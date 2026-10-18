@@ -15,7 +15,7 @@ export interface paths {
         /** Полное обновление пользователя (PUT). Только ADMIN. */
         put: operations["updateUser"];
         post?: never;
-        /** Архивировать пользователя (soft delete). Только ADMIN. */
+        /** Устаревший маршрут: используйте защищённое архивирование */
         delete: operations["archiveUser"];
         options?: never;
         head?: never;
@@ -54,8 +54,10 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get"];
+        /** Изменить полномочия администратора */
         put: operations["put"];
         post?: never;
+        /** Отозвать полномочия администратора */
         delete: operations["delete"];
         options?: never;
         head?: never;
@@ -459,6 +461,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/report-download-tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/registry-exports/users": {
         parameters: {
             query?: never;
@@ -614,6 +632,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/identity-operations/{operationId}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Восстановить неизменную failed-safe операцию пользователя или группы */
+        post: operations["reconcileGroupOperation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/homeworks": {
         parameters: {
             query?: never;
@@ -734,6 +769,38 @@ export interface paths {
         put?: never;
         /** Preview промоушена групп (dry-run, ADMIN) */
         post: operations["promotePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/export-jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/export-jobs/{id}/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ticket"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1134,6 +1201,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/report-download/{ticket}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ticketFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/registry-exports/users/formats": {
         parameters: {
             query?: never;
@@ -1265,6 +1348,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/identity-operations/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Проверить состояние сохранённой операции изменения пользователя или группы */
+        get: operations["getIdentityOperation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/identity-operations/{operationId}/reconcile-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить новое подтверждение для восстановления failed-safe архивирования пользователя */
+        get: operations["getArchiveReconciliationPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/homeworks/{id}/history": {
         parameters: {
             query?: never;
@@ -1341,6 +1458,38 @@ export interface paths {
         };
         /** Участники группы текущего пользователя (STUDENT/HEADMAN) */
         get: operations["getMyGroupMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/export-jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["status_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/export-jobs/{id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["file"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1621,6 +1770,86 @@ export interface components {
              * @example 123456789
              */
             telegramId?: number;
+        };
+        /** @description Состояние сохранённой операции изменения пользователя; без секретов и внутренней команды */
+        IdentityOperationStatus: {
+            /** Format: uuid */
+            operationId?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "SUCCEEDED" | "REJECTED" | "FAILED_SAFE";
+            /** Format: int32 */
+            retryAfterSeconds?: number;
+        };
+        /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
+        ErrorResponse: {
+            /**
+             * Format: int32
+             * @description HTTP статус код
+             * @example 404
+             */
+            status?: number;
+            /**
+             * @description URI типа ошибки
+             * @example https://api.rutcampustrack.ru/problems/resource-not-found
+             */
+            type?: string;
+            /**
+             * @description Краткое описание ошибки
+             * @example Ресурс не найден
+             */
+            title?: string;
+            /**
+             * @description Детальное описание
+             * @example Группа с id=99 не найдена
+             */
+            detail?: string;
+            /**
+             * @description URI запроса, вызвавшего ошибку
+             * @example /api/academic/groups/99
+             */
+            instance?: string;
+            /**
+             * Format: date-time
+             * @description Время возникновения ошибки (UTC)
+             * @example 2026-04-24T10:15:30Z
+             */
+            timestamp?: string;
+            /**
+             * @description Correlation ID из MDC (для трассировки в логах)
+             * @example abc-trace-123
+             */
+            traceId?: string;
+            /** @description Ошибки валидации полей body DTO (только для 400) */
+            fieldErrors?: components["schemas"]["FieldError"][];
+            /**
+             * @description Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)
+             * @example login
+             */
+            field?: string;
+            /**
+             * @description Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)
+             * @example {
+             *       "scheduleItemsCount": 3
+             *     }
+             */
+            extras?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Ошибка валидации одного поля DTO (RFC 9457 Extension Member) */
+        FieldError: {
+            /**
+             * @description Имя поля DTO
+             * @example displayName
+             */
+            field?: string;
+            /** @description Отклонённое значение */
+            rejectedValue?: unknown;
+            /**
+             * @description Локализованное сообщение об ошибке
+             * @example Имя не может быть пустым
+             */
+            message?: string;
         };
         EntityModelUserResponse: {
             /** Format: int64 */
@@ -2292,6 +2521,160 @@ export interface components {
             attendance?: "NOT_STARTED" | "PENDING" | "READY" | "PREPARED_RESTORE" | "RELEASE_PENDING" | "RELEASED" | "DELETED";
             blockingReason?: string;
         };
+        AdminGroupAttendanceParameters: {
+            semesterId: string;
+            search: string;
+            sort: string;
+            direction: string;
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        AdminGroupsParameters: {
+            status?: string;
+            search?: string;
+            /** Format: int32 */
+            course?: number;
+            studyMode?: string;
+            educationLevel?: string;
+            sorts?: components["schemas"]["RegistrySort"][];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        AdminUsersParameters: {
+            search?: string;
+            role?: string;
+            status?: string;
+            roleStatus?: string;
+            sorts?: components["schemas"]["RegistrySort"][];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        /** @description Current headman's own group roster export; group is selected by the server */
+        HeadmanGroupCompositionParameters: {
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        /** @description A bounded text or numeric headman statistics filter */
+        HeadmanStatsFilter: {
+            field: string;
+            contains?: string;
+            minimum?: number;
+            maximum?: number;
+        };
+        /** @description Headman current-group statistics export parameters */
+        HeadmanStatsParameters: {
+            /** Format: int64 */
+            subjectId?: number;
+            lessonTypes?: string[];
+            sorts?: components["schemas"]["HeadmanStatsSort"][];
+            filters?: components["schemas"]["HeadmanStatsFilter"][];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+            /** Format: int64 */
+            semesterId?: number;
+        };
+        /** @description One priority-ordered headman statistics sort field */
+        HeadmanStatsSort: {
+            field: string;
+            descending?: boolean;
+        };
+        /** @description Current-group headman trend chart export parameters */
+        HeadmanStatsTrendParameters: {
+            /** @enum {string} */
+            mode: "SEMESTER" | "WEEK" | "SUBJECT";
+            /** Format: date */
+            weekStart?: string;
+            /** Format: int64 */
+            subjectId?: number;
+            lessonTypes?: string[];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+            /** Format: int64 */
+            semesterId?: number;
+            /** @enum {string} */
+            bucketUnit?: "DAY" | "WEEK";
+        };
+        HeadmanSubjectJournalParameters: {
+            /** Format: int64 */
+            subjectId: number;
+            lessonTypes: string[];
+            weekStarts?: string[];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        /** @description Current headman weekly export parameters */
+        HeadmanWeeklyCurrentParameters: {
+            /** Format: date */
+            weekStart: string;
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        /** @description Selected headman weekly export parameters */
+        HeadmanWeeklySelectedParameters: {
+            weekStarts: string[];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        /** @description One allowlisted report and its bounded export parameters */
+        IssueReportDownloadTicketRequest: {
+            /** @enum {string} */
+            kind: "TEACHER_JOURNAL" | "TEACHER_STATS" | "HEADMAN_WEEKLY_CURRENT" | "HEADMAN_WEEKLY_SELECTED" | "HEADMAN_STATS" | "HEADMAN_STATS_TREND" | "HEADMAN_GROUP_COMPOSITION" | "HEADMAN_SUBJECT_JOURNAL" | "ADMIN_USERS" | "ADMIN_GROUPS" | "ADMIN_GROUP_ATTENDANCE";
+            teacherJournal?: components["schemas"]["TeacherJournalParameters"];
+            teacherStats?: components["schemas"]["TeacherStatsParameters"];
+            headmanWeeklyCurrent?: components["schemas"]["HeadmanWeeklyCurrentParameters"];
+            headmanWeeklySelected?: components["schemas"]["HeadmanWeeklySelectedParameters"];
+            headmanStats?: components["schemas"]["HeadmanStatsParameters"];
+            headmanStatsTrend?: components["schemas"]["HeadmanStatsTrendParameters"];
+            headmanGroupComposition?: components["schemas"]["HeadmanGroupCompositionParameters"];
+            headmanSubjectJournal?: components["schemas"]["HeadmanSubjectJournalParameters"];
+            adminUsers?: components["schemas"]["AdminUsersParameters"];
+            adminGroups?: components["schemas"]["AdminGroupsParameters"];
+            adminGroupAttendance?: components["schemas"]["AdminGroupAttendanceParameters"];
+        };
+        RegistrySort: {
+            field: string;
+            descending?: boolean;
+        };
+        /** @description Complete teacher subject journal parameters */
+        TeacherJournalParameters: {
+            /** Format: int64 */
+            semesterId: number;
+            /** Format: int64 */
+            groupId: number;
+            /** Format: int64 */
+            subjectId: number;
+            lessonTypes: string[];
+            /** Format: date */
+            dateFrom?: string;
+            /** Format: date */
+            dateTo?: string;
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+            pastOnly?: boolean;
+            lessonId?: string;
+        };
+        /** @description Teacher statistics export parameters */
+        TeacherStatsParameters: {
+            /** Format: int64 */
+            semesterId: number;
+            scope: string;
+            /** Format: int64 */
+            groupId?: number;
+            /** Format: int64 */
+            subjectId?: number;
+            lessonTypes?: string[];
+            sorts?: string[];
+            filters?: string[];
+            /** @enum {string} */
+            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+        };
+        /** @description Short-lived report download capability */
+        ReportDownloadTicketResponse: {
+            downloadPath?: string;
+            /** Format: date-time */
+            expiresAt?: string;
+            suggestedFilename?: string;
+        };
         SortOrder: {
             field: string;
             descending?: boolean;
@@ -2383,6 +2766,10 @@ export interface components {
             code: string;
             /** @description Human-readable label; defaults to the code */
             label?: string;
+        };
+        ReconcileRequest: {
+            archivePreviewDigest?: string;
+            password?: string;
         };
         /** @description Запрос на создание нового домашнего задания (HEADMAN/ASSISTANT) */
         CreateHomeworkRequest: {
@@ -2590,6 +2977,21 @@ export interface components {
         PromotionPreviewRequest: {
             /** Format: int64 */
             groupId?: number;
+        };
+        Create: {
+            /** Format: uuid */
+            requestId: string;
+            report: components["schemas"]["IssueReportDownloadTicketRequest"];
+        };
+        Status: {
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            state: "queued" | "preparing" | "ready" | "error";
+            suggestedFilename: string;
+            /** Format: date-time */
+            expiresAt: string;
+            errorCode: string | null;
         };
         /** @description Запрос на назначение помощника старосты с начальным набором прав */
         AssignAssistantRequest: {
@@ -3065,10 +3467,10 @@ export interface components {
             lessonType?: "LECTURE" | "PRACTICE" | "LAB";
         };
         PageHomeworkHistoryResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             first?: boolean;
             last?: boolean;
             /** Format: int32 */
@@ -3087,11 +3489,11 @@ export interface components {
             offset?: number;
             sort?: components["schemas"]["SortObject"];
             paged?: boolean;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
         };
         SortObject: {
             empty?: boolean;
@@ -3363,77 +3765,6 @@ export interface components {
         Links: {
             [key: string]: components["schemas"]["Link"];
         };
-        /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
-        ErrorResponse: {
-            /**
-             * Format: int32
-             * @description HTTP статус код
-             * @example 404
-             */
-            status?: number;
-            /**
-             * @description URI типа ошибки
-             * @example https://api.rutcampustrack.ru/problems/resource-not-found
-             */
-            type?: string;
-            /**
-             * @description Краткое описание ошибки
-             * @example Ресурс не найден
-             */
-            title?: string;
-            /**
-             * @description Детальное описание
-             * @example Группа с id=99 не найдена
-             */
-            detail?: string;
-            /**
-             * @description URI запроса, вызвавшего ошибку
-             * @example /api/academic/groups/99
-             */
-            instance?: string;
-            /**
-             * Format: date-time
-             * @description Время возникновения ошибки (UTC)
-             * @example 2026-04-24T10:15:30Z
-             */
-            timestamp?: string;
-            /**
-             * @description Correlation ID из MDC (для трассировки в логах)
-             * @example abc-trace-123
-             */
-            traceId?: string;
-            /** @description Ошибки валидации полей body DTO (только для 400) */
-            fieldErrors?: components["schemas"]["FieldError"][];
-            /**
-             * @description Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)
-             * @example login
-             */
-            field?: string;
-            /**
-             * @description Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)
-             * @example {
-             *       "scheduleItemsCount": 3
-             *     }
-             */
-            extras?: {
-                [key: string]: Record<string, never>;
-            };
-        };
-        /** @description Ошибка валидации одного поля DTO (RFC 9457 Extension Member) */
-        FieldError: {
-            /**
-             * @description Имя поля DTO
-             * @example displayName
-             */
-            field?: string;
-            /** @description Отклонённое значение */
-            rejectedValue?: Record<string, never>;
-            /**
-             * @description Локализованное сообщение об ошибке
-             * @example Имя не может быть пустым
-             */
-            message?: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -3531,7 +3862,10 @@ export interface operations {
     updateUser: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3546,10 +3880,31 @@ export interface operations {
             /** @description Пользователь обновлён */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelUserResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Ошибка валидации */
@@ -3558,10 +3913,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3576,7 +3931,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Пользователь не найден */
@@ -3585,10 +3940,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3608,6 +3963,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3628,14 +3992,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Пользователь архивирован */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Ошибка валидации запроса */
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3644,7 +4001,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3662,7 +4019,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Пользователь не найден */
+            /** @description Ресурс не найден */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3671,7 +4028,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Требуется защищённый POST /{id}/archive: protectedroute_required */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3698,12 +4055,24 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     patchUser: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3718,10 +4087,31 @@ export interface operations {
             /** @description Пользователь обновлён */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelUserResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Ошибка валидации */
@@ -3730,10 +4120,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3748,7 +4138,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Пользователь не найден */
@@ -3757,10 +4147,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3787,12 +4177,24 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     updateRoleGrant: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
                 role: string;
@@ -3808,10 +4210,31 @@ export interface operations {
             /** @description Роль сохранена */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelUserResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Недопустимая роль или статус */
@@ -3820,10 +4243,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3838,7 +4261,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Пользователь не найден */
@@ -3847,7 +4270,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Конфликт role-data */
@@ -3856,7 +4279,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Превышен лимит запросов */
@@ -3870,6 +4293,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3967,7 +4399,10 @@ export interface operations {
     put: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3979,16 +4414,37 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Операция завершена */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Profile"];
+                    "application/json": components["schemas"]["Profile"];
                 };
             };
-            /** @description Ошибка валидации запроса */
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3997,7 +4453,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4006,7 +4462,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Доступ запрещён */
+            /** @description Нет прав доступа */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4024,7 +4480,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4044,6 +4500,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4056,7 +4521,10 @@ export interface operations {
     delete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -4068,14 +4536,35 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Операция завершена */
+            204: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Ошибка валидации запроса */
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4084,7 +4573,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4093,7 +4582,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Доступ запрещён */
+            /** @description Нет прав доступа */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4111,7 +4600,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4131,6 +4620,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5470,7 +5968,10 @@ export interface operations {
     updateGroup: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -5485,10 +5986,31 @@ export interface operations {
             /** @description Группа обновлена */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelGroupResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Ошибка валидации */
@@ -5497,10 +6019,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelGroupResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5515,7 +6037,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelGroupResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Группа не найдена */
@@ -5524,10 +6046,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelGroupResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5547,6 +6069,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5642,7 +6173,10 @@ export interface operations {
     assignHeadman: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -5657,10 +6191,31 @@ export interface operations {
             /** @description Староста назначен */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["HeadmanAssignmentResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Ошибка валидации */
@@ -5669,10 +6224,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["HeadmanAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5687,7 +6242,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["HeadmanAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Группа или студент не найдены */
@@ -5696,7 +6251,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["HeadmanAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Устаревшее состояние или конфликт назначения */
@@ -5705,7 +6260,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["HeadmanAssignmentResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Превышен лимит запросов */
@@ -5719,6 +6274,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5822,7 +6386,10 @@ export interface operations {
     createUser: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5835,10 +6402,31 @@ export interface operations {
             /** @description Пользователь создан */
             201: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelUserCreatedResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Ошибка валидации */
@@ -5847,10 +6435,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserCreatedResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5865,7 +6453,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserCreatedResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Ресурс не найден */
@@ -5883,7 +6471,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserCreatedResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Превышен лимит запросов */
@@ -5904,12 +6492,24 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     transferStudent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -5924,10 +6524,31 @@ export interface operations {
             /** @description Студент переведён */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelUserResponse"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
                 };
             };
             /** @description Ошибка валидации */
@@ -5936,10 +6557,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5954,7 +6575,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Пользователь или группа не найдены */
@@ -5963,10 +6584,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EntityModelUserResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5986,6 +6607,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5998,7 +6628,10 @@ export interface operations {
     restoreUser: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -6010,14 +6643,35 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Операция завершена */
+            204: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Ошибка валидации запроса */
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6026,7 +6680,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6035,7 +6689,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Доступ запрещён */
+            /** @description Нет прав доступа */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6053,7 +6707,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6073,6 +6727,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6085,7 +6748,10 @@ export interface operations {
     archiveUserProtected: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -6097,14 +6763,35 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Операция завершена */
+            204: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Ошибка валидации запроса */
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6113,7 +6800,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6122,7 +6809,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Доступ запрещён */
+            /** @description Нет прав доступа */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6140,7 +6827,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт состояния */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6160,6 +6847,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7087,6 +7783,102 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SemesterArchiveOperationResponse"];
+                };
+            };
+        };
+    };
+    legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueReportDownloadTicketRequest"];
+            };
+        };
+        responses: {
+            /** @description Report download ticket issued */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
+                };
+            };
+            /** @description No current selectable report session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ticket issuance limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Current authority or ticket store unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -8077,6 +8869,128 @@ export interface operations {
             };
         };
     };
+    reconcileGroupOperation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReconcileRequest"];
+            };
+        };
+        responses: {
+            /** @description Операция завершена */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Ошибка валидации */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется действующая сессия */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Нет прав доступа */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт состояния */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     listHomeworks: {
         parameters: {
             query: {
@@ -8616,7 +9530,10 @@ export interface operations {
     restoreGroup: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: number;
             };
@@ -8624,14 +9541,35 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
             /** @description Группа восстановлена или уже активна */
             204: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Ошибка валидации запроса */
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8640,7 +9578,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -8687,6 +9625,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8876,7 +9823,10 @@ export interface operations {
     promote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8889,13 +9839,34 @@ export interface operations {
             /** @description Результат промоушена */
             200: {
                 headers: {
+                    "Cache-Control"?: string;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["PromotionSummary"];
                 };
             };
-            /** @description Ошибка валидации запроса */
+            /** @description Операция сохранена; проверьте Location перед повтором команды с прежним ключом */
+            202: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Задержка перед проверкой состояния в секундах */
+                    "Retry-After"?: number;
+                    /** @description UUID сохранённой операции */
+                    "X-Operation-Id"?: string;
+                    /** @description Адрес проверки состояния операции */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Ошибка валидации */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8904,7 +9875,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Требуется аутентификация */
+            /** @description Требуется действующая сессия */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -8919,7 +9890,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PromotionSummary"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Весенний семестр или группа не найдены */
@@ -8928,7 +9899,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PromotionSummary"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Предпросмотр устарел или группа уже обработана */
@@ -8937,7 +9908,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PromotionSummary"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Превышен лимит запросов */
@@ -8951,6 +9922,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9025,6 +10005,187 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PromotionSummary"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Create"];
+            };
+        };
+        responses: {
+            /** @description Durable report accepted; poll the returned job until ready or error */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Status"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Current authority or durable export storage unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ticket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Превышен лимит запросов */
@@ -11124,6 +12285,99 @@ export interface operations {
             };
         };
     };
+    ticketFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report artifact redeemed by its short-lived ticket */
+            200: {
+                headers: {
+                    "Cache-Control"?: "no-store";
+                    /** @description Attachment filename */
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": string;
+                    "application/pdf": string;
+                    "application/zip": string;
+                    "image/png": string;
+                    "text/html": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     userFormats: {
         parameters: {
             query?: never;
@@ -11807,6 +13061,197 @@ export interface operations {
             };
         };
     };
+    getIdentityOperation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Текущее сохранённое состояние операции */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    "X-Operation-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityOperationStatus"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется действующая сессия */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Нет прав доступа */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Операция не найдена или недоступна текущему пользователю */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getArchiveReconciliationPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Текущее подтверждение архивирования */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preview"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Нет актуального права USERS_ARCHIVE */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Операция не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Нет подтверждённого failed-safe архивирования */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Актуальный snapshot недоступен */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     history: {
         parameters: {
             query: {
@@ -12199,6 +13644,184 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PagedModelEntityModelUserResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    status_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Status"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current authorized report artifact */
+            200: {
+                headers: {
+                    "Cache-Control"?: "no-store";
+                    /** @description Attachment filename */
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": string;
+                    "application/pdf": string;
+                    "application/zip": string;
+                    "image/png": string;
+                    "text/html": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Ресурс не найден */

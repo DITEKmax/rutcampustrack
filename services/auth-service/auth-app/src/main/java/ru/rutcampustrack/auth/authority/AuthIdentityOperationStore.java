@@ -775,6 +775,8 @@ SELECT EXISTS(SELECT 1 FROM auth_sessions s JOIN user_role_grants g ON g.id=s.ac
 INSERT INTO user_role_grants(id,user_id,role,status,group_id) VALUES(?,?,?,?,?)
 ON CONFLICT(user_id,role) DO UPDATE SET status=EXCLUDED.status,group_id=EXCLUDED.group_id,updated_at=NOW()
 WHERE user_role_grants.id=EXCLUDED.id
+  AND (user_role_grants.status IS DISTINCT FROM EXCLUDED.status
+    OR user_role_grants.group_id IS DISTINCT FROM EXCLUDED.group_id)
 """,
                     grant.getGrantId(),
                     target.userId(),

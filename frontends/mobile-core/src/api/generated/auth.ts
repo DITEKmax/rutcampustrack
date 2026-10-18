@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: bd2ea023f05f9560630c3c550d3183c9b807c69f1ac74346e8c5237882a78164
+// Contract: Auth session/role; SHA-256: e571a08edf9dfad1abc53033389a3ec381cb6c3a0afb0c8a820e47afc571c0ef
 
 export interface paths {
     "/auth/account-history": {
@@ -48,70 +48,6 @@ export interface paths {
         put?: never;
         /** Change the current user's password */
         post: operations["changePassword"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/export-jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/export-jobs/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["status_1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/export-jobs/{id}/file": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["file"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/export-jobs/{id}/ticket": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ticket"];
         delete?: never;
         options?: never;
         head?: never;
@@ -364,7 +300,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Issue or reissue a browser-bound LOGIN challenge */
-        post: operations["issue_1"];
+        post: operations["issue"];
         delete?: never;
         options?: never;
         head?: never;
@@ -453,23 +389,6 @@ export interface paths {
          * @description Read refresh token from HttpOnly cookie 'rct_refresh', rotate it, return new access in body + new cookie.
          */
         post: operations["refresh"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/report-download-tickets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Issue a short-lived URL for one allowlisted report */
-        post: operations["issue"];
         delete?: never;
         options?: never;
         head?: never;
@@ -601,40 +520,12 @@ export interface components {
             items: components["schemas"]["AccountHistoryEvent"][];
             nextCursor?: string;
         };
-        AdminGroupAttendanceParameters: {
-            direction: string;
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            search: string;
-            semesterId: string;
-            sort: string;
-        };
-        AdminGroupsParameters: {
-            /** Format: int32 */
-            course?: number;
-            educationLevel?: string;
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            search?: string;
-            sorts?: components["schemas"]["RegistrySort"][];
-            status?: string;
-            studyMode?: string;
-        };
         AdminPasswordResetLinkResponse: {
             /** Format: date-time */
             expiresAt?: string;
             /** Format: int32 */
             expiresInSeconds?: number;
             url?: string;
-        };
-        AdminUsersParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            role?: string;
-            roleStatus?: string;
-            search?: string;
-            sorts?: components["schemas"]["RegistrySort"][];
-            status?: string;
         };
         AuthSessionsPage: {
             items: components["schemas"]["AuthSessionSummary"][];
@@ -654,11 +545,6 @@ export interface components {
         ChangePasswordRequest: {
             currentPassword: string;
             newPassword: string;
-        };
-        Create: {
-            report: components["schemas"]["IssueReportDownloadTicketRequest"];
-            /** Format: uuid */
-            requestId: string;
         };
         CurrentSessionResponse: {
             activeRole?: string;
@@ -754,88 +640,6 @@ export interface components {
         };
         HeadmanGeneratedPasswordRequest: {
             expectedCredentialsVersion: string;
-        };
-        /** @description Current headman's own group roster export; group is selected by the server */
-        HeadmanGroupCompositionParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-        };
-        /** @description A bounded text or numeric headman statistics filter */
-        HeadmanStatsFilter: {
-            contains?: string;
-            field: string;
-            maximum?: number;
-            minimum?: number;
-        };
-        /** @description Headman current-group statistics export parameters */
-        HeadmanStatsParameters: {
-            filters?: components["schemas"]["HeadmanStatsFilter"][];
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            lessonTypes?: string[];
-            /** Format: int64 */
-            semesterId?: number;
-            sorts?: components["schemas"]["HeadmanStatsSort"][];
-            /** Format: int64 */
-            subjectId?: number;
-        };
-        /** @description One priority-ordered headman statistics sort field */
-        HeadmanStatsSort: {
-            descending?: boolean;
-            field: string;
-        };
-        /** @description Current-group headman trend chart export parameters */
-        HeadmanStatsTrendParameters: {
-            /** @enum {string} */
-            bucketUnit?: "DAY" | "WEEK";
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            lessonTypes?: string[];
-            /** @enum {string} */
-            mode: "SEMESTER" | "WEEK" | "SUBJECT";
-            /** Format: int64 */
-            semesterId?: number;
-            /** Format: int64 */
-            subjectId?: number;
-            /** Format: date */
-            weekStart?: string;
-        };
-        HeadmanSubjectJournalParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            lessonTypes: string[];
-            /** Format: int64 */
-            subjectId: number;
-            weekStarts?: string[];
-        };
-        /** @description Current headman weekly export parameters */
-        HeadmanWeeklyCurrentParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            /** Format: date */
-            weekStart: string;
-        };
-        /** @description Selected headman weekly export parameters */
-        HeadmanWeeklySelectedParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            weekStarts: string[];
-        };
-        /** @description One allowlisted report and its bounded export parameters */
-        IssueReportDownloadTicketRequest: {
-            adminGroupAttendance?: components["schemas"]["AdminGroupAttendanceParameters"];
-            adminGroups?: components["schemas"]["AdminGroupsParameters"];
-            adminUsers?: components["schemas"]["AdminUsersParameters"];
-            headmanGroupComposition?: components["schemas"]["HeadmanGroupCompositionParameters"];
-            headmanStats?: components["schemas"]["HeadmanStatsParameters"];
-            headmanStatsTrend?: components["schemas"]["HeadmanStatsTrendParameters"];
-            headmanSubjectJournal?: components["schemas"]["HeadmanSubjectJournalParameters"];
-            headmanWeeklyCurrent?: components["schemas"]["HeadmanWeeklyCurrentParameters"];
-            headmanWeeklySelected?: components["schemas"]["HeadmanWeeklySelectedParameters"];
-            /** @enum {string} */
-            kind: "TEACHER_JOURNAL" | "TEACHER_STATS" | "HEADMAN_WEEKLY_CURRENT" | "HEADMAN_WEEKLY_SELECTED" | "HEADMAN_STATS" | "HEADMAN_STATS_TREND" | "HEADMAN_GROUP_COMPOSITION" | "HEADMAN_SUBJECT_JOURNAL" | "ADMIN_USERS" | "ADMIN_GROUPS" | "ADMIN_GROUP_ATTENDANCE";
-            teacherJournal?: components["schemas"]["TeacherJournalParameters"];
-            teacherStats?: components["schemas"]["TeacherStatsParameters"];
         };
         LoginRequest: {
             login: string;
@@ -966,17 +770,6 @@ export interface components {
             /** Format: int64 */
             ttl?: number;
         };
-        RegistrySort: {
-            descending?: boolean;
-            field: string;
-        };
-        /** @description Short-lived report download capability */
-        ReportDownloadTicketResponse: {
-            downloadPath?: string;
-            /** Format: date-time */
-            expiresAt?: string;
-            suggestedFilename?: string;
-        };
         RoleGrantResponse: {
             contextLabel?: string;
             grantId: string;
@@ -995,49 +788,6 @@ export interface components {
             /** Format: int64 */
             expiresIn?: number;
             session: components["schemas"]["CurrentSessionResponse"];
-        };
-        Status: {
-            errorCode: string | null;
-            /** Format: date-time */
-            expiresAt: string;
-            /** Format: uuid */
-            jobId: string;
-            /** @enum {string} */
-            state: "queued" | "preparing" | "ready" | "error";
-            suggestedFilename: string;
-        };
-        /** @description Complete teacher subject journal parameters */
-        TeacherJournalParameters: {
-            /** Format: date */
-            dateFrom?: string;
-            /** Format: date */
-            dateTo?: string;
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            /** Format: int64 */
-            groupId: number;
-            lessonId?: string;
-            lessonTypes: string[];
-            pastOnly?: boolean;
-            /** Format: int64 */
-            semesterId: number;
-            /** Format: int64 */
-            subjectId: number;
-        };
-        /** @description Teacher statistics export parameters */
-        TeacherStatsParameters: {
-            filters?: string[];
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            /** Format: int64 */
-            groupId?: number;
-            lessonTypes?: string[];
-            scope: string;
-            /** Format: int64 */
-            semesterId: number;
-            sorts?: string[];
-            /** Format: int64 */
-            subjectId?: number;
         };
         TmaAuthRequest: {
             initData: string;
@@ -1252,357 +1002,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Требуется аутентификация */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Доступ запрещён */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Create"];
-            };
-        };
-        responses: {
-            /** @description Durable export accepted; poll the returned job until ready or error */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Status"];
-                };
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Требуется аутентификация */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Доступ запрещён */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Current authority or durable export storage unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    status_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Status"];
-                };
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Требуется аутентификация */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Доступ запрещён */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    file: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": string;
-                };
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Требуется аутентификация */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Доступ запрещён */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    ticket: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
             };
             /** @description Ошибка валидации запроса */
             400: {
@@ -2805,7 +2204,7 @@ export interface operations {
             };
         };
     };
-    issue_1: {
+    issue: {
         parameters: {
             query?: never;
             header?: never;
@@ -3321,102 +2720,6 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    issue: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IssueReportDownloadTicketRequest"];
-            };
-        };
-        responses: {
-            /** @description Report download ticket issued */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid access token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description No current selectable report session */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ticket issuance limit exceeded */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Session or ticket store unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
                 };
             };
         };

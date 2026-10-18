@@ -263,6 +263,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
       errorClass: 'TimeoutError',
       code: 'ECONNRESET',
       exitStatus: 255,
+      transportHint: 'UNKNOWN',
     },
     {
       path: 'ASYNC_REPORT',
@@ -270,6 +271,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
       errorClass: 'TimeoutError',
       code: 'UNKNOWN',
       exitStatus: 'UNKNOWN',
+      state: 'UNKNOWN',
     },
   ];
   expect(safeNativePrimaryFailures(nativeAnnotations)).toEqual(nativeFacts);
@@ -289,6 +291,11 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     { ...nativeFacts[0], path: marker },
     { ...nativeFacts[0], action: 'HTTP_GET' },
     { ...nativeFacts[2], action: 'HTTP_GET' },
+    { ...nativeFacts[2], state: marker },
+    { ...nativeFacts[2], state: 'error', errorCode: marker },
+    { ...nativeFacts[2], state: 'error' },
+    { ...nativeFacts[2], state: 'ready', errorCode: 'GENERATION_FAILED' },
+    { ...nativeFacts[2], path: 'SUBJECT_OTP', action: 'DOCKER_INSPECT' },
     { ...nativeFacts[0], errorClass: marker },
     { ...nativeFacts[0], code: marker },
     { ...nativeFacts[0], exitStatus: -1 },
@@ -296,9 +303,56 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     { ...nativeFacts[0], exitStatus: 1.5 },
     { ...nativeFacts[0], exitStatus: '1' },
     { ...nativeFacts[0], extra: marker },
+    { ...nativeFacts[0], transportHint: 'TLS_CERTIFICATE' },
+    { ...nativeFacts[1], transportHint: marker },
     { path: 'SUBJECT_OTP' },
   ])
     expect(safeNativePrimaryFailures(nativeAnnotation(value))).toEqual([]);
+  for (const [message, transportHint, code] of [
+    ['apiRequestContext.get: self-signed certificate', 'TLS_CERTIFICATE', undefined],
+    ['apiRequestContext.get: Unsupported TLS certificate.\n' + marker, 'TLS_CERTIFICATE', undefined],
+    ['apiRequestContext.get: Client network socket disconnected before secure TLS connection was established', 'TLS_HANDSHAKE', undefined],
+    ['apiRequestContext.get: read ECONNRESET', 'ECONNRESET', undefined],
+    ['apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:443', 'ECONNREFUSED', undefined],
+    ['apiRequestContext.get: connect ECONNREFUSED ::1:443', 'ECONNREFUSED', undefined],
+    ['apiRequestContext.get: Request context disposed.', 'REQUEST_CONTEXT_DISPOSED', undefined],
+    ['apiRequestContext.get: Timeout 30000ms exceeded.', 'REQUEST_TIMEOUT', undefined],
+    ['apiRequestContext.get: read ECONNRESET', 'UNKNOWN', 'ECONNREFUSED'],
+    ['apiRequestContext.post: self-signed certificate', 'UNKNOWN', undefined],
+    ['apiRequestContext.get: self-signed certificate ECONNRESET', 'UNKNOWN', undefined],
+    ['apiRequestContext.get: connect ECONNREFUSED 999.0.0.1:443', 'UNKNOWN', undefined],
+    ['apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:65536', 'UNKNOWN', undefined],
+    ['apiRequestContext.get: Timeout 0ms exceeded.', 'UNKNOWN', undefined],
+    ['apiRequestContext.get: read ECONNRESET ' + marker, 'UNKNOWN', undefined],
+    ['apiRequestContext.get: ' + marker.repeat(80), 'UNKNOWN', undefined],
+    [marker + '\napiRequestContext.get: read ECONNRESET', 'UNKNOWN', undefined],
+    [marker, 'UNKNOWN', undefined],
+  ] as const) {
+    const annotations: TestInfo['annotations'] = [];
+    retainNativePrimaryFailure(annotations, 'SEMESTER_PREVIEW', 'HTTP_GET', {
+      message, ...(code ? { code } : {}), stack: marker, url: marker,
+    });
+    expect(safeNativePrimaryFailures(annotations)).toEqual([{
+      ...nativeFacts[1], errorClass: 'UNKNOWN', code: code ?? 'UNKNOWN',
+      exitStatus: 'UNKNOWN', transportHint,
+    }]);
+    expect(JSON.stringify(annotations)).not.toContain(marker);
+  }
+  for (const state of ['queued', 'preparing', 'ready', 'error', marker]) {
+    for (const errorCode of ['AUTHORITY_DENIED', 'GENERATION_FAILED', 'EXPORT_TOO_LARGE', marker]) {
+      const annotations: TestInfo['annotations'] = [];
+      retainNativePrimaryFailure(annotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', new Error(marker), {
+        state, errorCode, jobId: marker, downloadPath: `/api/report-download/${marker}`,
+      });
+      expect(safeNativePrimaryFailures(annotations)).toEqual([{
+        ...nativeFacts[2],
+        errorClass: 'Error',
+        state: state === marker ? 'UNKNOWN' : state,
+        ...(state === 'error' ? { errorCode: errorCode === marker ? 'UNKNOWN' : errorCode } : {}),
+      }]);
+      expect(JSON.stringify(annotations)).not.toContain(marker);
+    }
+  }
   const syntaxAnnotations: TestInfo['annotations'] = [];
   retainNativePrimaryFailure(
     syntaxAnnotations,

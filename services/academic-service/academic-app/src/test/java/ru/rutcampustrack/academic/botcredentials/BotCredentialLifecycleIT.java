@@ -927,8 +927,8 @@ SELECT ?,id,roles_version,roles_version+1,credentials_version,credentials_versio
                         group);
             academicOwner.update(
                     "INSERT INTO"
-                        + " academic_profiles(id,directory_role,last_name,first_name,academic_revision,applied_auth_roles_version,created_at,updated_at)"
-                        + " VALUES(?,?,'NP01','Synthetic',1,1,NOW(),NOW())",
+                        + " academic_profiles(id,directory_role,directory_status,last_name,first_name,academic_revision,applied_auth_roles_version,created_at,updated_at)"
+                        + " VALUES(?,?,'ACTIVE','NP01','Synthetic',1,1,NOW(),NOW())",
                     id,
                     base.equals("admin") ? "ADMIN" : base.toUpperCase(java.util.Locale.ROOT));
             if (!base.equals("admin"))

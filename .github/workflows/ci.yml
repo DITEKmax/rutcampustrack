@@ -554,8 +554,15 @@ jobs:
                   method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
                   test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java'
                   source = test_source.read_bytes()
-                  assert hashlib.sha256(source).hexdigest() == 'e4c28850a60ae3c0207205d9f651edaa89e2700e3d26bc0cd9ceef60dd97a374'
-                  archive = b'        service.archive(target, request);\n'
+                  assert hashlib.sha256(source).hexdigest() == 'c1bc6549965096b3c00669aed4f7ef91f676977d7e94fa4031b12f53fdf307f3'
+                  archive = (b'        archive(target, request);\n'
+                             b'        assertThat(\n'
+                             b'                        jdbc.queryForObject(\n'
+                             b'                                "SELECT phase FROM academic_identity_operations WHERE"\n'
+                             b'                                        + " operation_id=?",\n'
+                             b'                                String.class,\n'
+                             b'                                request.operationId()))\n'
+                             b'                .isEqualTo("SUCCEEDED");\n')
                   oracle = (b'        assertThat(\n'
                             b'                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)\n'
                             b'                                .equals(retainedHomework))\n'
@@ -571,7 +578,7 @@ jobs:
                           .isEqualTo(1);
           '''
                   negative = source.replace(anchor, archive + update + oracle)
-                  assert hashlib.sha256(negative).hexdigest() == '11d392c7402350d3e22015ee131eefdbebf148184fcc9c66288a6c8971f73460'
+                  assert hashlib.sha256(negative).hexdigest() == 'a5e736d55aa7e8b1a74fa402b69ab72aee309b6596b8f0c9e90cbeac75aca6ed'
                   assert negative.count(archive + update + oracle) == 1
                   rule_line = negative[:negative.index(archive + update + oracle)].count(b'\n') + len((archive + update + oracle).splitlines())
                   replacements = {test_source: negative}
@@ -579,12 +586,20 @@ jobs:
                                ruleFrame=package + '.' + method + '(UserArchiveLifecycleIT.java:' + str(rule_line) + ')')
                   identity_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java'
                   identity_current = identity_source.read_bytes()
-                  assert hashlib.sha256(identity_current).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
-                  identity_oracle = "        assertThat(studentIdentity.equals(jdbcTemplate.queryForMap(preservedFields, studentId)))\n                .as(\"Adding a role must preserve the existing account identity and credentials\")\n                .isTrue();\n".encode()
-                  identity_update = "        assertThat(\n                        jdbcTemplate.update(\n                                \"UPDATE users SET first_name=first_name || '-rct-identity-red' WHERE id=?\",\n                                studentId))\n                .isEqualTo(1);\n".encode()
+                  assert hashlib.sha256(identity_current).hexdigest() == 'ee838949ab03c847fcbbff78192e209a4da5066ad71fe28d9bc4037b67c5fefc'
+                  identity_oracle = (b'        assertThat(\n'
+                                     b'                        studentIdentity.equals(\n'
+                                     b'                                java.util.List.of(\n'
+                                     b'                                        identityFixture\n'
+                                     b'                                                .authJdbc()\n'
+                                     b'                                                .queryForMap(preservedCredentials, studentId),\n'
+                                     b'                                        jdbcTemplate.queryForMap(preservedProfile, studentId))))\n'
+                                     b'                .as("Adding a role must preserve the existing account identity and credentials")\n'
+                                     b'                .isTrue();\n')
+                  identity_update = "        assertThat(\n                        jdbcTemplate.update(\n                                \"UPDATE academic_profiles SET first_name=first_name || '-rct-identity-red' WHERE id=?\",\n                                studentId))\n                .isEqualTo(1);\n".encode()
                   assert identity_current.count(identity_oracle) == 1
                   identity_negative = identity_current.replace(identity_oracle, identity_update + identity_oracle)
-                  assert hashlib.sha256(identity_negative).hexdigest() == 'ffd0703bf83c28a004b78c693698b1d2aff2f8da478fcb35756a2c9fc1493997'
+                  assert hashlib.sha256(identity_negative).hexdigest() == '7320a591dd684999e382ef812cf6dbd8778049dc9a66ad642458901629f8ba38'
                   identity_line = (identity_negative[:identity_negative.index(identity_update + identity_oracle)].count(b'\n')
                                    + len((identity_update + identity_oracle).splitlines()))
                   identity_package = 'ru.rutcampustrack.academic.integration.RestApiIT'
@@ -3318,6 +3333,7 @@ jobs:
         run: bash tests/e2e/infra/scripts/generate-test-certs.sh
 
       - name: Boot isolated Vue auth stack
+        id: bootstrap-images
         env:
           RCT_E2E_SYNTHETIC_BASELINE: browser-v2-split-20261018-v1
         run: |
@@ -5769,8 +5785,163 @@ jobs:
           sudo update-ca-certificates
 
       - name: Stop isolated e2e containers
+        id: e2e-stop
         if: always()
         run: docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml down
+
+      - name: Verify the actual initial-administrator operator CLI
+        id: bootstrap-cli
+        if: ${{ !cancelled() && matrix.group == 'client' && steps.bootstrap-images.outcome == 'success' && steps.e2e-stop.outcome == 'success' }}
+        timeout-minutes: 10
+        env:
+          RCT_BOOTSTRAP_CLI_ACCEPTANCE: 'true'
+          TESTCONTAINERS_RYUK_DISABLED: 'true'
+          TESTCONTAINERS_CHECKS_DISABLE: 'true'
+          RCT_BOOTSTRAP_CLI_PROJECT: rct-bootstrap-cli-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_BOOTSTRAP_AUTH_IMAGE: rct/auth-service:e2e-local
+          RCT_BOOTSTRAP_ACADEMIC_IMAGE: rct/academic-service:e2e-local
+          RCT_CI_JOB_ID: ${{ github.job }}
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          RCT_CI_EVENT_NAME: ${{ github.event_name }}
+          RCT_CI_RUN_ID: ${{ github.run_id }}
+          RCT_CI_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          umask 077
+          python3 - <<'PY_BOOTSTRAP_CLI'
+          import hashlib, json, os, pathlib, re, shutil, signal, subprocess, tempfile
+
+          root = pathlib.Path.cwd()
+          project = os.environ['RCT_BOOTSTRAP_CLI_PROJECT']
+          source = 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java'
+          classname = 'ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT'
+          method = 'operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator'
+          owned_images = set()
+          current = None
+          temporary = None
+
+          def interrupted(number, frame):
+              raise KeyboardInterrupt()
+
+          signal.signal(signal.SIGTERM, interrupted)
+          signal.signal(signal.SIGINT, interrupted)
+
+          def call(arguments, seconds=20, discard=False):
+              global current
+              current = subprocess.Popen(arguments, cwd=root,
+                                         stdout=subprocess.DEVNULL if discard else subprocess.PIPE,
+                                         stderr=subprocess.DEVNULL, start_new_session=True)
+              try:
+                  output, _ = current.communicate(timeout=seconds)
+                  output = output or b''
+                  if current.returncode != 0 or len(output) > 1048576:
+                      raise ValueError('bounded bootstrap command failed')
+                  return output
+              finally:
+                  if current.poll() is None:
+                      os.killpg(current.pid, signal.SIGKILL)
+                      current.wait(timeout=10)
+                  current = None
+
+          try:
+              if (os.environ.get('GITHUB_ACTIONS') != 'true'
+                      or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+                      or not re.fullmatch(r'rct-bootstrap-cli-[0-9]{1,20}-[0-9]{1,20}', project)):
+                  raise ValueError('disposable bootstrap CI scope required')
+              if shutil.disk_usage(root).free < 4 * 1024**3:
+                  raise ValueError('bootstrap disk reserve unavailable')
+              memory = dict(line.split(':', 1) for line in pathlib.Path('/proc/meminfo').read_text().splitlines())
+              if int(memory['MemAvailable'].split()[0]) * 1024 < 4 * 1024**3:
+                  raise ValueError('bootstrap memory reserve unavailable')
+              call(['docker', 'compose', 'version'])
+              if call(['docker', 'ps', '-q', '--filter', 'label=com.docker.compose.project=rct-e2e']).strip():
+                  raise ValueError('existing browser stack must be stopped first')
+              for reference in ('rct/auth-service:e2e-local', 'rct/academic-service:e2e-local', 'postgres:16'):
+                  image = call(['docker', 'image', 'inspect', '--format', '{{.Id}}', reference]).decode().strip()
+                  if not re.fullmatch(r'sha256:[0-9a-f]{64}', image):
+                      raise ValueError('current local bootstrap image required')
+                  owned_images.add(image)
+              results = root / 'services/academic-service/academic-app/build/test-results/integrationTest'
+              if results.exists() and any(results.glob('TEST-*.xml')):
+                  raise ValueError('fresh bootstrap result directory required')
+              tracked = call(['git', 'show', 'HEAD:' + source])
+              if tracked != (root / source).read_bytes():
+                  raise ValueError('tracked bootstrap test required')
+              temporary = tempfile.TemporaryDirectory(prefix=project + '-', dir=os.environ['RUNNER_TEMP'])
+              os.environ['RCT_BOOTSTRAP_CLI_DIRECTORY'] = temporary.name
+              environment = dict(os.environ)
+              try:
+                  # No Docker rebuild/pull and no test worker parallelism after stack shutdown.
+                  call(['bash', 'gradlew', ':services:academic-service:academic-app:integrationTest',
+                        '--no-daemon', '--max-workers=1',
+                        '-Dorg.gradle.jvmargs=-Xmx512m -XX:ActiveProcessorCount=1',
+                        '--tests', classname + '.' + method], seconds=480, discard=True)
+                  environment['RCT_CI_TEST_OUTCOME'] = 'success'
+              except Exception:
+                  environment['RCT_CI_TEST_OUTCOME'] = 'failure'
+              collected = subprocess.run(
+                  ['python3', 'scripts/collect-ci-test-outcomes.py', '--service', 'academic-service',
+                   '--task', 'integrationTest'], cwd=root, env=environment,
+                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+              if collected.returncode != 0:
+                  raise ValueError('bootstrap safe collection failed')
+              report = json.loads((root / 'build/ci-test-outcomes/academic-service/integrationTest/safe-outcomes.json').read_text())
+              checkout = call(['git', 'rev-parse', 'HEAD']).decode().strip()
+              expected_metadata = {
+                  'checkoutSha': checkout, 'prHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
+                  'runId': os.environ['RCT_CI_RUN_ID'], 'runAttempt': os.environ['RCT_CI_RUN_ATTEMPT'],
+                  'event': os.environ['RCT_CI_EVENT_NAME'], 'testStepOutcome': 'success',
+                  'service': 'academic-service', 'task': 'integrationTest', 'job': 'e2e-auth'}
+              cases = report.get('cases', [])
+              if (report.get('collection') != 'RESULTS'
+                      or report.get('summary') != {'PASSED': 1, 'FAILED': 0, 'ERROR': 0,
+                                                  'SKIPPED': 0, 'NOT_EXECUTED': 0}
+                      or len(cases) != 1
+                      or any(report.get('metadata', {}).get(k) != v for k, v in expected_metadata.items())):
+                  raise ValueError('one executed bootstrap CLI pass required')
+              case = cases[0]
+              if (case.get('identity') != 'SOURCE_METHOD' or case.get('status') != 'PASSED'
+                      or case.get('classname') != classname or case.get('method') != method
+                      or case.get('source') != source
+                      or case.get('sourceSha256') != hashlib.sha256(tracked).hexdigest()
+                      or tracked != (root / source).read_bytes()):
+                  raise ValueError('current bootstrap source-linked pass required')
+          except BaseException:
+              raise SystemExit('Initial-administrator CLI acceptance failed')
+          finally:
+              # Exact current-run labels only. Never stop the browser stand or prune shared objects.
+              try:
+                  for label in ('rct.bootstrap.cli.owner', 'rct.bootstrap.cli.fixture'):
+                      identifiers = call(['docker', 'ps', '-aq', '--filter', 'label=' + label + '=' + project]).decode().split()
+                      for identifier in identifiers:
+                          if not re.fullmatch(r'[0-9a-f]{12,64}', identifier):
+                              raise SystemExit('Bootstrap owned cleanup failed')
+                          info = json.loads(call(['docker', 'inspect', identifier]))[0]
+                          labels = info['Config'].get('Labels') or {}
+                          if (labels.get(label) != project or info['Image'] not in owned_images
+                                  or label == 'rct.bootstrap.cli.owner' and (
+                                      labels.get('com.docker.compose.project') != project
+                                      or labels.get('com.docker.compose.service') not in ('auth-service', 'academic-service'))):
+                              raise SystemExit('Bootstrap owned cleanup scope refused')
+                          call(['docker', 'rm', '--force', '--volumes', identifier])
+              except BaseException:
+                  raise SystemExit('Bootstrap owned cleanup failed') from None
+              finally:
+                  if temporary is not None:
+                      try:
+                          temporary.cleanup()
+                      except Exception:
+                          raise SystemExit('Bootstrap private-file cleanup failed') from None
+          print('PASS actual operator CLI, private ConfigData and coherent own-DB bootstrap/retry')
+          PY_BOOTSTRAP_CLI
+
+      - name: Upload the existing collector's operator CLI outcome
+        if: ${{ !cancelled() && matrix.group == 'client' && steps.bootstrap-images.outcome == 'success' && steps.e2e-stop.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootstrap-cli-safe-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/academic-service/integrationTest/safe-outcomes.json
+          if-no-files-found: error
+          retention-days: 7
 
   e2e-auth-required:
     name: Playwright E2E auth flow

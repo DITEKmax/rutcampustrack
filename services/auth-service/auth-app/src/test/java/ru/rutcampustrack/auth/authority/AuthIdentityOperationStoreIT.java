@@ -1239,6 +1239,97 @@ SELECT jsonb_build_object(
     }
 
     @Test
+    void addingTeacherPreservesFullStudentGrantWhileStatusAndGroupChangesStillUpdateIt() {
+        var create = create(UUID.randomUUID());
+        var ready = operations.commit(commit(create, operations.prepare(create)));
+        var student = ready.getTargets(0).getGrants(0);
+        Timestamp past = Timestamp.from(Instant.parse("2020-01-02T00:00:00Z"));
+        owner.update(
+                "UPDATE user_role_grants SET created_at=?,updated_at=? WHERE id=?",
+                Timestamp.from(Instant.parse("2020-01-01T00:00:00Z")),
+                past,
+                student.getGrantId());
+        var studentBefore =
+                owner.queryForMap(
+                        "SELECT * FROM user_role_grants WHERE id=?", student.getGrantId());
+        var addTeacher =
+                roleChange(
+                        ready,
+                        List.of(
+                                student,
+                                AdmissionGrant.newBuilder()
+                                        .setRole("TEACHER")
+                                        .setStatus("ACTIVE")
+                                        .build()));
+        ready = operations.commit(commit(addTeacher, operations.prepare(addTeacher)));
+        assertThat(ready.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        assertThat(
+                        owner.queryForMap(
+                                "SELECT * FROM user_role_grants WHERE id=?", student.getGrantId()))
+                .isEqualTo(studentBefore);
+        var teacher =
+                ready.getTargets(0).getGrantsList().stream()
+                        .filter(g -> g.getRole().equals("TEACHER"))
+                        .findFirst()
+                        .orElseThrow();
+        var teacherBefore =
+                owner.queryForMap(
+                        "SELECT * FROM user_role_grants WHERE id=?", teacher.getGrantId());
+        for (var changed :
+                List.of(
+                        student.toBuilder().setStatus("SUSPENDED").build(),
+                        student.toBuilder().setStatus("SUSPENDED").setGroupId(12).build())) {
+            owner.update(
+                    "UPDATE user_role_grants SET updated_at=? WHERE id=?",
+                    past,
+                    student.getGrantId());
+            var change = roleChange(ready, List.of(changed, teacher));
+            ready = operations.commit(commit(change, operations.prepare(change)));
+            assertThat(ready.getPhase())
+                    .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+            var after =
+                    owner.queryForMap(
+                            "SELECT * FROM user_role_grants WHERE id=?", student.getGrantId());
+            assertThat(after)
+                    .containsEntry("id", student.getGrantId())
+                    .containsEntry("status", changed.getStatus().toLowerCase(Locale.ROOT))
+                    .containsEntry("group_id", changed.getGroupId())
+                    .containsEntry("created_at", studentBefore.get("created_at"));
+            assertThat((Timestamp) after.get("updated_at")).isAfter(past);
+            assertThat(
+                            owner.queryForMap(
+                                    "SELECT * FROM user_role_grants WHERE id=?",
+                                    teacher.getGrantId()))
+                    .isEqualTo(teacherBefore);
+        }
+    }
+
+    private static PrepareIdentityOperationRequest roleChange(
+            IdentityOperationResult ready, List<AdmissionGrant> grants) {
+        var target = ready.getTargets(0);
+        return hash(
+                PrepareIdentityOperationRequest.newBuilder()
+                        .setOperationId(UUID.randomUUID().toString())
+                        .setKind(IdentityOperationKind.IDENTITY_OPERATION_KIND_ROLE)
+                        .addTargets(
+                                IdentityTargetCommand.newBuilder()
+                                        .setUserId(target.getUserId())
+                                        .setExpectedRolesVersion(target.getFinalRolesVersion())
+                                        .setExpectedCredentialsVersion(
+                                                target.getCredentialsVersion())
+                                        .setExpectedTelegramBindingVersion(
+                                                target.getTelegramBindingVersion())
+                                        .setExpectedAcademicRevision(
+                                                target.getExpectedAcademicRevision() + 1)
+                                        .setDesiredAccountState(
+                                                IdentityAccountState.IDENTITY_ACCOUNT_STATE_ACTIVE)
+                                        .setDesiredAdminProfile(
+                                                AdmissionAdminProfile.getDefaultInstance())
+                                        .addAllDesiredGrants(grants)));
+    }
+
+    @Test
     void naturalSessionTimeExpiryDoesNotLoseTheAcceptedFixedCommand() {
         var command = create(UUID.randomUUID());
         var prepared = operations.prepare(command);

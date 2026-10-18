@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -19,14 +20,18 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 /**
  * End-to-end integration tests for the REST API layer. Covers all critical paths across User,
  * Semester, Threshold, Homework domains.
  *
- * <p>Uses AbstractAcademicIntegrationTest (Testcontainers PostgreSQL, no RabbitMQ/Redis). Tests run
- * in @Transactional for automatic rollback — DB state is restored per test.
+ * <p>The owned two-database fixture resets before each test. HTTP commands commit through the real
+ * coordinator; an Academic test transaction cannot wrap an Auth operation.
  */
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -42,22 +47,30 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private ru.rutcampustrack.academic.group.GroupService groupService;
 
-    // Seed data IDs (from V2 migrations)
     private Long seedStudentId;
     private Long seedGroupId;
     private Long seedAdminId;
+    private String seedStudentLogin;
+    private SelectedActor adminActor;
+    private SelectedActor studentActor;
+    private SelectedActor headmanActor;
 
     @BeforeEach
     void loadSeedIds() {
-        seedStudentId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'student'", Long.class);
-        seedGroupId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
-        seedAdminId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        var seed = identityFixture.canonical();
+        seedStudentId = seed.studentId();
+        seedGroupId = seed.groupId();
+        seedAdminId = seed.adminId();
+        seedStudentLogin =
+                identityFixture
+                        .authJdbc()
+                        .queryForObject(
+                                "SELECT login FROM auth_identities WHERE id=?",
+                                String.class,
+                                seedStudentId);
+        adminActor = identityFixture.select(seedAdminId, AuthRole.ADMIN);
+        studentActor = identityFixture.select(seedStudentId, AuthRole.STUDENT);
+        headmanActor = identityFixture.select(seedStudentId, AuthRole.HEADMAN);
     }
 
     // =====================================================================
@@ -66,7 +79,6 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @Test
     @Order(1)
-    @Transactional
     void testAdminCreateUser_returnsLoginAndPassword() throws Exception {
         Long managedGroupId =
                 groupService
@@ -94,7 +106,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                         .content(body)
                                         .header("X-User-Id", seedAdminId)
                                         .header("X-User-Role", "ADMIN")
-                                        .with(signedAdmin())
+                                        .with(identityFixture.signed(adminActor))
                                         .header("X-Group-Id", "")
                                         .header("X-Is-Headman", "false"))
                         .andExpect(status().isCreated())
@@ -114,7 +126,9 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
             throws Exception {
         // No test transaction: each HTTP mutation commits before the independent SQL readback.
         long initialAccountCount =
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class);
+                identityFixture
+                        .authJdbc()
+                        .queryForObject("SELECT COUNT(*) FROM auth_identities", Long.class);
         Long managedGroupId =
                 groupService
                         .createGroup(
@@ -138,7 +152,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                                 .content(studentBody)
                                                 .header("X-User-Id", seedAdminId)
                                                 .header("X-User-Role", "ADMIN")
-                                                .with(signedAdmin()))
+                                                .with(identityFixture.signed(adminActor)))
                                 .andExpect(status().isCreated())
                                 .andReturn()
                                 .getResponse()
@@ -158,7 +172,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                                                 .formatted(occupiedEmployeeNumber))
                                                 .header("X-User-Id", seedAdminId)
                                                 .header("X-User-Role", "ADMIN")
-                                                .with(signedAdmin()))
+                                                .with(identityFixture.signed(adminActor)))
                                 .andExpect(status().isCreated())
                                 .andReturn()
                                 .getResponse()
@@ -166,34 +180,52 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         long teacherId = teacher.get("id").asLong();
         assertThat(teacherId).isNotEqualTo(studentId);
         assertThat(teacher.get("login").asText()).isEqualTo(studentLogin + "-2");
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class))
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject("SELECT COUNT(*) FROM auth_identities", Long.class))
                 .isEqualTo(initialAccountCount + 2);
         assertThat(
-                        jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
-                                Long.class,
-                                studentId))
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
+                                        Long.class,
+                                        studentId))
                 .isEqualTo(1);
 
         java.util.function.Supplier<java.util.List<?>> durableState =
                 () ->
                         java.util.List.of(
+                                identityFixture
+                                        .authJdbc()
+                                        .queryForList(
+                                                "SELECT * FROM auth_identities WHERE id IN (?, ?)"
+                                                        + " ORDER BY id",
+                                                studentId,
+                                                teacherId),
                                 jdbcTemplate.queryForList(
-                                        "SELECT * FROM users WHERE id IN (?, ?) ORDER BY id",
+                                        "SELECT * FROM academic_profiles WHERE id IN (?, ?) ORDER"
+                                                + " BY id",
                                         studentId,
                                         teacherId),
-                                jdbcTemplate.queryForList(
-                                        "SELECT * FROM user_role_grants WHERE user_id IN (?, ?)"
-                                                + " ORDER BY id",
-                                        studentId,
-                                        teacherId),
+                                identityFixture
+                                        .authJdbc()
+                                        .queryForList(
+                                                "SELECT * FROM user_role_grants WHERE user_id IN"
+                                                        + " (?, ?) ORDER BY id",
+                                                studentId,
+                                                teacherId),
                                 jdbcTemplate.queryForList(
                                         "SELECT * FROM student_group_history WHERE user_id IN (?,"
                                                 + " ?) ORDER BY id",
                                         studentId,
                                         teacherId),
-                                jdbcTemplate.queryForObject(
-                                        "SELECT COUNT(*) FROM users", Long.class));
+                                identityFixture
+                                        .authJdbc()
+                                        .queryForObject(
+                                                "SELECT COUNT(*) FROM auth_identities",
+                                                Long.class));
         var beforeFailures = durableState.get();
 
         mockMvc.perform(
@@ -202,7 +234,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(studentBody)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin()))
+                                .with(identityFixture.signed(adminActor)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.field", is("telegramId")));
         // Private credential/hash snapshots are compared as booleans, never assertion payloads.
@@ -214,7 +246,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .param("search", Long.toString(telegramId))
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin()))
+                                .with(identityFixture.signed(adminActor)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements", is(1)))
                 .andExpect(jsonPath("$._embedded.userResponseList[0].id", is((int) studentId)))
@@ -230,7 +262,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                                 .formatted(occupiedEmployeeNumber))
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin()))
+                                .with(identityFixture.signed(adminActor)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.field", is("employeeNumber")));
         assertThat(beforeFailures.equals(durableState.get()))
@@ -249,7 +281,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                                 .formatted(availableEmployeeNumber, managedGroupId))
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin()))
+                                .with(identityFixture.signed(adminActor)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.field", is("groupId")));
         assertThat(beforeFailures.equals(durableState.get()))
@@ -258,17 +290,32 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 + " history state")
                 .isTrue();
 
-        String preservedFields =
+        String preservedCredentials =
                 "SELECT"
-                        + " id,login,last_name,first_name,middle_name,password_hash,initial_password,telegram_id,role,status,group_id,is_headman,password_changed,created_at"
-                        + " FROM users WHERE id=?";
-        var studentIdentity = jdbcTemplate.queryForMap(preservedFields, studentId);
-        var teacherAccount = jdbcTemplate.queryForMap("SELECT * FROM users WHERE id=?", teacherId);
+                    + " id,login,password_hash,initial_password,telegram_id,password_changed,created_at"
+                    + " FROM auth_identities WHERE id=?";
+        String preservedProfile =
+                "SELECT"
+                    + " id,last_name,first_name,middle_name,role,status,group_id,is_headman,created_at"
+                    + " FROM academic_user_directory WHERE id=?";
+        var studentIdentity =
+                java.util.List.of(
+                        identityFixture.authJdbc().queryForMap(preservedCredentials, studentId),
+                        jdbcTemplate.queryForMap(preservedProfile, studentId));
+        var teacherAccount =
+                java.util.List.of(
+                        identityFixture
+                                .authJdbc()
+                                .queryForMap("SELECT * FROM auth_identities WHERE id=?", teacherId),
+                        jdbcTemplate.queryForMap(
+                                "SELECT * FROM academic_profiles WHERE id=?", teacherId));
         var studentGrant =
-                jdbcTemplate.queryForList(
-                        "SELECT * FROM user_role_grants WHERE user_id=? AND role='student' ORDER BY"
-                                + " id",
-                        studentId);
+                identityFixture
+                        .authJdbc()
+                        .queryForList(
+                                "SELECT * FROM user_role_grants WHERE user_id=? AND role='student'"
+                                        + " ORDER BY id",
+                                studentId);
         var studentHistory =
                 jdbcTemplate.queryForList(
                         "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
@@ -286,26 +333,41 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                                 .formatted(availableEmployeeNumber))
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin()))
+                                .with(identityFixture.signed(adminActor)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is((int) studentId)))
                 .andExpect(jsonPath("$.login", is(studentLogin)));
 
-        assertThat(studentIdentity.equals(jdbcTemplate.queryForMap(preservedFields, studentId)))
+        assertThat(
+                        studentIdentity.equals(
+                                java.util.List.of(
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(preservedCredentials, studentId),
+                                        jdbcTemplate.queryForMap(preservedProfile, studentId))))
                 .as("Adding a role must preserve the existing account identity and credentials")
                 .isTrue();
         assertThat(
                         teacherAccount.equals(
-                                jdbcTemplate.queryForMap(
-                                        "SELECT * FROM users WHERE id=?", teacherId)))
+                                java.util.List.of(
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(
+                                                        "SELECT * FROM auth_identities WHERE id=?",
+                                                        teacherId),
+                                        jdbcTemplate.queryForMap(
+                                                "SELECT * FROM academic_profiles WHERE id=?",
+                                                teacherId))))
                 .as("Adding a role must preserve the other account")
                 .isTrue();
         assertThat(
                         studentGrant.equals(
-                                jdbcTemplate.queryForList(
-                                        "SELECT * FROM user_role_grants WHERE user_id=? AND"
-                                                + " role='student' ORDER BY id",
-                                        studentId)))
+                                identityFixture
+                                        .authJdbc()
+                                        .queryForList(
+                                                "SELECT * FROM user_role_grants WHERE user_id=? AND"
+                                                        + " role='student' ORDER BY id",
+                                                studentId)))
                 .as("Adding a teacher role must preserve the existing student grant")
                 .isTrue();
         assertThat(
@@ -316,24 +378,31 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                         studentId)))
                 .as("Adding a teacher role must preserve the existing student history")
                 .isTrue();
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class))
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject("SELECT COUNT(*) FROM auth_identities", Long.class))
                 .isEqualTo(initialAccountCount + 2);
         assertThat(
-                        jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
-                                Long.class,
-                                studentId))
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
+                                        Long.class,
+                                        studentId))
                 .isEqualTo(2);
         assertThat(
-                        jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND"
-                                        + " role='teacher' AND status='active'",
-                                Long.class,
-                                studentId))
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND"
+                                                + " role='teacher' AND status='active'",
+                                        Long.class,
+                                        studentId))
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT employee_number FROM users WHERE id=?",
+                                "SELECT employee_number FROM academic_profiles WHERE id=?",
                                 String.class,
                                 studentId))
                 .isEqualTo(availableEmployeeNumber);
@@ -341,7 +410,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         get("/academic/users/{id}", studentId)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin()))
+                                .with(identityFixture.signed(adminActor)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is((int) studentId)))
                 .andExpect(jsonPath("$.login", is(studentLogin)))
@@ -378,7 +447,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(body)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isBadRequest())
@@ -414,6 +483,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(body)
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(studentActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isForbidden())
@@ -451,7 +521,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                         .content(body1)
                                         .header("X-User-Id", seedAdminId)
                                         .header("X-User-Role", "ADMIN")
-                                        .with(signedAdmin())
+                                        .with(identityFixture.signed(adminActor))
                                         .header("X-Group-Id", "")
                                         .header("X-Is-Headman", "false"))
                         .andExpect(status().isCreated())
@@ -480,7 +550,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                         .content(body2)
                                         .header("X-User-Id", seedAdminId)
                                         .header("X-User-Role", "ADMIN")
-                                        .with(signedAdmin())
+                                        .with(identityFixture.signed(adminActor))
                                         .header("X-Group-Id", "")
                                         .header("X-Is-Headman", "false"))
                         .andExpect(status().isCreated())
@@ -494,7 +564,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         patch("/academic/semesters/" + sem1Id + "/activate")
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -506,7 +576,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         patch("/academic/semesters/" + sem2Id + "/activate")
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -518,7 +588,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         get("/academic/semesters/" + sem1Id)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -535,7 +605,6 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @Test
     @Order(5)
-    @Transactional
     void testSemesterDeleteWithWrongConfirmation_returns400() throws Exception {
         // Create a semester to try to delete
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
@@ -560,7 +629,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                         .content(createBody)
                                         .header("X-User-Id", seedAdminId)
                                         .header("X-User-Role", "ADMIN")
-                                        .with(signedAdmin())
+                                        .with(identityFixture.signed(adminActor))
                                         .header("X-Group-Id", "")
                                         .header("X-Is-Headman", "false"))
                         .andExpect(status().isCreated())
@@ -580,7 +649,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(deleteBody)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isBadRequest())
@@ -598,10 +667,11 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         get("/academic/users/me")
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(studentActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.login", is("student")))
+                .andExpect(jsonPath("$.login", is(seedStudentLogin)))
                 .andExpect(jsonPath("$.role", is("STUDENT")));
     }
 
@@ -611,7 +681,6 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @Test
     @Order(7)
-    @Transactional
     void testThresholdResolution_mostSpecificWins() throws Exception {
         // Set global threshold as ADMIN
         String globalBody =
@@ -624,7 +693,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(globalBody)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk());
@@ -640,6 +709,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(groupBody)
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(headmanActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "true"))
                 .andExpect(status().isOk());
@@ -650,6 +720,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .param("groupId", seedGroupId.toString())
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(studentActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -661,7 +732,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         get("/academic/thresholds/resolve")
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -682,7 +753,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .param("size", "2")
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -697,23 +768,27 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @Test
     @Order(9)
-    @Transactional
     void testStandaloneHeadmanRemovalKeepsHeadmanAndAssistants() throws Exception {
-        // The seed 'student' user has is_headman = true (from V2 migration)
         Long headmanId = seedStudentId;
-
-        // Create a second student to serve as assistant
         Long assistantId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) "
-                                + "VALUES ('assistant_test', 'hash', 'Assistant', 'User', 'student', 'active', false, ?) RETURNING id",
-                        Long.class,
-                        seedGroupId);
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Assistant",
+                                        "User",
+                                        null,
+                                        UserRole.STUDENT,
+                                        seedGroupId,
+                                        null,
+                                        610000009009L),
+                                adminActor)
+                        .userId();
 
         // Assign the student as an assistant to the headman's group via native SQL
         jdbcTemplate.update(
-                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
-                        + "VALUES (?, ?, ARRAY['mark_attendance']::varchar(64)[], ?, true, NOW())",
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by,"
+                        + " is_active, assigned_at) VALUES (?, ?,"
+                        + " ARRAY['mark_attendance']::varchar(64)[], ?, true, NOW())",
                 seedGroupId,
                 assistantId,
                 headmanId);
@@ -721,7 +796,8 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Verify assistant exists before revoke
         Integer countBefore =
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
+                        "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active ="
+                                + " true",
                         Integer.class,
                         seedGroupId);
         assertThat(countBefore).isGreaterThan(0);
@@ -737,7 +813,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                                 .content(patchBody)
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isConflict())
@@ -746,13 +822,14 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // The rejected operation leaves all assistants and current headman authority unchanged.
         Integer countAfter =
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
+                        "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active ="
+                                + " true",
                         Integer.class,
                         seedGroupId);
         assertThat(countAfter).isEqualTo(countBefore);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT is_headman FROM users WHERE id = ?",
+                                "SELECT is_headman FROM academic_user_directory WHERE id = ?",
                                 Boolean.class,
                                 headmanId))
                 .isTrue();
@@ -769,10 +846,11 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Phase 60-01 V12: subjects.group_id NOT NULL — используем seedGroupId
         Long subjectId =
                 jdbcTemplate.queryForObject(
-                        "WITH subject AS (INSERT INTO subjects (name, type, group_id) "
-                                + "VALUES ('Integration Test Subject', 'lecture', ?) RETURNING id), "
-                                + "types AS (INSERT INTO subject_lesson_types(subject_id,lesson_type) "
-                                + "SELECT id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id FROM types",
+                        "WITH subject AS (INSERT INTO subjects (name, type, group_id) VALUES"
+                            + " ('Integration Test Subject', 'lecture', ?) RETURNING id), types AS"
+                            + " (INSERT INTO subject_lesson_types(subject_id,lesson_type) SELECT"
+                            + " id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id"
+                            + " FROM types",
                         Long.class,
                         seedGroupId);
 
@@ -786,18 +864,20 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Use a far-future window that is guaranteed empty.
         Long semesterId =
                 jdbcTemplate.queryForObject(
-                        "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                                + "VALUES ('HW Test Semester', '2040-02-01', '2040-06-30', false, NOW()) RETURNING id",
+                        "INSERT INTO semesters (name, date_from, date_to, is_active, created_at)"
+                                + " VALUES ('HW Test Semester', '2040-02-01', '2040-06-30', false,"
+                                + " NOW()) RETURNING id",
                         Long.class);
 
         // Create homework as headman via native SQL (avoid headman permission check).
         // Phase 61-02 V13: lesson_date / lesson_number NOT NULL.
         Long homeworkId =
                 jdbcTemplate.queryForObject(
-                        "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, lesson_date, "
-                                + "lesson_number, binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at) "
-                                + "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, 20400301, ?, ?, "
-                                + "decode(repeat('ab',32),'hex'),'ACTIVE',NOW(),NOW()) RETURNING id",
+                        "INSERT INTO homeworks (group_id, subject_id, semester_id, title,"
+                            + " published_by, lesson_date, lesson_number,"
+                            + " binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at)"
+                            + " VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, 20400301, ?, ?,"
+                            + " decode(repeat('ab',32),'hex'),'ACTIVE',NOW(),NOW()) RETURNING id",
                         Long.class,
                         seedGroupId,
                         subjectId,
@@ -811,6 +891,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         post("/academic/homeworks/" + homeworkId + "/complete")
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(studentActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isNoContent());
@@ -818,7 +899,8 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Verify it's marked in DB
         Integer count =
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
+                        "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND"
+                                + " student_id = ?",
                         Integer.class,
                         homeworkId,
                         seedStudentId);
@@ -829,6 +911,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         delete("/academic/homeworks/" + homeworkId + "/complete")
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(studentActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isNoContent());
@@ -836,7 +919,8 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Verify it's unmarked
         Integer countAfter =
                 jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
+                        "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND"
+                                + " student_id = ?",
                         Integer.class,
                         homeworkId,
                         seedStudentId);
@@ -854,7 +938,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         get("/academic/dashboard/stats")
                                 .header("X-User-Id", seedAdminId)
                                 .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
+                                .with(identityFixture.signed(adminActor))
                                 .header("X-Group-Id", "")
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -876,6 +960,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         get("/academic/dashboard/stats")
                                 .header("X-User-Id", seedStudentId)
                                 .header("X-User-Role", "STUDENT")
+                                .with(identityFixture.signed(studentActor))
                                 .header("X-Group-Id", seedGroupId)
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isForbidden())

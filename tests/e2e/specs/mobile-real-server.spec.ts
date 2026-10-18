@@ -5624,6 +5624,30 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         await expect(screen).toHaveAttribute('aria-busy', 'false');
         await expect(page.locator('.headman-journal')).toHaveCount(0);
       };
+      let firstJob = '';
+      let lastJobStatus: { state?: unknown; errorCode?: unknown } | undefined;
+      let statusRevision = 0;
+      const observeJobStatus = async (response: Response): Promise<void> => {
+        if (
+          !firstJob ||
+          response.status() !== 200 ||
+          response.request().method() !== 'GET' ||
+          new URL(response.url()).pathname !== `/api/auth/export-jobs/${firstJob}`
+        )
+          return;
+        const revision = ++statusRevision;
+        lastJobStatus = undefined;
+        try {
+          const status: unknown = await response.json();
+          if (revision === statusRevision && status && typeof status === 'object') {
+            const value = status as { state?: unknown; errorCode?: unknown };
+            lastJobStatus = { state: value.state, errorCode: value.errorCode };
+          }
+        } catch {
+          // A missing or malformed existing response leaves its status unknown.
+        }
+      };
+      page.on('response', observeJobStatus);
       try {
         const sheet = await open();
         const accepted = page.waitForResponse(
@@ -5634,7 +5658,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         await sheet.getByRole('button', { name: 'Скачать', exact: true }).click();
         const created = await accepted;
         expect(created.status()).toBe(202);
-        const firstJob = (await created.json()).jobId as string;
+        firstJob = (await created.json()).jobId as string;
         expect(created.request().postDataJSON().report).toEqual({
           kind: 'HEADMAN_WEEKLY_SELECTED',
           headmanWeeklySelected: { weekStarts: weeks, format: 'docx' },
@@ -5664,7 +5688,9 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         );
         const firstDownload = page.waitForEvent('download');
         void firstDownload.catch((error: unknown) => {
-          retainNativePrimaryFailure(info.annotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', error);
+          retainNativePrimaryFailure(
+            info.annotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', error, lastJobStatus,
+          );
         });
         await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
         expect((await restored).status()).toBe(200);
@@ -5751,6 +5777,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
           expect([401, 403, 404].includes(denied.status())).toBe(true);
         }
       } finally {
+        page.off('response', observeJobStatus);
         holdFirstHandoff = false;
         releaseFirstHandoff();
         await page.unroute('**/api/auth/export-jobs/*/ticket');

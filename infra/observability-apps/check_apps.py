@@ -88,6 +88,42 @@ def safe_failure(error):
     return result
 
 
+def closed_profile_sdk(text):
+    """Reported SDK hints only; log text cannot establish a cause or acceptance."""
+    text = text[:64 * 1024]
+    prefix = r"(?m)^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} "
+    hints = set()
+    if re.search(prefix + r"\[ERROR\] Error starting profiler(?: |$)", text):
+        hints.add("NATIVE_START")
+    for match in re.finditer(prefix + r"\[ERROR\] Error uploading snapshot: ", text):
+        status = re.compile(r"([0-9]{3})(?: |$)", re.MULTILINE).match(text, match.end())
+        code = int(status[1]) if status else None
+        hints.add({400: "UPLOAD_400", 413: "UPLOAD_413", 429: "UPLOAD_429"}.get(code,
+                  "UPLOAD_5XX" if code is not None and 500 <= code <= 599 else
+                  "UPLOAD_HTTP_OTHER" if code is not None else "UPLOAD_IO"))
+    started = bool(re.search(prefix + r"\[INFO\] Profiling started\r?$", text))
+    stopped = bool(re.search(prefix + r"\[INFO\] Profiling stopped\r?$", text))
+    hint = next(iter(hints)) if len(hints) == 1 else "UNKNOWN"
+    if "NATIVE_START" in hints and started:
+        hint = "UNKNOWN"
+    return {"reported_hint": hint, "start_reported": started, "stop_reported": stopped}
+
+
+def closed_flamegraph_response(code, body):
+    names = "UNKNOWN"
+    try:
+        data = json.loads(body[:64 * 1024])
+        graph = data.get("flamegraph") if isinstance(data, dict) else None
+        values = graph.get("names", []) if isinstance(graph, dict) else None
+        if isinstance(values, list):
+            names = "NONEMPTY" if values else "EMPTY"
+    except (ValueError, RecursionError):
+        pass
+    return {"http_status": "HTTP_" + str(code) if type(code) is int and code in
+            {200, 400, 401, 403, 404, 408, 413, 429, 500, 502, 503, 504} else "UNKNOWN",
+            "names": names, "docx_present": b"DocxRenderer" in body}
+
+
 def stage(name):
     global CURRENT_STAGE
     CURRENT_STAGE = name
@@ -251,6 +287,8 @@ def main():
         stop_sampler = threading.Event()
         sample_error = []
         measurements = {}
+        profile_sdk_hint = {}
+        flamegraph_hint = {}
 
         def docker(*args, **kwargs):
             return run(compose + list(args), env=environment, **kwargs)
@@ -314,8 +352,11 @@ def main():
             process_env = dict(environment)
             process_env.update({"RCT_PYROSCOPE_ADDRESS": address or "http://127.0.0.1:9/pyroscope", "RCT_JAVA_GLITCHTIP_DSN": dsn or ""})
             resultfile = work / (mode + ".json")
-            run(["java", "-Xms64m", "-Xmx192m", "-XX:MaxDirectMemorySize=32m", "-cp", classpath,
+            completed = run(["java", "-Xms64m", "-Xmx192m", "-XX:MaxDirectMemorySize=32m", "-cp", classpath,
                  "ru.rutcampustrack.attendance.report.ObservabilityProbe", mode, str(resultfile)], env=process_env, timeout=100)
+            if mode == "profile":
+                profile_sdk_hint.update(closed_profile_sdk(completed.stderr[:64 * 1024] +
+                                        "\n" + completed.stdout[:64 * 1024]))
             result = json.loads(resultfile.read_text())
             require(result["result"] == "PASS" and result["operation"]["operations"] > 0, "Actual report operation failed")
             require(0 < result["operation"]["peak_rss_bytes"] < 384 * MIB, "Java process memory budget exceeded")
@@ -476,6 +517,7 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                      "labelSelector": '{service_name="rct.attendance"}', "profileTypeID": "process_cpu:cpu:nanoseconds:cpu:nanoseconds", "maxNodes": 16384}
             def flamegraph():
                 code, body = request(pyroscope + "/querier.v1.QuerierService/SelectMergeStacktraces", query)
+                flamegraph_hint.update(closed_flamegraph_response(code, body))
                 return body if code == 200 and b"DocxRenderer" in body else None
             stage("actual-flamegraph-budget")
             flame = wait_for(flamegraph, 90)
@@ -521,6 +563,10 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                        "qualification": "Actual isolated GlitchTip/Java+Vue SDKs/CPU flamegraph/operator links. Synthetic Vue operations exercise the shared adapter under PWA/TMA prefixes; not a full authenticated business journey. Effective retention is checked; seven-day wall-clock expiry is not elapsed. 16GiB Cloud capacity is not a 32GiB VPS benchmark."}
         except BaseException as error:
             primary_failure = {**safe_failure(error), "stage": CURRENT_STAGE}
+            if profile_sdk_hint:
+                primary_failure["pyroscope_sdk_reported"] = profile_sdk_hint
+            if flamegraph_hint:
+                primary_failure["pyroscope_query_last_response"] = flamegraph_hint
             if browser is not None:
                 primary_failure["browser_failure"] = browser_hint()
             # Diagnose only this already guarded synthetic namespace, before cleanup.

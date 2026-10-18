@@ -6,7 +6,7 @@ Persisted Goal Q031/D037: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
 Root sole Git/taskdocs; branch codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2); no main/merge/deploy.
 Starting26cbe5912f6683a81780a831609dbddbc26feba4. Published/runtime baseline
-**92be74818741044d4a79c62ae2beabdb5a4ba7ae**; current source is HEAD plus owned WIP.
+**b836b1943a3a5c694eb9a5f95050cd250cc03981**; current source is HEAD plus owned WIP.
 
 ## Конечный план
 
@@ -25,43 +25,50 @@ Starting26cbe5912f6683a81780a831609dbddbc26feba4. Published/runtime baseline
 | Остаток | Следующее достаточное действие / зависимость |
 | --- | --- |
 | U14.2/.3/.5 | Create/credentials/grants/transfer/archive/proofs/currentrights/recovery. Разобрать конкретные FAIL, сохранить deny/unknown-outcome сценарии. |
-| U14.4/.6 | Два async DOCX и короткий период/lost202/reconnect/currentrights; официальный Academic snapshot после исправления коллизии схем → существующие генераторы/atomic5. |
-| U14.7 | Q033: 3/4 DB PASS; first-login fixture исправлен по bootstrap→selectRole. Actual CLI/config/privateIPC и fresh/repeat ещё не приняты. |
-| U15.1 | Сохранность двух DB в UserOwnershipLifecycleIT; запуск блокируется context/Flyway/connection ошибкой, причина UNKNOWN. |
+| U14.4/.6 | Два async DOCX и короткий период/lost202/reconnect/currentrights; atomic5 из исправленного официального snapshot уже joined; итоговые consumers/gates pending. |
+| U14.7 | Q033: 3/4 DB PASS; новый FAIL — удаление grant с сохранённым SID. Fixture сохраняет историю; actual CLI/config/privateIPC ещё не принят. |
+| U15.1 | Сохранность двух DB в UserOwnershipLifecycleIT; первичный SQLSTATE53300 TOO_MANY_CONNECTIONS. Test-only idle pool fix joined; actual повтор pending. |
 | U20.1/.2/.3 | Private synthetic bot с двумя DB: точное меню/headman roster/teacher Today/currentbinding/revoke. |
-| U23.1/.2/.4 | Реальные Vue/Java GlitchTip, профиль Pyroscope и общий расход. SDK resolver исправлен; Homepage U23.3 и PMM decision U23.5 приняты. |
+| U23.1/.2/.4 | Реальные Vue/Java GlitchTip, профиль Pyroscope и общий расход. Vue/Java groups/release/stack/scrub actual PASS prefix; Pyro flamegraph UNKNOWN. Homepage U23.3/PMM U23.5 приняты. |
 | U25 | Финальные совместимые CI/Coverage/Security/OpenAPI/monitoring, review и exact SHA handoff. |
 
 ## Текущее доказательство и работа
 
-92b push39151426401 завершён FAILURE; оба browser cleanup SUCCESS. Coverage FAILURE;
-Security/OpenAPI/полный monitoring SUCCESS. Новые actual PASS: map view/download
-после API replacement и semester reconciliation; FIRST3/geo/HW/assignment/Today PASS.
-Другие UI FAIL не объединены одной гипотезой; archive participants SKIPPED после
-checkpoint recovery FAIL. Evidence и прежняя приёмка — в матрице/attempts.
+b836 push39155034033 terminalFAIL, оба browser cleanupPASS; полезные пути завершены.
+PR39155040105 ещё наблюдался running, его статус учитывается отдельно.
+Coverage39155040110 FAILURE, Security39155040081/OpenAPI39155040095 SUCCESS.
+Новый actual administrator account lifecycle29 PASS; FIRST3/map/remaining WebKit PASS.
+Application-recovery: seed/pending API prefix PASS; полный шаг FAIL на backup.
+Async DOCX/admin-grants/registry/semester ещё открыты. Изменённые gates
+красные; подробные прежние outcomes сохранены в attempts и матрице.
 
-Root интегрирует пакет: archived-card credential enrichment fix; уникальное имя
-identity OpenAPI schema; Q033 role-selection fixture; Homework servlet context;
-реальный BEFORE_COMMIT rollback fixture; SDK ESM resolution; прежние CI pins;
-закрытая JDBC диагностика в существующем сборщике. Source reviews приняты.
-current15 compileJava/compileTestJava PASS; unit4 первоначально FAIL из-за
-неинъецированных private полей теста. Исправлен только setup; current16 все4 PASS
-(80.82s), прочий код не повторялся. Runtime DB/UI для нового пакета ещё pending.
+Actual Academic185PASS/335FAIL: AssignmentAuthority7/Replacement6 и admin notification
+cycle1 PASS. Части context FAIL соответствуют SQLSTATE53300: cached idle floor160
+при PG100. Test-only minimumIdle0/idleTimeout10s joined, max20/concurrency сохранены.
+Все335 этой причиной не объясняются. Legacy lifecycle2 IT переведены на настоящий
+протокол с сохранением rollback/fence/replay/current401/race/history; review APPROVE.
+Отдельные product fixes сохраняют unchanged grant.updated_at и400 field=groupId;
+реальные SQL/API assertions оставлены, independent source review APPROVE.
 
-Owners и ресурсы: [resources](resources.md). Canonical assignment cohort8 принят
-независимым reviewer, current17 compileTestJava PASS68.13s; прежние unit4 PASS сохранены.
-Следующий Q033 пакет проверяет настоящий CLI; runtime DB для cohort8 ещё pending.
-Root не ждёт всех направлений перед публикацией готового пакета.
-Официальные runtime specs92b получены; штатная генерация, два mobile typecheck
-и74 report tests PASS. Atomic5 удержан: схема Operation потеряла subject-deletion
-поля из-за name collision; DTO fix должен дать новый официальный snapshot.
-Полный PWA typecheck достиг heap limit; PASS не заявляется.
+Официальные b836 Academic02f8625b/Auth92b e571a08e source-equivalent → atomic5 joined.
+Коллизия Operation устранена; generators/drift/production tsc PASS10.993s;
+неизменённые81Auth/74report tests и mobile test-tsc сохранены. FullPWA heapOOM не PASS.
+Actual Apps подтвердил Vue+Java grouping/release/stack/scrub; flamegraph wait падает
+до budget/outage/retention. Существующий diagnostic получает только закрытые hints.
+DOCX: после возврата statusGET200, затем WAIT_DOWNLOAD TimeoutError; ready/error
+UNKNOWN. Наблюдение уже полученных state/errorCode добавлено без новых запросов.
 
-Следующий шаг: адресные проверки/affected review → один normal push; обычный CI
-даёт актуальные первичные причины и исправленный runtime OpenAPI → atomic5.
-Source-only результат не увеличивает счётчик приёмки. Foreign25 и reserved report
-type alias сохранены. Local Docker/DB/imagepull NOT_RUN: workspace меньше4GiB
-reserve/VFS sameFS; нет cleanup/reset/prune. Вопросов владельцу нет.
+Q033 actual CLI/config/privateIPC fifth case + guarded client CI + honest metadata
+review APPROVE; grant fixture теперь сохраняет SID history. Общий bot seed исправлен:
+обязательный directory_status=ACTIVE; никаких упрощений current binding/deny.
+Auth/Academic compileJava+compileTestJava готового пакета прошли; следующий шаг:
+адресные checks/precommit → один normal push после текущей browser safe boundary.
+current18 все4 Auth/Academic compile tasks PASS87.33s/RSS1,108,602,880B; DB NOT_RUN.
+Runtime готового WIP pending; source-only не увеличивает приёмку.
+Параллельно: точный ADMIN export cause и synthetic recovery init secrets/ACL/input.
+Owners/resources — [resources](resources.md). Foreign25 сохранены; reserved alias
+перенесён в atomic5. Local Docker/DB/imagepull NOT_RUN: workspace<4GiB reserve/VFS
+sameFS. Нет cleanup/reset/prune. Вопросов владельцу нет.
 
 [Protocol](BOUNDARY-PROTOCOL-20261018.md), [history](attempts.ndjson),
 [decisions](decisions.md), [questions](questions.md), [handoff](HANDOFF-20261017.md);

@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, isAbsolute, relative, resolve } from 'node:path';
+import { isIP } from 'node:net';
 import type {
   FullConfig,
   FullResult,
@@ -46,6 +47,14 @@ const nativeErrorCodes = [
   'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
   'UNKNOWN',
 ] as const;
+const nativeJobStates = ['queued', 'preparing', 'ready', 'error', 'UNKNOWN'] as const;
+const nativeJobErrors = [
+  'AUTHORITY_DENIED', 'GENERATION_FAILED', 'EXPORT_TOO_LARGE', 'UNKNOWN',
+] as const;
+const nativeTransportHints = [
+  'TLS_CERTIFICATE', 'TLS_HANDSHAKE', 'ECONNRESET', 'ECONNREFUSED',
+  'REQUEST_CONTEXT_DISPOSED', 'REQUEST_TIMEOUT', 'UNKNOWN',
+] as const;
 type NativePrimaryPath = keyof typeof nativePrimaryPaths;
 interface NativePrimaryFailure {
   path: NativePrimaryPath;
@@ -53,14 +62,18 @@ interface NativePrimaryFailure {
   errorClass: (typeof nativeErrorClasses)[number];
   code: (typeof nativeErrorCodes)[number];
   exitStatus: number | 'UNKNOWN';
+  state?: (typeof nativeJobStates)[number];
+  errorCode?: (typeof nativeJobErrors)[number];
+  transportHint?: (typeof nativeTransportHints)[number];
 }
 
-/** First facts only; no messages, commands, output, paths or object-supplied class names. */
+/** First facts only; no raw messages, commands, output, paths or object-supplied class names. */
 export function retainNativePrimaryFailure(
   annotations: TestResult['annotations'],
   path: NativePrimaryPath,
   action: NativePrimaryFailure['action'],
   error: unknown,
+  jobStatus?: unknown,
 ): void {
   if (
     annotations.length >= 32 ||
@@ -96,9 +109,47 @@ export function retainNativePrimaryFailure(
     typeof status === 'number' && Number.isInteger(status) && status >= 0 && status <= 255
       ? status
       : 'UNKNOWN';
+  const state = nativeJobStates.find((value) => value === ownData(jobStatus, 'state')) ?? 'UNKNOWN';
+  const errorCode =
+    nativeJobErrors.find((value) => value === ownData(jobStatus, 'errorCode')) ?? 'UNKNOWN';
+  const exportStatus =
+    path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {};
+  let transportHint: (typeof nativeTransportHints)[number] = 'UNKNOWN';
+  const message = path === 'SEMESTER_PREVIEW' ? ownData(error, 'message') : undefined;
+  if (typeof message === 'string') {
+    const bounded = message.slice(0, 513);
+    const newline = bounded.indexOf('\n');
+    const firstLine = (newline < 0 ? bounded : bounded.slice(0, newline)).replace(/\r$/, '');
+    const prefix = 'apiRequestContext.get: ';
+    if ((newline >= 0 || message.length <= 512) &&
+        Buffer.byteLength(firstLine, 'utf8') <= 512 && firstLine.startsWith(prefix)) {
+      const detail = firstLine.slice(prefix.length);
+      if ([
+        'self-signed certificate', 'self-signed certificate in certificate chain',
+        'unable to verify the first certificate', 'unable to get local issuer certificate',
+        'certificate has expired', 'certificate is not yet valid', 'Unsupported TLS certificate.',
+      ].includes(detail)) transportHint = 'TLS_CERTIFICATE';
+      else if (detail === 'Client network socket disconnected before secure TLS connection was established')
+        transportHint = 'TLS_HANDSHAKE';
+      else if (['read ECONNRESET', 'write ECONNRESET', 'socket hang up'].includes(detail))
+        transportHint = 'ECONNRESET';
+      else if (detail === 'Request context disposed.') transportHint = 'REQUEST_CONTEXT_DISPOSED';
+      else if (/^Timeout [1-9][0-9]{0,8}ms exceeded\.$/.test(detail)) transportHint = 'REQUEST_TIMEOUT';
+      else {
+        const refused = /^connect ECONNREFUSED ([0-9a-fA-F:.]+):([0-9]{1,5})$/.exec(detail);
+        if (refused && isIP(refused[1]) && Number(refused[2]) > 0 && Number(refused[2]) <= 65535)
+          transportHint = 'ECONNREFUSED';
+      }
+      const compatibleCodes = transportHint === 'TLS_HANDSHAKE' ? ['UNKNOWN', 'ECONNRESET']
+        : transportHint === 'ECONNRESET' || transportHint === 'ECONNREFUSED' ? ['UNKNOWN', transportHint]
+        : transportHint === 'REQUEST_TIMEOUT' ? ['UNKNOWN', 'ETIMEDOUT'] : ['UNKNOWN'];
+      if (!compatibleCodes.includes(code)) transportHint = 'UNKNOWN';
+    }
+  }
+  const transport = path === 'SEMESTER_PREVIEW' ? { transportHint } : {};
   annotations.push({
     type: nativePrimaryAnnotation,
-    description: JSON.stringify({ path, action, errorClass, code, exitStatus }),
+    description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport }),
   });
 }
 
@@ -118,13 +169,24 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       continue;
     }
     if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+    const path = ownData(value, 'path');
+    const state = ownData(value, 'state');
+    const errorCode = ownData(value, 'errorCode');
+    const transportHint = ownData(value, 'transportHint');
+    const fields = ['path', 'action', 'errorClass', 'code', 'exitStatus'];
+    if (path === 'SEMESTER_PREVIEW') fields.push('transportHint');
+    if (path === 'ASYNC_REPORT') fields.push('state');
+    if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
     const keys = Object.keys(value);
     if (
-      keys.length !== 5 ||
-      keys.some((key) => !['path', 'action', 'errorClass', 'code', 'exitStatus'].includes(key))
+      keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
+      (path === 'SEMESTER_PREVIEW' && !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
+      (path === 'ASYNC_REPORT' && !nativeJobStates.some((candidate) => candidate === state)) ||
+      (path === 'ASYNC_REPORT' &&
+        state === 'error' &&
+        !nativeJobErrors.some((candidate) => candidate === errorCode))
     )
       continue;
-    const path = ownData(value, 'path');
     const action = ownData(value, 'action');
     const errorClass = ownData(value, 'errorClass');
     const code = ownData(value, 'code');
@@ -144,7 +206,15 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       result.some((row) => row.path === path)
     )
       continue;
-    result.push({ path, action, errorClass, code, exitStatus } as NativePrimaryFailure);
+    result.push({
+      path,
+      action,
+      errorClass,
+      code,
+      exitStatus,
+      ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
+      ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
+    } as NativePrimaryFailure);
   }
   return result;
 }

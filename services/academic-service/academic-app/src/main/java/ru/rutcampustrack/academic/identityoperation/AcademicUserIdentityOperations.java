@@ -975,12 +975,13 @@ public class AcademicUserIdentityOperations {
                                 : List.of("ACTIVE", "SUSPENDED", "DISMISSED"))
                         .contains(request.status().name()))
             throw new BadRequestException("Статус не применим к роли " + role);
+        if (role.equals("TEACHER") && request.groupId() != null)
+            throw new BadRequestException("groupId", "Данные не применимы к роли " + role);
         if (request.groupId() != null && request.groupId() <= 0
                 || request.telegramId() != null && request.telegramId() <= 0)
             throw new BadRequestException("ID должен быть положительным");
         if (role.equals("STUDENT") && blankToNull(request.employeeNumber()) != null
-                || role.equals("TEACHER")
-                        && (request.groupId() != null || request.telegramId() != null))
+                || role.equals("TEACHER") && request.telegramId() != null)
             throw new BadRequestException("Данные не применимы к роли " + role);
     }
 

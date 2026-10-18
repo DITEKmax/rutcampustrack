@@ -471,6 +471,11 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
         registry.add("spring.datasource.url", academicData::getUrl);
         registry.add("spring.datasource.username", () -> ACADEMIC_RUNTIME);
         registry.add("spring.datasource.password", () -> databasePassword);
+        // Cached Spring contexts share this fixture's PostgreSQL. Release unused connections
+        // instead of retaining five per context; preserve the application maximum for real races.
+        // Auth and fixture JDBC use unpooled DriverManagerDataSource connections.
+        registry.add("spring.datasource.hikari.minimum-idle", () -> 0);
+        registry.add("spring.datasource.hikari.idle-timeout", () -> 10_000L);
         registry.add("spring.flyway.url", academicOwnerData::getUrl);
         registry.add("spring.flyway.user", () -> ACADEMIC_MIGRATOR);
         registry.add("spring.flyway.password", () -> databasePassword);

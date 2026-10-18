@@ -157,6 +157,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -171,10 +180,79 @@
         "responses" : {
           "200" : {
             "description" : "Пользователь обновлён",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -182,9 +260,19 @@
           "400" : {
             "description" : "Ошибка валидации",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -192,25 +280,15 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "404" : {
             "description" : "Пользователь не найден",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -220,7 +298,17 @@
             }
           },
           "409" : {
-            "description" : "Конфликт данных",
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -256,7 +344,7 @@
       },
       "delete" : {
         "tags" : [ "Users" ],
-        "summary" : "Архивировать пользователя (soft delete). Только ADMIN.",
+        "summary" : "Устаревший маршрут: используйте защищённое архивирование",
         "operationId" : "archiveUser",
         "parameters" : [ {
           "name" : "id",
@@ -268,8 +356,25 @@
           }
         } ],
         "responses" : {
-          "204" : {
-            "description" : "Пользователь архивирован"
+          "400" : {
+            "description" : "Ошибка валидации",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "403" : {
             "description" : "Нет прав доступа",
@@ -281,38 +386,28 @@
               }
             }
           },
-          "404" : {
-            "description" : "Пользователь не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Ошибка валидации запроса",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
           "409" : {
-            "description" : "Конфликт данных",
+            "description" : "Требуется защищённый POST /{id}/archive: protectedroute_required",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -359,6 +454,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -373,10 +477,79 @@
         "responses" : {
           "200" : {
             "description" : "Пользователь обновлён",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -384,9 +557,19 @@
           "400" : {
             "description" : "Ошибка валидации",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -394,25 +577,15 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "404" : {
             "description" : "Пользователь не найден",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -422,7 +595,17 @@
             }
           },
           "409" : {
-            "description" : "Конфликт данных",
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -478,6 +661,15 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -492,10 +684,79 @@
         "responses" : {
           "200" : {
             "description" : "Роль сохранена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -503,9 +764,19 @@
           "400" : {
             "description" : "Недопустимая роль или статус",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -513,9 +784,9 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -523,9 +794,9 @@
           "404" : {
             "description" : "Пользователь не найден",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -533,15 +804,15 @@
           "409" : {
             "description" : "Конфликт role-data",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
-          "401" : {
-            "description" : "Требуется аутентификация",
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -677,6 +948,7 @@
       },
       "put" : {
         "tags" : [ "admin-access-controller" ],
+        "summary" : "Изменить полномочия администратора",
         "operationId" : "put",
         "parameters" : [ {
           "name" : "id",
@@ -685,6 +957,15 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
           }
         } ],
         "requestBody" : {
@@ -699,17 +980,86 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "Операция завершена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/Profile"
                 }
               }
             }
           },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
           "400" : {
-            "description" : "Ошибка валидации запроса",
+            "description" : "Ошибка валидации",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -719,7 +1069,7 @@
             }
           },
           "401" : {
-            "description" : "Требуется аутентификация",
+            "description" : "Требуется действующая сессия",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -729,7 +1079,27 @@
             }
           },
           "403" : {
-            "description" : "Доступ запрещён",
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -740,16 +1110,6 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -785,6 +1145,7 @@
       },
       "delete" : {
         "tags" : [ "admin-access-controller" ],
+        "summary" : "Отозвать полномочия администратора",
         "operationId" : "delete",
         "parameters" : [ {
           "name" : "id",
@@ -793,6 +1154,15 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
           }
         } ],
         "requestBody" : {
@@ -806,11 +1176,80 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Операция завершена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            }
           },
           "400" : {
-            "description" : "Ошибка валидации запроса",
+            "description" : "Ошибка валидации",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -820,7 +1259,7 @@
             }
           },
           "401" : {
-            "description" : "Требуется аутентификация",
+            "description" : "Требуется действующая сессия",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -830,7 +1269,27 @@
             }
           },
           "403" : {
-            "description" : "Доступ запрещён",
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -841,16 +1300,6 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2504,6 +2953,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -2518,10 +2976,79 @@
         "responses" : {
           "200" : {
             "description" : "Группа обновлена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -2529,9 +3056,19 @@
           "400" : {
             "description" : "Ошибка валидации",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelGroupResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2539,25 +3076,15 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelGroupResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "404" : {
             "description" : "Группа не найдена",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelGroupResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2567,7 +3094,17 @@
             }
           },
           "409" : {
-            "description" : "Конфликт данных",
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2707,6 +3244,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -2721,10 +3267,79 @@
         "responses" : {
           "200" : {
             "description" : "Староста назначен",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/HeadmanAssignmentResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -2732,9 +3347,19 @@
           "400" : {
             "description" : "Ошибка валидации",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/HeadmanAssignmentResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2742,9 +3367,9 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/HeadmanAssignmentResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2752,9 +3377,9 @@
           "404" : {
             "description" : "Группа или студент не найдены",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/HeadmanAssignmentResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2762,15 +3387,15 @@
           "409" : {
             "description" : "Устаревшее состояние или конфликт назначения",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/HeadmanAssignmentResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
-          "401" : {
-            "description" : "Требуется аутентификация",
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2947,6 +3572,16 @@
         "summary" : "Создать пользователя",
         "description" : "Создаёт нового пользователя с автоматической генерацией логина и начального пароля. Только ADMIN.",
         "operationId" : "createUser",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2960,10 +3595,79 @@
         "responses" : {
           "201" : {
             "description" : "Пользователь создан",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/EntityModelUserCreatedResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -2971,9 +3675,19 @@
           "400" : {
             "description" : "Ошибка валидации",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserCreatedResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2981,9 +3695,9 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserCreatedResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2991,15 +3705,15 @@
           "409" : {
             "description" : "Конфликт данных",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserCreatedResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
-          "401" : {
-            "description" : "Требуется аутентификация",
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3057,6 +3771,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -3071,10 +3794,79 @@
         "responses" : {
           "200" : {
             "description" : "Студент переведён",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
@@ -3082,9 +3874,19 @@
           "400" : {
             "description" : "Ошибка валидации",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3092,25 +3894,15 @@
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "*/*" : {
+              "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
+                  "$ref" : "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "404" : {
             "description" : "Пользователь или группа не найдены",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelUserResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3120,7 +3912,17 @@
             }
           },
           "409" : {
-            "description" : "Конфликт данных",
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3168,6 +3970,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -3180,11 +3991,80 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Операция завершена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            }
           },
           "400" : {
-            "description" : "Ошибка валидации запроса",
+            "description" : "Ошибка валидации",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3194,7 +4074,7 @@
             }
           },
           "401" : {
-            "description" : "Требуется аутентификация",
+            "description" : "Требуется действующая сессия",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3204,7 +4084,27 @@
             }
           },
           "403" : {
-            "description" : "Доступ запрещён",
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3215,16 +4115,6 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3272,6 +4162,15 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -3284,11 +4183,80 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
-            "description" : "OK"
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Операция завершена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            }
           },
           "400" : {
-            "description" : "Ошибка валидации запроса",
+            "description" : "Ошибка валидации",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3298,7 +4266,7 @@
             }
           },
           "401" : {
-            "description" : "Требуется аутентификация",
+            "description" : "Требуется действующая сессия",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3308,7 +4276,27 @@
             }
           },
           "403" : {
-            "description" : "Доступ запрещён",
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3319,16 +4307,6 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -4488,6 +5466,117 @@
           },
           "429" : {
             "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/report-download-tickets" : {
+      "post" : {
+        "tags" : [ "academic-report-ticket-controller" ],
+        "operationId" : "legacy",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/IssueReportDownloadTicketRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Report download ticket issued",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReportDownloadTicketResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid access token",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReportDownloadTicketResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "No current selectable report session",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReportDownloadTicketResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Ticket issuance limit exceeded",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReportDownloadTicketResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Current authority or ticket store unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -5723,6 +6812,204 @@
         } ]
       }
     },
+    "/academic/identity-operations/{operationId}/reconcile" : {
+      "post" : {
+        "tags" : [ "academic-identity-operation-controller" ],
+        "summary" : "Восстановить неизменную failed-safe операцию пользователя или группы",
+        "operationId" : "reconcileGroupOperation",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReconcileRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Операция завершена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт состояния",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/academic/homeworks" : {
       "get" : {
         "tags" : [ "Homeworks" ],
@@ -6405,10 +7692,108 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
         } ],
         "responses" : {
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
           "204" : {
-            "description" : "Группа восстановлена или уже активна"
+            "description" : "Группа восстановлена или уже активна",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "403" : {
             "description" : "Нет прав доступа",
@@ -6440,18 +7825,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Ошибка валидации запроса",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -6732,6 +8107,16 @@
         "tags" : [ "Groups" ],
         "summary" : "Выполнить промоушен групп (ADMIN). Запускать после preview.",
         "operationId" : "promote",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid",
+            "pattern" : "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -6745,6 +8130,31 @@
         "responses" : {
           "200" : {
             "description" : "Результат промоушена",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
+                }
+              }
+            },
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -6753,38 +8163,52 @@
               }
             }
           },
-          "403" : {
-            "description" : "Нет прав доступа",
-            "content" : {
-              "*/*" : {
+          "202" : {
+            "description" : "Операция сохранена; проверьте Location перед повтором команды с прежним ключом",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
                 "schema" : {
-                  "$ref" : "#/components/schemas/PromotionSummary"
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "Retry-After" : {
+                "description" : "Задержка перед проверкой состояния в секундах",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer",
+                  "example" : 2,
+                  "minimum" : 0
+                }
+              },
+              "X-Operation-Id" : {
+                "description" : "UUID сохранённой операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              },
+              "Location" : {
+                "description" : "Адрес проверки состояния операции",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uri-reference"
                 }
               }
-            }
-          },
-          "404" : {
-            "description" : "Весенний семестр или группа не найдены",
+            },
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PromotionSummary"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Предпросмотр устарел или группа уже обработана",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PromotionSummary"
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
                 }
               }
             }
           },
           "400" : {
-            "description" : "Ошибка валидации запроса",
+            "description" : "Ошибка валидации",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -6794,7 +8218,47 @@
             }
           },
           "401" : {
-            "description" : "Требуется аутентификация",
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Весенний семестр или группа не найдены",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Предпросмотр устарел или группа уже обработана",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -6897,6 +8361,217 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/export-jobs" : {
+      "post" : {
+        "tags" : [ "academic-export-job-controller" ],
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Create"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Durable report accepted; poll the returned job until ready or error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Current authority or durable export storage unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/export-jobs/{id}/ticket" : {
+      "post" : {
+        "tags" : [ "academic-export-job-controller" ],
+        "operationId" : "ticket",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReportDownloadTicketResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -9467,6 +11142,150 @@
         } ]
       }
     },
+    "/academic/report-download/{ticket}" : {
+      "get" : {
+        "tags" : [ "academic-report-ticket-controller" ],
+        "operationId" : "ticketFile",
+        "parameters" : [ {
+          "name" : "ticket",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Report artifact redeemed by its short-lived ticket",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "enum" : [ "no-store" ]
+                }
+              },
+              "Content-Disposition" : {
+                "description" : "Attachment filename",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "image/png" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "text/html" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
     "/academic/registry-exports/users/formats" : {
       "get" : {
         "tags" : [ "registry-export-controller" ],
@@ -10304,6 +12123,253 @@
         } ]
       }
     },
+    "/academic/identity-operations/{operationId}" : {
+      "get" : {
+        "tags" : [ "academic-identity-operation-controller" ],
+        "summary" : "Проверить состояние сохранённой операции изменения пользователя или группы",
+        "operationId" : "getIdentityOperation",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Текущее сохранённое состояние операции",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              },
+              "X-Operation-Id" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "format" : "uuid"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentityOperationStatus"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется действующая сессия",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нет прав доступа",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Операция не найдена или недоступна текущему пользователю",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальное состояние зависимости недоступно; исход операции нельзя считать отклонённым",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/identity-operations/{operationId}/reconcile-preview" : {
+      "get" : {
+        "tags" : [ "academic-identity-operation-controller" ],
+        "summary" : "Получить новое подтверждение для восстановления failed-safe архивирования пользователя",
+        "operationId" : "getArchiveReconciliationPreview",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Текущее подтверждение архивирования",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "no-store"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нет актуального права USERS_ARCHIVE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Операция не найдена",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Нет подтверждённого failed-safe архивирования",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Актуальный snapshot недоступен",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/academic/homeworks/{id}/history" : {
       "get" : {
         "tags" : [ "Homeworks" ],
@@ -10793,6 +12859,253 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/export-jobs/{id}" : {
+      "get" : {
+        "tags" : [ "academic-export-job-controller" ],
+        "operationId" : "status_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/export-jobs/{id}/file" : {
+      "get" : {
+        "tags" : [ "academic-export-job-controller" ],
+        "operationId" : "file",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Current authorized report artifact",
+            "headers" : {
+              "Cache-Control" : {
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string",
+                  "enum" : [ "no-store" ]
+                }
+              },
+              "Content-Disposition" : {
+                "description" : "Attachment filename",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "image/png" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "text/html" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -12221,6 +14534,106 @@
         },
         "required" : [ "firstName", "lastName", "role" ]
       },
+      "IdentityOperationStatus" : {
+        "type" : "object",
+        "description" : "Состояние сохранённой операции изменения пользователя; без секретов и внутренней команды",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "SUCCEEDED", "REJECTED", "FAILED_SAFE" ]
+          },
+          "retryAfterSeconds" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ErrorResponse" : {
+        "type" : "object",
+        "description" : "Стандартный формат ошибки API (RFC 9457 Problem Details)",
+        "properties" : {
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "HTTP статус код",
+            "example" : 404
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "URI типа ошибки",
+            "example" : "https://api.rutcampustrack.ru/problems/resource-not-found"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "Краткое описание ошибки",
+            "example" : "Ресурс не найден"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "Детальное описание",
+            "example" : "Группа с id=99 не найдена"
+          },
+          "instance" : {
+            "type" : "string",
+            "description" : "URI запроса, вызвавшего ошибку",
+            "example" : "/api/academic/groups/99"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Время возникновения ошибки (UTC)",
+            "example" : "2026-04-24T10:15:30Z"
+          },
+          "traceId" : {
+            "type" : "string",
+            "description" : "Correlation ID из MDC (для трассировки в логах)",
+            "example" : "abc-trace-123"
+          },
+          "fieldErrors" : {
+            "type" : "array",
+            "description" : "Ошибки валидации полей body DTO (только для 400)",
+            "items" : {
+              "$ref" : "#/components/schemas/FieldError"
+            }
+          },
+          "field" : {
+            "type" : "string",
+            "description" : "Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)",
+            "example" : "login"
+          },
+          "extras" : {
+            "type" : "object",
+            "additionalProperties" : { },
+            "description" : "Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)",
+            "example" : {
+              "scheduleItemsCount" : 3
+            }
+          }
+        }
+      },
+      "FieldError" : {
+        "type" : "object",
+        "description" : "Ошибка валидации одного поля DTO (RFC 9457 Extension Member)",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "description" : "Имя поля DTO",
+            "example" : "displayName"
+          },
+          "rejectedValue" : {
+            "description" : "Отклонённое значение"
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "Локализованное сообщение об ошибке",
+            "example" : "Имя не может быть пустым"
+          }
+        }
+      },
       "EntityModelUserResponse" : {
         "type" : "object",
         "properties" : {
@@ -13615,6 +16028,494 @@
           }
         }
       },
+      "AdminGroupAttendanceParameters" : {
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[1-9][0-9]{0,18}"
+          },
+          "search" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "sort" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "GROUP_NAME|PRESENT_PERCENT|PRESENT_OR_EXCUSED_PERCENT|COUNTED_LESSONS|PRESENT|ABSENT|EXCUSED"
+          },
+          "direction" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "ASC|DESC"
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "direction", "format", "search", "semesterId", "sort" ]
+      },
+      "AdminGroupsParameters" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "pattern" : "ACTIVE|DRAFT|ARCHIVED"
+          },
+          "search" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "course" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 5,
+            "minimum" : 1
+          },
+          "studyMode" : {
+            "type" : "string",
+            "pattern" : "FULL_TIME|PART_TIME|EXTRAMURAL"
+          },
+          "educationLevel" : {
+            "type" : "string",
+            "pattern" : "BACHELOR|SPECIALIST|MASTER"
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RegistrySort"
+            },
+            "maxItems" : 8,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format" ]
+      },
+      "AdminUsersParameters" : {
+        "type" : "object",
+        "properties" : {
+          "search" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "role" : {
+            "type" : "string",
+            "pattern" : "STUDENT|TEACHER|ADMIN|HEADMAN"
+          },
+          "status" : {
+            "type" : "string",
+            "pattern" : "ACTIVE|EXPELLED|SUSPENDED|ARCHIVED"
+          },
+          "roleStatus" : {
+            "type" : "string",
+            "pattern" : "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED"
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RegistrySort"
+            },
+            "maxItems" : 8,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format" ]
+      },
+      "HeadmanGroupCompositionParameters" : {
+        "type" : "object",
+        "description" : "Current headman's own group roster export; group is selected by the server",
+        "properties" : {
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format" ]
+      },
+      "HeadmanStatsFilter" : {
+        "type" : "object",
+        "description" : "A bounded text or numeric headman statistics filter",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "contains" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "minimum" : {
+            "type" : "number"
+          },
+          "maximum" : {
+            "type" : "number"
+          }
+        },
+        "required" : [ "field" ]
+      },
+      "HeadmanStatsParameters" : {
+        "type" : "object",
+        "description" : "Headman current-group statistics export parameters",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 64,
+              "minLength" : 0
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanStatsSort"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "filters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanStatsFilter"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "format" ]
+      },
+      "HeadmanStatsSort" : {
+        "type" : "object",
+        "description" : "One priority-ordered headman statistics sort field",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "descending" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "field" ]
+      },
+      "HeadmanStatsTrendParameters" : {
+        "type" : "object",
+        "description" : "Current-group headman trend chart export parameters",
+        "properties" : {
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "SEMESTER", "WEEK", "SUBJECT" ]
+          },
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 64,
+              "minLength" : 0
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bucketUnit" : {
+            "type" : "string",
+            "enum" : [ "DAY", "WEEK" ]
+          }
+        },
+        "required" : [ "format", "mode" ]
+      },
+      "HeadmanSubjectJournalParameters" : {
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "minLength" : 1
+            },
+            "maxItems" : 3,
+            "minItems" : 1
+          },
+          "weekStarts" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "maxItems" : 64,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format", "lessonTypes", "subjectId" ]
+      },
+      "HeadmanWeeklyCurrentParameters" : {
+        "type" : "object",
+        "description" : "Current headman weekly export parameters",
+        "properties" : {
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format", "weekStart" ]
+      },
+      "HeadmanWeeklySelectedParameters" : {
+        "type" : "object",
+        "description" : "Selected headman weekly export parameters",
+        "properties" : {
+          "weekStarts" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "maxItems" : 64,
+            "minItems" : 1
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format", "weekStarts" ]
+      },
+      "IssueReportDownloadTicketRequest" : {
+        "type" : "object",
+        "description" : "One allowlisted report and its bounded export parameters",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "TEACHER_JOURNAL", "TEACHER_STATS", "HEADMAN_WEEKLY_CURRENT", "HEADMAN_WEEKLY_SELECTED", "HEADMAN_STATS", "HEADMAN_STATS_TREND", "HEADMAN_GROUP_COMPOSITION", "HEADMAN_SUBJECT_JOURNAL", "ADMIN_USERS", "ADMIN_GROUPS", "ADMIN_GROUP_ATTENDANCE" ]
+          },
+          "teacherJournal" : {
+            "$ref" : "#/components/schemas/TeacherJournalParameters"
+          },
+          "teacherStats" : {
+            "$ref" : "#/components/schemas/TeacherStatsParameters"
+          },
+          "headmanWeeklyCurrent" : {
+            "$ref" : "#/components/schemas/HeadmanWeeklyCurrentParameters"
+          },
+          "headmanWeeklySelected" : {
+            "$ref" : "#/components/schemas/HeadmanWeeklySelectedParameters"
+          },
+          "headmanStats" : {
+            "$ref" : "#/components/schemas/HeadmanStatsParameters"
+          },
+          "headmanStatsTrend" : {
+            "$ref" : "#/components/schemas/HeadmanStatsTrendParameters"
+          },
+          "headmanGroupComposition" : {
+            "$ref" : "#/components/schemas/HeadmanGroupCompositionParameters"
+          },
+          "headmanSubjectJournal" : {
+            "$ref" : "#/components/schemas/HeadmanSubjectJournalParameters"
+          },
+          "adminUsers" : {
+            "$ref" : "#/components/schemas/AdminUsersParameters"
+          },
+          "adminGroups" : {
+            "$ref" : "#/components/schemas/AdminGroupsParameters"
+          },
+          "adminGroupAttendance" : {
+            "$ref" : "#/components/schemas/AdminGroupAttendanceParameters"
+          }
+        },
+        "required" : [ "kind" ]
+      },
+      "RegistrySort" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "descending" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "field" ]
+      },
+      "TeacherJournalParameters" : {
+        "type" : "object",
+        "description" : "Complete teacher subject journal parameters",
+        "properties" : {
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 64,
+              "minLength" : 0
+            },
+            "maxItems" : 3,
+            "minItems" : 1
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          },
+          "pastOnly" : {
+            "type" : "boolean"
+          },
+          "lessonId" : {
+            "type" : "string",
+            "pattern" : "[1-9][0-9]{0,18}"
+          }
+        },
+        "required" : [ "format", "groupId", "lessonTypes", "semesterId", "subjectId" ]
+      },
+      "TeacherStatsParameters" : {
+        "type" : "object",
+        "description" : "Teacher statistics export parameters",
+        "properties" : {
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "scope" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "(?i:students|student|groups|group)"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 64,
+              "minLength" : 0
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 128,
+              "minLength" : 0
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "filters" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 128,
+              "minLength" : 0
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          }
+        },
+        "required" : [ "format", "scope", "semesterId" ]
+      },
+      "ReportDownloadTicketResponse" : {
+        "type" : "object",
+        "description" : "Short-lived report download capability",
+        "properties" : {
+          "downloadPath" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "suggestedFilename" : {
+            "type" : "string"
+          }
+        }
+      },
       "SortOrder" : {
         "type" : "object",
         "properties" : {
@@ -13862,6 +16763,20 @@
           }
         },
         "required" : [ "code" ]
+      },
+      "ReconcileRequest" : {
+        "type" : "object",
+        "properties" : {
+          "archivePreviewDigest" : {
+            "type" : "string",
+            "pattern" : "[0-9a-f]{64}"
+          },
+          "password" : {
+            "type" : "string",
+            "maxLength" : 1024,
+            "minLength" : 0
+          }
+        }
       },
       "CreateHomeworkRequest" : {
         "type" : "object",
@@ -14260,6 +17175,43 @@
             "format" : "int64"
           }
         }
+      },
+      "Create" : {
+        "type" : "object",
+        "properties" : {
+          "requestId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "report" : {
+            "$ref" : "#/components/schemas/IssueReportDownloadTicketRequest"
+          }
+        },
+        "required" : [ "report", "requestId" ]
+      },
+      "Status" : {
+        "type" : "object",
+        "properties" : {
+          "jobId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "queued", "preparing", "ready", "error" ]
+          },
+          "suggestedFilename" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "errorCode" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "errorCode", "expiresAt", "jobId", "state", "suggestedFilename" ]
       },
       "AssignAssistantRequest" : {
         "type" : "object",
@@ -15273,13 +18225,13 @@
       "PageHomeworkHistoryResponse" : {
         "type" : "object",
         "properties" : {
-          "totalElements" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "totalPages" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "first" : {
             "type" : "boolean"
@@ -15329,16 +18281,16 @@
           "paged" : {
             "type" : "boolean"
           },
-          "pageNumber" : {
-            "type" : "integer",
-            "format" : "int32"
+          "unpaged" : {
+            "type" : "boolean"
           },
           "pageSize" : {
             "type" : "integer",
             "format" : "int32"
           },
-          "unpaged" : {
-            "type" : "boolean"
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -16016,93 +18968,6 @@
         "type" : "object",
         "additionalProperties" : {
           "$ref" : "#/components/schemas/Link"
-        }
-      },
-      "ErrorResponse" : {
-        "description" : "Стандартный формат ошибки API (RFC 9457 Problem Details)",
-        "properties" : {
-          "status" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "HTTP статус код",
-            "example" : 404
-          },
-          "type" : {
-            "type" : "string",
-            "description" : "URI типа ошибки",
-            "example" : "https://api.rutcampustrack.ru/problems/resource-not-found"
-          },
-          "title" : {
-            "type" : "string",
-            "description" : "Краткое описание ошибки",
-            "example" : "Ресурс не найден"
-          },
-          "detail" : {
-            "type" : "string",
-            "description" : "Детальное описание",
-            "example" : "Группа с id=99 не найдена"
-          },
-          "instance" : {
-            "type" : "string",
-            "description" : "URI запроса, вызвавшего ошибку",
-            "example" : "/api/academic/groups/99"
-          },
-          "timestamp" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "Время возникновения ошибки (UTC)",
-            "example" : "2026-04-24T10:15:30Z"
-          },
-          "traceId" : {
-            "type" : "string",
-            "description" : "Correlation ID из MDC (для трассировки в логах)",
-            "example" : "abc-trace-123"
-          },
-          "fieldErrors" : {
-            "type" : "array",
-            "description" : "Ошибки валидации полей body DTO (только для 400)",
-            "items" : {
-              "$ref" : "#/components/schemas/FieldError"
-            }
-          },
-          "field" : {
-            "type" : "string",
-            "description" : "Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)",
-            "example" : "login"
-          },
-          "extras" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "object",
-              "description" : "Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)",
-              "example" : {
-                "scheduleItemsCount" : 3
-              }
-            },
-            "description" : "Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)",
-            "example" : {
-              "scheduleItemsCount" : 3
-            }
-          }
-        }
-      },
-      "FieldError" : {
-        "description" : "Ошибка валидации одного поля DTO (RFC 9457 Extension Member)",
-        "properties" : {
-          "field" : {
-            "type" : "string",
-            "description" : "Имя поля DTO",
-            "example" : "displayName"
-          },
-          "rejectedValue" : {
-            "type" : "object",
-            "description" : "Отклонённое значение"
-          },
-          "message" : {
-            "type" : "string",
-            "description" : "Локализованное сообщение об ошибке",
-            "example" : "Имя не может быть пустым"
-          }
         }
       }
     },

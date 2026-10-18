@@ -308,7 +308,13 @@ def metadata(root: Path, service: str, task: str, environment: dict[str, str]) -
         raise ValueError("Invalid revision metadata")
     expected_job = "java-unit-test" if task == "test" else "java-integration-test"
     job = environment.get("RCT_CI_JOB_ID", expected_job)
-    if job not in {expected_job, "java-coverage"}:
+    bootstrap_cli = (
+        job == "e2e-auth"
+        and service == "academic-service"
+        and task == "integrationTest"
+        and environment.get("RCT_BOOTSTRAP_CLI_ACCEPTANCE") == "true"
+    )
+    if job not in {expected_job, "java-coverage"} and not bootstrap_cli:
         raise ValueError("Invalid job scope")
     result = {
         "checkoutSha": checkout,

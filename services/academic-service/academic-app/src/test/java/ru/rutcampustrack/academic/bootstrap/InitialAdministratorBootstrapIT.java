@@ -86,12 +86,30 @@ class InitialAdministratorBootstrapIT {
 
     @BeforeEach
     void freshOwnDatabases() {
+        boolean cli = "true".equals(System.getenv("RCT_BOOTSTRAP_CLI_ACCEPTANCE"));
+        if (cli
+                && (!"true".equals(System.getenv("TESTCONTAINERS_RYUK_DISABLED"))
+                        || !"true".equals(System.getenv("TESTCONTAINERS_CHECKS_DISABLE"))))
+            throw new AssertionError("CLI lane requires explicitly disabled automatic helpers");
         postgres =
                 new PostgreSQLContainer<>("postgres:16")
                         .withDatabaseName("auth_db")
                         .withUsername("fixture_owner")
                         .withPassword(DB_PASSWORD)
                         .withReuse(false);
+        if (cli) {
+            // Require the private configtree password even from the shared loopback namespace.
+            // Unix socket trust is only for the official image's own initdb entrypoint.
+            postgres.withEnv("POSTGRES_INITDB_ARGS", "--auth-host=scram-sha-256 --auth-local=trust")
+                    .withEnv("POSTGRES_HOST_AUTH_METHOD", "scram-sha-256")
+                    .withImagePullPolicy(image -> false)
+                    .withLabel("rct.bootstrap.cli.fixture", cliProject())
+                    .withCreateContainerCmdModifier(
+                            command ->
+                                    command.getHostConfig()
+                                            .withMemory(512L * 1024 * 1024)
+                                            .withNanoCPUs(1_000_000_000L));
+        }
         loopback(postgres, 5432);
         postgres.start();
         var root =
@@ -324,9 +342,30 @@ class InitialAdministratorBootstrapIT {
                         auth.queryForObject(
                                 "SELECT version FROM auth_identity_catalog_clock", Long.class))
                 .isEqualTo(catalog);
-        auth.update("DELETE FROM user_role_grants WHERE user_id=?", uid);
+        // Deactivate authority in place, as the normal grant writer does: selected SID history
+        // retains its composite FK to this grant even after password change/revocation.
+        assertThat(
+                        auth.update(
+                                "UPDATE user_role_grants SET status='archived',updated_at=NOW()"
+                                        + " WHERE user_id=? AND role='admin' AND status='active'",
+                                uid))
+                .isOne();
         auth.update(
                 "UPDATE admin_access_profiles SET assigned=FALSE,mode=NULL WHERE user_id=?", uid);
+        assertThat(
+                        new AuthAdminJdbcAuthority(new JdbcTemplate(authRuntime))
+                                .profile(uid)
+                                .assigned())
+                .isFalse();
+        assertThat(
+                        auth.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM auth_sessions s JOIN user_role_grants"
+                                    + " g ON g.id=s.active_role_grant_id AND g.user_id=s.user_id"
+                                    + " WHERE s.user_id=? AND g.role='admin' AND"
+                                    + " g.status='archived')",
+                                Boolean.class,
+                                uid))
+                .isTrue();
         assertThatThrownBy(() -> authCommand.execute("prepare", request(UUID.randomUUID())))
                 .isInstanceOf(IllegalArgumentException.class);
     }
@@ -586,6 +625,327 @@ class InitialAdministratorBootstrapIT {
                                 "SELECT count(*) FROM auth_admin_access_noop_receipts", Long.class))
                 .isZero();
         assertPending(prepared);
+    }
+
+    @Test
+    @org.junit.jupiter.api.Timeout(value = 6, unit = TimeUnit.MINUTES)
+    @org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(
+            named = "RCT_BOOTSTRAP_CLI_ACCEPTANCE",
+            matches = "true")
+    void operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator() throws Exception {
+        String configuredDirectory = System.getenv("RCT_BOOTSTRAP_CLI_DIRECTORY");
+        if (configuredDirectory == null) throw new AssertionError("private CLI directory required");
+        Path directory = Path.of(configuredDirectory);
+        if (!directory.isAbsolute()
+                || Files.isSymbolicLink(directory)
+                || !Files.isDirectory(directory)
+                || !Files.getPosixFilePermissions(directory)
+                        .equals(
+                                java.nio.file.attribute.PosixFilePermissions.fromString(
+                                        "rwx------")))
+            throw new AssertionError("private CLI directory required");
+        var docker = org.testcontainers.DockerClientFactory.instance().client();
+        String project = cliProject();
+        Path compose = directory.resolve("compose.json");
+        try {
+            String authImage = localCliImage("RCT_BOOTSTRAP_AUTH_IMAGE");
+            String academicImage = localCliImage("RCT_BOOTSTRAP_ACADEMIC_IMAGE");
+            var descriptor =
+                    Map.of(
+                            "name",
+                            project,
+                            "services",
+                            Map.of(
+                                    "auth-service",
+                                            cliService(
+                                                    authImage,
+                                                    "auth_db",
+                                                    "rct_auth_migrator",
+                                                    project,
+                                                    directory.resolve("auth-config")),
+                                    "academic-service",
+                                            cliService(
+                                                    academicImage,
+                                                    "academic_db",
+                                                    "rct_migrator",
+                                                    project,
+                                                    directory.resolve("academic-config"))));
+            Files.writeString(compose, JSON.writeValueAsString(descriptor));
+            Path requestFile = directory.resolve("request.json");
+            UUID operation = UUID.randomUUID();
+            var input =
+                    JSON.createObjectNode()
+                            .put("version", 1)
+                            .put("operationId", operation.toString())
+                            .put("login", "first-admin")
+                            .put("initialPassword", INITIAL);
+            input.set("profile", profile());
+            Files.createFile(
+                    requestFile,
+                    java.nio.file.attribute.PosixFilePermissions.asFileAttribute(
+                            java.nio.file.attribute.PosixFilePermissions.fromString("rw-------")));
+            Files.writeString(requestFile, JSON.writeValueAsString(input));
+            Path authPassword = directory.resolve("auth-config/spring.flyway.password");
+            Files.delete(authPassword);
+            try {
+                // The same real CLI must fail before creating anything if protected Auth
+                // ConfigData is missing; localhost may never silently trust the principal.
+                runOperatorCli(requestFile, compose, false);
+                assertThat(auth.queryForObject("SELECT count(*) FROM auth_identities", Long.class))
+                        .isZero();
+                assertThat(
+                                academic.queryForObject(
+                                        "SELECT count(*) FROM academic_profiles", Long.class))
+                        .isZero();
+            } finally {
+                Files.writeString(authPassword, DB_PASSWORD);
+                Files.setPosixFilePermissions(
+                        authPassword,
+                        java.nio.file.attribute.PosixFilePermissions.fromString("r--r--r--"));
+            }
+            var first = runOperatorCli(requestFile, compose);
+            assertThat(
+                            first.size() == 3
+                                    && first.path("operationId")
+                                            .asText()
+                                            .equals(operation.toString())
+                                    && first.path("userId").isIntegralNumber()
+                                    && first.path("userId").asLong() > 0
+                                    && first.path("status").asText().equals("COMMITTED"))
+                    .as("actual operator CLI returns only its committed operation binding")
+                    .isTrue();
+            long uid = first.path("userId").asLong();
+            assertThat(
+                            auth.queryForObject(
+                                    "SELECT account_state='ACTIVE' AND fence_operation_id IS NULL"
+                                            + " AND initial_password IS NOT NULL AND NOT"
+                                            + " password_changed AND"
+                                            + " generated_password_origin='initial' FROM"
+                                            + " auth_identities WHERE id=?",
+                                    Boolean.class,
+                                    uid))
+                    .isTrue();
+            String encoded =
+                    auth.queryForObject(
+                            "SELECT password_hash FROM auth_identities WHERE id=?",
+                            String.class,
+                            uid);
+            assertThat(SecurityConfig.passwordEncoder().matches(INITIAL, encoded)).isTrue();
+            assertThat(
+                            INITIAL.equals(
+                                    auth.queryForObject(
+                                            "SELECT initial_password FROM auth_identities WHERE"
+                                                    + " id=?",
+                                            String.class,
+                                            uid)))
+                    .as("actual operator retains the accepted initial credential display lifecycle")
+                    .isTrue();
+            assertThat(
+                            new AuthAdminJdbcAuthority(new JdbcTemplate(authRuntime))
+                                    .profile(uid)
+                                    .full())
+                    .isTrue();
+            assertThat(
+                            academic.queryForObject(
+                                    "SELECT directory_role='ADMIN' AND directory_status='ACTIVE'"
+                                        + " AND first_name=? AND last_name=? AND"
+                                        + " academic_revision=1 AND applied_auth_roles_version=1"
+                                        + " FROM academic_profiles WHERE id=?",
+                                    Boolean.class,
+                                    profile().path("firstName").asText(),
+                                    profile().path("lastName").asText(),
+                                    uid))
+                    .isTrue();
+            assertThat(
+                            academic.queryForObject(
+                                    "SELECT finalized_catalog_version IS NOT NULL AND"
+                                        + " finalized_catalog_version <= (SELECT"
+                                        + " applied_catalog_version FROM"
+                                        + " academic_identity_catalog_cursor WHERE singleton) FROM"
+                                        + " academic_initial_admin_bootstrap WHERE operation_id=?",
+                                    Boolean.class,
+                                    operation))
+                    .isTrue();
+            assertThat(
+                            academic.queryForObject(
+                                    "SELECT account_state='ACTIVE' AND academic_revision=1"
+                                            + " FROM academic_identity_read_model WHERE user_id=?",
+                                    Boolean.class,
+                                    uid))
+                    .isTrue();
+            var repeated = runOperatorCli(requestFile, compose);
+            assertThat(repeated.equals(first))
+                    .as("actual CLI retry retains the stored result")
+                    .isTrue();
+            assertThat(auth.queryForObject("SELECT count(*) FROM auth_identities", Long.class))
+                    .isOne();
+            assertThat(
+                            academic.queryForObject(
+                                    "SELECT count(*) FROM academic_profiles", Long.class))
+                    .isOne();
+            String repeatedHash =
+                    auth.queryForObject(
+                            "SELECT password_hash FROM auth_identities WHERE id=?",
+                            String.class,
+                            uid);
+            assertThat(encoded.equals(repeatedHash))
+                    .as("actual CLI retry preserves credentials")
+                    .isTrue();
+            assertThat(auth.queryForObject("SELECT count(*) FROM auth_sessions", Long.class))
+                    .isZero();
+        } finally {
+            // The compose project has only these two one-shots, never the fixture Postgres.
+            // Remove a timed-out compose child too; successful --rm children are already gone.
+            for (var child :
+                    docker.listContainersCmd()
+                            .withShowAll(true)
+                            .withLabelFilter(Map.of("com.docker.compose.project", project))
+                            .exec()) {
+                var labels = child.getLabels();
+                if (!project.equals(labels.get("rct.bootstrap.cli.owner"))
+                        || !java.util.Set.of("auth-service", "academic-service")
+                                .contains(labels.get("com.docker.compose.service")))
+                    throw new AssertionError("unexpected bootstrap cleanup scope");
+                docker.removeContainerCmd(child.getId())
+                        .withForce(true)
+                        .withRemoveVolumes(true)
+                        .exec();
+            }
+        }
+    }
+
+    private static String localCliImage(String variable) {
+        String reference = System.getenv(variable);
+        String expected =
+                Map.of(
+                                "RCT_BOOTSTRAP_AUTH_IMAGE",
+                                "rct/auth-service:e2e-local",
+                                "RCT_BOOTSTRAP_ACADEMIC_IMAGE",
+                                "rct/academic-service:e2e-local")
+                        .get(variable);
+        if (reference == null || !reference.equals(expected))
+            throw new AssertionError("current built bootstrap images required");
+        String id =
+                org.testcontainers.DockerClientFactory.instance()
+                        .client()
+                        .inspectImageCmd(reference)
+                        .exec()
+                        .getId();
+        if (id == null || !id.matches("sha256:[0-9a-f]{64}"))
+            throw new AssertionError("local immutable bootstrap image required");
+        return id;
+    }
+
+    private static String cliProject() {
+        String project = System.getenv("RCT_BOOTSTRAP_CLI_PROJECT");
+        if (project == null || !project.matches("rct-bootstrap-cli-[0-9]{1,20}-[0-9]{1,20}"))
+            throw new AssertionError("owned CI bootstrap project required");
+        return project;
+    }
+
+    private Map<String, Object> cliService(
+            String image, String database, String principal, String project, Path config)
+            throws Exception {
+        Files.createDirectory(
+                config,
+                java.nio.file.attribute.PosixFilePermissions.asFileAttribute(
+                        java.nio.file.attribute.PosixFilePermissions.fromString("rwxr-xr-x")));
+        Path password = config.resolve("spring.flyway.password");
+        Files.writeString(password, DB_PASSWORD);
+        Files.setPosixFilePermissions(
+                password, java.nio.file.attribute.PosixFilePermissions.fromString("r--r--r--"));
+        return Map.of(
+                "image",
+                image,
+                "pull_policy",
+                "never",
+                "network_mode",
+                "container:" + postgres.getContainerId(),
+                "mem_limit",
+                "512m",
+                "cpus",
+                1.0,
+                "healthcheck",
+                Map.of("disable", true),
+                "labels",
+                Map.of("rct.bootstrap.cli.owner", project),
+                "environment",
+                Map.of(
+                        "SPRING_CONFIG_IMPORT",
+                        "configtree:/run/bootstrap-db/",
+                        "SPRING_DATASOURCE_URL",
+                        "jdbc:postgresql://localhost:5432/" + database,
+                        "SPRING_FLYWAY_USER",
+                        principal,
+                        "SPRING_PROFILES_ACTIVE",
+                        "prod",
+                        "JAVA_TOOL_OPTIONS",
+                        "-Xmx256m -XX:ActiveProcessorCount=1"),
+                "volumes",
+                java.util.List.of(
+                        Map.of(
+                                "type",
+                                "bind",
+                                "source",
+                                config.toString(),
+                                "target",
+                                "/run/bootstrap-db",
+                                "read_only",
+                                true,
+                                "bind",
+                                Map.of("create_host_path", false))));
+    }
+
+    private static ObjectNode runOperatorCli(Path request, Path compose) throws Exception {
+        return runOperatorCli(request, compose, true);
+    }
+
+    private static ObjectNode runOperatorCli(Path request, Path compose, boolean success)
+            throws Exception {
+        Path root = Path.of("").toAbsolutePath();
+        while (root != null && !Files.isRegularFile(root.resolve("settings.gradle.kts")))
+            root = root.getParent();
+        if (root == null) throw new AssertionError("bootstrap repository required");
+        var child =
+                new ProcessBuilder(
+                                "python3",
+                                root.resolve("scripts/bootstrap-initial-admin.py").toString(),
+                                "--request-file",
+                                request.toString(),
+                                "--compose-file",
+                                compose.toString())
+                        .directory(root.toFile())
+                        .start();
+        try {
+            child.getOutputStream().close();
+            if (!child.waitFor(success ? 120 : 30, TimeUnit.SECONDS))
+                throw new AssertionError("bounded operator CLI did not exit");
+            byte[] output = child.getInputStream().readNBytes(4097);
+            byte[] errors = child.getErrorStream().readNBytes(4097);
+            if (child.exitValue() != (success ? 0 : 2)
+                    || output.length > 4096
+                    || errors.length != 0
+                    || new String(output, java.nio.charset.StandardCharsets.UTF_8)
+                            .contains(INITIAL))
+                throw new AssertionError("closed operator CLI result required");
+            try {
+                var result = JSON.readTree(output);
+                if (!(result instanceof ObjectNode object)) throw new IllegalArgumentException();
+                if (!success
+                        && (object.size() != 1
+                                || !"REFUSED".equals(object.path("status").asText())))
+                    throw new IllegalArgumentException();
+                return object;
+            } catch (Exception invalid) {
+                throw new AssertionError("closed operator CLI JSON required");
+            }
+        } finally {
+            if (child.isAlive()) {
+                child.destroyForcibly();
+                if (!child.waitFor(10, TimeUnit.SECONDS))
+                    throw new AssertionError("owned operator process cleanup failed");
+            }
+        }
     }
 
     private ObjectNode attempt(ObjectNode input) {

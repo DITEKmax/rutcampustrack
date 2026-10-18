@@ -2,7 +2,7 @@
 
 Root sole Git/taskdocs/matrix. RULES2b9a859c; children Sol6.1/high/forknone,
 actual metadata UNKNOWN accepted Cloud exception. Native7 slots inclRoot; no CLI plane.
-Current source is branch HEAD plus owned WIP; published/runtime baseline92be748.
+Current source is branch HEAD plus owned WIP; published/runtime baselineb836b194.
 Foreign25 + reserved reporttypealias preserved.
 
 ## Resources
@@ -23,17 +23,18 @@ Other checks light CPU1/RSS<=1GiB. Q032 exactconsent executed, no refusals bypas
 
 | Owner | Worktree / scope / state |
 | --- | --- |
-| Root | /workspace/rutcampustrack; sole Git/taskdocs/matrix; ready coherent fixes; reserved report alias/foreign25 held. |
-| s19_fixture_compile | /tmp/rct-s19-auth-runtime + private Gradle home; current15 compile PASS/unit fixture FAIL; current16 corrected unit4 PASS; current17 cohort8 compile PASS68.13s/RSS863,178,752B. Lease RELEASED. |
-| ac9_auth_it | /tmp/rct-s19-auth; canonical assignment fixture cohort8 SOURCEAPPROVE/Root joined/current17compilePASS; actual DB pending. Common connection failure cause remains UNKNOWN. |
-| s19_ci_diagnosis | /tmp/rct-s19-e2e; archived DTO2/notification fixture1/collector2 source approved; unit setup correction joined. |
-| s19_docx_path_diagnosis | /workspace/s19-async-native-primary; existing native hint3 source/TS/privacy case PASS, Root joined; no deadline change. |
-| ac9_apps | /tmp/rct-s19-apps; SDK nested-layout ESM resolver1 source proof PASS/Root joined; actual Apps pipeline pending. |
-| ac9_contract_generation | /tmp/ac9-contract-generation; atomic5 held for corrected official Academic schema; generation/Schedule/mobile2 typecheck/report74 PASS. Full PWA heap limit. |
-| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q033 role fixture approved; actual CLI fifth test + coordinated client CI step under preparation, no runtime. |
-| s19_review_producer | independent archived DTO/collector privacy/Q033 affected reviews approved; no authoring. |
-| s19_review_synthetic_baseline | notification rollback P2 addressed/affected recheck APPROVE; independent cohort review next. |
-| s19_3f_ci_observer | 92b useful browser jobs terminalFAIL/cleanupPASS; next observer only after meaningful push. |
+| Root | /workspace/rutcampustrack; sole Git/taskdocs/matrix; b836 published; next causal bundle joined; atomic5 includes preserved alias/foreign25. |
+| s19_fixture_compile | /tmp/rct-s19-auth-runtime/private Gradle home; current18 Auth/Academic4compile tasksPASS87.33s/RSS1,108,602,880B;8changed files/2018Root+2268native stable. Lease released, processes0. |
+| ac9_auth_it | /tmp/rct-s19-auth; lifecycle2 source APPROVE/joined/current18compilePASS. Solewriter next syntheticrecovery scripts+existingCI recoveryblock; no localDB. |
+| b836_contract_fixes | /tmp/rct-s19-contract-corrections sparse detached b836; actual grant/API product3 source APPROVE/joined; runtime pending. |
+| b836_pool_budget | /tmp/rct-s19-pool-budget sparse detached b836; test fixture idle0/10s joined, max20 unchanged; runtime53300 pending. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; Q033 metadata2 approved/joined; bot shared seed directory_status correction. |
+| s19_docx_path_diagnosis | /workspace/s19-async-native-primary; native3 state/errorCode+semester transport closed hints joined; tsc/privacy PASS, no new HTTP/deadlines. |
+| ac9_apps | /tmp/rct-s19-apps; GT core actualprefixPASS; closedSDK/queryhint joined. UI navigation helper1 joined; next addressADMINexport sourcecause. |
+| ac9_contract_generation | /tmp/ac9-contract-generation; corrected official atomic5 joined, generators/drift/tscPASS; prior81+74 reused, no process. |
+| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q033 actualCLI whole4 review APPROVE/joined; grant history fixture corrected; runtime pending. |
+| s19_review_producer | independent whole4/lifecycle2/product3 source APPROVE; no authoring/runtime. |
+| s19_3f_ci_observer | b836 push both browsers terminalFAIL/cleanupPASS; next publish safe boundary; PR CI separate. |
 
 No stand per writer. current15:85.88s/RSS1,149,927,424B; outputs100,099,182B,
 Root2018/native2268 stable; compileJava/compileTestJava PASS, four unit setup FAIL.

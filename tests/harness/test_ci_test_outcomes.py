@@ -847,6 +847,53 @@ class SafeCases {
         self.assertNotIn("failureDiagnostic", report["cases"][0])
         self.assertNotIn(MARKER, json.dumps(report))
 
+    def test_bootstrap_cli_truthful_job_requires_explicit_exact_scope_flag(self) -> None:
+        for service, task, flag in (
+            ("academic-service", "integrationTest", None),
+            ("academic-service", "integrationTest", "false"),
+            ("academic-service", "integrationTest", "TRUE"),
+            ("academic-service", "integrationTest", MARKER),
+            ("academic-service", "test", "true"),
+            ("auth-service", "integrationTest", "true"),
+            ("schedule-service", "integrationTest", "true"),
+        ):
+            environment = {**self.environment, "RCT_CI_JOB_ID": "e2e-auth"}
+            if flag is not None:
+                environment["RCT_BOOTSTRAP_CLI_ACCEPTANCE"] = flag
+            with (
+                self.subTest(service=service, task=task, flag=flag),
+                self.assertRaisesRegex(ValueError, "Invalid job scope"),
+            ):
+                COLLECTOR.metadata(self.root, service, task, environment)
+
+    def test_bootstrap_cli_collects_real_source_method_without_auto_acceptance(self) -> None:
+        source_path = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java"
+        classname = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
+        method = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"
+        source = self.root / source_path
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            f"package ru.rutcampustrack.academic.bootstrap; class InitialAdministratorBootstrapIT {{ @Test void {method}() {{}} }}"
+        )
+        subprocess.run(["git", "add", source_path], cwd=self.root, check=True, capture_output=True)
+        self.results = self.root / COLLECTOR.MODULES["academic-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment.update(RCT_CI_JOB_ID="e2e-auth", RCT_BOOTSTRAP_CLI_ACCEPTANCE="true")
+        self.xml(f'<testcase classname="{classname}" name="{method}()"/>', tests=1)
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["metadata"]["job"], "e2e-auth")
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        self.assertEqual(report["collection"], "RESULTS")
+        self.assertEqual(report["summary"], {"PASSED": 1, "FAILED": 0, "ERROR": 0, "SKIPPED": 0, "NOT_EXECUTED": 0})
+        self.assertEqual(len(report["cases"]), 1)
+        case = report["cases"][0]
+        self.assertEqual(
+            (case["classname"], case["method"], case["source"], case["identity"]),
+            (classname, method, source_path, "SOURCE_METHOD"),
+        )
+        self.assertEqual(case["sourceSha256"], COLLECTOR.hashlib.sha256(source.read_bytes()).hexdigest())
+        self.assertNotIn(MARKER, json.dumps(report))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -419,7 +419,9 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     await users.getByRole('button', { name: 'Найти', exact: true }).click();
     await users.locator(`[data-user-id="${target.id}"]`).click();
     const openEditor = async (assigned: boolean) => {
-      await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+      await users
+        .getByRole('button', { name: assigned ? 'Назад' : 'Редактировать данные', exact: true })
+        .click();
       await users
         .getByRole('button', {
           name: assigned ? 'Настроить права администратора' : 'Назначить права администратора',

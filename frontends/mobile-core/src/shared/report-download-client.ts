@@ -1,5 +1,5 @@
 import { StaleSessionGenerationError } from './session-owner'
-import type { components as AuthContract } from '../api/generated/auth'
+import type { components as AcademicContract } from '../api/generated/academic.types'
 import type {
   AdminManagedRole,
   AdminRoleStatus,
@@ -132,7 +132,7 @@ export interface AdminGroupAttendanceReportSelector {
   readonly format: ReportDownloadFormat
 }
 
-export type ExportJobState = NonNullable<AuthContract['schemas']['Status']['state']>
+export type ExportJobState = NonNullable<AcademicContract['schemas']['Status']['state']>
 export type ExportStateListener = (state: ExportJobState) => void
 export function exportStateLabel(state: ExportJobState): string {
   return {

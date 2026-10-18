@@ -190,10 +190,24 @@ ACADEMIC_JDBC_MESSAGES = (
         r"FATAL: (?:the database system is (?:shutting down|starting up|in recovery mode)|terminating connection due to administrator command)",
     ),
 )
+HEADMAN_RACE_CLASS = "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT"
+HEADMAN_RACE_METHOD = "concurrentCandidatesHaveOneWinnerAndOneCasConflict"
+HEADMAN_RACE_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java"
+HEADMAN_RACE_HTTP_CATEGORIES = ("HTTP200", "HTTP202", "HTTP401", "HTTP403", "HTTP409", "HTTP429", "HTTP503", "OTHER")
+HEADMAN_RACE_MARKER = re.compile(
+    r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):\s*)?"
+    r"HEADMAN_RACE_HTTP_DIAGNOSTIC_V1 category=(" + "|".join(HEADMAN_RACE_HTTP_CATEGORIES) + r")"
+)
 BOOTSTRAP_CLI_CLASS = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
 BOOTSTRAP_CLI_METHOD = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"
 BOOTSTRAP_CLI_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java"
 BOOTSTRAP_CLI_DIAGNOSTIC_CHARS = 65536
+BOOTSTRAP_CLI_RESULT_MARKER = re.compile(
+    r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):\s*)?"
+    r"BOOTSTRAP_CLI_RESULT_V1 invocation=(MISSING_CONFIG|FRESH|REPEAT) "
+    r"guard=(UNEXPECTED_EXIT|OVERSIZED_STDOUT|NONEMPTY_STDERR|SECRET_MARKER) "
+    r"expectedExit=(0|2) actualExit=(0|[1-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5]|OTHER)"
+)
 BOOTSTRAP_CLI_EXCEPTIONS = {
     "java.lang.AssertionError": "ASSERTION",
     "org.opentest4j.AssertionFailedError": "ASSERTION",
@@ -534,6 +548,37 @@ def academic_jdbc_failure_diagnostic(case: ElementTree.Element) -> dict:
     return result
 
 
+def headman_race_failure_diagnostic(case: ElementTree.Element) -> dict:
+    result = {"state": "ABSENT_OR_UNRECOGNIZED"}
+    failures = case.findall("failure")
+    if len(failures) != 1 or failures[0].get("type") not in {
+        "java.lang.AssertionError", "org.opentest4j.AssertionFailedError"
+    }:
+        return result
+    failure = failures[0]
+    message = failure.get("message", "")
+    candidates = [message] if len(message) <= 256 else []
+    text = failure.text or ""
+    start = 0
+    for _ in range(2):
+        end = text.find("\n", start, start + 257)
+        if end >= 0:
+            candidates.append(text[start:end])
+            start = end + 1
+        elif len(text) - start <= 256:
+            candidates.append(text[start:])
+            break
+        else:
+            # A bounded prefix of a longer original line cannot attest the marker.
+            break
+    categories = {
+        match.group(1) for value in candidates if (match := HEADMAN_RACE_MARKER.fullmatch(value.strip()))
+    }
+    if len(categories) == 1:
+        return {"state": "CLOSED_MARKER", "category": categories.pop()}
+    return result
+
+
 def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> dict:
     result = {
         "state": "ABSENT_OR_UNRECOGNIZED",
@@ -567,6 +612,24 @@ def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> 
                     break
     if result["exception"] != "UNKNOWN" or result["site"] != "UNKNOWN":
         result["state"] = "PROJECTED"
+    if result["exception"] == "ASSERTION" and result["site"] == "CLI_RESULT":
+        # Only a whole bounded message/first stack line can carry the closed marker.
+        message = failure.get("message", "")
+        first_line = text.split("\n", 1)[0]
+        markers = {
+            match.groups()
+            for value in (message, first_line)
+            if len(value) <= 256 and (match := BOOTSTRAP_CLI_RESULT_MARKER.fullmatch(value))
+        }
+        if len(markers) == 1:
+            invocation, guard, expected, actual = markers.pop()
+            expected_for_invocation = "2" if invocation == "MISSING_CONFIG" else "0"
+            unexpected_exit = actual != expected
+            if expected == expected_for_invocation and (guard == "UNEXPECTED_EXIT") == unexpected_exit:
+                result.update(
+                    state="CLOSED_MARKER", invocation=invocation, guard=guard,
+                    expectedExit=int(expected), actualExit=int(actual) if actual != "OTHER" else "OTHER",
+                )
     return result
 
 
@@ -683,6 +746,16 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                 ):
                     safe["failureDiagnostic"] = academic_jdbc_failure_diagnostic(case)
                     jdbc_diagnosed.add(raw_class)
+                if (
+                    service == "academic-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class == HEADMAN_RACE_CLASS
+                    and method == HEADMAN_RACE_METHOD
+                    and known["source"] == HEADMAN_RACE_SOURCE
+                ):
+                    safe["failureDiagnostic"] = headman_race_failure_diagnostic(case)
                 if (
                     service == "academic-service"
                     and task == "integrationTest"

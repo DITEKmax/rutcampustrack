@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 import uuid
+from pathlib import Path
 from types import SimpleNamespace
 
 import aiohttp
@@ -98,6 +99,8 @@ class Provider:
         self.drop_reply = False
         self.gate = None
         self.entered = asyncio.Event()
+        self.messages = []
+        self.rich_attempts = 0
 
     def contains_initial(self, fixture):
         marker = html.escape(fixture["initial"])
@@ -108,8 +111,13 @@ class Provider:
 
     async def handle(self, request):
         fields = await request.post()
-        chat = int(fields["chat_id"])
         method = request.match_info["method"]
+        if method == "answerCallbackQuery":
+            return web.json_response({"ok": True, "result": True})
+        chat = int(fields["chat_id"])
+        if method == "sendRichMessage":
+            self.rich_attempts += 1
+            return self.error("isolated provider uses the supported text fallback")
         if method == "sendMessage":
             message = self.next_id
             self.next_id += 1
@@ -117,9 +125,12 @@ class Provider:
             if "Пароль RutCampusTrack изменён" in text:
                 self.notice_count += 1
             self.cards[(chat, message)] = text
+            self.messages.append((chat, message, text, json.loads(fields.get("reply_markup", "null"))))
             return self.result(chat, message)
         message = int(fields["message_id"])
         key = (chat, message)
+        if method == "editMessageReplyMarkup":
+            return self.result(chat, message)
         if method == "deleteMessage":
             if self.delete_rejected:
                 return self.error("message can't be deleted")
@@ -635,9 +646,193 @@ async def own_homework_main():
                 await asyncio.gather(generic.close(), protected.close(), menu.close())
 
 
+async def hosted_role_menu_main():
+    """Read the existing CI services; only Node's owned fixture can change domain state."""
+    global _phase
+    from bot.grpc_client.bot_read_client import BotReadGrpcClient
+    from bot.handlers.prefs import (
+        CREDENTIALS_LABEL, LINKS_LABEL, LOGIN_LABEL, SETTINGS_LABEL,
+        HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, HEADMAN_LABEL, TEACHER_TODAY_LABEL,
+    )
+    from bot.handlers.role_reads import LessonChoices, role_reads_router
+    from bot.services.bot_menu import BotReadDenied, resolve_menu_scope
+
+    auth_token = Path(os.environ["NP01_AUTH_SERVICE_TOKEN_FILE"]).read_text().strip()
+    read_token = Path(os.environ["NP01_READ_SERVICE_TOKEN_FILE"]).read_text().strip()
+    reads = BotReadGrpcClient(
+        "mobile-bff", 19098, tls_enabled=True,
+        tls_ca_path=os.environ["NP01_READ_SERVICE_CA"], service_token=read_token,
+    )
+    menu = CountingMenu(BotMenuGrpcClient(
+        "auth-service", 19090, tls_enabled=True,
+        tls_ca_path=os.environ["NP01_AUTH_SERVICE_CA"], service_token=auth_token, read_client=reads,
+    ))
+    common = [CREDENTIALS_LABEL, LINKS_LABEL, LOGIN_LABEL, SETTINGS_LABEL]
+    extras = {
+        "student": [HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL],
+        # A genuine HEADMAN also has the required active STUDENT grant.
+        "headman": [HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, HEADMAN_LABEL],
+        "teacher": [TEACHER_TODAY_LABEL],
+        "empty_teacher": [TEACHER_TODAY_LABEL],
+        "empty_headman": [HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, HEADMAN_LABEL],
+        "admin": [],
+        "mixed": [HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, HEADMAN_LABEL, TEACHER_TODAY_LABEL],
+    }
+    provider_runner = bot = None
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as controls:
+        async def control(action):
+            async with controls.post(
+                os.environ["NP01_CONTROL_URL"] + "/control/" + action,
+                headers={"x-np01-control": os.environ["NP01_CONTROL_TOKEN"]},
+            ) as response:
+                check(response.status == 200)
+                return await response.json()
+
+        try:
+            fixtures = await control("fixtures")
+            provider = Provider(fixtures, control)
+            app = web.Application()
+            app.router.add_route("*", "/bot{token}/{method}", provider.handle)
+            provider_runner = web.AppRunner(app, access_log=None, shutdown_timeout=2)
+            await provider_runner.setup()
+            site = web.TCPSite(provider_runner, "127.0.0.1", 0)
+            await site.start()
+            bot = Bot(
+                token="123456:" + uuid.uuid4().hex,
+                session=AiohttpSession(api=TelegramAPIServer.from_base(
+                    f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}")),
+            )
+            dispatcher = Dispatcher()
+            dispatcher.include_router(start_router)
+            dispatcher.include_router(role_reads_router)
+            choices = LessonChoices()
+            sequence = 0
+
+            async def feed(chat, text, *, chat_type="private", callback=False):
+                nonlocal sequence
+                sequence += 1
+                message = {
+                    "message_id": sequence + 1000, "date": 1700000000,
+                    "chat": {"id": chat, "type": chat_type}, "text": text,
+                    "from": {"id": chat, "is_bot": False, "first_name": "Synthetic"},
+                }
+                payload = {"update_id": sequence, "message": message}
+                if callback:
+                    payload = {"update_id": sequence, "callback_query": {
+                        "id": str(sequence), "from": message["from"], "chat_instance": "synthetic",
+                        "message": message, "data": text,
+                    }}
+                before = len(provider.messages)
+                await dispatcher.feed_update(
+                    bot, Update.model_validate(payload, context={"bot": bot}),
+                    academic_client=None, prefs_client=None, bot_menu_client=menu,
+                    bot_lesson_choices=choices,
+                )
+                return provider.messages[before:]
+
+            def text(messages):
+                return "\n".join(message[2] for message in messages)
+
+            async def denied(operation):
+                try:
+                    await operation()
+                except BotReadDenied:
+                    check(True)
+                else:
+                    check(False)
+
+            _phase = "hosted_private_current_menu"
+            for role, expected in extras.items():
+                own = fixtures[role]
+                scope = await resolve_menu_scope(menu, own["chat"])
+                check(scope is not None and scope.user_id == own["uid"])
+                replies = await feed(own["chat"], "/start")
+                check(len(replies) == 1 and replies[0][0] == own["chat"])
+                labels = [button["text"] for row in replies[0][3]["keyboard"] for button in row]
+                check(labels == common + expected and len(labels) == len(set(labels)))
+            _auth_boundary["actual_auth_tls"] = True
+
+            _phase = "hosted_private_guard"
+            for command in ("/start", HEADMAN_LABEL, TEACHER_TODAY_LABEL):
+                before = menu.calls
+                replies = await feed(fixtures["headman"]["chat"], command, chat_type="group")
+                check(menu.calls == before and len(replies) == 1)
+                check(fixtures["subject_name"] not in text(replies))
+                check(all(row["display_name"] not in text(replies) for row in fixtures["roster"]))
+
+            teacher = fixtures["teacher"]
+            teacher_scope = await resolve_menu_scope(menu, teacher["chat"])
+            check(teacher_scope is not None)
+            _phase = "hosted_teacher_today_and_empty"
+            today = await menu.teacher_today(teacher["chat"], teacher_scope)
+            check([lesson.lesson_id for lesson in today.lessons] == [fixtures["lesson_id"]])
+            replies = await feed(teacher["chat"], TEACHER_TODAY_LABEL)
+            check(fixtures["subject_name"] in text(replies) and fixtures["group_name"] in text(replies))
+            empty = fixtures["empty_teacher"]
+            empty_scope = await resolve_menu_scope(menu, empty["chat"])
+            check(empty_scope is not None and not (await menu.teacher_today(empty["chat"], empty_scope)).lessons)
+            check("Сегодня у тебя нет пар." in text(await feed(empty["chat"], TEACHER_TODAY_LABEL)))
+
+            _phase = "hosted_headman_current_roster_statistics"
+            headman = fixtures["headman"]
+            old_scope = await resolve_menu_scope(menu, headman["chat"])
+            check(old_scope is not None)
+            current = await menu.headman_current(headman["chat"], old_scope)
+            check(current.state == "READY" and current.lesson.lesson_id == fixtures["lesson_id"])
+            expected = sorted((row["uid"], row["display_name"], row["status"], row["record_present"])
+                              for row in fixtures["roster"])
+            check(sorted((row.student_id, row.display_name, row.status, row.record_present)
+                         for row in current.rows) == expected)
+            check(any(row.status == "ABSENT" and row.record_present for row in current.rows))
+            check(any(not row.record_present and not row.status for row in current.rows))
+            replies = await feed(headman["chat"], HEADMAN_LABEL)
+            rendered = text(replies)
+            check(all(row["display_name"] in rendered for row in fixtures["roster"]))
+            check("Отсутствует" in rendered and "Не отмечен" in rendered and "Всего:" in rendered)
+            check(provider.rich_attempts == 1)
+            empty = fixtures["empty_headman"]
+            empty_scope = await resolve_menu_scope(menu, empty["chat"])
+            check(empty_scope is not None)
+            check((await menu.headman_current(empty["chat"], empty_scope)).state == "NO_CURRENT")
+            check("Сейчас нет текущей пары." in text(await feed(empty["chat"], HEADMAN_LABEL)))
+
+            _phase = "hosted_fresh_binding"
+            rebound = await control("rebind_teacher")
+            check(await resolve_menu_scope(menu, teacher["chat"]) is None)
+            fresh = await resolve_menu_scope(menu, rebound["chat"])
+            check(fresh is not None and fresh.user_id == teacher_scope.user_id)
+            check(fresh.telegram_binding_version > teacher_scope.telegram_binding_version)
+            await denied(lambda: menu.teacher_today(teacher["chat"], teacher_scope))
+            check(fixtures["subject_name"] in text(await feed(rebound["chat"], TEACHER_TODAY_LABEL)))
+
+            _phase = "hosted_revoked_headman_and_late_callback"
+            await control("revoke_headman")
+            fresh = await resolve_menu_scope(menu, headman["chat"])
+            check(fresh is not None and fresh.roles_version > old_scope.roles_version and not fresh.headman_enabled)
+            await denied(lambda: menu.headman_current(headman["chat"], old_scope, fixtures["lesson_id"]))
+            replies = await feed(headman["chat"], HEADMAN_LABEL)
+            check("Учёт группы недоступен" in text(replies))
+            before = (menu.calls, len(provider.messages))
+            await feed(headman["chat"], f"group-read:expired-own-choice:{fixtures['lesson_id']}", callback=True)
+            check(before == (menu.calls, len(provider.messages)))
+            # No real CHOOSE can be issued by canonical nonoverlapping unique slots.
+            # Valid-choice/revoke behavior remains covered by the existing defensive unit cases.
+            check((await control("finish"))["attendance_unchanged"] is True)
+            _phase = "hosted_role_menu_complete"
+        finally:
+            if bot is not None:
+                await bot.session.close()
+            if provider_runner is not None:
+                await provider_runner.cleanup()
+            await asyncio.gather(menu.close(), reads.close())
+
+
 if __name__ == "__main__":
     try:
-        asyncio.run(asyncio.wait_for(own_homework_main(), timeout=30) if sys.argv[1:] == ["--own-homework"] else main())
+        if sys.argv[1:] == ["--hosted-role-menu"]:
+            asyncio.run(asyncio.wait_for(hosted_role_menu_main(), timeout=45))
+        else:
+            asyncio.run(asyncio.wait_for(own_homework_main(), timeout=30) if sys.argv[1:] == ["--own-homework"] else main())
     except BaseException:
         print(
             json.dumps(
@@ -666,6 +861,7 @@ if __name__ == "__main__":
                 "phase": _phase,
                 "auth_producer_exercised": False,
                 "external_telegram_exercised": False,
+                **({"native_choice": "NOT_APPLICABLE"} if sys.argv[1:] == ["--hosted-role-menu"] else {}),
                 **_auth_boundary,
             }
         )

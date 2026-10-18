@@ -2,37 +2,38 @@
 
 Root sole Git/taskdocs/matrix. RULES2b9a859c; children Sol6.1/high/forknone,
 actual metadata UNKNOWN accepted Cloud exception. Native7 slots inclRoot; no CLI plane.
-Published658abf26be6d1a8eb9c8e13f055273aff162b067; source=HEAD+ownedWIP.
+Published8caa3818d246d16a6ecdf2991c13df42cb85f29c; source=HEAD+ownedWIP.
 Foreign25 preserved; shared contracts/configs/Git have no competing writer.
 
 ## Resources
 
-Exec works. Workspace4224741376B<4GiB Dockerreserve; Docker28.4 VFSsameFS.
+Exec works. Workspace4223139840B<4GiB Dockerreserve; Docker28.4 VFSsameFS.
 No local Docker/DB/imagepull or cleanup/prune/reset/volume actions. Source/Git output
-<=128MiB, workspace>=3.75GiB. TMP4778049536B;16GiB cgroup/CPUquota4/cpuset0–4.
-Heavy lease RELEASED: r658_fixture_compile current23, native /tmp/rct-s19-auth-runtime,
+<=128MiB, workspace>=3.75GiB. TMP4769935360B;16GiB cgroup/CPUquota4/cpuset0–4.
+Heavy lease RELEASED after current26: r658_fixture_compile, native /tmp/rct-s19-auth-runtime,
 private /tmp/rct-s19-auth-gradle-home. Offline JDK21.0.12.1/Gradle8.12/existing launcher;
 CPU1/RSS<=2.5GiB/changedoutputs<=128MiB/TMP>=4GiB/workspace>=3.75GiB.
-Current23 archive witness compileTestJava PASS71.65s/RSS863248384B; no Java processes.
-Current22 main+test5 PASS65.90s/RSS931610624B/output100450000B; current21 test4
-PASS64.71s/RSS854482944B. No tests/DB/downloads/servers; compile is not runtime acceptance.
-Remote ordinary CI uses isolated hosted resources. No stand per source writer.
+Current24 testcompile PASS66.31s/RSS854360064B; current25 EducationalTime main+test PASS72.25s/RSS891379712B; current26 main+test PASS66.11s/RSS887980032B; all PIDs exited.
+No tests/DB/downloads/servers; compile is not runtime acceptance. Ordinary CI uses isolated
+hosted resources. No stand per source writer.
 
 ## Owners / next
 
 | Owner | Worktree / scope / state |
 | --- | --- |
-| Root | /workspace/rutcampustrack; sole integration/Git/taskdocs/matrix. Next coherent report+Group+fixtures+closed diagnostics checkpoint. |
-| r658_fixture_compile | Native mirror/privateGH; current23 one-test compile PASS; lease/processes released. |
-| s19_ci_diagnosis | /tmp/rct-s19-e2e; report2 addressed APPROVE/joined. Collector+harness2 exact Q033 diagnostic integrated/44purePASS; writer released. |
-| b836_pool_budget | /tmp/rct-s19-pool-budget; Group3 source APPROVE/joined/compilePASS. AdminAttendance mapper fixture1 integrated/sourceguardsPASS; writer released. |
-| r658_archive_race | /tmp/rct-s19-auth; archive witness1 source APPROVE/joined; writer released. Recovery hint1 also integrated, foreign WIP preserved. |
-| r658_apps_budget | /tmp/rct-s19-apps; finite budget diagnostic1 integrated/source guardsPASS; writer released, measured runtime budget still FAIL. |
-| r219_behavior_review | Readonly report2 addressed APPROVE and U14.2 evidence APPLICABLE; no authoring/runtime. |
-| r658_group_review | Readonly Group3/archive witness1 source APPROVE; no authoring/runtime. |
+| Root | /workspace/rutcampustrack; sole integration/Git/taskdocs/matrix. Next coherent reviewed packet after usefulCI boundary. |
+| r658_fixture_compile | Native mirror/privateGH; current26 main+test PASS; lease/PIDs/sourcefreeze released. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; EducationalTime1 +classification3 S3APPROVE/joined; writer released. |
+| b836_pool_budget | /tmp/rct-s19-pool-budget; hostedU20 existing3files whole+addressed APPROVE/joined, TS0; writer released. |
+| r658_archive_race | /tmp/rct-s19-auth; Group2 source APPROVE/joined +finite race diagnostic joined; writer released. |
+| b836_contract_fixes | /tmp/rct-s19-contract-corrections; UserSearch1 APPROVE/joined; Q033 failure-only diagnostic3 joined/48purePASS; writer released. |
+| r219_behavior_review | Independent Group2/UserSearch1 source APPROVE; no runtime. |
+| r658_group_review | Independent hostedU20 whole+two addressed findings APPROVE; no runtime. |
+| s19_academic_grpc_rca | /tmp/rct-s19-pool-budget; solewriter ONLY AcademicGrpcIT canonicalfixture21 nextpacket; preserve priorU20/otherWIP. |
 
-658 both browser groups terminalFAIL/cleanup69PASS/actualCLI70FAIL; observer released.
-Auth201PASS; Academic330PASS190FAIL1SKIP, not all fixture defects. Monitoring/Security/
-OpenAPI SUCCESS; Coverage/final gates unresolved. No cancel/retrigger; useful run preserved.
-Apps measuredcombined proof pending; existing limits unchanged. Frozen B013/B014/B015
-and production/main/merge/deploy/secrets boundaries unchanged.
+Actual8caa firstDOCX lastmark28FAIL; Apps budgetsPASS/laterrestartFAIL;
+Recovery BACKUP/PG_QUERY; samearchive recovery PASS. Current final gates unresolved.
+Bothpushbrowsergroups terminalFAIL/cleanup69PASS; actualCLI70FAIL; no cancel/retrigger.
+PRduplicate browser/CLI terminalFAIL/cleanup69PASS; safe publication boundary reached.
+U20 pool writer released before Grpc1 assignment; Root sharedCI solewriter.
+Existing limits unchanged; B013/B014/B015 FROZEN. Production/main/merge/deploy/secrets prohibited.

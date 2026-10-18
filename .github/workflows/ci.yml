@@ -650,23 +650,24 @@ jobs:
 
                   admin_source = app / 'src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java'
                   admin_test = admin_source.read_bytes()
-                  assert hashlib.sha256(admin_test).hexdigest() == 'd0d844748441cd4cb0fd9a2bb98b21e92ff0faecf146a5706b6cb40f894c9cd0'
+                  assert hashlib.sha256(admin_test).hexdigest() == '77f3fa756acbff72f9d890bfa8bd7cea43f3b0a55361ff6327a53316b54e694e'
                   assert admin_test == subprocess.check_output(['git', 'show', 'HEAD:' + admin_source.as_posix()])
-                  admin_oracle = (b'        assertThatThrownBy(() -> reports.read("7", "", Sort.GROUP_NAME, Direction.ASC, 0, 25))\n'
+                  admin_oracle = (b'        assertThatThrownBy(\n'
+                                  b'                        () -> reports.read(semesterId, "", Sort.GROUP_NAME, Direction.ASC, 0, 25))\n'
                                   b'                .isInstanceOf(AdminAccessException.class);\n')
                   assert admin_test.count(admin_oracle) == 1
                   admin_line = admin_test[:admin_test.index(admin_oracle)].count(b'\n') + 1
-                  assert admin_line == 237
+                  assert admin_line == 223
                   admin_production = app / 'src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportService.java'
                   admin_current = admin_production.read_bytes()
-                  assert hashlib.sha256(admin_current).hexdigest() == '6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36'
+                  assert hashlib.sha256(admin_current).hexdigest() == '0176504ec5d922fa35c9e627cb8f9ceec60234b198896484e5401aec87ec53c6'
                   admin_anchor = (b'            rows.sort(comparator(sort, direction));\n'
-                                  b'            access.require("DASHBOARD_VIEW");\n'
+                                  b'            requireCurrentAccess();\n'
                                   b'            return new FullReport(')
-                  admin_changed = admin_anchor.replace(b'            access.require("DASHBOARD_VIEW");\n', b'')
+                  admin_changed = admin_anchor.replace(b'            requireCurrentAccess();\n', b'')
                   assert admin_current.count(admin_anchor) == 1
                   admin_negative = admin_current.replace(admin_anchor, admin_changed)
-                  assert hashlib.sha256(admin_negative).hexdigest() == '417d2f84d145f70a128272424abe0d8fe3b63d79973f23b13d648c6968ca27f8'
+                  assert hashlib.sha256(admin_negative).hexdigest() == 'f61f5b4e700d75c2d502a79185e33d9ebd9466edf4b71cabfb6f762ed05a9786'
                   assert admin_negative.replace(admin_changed, admin_anchor) == admin_current
                   admin_rights = {'package': 'ru.rutcampustrack.academic.adminattendance.AdminAttendanceReportIT',
                                   'method': 'otherRegistryGrantsCannotReadAndRevocationDuringRemoteReadReturnsNoRows',
@@ -3440,6 +3441,35 @@ jobs:
           path: |
             ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/safe-results.json
             ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/metrics.safe.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Verify actual private bot menus roster and teacher Today on the hosted services
+        id: hosted-bot-roles
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        timeout-minutes: 6
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_BOT_ROLE_MENU: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-u20-bot-${{ github.run_id }}-${{ github.run_attempt }}
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          mkdir -m 700 "$RCT_REMAINING5_RUN" "$RCT_REMAINING5_RUN/artifacts"
+          docker build --tag "rct/notification-bot:u20-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" ../../services/notification-bot
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '^actual private bot menu roster and teacher Today use hosted current authority$'
+
+      - name: Upload only safe hosted bot role outcomes
+        if: always() && matrix.group == 'client' && steps.hosted-bot-roles.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-bot-roles-safe-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rct-u20-bot-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/safe-results.json
           if-no-files-found: error
           retention-days: 7
 

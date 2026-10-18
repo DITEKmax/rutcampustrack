@@ -11,8 +11,10 @@ import ru.rutcampustrack.academic.adminattendance.AdminAttendanceExportService;
 import ru.rutcampustrack.academic.contract.dto.adminattendance.AdminAttendanceReportModels;
 import ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels;
 import ru.rutcampustrack.academic.contract.dto.exportjobs.AcademicExportJobModels.Render;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.export.AdminRegistryExportService;
 import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.academic.security.RequireRole;
 
 import java.util.UUID;
 
@@ -40,6 +42,7 @@ public class AcademicReportRenderController {
 
     @io.swagger.v3.oas.annotations.Hidden
     @PostMapping("/academic/export-jobs/{id}/render")
+    @RequireRole(value = UserRole.ADMIN, adminShared = true)
     public ResponseEntity<byte[]> render(
             @PathVariable UUID id, @Valid @RequestBody Render request) {
         var job = jobs.renderPlan(id, request.leaseId(), context.getClaims());

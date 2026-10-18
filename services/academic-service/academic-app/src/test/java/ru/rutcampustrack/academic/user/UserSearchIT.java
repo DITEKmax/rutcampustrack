@@ -355,11 +355,12 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
             UserRole role,
             String employee,
             Long telegram) {
+        String[] naming = stem.split("-", 2);
         var created =
                 identityFixture.seedUser(
                         new CreateUserRequest(
-                                stem,
-                                "Fixture",
+                                naming[0],
+                                naming.length == 2 ? naming[1] : "Fixture",
                                 null,
                                 role,
                                 role == UserRole.STUDENT

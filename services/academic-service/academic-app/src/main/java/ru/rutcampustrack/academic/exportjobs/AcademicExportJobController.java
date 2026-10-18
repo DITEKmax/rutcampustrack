@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 
 import ru.rutcampustrack.academic.contract.api.AcademicExportJobApi;
 import ru.rutcampustrack.academic.contract.dto.exportjobs.AcademicExportJobModels.*;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
@@ -23,6 +25,9 @@ public class AcademicExportJobController implements AcademicExportJobApi {
     }
 
     @Override
+    @RequireRole(
+            value = {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
+            adminShared = true)
     public ResponseEntity<Status> create(Create request) {
         return ResponseEntity.accepted()
                 .cacheControl(CacheControl.noStore())
@@ -30,6 +35,9 @@ public class AcademicExportJobController implements AcademicExportJobApi {
     }
 
     @Override
+    @RequireRole(
+            value = {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
+            adminShared = true)
     public ResponseEntity<Status> status(UUID id) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
@@ -37,11 +45,17 @@ public class AcademicExportJobController implements AcademicExportJobApi {
     }
 
     @Override
+    @RequireRole(
+            value = {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
+            adminShared = true)
     public ResponseEntity<byte[]> file(UUID id) {
         return download(jobs.file(actor(), id));
     }
 
     @Override
+    @RequireRole(
+            value = {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
+            adminShared = true)
     public ResponseEntity<ReportDownloadTicketResponse> ticket(UUID id) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())

@@ -690,7 +690,7 @@ class InitialAdministratorBootstrapIT {
             try {
                 // The same real CLI must fail before creating anything if protected Auth
                 // ConfigData is missing; localhost may never silently trust the principal.
-                runOperatorCli(requestFile, compose, false);
+                runOperatorCli(requestFile, compose, CliInvocation.MISSING_CONFIG, false);
                 assertThat(auth.queryForObject("SELECT count(*) FROM auth_identities", Long.class))
                         .isZero();
                 assertThat(
@@ -703,7 +703,7 @@ class InitialAdministratorBootstrapIT {
                         authPassword,
                         java.nio.file.attribute.PosixFilePermissions.fromString("r--r--r--"));
             }
-            var first = runOperatorCli(requestFile, compose);
+            var first = runOperatorCli(requestFile, compose, CliInvocation.FRESH);
             assertThat(
                             first.size() == 3
                                     && first.path("operationId")
@@ -773,7 +773,7 @@ class InitialAdministratorBootstrapIT {
                                     Boolean.class,
                                     uid))
                     .isTrue();
-            var repeated = runOperatorCli(requestFile, compose);
+            var repeated = runOperatorCli(requestFile, compose, CliInvocation.REPEAT);
             assertThat(repeated.equals(first))
                     .as("actual CLI retry retains the stored result")
                     .isTrue();
@@ -896,11 +896,19 @@ class InitialAdministratorBootstrapIT {
                                 Map.of("create_host_path", false))));
     }
 
-    private static ObjectNode runOperatorCli(Path request, Path compose) throws Exception {
-        return runOperatorCli(request, compose, true);
+    private enum CliInvocation {
+        MISSING_CONFIG,
+        FRESH,
+        REPEAT
     }
 
-    private static ObjectNode runOperatorCli(Path request, Path compose, boolean success)
+    private static ObjectNode runOperatorCli(Path request, Path compose, CliInvocation invocation)
+            throws Exception {
+        return runOperatorCli(request, compose, invocation, true);
+    }
+
+    private static ObjectNode runOperatorCli(
+            Path request, Path compose, CliInvocation invocation, boolean success)
             throws Exception {
         Path root = Path.of("").toAbsolutePath();
         while (root != null && !Files.isRegularFile(root.resolve("settings.gradle.kts")))
@@ -922,12 +930,24 @@ class InitialAdministratorBootstrapIT {
                 throw new AssertionError("bounded operator CLI did not exit");
             byte[] output = child.getInputStream().readNBytes(4097);
             byte[] errors = child.getErrorStream().readNBytes(4097);
-            if (child.exitValue() != (success ? 0 : 2)
-                    || output.length > 4096
-                    || errors.length != 0
-                    || new String(output, java.nio.charset.StandardCharsets.UTF_8)
-                            .contains(INITIAL))
-                throw new AssertionError("closed operator CLI result required");
+            String guard = null;
+            if (child.exitValue() != (success ? 0 : 2)) guard = "UNEXPECTED_EXIT";
+            else if (output.length > 4096) guard = "OVERSIZED_STDOUT";
+            else if (errors.length != 0) guard = "NONEMPTY_STDERR";
+            else if (new String(output, java.nio.charset.StandardCharsets.UTF_8).contains(INITIAL))
+                guard = "SECRET_MARKER";
+            if (guard != null) {
+                int actualExit = child.exitValue();
+                throw new AssertionError(
+                        "BOOTSTRAP_CLI_RESULT_V1 invocation="
+                                + invocation.name()
+                                + " guard="
+                                + guard
+                                + " expectedExit="
+                                + (success ? 0 : 2)
+                                + " actualExit="
+                                + (actualExit >= 0 && actualExit <= 255 ? actualExit : "OTHER"));
+            }
             try {
                 var result = JSON.readTree(output);
                 if (!(result instanceof ObjectNode object)) throw new IllegalArgumentException();

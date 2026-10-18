@@ -425,6 +425,107 @@ class SafeCases {
                 self.assertEqual(value["stage"], "AWAIT_BARRIER")
                 self.assertNotIn(MARKER, json.dumps(value))
 
+    def headman_race_fixture(self) -> None:
+        source = self.root / COLLECTOR.HEADMAN_RACE_SOURCE
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "package ru.rutcampustrack.academic.group; class GroupHeadmanAssignmentIT {"
+            "@Test void concurrentCandidatesHaveOneWinnerAndOneCasConflict() {} @Test void otherBoundary() {} }"
+        )
+        subprocess.run(
+            ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
+        )
+        self.results = self.root / COLLECTOR.MODULES["academic-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment["RCT_CI_JOB_ID"] = "java-integration-test"
+        self.environment["RCT_CI_TEST_OUTCOME"] = "failure"
+
+    def test_headman_race_marker_projects_only_closed_http_category_with_owned_identity(self) -> None:
+        self.headman_race_fixture()
+        for category in COLLECTOR.HEADMAN_RACE_HTTP_CATEGORIES:
+            with self.subTest(category=category):
+                marker = "HEADMAN_RACE_HTTP_DIAGNOSTIC_V1 category=" + category
+                self.xml(
+                    f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="{COLLECTOR.HEADMAN_RACE_METHOD}()">'
+                    f'<failure type="java.lang.AssertionError" message="java.lang.AssertionError: {marker}">'
+                    f"java.lang.AssertionError: {marker}\n{MARKER}</failure></testcase>",
+                    tests=1,
+                    failures=1,
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                case = report["cases"][0]
+                self.assertEqual(case["identity"], "SOURCE_METHOD")
+                self.assertEqual(case["source"], COLLECTOR.HEADMAN_RACE_SOURCE)
+                self.assertEqual(
+                    case["sourceSha256"],
+                    COLLECTOR.hashlib.sha256((self.root / COLLECTOR.HEADMAN_RACE_SOURCE).read_bytes()).hexdigest(),
+                )
+                self.assertEqual(case["failureDiagnostic"], {"state": "CLOSED_MARKER", "category": category})
+                self.assertEqual(report["summary"]["FAILED"], 1)
+                self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+                self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_headman_race_marker_rejects_private_near_match_conflicting_and_foreign_carriers(self) -> None:
+        self.headman_race_fixture()
+        good = "HEADMAN_RACE_HTTP_DIAGNOSTIC_V1 category=HTTP503"
+        for message, text, kind in (
+            (good.replace("HTTP503", "HTTP500"), "", "java.lang.AssertionError"),
+            (good.replace("HTTP503", MARKER), "", "java.lang.AssertionError"),
+            (good + MARKER, "", "java.lang.AssertionError"),
+            (MARKER + good, "", "java.lang.AssertionError"),
+            (good + " " * 256 + MARKER, good + " " * 256 + MARKER, "java.lang.AssertionError"),
+            (good, good.replace("HTTP503", "HTTP202"), "java.lang.AssertionError"),
+            (good, "", "java.lang.IllegalStateException"),
+        ):
+            with self.subTest(carrier="malformed or conflicting synthetic marker"):
+                self.xml(
+                    f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="{COLLECTOR.HEADMAN_RACE_METHOD}()">'
+                    f'<failure type="{kind}" message="{message}">{text}</failure></testcase>',
+                    tests=1,
+                    failures=1,
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                self.assertEqual(report["cases"][0]["failureDiagnostic"], {"state": "ABSENT_OR_UNRECOGNIZED"})
+                self.assertNotIn(MARKER, json.dumps(report))
+        failure = f'<failure type="java.lang.AssertionError" message="{good}">{MARKER}</failure>'
+        self.xml(
+            f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="{COLLECTOR.HEADMAN_RACE_METHOD}()">{failure}{failure}</testcase>',
+            tests=1,
+            failures=1,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["cases"][0]["failureDiagnostic"], {"state": "ABSENT_OR_UNRECOGNIZED"})
+        self.assertNotIn(MARKER, json.dumps(report))
+        self.xml(
+            f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="otherBoundary()">{failure}</testcase>'
+            f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="unknownBoundary()">{failure}</testcase>'
+            f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}NearMatch" name="{COLLECTOR.HEADMAN_RACE_METHOD}()">{failure}</testcase>'
+            f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="{COLLECTOR.HEADMAN_RACE_METHOD}()"/>',
+            tests=4,
+            failures=3,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertTrue(all("failureDiagnostic" not in case for case in report["cases"]))
+        self.assertNotIn(MARKER, json.dumps(report))
+        self.xml(
+            f'<testcase classname="{COLLECTOR.HEADMAN_RACE_CLASS}" name="{COLLECTOR.HEADMAN_RACE_METHOD}()">{failure}</testcase>',
+            tests=1,
+            failures=1,
+        )
+        unit = self.results.parent / "test"
+        unit.mkdir()
+        (unit / "TEST-control.xml").write_text((self.results / "TEST-control.xml").read_text())
+        report = COLLECTOR.collect(self.root, "academic-service", "test", {**self.environment, "RCT_CI_JOB_ID": "java-unit-test"})
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        self.assertNotIn(MARKER, json.dumps(report))
+        source = self.root / COLLECTOR.HEADMAN_RACE_SOURCE
+        source.rename(source.with_name("OtherCases.java"))
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True, capture_output=True)
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["cases"][0]["identity"], "SOURCE_METHOD")
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        self.assertNotIn(MARKER, json.dumps(report))
+
     def notification_fixture(self) -> str:
         package = "ru.rutcampustrack.notification.diagnostic"
         source = self.root / COLLECTOR.MODULES["notification-service"] / "src/test/java/NotificationStartupIT.java"
@@ -904,6 +1005,69 @@ class SafeCases {
                 self.assertEqual(report["cases"][0]["status"], "FAILED")
                 self.assertEqual(report["cases"][0]["identity"], "SOURCE_METHOD")
                 self.assertEqual(report["summary"]["FAILED"], 1)
+                self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+                self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_bootstrap_cli_result_marker_projects_closed_invocation_guard_and_exit_only(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        for invocation, guard, expected, actual in (
+            ("MISSING_CONFIG", "UNEXPECTED_EXIT", 2, 0),
+            ("FRESH", "UNEXPECTED_EXIT", 0, 255),
+            ("REPEAT", "UNEXPECTED_EXIT", 0, "OTHER"),
+            ("FRESH", "OVERSIZED_STDOUT", 0, 0),
+            ("REPEAT", "NONEMPTY_STDERR", 0, 0),
+            ("MISSING_CONFIG", "SECRET_MARKER", 2, 2),
+        ):
+            with self.subTest(invocation=invocation, guard=guard):
+                marker = (
+                    f"BOOTSTRAP_CLI_RESULT_V1 invocation={invocation} guard={guard} "
+                    f"expectedExit={expected} actualExit={actual}"
+                )
+                for message, first_line in ((marker, MARKER), (MARKER, "java.lang.AssertionError: " + marker)):
+                    self.xml(
+                        f'<testcase classname="{classname}" name="{method}()">'
+                        f'<failure type="java.lang.AssertionError" message="{message}">{first_line}\n'
+                        f"\tat {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:8)\n"
+                        f"{MARKER}</failure></testcase>", tests=1, failures=1,
+                    )
+                    report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                    self.assertEqual(report["cases"][0]["failureDiagnostic"], {
+                        "state": "CLOSED_MARKER", "exception": "ASSERTION", "site": "CLI_RESULT", "sourceLine": 8,
+                        "invocation": invocation, "guard": guard, "expectedExit": expected, "actualExit": actual,
+                    })
+                    self.assertEqual(report["cases"][0]["status"], "FAILED")
+                    self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+                    self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_bootstrap_cli_result_marker_rejects_malformed_conflicting_and_unbound_claims(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        marker = "BOOTSTRAP_CLI_RESULT_V1 invocation=FRESH guard=UNEXPECTED_EXIT expectedExit=0 actualExit=2"
+        frame = f"at {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:8)"
+        for message, first_line, owned_frame, name, failure_type in (
+            (marker + MARKER, marker + MARKER, frame, method, "java.lang.AssertionError"),
+            (marker.replace("FRESH", MARKER), MARKER, frame, method, "java.lang.AssertionError"),
+            (marker.replace("actualExit=2", "actualExit=256"), MARKER, frame, method, "java.lang.AssertionError"),
+            (marker.replace("actualExit=2", "actualExit=-1"), MARKER, frame, method, "java.lang.AssertionError"),
+            (marker.replace("actualExit=2", "actualExit=02"), MARKER, frame, method, "java.lang.AssertionError"),
+            (marker.replace("expectedExit=0", "expectedExit=2"), MARKER, frame, method, "java.lang.AssertionError"),
+            (marker.replace("UNEXPECTED_EXIT", "SECRET_MARKER"), MARKER, frame, method, "java.lang.AssertionError"),
+            (marker, marker.replace("FRESH", "REPEAT"), frame, method, "java.lang.AssertionError"),
+            (marker, MARKER, frame.replace(":8)", ":5)"), method, "java.lang.AssertionError"),
+            (marker, MARKER, frame.replace(classname, "foreign." + MARKER), method, "java.lang.AssertionError"),
+            (marker, MARKER, frame, "runOperatorCli", "java.lang.AssertionError"),
+            (marker, MARKER, frame, method, "java.io.IOException"),
+        ):
+            with self.subTest(message=message, name=name, failure_type=failure_type):
+                self.xml(
+                    f'<testcase classname="{classname}" name="{name}()">'
+                    f'<failure type="{failure_type}" message="{message}">{first_line}\n'
+                    f"{owned_frame}\n{MARKER}</failure></testcase>", tests=1, failures=1,
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                diagnostic = report["cases"][0].get("failureDiagnostic", {})
+                self.assertNotEqual(diagnostic.get("state"), "CLOSED_MARKER")
+                self.assertNotIn("invocation", diagnostic)
+                self.assertNotIn("actualExit", diagnostic)
                 self.assertEqual(report["acceptance"], "NOT_ASSESSED")
                 self.assertNotIn(MARKER, json.dumps(report))
 

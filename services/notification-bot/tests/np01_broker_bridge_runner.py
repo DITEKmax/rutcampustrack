@@ -442,8 +442,8 @@ async def supervisor():
             await start_worker()
 
             _phase = "actual_auth_change_outbox_confirm_consumer_ack"
-            public = await generic.get_user_by_telegram_id(own["chat"])
-            check(public.found and public.user_id == own["uid"] and not public.initial_password)
+            public = await menu.own_profile(own["chat"])
+            check(public.found and public.user_id == own["uid"] and not hasattr(public, "initial_password"))
             await feed(own["chat"])
             before_foreign = set(provider.cards)
             await feed(foreign["chat"])

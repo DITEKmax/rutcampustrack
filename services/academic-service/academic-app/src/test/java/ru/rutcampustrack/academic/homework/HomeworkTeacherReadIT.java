@@ -1,9 +1,12 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,41 +21,39 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
 /** Signed HTTP reads against real grants, assignments, lifecycle operations and date bounds. */
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true")
-@Transactional
 class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private InternalJwtTestFactory tokens;
+    @Autowired private PlatformTransactionManager transactions;
+    @Autowired private UserService users;
 
     private long teacher, student, admin, group, subject, semester;
+    private SelectedActor teacherActor, administrator;
     private final LocalDate day = LocalDate.of(2041, 3, 10);
 
     @BeforeEach
     void fixture() {
-        student = jdbc.queryForObject("SELECT id FROM users WHERE login='student'", Long.class);
-        admin = jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
-        group = jdbc.queryForObject("SELECT id FROM groups WHERE name='ИВТ-211'", Long.class);
-        teacher =
-                jdbc.queryForObject(
-                        """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,created_at,updated_at)
-                VALUES(?, '$2a$10$dummy', 'ДЗ', 'Преподаватель', 'teacher', 'active', NOW(), NOW()) RETURNING id
-                """,
-                        Long.class,
-                        "hw_teacher_" + UUID.randomUUID().toString().substring(0, 16));
-        jdbc.update(
-                """
-                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
-                VALUES(?,'teacher','active',NOW(),NOW())
-                """,
-                teacher);
+        // The base resets both owned databases and creates these identities through real Auth.
+        student = identityFixture.canonical().studentId();
+        admin = identityFixture.canonical().adminId();
+        group = identityFixture.canonical().groupId();
+        teacher = identityFixture.canonical().teacherId();
+        administrator = identityFixture.select(admin, AuthRole.ADMIN);
+        teacherActor = identityFixture.select(teacher, AuthRole.TEACHER);
         subject = subject(group);
         semester = semester();
     }
@@ -146,10 +147,10 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         UUID operation = UUID.randomUUID();
         jdbc.update(
                 """
-                INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,
-                    target_assignment_id,effective_from,source_valid_until,target_valid_until,state,operation_kind,requested_cutoff)
-                VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,?,'PREPARED','ADOPT_UNASSIGNED',?)
-                """,
+INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,
+    target_assignment_id,effective_from,source_valid_until,target_valid_until,state,operation_kind,requested_cutoff)
+VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,?,'PREPARED','ADOPT_UNASSIGNED',?)
+""",
                 operation,
                 admin,
                 UUID.randomUUID(),
@@ -161,14 +162,14 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         if (!state.equals("PREPARED"))
             jdbc.update(
                     """
-                UPDATE assignment_replacement_operations SET state='APPLIED',schedule_receipt_state='APPLIED' WHERE operation_id=?
-                """,
+UPDATE assignment_replacement_operations SET state='APPLIED',schedule_receipt_state='APPLIED' WHERE operation_id=?
+""",
                     operation);
         if (state.equals("COMMITTED"))
             jdbc.update(
                     """
-                UPDATE assignment_replacement_operations SET state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE operation_id=?
-                """,
+UPDATE assignment_replacement_operations SET state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE operation_id=?
+""",
                     operation);
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
@@ -182,32 +183,41 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         String token = teacherToken();
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", token))
                 .andExpect(status().isOk());
-        jdbc.update(
-                "UPDATE user_role_grants SET status='dismissed' WHERE user_id=? AND role='teacher'",
-                teacher);
+        try (var ignored = identityFixture.request(administrator)) {
+            users.updateRoleGrant(
+                    teacher,
+                    "TEACHER",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.DISMISSED, null, null, null));
+        }
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", token))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(not(containsString("Protected homework"))));
     }
 
     @Test
     void inactiveSignedTeacherCannotReadWithActiveDatabaseGrant() throws Exception {
         assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
+        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", is("Protected homework")));
+        // Contradict the ACTIVE grant while retaining the real selected session binding.
         mvc.perform(
                         get("/academic/homeworks/{id}", id)
                                 .header(
                                         "X-Internal-Token",
                                         tokens.validToken(
                                                 teacher,
-                                                UUID.randomUUID(),
-                                                1,
-                                                1,
+                                                teacherActor.sessionId(),
+                                                teacherActor.sessionVersion(),
+                                                teacherActor.rolesVersion(),
                                                 "TEACHER",
                                                 "ARCHIVED",
                                                 null,
                                                 false,
                                                 true)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(not(containsString("Protected homework"))));
     }
 
     @Test
@@ -262,65 +272,23 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
                 homework(otherGroup, subject(otherGroup), semester, "LESSON", null, day, "ACTIVE");
         for (boolean headman : new boolean[] {false, true}) {
             String token =
-                    tokens.validToken(
-                            student,
-                            UUID.randomUUID(),
-                            1,
-                            1,
-                            headman ? "HEADMAN" : "STUDENT",
-                            "ACTIVE",
-                            group,
-                            headman,
-                            false);
+                    identityFixture
+                            .select(student, headman ? AuthRole.HEADMAN : AuthRole.STUDENT)
+                            .internalToken();
             mvc.perform(get("/academic/homeworks/{id}", own).header("X-Internal-Token", token))
                     .andExpect(status().isOk());
             mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token", token))
                     .andExpect(status().isForbidden());
         }
-        // Same durable FULL profile/session pattern as GroupRegistryIT; a signed role alone is
-        // insufficient.
-        jdbc.update(
-                "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
-                        + "VALUES(?,true,'FULL','{}',1) ON CONFLICT(user_id) DO UPDATE "
-                        + "SET assigned=true,mode='FULL',permissions='{}',version=admin_access_profiles.version+1,updated_at=NOW()",
-                admin);
-        long grantId =
-                jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'",
-                        Long.class,
-                        admin);
-        UUID sid = UUID.randomUUID();
-        jdbc.update(
-                "INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,"
-                        + "refresh_expires_at,created_at,last_seen_at,auth_method) "
-                        + "VALUES(?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
-                sid,
-                admin,
-                grantId,
-                UUID.randomUUID());
-        long rolesVersion =
-                jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id=?", Long.class, admin);
+        // A real selected FULL administrator retains the existing foreign-group read authority.
         mvc.perform(
                         get("/academic/homeworks/{id}", foreign)
-                                .header(
-                                        "X-Internal-Token",
-                                        tokens.validToken(
-                                                admin,
-                                                sid,
-                                                1,
-                                                rolesVersion,
-                                                "ADMIN",
-                                                "ACTIVE",
-                                                null,
-                                                false,
-                                                false)))
+                                .header("X-Internal-Token", administrator.internalToken()))
                 .andExpect(status().isOk());
     }
 
     private String teacherToken() {
-        return tokens.validToken(
-                teacher, UUID.randomUUID(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
+        return teacherActor.internalToken();
     }
 
     private long foreignGroup() {
@@ -331,18 +299,24 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     }
 
     private long subject(long groupId) {
-        long id =
-                jdbc.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",
-                        Long.class,
-                        "HW protected " + UUID.randomUUID(),
-                        groupId);
-        for (String type : new String[] {"lecture", "practice", "lab"})
-            jdbc.update(
-                    "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,CAST(? AS subject_type))",
-                    id,
-                    type);
-        return id;
+        return new TransactionTemplate(transactions)
+                .execute(
+                        status -> {
+                            long id =
+                                    jdbc.queryForObject(
+                                            "INSERT INTO subjects(name,type,group_id)"
+                                                    + " VALUES(?,'lecture',?) RETURNING id",
+                                            Long.class,
+                                            "HW protected " + UUID.randomUUID(),
+                                            groupId);
+                            for (String type : new String[] {"lecture", "practice", "lab"})
+                                jdbc.update(
+                                        "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                                + " VALUES(?,CAST(? AS subject_type))",
+                                        id,
+                                        type);
+                            return id;
+                        });
     }
 
     private long semester() {
@@ -372,9 +346,9 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
             String lifecycle) {
         return jdbc.queryForObject(
                 """
-                INSERT INTO assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from,valid_until_exclusive,lifecycle_state)
-                VALUES(?,?,?,?,CAST(? AS subject_type),?,?,?) RETURNING id
-                """,
+INSERT INTO assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from,valid_until_exclusive,lifecycle_state)
+VALUES(?,?,?,?,CAST(? AS subject_type),?,?,?) RETURNING id
+""",
                 Long.class,
                 actor,
                 groupId,
@@ -396,10 +370,10 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
             String publication) {
         return jdbc.queryForObject(
                 """
-                INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
-                    binding_mode,lesson_type,binding_id,actor_id,request_key,payload_hash,publication_state)
-                VALUES(?,?,?,'Protected homework',?,?,?,?,?,?,?, ?,decode(repeat('11',32),'hex'),?) RETURNING id
-                """,
+INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
+    binding_mode,lesson_type,binding_id,actor_id,request_key,payload_hash,publication_state)
+VALUES(?,?,?,'Protected homework',?,?,?,?,?,?,?, ?,decode(repeat('11',32),'hex'),?) RETURNING id
+""",
                 Long.class,
                 groupId,
                 subjectId,

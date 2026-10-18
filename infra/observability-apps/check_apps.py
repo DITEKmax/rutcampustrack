@@ -589,7 +589,11 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
             # Graceful shutdown flushes the current v1 head before restarting it.
             docker("stop", "--timeout", "30", "glitchtip", "pyroscope", timeout=80)
             docker("start", "glitchtip", "pyroscope", timeout=60)
+            stage("persistent-restart-glitchtip-readiness")
             wait_for(lambda: request(origin + "/glitchtip/", auth=True)[0] == 200, 90)
+            stage("persistent-restart-profile-query")
+            flamegraph_hint.clear()
+            pyroscope = port("pyroscope", 4040)
             wait_for(flamegraph, 90)
             require(groups()["event_count"] == 6, "Error data lost on restart")
             stage("telemetry-outage")

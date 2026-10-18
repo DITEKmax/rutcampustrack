@@ -11,6 +11,7 @@ import ru.rutcampustrack.academic.grpc.HeadmanStatsScopeReadService;
 import ru.rutcampustrack.academic.grpc.HeadmanStatsScopeRequest;
 import ru.rutcampustrack.reportrendering.grpc.*;
 import ru.rutcampustrack.schedule.grpc.*;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 import ru.rutcampustrack.teacher.grpc.*;
 
 import java.time.*;
@@ -26,6 +27,7 @@ public class AcademicReportPlanBuilder {
     private final ReportPlanSnapshotReader snapshots;
     private final LocalReportAuthority local;
     private final HeadmanStatsScopeReadService headmanScopes;
+    private final EducationalTime educationalTime;
     private final String scheduleToken;
     private final String scheduleAuthority;
 
@@ -33,6 +35,7 @@ public class AcademicReportPlanBuilder {
             ReportPlanSnapshotReader snapshots,
             LocalReportAuthority local,
             HeadmanStatsScopeReadService headmanScopes,
+            EducationalTime educationalTime,
             @Value("${grpc.service-identity.academic-report-to-schedule-token:}")
                     String scheduleToken,
             @Value("${grpc.client.schedule-service.security.authority-override:schedule-service}")
@@ -40,6 +43,7 @@ public class AcademicReportPlanBuilder {
         this.snapshots = snapshots;
         this.local = local;
         this.headmanScopes = headmanScopes;
+        this.educationalTime = educationalTime;
         this.scheduleToken = scheduleToken;
         this.scheduleAuthority = scheduleAuthority;
     }
@@ -121,7 +125,12 @@ public class AcademicReportPlanBuilder {
         remainingMillis(job);
         var plan =
                 snapshots
-                        .snapshot(job, discovery, lessons, Instant.now(), admittedScope)
+                        .snapshot(
+                                job,
+                                discovery,
+                                lessons,
+                                educationalTime.clock().instant(),
+                                admittedScope)
                         .toBuilder();
         switch (report.kind()) {
             case TEACHER_JOURNAL -> {

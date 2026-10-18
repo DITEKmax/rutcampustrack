@@ -99,20 +99,42 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                 "UPDATE headman_assistants SET is_active = false, revoked_at = NOW() "
                         + "WHERE group_id = ?",
                 fixture.groupId());
-        String changedLogin = "roster_" + Long.toUnsignedString(System.nanoTime(), 36);
-        identityFixture
-                .fixtureOwnerAuthJdbc()
-                .update(
-                        "UPDATE auth_identities SET login=? WHERE id=?",
-                        changedLogin,
-                        fixture.thirdId());
-        identityFixture.catchUpCatalog();
+        String generatedLogin =
+                identityFixture
+                        .authJdbc()
+                        .queryForObject(
+                                "SELECT login FROM auth_identities WHERE id=?",
+                                String.class,
+                                fixture.thirdId());
+        assertThat(snapshot.getMembersList().getLast().getLogin()).isEqualTo(generatedLogin);
+        patchUser(
+                fixture.thirdId(),
+                new PatchUserRequest(null, null, "Обновлённый", null, null, null, null, null));
         Long added = student("composition_new", "Александр", fixture.groupId());
         var fresh = compositionReadService.read(actor, fixture.groupId());
         assertThat(fresh.getMembersList())
                 .extracting(member -> member.getUserId())
                 .containsExactly(added, fixture.secondId(), fixture.firstId(), fixture.thirdId());
-        assertThat(fresh.getMembersList().getLast().getLogin()).isEqualTo(changedLogin);
+        assertThat(fresh.getMembersList().getLast().getDisplayName())
+                .isEqualTo("Тестов Третий Обновлённый")
+                .isNotEqualTo(snapshot.getMembersList().getLast().getDisplayName());
+        assertThat(fresh.getMembersList().getLast().getLogin()).isEqualTo(generatedLogin);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT login FROM auth_identities WHERE id=?",
+                                        String.class,
+                                        fixture.thirdId()))
+                .isEqualTo(generatedLogin);
+        assertThat(fresh.getMembersList().getFirst().getLogin())
+                .isEqualTo(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT login FROM auth_identities WHERE id=?",
+                                        String.class,
+                                        added));
         assertThat(fresh.getMembersList().getLast().getGroupRole()).isEqualTo("STUDENT");
         // Durable transfer invalidates the old signed HEADMAN identity on the next read.
         assign(fixture.groupId(), new AssignHeadmanRequest(fixture.secondId(), fixture.firstId()));
@@ -421,7 +443,21 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                 int status = result.join();
                 if (status == 200) successes++;
                 else {
-                    assertThat(status).isEqualTo(409);
+                    assertThat(status)
+                            .withFailMessage(
+                                    () ->
+                                            "HEADMAN_RACE_HTTP_DIAGNOSTIC_V1 category="
+                                                    + switch (status) {
+                                                        case 200 -> "HTTP200";
+                                                        case 202 -> "HTTP202";
+                                                        case 401 -> "HTTP401";
+                                                        case 403 -> "HTTP403";
+                                                        case 409 -> "HTTP409";
+                                                        case 429 -> "HTTP429";
+                                                        case 503 -> "HTTP503";
+                                                        default -> "OTHER";
+                                                    })
+                            .isEqualTo(409);
                     conflicts++;
                 }
             }

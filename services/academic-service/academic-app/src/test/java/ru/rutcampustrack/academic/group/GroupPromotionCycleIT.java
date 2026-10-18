@@ -707,14 +707,18 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
                 corrected);
         long subjectId =
                 jdbc.queryForObject(
-                        "INSERT INTO subjects(name, type, group_id) "
-                                + "VALUES (?, 'lecture', ?) RETURNING id",
+                        """
+                        WITH subject AS (
+                            INSERT INTO subjects(name,type,group_id)
+                            VALUES (?, 'lecture', ?) RETURNING id,type
+                        ), lesson_type AS (
+                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                            SELECT id,type FROM subject RETURNING subject_id
+                        ) SELECT subject_id FROM lesson_type
+                        """,
                         Long.class,
                         "cutoff-" + System.nanoTime(),
                         corrected);
-        jdbc.update(
-                "INSERT INTO subject_lesson_types(subject_id, lesson_type) VALUES (?, 'lecture')",
-                subjectId);
         long assignmentId =
                 jdbc.queryForObject(
                         "INSERT INTO assignments(teacher_id, subject_id, group_id, "

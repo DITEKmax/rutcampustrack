@@ -11,7 +11,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
@@ -40,6 +42,9 @@ public class AcademicReportTicketController {
                     @Content(
                             mediaType = "application/problem+json",
                             schema = @Schema(implementation = ErrorResponse.class)))
+    @RequireRole(
+            value = {UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT},
+            adminShared = true)
     public ResponseEntity<ReportDownloadTicketResponse> legacy(
             @Valid @RequestBody IssueReportDownloadTicketRequest report) {
         var actor = context.getClaims();

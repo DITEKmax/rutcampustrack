@@ -145,17 +145,17 @@ WITH namespaces AS (
   SELECT 'DATABASE',current_database(),datdba,datacl FROM pg_database
     WHERE datname=current_database()
   UNION ALL SELECT 'SCHEMA',nspname,nspowner,nspacl FROM namespaces
-  UNION ALL SELECT 'RELATION_'||c.relkind,quote_ident(n.nspname)||'.'||quote_ident(c.relname),c.relowner,c.relacl
+  UNION ALL SELECT 'RELATION_'||c.relkind::text,quote_ident(n.nspname)||'.'||quote_ident(c.relname),c.relowner,c.relacl
     FROM pg_class c JOIN namespaces n ON n.oid=c.relnamespace
     WHERE c.relkind IN ('r','p','S','v','m','f')
   UNION ALL SELECT 'COLUMN',quote_ident(n.nspname)||'.'||quote_ident(c.relname)||'.'||quote_ident(a.attname),c.relowner,a.attacl
     FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
     JOIN namespaces n ON n.oid=c.relnamespace WHERE a.attnum>0 AND NOT a.attisdropped AND a.attacl IS NOT NULL
-  UNION ALL SELECT 'FUNCTION_'||p.prokind,quote_ident(n.nspname)||'.'||quote_ident(p.proname)||'('||pg_get_function_identity_arguments(p.oid)||')',p.proowner,p.proacl
+  UNION ALL SELECT 'FUNCTION_'||p.prokind::text,quote_ident(n.nspname)||'.'||quote_ident(p.proname)||'('||pg_get_function_identity_arguments(p.oid)||')',p.proowner,p.proacl
     FROM pg_proc p JOIN namespaces n ON n.oid=p.pronamespace
-  UNION ALL SELECT 'TYPE_'||t.typtype,quote_ident(n.nspname)||'.'||quote_ident(t.typname),t.typowner,t.typacl
+  UNION ALL SELECT 'TYPE_'||t.typtype::text,quote_ident(n.nspname)||'.'||quote_ident(t.typname),t.typowner,t.typacl
     FROM pg_type t JOIN namespaces n ON n.oid=t.typnamespace
-  UNION ALL SELECT 'DEFAULT_'||d.defaclobjtype,COALESCE(n.nspname,'*'),d.defaclrole,d.defaclacl
+  UNION ALL SELECT 'DEFAULT_'||d.defaclobjtype::text,COALESCE(n.nspname,'*'),d.defaclrole,d.defaclacl
     FROM pg_default_acl d LEFT JOIN pg_namespace n ON n.oid=d.defaclnamespace
 ), named AS (
   SELECT kind,name,pg_get_userbyid(owner) AS owner,

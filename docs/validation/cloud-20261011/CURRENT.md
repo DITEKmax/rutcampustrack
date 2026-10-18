@@ -5,7 +5,7 @@ Persisted Goal Q031/D037 **IN_PROGRESS**: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018
 [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md), Q033/D038. No deadline/main merge/deploy.
 Branch codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2).
 Starting26cbe5912f6683a81780a831609dbddbc26feba4; published/PR verified
-**658abf26be6d1a8eb9c8e13f055273aff162b067**. Source=HEAD+exact owned WIP;
+**8caa3818d246d16a6ecdf2991c13df42cb85f29c**. Source=HEAD+owned WIP;
 source/compile/runtime acceptance remain distinct.
 
 ## Конечный план
@@ -23,36 +23,34 @@ sameDB действуют только в прежней применимост�
 | КТ4 changedchains/monitoring/jobs | 13/15 | 70/83 | 84.34 |
 | КТ5 finalgates/review/handoff | 0/1 | 0/5 | 0 |
 
-| Остаток | Следующее достаточное действие / зависимость |
+| Остаток | Конкретное следующее действие / зависимость |
 | --- | --- |
-| U14.3/.5 | Grants/transfer/archive/proofs/currentrights: конкретный остаток IT/browser; не все190FAIL — дефекты продукта. U14.2 create/credentials/unknownACK accepted658: Rest13+Ownership2+Auth201 PASS, independent applicability. |
-| U14.4/.6 | Два DOCX+короткий период/lost202/reconnect/currentrights. Actual658 accepted1/retried2/queued; proven scope/Auth-under-TX source blocker fixed with same-RR counts guard; runtime pending. |
-| U14.7 | Q033 core4 passed previously; actual658 CLI1FAILED, collector RESULTS/source identity now correct. Primary runtime cause UNKNOWN; minimal existing collector diagnostic pending. |
-| U20.1/.2/.3 | Private menu/headman roster/teacher Today/current binding/revoke with twoDB. Credential19PASS is not menu acceptance; Python/broker bridges FAIL, primary cause pending. |
-| U23.1/.2/.4 | Pyroscope actual DocxRenderer profile/query200 proved, resource budget FAIL; finite measured-budget diagnostic joined. GT prefix is partial; outage/retention/combined resources pending. Homepage/PMM decision accepted. |
-| U25 | Recovery BACKUP stage FAIL/cause UNKNOWN; existing finite hint joined. Final compatible CI/Coverage/Security/OpenAPI/monitoring, risk review and exact SHA handoff. |
+| U14.3/.5 | Grants/transfer/archive/proofs/currentrights: сохранить actual8caa archive4/subjectdelete12/FIRST3 и samearchive recovery PASS; закрыть named Group/race/registry/browser остаток. Fixture fixes не означают продуктовый PASS. |
+| U14.4/.6 | Actual8caa DOCX после navigation получен:18segments/dates/group/firstmark PASS, laststudent «у» check28 FAIL; secondlost202 не достигнут. EducationalTime as-of fix source APPROVE/joined; compile25 PASS; classification3 source APPROVE/joined. Повторить неизменный realDOCX oracle на следующем CI. |
+| U14.7 | Q033 core4 PASS сохранены; actual658 CLI1FAILED. Exact existing collector diagnostic исправлен; actual8caa CLI70 FAIL после cleanup; safe diagnostic CLI_RESULT930, bounded invocation/guard/exit diagnostic joined, actual cause remains UNKNOWN. |
+| U20.1/.2/.3 | Hosted private menu/headman roster/teacherToday/currentbinding/revoke пакет3 source+addressed APPROVE/joined, TS0/AST PASS. Следующий ordinaryCI использует существующий стенд; real Telegram отложен. |
+| U23.1/.2/.4 | Actual8caa realDocx profile/query200 +4 budgets PASS (RSS+56217600B/CPUratio1.01425/disk78225408B); позже persistent-restart Timeout. Dynamicendpoint/hint/stage fix joined; restart/outage/combinedresource proof остаётся. |
+| U25 | Recovery BACKUP/PG_QUERY: four catalog-char casts source APPROVE/joined, runtime pending. Совместимые finalCI/Coverage/Security/OpenAPI/monitoring, risk review и exactSHA handoff. |
 
 ## Текущая работа
 
-658 push39162958494 both browser groups terminalFAIL, cleanup69PASS; actual CLI70FAIL.
-Academic330PASS/190FAIL/1SKIP; Auth201PASS/0FAIL/0skip; monitoring, Security/OpenAPI SUCCESS.
-Named current PASS: real create/ownership, map37, notification27, exportjobs17, registry5;
-browser FIRST3/remaining5/WebKit/maps/admin/geo/helperHW/quickrequest/helper/target paths PASS.
-Archive helper race is stale fixture witness: ACCEPT group lock precedes former APPLY PID.
-Target-only stronger witness source APPROVE/joined; no product-failure claim.
+8caa push39166403893/PR39166410759; OpenAPI SUCCESS. Push browser groups terminalFAIL,
+cleanup69PASS; actualCLI70 FAIL, collector71PASS. Security/OpenAPI SUCCESS, CoverageFAIL;
+Auth/Attendance/Schedule/Monitoring PASS. DuplicatePR browser/CLI terminalFAIL/cleanup69PASS, safe publication boundary достигнут.
+Academic370PASS/150FAIL/1SKIP — не150 продуктовых дефектов. Primary evidence once:
+ignored current-wip/ci-8caa-primary/{12151337823,12151053426,12151410622,12151128110}.
+Actual samearchive recovery: original pending→applied→completed, duplicate unchanged,
+retainedDLQ1/restoration/clock/cleanup PASS. Application recovery отдельно BACKUP/PG_QUERY FAIL.
 
-Joined next bundle: report2 admission-before-RR + current-count coherence (S3 addressed APPROVE);
-Group3 canonical2DB/API/rollback+sameUUID recovery (S3 APPROVE); user-query3 actual fixtures
-(S3 APPROVE), subject test-key fixture, finite Apps/recovery diagnostics. Current21 compiled
-four test overlays PASS64.71s/RSS854482944B; current22 Group/report5 PASS65.90s/RSS931610624B.
-Current23 archive-witness test compile PASS71.65s/RSS863248384B; no tests/runtime.
-Mapper fixture1 uses Boot ObjectMapper, all4 oracles exact; its compile/runtime nextCI.
-Q033 exact failureDiagnostic+44purePASS joined. Existing nonfrozen timestamp source pins
-updated only; downstream Admin source-pin drift remains a separate gate issue.
-No source-only fix closes runtime criteria. Useful658 browser/CLI run preserved to completion.
+Next bundle joined: EducationalTime rendering-asof1; reviewed HW/history canonicalfixtures;
+recovery4casts; nonfrozen Q024static; Apps dynamicendpoint/hints; bot ownprofile bridge;
+hostedU20 existing3files. Group2/UserSearch1 fixtures source APPROVE/joined; finite failure-only race HTTPcategory
+in existingcollector joined, strict409/onewinner/oneconflict unchanged. All original strict race/count/history/data/access assertions retained.
+Current24 testcompile PASS66.31s/RSS854360064B; current25 main+test PASS72.25s/RSS891379712B; current26 main+test PASS66.11s/RSS887980032B. No local runtime.
 Root sole Git/taskdocs/matrix; [resources/owners](resources.md), [boundary protocol](BOUNDARY-PROTOCOL-20261018.md).
-Cached6 precommit PASS21paths/sourceDriftNONE. Next: one coherent push/CI;
-parallel bounded remaining RCA.
+Next coherent publish after cachedchecks; Q033 invocation/guard/exit diagnostic joined (48purePASS,
+execution/oracles unchanged). IndependentGrpc21 fixture
+setup correction proceeds separately and does not delay this ready batch.
 Local Docker/DB/imagepull NOT_RUN: workspace<4GiB reserve/VFSsameFS; no cleanup/reset/prune.
 Foreign25 preserved. History once in [attempts](attempts.ndjson); exact WIP in ignored
 current-wip/latest-checkpoint.safe.json. [Decisions](decisions.md), [questions](questions.md).

@@ -1,7 +1,9 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { lstatSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { BrowserContext, Download, Page, Request, Response, TestInfo } from '@playwright/test';
 import {
   test as mobileTest,
@@ -5785,4 +5787,400 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
       }
     },
   );
+});
+
+// Native bot acceptance uses the same owned services and genuine dataset commands as the clients.
+// Only the fixture holds user/admin bearers; the Python process receives two directed bot capabilities.
+test('actual private bot menu roster and teacher Today use hosted current authority', async ({
+  activeHeadmanDataset: dataset,
+}) => {
+  const run = process.env.GITHUB_RUN_ID;
+  const attempt = process.env.GITHUB_RUN_ATTEMPT;
+  const root = resolve(__dirname, '../../..');
+  if (
+    process.env.RCT_E2E_BOT_ROLE_MENU !== 'true' ||
+    process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
+    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+    process.env.CI !== 'true' ||
+    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+    root !== process.env.GITHUB_WORKSPACE ||
+    !run ||
+    !/^[1-9][0-9]*$/.test(run) ||
+    !attempt ||
+    !/^[1-9][0-9]*$/.test(attempt) ||
+    process.getuid?.() === undefined ||
+    process.getgid?.() === undefined
+  )
+    throw new Error('Hosted bot acceptance requires the owned disposable client lane');
+
+  function docker(args: string[]): Buffer {
+    try {
+      return execFileSync('docker', args, {
+        timeout: 5000,
+        maxBuffer: 65536,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      throw new Error('Owned bot fixture Docker operation failed');
+    }
+  }
+  const networkName = 'rct-e2e_private_net';
+  const network = JSON.parse(docker(['network', 'inspect', networkName]).toString('utf8'))[0];
+  const gateway = network.IPAM?.Config?.[0]?.Gateway;
+  if (
+    network.Name !== networkName ||
+    network.Labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    network.Labels?.['com.docker.compose.network'] !== 'private_net' ||
+    typeof gateway !== 'string' ||
+    !/^(?:10|172|192)\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}$/.test(gateway)
+  )
+    throw new Error('Owned bot fixture network identity unavailable');
+  const image = `rct/notification-bot:u20-${run}-${attempt}`;
+  const containerName = `rct-u20-bot-${run}-${attempt}`;
+  const mounts = [
+    ['auth-server.crt', '/run/u20/auth.crt'],
+    ['mobile-bff-server.crt', '/run/u20/read.crt'],
+    ['auth-secrets/bot-to-auth-token', '/run/u20/auth-token'],
+    ['auth-secrets/bot-to-read-token', '/run/u20/read-token'],
+  ]
+    .map(([file, target]) => {
+      const source = resolve(root, 'tests/e2e/infra/certs', file);
+      const info = lstatSync(source);
+      if (!info.isFile() || info.isSymbolicLink() || info.size <= 0 || info.size > 8192)
+        throw new Error('Owned bot fixture capability file unavailable');
+      return ['--mount', `type=bind,source=${source},target=${target},readonly`];
+    })
+    .flat();
+  const runnerSource = resolve(root, 'services/notification-bot/tests/np01_bridge_runner.py');
+  const runnerFile = lstatSync(runnerSource);
+  if (
+    !runnerFile.isFile() ||
+    runnerFile.isSymbolicLink() ||
+    runnerFile.size <= 0 ||
+    runnerFile.size > 65536
+  )
+    throw new Error('Owned bot fixture runner source unavailable');
+
+  // Every mutation below targets only IDs created by this dataset. Unknown outcomes fail the lane;
+  // they are never retried as a new command or compensated through SQL.
+  const emptyTeacher = await dataset.user('TEACHER');
+  const emptyHeadman = await dataset.user('STUDENT', dataset.otherGroup.id);
+  await dataset.admin.call('PUT', `/api/academic/groups/${dataset.otherGroup.id}/headman`, {
+    studentId: emptyHeadman.id,
+    expectedHeadmanId: null,
+  });
+  const mixedGroup = await dataset.admin.call(
+    'POST',
+    '/api/academic/groups/registry',
+    {
+      alphabeticCode: [...randomBytes(4)]
+        .map((byte) => 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ'[byte % 27])
+        .join(''),
+      numericCode: `1${10 + (randomBytes(1)[0] % 90)}`,
+      trainingDurationYears: 4,
+    },
+    [201],
+  );
+  const mixed = await dataset.user('STUDENT', mixedGroup.id);
+  await dataset.admin.call('PUT', `/api/academic/groups/${mixedGroup.id}/headman`, {
+    studentId: mixed.id,
+    expectedHeadmanId: null,
+  });
+  await dataset.admin.call('PUT', `/api/academic/users/${mixed.id}/roles/TEACHER`, {
+    status: 'ACTIVE',
+    employeeNumber: `E2E-${randomUUID().slice(0, 20)}`,
+  });
+  const mixedProfile = await dataset.admin.call(
+    'GET',
+    `/api/academic/users/${mixed.id}/admin-access`,
+  );
+  await dataset.admin.call('PUT', `/api/academic/users/${mixed.id}/admin-access`, {
+    mode: 'LIMITED',
+    permissions: ['USERS_VIEW'],
+    expectedVersion: mixedProfile.version,
+  });
+  await dataset.admin.call('PATCH', `/api/academic/users/${dataset.limitedAdmin.id}`, {
+    telegramId: dataset.limitedAdmin.telegramId,
+  });
+  const lessonId = Number(dataset.lesson.physicalLessonId);
+  const reportPath = `/api/attendance/reports/lesson/${lessonId}`;
+  let report = await dataset.headmanActor.call('GET', reportPath);
+  for (const [userId, status] of [
+    [dataset.student.id, 'ABSENT'],
+    [dataset.assistant.id, 'PRESENT'],
+  ] as const) {
+    const entry = report.entries.find((row: { userId: number }) => Number(row.userId) === userId);
+    if (!entry || entry.status !== null || entry.markRevision !== null)
+      throw new Error('Hosted bot fixture requires initially unmarked owned rows');
+    await dataset.headmanActor.call(
+      'PUT',
+      `/api/attendance/lessons/${lessonId}/students/${userId}`,
+      {
+        status,
+        expectedStatus: 'EMPTY',
+        expectedRevision: 'EMPTY',
+      },
+    );
+  }
+  report = await dataset.headmanActor.call('GET', reportPath);
+  const ownUsers = [dataset.student, dataset.headman, dataset.assistant];
+  const roster = report.entries.map((entry: { userId: number; status: string | null }) => {
+    const user = ownUsers.find((value) => value.id === Number(entry.userId));
+    if (!user) throw new Error('Hosted bot fixture returned a foreign roster row');
+    return {
+      uid: user.id,
+      display_name: user.displayName,
+      status: entry.status?.toUpperCase() ?? '',
+      record_present: entry.status !== null,
+    };
+  });
+  expect(roster.length).toBe(ownUsers.length);
+  const snapshot = (
+    entries: { userId: number; status: string | null; markRevision: string | null }[],
+  ) =>
+    entries
+      .map((row) => [Number(row.userId), row.status, row.markRevision])
+      .sort((left, right) => Number(left[0]) - Number(right[0]));
+  const beforeAttendance = snapshot(report.entries);
+  const own = (user: { id: number; telegramId: number }) => ({
+    uid: user.id,
+    chat: user.telegramId,
+  });
+  const fixtures = {
+    student: own(dataset.student),
+    headman: own(dataset.headman),
+    teacher: own(dataset.teacher),
+    empty_teacher: own(emptyTeacher),
+    empty_headman: own(emptyHeadman),
+    mixed: own(mixed),
+    admin: own(dataset.limitedAdmin),
+    lesson_id: lessonId,
+    roster,
+    group_name: dataset.group.name,
+    subject_name: dataset.subject.name,
+  };
+  const controlToken = randomBytes(32).toString('base64url');
+  const actions = ['fixtures', 'rebind_teacher', 'revoke_headman', 'finish'] as const;
+  let nextAction = 0;
+  let busy = false;
+  let controlFailed = false;
+  let child: ReturnType<typeof spawn> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let cleanupFailed = false;
+  let primaryFailure: unknown;
+  let controlSettled = Promise.resolve();
+  let finishControl: (() => void) | undefined;
+  const control = createServer({ maxHeaderSize: 4096 }, async (request, response) => {
+    const supplied = request.headers['x-np01-control'];
+    const authenticated =
+      typeof supplied === 'string' &&
+      /^[A-Za-z0-9_-]{43}$/.test(supplied) &&
+      timingSafeEqual(Buffer.from(supplied), Buffer.from(controlToken));
+    if (
+      !authenticated ||
+      request.method !== 'POST' ||
+      busy ||
+      controlFailed ||
+      nextAction >= actions.length ||
+      request.url !== `/control/${actions[nextAction]}` ||
+      request.headers['transfer-encoding'] ||
+      (request.headers['content-length'] !== undefined && request.headers['content-length'] !== '0')
+    ) {
+      response.writeHead(403);
+      response.end();
+      return;
+    }
+    busy = true;
+    controlSettled = new Promise<void>((ready) => {
+      finishControl = ready;
+    });
+    try {
+      const action = actions[nextAction];
+      let result: unknown;
+      if (action === 'fixtures') result = fixtures;
+      else if (action === 'rebind_teacher') {
+        const chat = 8_000_000_000 + randomBytes(4).readUInt32BE(0);
+        await dataset.admin.call('PATCH', `/api/academic/users/${dataset.teacher.id}`, {
+          telegramId: chat,
+        });
+        const actual = await dataset.admin.call('GET', `/api/academic/users/${dataset.teacher.id}`);
+        if (actual.telegramId !== chat) throw new Error('Owned binding outcome unavailable');
+        result = { chat };
+      } else if (action === 'revoke_headman') {
+        await dataset.admin.call('PUT', `/api/academic/groups/${dataset.group.id}/headman`, {
+          studentId: dataset.assistant.id,
+          expectedHeadmanId: dataset.headman.id,
+        });
+        result = { completed: true };
+      } else {
+        const replacement = await admit(dataset.request, dataset.assistant, 'HEADMAN');
+        const after = await replacement.call('GET', reportPath);
+        if (!isDeepStrictEqual(snapshot(after.entries), beforeAttendance))
+          throw new Error('Bot reads changed owned attendance');
+        result = { attendance_unchanged: true };
+      }
+      nextAction++;
+      response.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify(result));
+    } catch {
+      controlFailed = true;
+      response.writeHead(503, { 'Cache-Control': 'no-store' });
+      response.end();
+    } finally {
+      busy = false;
+      finishControl?.();
+      finishControl = undefined;
+    }
+  });
+  control.requestTimeout = 5000;
+  control.headersTimeout = 5000;
+  control.maxRequestsPerSocket = 8;
+  try {
+    await new Promise<void>((ready, reject) => {
+      control.once('error', reject);
+      control.listen(0, gateway, ready);
+    });
+    const address = control.address();
+    if (!address || typeof address === 'string')
+      throw new Error('Owned control address unavailable');
+    const args = [
+      'run',
+      '--rm',
+      '--name',
+      containerName,
+      '--label',
+      `rct.u20.owner=${run}-${attempt}`,
+      '--pull=never',
+      '--network',
+      networkName,
+      '--read-only',
+      '--cap-drop',
+      'ALL',
+      '--security-opt',
+      'no-new-privileges:true',
+      '--log-driver',
+      'none',
+      '--cpus',
+      '1',
+      '--memory',
+      '256m',
+      '--pids-limit',
+      '64',
+      '--user',
+      `${process.getuid!()}:${process.getgid!()}`,
+      '--tmpfs',
+      '/tmp:rw,noexec,nosuid,size=16m',
+      ...mounts,
+      '--mount',
+      `type=bind,source=${runnerSource},target=/run/u20/runner.py,readonly`,
+      '--env',
+      'PYTHONPATH=/app',
+      '--env',
+      'PYTHONDONTWRITEBYTECODE=1',
+      '--env',
+      'NP01_AUTH_SERVICE_CA=/run/u20/auth.crt',
+      '--env',
+      'NP01_READ_SERVICE_CA=/run/u20/read.crt',
+      '--env',
+      'NP01_AUTH_SERVICE_TOKEN_FILE=/run/u20/auth-token',
+      '--env',
+      'NP01_READ_SERVICE_TOKEN_FILE=/run/u20/read-token',
+      '--env',
+      `NP01_CONTROL_URL=http://${gateway}:${address.port}`,
+      '--env',
+      'NP01_CONTROL_TOKEN',
+      '--entrypoint',
+      'python',
+      image,
+      '/run/u20/runner.py',
+      '--hosted-role-menu',
+    ];
+    const output: Buffer[] = [];
+    let bytes = 0;
+    const childResult = new Promise<number | null>((ready, reject) => {
+      child = spawn('docker', args, {
+        env: { PATH: process.env.PATH, NP01_CONTROL_TOKEN: controlToken },
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      child.stdout!.on('data', (chunk: Buffer) => {
+        bytes += chunk.length;
+        if (bytes > 8192) child!.kill('SIGKILL');
+        else output.push(chunk);
+      });
+      child.once('error', () => reject(new Error('Hosted bot child could not start')));
+      child.once('close', ready);
+      timer = setTimeout(() => {
+        child!.kill('SIGKILL');
+      }, 50000);
+    });
+    const exit = await childResult;
+    clearTimeout(timer);
+    let facts: Record<string, unknown>;
+    try {
+      facts = JSON.parse(Buffer.concat(output).toString('utf8'));
+    } catch {
+      throw new Error('Hosted bot child omitted safe outcomes');
+    }
+    expect(exit).toBe(0);
+    expect(
+      facts.qualified === true &&
+        facts.actual_auth_tls === true &&
+        facts.failures === 0 &&
+        facts.phase === 'hosted_role_menu_complete' &&
+        facts.native_choice === 'NOT_APPLICABLE',
+    ).toBe(true);
+    expect(nextAction === actions.length && !controlFailed && !busy).toBe(true);
+    // Canonical nonoverlapping LessonSlot times + unique physical group/day/slot + one own
+    // headman group make CHOOSE unreachable here. Existing defensive choice/revoke units remain.
+  } catch (error) {
+    primaryFailure = error;
+    throw error;
+  } finally {
+    if (timer) clearTimeout(timer);
+    if (child && child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+    try {
+      const remaining = docker(['ps', '-aq', '--filter', `name=^/${containerName}$`])
+        .toString('utf8')
+        .trim();
+      if (remaining) {
+        const target = JSON.parse(
+          docker(['inspect', '--format', '{{json .Config.Labels}}', remaining]).toString('utf8'),
+        );
+        if (target['rct.u20.owner'] !== `${run}-${attempt}`)
+          throw new Error('Owned bot cleanup refused');
+        docker(['rm', '-f', remaining]);
+      }
+    } catch {
+      cleanupFailed = true;
+    }
+    control.closeAllConnections();
+    await new Promise<void>((ready) => control.close(() => ready()));
+    if (busy) {
+      let wait: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          controlSettled,
+          new Promise<never>((_, reject) => {
+            wait = setTimeout(
+              () => reject(new Error('Owned control outcome remains unknown')),
+              5000,
+            );
+          }),
+        ]);
+      } catch {
+        cleanupFailed = true;
+      } finally {
+        if (wait) clearTimeout(wait);
+      }
+    }
+    if (cleanupFailed) {
+      const failure = new Error('Owned bot fixture cleanup failed');
+      if (primaryFailure)
+        throw new AggregateError(
+          [primaryFailure, failure],
+          'Hosted bot acceptance and cleanup failed',
+        );
+      throw failure;
+    }
+  }
 });

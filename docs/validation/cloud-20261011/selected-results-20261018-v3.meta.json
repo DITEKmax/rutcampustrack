@@ -1,0 +1,60 @@
+{
+  "version": "v3-КТ1 FROZEN Q033 delta",
+  "utc": "2026-10-18T16:52:57.512904+00:00",
+  "base": "26cbe5912f6683a81780a831609dbddbc26feba4",
+  "goal": "TASK-ADDENDUM-SPLIT-APPS-20261018.md",
+  "historicalV1": {
+    "closed": 23,
+    "total": 25,
+    "closedWeight": 110,
+    "weight": 123,
+    "percent": 89.43
+  },
+  "mandatoryRows": 39,
+  "mandatoryWeight": 196,
+  "closed": 24,
+  "closedWeight": 114,
+  "percent": 58.16,
+  "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
+  "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
+  "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking.",
+  "previousVersion": "selected-results-20261018-v2.csv",
+  "historicalV2": {
+    "closed": 24,
+    "total": 38,
+    "closedWeight": 114,
+    "weight": 188,
+    "percent": 60.64
+  },
+  "delta": "OwnerQ033/D038 adds ONLYU14.7 weight8 operatorfirstadmin trustroot+2DBrecovery. 38+1=39;188+8=196; no parent-childdoublecredit. Weightfixedbeforeimplementation afterboundedsource design; v1/v2 preserved.",
+  "byCheckpoint": {
+    "КТ2": {
+      "closed": 9,
+      "total": 14,
+      "weight": 37,
+      "denominator": 71,
+      "percent": 52.11
+    },
+    "КТ3": {
+      "closed": 2,
+      "total": 9,
+      "weight": 7,
+      "denominator": 37,
+      "percent": 18.92
+    },
+    "КТ4": {
+      "closed": 13,
+      "total": 15,
+      "weight": 70,
+      "denominator": 83,
+      "percent": 84.34
+    },
+    "КТ5": {
+      "closed": 0,
+      "total": 1,
+      "weight": 0,
+      "denominator": 5,
+      "percent": 0.0
+    }
+  }
+}

@@ -240,3 +240,7 @@ No falsegreen/assertion/timeouts/oracle/gate weakening/wiringcoveragecampaign.
 Standingnormalpush currentbranch/draftPR/ordinaryCI действует; PRattach еслиtoolдоступен,
 прошлыйfailedattach не потеря PR. Goal complete только при всех mandatory actual
 criteria/review/currentgates; старыйостаток/существенныйnewscope не исчезает изотчёта.
+
+## Уточнение Q033 / D038 — initial administrator (18.10.2026)
+
+Владелец включил одноразовый operator-only initial-admin bootstrap как код: секрет из защищённого файла, без публичного endpoint/стандартного пароля, отказ при уже созданном администраторе; согласованная двухбазовая готовность/recovery и credential lifecycle сохраняются. Production запуск не разрешён. Решение и граница — decisions.md D038, BOUNDARY-PROTOCOL-20261018.md; новый результат учитывается versioned delta матрицы до реализации. Тестовый baseline browserstand не является production bootstrap.

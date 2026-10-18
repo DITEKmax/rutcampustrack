@@ -24,9 +24,15 @@ GIB = 1024**3
 SERVICES = {"glitchtip-db", "glitchtip", "pyroscope", "homepage", "observer-proxy"}
 MARKER = "synthetic-private@example.invalid"
 CURRENT_STAGE = "source"
+BROWSER_REASONS = {"NODE_MODULE_NOT_FOUND", "VITE_IMPORT", "BROWSER_LAUNCH",
+                   "BROWSER_TIMEOUT", "BROWSER_ASSERTION"}
+# Only known call/assertion lines in the current, source-bound browser fixture.
+BROWSER_SOURCE_LINES = {11, 12, 16, 17, 18, 54, 56, 57, 58, 59, 60, 61, 64, 65, 67,
+                        69, 70, 71, 72, 73, 81, 82, 83, 84, 85, 87, 88, 89, 92, 102,
+                        105, 106, 107, 120, 121}
 DIAGNOSTIC_REASONS = {"INVALID_MOUNT", "PERMISSION_DENIED", "UNHEALTHY_DEPENDENCY",
                       "OUT_OF_MEMORY", "READ_ONLY_FS", "NGINX_CONFIG", "PYRO_CONFIG", "DATABASE",
-                      "GLITCHTIP_MODULE_PATH"}
+                      "GLITCHTIP_MODULE_PATH"} | BROWSER_REASONS
 
 
 def closed_reason(text, service=None):
@@ -46,6 +52,24 @@ def closed_reason(text, service=None):
     if service == "glitchtip":
         patterns.append(("GLITCHTIP_MODULE_PATH", r"(?m)^modulenotfounderror: no module named 'glitchtip'\r?$"))
     return next((label for label, pattern in patterns if re.search(pattern, text.lower())), "UNKNOWN")
+
+
+def closed_browser_failure(text, returncode):
+    patterns = [
+        ("NODE_MODULE_NOT_FOUND", r"(?m)^(?:Error \[ERR_MODULE_NOT_FOUND\]:|  code: '(?:ERR_MODULE_NOT_FOUND|MODULE_NOT_FOUND)',?$)"),
+        ("VITE_IMPORT", r"(?m)^(?:Error: )?Failed to resolve import "),
+        ("BROWSER_LAUNCH", r"(?m)^browserType\.launch: "),
+        ("BROWSER_TIMEOUT", r"(?m)^(?:locator\.(?:waitFor|click)|page\.(?:goto|waitForFunction|evaluate)|apiRequestContext\.get): Timeout [0-9]{1,6}ms exceeded\."),
+        ("BROWSER_ASSERTION", r"(?m)^AssertionError \[ERR_ASSERTION\]:"),
+    ]
+    matches = [(match.start(), label) for label, pattern in patterns
+               if (match := re.search(pattern, text))]
+    frames = re.finditer(r"(?m)^[ \t]+at (?:file://)?[^\r\n]*?/infra/observability-apps/browser\.mjs:([0-9]{1,3}):[0-9]{1,4}\)?(?: \{)?\r?$", text)
+    source_line = next((line for match in frames if (line := int(match[1])) in BROWSER_SOURCE_LINES), None)
+    native_exit = type(returncode) is int
+    return {"state": "LIVE" if returncode is None else "EXITED" if native_exit else "UNKNOWN",
+            "exit_code_category": "UNKNOWN" if not native_exit else "ZERO" if returncode == 0 else "SIGNAL" if returncode < 0 else "NONZERO",
+            "reason": min(matches)[1] if matches else "UNKNOWN", "source_line": source_line}
 
 
 def safe_failure(error):
@@ -264,6 +288,15 @@ def main():
             require(re.fullmatch(r"127\.0\.0\.1:[0-9]+", address), "Non-loopback test port")
             return "http://" + address
 
+        def browser_hint():
+            text = ""
+            try:
+                with (work / "browser.log").open("rb") as stream:
+                    text = stream.read(64 * 1024).decode("utf-8", errors="replace")
+            except OSError:
+                pass
+            return closed_browser_failure(text, browser.poll())
+
         def manage(code):
             command = ["exec", "-T", "glitchtip", "/bin/sh", "/observer/start.sh", "python", "manage.py", "shell", "-c", code]
             response = docker(*command, timeout=60).stdout
@@ -388,7 +421,12 @@ def main():
             browser_env = dict(environment)
             browser_log = (work / "browser.log").open("w")
             browser = subprocess.Popen(["node", str(ROOT / "infra/observability-apps/browser.mjs"), origin, keys["1"], str(work)], cwd=ROOT, env=browser_env, stdout=browser_log, stderr=subprocess.STDOUT)
-            wait_for(lambda: (work / "browser-ready.json").exists() and browser.poll() is None, 120)
+            def browser_ready():
+                returncode = browser.poll()
+                if returncode is not None:
+                    raise subprocess.CalledProcessError(returncode, "node", output=browser_hint()["reason"])
+                return (work / "browser-ready.json").exists()
+            wait_for(browser_ready, 120)
 
             def groups():
                 # Evaluate structured stored frames inside the isolated receiver; export booleans only.
@@ -476,6 +514,8 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                        "qualification": "Actual isolated GlitchTip/Java+Vue SDKs/CPU flamegraph/operator links. Synthetic Vue operations exercise the shared adapter under PWA/TMA prefixes; not a full authenticated business journey. Effective retention is checked; seven-day wall-clock expiry is not elapsed. 16GiB Cloud capacity is not a 32GiB VPS benchmark."}
         except BaseException as error:
             primary_failure = {**safe_failure(error), "stage": CURRENT_STAGE}
+            if browser is not None:
+                primary_failure["browser_failure"] = browser_hint()
             # Diagnose only this already guarded synthetic namespace, before cleanup.
             # No State.Error, environment, IDs, log text, arguments or URLs leave memory.
             try:

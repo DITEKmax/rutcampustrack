@@ -202,3 +202,29 @@ pending credentials denied and final artifact authorization. Meaningful real DB/
 RPC tests required; mocks and schema/source approval do not establish end-to-endPASS.
 Old U15 sameDB evidence remains historical, new twoDB preservation separateU15.1.
 B013/B014/B015 FROZEN: no equivalent forbidden caller/mutation/proof rerun.
+
+## Disposable browser baseline — scoped contract (design review pending)
+
+1. Goal: existing client/lifecycle UI paths start with their coherent synthetic baseline; all user assertions remain.
+2. Evidence: 9928 Boot succeeds; Link fails exactly «E2E teacher seed is missing». New migrationchains exclude old V2 actors, not a table/ACL error.
+3. Owner/scope: ac9_auth_it; retained /tmp/rct-s19-auth. Only new tests/e2e/infra/docker-compose.synthetic-baseline.yml, baseline/{auth,academic}/afterMigrate__e2e_synthetic_*_baseline.sql and the existing CI Boot step.
+4. Order: each own production Flyway chain -> own migrator callback -> normal JPA/HTTP startup. Auth identities/grants/FULLprofile/COMMITTED receipt/catalog; Academic profiles/group/membership history/semester/campus use the same existing fixture IDs/logins.
+5. Invariants: explicit disposable-scope plus database/principal guards; ownDB transactions; sequences advance; no sharedSQL/foreignjoins/disabledguards/sessions/JWTs. Real catalog emission after coherent Auth receipt; Academic consumes after its own baseline is ready.
+6. Pattern: trusted initial fixture analogous to current Java twoDB fixtures, not a user provisioning operation. No production callback mount, users or published SQL changes; preserve TEST_USERS/Link seed/assertions.
+7. Repeat: immutable fixture/provision marker permits NO reset of mutable credentials/domain state; partial or conflicting initialization fails closed. Both sides finish before UI; no silent ON CONFLICT repair.
+8. Verification: source/compose/SQL boundaries, actual isolated fresh/repeat/conflict checks and existing Link/create/login/DOCX UI paths; no mocked runtime PASS.
+9. Exclusions: no real first-admin setup (Q033 separate), grants widening, unrelated workflow/config/consumer rewrite, reset or B013/B014/B015 caller. Root+independent S3 design GO before implementation; final changed-risk source review thereafter.
+
+## U14.7 / Q033 operator bootstrap — DESIGN GO / implementation active
+
+1. Goal: one explicit operator command creates the first FULL administrator with matching Auth identity/credentials and Academic profile; no production invocation in this task.
+2. Evidence: current CREATE requires a live admin; fresh split chains create no sample actors. Actorless bootstrap is a separate trust root, not a fabricated session or normal create bypass. Weight8 fixed before code; v3 adds only U14.7.
+3. Owner/inventory: s19_edge_it_diagnosis; own service bootstrap/InitialAdministrator{Auth,Academic}Command.java; AuthIdentityOperationStore ordinary-origin filters; reserved Auth V13/Academic V11 migrations; exact SecurityConfig.passwordEncoder static factory modifier; scripts/bootstrap-initial-admin.py; Academic InitialAdministratorBootstrapIT; one Python orchestration/privacy unittest. No e2e baseline/CI/config/generated overlap.
+4. Protocol: Auth prepare singleton stableUID/PENDING/fenced -> Academic apply+immutable receipt -> ownDB verify -> Auth grant/FULLprofile/targetreceipt/COMMITTED/unfence atomically -> Academic realcatalog finalize/readback. No DB locks held across subprocess calls. Exact retry never rotates credentials or resets later user changes.
+5. Trust: service-specific offline commands connect only to their own DB via explicit operator migration principals. Strict bootstrap-origin constraints and DB guard deny ordinaryruntime inserts/updates; ordinary RPC cannot lookup/commit bootstrap operations. Operator IPC is private, not a network receipt API; Academic never receives password.
+6. Reuse: existing PasswordEncoder factory/guard/PasswordPolicy and actual initial_password storage/clear lifecycle; existing operation/target/fence/catalog/projection. PropertiesLauncher main excludes normal application/component scanning/listeners/schedulers/consumers/Flyway. No new service/framework.
+7. Acceptance: refuse other administrator/reservation; exact own retry and unknown/crash/concurrency preserve UID/result; admission waits committed Academic profile; live firstlogin/FULLprofile/firstpasswordchange work. stdout only bounded operationId/UID/status; no secret/hash/SQL/config/stack. Protected regular secretfile with failclosed permissions/size/symlink rules.
+8. Checks: real synthetic twoDB fresh/repeat/upgrade/preservation, partial-crash/lostresponse/existingadmin/mismatchedrequest-receipt/concurrency; ordinaryruntime DML/RPC deny; privacy/wrapper checks. Appropriate compile before DB IT; no production credentials or execution.
+9. Exclusions: public HTTP/RPC/startup bootstrap/defaultpassword/sharedSQL/FDW/fakeactor/session/new generic saga, normal provisioning policy changes, production/deploy, B013/B014/B015 mutation/caller. S3 design GO before implementation, then one independent substantial source review and addressed findings recheck.
+
+Q033 implementation conditions accepted by independent reviewer: ordinary negative/noop/reconcile paths treat bootstrap UUID as reserved; ownDB/session_user operator guard and shared authority/UUID lock; committed retry returns stored result without checking an old password or resetting later state; private Academic payload excludes the secretfile/password; finalize preserves newer projections. Singleton receipt blocks recreation after revoke/archive. Source has no CredentialVault: preserve actual restricted initial_password lifecycle, without inventing new crypto. The ninth routine file only makes the existing @Bean factory static; name/type/body/parameters unchanged. No extra user result/weight.

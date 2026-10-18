@@ -9,33 +9,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import ru.rutcampustrack.academic.AcademicApplication;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekRequest;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
 import ru.rutcampustrack.academic.grpc.StudentHomeworkTestIdentity;
-import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
-import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.LocalDate;
@@ -57,48 +51,19 @@ import java.util.concurrent.TimeUnit;
 /**
  * Real PostgreSQL proof for the student desired-state completion commands.
  *
- * <p>This class owns a fresh, non-reused container and invokes the Spring service proxy from
- * independent executor threads. The assertions therefore cover transaction boundaries, the native
+ * <p>The common owned split fixture resets both non-reused databases before each test. Independent
+ * executor threads invoke the Spring service proxy, preserving transaction boundaries, the native
  * unique-key conflict path and the observable rows that remain after concurrent commands.
  */
-@Testcontainers
 @SpringBootTest(
         classes = AcademicApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ActiveProfiles("test")
-@Import(InternalJwtTestConfig.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class HomeworkStudentCompletionConcurrencyIT {
+class HomeworkStudentCompletionConcurrencyIT extends AbstractAcademicIntegrationTest {
 
     private static final int CONCURRENT_COMMANDS = 8;
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
     private static final UUID SESSION_ID = UUID.fromString("44444444-4444-4444-8444-444444444444");
-
-    @Container
-    static final PostgreSQLContainer<?> POSTGRES =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withDatabaseName("academic_homework_it")
-                    .withUsername("rct_user")
-                    .withPassword("rct_dev_pass");
-
-    @DynamicPropertySource
-    static void databaseProperties(DynamicPropertyRegistry registry) {
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add(
-                "spring.autoconfigure.exclude",
-                () ->
-                        "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
-        registry.add("grpc.server.port", () -> "-1");
-    }
-
-    @MockitoBean RabbitTemplate rabbitTemplate;
-
-    @MockitoBean OutboxEventSender outboxEventSender;
 
     @Autowired private JdbcTemplate jdbc;
 
@@ -118,25 +83,18 @@ class HomeworkStudentCompletionConcurrencyIT {
     private long studentId;
     private long otherStudentId;
     private long homeworkId;
+    private SelectedActor student;
 
     @BeforeEach
     void createIsolatedFixture() {
         String suffix = UUID.randomUUID().toString().replace("-", "");
-        groupId =
-                jdbc.queryForObject(
-                        "INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id",
-                        Long.class,
-                        "ГР-"
-                                + suffix.substring(0, 3).toUpperCase()
-                                + "-"
-                                + suffix.substring(3, 6));
-        semesterId =
-                jdbc.queryForObject(
-                        "SELECT id FROM semesters WHERE is_active = true ORDER BY id LIMIT 1",
-                        Long.class);
-        studentId = insertStudent("student-a-" + suffix.substring(0, 20), "Студент А", groupId);
-        otherStudentId =
-                insertStudent("student-b-" + suffix.substring(0, 20), "Студент Б", groupId);
+        groupId = identityFixture.canonical().groupId();
+        semesterId = identityFixture.canonical().semesterId();
+        var administrator =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        studentId = insertStudent("Студент А", groupId, administrator);
+        otherStudentId = insertStudent("Студент Б", groupId, administrator);
+        student = identityFixture.select(studentId, AuthRole.STUDENT);
         subjectId =
                 jdbc.queryForObject(
                         "WITH inserted_subject AS ("
@@ -436,29 +394,16 @@ class HomeworkStudentCompletionConcurrencyIT {
     }
 
     private InternalJwtClaims claims() {
-        return new InternalJwtClaims(
-                studentId, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", groupId, false, false);
+        return student.claims();
     }
 
-    private long insertStudent(String login, String firstName, long group) {
-        long id =
-                jdbc.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
-                            + " status, is_headman, group_id, password_changed, created_at,"
-                            + " updated_at) VALUES (?, NULL, 'HomeworkDb', ?, 'student'::user_role,"
-                            + " 'active'::account_status, false, ?, false, NOW(), NOW()) RETURNING"
-                            + " id",
-                        Long.class,
-                        login,
-                        firstName,
-                        group);
-        jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at,"
-                    + " updated_at) VALUES (?, 'student'::user_role, 'active'::account_status, ?,"
-                    + " NOW(), NOW())",
-                id,
-                group);
-        return id;
+    private long insertStudent(String firstName, long group, SelectedActor administrator) {
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                "HomeworkDb", firstName, null, UserRole.STUDENT, group, null, null),
+                        administrator)
+                .userId();
     }
 
     private void insertCompletion(long student) {

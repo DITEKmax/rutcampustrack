@@ -54,7 +54,11 @@ public final class AcademicIdentityCoordinator {
                 } catch (io.grpc.StatusRuntimeException denied) {
                     var reason = definiteRejection(denied.getStatus().getCode());
                     if (reason == null) throw denied;
-                    rejection = store.prepareRejection(operation, reason);
+                    String code = confirmedConflictCode(denied);
+                    rejection =
+                            code == null
+                                    ? store.prepareRejection(operation, reason)
+                                    : store.prepareRejection(operation, reason, code);
                     if (rejection == null) return advance(store.find(operation.id()));
                     outsideTransaction();
                     prepared = auth.reject(rejection);
@@ -148,6 +152,18 @@ public final class AcademicIdentityCoordinator {
                 || !target.getGrantsList().equals(requested.getDesiredGrantsList())
                 || target.getGrantsList().stream().anyMatch(g -> g.getGrantId() <= 0))
             throw unavailable();
+    }
+
+    private static String confirmedConflictCode(io.grpc.StatusRuntimeException failure) {
+        if (failure.getStatus().getCode() != Status.Code.ALREADY_EXISTS
+                || failure.getTrailers() == null) return null;
+        String code =
+                failure.getTrailers()
+                        .get(
+                                io.grpc.Metadata.Key.of(
+                                        "x-rct-error-code",
+                                        io.grpc.Metadata.ASCII_STRING_MARSHALLER));
+        return "TELEGRAM_ID_CONFLICT".equals(code) ? code : null;
     }
 
     private static IdentityOperationRejectionReason definiteRejection(Status.Code code) {
@@ -348,7 +364,17 @@ public final class AcademicIdentityCoordinator {
             Phase phase,
             PrepareIdentityOperationRequest command,
             IdentityOperationResult prepared,
-            List<AcademicIdentityCommitReceipt> receipts) {
+            List<AcademicIdentityCommitReceipt> receipts,
+            String rejectionCode) {
+        public Operation(
+                String id,
+                Phase phase,
+                PrepareIdentityOperationRequest command,
+                IdentityOperationResult prepared,
+                List<AcademicIdentityCommitReceipt> receipts) {
+            this(id, phase, command, prepared, receipts, null);
+        }
+
         public Operation {
             receipts = List.copyOf(receipts);
         }
@@ -373,6 +399,11 @@ public final class AcademicIdentityCoordinator {
 
         RejectUnpreparedIdentityOperationRequest prepareRejection(
                 Operation expected, IdentityOperationRejectionReason reason);
+
+        default RejectUnpreparedIdentityOperationRequest prepareRejection(
+                Operation expected, IdentityOperationRejectionReason reason, String code) {
+            return prepareRejection(expected, reason);
+        }
 
         RejectUnpreparedIdentityOperationRequest pendingRejection(Operation expected);
 

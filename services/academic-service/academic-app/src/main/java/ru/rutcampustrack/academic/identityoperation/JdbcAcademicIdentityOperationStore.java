@@ -628,6 +628,21 @@ UPDATE academic_identity_operation_targets SET committed_academic_revision=?,app
     public RejectUnpreparedIdentityOperationRequest prepareRejection(
             AcademicIdentityCoordinator.Operation expected,
             IdentityOperationRejectionReason reason) {
+        return prepareRejection(expected, reason, null);
+    }
+
+    @Override
+    @Transactional
+    public RejectUnpreparedIdentityOperationRequest prepareRejection(
+            AcademicIdentityCoordinator.Operation expected,
+            IdentityOperationRejectionReason reason,
+            String code) {
+        if (code != null
+                && (!"TELEGRAM_ID_CONFLICT".equals(code)
+                        || reason
+                                != IdentityOperationRejectionReason
+                                        .IDENTITY_OPERATION_REJECTION_REASON_TARGET_CONFLICT))
+            throw Status.INVALID_ARGUMENT.asRuntimeException();
         UUID id = uuid(expected.id());
         if (load(id, true).phase() != AcademicIdentityCoordinator.Phase.ACCEPTED) return null;
         String value =
@@ -639,9 +654,11 @@ UPDATE academic_identity_operation_targets SET committed_academic_revision=?,app
                     default -> throw Status.INVALID_ARGUMENT.asRuntimeException();
                 };
         jdbc.update(
-                "UPDATE academic_identity_operations SET"
+                "UPDATE academic_identity_operations SET rejection_code=CASE WHEN rejection_reason"
+                        + " IS NULL THEN ? ELSE rejection_code END,"
                         + " rejection_reason=coalesce(rejection_reason,?),updated_at=now() WHERE"
                         + " operation_id=? AND phase='ACCEPTED'",
+                code,
                 value,
                 id);
         return rejectionRequest(id);
@@ -1197,7 +1214,7 @@ UPDATE academic_identity_operation_targets SET committed_academic_revision=?,app
     private AcademicIdentityCoordinator.Operation load(UUID id, boolean lock) {
         var operations =
                 jdbc.query(
-                        "SELECT phase,command_payload,auth_prepared_payload FROM"
+                        "SELECT phase,command_payload,auth_prepared_payload,rejection_code FROM"
                                 + " academic_identity_operations WHERE operation_id=?"
                                 + (lock ? " FOR UPDATE" : ""),
                         (rs, n) ->
@@ -1207,7 +1224,8 @@ UPDATE academic_identity_operation_targets SET committed_academic_revision=?,app
                                                 rs.getString("phase")),
                                         command(rs.getBytes("command_payload")),
                                         prepared(rs.getBytes("auth_prepared_payload")),
-                                        List.of()),
+                                        List.of(),
+                                        rs.getString("rejection_code")),
                         id);
         if (operations.size() != 1)
             throw Status.NOT_FOUND
@@ -1236,7 +1254,8 @@ UPDATE academic_identity_operation_targets SET committed_academic_revision=?,app
                 operation.phase(),
                 operation.command(),
                 operation.prepared(),
-                receipts);
+                receipts,
+                operation.rejectionCode());
     }
 
     private static void validateArchiveBinding(

@@ -602,7 +602,9 @@ async def own_homework_main():
                 check(False)
             await denied({**values, "expected_roles_version": values["expected_roles_version"] + 1})
             await denied({**values, "expected_telegram_binding_version": 0})
-            await denied({**values, "expected_telegram_binding_version": values["expected_telegram_binding_version"] + 1})
+            await denied(
+                {**values, "expected_telegram_binding_version": values["expected_telegram_binding_version"] + 1}
+            )
             await denied({**values, "telegram_sender_id": fixtures["foreign"]["chat"]})
 
             _phase = "own_homework_revoked_grant"

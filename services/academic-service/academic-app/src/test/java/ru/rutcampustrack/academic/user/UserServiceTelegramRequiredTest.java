@@ -1,88 +1,37 @@
 package ru.rutcampustrack.academic.user;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationEventPublisher;
-import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
+
+import ru.rutcampustrack.academic.contract.dto.user.*;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
-import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.exception.BadRequestException;
-import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
+import ru.rutcampustrack.academic.identityoperation.*;
+import ru.rutcampustrack.academic.repository.*;
 import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.authauthority.grpc.*;
+import ru.rutcampustrack.authoperations.grpc.*;
 
-/**
- * BUG-006-3 / D-08..D-11: telegramId is required for STUDENT, optional for TEACHER and ADMIN.
- * Validation lives inside {@link UserService#createUser} (guard runs before any repo access) and
- * surfaces a {@link BadRequestException} with {@code field="telegramId"} — so the frontend can
- * highlight the offending control via the Problem-Detail payload.
- */
-@ExtendWith(MockitoExtension.class)
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.function.Function;
+
+/** Existing role-specific input outcomes through the real Academic command producer. */
 class UserServiceTelegramRequiredTest {
-
-    @Mock private UserRepository userRepository;
-    @Mock private HeadmanAssistantRepository headmanAssistantRepository;
-    @Mock private StudentGroupHistoryRepository studentGroupHistoryRepository;
-    @Mock private RequestContext requestContext;
-    @Mock private UserAssembler userAssembler;
-    @Mock private CacheManager cacheManager;
-    @Mock private ApplicationEventPublisher eventPublisher;
-    @Mock private GroupRepository groupRepository;
-    @Mock private SemesterRepository semesterRepository;
-    @Mock private GroupHistoryCoverageRepository coverageRepository;
-    @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
-    @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
-
-    @org.mockito.Spy
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder =
-            new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
-
-    @InjectMocks private UserService service;
-
-    @org.junit.jupiter.api.BeforeEach
-    void managedEnrollmentFixture() {
-        org.springframework.test.util.ReflectionTestUtils.setField(
-                service, "adminAccess", adminAccess);
-        org.springframework.test.util.ReflectionTestUtils.setField(
-                service, "adminAccessService", adminAccessService);
-        Group group = org.mockito.Mockito.mock(Group.class);
-        lenient().when(group.getId()).thenReturn(1L);
-        lenient().when(group.isActive()).thenReturn(true);
-        Semester semester = org.mockito.Mockito.mock(Semester.class);
-        lenient().when(semester.getId()).thenReturn(1L);
-        lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
-        lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
-        GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
-        lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
-        lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
-        lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
-        lenient()
-                .when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
-                .thenReturn(List.of(semester));
-        lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
-    }
+    private final UserIdentityCommandFixture fixture = new UserIdentityCommandFixture();
 
     private CreateUserRequest req(UserRole role, Long telegramId, String employeeNumber) {
         return new CreateUserRequest(
@@ -97,9 +46,7 @@ class UserServiceTelegramRequiredTest {
 
     @Test
     void studentWithoutTelegramIdIsRejected() {
-        CreateUserRequest req = req(UserRole.STUDENT, null, null);
-
-        assertThatThrownBy(() -> service.createUser(req))
+        assertThatThrownBy(() -> fixture.service.createUser(req(UserRole.STUDENT, null, null)))
                 .isInstanceOfSatisfying(
                         BadRequestException.class,
                         ex -> {
@@ -107,69 +54,40 @@ class UserServiceTelegramRequiredTest {
                             assertThat(ex.getMessage())
                                     .isEqualTo("Telegram ID обязателен для студента");
                         });
-
-        verify(userRepository, never()).save(any());
-        verify(userRepository, never()).nextStudentLoginSeq();
+        verify(fixture.users, never()).save(any());
+        verify(fixture.users, never()).nextStudentLoginSeq();
+        fixture.notAccepted();
     }
 
     @Test
     void studentWithZeroTelegramIdIsRejected() {
-        // Some clients submit 0 instead of null — treat as missing.
-        CreateUserRequest req = req(UserRole.STUDENT, 0L, null);
-
-        assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(
-                        BadRequestException.class,
-                        ex -> {
-                            assertThat(ex.getField()).isEqualTo("telegramId");
-                        });
-
-        verify(userRepository, never()).save(any());
+        rejected(req(UserRole.STUDENT, 0L, null), "telegramId");
     }
 
     @Test
     void studentWithoutGroupIsRejectedBeforePersistence() {
-        CreateUserRequest request =
+        rejected(
                 new CreateUserRequest(
-                        "Иванов", "Иван", null, UserRole.STUDENT, null, null, 123456789L);
-
-        assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(
-                        BadRequestException.class,
-                        ex -> assertThat(ex.getField()).isEqualTo("groupId"));
-
-        verify(userRepository, never()).save(any());
+                        "Иванов", "Иван", null, UserRole.STUDENT, null, null, 123456789L),
+                "groupId");
     }
 
     @Test
     void studentCannotCarryTeacherEmployeeNumber() {
-        CreateUserRequest request = req(UserRole.STUDENT, 123456789L, "EMP-777");
-
-        assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(
-                        BadRequestException.class,
-                        ex -> assertThat(ex.getField()).isEqualTo("employeeNumber"));
-
-        verify(userRepository, never()).save(any());
+        rejected(req(UserRole.STUDENT, 123456789L, "EMP-777"), "employeeNumber");
     }
 
     @Test
     void teacherCannotCarryStudentGroup() {
-        CreateUserRequest request =
+        rejected(
                 new CreateUserRequest(
-                        "Иванов", "Иван", null, UserRole.TEACHER, 1L, "EMP-777", null);
-
-        assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(
-                        BadRequestException.class,
-                        ex -> assertThat(ex.getField()).isEqualTo("groupId"));
-
-        verify(userRepository, never()).save(any());
+                        "Иванов", "Иван", null, UserRole.TEACHER, 1L, "EMP-777", null),
+                "groupId");
     }
 
     @Test
     void adminCannotCarryTeacherEmployeeNumber() {
-        CreateUserRequest request =
+        rejected(
                 new CreateUserRequest(
                         "Иванов",
                         "Иван",
@@ -178,31 +96,20 @@ class UserServiceTelegramRequiredTest {
                         null,
                         "EMP-777",
                         null,
-                        new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput(
-                                "FULL", List.of()));
-
-        assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(
-                        BadRequestException.class,
-                        ex -> assertThat(ex.getField()).isEqualTo("employeeNumber"));
-
-        verify(userRepository, never()).save(any());
+                        new AdminAccessInput("FULL", List.of())),
+                "employeeNumber");
     }
 
     @Test
     void teacherWithoutTelegramIdIsAccepted() {
-        CreateUserRequest req = req(UserRole.TEACHER, null, "EMP-777");
-        lenient().when(userRepository.existsByEmployeeNumber("EMP-777")).thenReturn(false);
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
-
-        verify(userRepository).save(any());
+        accepted(req(UserRole.TEACHER, null, "EMP-777"));
+        assertThat(fixture.accepted.authCommand().getCreateIdentity().getTelegramId()).isZero();
+        assertThat(fixture.local().profile().employeeNumber()).isEqualTo("EMP-777");
     }
 
     @Test
     void adminWithoutTelegramIdIsAccepted() {
-        CreateUserRequest req =
+        accepted(
                 new CreateUserRequest(
                         "Иванов",
                         "Иван",
@@ -211,47 +118,232 @@ class UserServiceTelegramRequiredTest {
                         null,
                         null,
                         null,
-                        new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput(
-                                "FULL", List.of()));
-        when(userRepository.nextTeacherLoginSeq()).thenReturn(3L);
-        when(userRepository.save(any()))
-                .thenAnswer(
-                        inv -> {
-                            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
-                            org.springframework.test.util.ReflectionTestUtils.setField(
-                                    user, "id", 10L);
-                            return user;
-                        });
-
-        assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
-
-        verify(userRepository).save(any());
+                        new AdminAccessInput("FULL", List.of())));
+        assertThat(fixture.accepted.authCommand().getCreateIdentity().getTelegramId()).isZero();
+        assertThat(fixture.accepted.authCommand().getTargets(0).getDesiredAdminProfile().getMode())
+                .isEqualTo("FULL");
     }
 
     @Test
     void studentWithTelegramIdIsAccepted() {
-        CreateUserRequest req = req(UserRole.STUDENT, 123456789L, null);
-        lenient().when(userRepository.existsByTelegramId(123456789L)).thenReturn(false);
-        when(userRepository.save(any()))
-                .thenAnswer(
-                        inv -> {
-                            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
-                            org.springframework.test.util.ReflectionTestUtils.setField(
-                                    user, "id", 10L);
-                            return user;
-                        });
-        when(studentGroupHistoryRepository.save(any()))
-                .thenAnswer(
-                        inv -> {
-                            ru.rutcampustrack.academic.entity.StudentGroupHistory history =
-                                    inv.getArgument(0);
-                            org.springframework.test.util.ReflectionTestUtils.setField(
-                                    history, "id", 100L);
-                            return history;
-                        });
+        accepted(req(UserRole.STUDENT, 123456789L, null));
+        assertThat(fixture.accepted.authCommand().getCreateIdentity().getTelegramId())
+                .isEqualTo(123456789L);
+        assertThat(fixture.accepted.authCommand().getTargets(0).getDesiredGrants(0).getGroupId())
+                .isEqualTo(1);
+        assertThat(fixture.local().enrollmentSemesterId()).isEqualTo(1);
+    }
 
-        assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
+    private void rejected(CreateUserRequest request, String field) {
+        assertThatThrownBy(() -> fixture.service.createUser(request))
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo(field));
+        verify(fixture.users, never()).save(any());
+        fixture.notAccepted();
+    }
 
-        verify(userRepository).save(any());
+    private void accepted(CreateUserRequest request) {
+        assertThatCode(() -> fixture.service.createUser(request)).doesNotThrowAnyException();
+        assertThat(fixture.accepted).isNotNull();
+        assertThat(fixture.accepted.authCommand().getTargets(0).getDesiredGrants(0).getRole())
+                .isEqualTo(request.role().name());
+        verify(fixture.users, never()).save(any()); // Academic never writes the identity view.
+    }
+}
+
+/** Local SQL/remote boundaries are mocked; input validation and command construction are real. */
+final class UserIdentityCommandFixture {
+    final UserRepository users = mock(UserRepository.class);
+    final UserRoleGrantWriter oldWriter = mock(UserRoleGrantWriter.class);
+    final AuthIdentityDataClient auth = mock(AuthIdentityDataClient.class);
+    final AcademicIdentityHttpOperations http = mock(AcademicIdentityHttpOperations.class);
+    final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    final Map<String, Object> profile = new HashMap<>();
+    final JdbcTemplate jdbc;
+    final UserService service;
+    final AcademicUserIdentityOperations operations;
+    AcademicIdentityCoordinator.AcceptedCommand accepted;
+    final UUID id = UUID.fromString("00000000-0000-0000-0000-000000000042");
+
+    UserIdentityCommandFixture() {
+        profile.put("directory_role", "STUDENT");
+        profile.put("directory_status", "ACTIVE");
+        profile.put("last_name", "Петров");
+        profile.put("first_name", "Пётр");
+        profile.put("employee_number", "EMP-001");
+        profile.put("academic_revision", 2L);
+        profile.put("applied_auth_roles_version", 3L);
+        jdbc =
+                mock(
+                        JdbcTemplate.class,
+                        call -> {
+                            if (call.getMethod().getName().equals("query")) {
+                                String sql = call.getArgument(0);
+                                var values =
+                                        sql.contains("FROM academic_profiles")
+                                                ? profile
+                                                : sql.contains("FROM semesters")
+                                                        ? Map.<String, Object>of(
+                                                                "id",
+                                                                1L,
+                                                                "date_from",
+                                                                LocalDate.of(2026, 9, 1),
+                                                                "date_to",
+                                                                LocalDate.of(2027, 1, 31))
+                                                        : Map.<String, Object>of(
+                                                                "academic_revision",
+                                                                1L,
+                                                                "coverage_from",
+                                                                LocalDate.of(2026, 9, 1),
+                                                                "writer_version",
+                                                                "managed_v1");
+                                var row =
+                                        mock(
+                                                ResultSet.class,
+                                                read -> {
+                                                    if (read.getArguments().length == 0)
+                                                        return RETURNS_DEFAULTS.answer(read);
+                                                    Object value = values.get(read.getArgument(0));
+                                                    return switch (read.getMethod().getName()) {
+                                                        case "getString" ->
+                                                                value == null
+                                                                        ? null
+                                                                        : value.toString();
+                                                        case "getLong" ->
+                                                                value == null
+                                                                        ? 0L
+                                                                        : ((Number) value)
+                                                                                .longValue();
+                                                        case "getObject" -> value;
+                                                        default -> RETURNS_DEFAULTS.answer(read);
+                                                    };
+                                                });
+                                RowMapper<?> rowMapper = call.getArgument(1);
+                                return List.of(rowMapper.mapRow(row, 0));
+                            }
+                            if (call.getMethod().getName().equals("queryForList")
+                                    && ((String) call.getArgument(0))
+                                            .contains("FROM groups WHERE id=?")) return List.of(1L);
+                            return RETURNS_DEFAULTS.answer(call);
+                        });
+        when(http.execute(any(AcademicIdentityLocalCommand.ApiIntent.class), any()))
+                .thenAnswer(
+                        call -> {
+                            Function<UUID, AcademicIdentityCoordinator.AcceptedCommand> build =
+                                    call.getArgument(1);
+                            accepted = build.apply(id);
+                            return completed(accepted);
+                        });
+        identity(
+                List.of(
+                        AuthorityRoleGrant.newBuilder()
+                                .setGrantId(11)
+                                .setRole("TEACHER")
+                                .setStatus("ACTIVE")
+                                .build(),
+                        AuthorityRoleGrant.newBuilder()
+                                .setGrantId(12)
+                                .setRole("STUDENT")
+                                .setStatus("ACTIVE")
+                                .setGroupId(1)
+                                .build()));
+        operations =
+                new AcademicUserIdentityOperations(
+                        jdbc,
+                        http,
+                        mapper,
+                        new LocalTransactions(),
+                        auth,
+                        mock(AcademicIdentityReadFence.class),
+                        new RequestContext(),
+                        mock(UserArchiveRepository.class),
+                        mock(AuthUserArchiveClient.class));
+        service =
+                new UserService(
+                        users,
+                        mock(HeadmanAssistantRepository.class),
+                        mock(StudentGroupHistoryRepository.class),
+                        new RequestContext(),
+                        mock(UserAssembler.class),
+                        null,
+                        mock(org.springframework.context.ApplicationEventPublisher.class),
+                        mock(GroupRepository.class),
+                        mock(SemesterRepository.class),
+                        mock(GroupHistoryCoverageRepository.class),
+                        oldWriter,
+                        mock(UserRoleGrantReader.class),
+                        mock(ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService.class),
+                        mock(org.springframework.security.crypto.password.PasswordEncoder.class));
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "identityOperations", operations);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "identityData", auth);
+        var user = new User();
+        user.setId(42L);
+        when(users.findByIdIncludingArchived(42L)).thenReturn(Optional.of(user));
+        when(auth.initialCredentials(eq(List.of(42L)), anyLong()))
+                .thenReturn(
+                        ReadInitialCredentialsResponse.newBuilder()
+                                .addCredentials(
+                                        InitialCredentialSnapshot.newBuilder().setUserId(42))
+                                .build());
+    }
+
+    void identity(List<AuthorityRoleGrant> grants) {
+        var identity =
+                IdentityAuthoritySnapshot.newBuilder()
+                        .setUserId(42)
+                        .setAccountState(AuthorityAccountState.AUTHORITY_ACCOUNT_STATE_ACTIVE)
+                        .setAcademicRevision(2)
+                        .setRolesVersion(3)
+                        .setCredentialsVersion(1)
+                        .setTelegramBindingVersion(1)
+                        .setTelegramId(123456789L)
+                        .addAllGrants(grants)
+                        .build();
+        when(auth.readServiceIdentity(eq(List.of(42L)), anyLong()))
+                .thenReturn(Map.of(42L, identity));
+    }
+
+    AcademicIdentityLocalCommand local() {
+        try {
+            return mapper.readValue(
+                    accepted.localPayload().toByteArray(), AcademicIdentityLocalCommand.class);
+        } catch (java.io.IOException failure) {
+            throw new AssertionError(failure);
+        }
+    }
+
+    void notAccepted() {
+        assertThat(accepted).isNull();
+        verify(auth, never()).initialCredentials(any(), anyLong());
+    }
+
+    AcademicIdentityCoordinator.Operation completed(
+            AcademicIdentityCoordinator.AcceptedCommand command) {
+        return new AcademicIdentityCoordinator.Operation(
+                id.toString(),
+                AcademicIdentityCoordinator.Phase.SUCCEEDED,
+                command.authCommand(),
+                IdentityOperationResult.newBuilder()
+                        .addTargets(PreparedIdentityTarget.newBuilder().setUserId(42))
+                        .build(),
+                List.of());
+    }
+
+    static final class LocalTransactions extends AbstractPlatformTransactionManager {
+        @Override
+        protected Object doGetTransaction() {
+            return new Object();
+        }
+
+        @Override
+        protected void doBegin(Object transaction, TransactionDefinition definition) {}
+
+        @Override
+        protected void doCommit(DefaultTransactionStatus status) {}
+
+        @Override
+        protected void doRollback(DefaultTransactionStatus status) {}
     }
 }

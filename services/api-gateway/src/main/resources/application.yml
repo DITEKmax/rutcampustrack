@@ -3,6 +3,10 @@ server:
   # Gateway owns forwarding-header normalization from the raw socket peer.
   forward-headers-strategy: none
 
+grpc:
+  server:
+    port: -1
+
 spring:
   main:
     # Gateway remains a WebFlux server when servlet libraries are on the classpath.
@@ -516,6 +520,7 @@ rutcampustrack:
   report-download:
     mobile-bff-url: ${MOBILE_BFF_URL:http://mobile-bff:9080}
     attendance-service-url: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+    academic-service-url: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
     timeout-millis: 30000
   gateway:
     client-ip:

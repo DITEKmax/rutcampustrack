@@ -102,7 +102,7 @@ class StudentHttpGrpcAuthIT {
                 "grpc.client.attendance-service.address",
                 () -> "static://127.0.0.1:" + grpcServer.getPort());
         registry.add("grpc.client.attendance-service.negotiation-type", () -> "plaintext");
-        registry.add("grpc.server.port", () -> 0);
+        registry.add("grpc.server.port", () -> -1);
         registry.add("rutcampustrack.security.internal-jwt.clock-skew-seconds", () -> "0");
     }
 

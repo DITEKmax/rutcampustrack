@@ -83,7 +83,7 @@ class StudentEnumProjectionHttpGrpcIT {
                     () -> "static://127.0.0.1:" + server.getPort());
             registry.add("grpc.client." + service + ".negotiation-type", () -> "plaintext");
         }
-        registry.add("grpc.server.port", () -> 0);
+        registry.add("grpc.server.port", () -> -1);
         registry.add("grpc.auth.secret", () -> "");
     }
 

@@ -17,15 +17,12 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.MetadataUtils;
-import java.net.InetSocketAddress;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+
 import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
+import ru.rutcampustrack.academic.assistant.AssistantPermissionReadService;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.history.HistoricalMembershipService;
@@ -35,6 +32,13 @@ import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
+
+import java.net.InetSocketAddress;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /** Real socket regression for the user journal calling the Schedule-only semester boundary. */
 class HeadmanJournalSemesterTransportTest {
@@ -52,6 +56,9 @@ class HeadmanJournalSemesterTransportTest {
                         provider, new InternalJwtProperties(null, 60, 0, false, null, null, null));
         var authority = mock(AssistantPermissionAuthority.class);
         when(authority.allows(any(), org.mockito.ArgumentMatchers.eq(7L), any())).thenReturn(true);
+        var liveAssistant = mock(AssistantPermissionReadService.class);
+        when(liveAssistant.allows(any(), org.mockito.ArgumentMatchers.eq(7L), any()))
+                .thenReturn(true);
         var reads = mock(AcademicReadService.class);
         when(reads.fetchHistoricalGroupMembers(7L, LocalDate.of(2026, 4, 20), 3L))
                 .thenReturn(
@@ -67,6 +74,7 @@ class HeadmanJournalSemesterTransportTest {
         when(groups.findById(7L)).thenReturn(Optional.of(group));
         var service = mock(AcademicGrpcServiceImpl.class, CALLS_REAL_METHODS);
         ReflectionTestUtils.setField(service, "academicReadService", reads);
+        ReflectionTestUtils.setField(service, "assistantPermissionRead", liveAssistant);
         ReflectionTestUtils.setField(service, "assistantPermissionAuthority", authority);
         ReflectionTestUtils.setField(service, "semesterRepository", semesters);
         ReflectionTestUtils.setField(service, "groupRepository", groups);
@@ -96,10 +104,10 @@ class HeadmanJournalSemesterTransportTest {
                             41L, UUID.randomUUID(), 1, 1, "HEADMAN", "ACTIVE", 7L, true, false));
             var stub =
                     AcademicGrpcServiceGrpc.newBlockingStub(channel)
-                            .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                            .withDeadlineAfter(3, TimeUnit.SECONDS);
+                            .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers));
             assertThat(
-                            stub.checkAssistantPermission(
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .checkAssistantPermission(
                                             AssistantPermissionCheckRequest.newBuilder()
                                                     .setGroupId(7)
                                                     .setPermission("VIEW_STATS")
@@ -107,20 +115,22 @@ class HeadmanJournalSemesterTransportTest {
                                     .getAllowed())
                     .isTrue();
             var roster =
-                    stub.getGroupMembers(
-                            GroupMembersRequest.newBuilder()
-                                    .setGroupId(7)
-                                    .setAsOfDate("2026-04-20")
-                                    .setSemesterId(3)
-                                    .build());
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getGroupMembers(
+                                    GroupMembersRequest.newBuilder()
+                                            .setGroupId(7)
+                                            .setAsOfDate("2026-04-20")
+                                            .setSemesterId(3)
+                                            .build());
             assertThat(roster.getAsOfDate()).isEqualTo("2026-04-20");
             assertThat(roster.getSemesterId()).isEqualTo(3);
             assertThatThrownBy(
                             () ->
-                                    stub.getSemesterState(
-                                            SemesterStateRequest.newBuilder()
-                                                    .setSemesterId(3)
-                                                    .build()))
+                                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                            .getSemesterState(
+                                                    SemesterStateRequest.newBuilder()
+                                                            .setSemesterId(3)
+                                                            .build()))
                     .isInstanceOfSatisfying(
                             StatusRuntimeException.class,
                             error -> {
@@ -132,7 +142,8 @@ class HeadmanJournalSemesterTransportTest {
             verifyNoInteractions(semesters);
             // Same intended journal result as the retained RED, now using the user boundary.
             assertThat(
-                            stub.getHeadmanJournalSemesterState(
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(
                                             HeadmanJournalSemesterStateRequest.newBuilder()
                                                     .setGroupId(7)
                                                     .setSemesterId(3)
@@ -143,15 +154,17 @@ class HeadmanJournalSemesterTransportTest {
             sharedOnly.put(SHARED_SECRET, sharedSecret);
             var unsigned =
                     AcademicGrpcServiceGrpc.newBlockingStub(channel)
-                            .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(sharedOnly))
-                            .withDeadlineAfter(3, TimeUnit.SECONDS);
+                            .withInterceptors(
+                                    MetadataUtils.newAttachHeadersInterceptor(sharedOnly));
             var request =
                     HeadmanJournalSemesterStateRequest.newBuilder()
                             .setGroupId(7)
                             .setSemesterId(3)
                             .build();
             assertStatus(
-                    () -> unsigned.getHeadmanJournalSemesterState(request),
+                    () ->
+                            unsigned.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(request),
                     Status.Code.UNAUTHENTICATED);
             Metadata forgedHeaders = new Metadata();
             forgedHeaders.put(SHARED_SECRET, sharedSecret);
@@ -171,31 +184,37 @@ class HeadmanJournalSemesterTransportTest {
             var forged =
                     AcademicGrpcServiceGrpc.newBlockingStub(channel)
                             .withInterceptors(
-                                    MetadataUtils.newAttachHeadersInterceptor(forgedHeaders))
-                            .withDeadlineAfter(3, TimeUnit.SECONDS);
+                                    MetadataUtils.newAttachHeadersInterceptor(forgedHeaders));
             assertStatus(
-                    () -> forged.getHeadmanJournalSemesterState(request),
+                    () ->
+                            forged.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(request),
                     Status.Code.UNAUTHENTICATED);
             assertStatus(
                     () ->
-                            stub.getHeadmanJournalSemesterState(
-                                    request.toBuilder().setGroupId(9).build()),
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(
+                                            request.toBuilder().setGroupId(9).build()),
                     Status.Code.PERMISSION_DENIED);
             assertStatus(
                     () ->
-                            stub.getHeadmanJournalSemesterState(
-                                    request.toBuilder().setSemesterId(0).build()),
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(
+                                            request.toBuilder().setSemesterId(0).build()),
                     Status.Code.INVALID_ARGUMENT);
             assertStatus(
                     () ->
-                            stub.getHeadmanJournalSemesterState(
-                                    request.toBuilder().setSemesterId(999).build()),
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(
+                                            request.toBuilder().setSemesterId(999).build()),
                     Status.Code.NOT_FOUND);
             semester.setArchived(true);
             semester.setStateVersion(9);
             semester.setArchiveTransition(
                     ru.rutcampustrack.academic.contract.enums.SemesterTransition.RESTORING);
-            var archived = stub.getHeadmanJournalSemesterState(request);
+            var archived =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getHeadmanJournalSemesterState(request);
             assertThat(archived.getArchived()).isTrue();
             assertThat(archived.getWriteBlocked()).isTrue();
             assertThat(archived.getStateVersion()).isEqualTo(9);
@@ -203,22 +222,36 @@ class HeadmanJournalSemesterTransportTest {
             semester.setArchived(false);
             semester.setArchiveTransition(
                     ru.rutcampustrack.academic.contract.enums.SemesterTransition.ARCHIVING);
-            assertThat(stub.getHeadmanJournalSemesterState(request).getWriteBlocked()).isTrue();
+            assertThat(
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(request)
+                                    .getWriteBlocked())
+                    .isTrue();
             semester.setArchiveTransition(
                     ru.rutcampustrack.academic.contract.enums.SemesterTransition.NONE);
             semester.setReleasePending(true);
-            var releasing = stub.getHeadmanJournalSemesterState(request);
+            var releasing =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getHeadmanJournalSemesterState(request);
             assertThat(releasing.getArchived()).isFalse();
             assertThat(releasing.getWriteBlocked()).isTrue();
             assertThat(releasing.getReleasePending()).isTrue();
             semester.setReleasePending(false);
-            assertThat(stub.getHeadmanJournalSemesterState(request).getWriteBlocked()).isFalse();
+            assertThat(
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(request)
+                                    .getWriteBlocked())
+                    .isFalse();
             semester.setArchiveTransition(
                     ru.rutcampustrack.academic.contract.enums.SemesterTransition.DELETING);
             semester.setDeletionPhase(
                     ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.PREPARING);
             semester.setTransitionOperationId(UUID.randomUUID());
-            assertStatus(() -> stub.getHeadmanJournalSemesterState(request), Status.Code.NOT_FOUND);
+            assertStatus(
+                    () ->
+                            stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                                    .getHeadmanJournalSemesterState(request),
+                    Status.Code.NOT_FOUND);
         } finally {
             channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
             server.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);

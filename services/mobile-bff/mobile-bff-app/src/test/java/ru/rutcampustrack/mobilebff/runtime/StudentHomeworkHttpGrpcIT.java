@@ -125,7 +125,7 @@ class StudentHomeworkHttpGrpcIT {
                 "grpc.client.academic-service.address",
                 () -> "static://127.0.0.1:" + grpcServer.getPort());
         registry.add("grpc.client.academic-service.negotiation-type", () -> "plaintext");
-        registry.add("grpc.server.port", () -> 0);
+        registry.add("grpc.server.port", () -> -1);
         registry.add("grpc.auth.secret", () -> "");
         registry.add("rutcampustrack.security.internal-jwt.clock-skew-seconds", () -> "0");
     }

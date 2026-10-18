@@ -181,6 +181,15 @@ public class AcademicIdentityHttpOperations {
         if (status.status() == IdentityOperationHttpModels.Status.PENDING)
             throw new AcademicIdentityPendingException(status);
         if (status.status() == IdentityOperationHttpModels.Status.REJECTED) {
+            if (operation.prepared() != null
+                    && operation.prepared().getPhase()
+                            == ru.rutcampustrack.authoperations.grpc.IdentityOperationPhase
+                                    .IDENTITY_OPERATION_PHASE_REJECTED
+                    && "TELEGRAM_ID_CONFLICT".equals(operation.rejectionCode())
+                    && "PREPARE_REJECTED_TARGET_CONFLICT"
+                            .equals(operation.prepared().getErrorCode()))
+                throw new ru.rutcampustrack.academic.exception.ConflictException(
+                        "telegramId", null, "Telegram ID уже привязан к другой учётной записи");
             boolean denied =
                     operation.prepared() != null
                             && "PREPARE_REJECTED_ACTOR_DENIED"

@@ -26,7 +26,6 @@ import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
@@ -330,9 +329,9 @@ class OtpServiceTest {
             Field id = User.class.getDeclaredField("id");
             id.setAccessible(true);
             id.set(user, 1L);
-            Field status = User.class.getDeclaredField("status");
-            status.setAccessible(true);
-            status.set(user, AccountStatus.ACTIVE);
+            Field accountState = User.class.getDeclaredField("accountState");
+            accountState.setAccessible(true);
+            accountState.set(user, "ACTIVE");
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }

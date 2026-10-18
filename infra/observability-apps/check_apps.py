@@ -202,6 +202,8 @@ def main():
         config["services"]["observer-proxy"]["ports"] = [{"target": 8080, "published": "0", "host_ip": "127.0.0.1", "protocol": "tcp"}]
         for name, port in [("glitchtip", 8000), ("pyroscope", 4040)]:
             config["services"][name]["ports"] = [{"target": port, "published": "0", "host_ip": "127.0.0.1", "protocol": "tcp"}]
+            # Raw app access via this bridge exists only in the disposable CI scope.
+            config["services"][name]["networks"]["operator-access"] = None
         # Homepage host validation includes the selected ephemeral port after creation.
         config["services"]["homepage"]["environment"]["HOMEPAGE_ALLOWED_HOSTS"] = "localhost,127.0.0.1,homepage:3000"
         composefile = work / "compose.json"

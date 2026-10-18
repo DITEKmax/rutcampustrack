@@ -95,6 +95,11 @@ public class AcademicUserIdentityOperations {
                 intent,
                 id -> {
                     validate(request);
+                    localSnapshot(
+                            tx -> {
+                                requireEmployeeAvailable(blankToNull(request.employeeNumber()), 0);
+                                return null;
+                            });
                     var enrollment =
                             request.role() == UserRole.STUDENT
                                     ? localSnapshot(tx -> enrollment(request.groupId()))
@@ -106,6 +111,8 @@ public class AcademicUserIdentityOperations {
                     if (request.role() == UserRole.STUDENT) grant.setGroupId(request.groupId());
                     var target =
                             IdentityTargetCommand.newBuilder()
+                                    .setDesiredAdminProfile(
+                                            AdmissionAdminProfile.getDefaultInstance())
                                     .setDesiredAccountState(
                                             IdentityAccountState.IDENTITY_ACCOUNT_STATE_ACTIVE)
                                     .addDesiredGrants(grant);
@@ -899,11 +906,18 @@ public class AcademicUserIdentityOperations {
         boolean teacher =
                 state.auth().getGrantsList().stream().anyMatch(g -> g.getRole().equals("TEACHER"));
         if (teacher && employee == null)
-            throw new BadRequestException("Для преподавателя табельный номер обязателен");
+            throw new BadRequestException(
+                    "employeeNumber", "Для преподавателя табельный номер обязателен");
+        if (!Objects.equals(employee, p.employeeNumber()))
+            requireEmployeeAvailable(employee, p.userId());
         return new AcademicIdentityLocalCommand.Profile(
                 p.userId(),
-                request.lastName() == null ? p.lastName() : request.lastName().trim(),
-                request.firstName() == null ? p.firstName() : request.firstName().trim(),
+                request.lastName() == null
+                        ? p.lastName()
+                        : requiredName("lastName", request.lastName()),
+                request.firstName() == null
+                        ? p.firstName()
+                        : requiredName("firstName", request.firstName()),
                 request.middleName() == null
                         ? p.middleName()
                         : blankToNull(request.middleName().trim()),
@@ -912,6 +926,25 @@ public class AcademicUserIdentityOperations {
                 employee,
                 p.avatarId(),
                 request.status() == null ? p.directoryStatus() : request.status().name());
+    }
+
+    private void requireEmployeeAvailable(String employee, long userId) {
+        if (employee != null
+                && Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM academic_profiles WHERE"
+                                        + " employee_number=? AND id<>?)",
+                                Boolean.class,
+                                employee,
+                                userId)))
+            throw new ru.rutcampustrack.academic.exception.ConflictException(
+                    "employeeNumber", employee, "Табельный номер уже используется");
+    }
+
+    private static String requiredName(String field, String value) {
+        if (value == null || value.isBlank())
+            throw new BadRequestException(field, "Обязательное поле не может быть пустым");
+        return value.trim();
     }
 
     private <T> T localSnapshot(
@@ -1279,6 +1312,8 @@ public class AcademicUserIdentityOperations {
     private static void validate(CreateUserRequest request) {
         if (request == null || request.role() == null)
             throw new BadRequestException("role", "Роль обязательна");
+        requiredName("lastName", request.lastName());
+        requiredName("firstName", request.firstName());
         boolean employee = blankToNull(request.employeeNumber()) != null;
         if (request.telegramId() != null && request.telegramId() <= 0)
             throw new BadRequestException("telegramId", "Telegram ID должен быть положительным");
@@ -1301,9 +1336,11 @@ public class AcademicUserIdentityOperations {
                             "employeeNumber", "Табельный номер обязателен для преподавателя");
             }
             case ADMIN -> {
-                if (request.groupId() != null || employee)
+                if (request.groupId() != null)
+                    throw new BadRequestException("groupId", "Группа не применима к роли ADMIN");
+                if (employee)
                     throw new BadRequestException(
-                            "role", "Для ADMIN группа и табельный номер не применимы");
+                            "employeeNumber", "Табельный номер не применим к роли ADMIN");
                 if (request.adminAccess() == null)
                     throw new BadRequestException(
                             "adminAccess", "Для ADMIN нужен явный профиль доступа");

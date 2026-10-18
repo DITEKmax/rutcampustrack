@@ -92,7 +92,7 @@ services:
       - ./infra/observability-apps/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infra/observability-apps/start-proxy.sh:/observer/start-proxy.sh:ro
     secrets: [observer-htpasswd]
-    networks: [observer]
+    networks: [observer, operator-access]
     cap_drop: [ALL]
     cap_add: [CHOWN, SETUID, SETGID]
     read_only: true
@@ -106,6 +106,8 @@ networks:
   observer: { internal: true }
   browser-ingest: { internal: true }
   profiles: { internal: true }
+  # Host port publishing needs a non-internal bridge; only the proxy joins here.
+  operator-access: { driver: bridge, internal: false }
 volumes:
   glitchtip-db:
   glitchtip-uploads:

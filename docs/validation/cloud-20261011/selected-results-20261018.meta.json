@@ -1,0 +1,25 @@
+{
+  "version": "v1-КТ1 FROZEN",
+  "createdUTC": "2026-10-18T00:12:26.316619+00:00",
+  "baseline": "e66b1711b3d93faee625b50a2e2f785020a0f43a",
+  "rows": 25,
+  "mandatoryWeight": 123,
+  "closed": 8,
+  "closedWeight": 38,
+  "weightedPercent": 30.89,
+  "historicalStage": "6/9 DONE_CHANGED6 ALREADY_SATISFIED0",
+  "weightPolicy": "1/2/3/5/8 chosen byscope-risk before new implementation; no retrospective change for percentage; existing outcomes mapped once, U10 is sufficient acceptedM04subset notextraoldwholepackage",
+  "scopePolicy": "ContextIDEA033/034/045 crosscut; allownerDEFERREDtable entries outside denominator, conditionalintegration notselected outside; U23assessment remainsmandatory; mandatoryblockers staydenominator",
+  "frozenUTC": "2026-10-18T00:23:19.426881+00:00",
+  "history": [
+    {
+      "version": "v0-КТ0 provisional; freezeafterboundedКТ1 beforeimplementationnewrows",
+      "mandatoryRows": 25,
+      "mandatoryWeight": 123,
+      "closed": 7,
+      "closedWeight": 35,
+      "weightedPercent": 28.46
+    }
+  ],
+  "changeReason": "FourboundedKT1 mappings narrowedactualsourcecriteria; same25rows/same123weights, no denominatorchange. U23 assessmentaccepted, all4conditionalintegrations unselected/excluded; no productintegrationclaim."
+}

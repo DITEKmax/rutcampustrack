@@ -13,8 +13,18 @@ Root sole Git integrator/shared-docs writer; selected Sol6.1 ULTRA, actual UNKNO
 | s17_bot | /tmp/rct-stage17-bot | Python10 frozen/reviewed/Root integrated; no active runtime process |
 | Independent reviewers | read-only | Priorreviews retained; final diagnostic3 privacy approved/formatASTequivalent, lifecycle+wireprecision individually approved. Infra coherent3 finalv2 APPROVE_RUNTIME_PENDING; no repeated full38 review |
 
-All native/light leases RELEASED/reaped, including weeklyclockRED01compile/RED02semantic54s/GREEN01twoPASS61s. No localDB/Docker/browser/server/Java/Redis. Reportsclock2/InfraACL1+MARK2 frozen/reviewed/RootintegratedWIP; reviewers independent. Auth read-only currentCI safeartifact observer active; all other agents idle. Root soleGit/docs writer; next coherent5source+5docs checkpoint, no otherwriter conflict.
+All native/light leases RELEASED/reaped, including weeklyclockRED01compile/RED02semantic54s/GREEN01twoPASS61s. No localDB/Docker/browser/server/Java/Redis. Reportsclock2/InfraACL1+MARK2 frozen/reviewed/publishede66b1711; reviewers independent. Auth observer completedactualf8reconciliationPASS; independentM04applicabilityreview completed/noadditionalgap. All agents currentlyidle; no nativeprocess. Root soleGit/docs writer; coherent5source+5docs e66b1711 checkpoint actuallypushed/localRemotePRexact; nextordinaryCI inqueue, no otherwriter conflict.
 
 CPU5/RAM16GiB; workspacefloor4GiB and TMPheadroom remain. ExactnextGitbudget misses45KiB, so use standard temporaryGitindex under/tmp (backupRootindex, noforeignstagedchanges; restoreverifiedindex aftercommit); no lowerfloor or broadcleanup. Only ownpublished785objects packedb6f928cf SHA f57e7cb6f1a64145d25b16dc3c45327fd1e9db4afe71ac18649564d055c4ff6e; allbackups/tmp, noGC/prune.28ownsafeZIPs and publicunusedGradleinstaller preservedbyteequal/tmp withoriginalpathsymlinks; installedtoolchains unchanged; lowerlayerarchive move didnotfreeexpectedspace. No further cleanup campaign.
 
 Existing stoppedstand/volumes/keys/WIP untouched. Preserveproxy/CA. B013/B014/B015FROZEN. No production/deploy/main/Angular/newweb/secrets/otherchats.
+
+## 18.10 current slots
+
+Root soleGit/sharedDocs, scoped precommit→обычный coherentpush2source+10docs.
+s17_propagation: READ_ONLY U14 concreteatomicityplan на currentRoot e66; старыйWT нетронут.
+s17_auth/infra/reports и обаreviewers idle, newcurrentbaselineWT ещёневыданы.
+Все4КТ1 mappings сохранены; U07 final3d631113 и MARKguardcb7ce1ad reviewaccepted.
+Последнийownpublishedpack824objects72cfc560/SHA4c946d96, backupTMP; floor4GiB.
+Матрицаv1FROZEN 8/25 weight38/123=30.89%; старые6/9 отдельно. D037/Q031:
+TASK-CONTRACT/CURRENT — сохранённаяобъединённаяцельACTIVE, nofalsecomplete.

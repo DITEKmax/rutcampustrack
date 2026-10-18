@@ -5689,14 +5689,24 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         await expect(retrySheet.getByRole('alert')).toBeVisible();
         await retrySheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
         await openSchedule();
+        const previousOwner = await page.locator('.mobile-shell').elementHandle();
+        expect(previousOwner).not.toBeNull();
         await page.context().setOffline(true);
-        await page.context().setOffline(false);
+        const revalidated = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === '/api/auth/session' && r.request().method() === 'GET',
+        );
         const replay = page.waitForResponse(
           (r) =>
             new URL(r.url()).pathname === '/api/auth/export-jobs' &&
             r.request().method() === 'POST',
         );
         const recoveredDownload = page.waitForEvent('download');
+        await page.context().setOffline(false);
+        expect((await revalidated).status()).toBe(200);
+        await expect.poll(() => previousOwner!.evaluate((owner) => owner.isConnected)).toBe(false);
+        await previousOwner!.dispose();
+        await expect(page.locator('.headman-home')).toBeVisible();
         await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
         const replayed = await replay;
         expect(replayed.status()).toBe(202);

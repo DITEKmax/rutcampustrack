@@ -218,3 +218,9 @@ PENDING_OWNER/ENV. В текущей схеме Blackbox на тойже маш�
 
 
 2026-10-17T18:59:09.922619+00:00: Q028ANSWERED/D032 headmanjournal; Q029ANSWERED/D033 engineeringSLOdesign delegatedRoot; Q030ANSWERED/D034 externalhostprobe deploymentbacklog/DEFERRED_LOCAL, notCloudPASS. No pendingownerquestions frominitialnewstage.
+
+## Q031 — 18.10.2026: persisted Goal surface
+
+2026-10-18T00:17:53.194691+00:00: PENDING_OWNER (workflowmetadata only). SourceD036 requires actualGoalupdate via exposedmechanism; ALL_TOOLS hasno Goalread/update/create API. Existing17filegoal remainsIN_PROGRESS6/9, extended18contract/matrix saved; notfalsecomplete. Options: use TASK-CONTRACT/CURRENT as persistedextendedGoal afteractualoldcriteria (recommended), or ownerupdatesseparateappUIGoal. NotrepeatcodeGO, no budgetchange. OnlyplatformGoalmetadata transition depends; currentoldcriteria/independentKT1/authorisedreversiblework continue. Asked inmainCloudchat via штатныйasyncinput.
+
+2026-10-18T00:20:24.607420+00:00: Q031ANSWERED/D037: TASK-CONTRACT/CURRENT как persistedGoal; платформенныйGoal неимитируется. Зависимыйworkflowвопросзакрыт, кодовыйscope/oldcriteria продолжаются.

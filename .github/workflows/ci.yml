@@ -3620,7 +3620,7 @@ jobs:
                       and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
                               for item in row['diagnostics'])
                       and (config[4] != 'DATASET_ATTENDANCE_MARK_HTTP'
-                           or (row['line'] == 1580 and {'file': 'semester-lifecycle.spec.ts', 'line': 1806}
+                           or (row['line'] == 1587 and {'file': 'semester-lifecycle.spec.ts', 'line': 1813}
                                in row['errorLocations']))
                       and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
                           in row['diagnostics'])

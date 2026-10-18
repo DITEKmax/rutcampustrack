@@ -1,24 +1,23 @@
-# IN_PROGRESS — A01–A04 / M01–M05, 17.10.2026
+# IN_PROGRESS — A01–A04/M01–M05 + принятый scope18.10
 
-После compaction читать [TASK-CONTRACT-20261017.md](TASK-CONTRACT-20261017.md),
-[TASK-ADDENDUM-ASYNC-20261017.md](TASK-ADDENDUM-ASYNC-20261017.md), этот CURRENT,
-decisions/questions, resources и относящиеся к следующему шагу attempts.
-Старый широкий аудит не возобновлять. [HANDOFF-20261017.md](HANDOFF-20261017.md)
-один, пока явно incomplete; история/evidence один раз в attempts и Git.
+После compaction читать [расширение18.10](TASK-CONTRACT-20261018.md),
+[матрицуv1](selected-results-20261018.csv)/[version+weights](selected-results-20261018.meta.json), [контракт17.10](TASK-CONTRACT-20261017.md),
+[async-дополнение](TASK-ADDENDUM-ASYNC-20261017.md), этотCURRENT, decisions/questions,
+[resources](resources.md) и относящиеся к nextstep attempts. Один пока incomplete
+[HANDOFF](HANDOFF-20261017.md); историю не перечитывать/не повторять достаточныеPASS.
 
-Старт18:49UTC/21:49MSK, base753173688d633ca07991f4dd73bdcd2698f45d96.
-Опубликованный local=remote=PR head **f8af7a4225eaf7146e047265bbdd6ce92cd99dfb**,
-ветка codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2)
-→ main3908fad9624f97aec8891fc79338ceb6b0616bf3, без merge.
-Предыдущийe0 actual checkout **7a8cfb494aa7a2374b2b44623dfd52a7fcbd8537**,
-tree e020a8743187eab8e0b633be802b2003933f0333, artifact12117460957/SHAeb1f96f2… .
-Новыйf8 actual checkout 4da17553476cf9070f8f32289e9f2875400c238e/tree31093158fcbe6019139f93e44c99545297aed22c,
-artifact12117763214/SHA231a91d3… . CI39078337905/Coverage39078337926/Security39078337911/
-OpenAPI39078337923: Coverage/Security/OpenAPI completedSUCCESS; CI ещё идёт.
-Новыйmonitor FAIL REDIS_ADMIN_READINESS; безопасныйprimary12118332323 сохранён, pipeline/receiverPASS.
-Предыдущиеe0 Coverage39075933406, Security39075933403, OpenAPI39075933528 SUCCESS.
-CI39075933443 завершён:20success/4failure (monitoring/2browser/aggregate);
-новый диагноз/исправление не подтверждаются старым green.
+Старт17.10 18:49UTC; stagebase753173688d633ca07991f4dd73bdcd2698f45d96.
+Local=remote=PR head **e66b1711b3d93faee625b50a2e2f785020a0f43a**, ветка
+codex/server-validation-20261011, [draftPR2](https://github.com/DITEKmax/rutcampustrack/pull/2)
+→main3908fad9624f97aec8891fc79338ceb6b0616bf3, безmerge. Stage diff259paths:
+50A/209M/0D,9taskdocs; точныйinventory через gitdiffbase..head.
+PushCI39080567322 и PRCI39080571663: async-кейс FAIL после первого корректного DOCX;
+финальный общий статус не перечитан. Coverage39080571692, Security39080571702
+и OpenAPI39080571786 SUCCESS наe66; новый reconnectfixture ожидает обычногоCI.
+Actualpushcheckout e66b1711, PRcheckout7eb18090d21eedbce098f1164db6c6f0f565215f;
+оба treea7bb0f041ea7fa6779177a8d6804b844b8a5aed4, safe12119160097/12118936028 verified. Предыдущийf8actual4da17553476cf9070f8f32289e9f2875400c238e/
+tree31093158fcbe6019139f93e44c99545297aed22c,12117763214/SHA231a91d3…;
+егоCoverage/Security/OpenAPI PASS, Redis/asyncFAIL, reconciliation+ordinaryarchivePASS.
 
 | ID | Статус | Достаточный результат / конкретный остаток |
 | --- | --- | --- |
@@ -27,95 +26,90 @@ CI39075933443 завершён:20success/4failure (monitoring/2browser/aggregate
 | A03 | DONE_CHANGED | DTO redaction/JSON, RS256/claims, safeCI uploads; realAuth145unit+200IT PASS0skip/review.8ae9b530/checkoutda31a937,12114133029. |
 | A04 | DONE_CHANGED | RealSQL pages/order/fields/empty/currentstudent isolation PASS: subjects2 enrichment reads/HW1 completion read без per-row роста.8ae9b530,12114232912/review. |
 | M01 | DONE_CHANGED | RealGateway→BFF→TCPgRPC24spans/Rabbit delayedretry→Mongodedup10spans/independentnext event→Tempo+Loki/Grafana, context/privacy/cancel controls, independent runtime review. e283b95c/12114439186; e0pipeline12116514443 повторноPASS. |
-| M02 | IN_PROGRESS | Apps8/node/cAdvisor/Botqueue/2PG blocks и Mongo auth+diagnostic+appreadDENIED+exporter PASS. Остаток: Redis→Rabbitplugin; realreport/job deltas и retainedfamilies из нового asyncbrowser. Infra/Reports. |
+| M02 | IN_PROGRESS | Apps8/node/cAdvisor/Botqueue/2PG blocks и Mongo auth+diagnostic+appreadDENIED+exporter PASS. Redis/Rabbitplugin actualPASS M05; остаток: realreport/job deltas и retainedfamilies из нового asyncbrowser. Infra/Reports. |
 | M03 | IN_PROGRESS | Realresourcequeries/30dengine/logs↔traces PASS e0pipeline299.77s. Scoped dashboard/BFF/queryoracle corrections reviewed. Остаток: retained JVM/Hikari/Tomcat/gRPC/report/Auth panels после2realDOCX. Infra. |
-| M04 | IN_PROGRESS | Старый HEADMAN HTTP/Mongo18week DOCX7/7 PASS85463; realRabbit8cases/mandatory oldRED→GREEN/ACK-return-NACK/retry/poison/dedup PASS e283, receiverPASS. Новыйasync e0 достигdownload, но содержимое НЕ принято. Остаток: обаcorrectDOCX/reconnect/lost202/currentrights и текущий reconciliation. |
-| M05 | IN_PROGRESS | Independent review принял privatequery/auth/admin403/ownedrecreate/positions/provisioning/capacity/settings/storemap. Actual Mongo rights/exporter PASS e0. Общий остаток: Redis monitor rights/exporter. |
+| M04 | IN_PROGRESS | Старый HEADMAN HTTP/Mongo18week DOCX7/7 PASS85463; realRabbit8cases/mandatory oldRED→GREEN/ACK-return-NACK/retry/poison/dedup PASS e283, receiverPASS. Новыйasync e0 достигdownload, но содержимое НЕ принято. Reconciliation samearchive/DLQ/dedup/cleanup actualPASSf8. Остаток: обаcorrectDOCX/reconnect/lost202/currentrights, ordinaryarchive actualf8PASS12118678030 (historical500causeUNKNOWN). |
+| M05 | DONE_CHANGED | e66 realRedisadmin+6NOPERM/exporter/Rabbit and2PG+Mongo rights PASS; privatequery/admin403/recreate/positions/capacity/storemap accepted independentreview.12118842862/SHAfb1a7985… . |
 
-**Закрыто5/9: DONE_CHANGED5, ALREADY_SATISFIED0.** C01 actualPG old-staleRED→
-restoredcommit/rollback2GREEN12113673595 принят. C02 publishedmigration guard/
-28controls ordinaryCI PASS. C03 минимальныероли/source reviewed,2PG+Mongo blocks
-PASS; весьcohort ещёFAIL, productiongrants не применялись.
+**Закрыто6/9: DONE_CHANGED6, ALREADY_SATISFIED0.** C01 настоящийPG oldstaleRED→
+afterCommit commit/rollback2GREEN12113673595; C02 publishedmigration guard/28controlsPASS.
+C03 2PG+Mongo+Redisrights/exporters actualPASS; fullcohort91.85s/cleanupPASS,
+independentlyaccepted12118842862; productiongrants не выполнялись.
 
-## Исполнимый остаток и текущее действие
+## Конечный остаток / next step
 
-1. **Redis exact primary.** e0safe12116514443/SHA63a8e1be…: MongoALLGREEN,
-   затем REDIS_ROLE_AND_EXPORTER/AssertionError, cleanupPASS. Existingcompletedlog
-   не сохранил ветку; ACL/pinnedexporter source не обосновывает расширениеправ.
-   Infra ONEfile check_exporters diagnostics7800ed4b frozen/independentreview
-   04a4a38f APPROVE_RUNTIME_PENDING/publishedf8af7a42. Фиксированные stage/exit/
-   category/UP state, исходные6denials/120s/ACL/images/cleanup сохранены.
-   Новыйf8actual12118332323: REDIS_ADMIN_READINESS/CLIexit1/UNKNOWN, ещё до
-   adminfixture/monitor/denials/exporter. MongoagainPASS, pipeline280.42s/receiver74.36s
-   PASS/cleanupPASS. PinnedRedis7.4.6 officialACLparser требуетuserline, а шаблон содержит3comments.
-   ACLfixea378173 independentlyreviewedbec2d62a/RootintegratedWIP; обеuserlines byteequal. Optional
-   Debian7.0.15 nativeNOT_RUN_SETUP_FAILURE/всёreaped, sourceproof не заменяет
-   следующий actualpinnedCI. Права/таймауты не менялись.
-2. **Новый async DOCX.** e0safe12117836440/SHA354ee958…: download достигнут,
-   Pythoncontenthelper5487 FAIL10409ms/error1; какая из2проверок и точный assert
-   UNKNOWN.8targetsUP, deltasempty, cleanupPASS. Accepted202/storage/navigation
-   больше не первичный отказ; файл не объявлять правильным. Reports solewriter адресно сопоставляет actuallastweekmark/row vs seed/oracle;
-   Найден domainclockseam counterexample: Weeklyservice rawClock masks
-   lastlesson asfuture, тогда как mark/read используют EducationalTime09MSK.
-   Reports solewriter выравнивает existingclockpattern (service+existingunit only),
-   RED01 fixturecompile failed(Objectcast),15770reaped/nosemanticRED.
-   RED02 semantic missingEXCUSED FAIL54s/productunchanged → GREEN01 actualmodel+DOCX
-   regression и existingfuture/missingguard2/2PASS61s. Все процессыreaped;
-   frozen2filesbb36724a/ddf33b2c independentlyapproved/RootintegratedWIP.
-   SAMEspec fixedPythonexit/stage +NAVIGATION/LOST_ACCEPTANCE diagnostic97554397
-   frozen/review73a4a70aAPPROVED/publishedf8af7a42,
-   без rawXML/файла/stdout/stderr/имён и без ослабления18weeks/boundaries/rights.
-   TS/format/21Python+32JSprivacycontrolsPASS. Coherent3source checkpoint опубликованf8af7a42, hooks/commit/push/readbackPASS;
-   следующий ordinaryCI запущен, без ручного повтора неизменённыхPASS.
-3. **Reconciliation.** Исходный fullhealth barrier перенесён ПОСЛЕ восстановления
-   Schedule, при outage остаются running/exactretry/finalDLQ; sourcea1135f4c/review
-   4d64ca92. Actuale0 дошёл через exactDLQ и исходные fullhealth barriers до PENDING_ARCHIVE,
-   но admin request.get(delete-preview)4136 FAIL до response/try (12117802213).
-   Точная requestexception UNKNOWN; cleanup/recoveryeffect/restorationPASS,
-   samearchive/duplicate ещёНЕPASS. Обычный archive/restore gate тожеFAIL вSETUP:
-   attendance mark HTTP500/spec1806 (12117711849), ещё доarchive; causeUNKNOWN,
-   cleanup/clock/disposePASS. Reports source/logRCA завершён: CAS/roster inputs согласованы, но existingprivate500
-   classifier UNAVAILABLE_PRIVATE_INPUT для другого LESSON_REPORT. Нужна точная
-   MARK request-correlated Attendance exceptionclass/frame; Infra подтвердил staleInternalJwtIssuerClientpin и отсутствие MARK collector route/
-   responseRequestId. Reviewed/RootintegratedWIP CI+Actor.call точную корреляцию первого MARK500
-   и currentpin;2filesfrozen e03c0c44/f5f74cce,28JS+inlinePythonprivacy/correlation/
-   TS/format/YAML controlsPASS, independent6f6bbb40 APPROVE_RUNTIME_PENDING; без ослабленияidentity/новогоframework. CauseUNKNOWN, не новыйscope. Finite TimeoutError-vs-OTHER witness8808b910/reviewAPPROVED опубликованf8af7a42,
-   rethrow SAMEerror; retries/budgets/barriers не изменены.
-4. **После2correctDOCX** существующий check_pipeline в том же8appстенде проверяет
-   report/job deltas и actual retained panel queries; не заменятьsourcecontrols.
-5. После достаточных actualPASS — независимая применимость итоговогоevidence,
-   обязательныеcurrentgates, обновить одинHANDOFF с diffот753/inventory/обаSHA.
-   D009 разрешает finaldocs-onlycommit при доказанном sourceidentity.
+1. **M05/C03 закрыты наe66push:**12118842862/SHAfb1a7985… fullmanifestPASS,
+   exporters91.85s/pipeline355.16s/delivery74.37s/cleanupPASS. IndependentReviewAuth
+   связал exactsource и все34manifestconfigs; Redisadmin+6NOPERM/exporter, Mongo/PG
+   права, Rabbitready/unacked/DLQ/timestamp реальны. Machinecapacityнеизмерена,
+   productiongrants/deploy нет; отдельныеDEFERRED_LOCAL остаются.
+2. **Новый async18 DOCX:** e66pushclient12118927134/SHA0e4b13ce FAILlater21353ms: firstNAVIGATION
+   correct18weekDOCX иmarker-clear PASS, lost202 replayPOST/download5694/5699 timeout.
+   Историческое timingUNKNOWN. Sourcecounterexample: прежний offlineowner мог принять
+   click до activation новойсессии. Толькоfixture исправлен3d631113, independentR1
+   CLOSED: session200 + exactold.mobile-shell detached +newhome; реальныйreplaypending. Старыйf8artifact
+   12117919693/SHA47eaa821: first NAVIGATIONdownload ZIP/XML/all18dates/group/first+
+   PASS, LAST_STUDENT_MARK FAIL. Причина доказана: weeklyrawClock != EducationalTime
+   урока. Originalproduct semanticRED54s→alignedconstructor model+actualDOCX и
+   existingfuture/missingguard2GREEN61s, independentlyapprovedbb36724a/ddf33b2c,
+   опубликованоe66. Нужны actual2correctDOCX/navigation/reconnect/lost202/currentrights;
+   oldsync18week7/7/3240marks85463 не заменяетновыйasyncпуть.
+3. **Reconciliation и ordinaryarchive ужеPASS наf8**, не повторять вручную:
+   12118602956/SHAe94fdfcc… exactDLQ→PENDING→APPLIED→samearchiveCOMPLETED→duplicate
+   unchanged/cleanup/restoration/clock; configured3, measuredattemptsUNKNOWN, retainedDLQ1.
+   12118678030/SHA c6d8ddbe… ordinaryarchive→restore79980ms/all3RELEASED/cleanup/
+   clock/disposePASS. Прежняяe0MARK500 причинаUNKNOWN, не объявленаflaky/исправленной.
+   **Диагностика:** опубликованныйMARK collector e03c0c44/f5f74cce reviewed6f6bbb40
+   приватно связываетfirstcanonicalresponseIDдоfiniteprojection, но Root нашёл stale
+   lineguard1580/1806 послеpreview+7lines: actual1587/1813. Infra исправилТОЛЬКО2числа
+   вCI cb7ce1ad +actualsourceboundarycontrol; reviewerAuth rechecka222cd8c/RootWIPaccepted. Никакого
+   измененияправ/identity/schema/FROZEN илиповторнойfullCAPcampaign.
+4. **M02/M03:** после2correctDOCX существующий8app check проверяет реальныеjob/report
+   deltas, retained JVM/Hikari/Tomcat/gRPC/report/Auth panels. Realhost/node/cAdvisor/
+   Botqueue/scopedresourcequeries/30dengine/logs↔traces ужеPASS. Не заменятьactual
+   недостающееsourcecontrols. IndependentM04applicability проверил exactcurrent
+   Auth14ExportJobsIT+2HTTPIT(12114133029/SHA43d1537b…): boundedretry/lease/fencing/
+   idempotency/admission/retention/livegrants/session и worker/client stalecontrols
+   достаточны; новогообязательногоgap сверхэтогоконечногоостатка нет. Это неprocesskill/loadproof.
+5. ПослеactualPASS — finalindependentapplicability/currentmandatorygates и одинhandoff,
+   executablevsfinaldocsSHA/diffот753. D009 допускает finaldocsonlycommit с доказанным
+   sourceidentity; workflowcorrection вэтоисключение не входит. Неполное неDONE.
 
-Не повторять достаточные PASS без затронутого риска.5c assignmentprepare/pending/
-resume actualPASS12116498187 закрылstudy-window fixture; formatselection e0достигает
-файла, selectorfixture закрыт.5cAuthunit доtestsFAIL из-заMavenHTTP429/NO_RESULTS,
-currente0AuthunitSUCCESS, код и expectations для этого не менялись.
+## Решения / owners / ресурсы
 
-## Решения, владельцы, ресурсы
+D032/Q028 WORD — журналстаросты, прежнийdirectHTTP/JavaXMLZIP, неRabbit; исходныйcrashUNKNOWN.
+D035 durableasync job вPG, Gatewayworker вызывает совместимыйHTTPreportAPI; большойDOCX
+непересылаетсячерезRabbit. D033 engineering99.9%/30d, read+login2s/write3s/report30s p95,
+asyncfinal≤60s99.5%; expected4xx/cancel исключены, missing/noDataне100%.
+D034 offhostprobe приdeploy и futurealertbot — два отдельныхDEFERRED_LOCAL.
+Продуктовыхвопросов нет; Q031 ANSWERED/D037: TASK-CONTRACT/CURRENT = persistedGoal. Root soleGit/docs, selectedSol6.1ULTRA; детиSol6.1/high/forknone,
+actualUNKNOWN, capacity7inclRoot. Infra CI2constantcorrection reviewedRootWIP; ReviewAuth
+independentM05+findingrecheck. U14 readonlytechnicalplan active; остальныеidle; всеnative/JVM/Redis leasesRELEASED/reaped.
+LocalDB/Docker/browser/server нет. Полныйownership/resources — resources.md.
+RootdocsWIP сохраняютновыеactuals; foreign25untracked/старыйstand/volumes/keys нетронуты.
+Workspacefloor4GiB; exacttemporaryGitindex/tmp позволилобычныйcommit, normalRootindex
+byteverified restored. Ownpublished824pack72cfc560/SHA4c946d96/backups/tmp; noprune/GC.
+Noreset/main/merge/deploy/newbranch/newPR/Angular/newweb/secrets/otherchats/daemon.
+B013/B014/B015 FROZEN; прежние nativeTelegram/push/install/Safari/manualограничения
+отдельно. Этотэтап не объявляет прежнийаудит иливесьпродукт productionDONE.
 
-D032/Q028 WORD — журнал старосты; прежний renderer HTTP/JavaXMLZIP, неRabbit.
-D035 asyncjob хранится вPG, Gatewayworker вызывает совместимыйHTTP reportAPI;
-большойDOCX вRabbit не пересылается. Исходная причина пользовательского сбояUNKNOWN.
-D033 инженерныецели99.9%/30d, read/login2s/write3s/report30s p95,
-asyncfinal≤60s99.5%; expected4xx/cancel исключены, no-data не100%.
-D034 offhostprobe приdeploy DEFERRED_LOCAL, отдельно futurealertbotDEFERRED_LOCAL.
-**Вопросов владельцу сейчас нет.**
+## КТ0/расширение18.10
 
-Root soleGit/docs integrator selectedSol6.1ULTRA; детиSol6.1/high/forknone,
-actualUNKNOWN. Runtime7 включаяRoot. Soleauthors Infra(reviewedACL1+MARK2),
-Reports(reviewedclock2), все5sourcefiles RootintegratedWIP; обеreviewers независимы.
-Auth read-only observer ждёт только новыеsafe reconciliation/lifecycle artifacts текущегоCI.
-Остальныеidle; все локальные native/JVM/Redis процессыreaped, leasesRELEASED.
-ЛокальныхDB/Docker/browser/server нет. Foreign25untracked/старыйстенд/volumes/keys сохранены.
-Rootdocs5WIP; следующийшаг scopedhooks→обычныйcommit/push/readback→новыйordinaryCI
-для5sourcefixes. ТочныйследующийSHA ещёнеопределён. CPU5/RAM16GiB; workspacefloor4GiB.
-Точный atomicindex+blob+treebudget не помещается45KiB: использовать штатный временный
-Gitindex в/tmp с проверенным сохранением/восстановлениемRootindex; не снижатьfloor.
-Толькоownpublished785objects compacted packb6f928cf/SHAf57e7cb6; refs/index/diff неизменны.
-28ownsafeZIPs сохраненыbyteequal/tmp+исходныеsymlinks; публичныйGradleinstaller также
-сохранён/tmp, но underlyinglowerlayer не дал ожидаемогоfree—повторной уборки нет.
+D036 принято; рольответственного за выбранные сценарии/адресныйrefactor, Root интегратор.
+D037: ownerподтвердил TASK-CONTRACT/CURRENT как persistedGoal.
+Объединённаяцель18 ACTIVEвфайлах; старые17criteria/6из9 сохраняютсявнутри, неfalsecomplete.
+ОтдельныйplatformGoalAPI неимитируется; повторногоGO на выбранныйscope нет.
+Матрицаv1-КТ1 FROZEN: 8/25, weights38/123 = 30.89% плана, неproduction-readiness.
+Старые6/9 отдельно. Состав/criteria/weights зафиксированыКТ1 до новойреализации;
+условныеunselected integrations иownerDEFERRED отдельновне denominator; U23assessment обязателен.
+КТ1 nativeagents readonly: Auth HTTP/DTO/DI/access; Propagation owner/startup/cache;
+Reports files/notifications/menu/UI/k6; Infra Alloy/conditionaltools. Root сохраняет
+критический DOCX/CI остаток; reviewers независимы. Ресурсно native7inclRoot,
+без новых heavy/runtimeleases. Существенные productвопросы после boundedsourcecheck.
 
-Noreset/prune/main/merge/deploy/newbranch/newPR/Angular/newweb/secrets/otherchats/
-daemon. B013/B014/B015 FROZEN и прежние nativeTelegram/push/install/Safari/manual
-ограничения остаются отдельно; новыйэтап не объявляет прежнийаудит/productionDONE.
+КТ1 mappings сохранены attempts/matrixv1. U23assessment ALREADY_SATISFIED,
+четыре условных integration UNSELECTED. U07 final3d631113 independentlyaccepted,
+secondLOST_ACCEPTANCE/currentrights/runtime ещёpending; CI diagnosticguard меняет
+только stale2lineconstants. Готовый пакет:2source+10taskdocs, безновойпродуктовойправки.
+Послеpush — новые currentbaselineWT для HTTP/DI/access, atomicownerboundary,
+Alloy/Redis и ролевогобота/файлов. Старые753WT/WIP сохраняются, noreset.

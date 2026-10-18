@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.botcredentials;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 
@@ -307,8 +308,10 @@ class BotCredentialPythonBridgeIT {
                             }
                             var output = child.getInputStream().readAllBytes();
                             boolean qualified;
+                            BridgePhase phase = BridgePhase.OTHER;
                             try {
                                 var result = mapper.readTree(output);
+                                phase = BridgePhase.from(result.path("phase"));
                                 qualified =
                                         result.path("qualified").asBoolean(false)
                                                 && result.path("actual_tls").asBoolean(false)
@@ -327,8 +330,13 @@ class BotCredentialPythonBridgeIT {
                                 throw new AssertionError(
                                         "NP01 bridge did not return safe qualified outcomes");
                             }
-                            assertThat(child.exitValue()).isZero();
-                            assertThat(qualified).isTrue();
+                            String branchName = branch.isEmpty() ? "CREDENTIALS" : "OWN_HOMEWORK";
+                            assertThat(child.exitValue())
+                                    .as("NP01_BRIDGE branch=%s phase=%s", branchName, phase)
+                                    .isZero();
+                            assertThat(qualified)
+                                    .as("NP01_BRIDGE branch=%s phase=%s", branchName, phase)
+                                    .isTrue();
                         }
                         assertThat(
                                         jdbc.queryForObject(
@@ -349,6 +357,58 @@ class BotCredentialPythonBridgeIT {
                     assertThat(server.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                 }
             }
+        }
+    }
+
+    /** Only fixed runner phase literals may appear in a native assertion diagnostic. */
+    private enum BridgePhase {
+        SETUP,
+        REAL_TLS_DIRECTED_AUTH_BOUNDARIES,
+        OWN_ROLES_NATIVE_DISPATCHER,
+        PRIVACY_BEFORE_ANY_LOOKUP,
+        FOREIGN_UID_DENIAL,
+        ORIGINAL_UID_CLEANUP_AFTER_REBIND,
+        EVENT_BEFORE_REGISTER,
+        LATE_EDIT_AFTER_EXACT_DELETE,
+        UNCERTAIN_OUTCOME_PRESERVES_DURABLE_RETRY,
+        SETTLED_SANITIZE_FALLBACK,
+        OLD_EVENT_CANNOT_REMOVE_LATER_CARD,
+        GRANT_REVOCATION_NO_NEW_DELIVERY,
+        ARCHIVE_PRESERVES_EXACT_OLD_CARD_CLEANUP,
+        OWN_HOMEWORK_PROFILE,
+        OWN_HOMEWORK_HANDLERS,
+        OWN_HOMEWORK_TRANSPORT_DENIALS,
+        OWN_HOMEWORK_REVOKED_GRANT,
+        OWN_HOMEWORK_REBOUND_TELEGRAM,
+        COMPLETE,
+        OTHER;
+
+        static BridgePhase from(JsonNode value) {
+            if (!value.isTextual()) return OTHER;
+            return switch (value.textValue()) {
+                case "setup" -> SETUP;
+                case "real_tls_directed_auth_boundaries" -> REAL_TLS_DIRECTED_AUTH_BOUNDARIES;
+                case "own_roles_native_dispatcher" -> OWN_ROLES_NATIVE_DISPATCHER;
+                case "privacy_before_any_lookup" -> PRIVACY_BEFORE_ANY_LOOKUP;
+                case "foreign_uid_denial" -> FOREIGN_UID_DENIAL;
+                case "original_uid_cleanup_after_rebind" -> ORIGINAL_UID_CLEANUP_AFTER_REBIND;
+                case "event_before_register" -> EVENT_BEFORE_REGISTER;
+                case "late_edit_after_exact_delete" -> LATE_EDIT_AFTER_EXACT_DELETE;
+                case "uncertain_outcome_preserves_durable_retry" ->
+                        UNCERTAIN_OUTCOME_PRESERVES_DURABLE_RETRY;
+                case "settled_sanitize_fallback" -> SETTLED_SANITIZE_FALLBACK;
+                case "old_event_cannot_remove_later_card" -> OLD_EVENT_CANNOT_REMOVE_LATER_CARD;
+                case "grant_revocation_no_new_delivery" -> GRANT_REVOCATION_NO_NEW_DELIVERY;
+                case "archive_preserves_exact_old_card_cleanup" ->
+                        ARCHIVE_PRESERVES_EXACT_OLD_CARD_CLEANUP;
+                case "own_homework_profile" -> OWN_HOMEWORK_PROFILE;
+                case "own_homework_handlers" -> OWN_HOMEWORK_HANDLERS;
+                case "own_homework_transport_denials" -> OWN_HOMEWORK_TRANSPORT_DENIALS;
+                case "own_homework_revoked_grant" -> OWN_HOMEWORK_REVOKED_GRANT;
+                case "own_homework_rebound_telegram" -> OWN_HOMEWORK_REBOUND_TELEGRAM;
+                case "complete", "completed" -> COMPLETE;
+                default -> OTHER;
+            };
         }
     }
 

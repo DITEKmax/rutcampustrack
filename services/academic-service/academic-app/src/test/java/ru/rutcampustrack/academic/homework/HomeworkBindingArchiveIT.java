@@ -35,6 +35,7 @@ import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
 import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.SemesterArchiveOperation;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
@@ -153,9 +154,13 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
     void scheduledRetryRedrivesMaterializedPendingPublicationAfterScheduleAlreadyReady() {
         Homework pending = persistPending();
         UUID commandKey = UUID.randomUUID();
-        var operation =
-                archiveCommands.startOrReplay(
-                        semesterId, adminId, commandKey, SemesterArchiveAction.ARCHIVE);
+        var administrator = identityFixture.select(adminId, AuthRole.ADMIN);
+        SemesterArchiveOperation operation;
+        try (var ignored = identityFixture.request(administrator, commandKey)) {
+            operation =
+                    archiveCommands.startOrReplay(
+                            semesterId, adminId, commandKey, SemesterArchiveAction.ARCHIVE);
+        }
         archiveOperationIds.add(operation.getOperationId());
 
         var ready =
@@ -215,9 +220,14 @@ SELECT participant_state FROM academic_semester_archive_barriers WHERE semester_
 
     @Test
     void noContentCancellationTombstoneSurvivesRestoreAndIsNotRecapturedByNextArchive() {
-        var firstArchive =
-                archiveCommands.startOrReplay(
-                        semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        var administrator = identityFixture.select(adminId, AuthRole.ADMIN);
+        UUID firstArchiveKey = UUID.randomUUID();
+        SemesterArchiveOperation firstArchive;
+        try (var ignored = identityFixture.request(administrator, firstArchiveKey)) {
+            firstArchive =
+                    archiveCommands.startOrReplay(
+                            semesterId, adminId, firstArchiveKey, SemesterArchiveAction.ARCHIVE);
+        }
         archiveOperationIds.add(firstArchive.getOperationId());
         long occurrenceId = bindingId + 1;
         long scheduleRevision = 1L;
@@ -338,9 +348,13 @@ SELECT resolution_state, terminal_event_id, schedule_occurrence_id, schedule_rev
                 null);
         archiveCommands.completeArchive(firstArchive.getOperationId());
 
-        var restore =
-                archiveCommands.startOrReplay(
-                        semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.RESTORE);
+        UUID restoreKey = UUID.randomUUID();
+        SemesterArchiveOperation restore;
+        try (var ignored = identityFixture.request(administrator, restoreKey)) {
+            restore =
+                    archiveCommands.startOrReplay(
+                            semesterId, adminId, restoreKey, SemesterArchiveAction.RESTORE);
+        }
         archiveOperationIds.add(restore.getOperationId());
         archiveCommands.recordParticipant(
                 restore.getOperationId(),
@@ -393,9 +407,13 @@ SELECT resolution_state, terminal_event_id, schedule_occurrence_id, schedule_rev
         Homework lateRetry = persistPending();
         assertThat(lateRetry.getPublicationState().name()).isEqualTo("ARCHIVED");
 
-        var nextArchive =
-                archiveCommands.startOrReplay(
-                        semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        UUID nextArchiveKey = UUID.randomUUID();
+        SemesterArchiveOperation nextArchive;
+        try (var ignored = identityFixture.request(administrator, nextArchiveKey)) {
+            nextArchive =
+                    archiveCommands.startOrReplay(
+                            semesterId, adminId, nextArchiveKey, SemesterArchiveAction.ARCHIVE);
+        }
         archiveOperationIds.add(nextArchive.getOperationId());
         assertThat(
                         jdbcTemplate.queryForObject(

@@ -208,6 +208,24 @@ public class UserService {
     }
 
     public ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier.Result
+            listUserRegistryForReport(
+                    ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels.Users query,
+                    Pageable pageable,
+                    ru.rutcampustrack.academic.exportjobs.ExportJobService.UserRegistryReadScope
+                            reportScope) {
+        java.util.Objects.requireNonNull(reportScope).requireSelector(query);
+        return registryBarrier.readForReport(
+                () ->
+                        listUsersLocal(
+                                query.search(),
+                                query.role(),
+                                query.status(),
+                                query.roleStatus(),
+                                pageable),
+                reportScope);
+    }
+
+    public ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier.Result
             findUserDetail(long userId) {
         return registryBarrier.read(
                 () ->

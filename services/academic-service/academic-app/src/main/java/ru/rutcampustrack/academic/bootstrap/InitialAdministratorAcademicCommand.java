@@ -5,16 +5,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.identitycatalog.JdbcIdentityCatalogProjection;
 import ru.rutcampustrack.authauthority.grpc.IdentityCatalogChangesResponse;
 
-import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+
+import javax.sql.DataSource;
 
 /** Operator-only own-Academic-DB steps; never receives the initial password or request file. */
 public final class InitialAdministratorAcademicCommand {
@@ -53,6 +56,9 @@ public final class InitialAdministratorAcademicCommand {
         // A plain main deliberately has no Boot LoggingSystem. Keep all library diagnostics
         // off the private protocol channel, including SQL/configuration exception details.
         var protocol = System.out;
+        var diagnostic = System.err;
+        boolean diagnostics = "1".equals(System.getenv("RCT_INITIAL_ADMIN_DIAGNOSTICS"));
+        String phase = "INPUT";
         try {
             System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
             System.setErr(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
@@ -61,6 +67,7 @@ public final class InitialAdministratorAcademicCommand {
             if (bytes.length > 1_048_576) throw refused();
             var input = JSON.readTree(bytes);
             // Bind existing ConfigData/configtree only. No Spring context or auto-configuration.
+            phase = "CONFIG";
             var environment = new StandardEnvironment();
             ConfigDataEnvironmentPostProcessor.applyTo(environment);
             var data =
@@ -68,12 +75,45 @@ public final class InitialAdministratorAcademicCommand {
                             environment.getRequiredProperty("spring.datasource.url"),
                             environment.getRequiredProperty("spring.flyway.user"),
                             environment.getRequiredProperty("spring.flyway.password"));
+            phase = "EXECUTE";
             var result = new InitialAdministratorAcademicCommand(data).execute(args[0], input);
+            phase = "OUTPUT";
             protocol.println(JSON.writeValueAsString(result));
         } catch (Exception failure) {
             protocol.println("{\"status\":\"REFUSED\"}");
+            if (diagnostics)
+                diagnostic.println(
+                        "BOOTSTRAP_OWNER_FAILURE_V1 owner=ACADEMIC phase="
+                                + phase
+                                + " category="
+                                + failureCategory(phase, failure));
             System.exit(2);
         }
+    }
+
+    /**
+     * Closed diagnostic categories only; SQL state and exception material never leave this main.
+     */
+    private static String failureCategory(String phase, Exception failure) {
+        if ("INPUT".equals(phase)) return "INPUT";
+        if ("CONFIG".equals(phase)) return "CONFIG";
+        Throwable cause = failure;
+        for (int depth = 0; cause != null && depth < 8; depth++, cause = cause.getCause()) {
+            if (cause instanceof java.sql.SQLException sql) {
+                String state = sql.getSQLState();
+                if (state != null) {
+                    if (state.startsWith("28") || state.equals("42501")) return "DB_PERMISSION";
+                    if (state.startsWith("08")) return "DB_CONNECT";
+                    if (state.startsWith("42")) return "DB_SCHEMA";
+                    if (state.startsWith("23")) return "DB_CONSTRAINT";
+                }
+                return "OTHER";
+            }
+        }
+        if (failure instanceof org.springframework.jdbc.CannotGetJdbcConnectionException)
+            return "DB_CONNECT";
+        if (failure instanceof IllegalArgumentException) return "GUARD";
+        return "OTHER";
     }
 
     public ObjectNode execute(String stage, JsonNode input) {

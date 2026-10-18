@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.util.AopTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ru.rutcampustrack.academic.contract.dto.IdentityOperationHttpModels;
@@ -150,6 +152,11 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         Group group = createGroup();
         User student = createStudent(group.getId());
         LocalDate transitionDate = LocalDate.now(MOSCOW);
+        String admissionReason =
+                historyRepository
+                        .findByUserIdOrderByJoinedAtAscIdAsc(student.getId())
+                        .getFirst()
+                        .getReason();
 
         updateRoleGrant(
                 student.getId(),
@@ -160,6 +167,7 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId());
         assertThat(afterExpulsion).hasSize(1);
         assertThat(afterExpulsion.get(0).getLeftAt()).isEqualTo(transitionDate);
+        assertThat(afterExpulsion.getFirst().getReason()).isEqualTo(admissionReason);
 
         updateRoleGrant(
                 student.getId(),
@@ -172,6 +180,7 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         assertThat(afterReactivation.get(0).getLeftAt()).isEqualTo(transitionDate);
         assertThat(afterReactivation.get(1).getJoinedAt()).isEqualTo(transitionDate);
         assertThat(afterReactivation.get(1).getLeftAt()).isNull();
+        String reactivationReason = afterReactivation.get(1).getReason();
 
         updateRoleGrant(
                 student.getId(),
@@ -182,6 +191,8 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId());
         assertThat(afterGraduation).hasSize(2);
         assertThat(afterGraduation.get(1).getLeftAt()).isEqualTo(transitionDate);
+        assertThat(afterGraduation.getFirst().getReason()).isEqualTo(admissionReason);
+        assertThat(afterGraduation.get(1).getReason()).isEqualTo(reactivationReason);
     }
 
     @Test
@@ -207,8 +218,16 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
         long beforeOutbox =
                 jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox", Long.class);
         AtomicBoolean appliedBeforeFailure = new AtomicBoolean();
+        // Stub the underlying Mockito target; the actual coordinator still invokes the
+        // transactional bean proxy. MANDATORY must not run merely to register a stub.
+        AcademicIdentityDomainWriter writerSpy = AopTestUtils.getUltimateTargetObject(domainWriter);
+        assertThat(mockingDetails(writerSpy).isSpy()).isTrue();
         doAnswer(
                         call -> {
+                            assertThat(
+                                            TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isTrue();
                             call.callRealMethod();
                             entityManager.flush();
                             assertThat(
@@ -229,7 +248,7 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                             throw new DataAccessResourceFailureException(
                                     "injected failure after role revocation");
                         })
-                .when(domainWriter)
+                .when(writerSpy)
                 .apply(any(), any(), any(), anyLong());
         UUID operation = UUID.randomUUID();
         var suspend = new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null);
@@ -240,7 +259,7 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                             AcademicIdentityPendingException.class,
                             pending -> assertPending(pending, operation));
         } finally {
-            doCallRealMethod().when(domainWriter).apply(any(), any(), any(), anyLong());
+            doCallRealMethod().when(writerSpy).apply(any(), any(), any(), anyLong());
         }
         assertThat(appliedBeforeFailure)
                 .as("real local suspension DML preceded the injected fault")

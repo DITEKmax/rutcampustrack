@@ -21,12 +21,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.SemesterArchiveOperation;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.event.LessonTransferEventConsumer;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 /** Real Academic PostgreSQL participant and publication checks for chained transfers. */
 class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
@@ -497,9 +499,14 @@ SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
         transferConsumer.onEvent(transferEvent);
 
         long adminId = identityFixture.canonical().adminId();
-        var archive =
-                archiveCommands.startOrReplay(
-                        semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        var administrator = identityFixture.select(adminId, AuthRole.ADMIN);
+        UUID archiveKey = UUID.randomUUID();
+        SemesterArchiveOperation archive;
+        try (var ignored = identityFixture.request(administrator, archiveKey)) {
+            archive =
+                    archiveCommands.startOrReplay(
+                            semesterId, adminId, archiveKey, SemesterArchiveAction.ARCHIVE);
+        }
         archiveOperationIds.add(archive.getOperationId());
         AcademicSemesterArchiveBarrierTransaction.BindingResolution resolution =
                 archiveBarrier.preparePendingBindingResolution(

@@ -1,12 +1,17 @@
 package ru.rutcampustrack.academic.bootstrap;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.protobuf.ByteString;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.lettuce.core.resource.DefaultClientResources;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +31,7 @@ import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.auth.authority.AuthAdminJdbcAuthority;
 import ru.rutcampustrack.auth.authority.AuthIdentityOperationStore;
 import ru.rutcampustrack.auth.authority.AuthInternalActorReader;
@@ -64,9 +70,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * Fresh synthetic two-DB bootstrap through the actual offline command handlers and Auth lifecycle.
  */
@@ -74,6 +77,13 @@ class InitialAdministratorBootstrapIT {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final String DB_PASSWORD = "synthetic-bootstrap-database-only";
     private static final String INITIAL = "Synthetic-bootstrap-123!";
+    private static final java.util.regex.Pattern CLI_PHASE =
+            java.util.regex.Pattern.compile(
+                    "BOOTSTRAP_CLI_PHASE_V1"
+                        + " phase=(PARSE|READ_REQUEST|VALIDATE_REQUEST|AUTH_PREPARE|ACADEMIC_APPLY|ACADEMIC_VERIFY|AUTH_ACTIVATE|ACADEMIC_CURSOR|AUTH_CATALOG|ACADEMIC_FINALIZE|RESULT|OTHER)"
+                        + " reason=(INPUT|IO|CHILD_START|CHILD_TIMEOUT|CHILD_EXIT|OUTPUT_LIMIT|REPLY_JSON|REPLY_GUARD|PROTOCOL|OTHER)"
+                        + " ownerPhase=(NONE|INPUT|CONFIG|EXECUTE|OUTPUT|NO_MARKER|OTHER)"
+                        + " category=(NONE|CONFIG|INPUT|DB_CONNECT|DB_PERMISSION|DB_SCHEMA|DB_CONSTRAINT|GUARD|OTHER)\\n");
     private PostgreSQLContainer<?> postgres;
     private DriverManagerDataSource authOwner;
     private DriverManagerDataSource academicOwner;
@@ -914,7 +924,7 @@ class InitialAdministratorBootstrapIT {
         while (root != null && !Files.isRegularFile(root.resolve("settings.gradle.kts")))
             root = root.getParent();
         if (root == null) throw new AssertionError("bootstrap repository required");
-        var child =
+        var command =
                 new ProcessBuilder(
                                 "python3",
                                 root.resolve("scripts/bootstrap-initial-admin.py").toString(),
@@ -922,20 +932,38 @@ class InitialAdministratorBootstrapIT {
                                 request.toString(),
                                 "--compose-file",
                                 compose.toString())
-                        .directory(root.toFile())
-                        .start();
+                        .directory(root.toFile());
+        // This exact actual CLI lane opts in; ordinary operator invocations remain unchanged.
+        command.environment().put("RCT_INITIAL_ADMIN_DIAGNOSTICS", "1");
+        var child = command.start();
         try {
             child.getOutputStream().close();
             if (!child.waitFor(success ? 120 : 30, TimeUnit.SECONDS))
                 throw new AssertionError("bounded operator CLI did not exit");
             byte[] output = child.getInputStream().readNBytes(4097);
             byte[] errors = child.getErrorStream().readNBytes(4097);
+            var diagnostic =
+                    CLI_PHASE.matcher(new String(errors, java.nio.charset.StandardCharsets.UTF_8));
+            boolean closedDiagnostic = errors.length <= 4096 && diagnostic.matches();
+            String phase = closedDiagnostic ? diagnostic.group(1) : "OTHER";
+            String reason = closedDiagnostic ? diagnostic.group(2) : "OTHER";
+            String ownerPhase = closedDiagnostic ? diagnostic.group(3) : "OTHER";
+            String category = closedDiagnostic ? diagnostic.group(4) : "OTHER";
             String guard = null;
             if (child.exitValue() != (success ? 0 : 2)) guard = "UNEXPECTED_EXIT";
             else if (output.length > 4096) guard = "OVERSIZED_STDOUT";
-            else if (errors.length != 0) guard = "NONEMPTY_STDERR";
+            else if (success && errors.length != 0) guard = "NONEMPTY_STDERR";
+            else if (!success && !closedDiagnostic) guard = "INVALID_DIAGNOSTIC";
             else if (new String(output, java.nio.charset.StandardCharsets.UTF_8).contains(INITIAL))
                 guard = "SECRET_MARKER";
+            else if (!success
+                    && !("AUTH_PREPARE".equals(phase)
+                            && "CHILD_EXIT".equals(reason)
+                            && ("CONFIG".equals(ownerPhase) && "CONFIG".equals(category)
+                                    || "EXECUTE".equals(ownerPhase)
+                                            && "DB_PERMISSION".equals(category))))
+                // A preflight/request/launcher failure is not proof of missing protected config.
+                guard = "UNEXPECTED_REFUSAL_PHASE";
             if (guard != null) {
                 int actualExit = child.exitValue();
                 throw new AssertionError(
@@ -946,7 +974,15 @@ class InitialAdministratorBootstrapIT {
                                 + " expectedExit="
                                 + (success ? 0 : 2)
                                 + " actualExit="
-                                + (actualExit >= 0 && actualExit <= 255 ? actualExit : "OTHER"));
+                                + (actualExit >= 0 && actualExit <= 255 ? actualExit : "OTHER")
+                                + " phase="
+                                + phase
+                                + " reason="
+                                + reason
+                                + " ownerPhase="
+                                + ownerPhase
+                                + " category="
+                                + category);
             }
             try {
                 var result = JSON.readTree(output);

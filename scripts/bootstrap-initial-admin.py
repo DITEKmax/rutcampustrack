@@ -12,8 +12,39 @@ import sys
 import uuid
 
 
+DIAGNOSTIC_ENV = "RCT_INITIAL_ADMIN_DIAGNOSTICS"
+PHASES = frozenset({"PARSE", "READ_REQUEST", "VALIDATE_REQUEST", "AUTH_PREPARE",
+                    "ACADEMIC_APPLY", "ACADEMIC_VERIFY", "AUTH_ACTIVATE", "ACADEMIC_CURSOR",
+                    "AUTH_CATALOG", "ACADEMIC_FINALIZE", "RESULT", "OTHER"})
+REASONS = frozenset({"INPUT", "IO", "CHILD_START", "CHILD_TIMEOUT", "CHILD_EXIT",
+                     "OUTPUT_LIMIT", "REPLY_JSON", "REPLY_GUARD", "PROTOCOL", "OTHER"})
+OWNER_PHASES = frozenset({"NONE", "INPUT", "CONFIG", "EXECUTE", "OUTPUT", "NO_MARKER", "OTHER"})
+CATEGORIES = frozenset({"NONE", "CONFIG", "INPUT", "DB_CONNECT", "DB_PERMISSION",
+                        "DB_SCHEMA", "DB_CONSTRAINT", "GUARD", "OTHER"})
+OWNER_MARKER = re.compile(
+    rb"BOOTSTRAP_OWNER_FAILURE_V1 owner=(AUTH|ACADEMIC) "
+    rb"phase=(INPUT|CONFIG|EXECUTE|OUTPUT) "
+    rb"category=(CONFIG|INPUT|DB_CONNECT|DB_PERMISSION|DB_SCHEMA|DB_CONSTRAINT|GUARD|OTHER)"
+)
+
+
 class Refused(Exception):
-    pass
+    def __init__(self, *, reason=None, owner_phase="NONE", category="NONE"):
+        super().__init__()
+        self.reason = reason
+        self.owner_phase = owner_phase
+        self.category = category
+
+
+def owner_diagnostic(errors, owner):
+    # Inspect only this bounded private channel. Never return a line or unmatched material.
+    lines = [line for line in errors.splitlines() if b"BOOTSTRAP_OWNER_FAILURE_V1" in line]
+    if not lines:
+        return "NO_MARKER", "OTHER"
+    if len(lines) == 1 and (match := OWNER_MARKER.fullmatch(lines[0])):
+        if match[1].decode("ascii") == owner.upper():
+            return match[2].decode("ascii"), match[3].decode("ascii")
+    return "OTHER", "OTHER"
 
 
 class ClosedParser(argparse.ArgumentParser):
@@ -95,24 +126,39 @@ def validate_request(request):
     canonical(profile)  # Reject unpaired Unicode surrogates before making any DB command.
 
 
-def invoke(compose_files, service, stage, payload):
+def invoke(compose_files, service, stage, payload, *, diagnostics=False):
     owner = {"auth-service": "auth", "academic-service": "academic"}[service]
     name = "Auth" if owner == "auth" else "Academic"
     main = f"ru.rutcampustrack.{owner}.bootstrap.InitialAdministrator{name}Command"
     command = ["docker", "compose"]
     for path in compose_files:
         command += ["-f", path]
-    command += ["run", "--rm", "--no-deps", "-T", "--entrypoint", "java", service,
+    command += ["run", "--rm", "--no-deps", "-T", "--entrypoint", "java"]
+    if diagnostics:
+        # The parent opt-in is not implicitly inherited by Compose's one-shot containers.
+        command += ["--env", DIAGNOSTIC_ENV + "=1"]
+    command += [service,
                 "-XX:-HeapDumpOnOutOfMemoryError", "-XX:ErrorFile=/dev/null",
                 f"-Dloader.main={main}", "org.springframework.boot.loader.launch.PropertiesLauncher", stage]
-    result = subprocess.run(command, input=canonical(payload), capture_output=True,
-                            timeout=30, check=False, close_fds=True)
+    try:
+        result = subprocess.run(command, input=canonical(payload), capture_output=True,
+                                timeout=30, check=False, close_fds=True)
+    except subprocess.TimeoutExpired:
+        raise Refused(reason="CHILD_TIMEOUT") from None
+    except OSError:
+        raise Refused(reason="CHILD_START") from None
     # Child output remains private. Never forward DB/launcher/compose stderr or exception text.
-    if result.returncode != 0 or len(result.stdout) > 1_048_576 or len(result.stderr) > 16384:
-        raise Refused()
-    reply = json.loads(result.stdout.decode("utf-8"), object_pairs_hook=unique_object)
+    if len(result.stdout) > 1_048_576 or len(result.stderr) > 16384:
+        raise Refused(reason="OUTPUT_LIMIT")
+    if result.returncode != 0:
+        phase, category = owner_diagnostic(result.stderr, owner) if diagnostics else ("NONE", "NONE")
+        raise Refused(reason="CHILD_EXIT", owner_phase=phase, category=category)
+    try:
+        reply = json.loads(result.stdout.decode("utf-8"), object_pairs_hook=unique_object)
+    except (ValueError, UnicodeError, Refused):
+        raise Refused(reason="REPLY_JSON") from None
     if not isinstance(reply, dict) or reply.get("status") == "REFUSED":
-        raise Refused()
+        raise Refused(reason="REPLY_GUARD")
     return reply
 
 
@@ -167,17 +213,54 @@ def bootstrap(request, call):
 
 
 def main(argv=None):
+    diagnostics = os.environ.get(DIAGNOSTIC_ENV) == "1"
+    phase, reason = "PARSE", "INPUT"
     parser = ClosedParser(description="Explicit initial FULL administrator bootstrap")
     parser.add_argument("--request-file", required=True)
     parser.add_argument("--compose-file", action="append", required=True)
     try:
         args = parser.parse_args(argv)
+        phase = "READ_REQUEST"
         request = read_request(args.request_file)
-        result = bootstrap(request, lambda service, stage, body: invoke(args.compose_file, service, stage, body))
+        phase = "VALIDATE_REQUEST"
+
+        def call(service, stage, body):
+            nonlocal phase, reason
+            phase = {
+                ("auth-service", "prepare"): "AUTH_PREPARE",
+                ("academic-service", "apply"): "ACADEMIC_APPLY",
+                ("academic-service", "verify"): "ACADEMIC_VERIFY",
+                ("auth-service", "activate"): "AUTH_ACTIVATE",
+                ("academic-service", "cursor"): "ACADEMIC_CURSOR",
+                ("auth-service", "catalog"): "AUTH_CATALOG",
+                ("academic-service", "finalize"): "ACADEMIC_FINALIZE",
+            }.get((service, stage), "OTHER")
+            reason = "OTHER"
+            reply = invoke(args.compose_file, service, stage, body, diagnostics=diagnostics)
+            reason = "PROTOCOL"
+            return reply
+
+        result = bootstrap(request, call)
+        phase, reason = "RESULT", "OTHER"
         print(json.dumps(result, separators=(",", ":")))
         return 0
-    except Exception:
+    except Exception as failure:
         print('{"status":"REFUSED"}')
+        if diagnostics:
+            owner_phase, category = "NONE", "NONE"
+            if isinstance(failure, Refused):
+                reason = failure.reason if failure.reason in REASONS else reason
+                owner_phase = failure.owner_phase if failure.owner_phase in OWNER_PHASES else "OTHER"
+                category = failure.category if failure.category in CATEGORIES else "OTHER"
+            elif isinstance(failure, OSError):
+                reason = "IO"
+            elif isinstance(failure, (ValueError, UnicodeError)):
+                reason = "INPUT"
+            else:
+                reason = "OTHER"
+            print("BOOTSTRAP_CLI_PHASE_V1 phase=" + (phase if phase in PHASES else "OTHER")
+                  + " reason=" + (reason if reason in REASONS else "OTHER")
+                  + " ownerPhase=" + owner_phase + " category=" + category, file=sys.stderr)
         return 2
 
 

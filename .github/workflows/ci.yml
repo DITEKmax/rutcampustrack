@@ -842,12 +842,12 @@ jobs:
               if service == 'academic-service':
                   spring_source = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
                   spring_test = spring_source.read_bytes()
-                  assert hashlib.sha256(spring_test).hexdigest() == '0ce360ecd435c35ab2d8ed22bcce91b1c5d47c8648b5684302f7f429fd3accfe'
+                  assert hashlib.sha256(spring_test).hexdigest() == 'cd85ef47179def33ca01eafa5e9777dc9c9ccff3ecb6b869acbaf14f8e834238'
                   assert spring_test == subprocess.check_output(['git', 'show', 'HEAD:' + spring_source.as_posix()])
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(spring_source)]) == b''
                   spring_lines = spring_test.decode().splitlines()
-                  assert spring_lines[903].strip() == 'void unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState()'
-                  assert spring_lines[981].strip() == '.andExpect(status().isConflict());'
+                  assert spring_lines[1073].strip() == 'void unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState()'
+                  assert spring_lines[1130].strip() == '.andExpect(status().isConflict());'
                   spring_service = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java'
                   spring_repository = app / 'src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java'
                   spring_faults = {
@@ -879,7 +879,7 @@ jobs:
                       'testSourceSha256': hashlib.sha256(spring_test).hexdigest(),
                       'productionSourceSha256': {str(path): values[0] for path, values in spring_faults.items()},
                       'counterexampleSourceSha256': {str(path): values[3] for path, values in spring_faults.items()},
-                      'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:982)'}
+                      'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:1131)'}
 
                   # Captured teacher pairs moved to Academic; T008 grant policy is unchanged.
                   teacher_source = app / 'src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java'
@@ -955,14 +955,14 @@ jobs:
                       'package': 'ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT',
                       'method': 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
                       'source': 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java',
-                      'testSha': '24416e2147a4e286cce6a2139b87159cf458a751e16e67dc6766a13ef75cd15f',
+                      'testSha': '221e9cb87caa2325fd515a34e059f37be58019af7c86819d42a65bdb4cdda70f',
                       'production': 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java',
                       'productionSha': '57f2482b4bcd2d4d6a5b60074b96130b017734a66f10e07b3cbc4034754c0185',
                       'anchor': '        return AdminPermission.validate(input.mode(), input.permissions());',
                       'changed': '        return AdminPermission.validate(input.mode(), input.permissions().stream().filter(java.util.Objects::nonNull).filter(AdminPermission.allCodes()::contains).toList());',
                       'negativeSha': '6f4df7c79d31283b5c67a8db4820627d96198fba7ab65d9d159c89d4b9a42027',
                       'counterexample': 'SILENTLY_FILTERED_UNKNOWN_AND_NULL_ADMIN_PERMISSION_ELEMENTS',
-                      'ruleLine': 379,
+                      'ruleLine': 385,
                       'ruleSource': '.andExpect(status().isBadRequest())',
                       'messagePattern': 'Status expected:<400> but was:<200>',
                   },
@@ -1503,7 +1503,7 @@ jobs:
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
                       + re.escape(spring_completion['package'] + '.' + spring_completion['method'])
                       + r'\(GroupPromotionCycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', spring_failure.text or '')
-                  assert spring_named_lines == ['982']
+                  assert spring_named_lines == ['1131']
                   proof['springCompletionRule'].update(
                       state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
                       tests=1, failures=1, errors=0, skipped=0,
@@ -1571,7 +1571,7 @@ jobs:
                   proof['initialMembershipRule']['sourceRestoredExact'] = True
 
               if spring_completion is not None and current:
-                  assert hashlib.sha256(spring_completion['source'].read_bytes()).hexdigest() == '0ce360ecd435c35ab2d8ed22bcce91b1c5d47c8648b5684302f7f429fd3accfe'
+                  assert hashlib.sha256(spring_completion['source'].read_bytes()).hexdigest() == 'cd85ef47179def33ca01eafa5e9777dc9c9ccff3ecb6b869acbaf14f8e834238'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(spring_completion['source'])]) == b''
                   for path, values in spring_completion['production'].items():
                       assert hashlib.sha256(path.read_bytes()).hexdigest() == values[0]
@@ -1937,7 +1937,7 @@ jobs:
                   'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java', '38dce1cf49a8d538f896325cdf08a258109cc06f3a3ff07b313fd2f07c389fe6',
                   'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java', 'ede653fea92fb03039727dd0223ae1d14e41f348c8e0e289d85cdf4355db7531'),
               'academic-service': ('ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT', 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
-                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', '24416e2147a4e286cce6a2139b87159cf458a751e16e67dc6766a13ef75cd15f',
+                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', '221e9cb87caa2325fd515a34e059f37be58019af7c86819d42a65bdb4cdda70f',
                   'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java', '57f2482b4bcd2d4d6a5b60074b96130b017734a66f10e07b3cbc4034754c0185'),
           }
           package, method, source, digest, production, production_digest = boundary_targets[service]
@@ -1955,7 +1955,7 @@ jobs:
               package = 'ru.rutcampustrack.academic.group.GroupPromotionCycleIT'
               method = 'unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState'
               source = 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
-              digest = '0ce360ecd435c35ab2d8ed22bcce91b1c5d47c8648b5684302f7f429fd3accfe'
+              digest = 'cd85ef47179def33ca01eafa5e9777dc9c9ccff3ecb6b869acbaf14f8e834238'
               assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
               for target, target_digest in {
                   source: digest,

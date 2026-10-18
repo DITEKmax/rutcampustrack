@@ -9,9 +9,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels;
 import ru.rutcampustrack.academic.contract.dto.exportjobs.AcademicExportJobModels.Create;
 import ru.rutcampustrack.academic.scheduling.SingleInstanceScheduled;
 import ru.rutcampustrack.auth.dto.*;
+import ru.rutcampustrack.authauthority.grpc.AuthorityAdminProfile;
+import ru.rutcampustrack.authauthority.grpc.CheckAdminAccessResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.*;
@@ -54,6 +57,105 @@ public class ExportJobService {
         var job = owned(actor, id);
         authorize(job);
         return job;
+    }
+
+    /** A transient read scope for the exact admitted ADMIN_USERS render; it contains no bearer. */
+    public UserRegistryReadScope userRegistryReadScope(ExportJobRepository.Job job) {
+        if (job == null
+                || job.leaseId() == null
+                || job.identity().report().kind() != ReportDownloadKind.ADMIN_USERS)
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        ExportJobRepository.requireLease(job, job.leaseId());
+        return new UserRegistryReadScope(job);
+    }
+
+    public final class UserRegistryReadScope {
+        private final ExportJobRepository.Job expected;
+
+        private UserRegistryReadScope(ExportJobRepository.Job expected) {
+            this.expected = expected;
+        }
+
+        public void requireBinding(UUID job, UUID lease, InternalJwtClaims actor) {
+            if (!expected.id().equals(job)
+                    || !expected.leaseId().equals(lease)
+                    || !expected.identity().actor().equals(actor))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        }
+
+        public void requireSelector(RegistryExportModels.Users query) {
+            var selected = expected.identity().report().adminUsers();
+            var sorts =
+                    selected.sorts() == null
+                            ? null
+                            : selected.sorts().stream()
+                                    .map(
+                                            order ->
+                                                    new RegistryExportModels.SortOrder(
+                                                            order.field(), order.descending()))
+                                    .toList();
+            if (query == null
+                    || !Objects.equals(selected.search(), query.search())
+                    || !Objects.equals(selected.role(), query.role())
+                    || !Objects.equals(
+                            selected.status(),
+                            query.status() == null ? null : query.status().name())
+                    || !Objects.equals(selected.roleStatus(), query.roleStatus())
+                    || !Objects.equals(sorts, query.sorts())
+                    || !selected.format().code().equals(query.format()))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        }
+
+        public CheckAdminAccessResponse check(long deadlineNanos) {
+            requireDeadline(deadlineNanos);
+            var current = currentJob();
+            local.require(current.identity(), false);
+            requireDeadline(deadlineNanos);
+            // Auth re-admits the stored session, USERS_VIEW and sticky FULL. A read needs no
+            // new report bearer, and the existing per-RPC bound remains three seconds.
+            var admitted =
+                    admit(
+                            current.identity(),
+                            expected.requiresFull() || current.requiresFull(),
+                            null,
+                            null,
+                            deadlineNanos);
+            requireDeadline(deadlineNanos);
+            currentJob();
+            var profile = admitted.adminProfile();
+            if (profile == null
+                    || !profile.assigned()
+                    || profile.userId() != admitted.actor().userId()
+                    || !profile.allows("USERS_VIEW")
+                    || profile.full() != admitted.full())
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            return CheckAdminAccessResponse.newBuilder()
+                    .setActorUserId(admitted.actor().userId())
+                    .setSessionVersion(admitted.actor().sessionVersion())
+                    .setRolesVersion(admitted.actor().rolesVersion())
+                    .setProfile(
+                            AuthorityAdminProfile.newBuilder()
+                                    .setAssigned(profile.assigned())
+                                    .setMode(profile.mode())
+                                    .setVersion(profile.version())
+                                    .addAllPermissions(profile.permissions()))
+                    .build();
+        }
+
+        private ExportJobRepository.Job currentJob() {
+            var current = owned(expected.identity().actor(), expected.id());
+            ExportJobRepository.requireLease(current, expected.leaseId());
+            if (!expected.identity().equals(current.identity()))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            return current;
+        }
+
+        private void requireDeadline(long deadlineNanos) {
+            if (org.springframework.transaction.support.TransactionSynchronizationManager
+                            .isActualTransactionActive()
+                    || System.nanoTime() >= deadlineNanos)
+                throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     public Download file(InternalJwtClaims actor, UUID id) {
@@ -183,7 +285,7 @@ public class ExportJobService {
     @SingleInstanceScheduled(
             reason =
                     "Single worker cleans bounded batches; existing row locks and SKIP LOCKED"
-                        + " isolate terminal transitions and DELETE RETURNING expiry effects.")
+                            + " isolate terminal transitions and DELETE RETURNING expiry effects.")
     public void cleanExpired() {
         jobs.cleanExpired();
     }
@@ -223,6 +325,18 @@ public class ExportJobService {
             StoredReportIdentity identity, boolean full, UUID job, UUID lease) {
         try {
             var admitted = security.admit(identity, full, job, lease);
+            if (!identity.actor().equals(admitted.actor()) || full && !admitted.full())
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            return admitted;
+        } catch (StatusRuntimeException failure) {
+            throw map(failure);
+        }
+    }
+
+    private ReportSecurityAuthority.Admission admit(
+            StoredReportIdentity identity, boolean full, UUID job, UUID lease, long deadlineNanos) {
+        try {
+            var admitted = security.admit(identity, full, job, lease, deadlineNanos);
             if (!identity.actor().equals(admitted.actor()) || full && !admitted.full())
                 throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
             return admitted;

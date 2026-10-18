@@ -2,6 +2,8 @@ package ru.rutcampustrack.academic.integration;
 
 import static org.assertj.core.api.Assertions.*;
 
+import io.grpc.Status;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +17,18 @@ import ru.rutcampustrack.academic.entity.*;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.history.HistoricalMembershipService;
+import ru.rutcampustrack.academic.identityoperation.JdbcAcademicIdentityOperationStore;
 import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.*;
+import ru.rutcampustrack.academic.security.AcademicLiveSessionClient;
 import ru.rutcampustrack.academic.user.*;
+import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
+import ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority;
 import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.port.SessionStatePort;
+import ru.rutcampustrack.authoperations.grpc.IdentityOperationPhase;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -35,12 +44,16 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
     @Autowired UserRepository userRepository;
     @Autowired StudentGroupHistoryRepository historyRepository;
     @Autowired HistoricalMembershipService historicalMembershipService;
+    @Autowired AcademicLiveSessionClient liveSessions;
+    @Autowired JdbcAcademicIdentityOperationStore operations;
+    @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
     @MockitoBean AttendanceUserImpactGrpcClient attendanceImpact;
     private SelectedActor admin;
     private JdbcTemplate academic;
     private JdbcTemplate auth;
     private long testSemesterId;
     private final Map<UUID, Long> initialSessionVersions = new HashMap<>();
+    private final Map<UUID, SelectedActor> selectedSessions = new HashMap<>();
     private int groupNumber;
 
     @BeforeEach
@@ -52,8 +65,8 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
         var writable =
                 academic.queryForList(
                         "SELECT id FROM semesters WHERE date_from<=? AND date_to>=? AND NOT"
-                            + " is_archived AND archive_transition='NONE' AND NOT"
-                            + " archive_release_pending ORDER BY id LIMIT 1",
+                                + " is_archived AND archive_transition='NONE' AND NOT"
+                                + " archive_release_pending ORDER BY id LIMIT 1",
                         Long.class,
                         today,
                         today);
@@ -62,7 +75,7 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
                 writable.isEmpty()
                         ? academic.queryForObject(
                                 "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
-                                    + " VALUES(?,?,?,TRUE,NOW()) RETURNING id",
+                                        + " VALUES(?,?,?,TRUE,NOW()) RETURNING id",
                                 Long.class,
                                 "History archive " + UUID.randomUUID(),
                                 today.minusDays(7),
@@ -115,9 +128,61 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
         assertThat(rolesVersion(student.getId())).isEqualTo(assignedRolesVersion);
         assertThat(grantStatus(student.getId(), "headman")).isEqualTo("active");
 
-        patchUser(
-                student.getId(),
-                new PatchUserRequest(null, null, null, true, null, null, null, null));
+        var unchangedState =
+                academic.queryForMap(
+                        """
+SELECT (SELECT academic_revision FROM academic_profiles WHERE id=?) AS profile_revision,
+ (SELECT academic_revision FROM groups WHERE id=?) AS group_revision,
+ (SELECT count(*) FROM student_group_history WHERE user_id=?) AS history_count,
+ (SELECT count(*) FROM academic_outbox) AS outbox_count
+""",
+                        student.getId(),
+                        source.getId(),
+                        student.getId());
+        long catalogBeforeNoop =
+                auth.queryForObject(
+                        "SELECT version FROM auth_identity_catalog_clock WHERE singleton=1",
+                        Long.class);
+        UUID noopId = UUID.randomUUID();
+        var sameHeadman = new PatchUserRequest(null, null, null, true, null, null, null, null);
+        try (var ignored = identityFixture.request(admin, noopId)) {
+            userService.patchUser(student.getId(), sameHeadman);
+        }
+        var noop = operations.find(noopId.toString());
+        assertThat(noop.phase().name()).isEqualTo("SUCCEEDED");
+        assertThat(noop.prepared().getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_NOOP);
+        assertThat(noop.receipts()).isEmpty();
+        assertThat(noop.prepared().getTargets(0).getExpectedAcademicRevision())
+                .isEqualTo(((Number) unchangedState.get("profile_revision")).longValue());
+        try (var ignored = identityFixture.request(admin, noopId)) {
+            userService.patchUser(student.getId(), sameHeadman);
+        }
+        assertThat(operations.find(noopId.toString()).prepared()).isEqualTo(noop.prepared());
+        assertThat(
+                        academic.queryForMap(
+                                """
+SELECT (SELECT academic_revision FROM academic_profiles WHERE id=?) AS profile_revision,
+ (SELECT academic_revision FROM groups WHERE id=?) AS group_revision,
+ (SELECT count(*) FROM student_group_history WHERE user_id=?) AS history_count,
+ (SELECT count(*) FROM academic_outbox) AS outbox_count
+""",
+                                student.getId(),
+                                source.getId(),
+                                student.getId()))
+                .isEqualTo(unchangedState);
+        assertThat(
+                        auth.queryForObject(
+                                "SELECT version FROM auth_identity_catalog_clock WHERE singleton=1",
+                                Long.class))
+                .isEqualTo(catalogBeforeNoop);
+        assertThat(
+                        auth.queryForObject(
+                                "SELECT count(*) FROM auth_headman_noop_receipts WHERE"
+                                        + " operation_id=?",
+                                Long.class,
+                                noopId))
+                .isOne();
         long reassignedRolesVersion = rolesVersion(student.getId());
         assertThat(reassignedRolesVersion).isEqualTo(assignedRolesVersion);
 
@@ -257,7 +322,12 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
                 "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
 
-        // No Auth snapshot/refresh is made between the administrative writes.
+        // Read the same real SIDs through Auth; no direct fixture session mutation.
+        for (UUID session : List.of(studentSession, headmanSession, teacherSession)) {
+            requireOldSessionDenied(session);
+            refreshSelection(session);
+            requireOldSessionDenied(session);
+        }
         assertSelection(studentSession, null, 2);
         assertSelection(headmanSession, null, 2);
         assertSelection(teacherSession, teacherGrant, 1);
@@ -272,12 +342,24 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
                 "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
         assertThat(grantId(student.getId(), "student")).isEqualTo(studentGrant);
+        for (UUID session : List.of(studentSession, headmanSession, teacherSession))
+            refreshSelection(session);
         assertSelection(studentSession, null, 2);
         assertSelection(headmanSession, null, 2);
         assertSelection(teacherSession, teacherGrant, 1);
 
         protectedArchive(student.getId());
 
+        for (UUID session : List.of(studentSession, headmanSession, teacherSession)) {
+            requireOldSessionDenied(session);
+            assertThat(
+                            auth.queryForObject(
+                                    "SELECT revoked_at IS NOT NULL FROM auth_sessions WHERE sid=?",
+                                    Boolean.class,
+                                    session))
+                    .isTrue();
+        }
+        assertSelection(headmanSession, null, 2);
         assertSelection(teacherSession, null, 2);
         assertSelection(studentSession, null, 2);
         assertThat(grantId(student.getId(), "teacher")).isEqualTo(teacherGrant);
@@ -397,7 +479,30 @@ class HistoricalMembershipArchiveIT extends AbstractAcademicIntegrationTest {
                                 selected.sessionId()))
                 .isEqualTo(grantId);
         initialSessionVersions.put(selected.sessionId(), selected.sessionVersion());
+        selectedSessions.put(selected.sessionId(), selected);
         return selected.sessionId();
+    }
+
+    private void refreshSelection(UUID session) {
+        var actor = selectedSessions.get(session);
+        var authority =
+                new JdbcSessionAuthority(
+                        auth,
+                        identityFixture.authTransactions().getTransactionManager(),
+                        new PasswordChangedOutbox(auth, json));
+        var snapshot =
+                authority.snapshot(
+                        new SessionStatePort.SnapshotCommand(
+                                actor.userId(), session, Instant.now()));
+        assertThat(snapshot.succeeded()).isTrue();
+    }
+
+    private void requireOldSessionDenied(UUID session) {
+        assertThatThrownBy(() -> liveSessions.admit(selectedSessions.get(session).claims()))
+                .satisfies(
+                        error ->
+                                assertThat(Status.fromThrowable(error).getCode())
+                                        .isEqualTo(Status.Code.PERMISSION_DENIED));
     }
 
     private void assertSelection(UUID session, Long grant, long expectedRelativeVersion) {

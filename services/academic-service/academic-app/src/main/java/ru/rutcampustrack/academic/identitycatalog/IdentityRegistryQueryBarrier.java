@@ -12,13 +12,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.exportjobs.ExportJobService.UserRegistryReadScope;
 import ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
+import ru.rutcampustrack.authauthority.grpc.CheckAdminAccessResponse;
 import ru.rutcampustrack.authauthority.grpc.IdentityAuthoritySnapshot;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -50,10 +53,21 @@ public class IdentityRegistryQueryBarrier {
     }
 
     public Result read(Supplier<Page<User>> fullLocalQuery) {
+        return read(fullLocalQuery, auth::checkRegistryActor);
+    }
+
+    public Result readForReport(
+            Supplier<Page<User>> fullLocalQuery, UserRegistryReadScope reportScope) {
+        return read(fullLocalQuery, java.util.Objects.requireNonNull(reportScope)::check);
+    }
+
+    private Result read(
+            Supplier<Page<User>> fullLocalQuery,
+            LongFunction<CheckAdminAccessResponse> currentActor) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) throw unavailable();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
         for (int attempt = 0; attempt < 3 && System.nanoTime() < deadline; attempt++) {
-            var actor = auth.checkRegistryActor(deadline);
+            var actor = currentActor.apply(deadline);
             long version = catalog.watermark(deadline);
             catalog.await(version, deadline);
             var result =
@@ -81,7 +95,7 @@ public class IdentityRegistryQueryBarrier {
                     if (projected == null || !projected.matches(entry.getValue())) exact = false;
                 }
             }
-            var stillActor = auth.checkRegistryActor(deadline);
+            var stillActor = currentActor.apply(deadline);
             long after = catalog.watermark(deadline);
             if (exact && actor.equals(stillActor) && version == after)
                 return new Result(

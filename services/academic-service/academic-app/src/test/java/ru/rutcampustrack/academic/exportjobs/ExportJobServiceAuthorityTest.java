@@ -4,7 +4,13 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.Deadline;
+import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 import jakarta.validation.Validator;
 
@@ -13,10 +19,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.rutcampustrack.auth.dto.*;
+import ru.rutcampustrack.authsecurity.grpc.AuthSecurityCapabilityServiceGrpc;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 class ExportJobServiceAuthorityTest {
     private final ExportJobRepository repository = mock(ExportJobRepository.class);
@@ -63,6 +72,77 @@ class ExportJobServiceAuthorityTest {
     private ReportSecurityAuthority.Admission admitted(boolean full) {
         return new ReportSecurityAuthority.Admission(
                 actor, "transient-only-token", Instant.now().plusSeconds(30), full);
+    }
+
+    @Test
+    void reportAdmissionRpcDeadlineUsesOnlyRemainingRegistryBudget() {
+        var observed = new AtomicReference<CallOptions>();
+        var client = deadlineClient(observed);
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(100);
+        // One millisecond allows only measurement/call-option construction overhead.
+        Deadline ceiling = Deadline.after(101, TimeUnit.MILLISECONDS);
+        Throwable failure =
+                catchThrowable(() -> client.admit(identity, false, null, null, deadline));
+        assertThat(failure).isInstanceOf(StatusRuntimeException.class);
+        var code = ((StatusRuntimeException) failure).getStatus().getCode();
+        if (observed.get() == null) {
+            // Class initialization or a paused test JVM may exhaust this short budget first.
+            assertThat(System.nanoTime()).isGreaterThanOrEqualTo(deadline);
+            assertThat(code).isEqualTo(Status.Code.UNAVAILABLE);
+        } else {
+            assertThat(code).isEqualTo(Status.Code.DEADLINE_EXCEEDED);
+            assertThat(observed.get().getDeadline()).isNotNull();
+            assertThat(observed.get().getDeadline().isBefore(ceiling)).isTrue();
+        }
+    }
+
+    @Test
+    void expiredReportBudgetDoesNotStartRpcWhileOrdinaryAdmissionKeepsThreeSecondCap() {
+        var observed = new AtomicReference<CallOptions>();
+        var client = deadlineClient(observed);
+        assertThatThrownBy(() -> client.admit(identity, false, null, null, System.nanoTime() - 1))
+                .isInstanceOfSatisfying(
+                        StatusRuntimeException.class,
+                        error ->
+                                assertThat(error.getStatus().getCode())
+                                        .isEqualTo(Status.Code.UNAVAILABLE));
+        assertThat(observed.get()).isNull();
+        assertThatThrownBy(() -> client.admit(identity, false, null, null))
+                .isInstanceOfSatisfying(
+                        StatusRuntimeException.class,
+                        error ->
+                                assertThat(error.getStatus().getCode())
+                                        .isEqualTo(Status.Code.DEADLINE_EXCEEDED));
+        assertThat(observed.get()).isNotNull();
+        assertThat(observed.get().getDeadline()).isNotNull();
+        assertThat(observed.get().getDeadline().timeRemaining(TimeUnit.NANOSECONDS))
+                .isLessThanOrEqualTo(TimeUnit.SECONDS.toNanos(3));
+    }
+
+    private AuthReportSecurityClient deadlineClient(AtomicReference<CallOptions> observed) {
+        var client =
+                new AuthReportSecurityClient(
+                        java.util.Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString(new byte[32]),
+                        "auth-service");
+        Channel channel =
+                new Channel() {
+                    @Override
+                    public String authority() {
+                        return "auth-service";
+                    }
+
+                    @Override
+                    public <Q, S> ClientCall<Q, S> newCall(
+                            MethodDescriptor<Q, S> method, CallOptions options) {
+                        observed.set(options);
+                        throw Status.DEADLINE_EXCEEDED.asRuntimeException();
+                    }
+                };
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                client, "stub", AuthSecurityCapabilityServiceGrpc.newBlockingStub(channel));
+        return client;
     }
 
     @Test

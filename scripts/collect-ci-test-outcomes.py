@@ -205,8 +205,12 @@ BOOTSTRAP_CLI_DIAGNOSTIC_CHARS = 65536
 BOOTSTRAP_CLI_RESULT_MARKER = re.compile(
     r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):\s*)?"
     r"BOOTSTRAP_CLI_RESULT_V1 invocation=(MISSING_CONFIG|FRESH|REPEAT) "
-    r"guard=(UNEXPECTED_EXIT|OVERSIZED_STDOUT|NONEMPTY_STDERR|SECRET_MARKER) "
+    r"guard=(UNEXPECTED_EXIT|OVERSIZED_STDOUT|NONEMPTY_STDERR|SECRET_MARKER|INVALID_DIAGNOSTIC|UNEXPECTED_REFUSAL_PHASE) "
     r"expectedExit=(0|2) actualExit=(0|[1-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5]|OTHER)"
+    r"(?: phase=(PARSE|READ_REQUEST|VALIDATE_REQUEST|AUTH_PREPARE|ACADEMIC_APPLY|ACADEMIC_VERIFY|AUTH_ACTIVATE|ACADEMIC_CURSOR|AUTH_CATALOG|ACADEMIC_FINALIZE|RESULT|OTHER)"
+    r" reason=(INPUT|IO|CHILD_START|CHILD_TIMEOUT|CHILD_EXIT|OUTPUT_LIMIT|REPLY_JSON|REPLY_GUARD|PROTOCOL|OTHER)"
+    r" ownerPhase=(NONE|INPUT|CONFIG|EXECUTE|OUTPUT|NO_MARKER|OTHER)"
+    r" category=(NONE|CONFIG|INPUT|DB_CONNECT|DB_PERMISSION|DB_SCHEMA|DB_CONSTRAINT|GUARD|OTHER))?"
 )
 BOOTSTRAP_CLI_EXCEPTIONS = {
     "java.lang.AssertionError": "ASSERTION",
@@ -616,13 +620,17 @@ def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> 
         # Only a whole bounded message/first stack line can carry the closed marker.
         message = failure.get("message", "")
         first_line = text.split("\n", 1)[0]
+        candidates = [value for value in (message, first_line) if value]
+        if any(len(value) > 384 or not BOOTSTRAP_CLI_RESULT_MARKER.fullmatch(value)
+               for value in candidates):
+            return result
         markers = {
             match.groups()
             for value in (message, first_line)
-            if len(value) <= 256 and (match := BOOTSTRAP_CLI_RESULT_MARKER.fullmatch(value))
+            if len(value) <= 384 and (match := BOOTSTRAP_CLI_RESULT_MARKER.fullmatch(value))
         }
         if len(markers) == 1:
-            invocation, guard, expected, actual = markers.pop()
+            invocation, guard, expected, actual, phase, reason, owner_phase, category = markers.pop()
             expected_for_invocation = "2" if invocation == "MISSING_CONFIG" else "0"
             unexpected_exit = actual != expected
             if expected == expected_for_invocation and (guard == "UNEXPECTED_EXIT") == unexpected_exit:
@@ -630,6 +638,8 @@ def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> 
                     state="CLOSED_MARKER", invocation=invocation, guard=guard,
                     expectedExit=int(expected), actualExit=int(actual) if actual != "OTHER" else "OTHER",
                 )
+                if phase is not None:
+                    result.update(phase=phase, reason=reason, ownerPhase=owner_phase, category=category)
     return result
 
 

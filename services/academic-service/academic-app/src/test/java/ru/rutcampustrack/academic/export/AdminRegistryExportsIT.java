@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.exportjobs.ExportJobRepository;
+import ru.rutcampustrack.academic.exportjobs.ExportJobService;
 import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
 import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
@@ -39,6 +41,7 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
     @Autowired ObjectMapper mapper;
     @Autowired AcademicUserIdentityOperations identities;
     @Autowired AuthIdentityDataClient identityData;
+    @Autowired ExportJobService exportJobs;
     private SelectedActor actor;
     @MockitoBean RegistryDocumentClient documents;
     private String token;
@@ -314,6 +317,112 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                                 .contentType(APPLICATION_JSON)
                                 .content("{\"format\":\"html\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void reportPurposeUsersRenderKeepsCurrentFullLimitedAndRevocationBoundaries() throws Exception {
+        long telegram = 730000000001L;
+        var target =
+                identityFixture.seedUser(
+                        new CreateUserRequest(
+                                "Report",
+                                "Authority",
+                                null,
+                                UserRole.STUDENT,
+                                identityFixture.canonical().groupId(),
+                                null,
+                                telegram),
+                        actor);
+        var fullJob = enqueueUserReport(target.login());
+        String fullReportToken = exportJobs.renderAdmission(fullJob).token();
+        mvc.perform(get("/academic/users").header("X-Internal-Token", fullReportToken))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(
+                        post("/academic/export-jobs/{id}/render", fullJob.id())
+                                .servletPath("/academic/export-jobs/" + fullJob.id() + "/render")
+                                .header("X-Internal-Token", fullReportToken)
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsBytes(
+                                                Map.of("leaseId", UUID.randomUUID()))))
+                .andExpect(status().isConflict());
+        String full = renderUserReport(fullJob, fullReportToken);
+        assertThat(full).contains(target.login(), "Telegram ID", Long.toString(telegram));
+
+        changeAccess("LIMITED", List.of("USERS_VIEW"));
+        // A FULL job cannot silently become LIMITED after its captured authority changes.
+        mvc.perform(
+                        post("/academic/export-jobs/{id}/render", fullJob.id())
+                                .servletPath("/academic/export-jobs/" + fullJob.id() + "/render")
+                                .header("X-Internal-Token", fullReportToken)
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsBytes(
+                                                Map.of("leaseId", fullJob.leaseId()))))
+                .andExpect(status().isForbidden());
+        var limitedJob = enqueueUserReport(target.login());
+        String limitedReportToken = exportJobs.renderAdmission(limitedJob).token();
+        String limited = renderUserReport(limitedJob, limitedReportToken);
+        assertThat(limited)
+                .contains(target.login(), "Привязан")
+                .doesNotContain("Telegram ID", Long.toString(telegram));
+
+        changeAccess("LIMITED", List.of("GROUPS_VIEW"));
+        mvc.perform(
+                        post("/academic/export-jobs/{id}/render", limitedJob.id())
+                                .servletPath("/academic/export-jobs/" + limitedJob.id() + "/render")
+                                .header("X-Internal-Token", limitedReportToken)
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsBytes(
+                                                Map.of("leaseId", limitedJob.leaseId()))))
+                .andExpect(status().isForbidden());
+    }
+
+    private ExportJobRepository.Job enqueueUserReport(String search) throws Exception {
+        byte[] response =
+                mvc.perform(
+                                post("/academic/export-jobs")
+                                        .header("X-Internal-Token", token)
+                                        .contentType(APPLICATION_JSON)
+                                        .content(
+                                                mapper.writeValueAsBytes(
+                                                        Map.of(
+                                                                "requestId", UUID.randomUUID(),
+                                                                "report",
+                                                                        Map.of(
+                                                                                "kind",
+                                                                                "ADMIN_USERS",
+                                                                                "adminUsers",
+                                                                                Map.of(
+                                                                                        "search",
+                                                                                        search,
+                                                                                        "format",
+                                                                                        "html"))))))
+                        .andExpect(status().isAccepted())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsByteArray();
+        UUID id = UUID.fromString(mapper.readTree(response).path("jobId").asText());
+        var claimed = exportJobs.claim().orElseThrow();
+        assertThat(claimed.id()).isEqualTo(id);
+        return claimed;
+    }
+
+    private String renderUserReport(ExportJobRepository.Job job, String reportToken)
+            throws Exception {
+        return mvc.perform(
+                        post("/academic/export-jobs/{id}/render", job.id())
+                                .servletPath("/academic/export-jobs/" + job.id() + "/render")
+                                .header("X-Internal-Token", reportToken)
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsBytes(Map.of("leaseId", job.leaseId()))))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Export-Row-Count", "1"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
     }
 
     private byte[] file(String format) throws Exception {

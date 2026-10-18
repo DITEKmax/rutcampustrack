@@ -59,7 +59,8 @@ public class AcademicReportRenderController {
                                                 job.identity().report().adminUsers(),
                                                 RegistryExportModels.Users.class),
                                         job.id(),
-                                        job.leaseId());
+                                        job.leaseId(),
+                                        jobs.userRegistryReadScope(job));
                         yield new ExportJobService.GeneratedFile(
                                 result.content(),
                                 result.contentType(),

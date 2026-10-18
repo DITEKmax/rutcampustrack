@@ -3,10 +3,12 @@ import importlib.util
 import io
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from xml.etree import ElementTree
 
 SPEC = importlib.util.spec_from_file_location("initial_admin", Path(__file__).with_name("bootstrap-initial-admin.py"))
 BOOTSTRAP = importlib.util.module_from_spec(SPEC)
@@ -125,6 +127,114 @@ class InitialAdministratorOperatorTest(unittest.TestCase):
             self.assertEqual(BOOTSTRAP.main(["--password", request()["initialPassword"]]), 2)
         self.assertEqual(output.getvalue(), '{"status":"REFUSED"}\n')
         self.assertEqual(errors.getvalue(), "")
+
+
+class InitialAdministratorDiagnosticsTest(unittest.TestCase):
+    ARGS = ["--request-file", "unused-private-request", "--compose-file", "unused-compose"]
+
+    def main_result(self, result=None, *, failure=None, diagnostics=True):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.dict(BOOTSTRAP.os.environ, {BOOTSTRAP.DIAGNOSTIC_ENV: "1" if diagnostics else "0"}), \
+                patch.object(BOOTSTRAP, "read_request", return_value=request()), \
+                patch.object(BOOTSTRAP.subprocess, "run", return_value=result, side_effect=failure) as run, \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            code = BOOTSTRAP.main(self.ARGS)
+        return code, output.getvalue(), errors.getvalue(), run
+
+    @staticmethod
+    def child(code=2, output=b'{"status":"REFUSED"}', errors=b""):
+        return type("Result", (), {"returncode": code, "stdout": output, "stderr": errors})()
+
+    def test_default_refusal_stays_one_field_and_private_child_material_is_never_forwarded(self):
+        secret = request()["initialPassword"].encode()
+        result = self.child(errors=b"SQL/private/path/" + secret)
+        code, output, errors, run = self.main_result(result, diagnostics=False)
+        self.assertEqual((code, output, errors), (2, '{"status":"REFUSED"}\n', ""))
+        self.assertNotIn("--env", run.call_args.args[0])
+
+    def test_parse_and_request_read_are_distinct_from_child_failure(self):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.dict(BOOTSTRAP.os.environ, {BOOTSTRAP.DIAGNOSTIC_ENV: "1"}), \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            self.assertEqual(BOOTSTRAP.main(["--password", request()["initialPassword"]]), 2)
+        self.assertEqual(errors.getvalue(), "BOOTSTRAP_CLI_PHASE_V1 phase=PARSE reason=INPUT ownerPhase=NONE category=NONE\n")
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.dict(BOOTSTRAP.os.environ, {BOOTSTRAP.DIAGNOSTIC_ENV: "1"}), \
+                patch.object(BOOTSTRAP, "read_request", side_effect=OSError(request()["initialPassword"])), \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            self.assertEqual(BOOTSTRAP.main(self.ARGS), 2)
+        self.assertEqual(errors.getvalue(), "BOOTSTRAP_CLI_PHASE_V1 phase=READ_REQUEST reason=IO ownerPhase=NONE category=NONE\n")
+        self.assertEqual(output.getvalue(), '{"status":"REFUSED"}\n')
+
+    def test_auth_child_closed_category_crosses_only_explicit_private_channels(self):
+        raw = (b"Picked up JAVA_TOOL_OPTIONS: private-value\n"
+               b"BOOTSTRAP_OWNER_FAILURE_V1 owner=AUTH phase=CONFIG category=CONFIG\n")
+        code, output, errors, run = self.main_result(self.child(errors=raw))
+        self.assertEqual((code, output), (2, '{"status":"REFUSED"}\n'))
+        self.assertEqual(errors, "BOOTSTRAP_CLI_PHASE_V1 phase=AUTH_PREPARE reason=CHILD_EXIT ownerPhase=CONFIG category=CONFIG\n")
+        command = run.call_args.args[0]
+        self.assertIn(BOOTSTRAP.DIAGNOSTIC_ENV + "=1", command)
+        self.assertNotIn(request()["initialPassword"], repr(command))
+        self.assertNotIn("private-value", output + errors)
+        self.assertNotIn("env", run.call_args.kwargs)
+
+    def test_start_timeout_reply_and_protocol_failures_have_distinct_closed_reasons(self):
+        secret = request()["initialPassword"]
+        cases = [
+            (None, OSError(secret), "CHILD_START"),
+            (None, subprocess.TimeoutExpired(secret, 30, output=secret, stderr=secret), "CHILD_TIMEOUT"),
+            (self.child(0, ("{" + secret).encode()), None, "REPLY_JSON"),
+            (self.child(0), None, "REPLY_GUARD"),
+            (self.child(0, b'{"status":"PREPARED"}'), None, "PROTOCOL"),
+            (self.child(errors=b"x" * 16385), None, "OUTPUT_LIMIT"),
+        ]
+        for result, failure, reason in cases:
+            with self.subTest(reason=reason):
+                code, output, errors, _ = self.main_result(result, failure=failure)
+                self.assertEqual((code, output), (2, '{"status":"REFUSED"}\n'))
+                self.assertEqual(errors, "BOOTSTRAP_CLI_PHASE_V1 phase=AUTH_PREPARE reason=" + reason + " ownerPhase=NONE category=NONE\n")
+                self.assertNotIn(secret, errors + output)
+
+    def test_owner_marker_rejects_wrong_owner_duplicates_extensions_and_unrecognized_material(self):
+        valid = b"BOOTSTRAP_OWNER_FAILURE_V1 owner=AUTH phase=EXECUTE category=DB_PERMISSION"
+        self.assertEqual(BOOTSTRAP.owner_diagnostic(valid, "auth"), ("EXECUTE", "DB_PERMISSION"))
+        for raw in [valid + b" private", valid + b"\n" + valid,
+                    valid.replace(b"owner=AUTH", b"owner=ACADEMIC"),
+                    valid + b"\nBOOTSTRAP_OWNER_FAILURE_V1 malformed"]:
+            with self.subTest(size=len(raw)):
+                self.assertEqual(BOOTSTRAP.owner_diagnostic(raw, "auth"), ("OTHER", "OTHER"))
+        self.assertEqual(BOOTSTRAP.owner_diagnostic(request()["initialPassword"].encode(), "auth"),
+                         ("NO_MARKER", "OTHER"))
+
+    def test_collector_projects_only_exact_case_owned_frame_and_closed_marker(self):
+        spec = importlib.util.spec_from_file_location("bootstrap_outcomes", Path(__file__).with_name("collect-ci-test-outcomes.py"))
+        collector = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(collector)
+        root = Path(__file__).resolve().parent.parent
+        source = (root / collector.BOOTSTRAP_CLI_SOURCE).read_text()
+        line = next(i for i, value in enumerate(source.splitlines(), 1) if '"BOOTSTRAP_CLI_RESULT_V1 invocation="' in value)
+        base = "BOOTSTRAP_CLI_RESULT_V1 invocation=FRESH guard=UNEXPECTED_EXIT expectedExit=0 actualExit=2"
+        suffix = " phase=AUTH_PREPARE reason=CHILD_EXIT ownerPhase=EXECUTE category=DB_SCHEMA"
+
+        def project(message, first=None):
+            case = ElementTree.Element("testcase")
+            failure = ElementTree.SubElement(case, "failure", type="java.lang.AssertionError", message=message)
+            failure.text = "java.lang.AssertionError: " + (message if first is None else first) + "\n\tat " + collector.BOOTSTRAP_CLI_CLASS + ".runOperatorCli(InitialAdministratorBootstrapIT.java:" + str(line) + ")"
+            return collector.bootstrap_cli_failure_diagnostic(case, source)
+
+        result = project(base + suffix)
+        self.assertEqual(result["state"], "CLOSED_MARKER")
+        self.assertEqual({k: result[k] for k in ("phase", "reason", "ownerPhase", "category")},
+                         {"phase": "AUTH_PREPARE", "reason": "CHILD_EXIT", "ownerPhase": "EXECUTE", "category": "DB_SCHEMA"})
+        self.assertEqual(project(base)["state"], "CLOSED_MARKER")  # Historical diagnostics remain valid.
+        for corrupt in [base + suffix + " " + request()["initialPassword"],
+                        base + suffix.replace("DB_SCHEMA", request()["initialPassword"]),
+                        base + suffix + "\n" + base + suffix,
+                        base.replace("actualExit=2", "actualExit=999") + suffix]:
+            result = project(corrupt)
+            self.assertNotEqual(result["state"], "CLOSED_MARKER")
+            self.assertNotIn(request()["initialPassword"], json.dumps(result))
+        self.assertNotEqual(project(base + suffix, base + suffix.replace("DB_SCHEMA", "GUARD"))["state"], "CLOSED_MARKER")
 
 
 if __name__ == "__main__":

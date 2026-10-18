@@ -121,6 +121,411 @@ VALUES(?,?,?,1,?,?,?,?,'PASSWORD')
     }
 
     @Test
+    void unchangedHeadmanHasImmutableNoopAndAtomicUuidReservationWithoutAuthorityEffects()
+            throws Exception {
+        long group = 12000000 + actor.userId();
+        var ready = activeHeadman(group);
+        long user = ready.getTargets(0).getUserId();
+        var command = headmanCommand(ready, true, 2);
+        String before = adminNoopEffects(user);
+        long frontier = clock();
+        var result = operations.prepare(command);
+        assertThat(result.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_NOOP);
+        assertThat(result.getTargets(0).getFinalRolesVersion())
+                .isEqualTo(ready.getTargets(0).getFinalRolesVersion());
+        assertThat(result.getTargets(0).getExpectedAcademicRevision()).isEqualTo(2);
+        assertThat(result.getCommittedCatalogVersion()).isZero();
+        assertThat(adminNoopEffects(user)).isEqualTo(before);
+        assertThat(clock()).isEqualTo(frontier);
+        assertThat(count("auth_headman_noop_receipts", command)).isOne();
+        assertThat(count("auth_identity_operations", command)).isZero();
+        assertThat(count("auth_identity_operation_targets", command)).isZero();
+        var expired = mock(AuthInternalActorReader.class);
+        when(expired.read())
+                .thenThrow(new IllegalStateException("past bearer is not recovery authority"));
+        var restarted = store(expired);
+        assertThat(restarted.prepare(command)).isEqualTo(result);
+        assertThat(restarted.get(get(command))).isEqualTo(result);
+        assertThat(restarted.commit(commit(command, result))).isEqualTo(result);
+        assertThat(
+                        restarted.fail(
+                                FailIdentityOperationRequest.newBuilder()
+                                        .setOperationId(command.getOperationId())
+                                        .setCommandHash(command.getCommandHash())
+                                        .setErrorCode("ACADEMIC_APPLY_FAILED")
+                                        .build()))
+                .isEqualTo(result);
+        assertThat(restarted.rejectUnprepared(reject(command))).isEqualTo(result);
+        verifyNoInteractions(expired);
+        var clash =
+                hash(adminNoopCommand(user).toBuilder().setOperationId(command.getOperationId()));
+        assertThatThrownBy(() -> operations.prepare(clash))
+                .isInstanceOfSatisfying(
+                        StatusRuntimeException.class,
+                        error ->
+                                assertThat(error.getStatus().getCode())
+                                        .isEqualTo(io.grpc.Status.Code.ALREADY_EXISTS));
+        var competing = headmanCommand(ready, true, 2);
+        var start = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+        try {
+            var positive =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return operations.prepare(competing);
+                            });
+            var negative =
+                    executor.submit(
+                            () -> {
+                                start.await();
+                                return operations.rejectUnprepared(reject(competing));
+                            });
+            start.countDown();
+            var winner = positive.get(5, TimeUnit.SECONDS);
+            assertThat(negative.get(5, TimeUnit.SECONDS)).isEqualTo(winner);
+            assertThat(operations.get(get(competing))).isEqualTo(winner);
+            assertThat(
+                            count("auth_headman_noop_receipts", competing)
+                                    + count("auth_identity_operation_rejections", competing))
+                    .isOne();
+            assertThat(count("auth_admin_access_noop_receipts", competing)).isZero();
+            assertThat(count("auth_identity_operations", competing)).isZero();
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+        }
+        assertThat(adminNoopEffects(user)).isEqualTo(before);
+    }
+
+    @Test
+    void
+            headmanNoopRequiresActualCommittedRevisionIncludingCredentialReadersAndCurrentPermission() {
+        long group = 13000000 + actor.userId();
+        var ready = activeHeadman(group);
+        for (String generation : List.of("RV", "CV", "BV", "AR", "PROFILE")) {
+            var valid = headmanCommand(ready, true, 2);
+            var target = valid.getTargets(0).toBuilder();
+            switch (generation) {
+                case "RV" -> target.setExpectedRolesVersion(target.getExpectedRolesVersion() + 1);
+                case "CV" ->
+                        target.setExpectedCredentialsVersion(
+                                target.getExpectedCredentialsVersion() + 1);
+                case "BV" ->
+                        target.setExpectedTelegramBindingVersion(
+                                target.getExpectedTelegramBindingVersion() + 1);
+                case "AR" -> target.setExpectedAcademicRevision(3);
+                case "PROFILE" ->
+                        target.setDesiredAdminProfile(
+                                target.getDesiredAdminProfile().toBuilder().setExpectedVersion(1));
+            }
+            var stale = hash(valid.toBuilder().setTargets(0, target));
+            assertThatThrownBy(() -> operations.prepare(stale))
+                    .as(generation)
+                    .isInstanceOf(StatusRuntimeException.class);
+            assertThat(count("auth_headman_noop_receipts", stale)).isZero();
+            assertThat(count("auth_identity_operations", stale)).isZero();
+        }
+        var valid = headmanCommand(ready, true, 2);
+        var mixed =
+                hash(
+                        valid.toBuilder()
+                                .setTargets(
+                                        0,
+                                        valid.getTargets(0).toBuilder()
+                                                .setTelegramChange(
+                                                        TelegramBindingChange.newBuilder()
+                                                                .setTelegramId(
+                                                                        880000000000L
+                                                                                + actor
+                                                                                        .userId()))));
+        assertThatThrownBy(() -> operations.prepare(mixed))
+                .isInstanceOf(StatusRuntimeException.class);
+        var readers = new AuthCredentialReaderInvalidationStore(runtime, transactions, actors);
+        var reader =
+                readerCommand(
+                        group,
+                        ready.getTargets(0).getUserId(),
+                        ready.getTargets(0).getFinalRolesVersion(),
+                        2);
+        var reserved = readers.prepare(reader);
+        var updated =
+                ready.toBuilder()
+                        .setTargets(
+                                0,
+                                ready.getTargets(0).toBuilder()
+                                        .setFinalRolesVersion(
+                                                reserved.getHeadmen(0).getFinalRolesVersion()))
+                        .build();
+        var inFlight = headmanCommand(updated, true, 2);
+        assertThatThrownBy(() -> operations.prepare(inFlight))
+                .isInstanceOf(StatusRuntimeException.class);
+        readers.commit(readerCommit(reader, reserved));
+        var staleRevision = headmanCommand(updated, true, 2);
+        assertThatThrownBy(() -> operations.prepare(staleRevision))
+                .isInstanceOf(StatusRuntimeException.class);
+        var current = headmanCommand(updated, true, 3);
+        assertThat(operations.prepare(current).getTargets(0).getExpectedAcademicRevision())
+                .isEqualTo(3);
+        var normal = headmanCommand(updated, false, 3);
+        // Plain proto3 false has the exact old absent-field bytes and canonical hash.
+        var legacy = hash(normal.toBuilder().clearHeadmanNoopCandidate());
+        assertThat(normal.getCommandHash()).isEqualTo(legacy.getCommandHash());
+        assertThat(normal.toByteArray()).containsExactly(legacy.toByteArray());
+        var prepared = operations.prepare(normal);
+        assertThat(operations.prepare(legacy)).isEqualTo(prepared);
+        assertThat(prepared.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_PREPARED_FENCED);
+        assertThat(prepared.getTargets(0).getFinalRolesVersion())
+                .isEqualTo(updated.getTargets(0).getFinalRolesVersion() + 1);
+        var changed = operations.commit(commit(normal, prepared));
+        // A past terminal NOOP survives later real changes; it never reapplies old grants.
+        String changedState = adminNoopEffects(changed.getTargets(0).getUserId());
+        assertThat(operations.prepare(current).getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_NOOP);
+        assertThat(adminNoopEffects(changed.getTargets(0).getUserId())).isEqualTo(changedState);
+        owner.update(
+                "UPDATE admin_access_profiles SET"
+                    + " mode='LIMITED',permissions=ARRAY['GROUPS_VIEW','GROUPS_MANAGE'],version=version+1"
+                    + " WHERE user_id=?",
+                actor.userId());
+        var limited = headmanCommand(changed, true, 4);
+        assertThat(operations.prepare(limited).getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_NOOP);
+        owner.update(
+                "UPDATE admin_access_profiles SET"
+                        + " mode='LIMITED',permissions=ARRAY['USERS_VIEW'],version=version+1 WHERE"
+                        + " user_id=?",
+                actor.userId());
+        var denied = headmanCommand(changed, true, 4);
+        assertThatThrownBy(() -> operations.prepare(denied))
+                .isInstanceOf(StatusRuntimeException.class);
+        assertThat(count("auth_headman_noop_receipts", denied)).isZero();
+    }
+
+    @Test
+    void
+            committedGrantRevocationClearsOnlyAffectedSelectionAndArchiveClearsEachRemainingSelectionOnce() {
+        var teacher = teacher();
+        var add = roleCommand(teacher, "STUDENT", "ACTIVE", 1, 14000000 + actor.userId());
+        var ready = operations.commit(commit(add, operations.prepare(add)));
+        long user = ready.getTargets(0).getUserId();
+        long studentGrant =
+                ready.getTargets(0).getGrantsList().stream()
+                        .filter(g -> g.getRole().equals("STUDENT"))
+                        .findFirst()
+                        .orElseThrow()
+                        .getGrantId();
+        long teacherGrant =
+                ready.getTargets(0).getGrantsList().stream()
+                        .filter(g -> g.getRole().equals("TEACHER"))
+                        .findFirst()
+                        .orElseThrow()
+                        .getGrantId();
+        UUID studentSession = selectedSession(user, studentGrant),
+                teacherSession = selectedSession(user, teacherGrant),
+                loginSession = selectedSession(user, null);
+        var suspend = roleCommand(ready, "STUDENT", "SUSPENDED", 2, 0);
+        var prepared = operations.prepare(suspend);
+        var suspended = operations.commit(commit(suspend, prepared));
+        assertAuthoritySelection(studentSession, null, 2);
+        assertAuthoritySelection(teacherSession, teacherGrant, 1);
+        assertAuthoritySelection(loginSession, null, 1);
+        operations.commit(commit(suspend, prepared));
+        assertAuthoritySelection(studentSession, null, 2);
+        var activate = roleCommand(suspended, "STUDENT", "ACTIVE", 3, 0);
+        var reactivated = operations.commit(commit(activate, operations.prepare(activate)));
+        assertAuthoritySelection(studentSession, null, 2);
+        assertAuthoritySelection(teacherSession, teacherGrant, 1);
+        var base = archive(reactivated);
+        base =
+                hash(
+                        base.toBuilder()
+                                .setTargets(
+                                        0,
+                                        base.getTargets(0).toBuilder()
+                                                .setExpectedAcademicRevision(4)));
+        var archive =
+                hash(base.toBuilder().setPasswordStepUpReceiptId(receipt(base, "NONE").toString()));
+        var archived = operations.prepare(archive);
+        operations.commit(commit(archive, archived));
+        operations.commit(commit(archive, archived));
+        assertAuthoritySelection(studentSession, null, 2);
+        assertAuthoritySelection(teacherSession, null, 2);
+        assertAuthoritySelection(loginSession, null, 1);
+        for (UUID sid : List.of(studentSession, teacherSession, loginSession))
+            assertThat(
+                            owner.queryForObject(
+                                    "SELECT revoked_at IS NOT NULL FROM auth_sessions WHERE sid=?",
+                                    Boolean.class,
+                                    sid))
+                    .isTrue();
+    }
+
+    @Test
+    void staleHeadmanBeforeReservationHasDurableDefiniteRejectionWithoutPositiveFence() {
+        long group = 15000000 + actor.userId();
+        activeHeadman(group);
+        var create = studentInGroup(group);
+        var candidate = operations.commit(commit(create, operations.prepare(create)));
+        var command = headmanCommand(candidate, false, 1);
+        var rejected = operations.prepare(command);
+        assertThat(rejected.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_REJECTED);
+        assertThat(rejected.getTargetsCount()).isZero();
+        assertThat(count("auth_identity_operations", command)).isZero();
+        assertThat(count("auth_identity_operation_rejections", command)).isOne();
+        assertThat(
+                        owner.queryForObject(
+                                "SELECT roles_version=1 AND fence_operation_id IS NULL FROM"
+                                        + " auth_identities WHERE id=?",
+                                Boolean.class,
+                                candidate.getTargets(0).getUserId()))
+                .isTrue();
+        var expired = mock(AuthInternalActorReader.class);
+        when(expired.read()).thenThrow(new IllegalStateException("past actor"));
+        var restarted = store(expired);
+        assertThat(restarted.prepare(command)).isEqualTo(rejected);
+        assertThat(restarted.get(get(command))).isEqualTo(rejected);
+        verifyNoInteractions(expired);
+    }
+
+    private PrepareIdentityOperationRequest studentInGroup(long group) {
+        var command = create(UUID.randomUUID());
+        return hash(
+                command.toBuilder()
+                        .setTargets(
+                                0,
+                                command.getTargets(0).toBuilder()
+                                        .setDesiredGrants(
+                                                0,
+                                                command
+                                                        .getTargets(0)
+                                                        .getDesiredGrants(0)
+                                                        .toBuilder()
+                                                        .setGroupId(group))));
+    }
+
+    private IdentityOperationResult activeHeadman(long group) {
+        var create = studentInGroup(group);
+        var student = operations.commit(commit(create, operations.prepare(create)));
+        var assign = headmanCommand(student, false, 1);
+        return operations.commit(commit(assign, operations.prepare(assign)));
+    }
+
+    private PrepareIdentityOperationRequest headmanCommand(
+            IdentityOperationResult ready, boolean noop, long revision) {
+        var current = ready.getTargets(0);
+        var grants = new ArrayList<>(current.getGrantsList());
+        if (grants.stream().noneMatch(g -> g.getRole().equals("HEADMAN"))) {
+            long group =
+                    grants.stream()
+                            .filter(g -> g.getRole().equals("STUDENT"))
+                            .findFirst()
+                            .orElseThrow()
+                            .getGroupId();
+            grants.add(
+                    AdmissionGrant.newBuilder()
+                            .setRole("HEADMAN")
+                            .setStatus("ACTIVE")
+                            .setGroupId(group)
+                            .build());
+        }
+        grants.sort(Comparator.comparing(AdmissionGrant::getRole));
+        return hash(
+                PrepareIdentityOperationRequest.newBuilder()
+                        .setOperationId(UUID.randomUUID().toString())
+                        .setKind(IdentityOperationKind.IDENTITY_OPERATION_KIND_HEADMAN_REPLACE)
+                        .setHeadmanNoopCandidate(noop)
+                        .addTargets(
+                                IdentityTargetCommand.newBuilder()
+                                        .setUserId(current.getUserId())
+                                        .setExpectedRolesVersion(current.getFinalRolesVersion())
+                                        .setExpectedCredentialsVersion(
+                                                current.getCredentialsVersion())
+                                        .setExpectedTelegramBindingVersion(
+                                                current.getTelegramBindingVersion())
+                                        .setExpectedAcademicRevision(revision)
+                                        .setDesiredAccountState(
+                                                IdentityAccountState.IDENTITY_ACCOUNT_STATE_ACTIVE)
+                                        .setDesiredAdminProfile(
+                                                AdmissionAdminProfile.getDefaultInstance())
+                                        .addAllDesiredGrants(grants)));
+    }
+
+    private PrepareIdentityOperationRequest roleCommand(
+            IdentityOperationResult ready,
+            String role,
+            String status,
+            long revision,
+            long newGroup) {
+        var current = ready.getTargets(0);
+        var grants = new ArrayList<>(current.getGrantsList());
+        boolean exists = grants.removeIf(g -> g.getRole().equals(role));
+        var previous =
+                current.getGrantsList().stream().filter(g -> g.getRole().equals(role)).findFirst();
+        var changed =
+                previous.map(AdmissionGrant::toBuilder)
+                        .orElseGet(AdmissionGrant::newBuilder)
+                        .setRole(role)
+                        .setStatus(status);
+        if (!exists && newGroup > 0) changed.setGroupId(newGroup);
+        grants.add(changed.build());
+        grants.sort(Comparator.comparing(AdmissionGrant::getRole));
+        return hash(
+                PrepareIdentityOperationRequest.newBuilder()
+                        .setOperationId(UUID.randomUUID().toString())
+                        .setKind(IdentityOperationKind.IDENTITY_OPERATION_KIND_ROLE)
+                        .addTargets(
+                                IdentityTargetCommand.newBuilder()
+                                        .setUserId(current.getUserId())
+                                        .setExpectedRolesVersion(current.getFinalRolesVersion())
+                                        .setExpectedCredentialsVersion(
+                                                current.getCredentialsVersion())
+                                        .setExpectedTelegramBindingVersion(
+                                                current.getTelegramBindingVersion())
+                                        .setExpectedAcademicRevision(revision)
+                                        .setDesiredAccountState(
+                                                IdentityAccountState.IDENTITY_ACCOUNT_STATE_ACTIVE)
+                                        .setDesiredAdminProfile(
+                                                AdmissionAdminProfile.getDefaultInstance())
+                                        .addAllDesiredGrants(grants)));
+    }
+
+    /**
+     * Owned Auth fixture sessions only; every tested authority transition uses real PREPARE/COMMIT.
+     */
+    private UUID selectedSession(long user, Long grant) {
+        UUID sid = UUID.randomUUID();
+        owner.update(
+                """
+INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)
+ VALUES(?,?,?,1,?,now()+interval '1 hour',now()-interval '1 minute',now(),'PASSWORD')
+""",
+                sid,
+                user,
+                grant,
+                UUID.randomUUID());
+        return sid;
+    }
+
+    private void assertAuthoritySelection(UUID sid, Long grant, long version) {
+        assertThat(
+                        owner.queryForObject(
+                                "SELECT active_role_grant_id FROM auth_sessions WHERE sid=?",
+                                Long.class,
+                                sid))
+                .isEqualTo(grant);
+        assertThat(
+                        owner.queryForObject(
+                                "SELECT session_version FROM auth_sessions WHERE sid=?",
+                                Long.class,
+                                sid))
+                .isEqualTo(version);
+    }
+
+    @Test
     void unchangedAdminPutAndUnassignedRevokeHaveNoAuthorityOrEventSideEffects() {
         for (String mode : List.of("FULL", "LIMITED", "UNASSIGNED", "NONE")) {
             long target = adminNoopTarget(mode);
@@ -429,8 +834,8 @@ INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,curre
         assertThat(
                         owner.queryForObject(
                                 "SELECT (payload->'payload'->>'version')::bigint FROM auth_outbox"
-                                    + " WHERE event_type='admin.access.changed' AND"
-                                    + " payload->'payload'->>'target_user_id'=?",
+                                        + " WHERE event_type='admin.access.changed' AND"
+                                        + " payload->'payload'->>'target_user_id'=?",
                                 Long.class,
                                 Long.toString(newlyAssigned)))
                 .isEqualTo(1);

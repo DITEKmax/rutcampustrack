@@ -100,6 +100,7 @@ public class JdbcAcademicIdentityOperationStore implements AcademicIdentityCoord
                             .withDescription("group lifecycle operation is pending")
                             .asRuntimeException();
             }
+            if (request.getHeadmanNoopCandidate()) validateHeadmanNoopAdmission(request, local);
         }
         RecoverySource reconciliation = null;
         if (!Boolean.TRUE.equals(replay)
@@ -183,6 +184,84 @@ SELECT actor_id=? AND command_hash=? AND local_command_hash=?
             stored = load(id, false);
         }
         return stored;
+    }
+
+    /**
+     * Validate local purity while existing group locks and then the target profile lock are held.
+     */
+    private void validateHeadmanNoopAdmission(
+            PrepareIdentityOperationRequest request, AcademicIdentityLocalCommand local) {
+        if (request.getKind()
+                        != ru.rutcampustrack.authoperations.grpc.IdentityOperationKind
+                                .IDENTITY_OPERATION_KIND_HEADMAN_REPLACE
+                || request.getTargetsCount() != 1
+                || local.profile() == null
+                || local.headmanGroupId() == null
+                || local.candidateUserId() == null
+                || !local.candidateUserId().equals(local.expectedHeadmanId())
+                || local.groups().size() != 1
+                || local.groups().getFirst().groupId() != local.headmanGroupId()) throw conflict();
+        var target = request.getTargets(0);
+        long user = local.candidateUserId(), group = local.headmanGroupId();
+        for (String role : List.of("STUDENT", "HEADMAN"))
+            if (target.getDesiredGrantsList().stream()
+                            .filter(
+                                    g ->
+                                            g.getRole().equals(role)
+                                                    && g.getStatus().equals("ACTIVE")
+                                                    && g.hasGroupId()
+                                                    && g.getGroupId() == group)
+                            .count()
+                    != 1) throw conflict();
+        if (target.getUserId() != user
+                || target.hasTelegramChange()
+                || local.profile().userId() != user
+                || !Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM groups WHERE id=? AND is_active AND"
+                                        + " academic_revision=?)",
+                                Boolean.class,
+                                group,
+                                local.groups().getFirst().expectedRevision()))) throw conflict();
+        var profiles =
+                jdbc.query(
+                        """
+SELECT id,last_name,first_name,middle_name,email,phone,employee_number,avatar_id,directory_status
+ FROM academic_profiles WHERE id=? AND archived_at IS NULL AND academic_revision=? FOR UPDATE
+""",
+                        (rs, n) ->
+                                new AcademicIdentityLocalCommand.Profile(
+                                        rs.getLong("id"),
+                                        rs.getString("last_name"),
+                                        rs.getString("first_name"),
+                                        rs.getString("middle_name"),
+                                        rs.getString("email"),
+                                        rs.getString("phone"),
+                                        rs.getString("employee_number"),
+                                        rs.getString("avatar_id"),
+                                        rs.getString("directory_status")),
+                        user,
+                        target.getExpectedAcademicRevision());
+        if (profiles.size() != 1 || !profiles.getFirst().equals(local.profile())) throw conflict();
+        var headmen =
+                jdbc.queryForList(
+                        "SELECT user_id FROM academic_role_eligibility WHERE role='HEADMAN' AND"
+                                + " status='ACTIVE' AND group_id=? ORDER BY user_id",
+                        Long.class,
+                        group);
+        if (!headmen.equals(List.of(user))
+                || !Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                """
+SELECT EXISTS(SELECT 1 FROM academic_role_eligibility WHERE user_id=? AND role='STUDENT' AND status='ACTIVE' AND group_id=?)
+ AND NOT EXISTS(SELECT 1 FROM academic_identity_operation_groups WHERE group_id=? AND fenced)
+ AND NOT EXISTS(SELECT 1 FROM academic_identity_operation_targets WHERE user_id=? AND fenced)
+""",
+                                Boolean.class,
+                                user,
+                                group,
+                                group,
+                                user))) throw conflict();
     }
 
     @Transactional(readOnly = true)
@@ -540,10 +619,13 @@ UPDATE academic_identity_operation_targets SET committed_academic_revision=?,app
         if (!Boolean.TRUE.equals(untouched)) throw conflict();
         if (jdbc.update(
                         "UPDATE academic_identity_operations SET"
-                            + " phase='SUCCEEDED',auth_operation_revision=?,auth_prepared_payload=?,revision=revision+1,updated_at=now(),last_failure=NULL,next_attempt_at=NULL"
+                            + " phase='SUCCEEDED',auth_operation_revision=?,auth_prepared_payload=?,headman_assistants_revoked=CASE"
+                            + " WHEN ? THEN 0 ELSE headman_assistants_revoked"
+                            + " END,revision=revision+1,updated_at=now(),last_failure=NULL,next_attempt_at=NULL"
                             + " WHERE operation_id=? AND phase='ACCEPTED'",
                         nooped.getOperationRevision(),
                         nooped.toByteArray(),
+                        current.command().getHeadmanNoopCandidate(),
                         id)
                 != 1) throw conflict();
         // ACCEPTED target/group rows remain immutable evidence with fenced=false. No APPLY,

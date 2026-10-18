@@ -39,6 +39,7 @@ public class AuthIdentityOperationStore {
     private final AuthInternalActorReader actors;
     private final AuthIdentityRejectionStore rejections;
     private final AuthAdminAccessNoopReceipts noops;
+    private final AuthHeadmanNoopReceipts headmanNoops;
     private final ru.rutcampustrack.auth.event.AdminAccessChangedOutbox adminAccessEvents;
     private final AuthTelegramBindingReservations telegramReservations;
     private final AuthArchiveStepUpAdmission archiveAdmission;
@@ -71,6 +72,7 @@ public class AuthIdentityOperationStore {
         this.admins = new AuthAdminJdbcAuthority(jdbc);
         this.rejections = new AuthIdentityRejectionStore(jdbc);
         this.noops = new AuthAdminAccessNoopReceipts(jdbc);
+        this.headmanNoops = new AuthHeadmanNoopReceipts(jdbc);
         this.adminAccessEvents =
                 new ru.rutcampustrack.auth.event.AdminAccessChangedOutbox(jdbc, mapper);
         this.telegramReservations = new AuthTelegramBindingReservations(jdbc);
@@ -78,6 +80,11 @@ public class AuthIdentityOperationStore {
         this.actors = actors;
         this.passwords = passwords;
         this.bcrypt = bcrypt;
+    }
+
+    private IdentityOperationResult findNoop(UUID id, ByteString hash, byte[] canonical) {
+        var admin = noops.find(id, hash, canonical);
+        return admin != null ? admin : headmanNoops.find(id, hash, canonical);
     }
 
     public IdentityOperationResult prepare(PrepareIdentityOperationRequest request) {
@@ -92,7 +99,7 @@ public class AuthIdentityOperationStore {
         if (previous != null) return requireSame(previous, request.getCommandHash(), canonical);
         var rejected = rejections.find(id, request.getCommandHash(), canonical);
         if (rejected != null) return rejected;
-        var noop = noops.find(id, request.getCommandHash(), canonical);
+        var noop = findNoop(id, request.getCommandHash(), canonical);
         if (noop != null) return noop;
         SessionPrincipal actor = actors.read();
         String initial =
@@ -108,7 +115,7 @@ public class AuthIdentityOperationStore {
                         return requireSame(raced, request.getCommandHash(), canonical);
                     var racedRejection = rejections.find(id, request.getCommandHash(), canonical);
                     if (racedRejection != null) return racedRejection;
-                    var racedNoop = noops.find(id, request.getCommandHash(), canonical);
+                    var racedNoop = findNoop(id, request.getCommandHash(), canonical);
                     if (racedNoop != null) return racedNoop;
                     var ids = new TreeSet<Long>();
                     ids.add(actor.userId());
@@ -125,8 +132,23 @@ public class AuthIdentityOperationStore {
                                     ? request.getKind()
                                     : reconciliation.authorizationKind();
                     requireCommandPermission(actorProfile, authorizationKind, request);
-                    validateHeadmanAggregate(request);
+                    if (!validateHeadmanAggregate(request))
+                        return rejections.insert(
+                                request,
+                                canonical,
+                                IdentityOperationActor.newBuilder()
+                                        .setUserId(actor.userId())
+                                        .setSessionId(actor.sessionId().toString())
+                                        .setSessionVersion(actor.sessionVersion())
+                                        .setRolesVersion(actor.rolesVersion())
+                                        .build(),
+                                IdentityOperationRejectionReason
+                                        .IDENTITY_OPERATION_REJECTION_REASON_TARGET_CONFLICT);
                     var unchanged = noops.prepareIfUnchanged(request, actor, canonical);
+                    if (unchanged == null)
+                        unchanged =
+                                headmanNoops.prepareIfUnchanged(
+                                        request, actor, actorProfile, canonical);
                     if (unchanged != null) return unchanged;
                     var actorState = identity(actor.userId());
                     long actorCommitRv =
@@ -179,7 +201,7 @@ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
                     if (op == null) {
                         var rejection = rejections.find(id, request.getCommandHash(), null);
                         if (rejection != null) return rejection;
-                        var noop = noops.find(id, request.getCommandHash(), null);
+                        var noop = findNoop(id, request.getCommandHash(), null);
                         if (noop != null) return noop;
                         throw error(Status.NOT_FOUND, "OPERATION_NOT_FOUND");
                     }
@@ -194,7 +216,7 @@ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
         return tx.execute(
                 status -> {
                     lockGlobal();
-                    var noop = noops.find(id, request.getCommandHash(), null);
+                    var noop = findNoop(id, request.getCommandHash(), null);
                     if (noop != null) return noop;
                     var op = lockOperation(id);
                     requireHash(op, request.getCommandHash());
@@ -258,6 +280,16 @@ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 target.userId());
                         applyGrants(target);
                         applyAdminProfile(target);
+                        // A rapid regrant must never revive a selection revoked by this commit.
+                        // Active grants for other selected roles retain their sessions and SV.
+                        jdbc.update(
+                                """
+UPDATE auth_sessions s SET active_role_grant_id=NULL,session_version=session_version+1
+ WHERE s.user_id=? AND s.revoked_at IS NULL AND s.active_role_grant_id IS NOT NULL
+ AND NOT EXISTS(SELECT 1 FROM user_role_grants g WHERE g.id=s.active_role_grant_id
+   AND g.user_id=s.user_id AND g.status='active')
+""",
+                                target.userId());
                     }
                     Long clock =
                             jdbc.queryForObject(
@@ -303,7 +335,9 @@ UPDATE auth_identities SET account_state=?,fence_operation_id=NULL,
                         if ("ARCHIVED".equals(target.accountState()))
                             jdbc.update(
                                     """
-UPDATE auth_sessions SET revoked_at=NOW(),revoke_reason='SECURITY_REVOKED'
+UPDATE auth_sessions SET revoked_at=NOW(),revoke_reason='SECURITY_REVOKED',
+ session_version=session_version+CASE WHEN active_role_grant_id IS NULL THEN 0 ELSE 1 END,
+ active_role_grant_id=NULL
 WHERE user_id=? AND revoked_at IS NULL
 """,
                                     target.userId());
@@ -344,7 +378,7 @@ WHERE user_id=? AND revoked_at IS NULL
         return tx.execute(
                 status -> {
                     lockGlobal();
-                    var noop = noops.find(id, request.getCommandHash(), null);
+                    var noop = findNoop(id, request.getCommandHash(), null);
                     if (noop != null) return noop;
                     var op = lockOperation(id);
                     requireHash(op, request.getCommandHash());
@@ -395,9 +429,11 @@ WHERE user_id=? AND revoked_at IS NULL
                             throw error(Status.ALREADY_EXISTS, "OPERATION_ID_CONFLICT");
                         return requireSame(positive, command.getCommandHash(), canonical);
                     }
-                    var noop = noops.find(id, command.getCommandHash(), canonical);
+                    var noop = findNoop(id, command.getCommandHash(), canonical);
                     if (noop != null) {
-                        noops.requireActor(id, actor);
+                        if (noops.find(id, command.getCommandHash(), canonical) != null)
+                            noops.requireActor(id, actor);
+                        else headmanNoops.requireActor(id, actor);
                         return noop;
                     }
                     var negative = rejections.find(id, command.getCommandHash(), canonical);
@@ -1120,7 +1156,7 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
         if (!allowed) throw error(Status.PERMISSION_DENIED, "IDENTITY_COMMAND_SCOPE_DENIED");
     }
 
-    private void validateHeadmanAggregate(PrepareIdentityOperationRequest request) {
+    private boolean validateHeadmanAggregate(PrepareIdentityOperationRequest request) {
         var affected =
                 request.getTargetsList().stream()
                         .map(IdentityTargetCommand::getUserId)
@@ -1146,9 +1182,16 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
                                         + " status='active' AND group_id=?",
                                 Long.class,
                                 headman.getGroupId());
-                if (existing.stream().anyMatch(id -> !affected.contains(id)))
+                // Global operation lock still proves no reservation exists for this UUID.
+                // Persist a definite CAS loss instead of turning it into uncertain PENDING.
+                if (existing.stream().anyMatch(id -> !affected.contains(id))) {
+                    if (request.getKind()
+                            == IdentityOperationKind.IDENTITY_OPERATION_KIND_HEADMAN_REPLACE)
+                        return false;
                     throw error(Status.ABORTED, "HEADMAN_STATE_STALE");
+                }
             }
+        return true;
     }
 
     private static void validate(PrepareIdentityOperationRequest request) {
@@ -1161,6 +1204,10 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
                 || request.getTargetsCount() > 200) throw invalid();
         boolean create = request.getKind() == IdentityOperationKind.IDENTITY_OPERATION_KIND_CREATE;
         AuthArchiveStepUpAdmission.validateEnvelope(request);
+        if (request.getHeadmanNoopCandidate()
+                && (request.getKind()
+                                != IdentityOperationKind.IDENTITY_OPERATION_KIND_HEADMAN_REPLACE
+                        || request.getTargetsCount() != 1)) throw invalid();
         if (create != request.hasCreateIdentity() || (create && request.getTargetsCount() != 1))
             throw invalid();
         if (create

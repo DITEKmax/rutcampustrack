@@ -46,6 +46,25 @@ public class AuthReportSecurityClient implements ReportSecurityAuthority {
     }
 
     @Override
+    public Admission admit(
+            StoredReportIdentity identity,
+            boolean full,
+            UUID jobId,
+            UUID leaseId,
+            long deadlineNanos) {
+        var request = request(identity, full);
+        if (jobId != null) request.setOwnerResourceId(jobId.toString());
+        if (leaseId != null) request.setLeaseId(leaseId.toString());
+        var reply =
+                directed(
+                                AuthSecurityCapabilityServiceGrpc.getAdmitStoredSessionMethod()
+                                        .getFullMethodName(),
+                                deadlineNanos)
+                        .admitStoredSession(request.build());
+        return admission(reply);
+    }
+
+    @Override
     public Admission admitPlan(
             StoredReportIdentity identity,
             boolean full,
@@ -153,6 +172,16 @@ public class AuthReportSecurityClient implements ReportSecurityAuthority {
                                 reply.getAdminProfile().getPermissionsList(),
                                 reply.getAdminProfile().getVersion())
                         : null);
+    }
+
+    private AuthSecurityCapabilityServiceGrpc.AuthSecurityCapabilityServiceBlockingStub directed(
+            String method, long deadlineNanos) {
+        if (deadlineNanos - System.nanoTime() <= 0) throw Status.UNAVAILABLE.asRuntimeException();
+        var selected = directed(method);
+        long remaining = deadlineNanos - System.nanoTime();
+        if (remaining <= 0) throw Status.UNAVAILABLE.asRuntimeException();
+        return selected.withDeadlineAfter(
+                Math.min(remaining, TimeUnit.SECONDS.toNanos(3)), TimeUnit.NANOSECONDS);
     }
 
     private AuthSecurityCapabilityServiceGrpc.AuthSecurityCapabilityServiceBlockingStub directed(

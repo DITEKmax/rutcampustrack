@@ -390,7 +390,7 @@ def e2e_live_panel_queries(query, expected, safe):
     }
     probe("business-kpis.json", 2, "auth-service", absent=no_event)
     for panel in [50, 51, 52]:
-        probe("business-kpis.json", panel, "auth-service")
+        probe("business-kpis.json", panel, "academic-service")
     for panel in [33, 34, 43]:
         probe(
             "business-kpis.json",

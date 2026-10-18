@@ -666,13 +666,22 @@ async def hosted_role_menu_main():
     auth_token = Path(os.environ["NP01_AUTH_SERVICE_TOKEN_FILE"]).read_text().strip()
     read_token = Path(os.environ["NP01_READ_SERVICE_TOKEN_FILE"]).read_text().strip()
     reads = BotReadGrpcClient(
-        "mobile-bff", 19098, tls_enabled=True,
-        tls_ca_path=os.environ["NP01_READ_SERVICE_CA"], service_token=read_token,
+        "mobile-bff",
+        19098,
+        tls_enabled=True,
+        tls_ca_path=os.environ["NP01_READ_SERVICE_CA"],
+        service_token=read_token,
     )
-    menu = CountingMenu(BotMenuGrpcClient(
-        "auth-service", 19090, tls_enabled=True,
-        tls_ca_path=os.environ["NP01_AUTH_SERVICE_CA"], service_token=auth_token, read_client=reads,
-    ))
+    menu = CountingMenu(
+        BotMenuGrpcClient(
+            "auth-service",
+            19090,
+            tls_enabled=True,
+            tls_ca_path=os.environ["NP01_AUTH_SERVICE_CA"],
+            service_token=auth_token,
+            read_client=reads,
+        )
+    )
     common = [CREDENTIALS_LABEL, LINKS_LABEL, LOGIN_LABEL, SETTINGS_LABEL]
     extras = {
         "student": [HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL],
@@ -686,6 +695,7 @@ async def hosted_role_menu_main():
     }
     provider_runner = bot = None
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as controls:
+
         async def control(action):
             async with controls.post(
                 os.environ["NP01_CONTROL_URL"] + "/control/" + action,
@@ -705,8 +715,9 @@ async def hosted_role_menu_main():
             await site.start()
             bot = Bot(
                 token="123456:" + uuid.uuid4().hex,
-                session=AiohttpSession(api=TelegramAPIServer.from_base(
-                    f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}")),
+                session=AiohttpSession(
+                    api=TelegramAPIServer.from_base(f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}")
+                ),
             )
             dispatcher = Dispatcher()
             dispatcher.include_router(start_router)
@@ -718,20 +729,31 @@ async def hosted_role_menu_main():
                 nonlocal sequence
                 sequence += 1
                 message = {
-                    "message_id": sequence + 1000, "date": 1700000000,
-                    "chat": {"id": chat, "type": chat_type}, "text": text,
+                    "message_id": sequence + 1000,
+                    "date": 1700000000,
+                    "chat": {"id": chat, "type": chat_type},
+                    "text": text,
                     "from": {"id": chat, "is_bot": False, "first_name": "Synthetic"},
                 }
                 payload = {"update_id": sequence, "message": message}
                 if callback:
-                    payload = {"update_id": sequence, "callback_query": {
-                        "id": str(sequence), "from": message["from"], "chat_instance": "synthetic",
-                        "message": message, "data": text,
-                    }}
+                    payload = {
+                        "update_id": sequence,
+                        "callback_query": {
+                            "id": str(sequence),
+                            "from": message["from"],
+                            "chat_instance": "synthetic",
+                            "message": message,
+                            "data": text,
+                        },
+                    }
                 before = len(provider.messages)
                 await dispatcher.feed_update(
-                    bot, Update.model_validate(payload, context={"bot": bot}),
-                    academic_client=None, prefs_client=None, bot_menu_client=menu,
+                    bot,
+                    Update.model_validate(payload, context={"bot": bot}),
+                    academic_client=None,
+                    prefs_client=None,
+                    bot_menu_client=menu,
                     bot_lesson_choices=choices,
                 )
                 return provider.messages[before:]
@@ -785,10 +807,13 @@ async def hosted_role_menu_main():
             check(old_scope is not None)
             current = await menu.headman_current(headman["chat"], old_scope)
             check(current.state == "READY" and current.lesson.lesson_id == fixtures["lesson_id"])
-            expected = sorted((row["uid"], row["display_name"], row["status"], row["record_present"])
-                              for row in fixtures["roster"])
-            check(sorted((row.student_id, row.display_name, row.status, row.record_present)
-                         for row in current.rows) == expected)
+            expected = sorted(
+                (row["uid"], row["display_name"], row["status"], row["record_present"]) for row in fixtures["roster"]
+            )
+            check(
+                sorted((row.student_id, row.display_name, row.status, row.record_present) for row in current.rows)
+                == expected
+            )
             check(any(row.status == "ABSENT" and row.record_present for row in current.rows))
             check(any(not row.record_present and not row.status for row in current.rows))
             replies = await feed(headman["chat"], HEADMAN_LABEL)
@@ -839,9 +864,7 @@ if __name__ == "__main__":
             asyncio.run(asyncio.wait_for(hosted_role_menu_main(), timeout=45))
         else:
             asyncio.run(
-                asyncio.wait_for(own_homework_main(), timeout=30)
-                if sys.argv[1:] == ["--own-homework"]
-                else main()
+                asyncio.wait_for(own_homework_main(), timeout=30) if sys.argv[1:] == ["--own-homework"] else main()
             )
     except BaseException:
         print(

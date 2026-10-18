@@ -189,7 +189,8 @@ VALUES(?,?,?,?,?,?,?,?,?,?,1,?,now(),now())
                         target.getUserId(),
                         command.sourceGroupId(),
                         command.effectiveDate(),
-                        command.reason());
+                        command.reason(),
+                        true);
                 openMembership(
                         target.getUserId(),
                         command.destinationGroupId(),
@@ -265,7 +266,8 @@ VALUES(?,?,?,?,?,?,?,?,?,?,1,?,now(),now())
                             target.getUserId(),
                             open.getFirst(),
                             command.effectiveDate(),
-                            "role-status");
+                            null,
+                            false);
                 }
                 // Suspension keeps the established dated membership interval. Only terminal
                 // status closes it; reactivation reuses it when it is still open.
@@ -280,7 +282,8 @@ VALUES(?,?,?,?,?,?,?,?,?,?,1,?,now(),now())
                             target.getUserId(),
                             open.getFirst(),
                             command.effectiveDate(),
-                            "archive");
+                            null,
+                            false);
                 }
                 if (wasHeadman.get(target.getUserId()))
                     revokeGroupAssistants(old.group(), acceptedActorId);
@@ -459,7 +462,8 @@ ON CONFLICT(user_id,role) DO UPDATE SET status=excluded.status,group_id=excluded
                 : 0;
     }
 
-    private void closeMembership(long user, Long group, LocalDate date, String reason) {
+    private void closeMembership(
+            long user, Long group, LocalDate date, String reason, boolean replaceReason) {
         if (date == null || group == null) throw conflict();
         var rows =
                 jdbc.queryForList(
@@ -469,9 +473,11 @@ ON CONFLICT(user_id,role) DO UPDATE SET status=excluded.status,group_id=excluded
                         user);
         if (rows.size() != 1
                 || jdbc.update(
-                                "UPDATE student_group_history SET left_at=?,reason=? WHERE id=? AND"
-                                        + " group_id=? AND joined_at<=?",
+                                "UPDATE student_group_history SET left_at=?,reason=CASE WHEN ? THEN"
+                                        + " ? ELSE reason END WHERE id=? AND group_id=? AND"
+                                        + " joined_at<=?",
                                 date,
+                                replaceReason,
                                 reason,
                                 rows.getFirst(),
                                 group,

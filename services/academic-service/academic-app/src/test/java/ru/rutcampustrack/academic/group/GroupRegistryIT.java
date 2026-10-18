@@ -314,11 +314,12 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                                 .setObservedAtEpochMs(System.currentTimeMillis())
                                 .setSnapshotDigest("0".repeat(64))
                                 .build());
-        try (var ignored = identityFixture.request(admin)) {
+        UUID archiveOperation = UUID.randomUUID();
+        try (var ignored = identityFixture.request(admin, archiveOperation)) {
             var preview = userArchives.preview(archivedStudent);
             userArchives.archive(
                     archivedStudent,
-                    new ArchiveRequest(UUID.randomUUID(), preview.previewDigest(), null));
+                    new ArchiveRequest(archiveOperation, preview.previewDigest(), null));
         }
         Long multiRoleUser = createUser("dm_" + suffix, UserRole.STUDENT, null);
         changeRole(multiRoleUser, "TEACHER", RoleGrantStatus.ACTIVE, "dm_" + suffix);

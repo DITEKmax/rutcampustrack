@@ -1,20 +1,18 @@
 # ACTIVE — separate DB + apps + Q033 / 18.10.2026
 
-Persisted Goal Q031/D037 **IN_PROGRESS**: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
-[TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md),
-[ASYNC](TASK-ADDENDUM-ASYNC-20261017.md), Q033/D038. No deadline/main merge/deploy.
-Branch codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2).
-Starting26cbe5912f6683a81780a831609dbddbc26feba4; published/PR verified
-**9cfb2f985d33e5b27b9a30f22b25bc2f12d0e010**. Source=HEAD+owned WIP;
-source/compile/runtime acceptance remain distinct.
+Persisted Goal Q031/D037 IN_PROGRESS: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
+[TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md), [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md).
+Branch codex/server-validation-20261011; [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2).
+Starting26cbe5912f6683a81780a831609dbddbc26feba4; published/remote/PR verified
+**a05b0e872b5ec0f757ef160b239b7502e3a85cfc**. Source=HEAD+ownedWIP; no deadline/main/deploy.
 
 ## Конечный план
 
 [Матрица v3 FROZEN](selected-results-20261018-v3.csv)/[веса](selected-results-20261018-v3.meta.json):
 **30/39,146/196=74.49% плана** (28 DONE_CHANGED +2 ALREADY_SATISFIED), не readiness.
-Состав/веса не менялись. [v2](selected-results-20261018-v2.csv)24/38,114/188 и
-[v1](selected-results-20261018.csv)23/25,110/123 сохранены. TASK17 прежние9/9 и U15
-sameDB действуют только в прежней применимости. Критерии/evidence — в матрице.
+Веса/знаменатель прежние. [v1](selected-results-20261018.csv)23/25,110/123 и
+[v2](selected-results-20261018-v2.csv)24/38,114/188 сохранены; TASK17 прежние9/9/U15sameDB
+действуют в прежней применимости. Полные критерии/evidence/dependencies — в матрице.
 
 | КТ | Закрыто / всего | Вес / всего | % плана |
 | --- | --- | --- | --- |
@@ -23,41 +21,41 @@ sameDB действуют только в прежней применимост�
 | КТ4 changedchains/monitoring/jobs | 13/15 | 70/83 | 84.34 |
 | КТ5 finalgates/review/handoff | 0/1 | 0/5 | 0 |
 
-| Остаток | Конкретное следующее действие / зависимость |
+| Остаток | Следующее действие / существенная граница |
 | --- | --- |
-| U14.3/.5 | Grants/transfer/archive/proofs/currentrights: сохранить actual8caa archive4/subjectdelete12/FIRST3 и samearchive recovery PASS; закрыть named Group/race/registry/browser остаток. Fixture fixes не означают продуктовый PASS. |
-| U14.4/.6 | Actual9cf two18weekDOCX/navigation/lost202/reconnect/currentrights PASS; complementary short3week renderer + unchanged ownerSQL17 PASS accepted. FULL/LIMITED registry still FAIL (12152912215 frames76/755/1134); source RCA active. Whole criteria remain open. |
-| U14.7 | Core4 PASS retained; actual9cf CLI72 FRESH exits2 (expected0), safe12153291582/28b81f69. Cause UNKNOWN; author adds finite opt-in phase/category in existing channels; no speculative launcher/config fix. |
-| U20.1/.2/.3 | Actual9cf hosted runner exits before testbody (runnerErrors1/results[]). Exact grep leading-anchor mismatch corrected, one-parameter check PASS; actual private bot/menu/roster/Today proof pending. Real Telegram deferred. |
-| U25 | Current CI/Coverage unresolved; Security/OpenAPI/Monitoring/Apps SUCCESS. DOCX producer lacks async duration meter: observation-only correction4 in source review. Recovery canonical UTF8 ACL ordering2 source APPROVE/joined; actual BACKUP/GUARD cause remains UNKNOWN. Final compatible gates/review/handoff remain. |
+| U14.3 | Auth grant/CAS correctness: History11 independent APPROVE/joined: durable same-headman NOOP, targeted selection/SV clear, pre-reservation conflict; proto/main34 + test35 compile PASS; actual grants/history checks pending. |
+| U14.4 | Two18weekDOCX/lost202/reconnect/currentrights + short3week renderer/ownerSQL17 PASS retained. ADMIN_USERS purpose-scope9 source+addressed APPROVE/joined; native33/35PASS; actual FULL/LIMITED report required. |
+| U14.5 | Archive/proofs/history: existing exact samearchive/DLQ/duplicate/restoration actual9cfPR PASS; History11 fixes reason/session semantics. Named subject/semester/browser residual remains. |
+| U14.6 | Changed consumers depend U14.3/.4/.5; a05 OpenAPI SUCCESS, current client/IT verification active. Preserve old create500 fix and current session/DTO/wire contracts. |
+| U14.7 | Q033 actual9cf CLI FRESH exits2, causeUNKNOWN. Finite opt-in diagnostic6 source APPROVE/joined; native33; next actual CLI must identify cause and ultimately prove first create/repeat. |
+| U20.1 | Private common/student/exact role menu: a05 runnerErrors1/results[]; dedicated config grep excludes bot title; bounded selection correction underway, actual body pending. No real Telegram claim. |
+| U20.2 | Private current-lesson headman roster/statistics: existing server evidence retained; genuine hosted dispatch/result/currentbinding/revoke proof pending. |
+| U20.3 | Teacher Today/mixed roles/old buttons: genuine hosted current authority proof pending; teacher-only/admin-only no student HW. |
+| U25 | Compatible final CI/Coverage/security/OpenAPI/monitoring/review/handoff. a05 recovery RESTORE/GUARD/OTHER; finite codes joined. Coverage dependencyHTTP403 before tests (NO_RESULTS). Source-admission stale bindings joined; no gates weakened. |
 
-U23.1/.2/.4 accepted9cf: actual GT errors/privacy/restart, Docx CPUprofile/restart,
-allsidecar resourcephases/outage/cleanup PASS; independent applicability ACCEPT.
-Evidence: ignored current-wip/ci-9cf-primary/12151983958/apps.json SHA2222f88f.
+## Сейчас / продолжение
 
-## Текущая работа
+Publisheda05 includes reviewed report duration producer, canonical fixture corrections and
+recovery inventory ordering; native27–32 compilation PASS (not runtime acceptance).
+a05 pushCI39173748709/PRCI39173757390 terminalFAIL; Apps/Monitoring/Security/OpenAPI SUCCESS.
+a05 actual Academic502PASS/18FAIL/1SKIP (521 unchanged; safe12153782706);
+a05 actual two18weekDOCX/navigation/lost202/reconnect/currentrights PASS14.007s;
+all4 job/report deltas2 PASS,8targetsUP; probe50 Auth→Academic corrected; panel itself unchanged.
+Evidence once: current-wip/ci-a05-primary/12153767333; hosted bot12154076879 no test body.
+Coverage Academic HTTP403 fetching swagger-annotations-jakarta2.2.22 before tests;
+12154035574 NO_RESULTS, not test/coverage-percentage FAIL. Recovery RESTORE causeUNKNOWN.
 
-Published9cf verified/draft/notmerged; pushCI39170154229/PRCI39170159423 active;
-Coverage39170159441 FAIL (Academic tests; diff skipped), Security39170159436/OpenAPI39170159461 SUCCESS.
-Push Academic actualIT FAIL/safeoutcomes available; Auth/Attendance/Schedule/Notification/
-Gateway/BFF IT SUCCESS. Browser maps/Today/requests/lesson PASS; registry/admingrants/
-semesterUI/subject/schedule named paths FAIL. Both push andPR terminalFAIL; owned cleanup71 SUCCESS; actual CLI72 FAIL/upload73 SUCCESS.
-PR samearchive reconciliation59 PASS; push preview transport ECONNRESET, restoration/cleanup PASS; no redundant rerun.
-Primary evidence once in ignored current-wip/ci-9cf-primary; summaries never imply whole PASS.
+Owned source: report authority9/Q033diagnostic6 independent APPROVE and native33 PASS;
+History11/Admin+HWfixture2 independent APPROVE/joined; proto/main34 + test35 compile PASS.
+Python format1 standardRuff/AST PASS; Recovery finite codes1 joined; CI stale SHA/frame
+bindings1 joined with assertions/frozen bytes intact. Root sole Git/docs/matrix writer.
+Panelprobe1/dedicatedbotconfig1 fixed; archive3/Headman2 canonicalfixtures APPROVE;
+GroupRegistrykey1 andBotBridgeclosedphase1 joined; native36testcompilePASS63.30s.
+[owners/resources](resources.md). Botha05 browsergroups cleanupPASS/CLIexit2 boundaries preserved.
+Next: normalpushcoherent reviewedpacket andordinaryCI; no newownerquestion.
 
-Next owned packet: canonical Grpc/HW/Entity/ByIds/IDOR/cacheGroup plus Performance/Pagination/
-Rbac/Semester/filter/credential/events/outbox fixtures source independent APPROVE/joined.
-Native27–32 PASS (changed main/test compilation); current32 twelvefixtures PASS58.98s, lease RELEASED.
-Report-observation4 independent APPROVE/joined/current31PASS;
-recovery2 canonicalorder + finite diagnostics APPROVE/joined; one hosted grep correction
-joined and actual standard Ruff tiny fix PASS. Preserve useful9cf CI before next normalpush.
-Root sole Git/taskdocs/matrix; [resources/owners](resources.md), [boundary protocol](BOUNDARY-PROTOCOL-20261018.md).
-Next: finish explicit ADMIN_USERS report-scope fix (existing report admission), review ready fixtures;
-publish next coherent checked package (useful oldCI complete). History NOOP/session/reason
-fix11 design GO/author active; Bootstrap finite diagnostic active. Source-only fixes are not runtime acceptance.
-Local Docker/DB/imagepull NOT_RUN: workspace4221255680B<4GiB reserve/VFSsameFS;
-TMP4760072192B, no cleanup/reset/prune. Foreign25 preserved. History once in
-[attempts](attempts.ndjson); exact WIP in ignored current-wip/latest-checkpoint.safe.json.
-[Decisions](decisions.md), [questions](questions.md). Вопросов владельцу нет.
-B013/B014/B015 FROZEN. DEFERRED_OWNER: real Telegram/push/install/Safari/alertbot/
-offhost probe/owner stand/deploy/backup/VPS/multiworker.
+[Protocol](BOUNDARY-PROTOCOL-20261018.md), [decisions](decisions.md), [questions](questions.md),
+[history once](attempts.ndjson); exact WIP in ignored current-wip/latest-checkpoint.safe.json.
+Local Docker/DB/pulls NOT_RUN (workspace<4GiB reserve/VFSsameFS); no cleanup/reset/prune.
+Foreign25 preserved. Вопросов владельцу нет. B013/B014/B015 FROZEN. DEFERRED_OWNER:
+real Telegram/push/install/Safari/alertbot/offhost probe/owner stand/deploy/backup/VPS/multiworker.

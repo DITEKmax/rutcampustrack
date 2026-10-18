@@ -938,13 +938,17 @@ VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) R
                         requestKey,
                         hash);
         UUID operationId = UUID.randomUUID();
-        var started =
-                deletionCommands.startDelete(
-                        semesterId,
-                        adminId(),
-                        operationId,
-                        operationId,
-                        deletionSnapshot(semesterId));
+        var administrator = identityFixture.select(adminId(), AuthRole.ADMIN);
+        SemesterArchiveOperation started;
+        try (var ignored = identityFixture.request(administrator, operationId)) {
+            started =
+                    deletionCommands.startDelete(
+                            semesterId,
+                            adminId(),
+                            operationId,
+                            operationId,
+                            deletionSnapshot(semesterId));
+        }
         assertThat(
                         deletionBarrier.prepareDelete(
                                 operationId, semesterId, started.getStateVersion()))

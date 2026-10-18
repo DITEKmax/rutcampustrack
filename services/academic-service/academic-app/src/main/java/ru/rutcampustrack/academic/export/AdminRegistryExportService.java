@@ -16,6 +16,7 @@ import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.exception.BadRequestException;
+import ru.rutcampustrack.academic.exportjobs.ExportJobService.UserRegistryReadScope;
 import ru.rutcampustrack.academic.group.GroupAssembler;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
@@ -151,6 +152,15 @@ public class AdminRegistryExportService {
     }
 
     public Download users(RegistryExportModels.Users query, UUID jobId, UUID leaseId) {
+        return users(query, jobId, leaseId, null);
+    }
+
+    public Download users(
+            RegistryExportModels.Users query,
+            UUID jobId,
+            UUID leaseId,
+            UserRegistryReadScope reportScope) {
+        if (reportScope != null) reportScope.requireBinding(jobId, leaseId, context.getClaims());
         access.require("USERS_VIEW");
         boolean deferredAudit = asyncGeneration(jobId, leaseId, "ADMIN_USERS", "adminUsers", query);
         RegistryExportFormat format = RegistryExportFormat.from(query.format());
@@ -171,12 +181,15 @@ public class AdminRegistryExportService {
         // The barrier captures the page and batched grant labels in one local RR snapshot;
         // its live Auth checks must run outside any caller transaction.
         var selected =
-                users.listUserRegistry(
-                        query.search(),
-                        query.role(),
-                        query.status(),
-                        query.roleStatus(),
-                        PageRequest.of(0, MAX_ROWS + 1, sort));
+                reportScope == null
+                        ? users.listUserRegistry(
+                                query.search(),
+                                query.role(),
+                                query.status(),
+                                query.roleStatus(),
+                                PageRequest.of(0, MAX_ROWS + 1, sort))
+                        : users.listUserRegistryForReport(
+                                query, PageRequest.of(0, MAX_ROWS + 1, sort), reportScope);
         var page = selected.page();
         requireSize(page.getTotalElements());
         var roles = selected.grants();

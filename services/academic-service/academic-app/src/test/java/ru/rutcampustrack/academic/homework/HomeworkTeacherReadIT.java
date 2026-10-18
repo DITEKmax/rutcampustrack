@@ -33,7 +33,7 @@ import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
 /** Signed HTTP reads against real grants, assignments, lifecycle operations and date bounds. */
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true")
+@TestPropertySource(properties = "rct.fixture.legacy-headers-enabled=true")
 class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private JdbcTemplate jdbc;

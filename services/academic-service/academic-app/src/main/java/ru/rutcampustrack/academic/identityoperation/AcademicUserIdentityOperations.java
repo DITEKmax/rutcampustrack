@@ -787,9 +787,13 @@ public class AcademicUserIdentityOperations {
                                                                         .IDENTITY_OPERATION_KIND_HEADMAN_REPLACE);
                                         AcademicIdentityLocalCommand.Profile candidateProfile =
                                                 null;
+                                        boolean noopCandidate =
+                                                Objects.equals(discovery.current(), candidate);
                                         for (long user : ids) {
                                             var state = state(snapshots.get(user));
                                             var target = target(state.auth());
+                                            var unchangedGrants =
+                                                    List.copyOf(target.getDesiredGrantsList());
                                             var grants =
                                                     new ArrayList<>(target.getDesiredGrantsList());
                                             if (user == candidate) {
@@ -828,8 +832,15 @@ public class AcademicUserIdentityOperations {
                                             } else suspendHeadman(grants);
                                             target.clearDesiredGrants()
                                                     .addAllDesiredGrants(canonicalGrants(grants));
+                                            if (user == candidate)
+                                                noopCandidate &=
+                                                        candidateProfile.equals(state.profile())
+                                                                && !target.hasTelegramChange()
+                                                                && target.getDesiredGrantsList()
+                                                                        .equals(unchangedGrants);
                                             auth.addTargets(target);
                                         }
+                                        auth.setHeadmanNoopCandidate(noopCandidate);
                                         var local =
                                                 new AcademicIdentityLocalCommand(
                                                         intent,

@@ -122,7 +122,13 @@ public final class AcademicIdentityCoordinator {
 
     static void validateNoop(Operation operation, IdentityOperationResult result) {
         var command = operation.command();
-        if (command.getKind() != IdentityOperationKind.IDENTITY_OPERATION_KIND_ADMIN_ACCESS
+        boolean admin =
+                command.getKind() == IdentityOperationKind.IDENTITY_OPERATION_KIND_ADMIN_ACCESS
+                        && !command.getHeadmanNoopCandidate();
+        boolean headman =
+                command.getKind() == IdentityOperationKind.IDENTITY_OPERATION_KIND_HEADMAN_REPLACE
+                        && command.getHeadmanNoopCandidate();
+        if ((!admin && !headman)
                 || result.getKind() != command.getKind()
                 || !result.getOperationId().equals(operation.id())
                 || !result.getCommandHash().equals(command.getCommandHash())
@@ -134,6 +140,27 @@ public final class AcademicIdentityCoordinator {
                 || result.getTargetsCount() != 1) throw unavailable();
         var requested = command.getTargets(0);
         var target = result.getTargets(0);
+        if (headman) {
+            var selected =
+                    target.getGrantsList().stream()
+                            .filter(
+                                    g ->
+                                            g.getRole().equals("HEADMAN")
+                                                    && g.getStatus().equals("ACTIVE"))
+                            .toList();
+            if (selected.size() != 1
+                    || !selected.getFirst().hasGroupId()
+                    || selected.getFirst().getGroupId() <= 0
+                    || target.getGrantsList().stream()
+                            .noneMatch(
+                                    g ->
+                                            g.getRole().equals("STUDENT")
+                                                    && g.getStatus().equals("ACTIVE")
+                                                    && g.hasGroupId()
+                                                    && g.getGroupId()
+                                                            == selected.getFirst().getGroupId()))
+                throw unavailable();
+        }
         if (requested.getUserId() <= 0
                 || target.getUserId() != requested.getUserId()
                 || target.getFinalRolesVersion() != requested.getExpectedRolesVersion()

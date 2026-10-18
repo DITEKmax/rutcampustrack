@@ -108,6 +108,11 @@ message PrepareIdentityOperationRequest {
   string password_step_up_receipt_id = 6; // required only for dangerous archive
   string archive_preview_digest = 7; // exact opaque Academic preview SHA-256
   uint32 archive_step_up_protocol_version = 8; // effective ARCHIVE=1; otherwise 0
+  // Academic proves unchanged profile/headman/revisions in its acceptance transaction.
+  // Auth independently checks current authority and committed Academic revision.
+  // Only a pure single-target HEADMAN_REPLACE may request terminal NOOP; false
+  // retains the ordinary fenced RV+1 path, including mixed profile/binding edits.
+  bool headman_noop_candidate = 9;
   // Fresh RECONCILE refreshes these proof fields and actor/generations only;
   // immutable business intent v1 is the exact normalized affected target set.
 }

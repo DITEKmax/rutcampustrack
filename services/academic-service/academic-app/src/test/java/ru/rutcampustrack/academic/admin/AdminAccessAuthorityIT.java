@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.ErrorResponseException;
 
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.contract.dto.user.*;
 import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
@@ -34,6 +35,7 @@ import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.security.admin.*;
 
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
@@ -149,13 +151,17 @@ class AdminAccessAuthorityIT extends AbstractAcademicIntegrationTest {
                             boolean assigned = rs.getBoolean("assigned");
                             String mode = rs.getString("mode");
                             String[] permissions = (String[]) rs.getArray("permissions").getArray();
+                            List<String> canonicalPermissions = Arrays.asList(permissions);
+                            if (assigned && "FULL".equals(mode))
+                                canonicalPermissions = AdminPermission.allCodes();
+                            else if (assigned && "LIMITED".equals(mode))
+                                canonicalPermissions =
+                                        AdminPermission.validate(mode, canonicalPermissions);
                             return new AdminAccessProfile(
                                     target,
                                     assigned,
                                     mode,
-                                    assigned && "FULL".equals(mode)
-                                            ? AdminPermission.allCodes()
-                                            : Arrays.asList(permissions),
+                                    canonicalPermissions,
                                     rs.getLong("version"));
                         },
                         target);
@@ -607,6 +613,27 @@ class AdminAccessAuthorityIT extends AbstractAcademicIntegrationTest {
                         firstId,
                         identityFixture.canonical().semesterId(),
                         SemesterArchiveAction.DELETE);
+        var semesterState =
+                academic.queryForMap(
+                        "SELECT name,state_version FROM semesters WHERE id=?",
+                        operation.getSemesterId());
+        long originalVersion = ((Number) semesterState.get("state_version")).longValue();
+        operation.setStateVersion(Math.addExact(originalVersion, 1L));
+        operation.setTransition(SemesterTransition.DELETING);
+        operation.setDeletePhase(SemesterDeletionPhase.PREPARING);
+        operation.setPriorState(SemesterDeletionPriorState.ACTIVE);
+        operation.setSemesterName((String) semesterState.get("name"));
+        operation.setOriginalStateVersion(originalVersion);
+        String syntheticDigest = "11".repeat(32);
+        operation.setPreviewDigest(syntheticDigest);
+        operation.setAcademicParticipantDigest(syntheticDigest);
+        operation.setScheduleParticipantDigest(syntheticDigest);
+        operation.setAttendanceParticipantDigest(syntheticDigest);
+        operation.setDeletionCounts(new SemesterDeletionCounts(0, 0, 0, 0, 0, 0, 0));
+        operation.setPrepareExpiresAt(OffsetDateTime.now().plusMinutes(2));
+        operation.setAcademic(SemesterArchiveParticipantStatus.PENDING);
+        operation.setSchedule(SemesterArchiveParticipantStatus.PENDING);
+        operation.setAttendance(SemesterArchiveParticipantStatus.PENDING);
         identityFixture
                 .academicTransactions()
                 .executeWithoutResult(status -> semesterOperations.saveAndFlush(operation));

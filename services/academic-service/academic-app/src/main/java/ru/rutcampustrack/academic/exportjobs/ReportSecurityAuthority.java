@@ -10,6 +10,16 @@ import java.util.UUID;
 public interface ReportSecurityAuthority {
     Admission admit(StoredReportIdentity identity, boolean requiresFull, UUID jobId, UUID leaseId);
 
+    /** Absolute monotonic cutoff; an authority without deadline support must fail closed. */
+    default Admission admit(
+            StoredReportIdentity identity,
+            boolean requiresFull,
+            UUID jobId,
+            UUID leaseId,
+            long deadlineNanos) {
+        throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+    }
+
     Admission admitPlan(
             StoredReportIdentity identity,
             boolean requiresFull,

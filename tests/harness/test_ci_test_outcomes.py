@@ -537,8 +537,8 @@ class SafeCases {
         source = self.root / (source_path or COLLECTOR.ACADEMIC_SCHEMA_SOURCE)
         source.parent.mkdir(parents=True)
         source.write_text(
-            "package ru.rutcampustrack.academic.integration; class OpenApiSnapshotIT {"
-            "@Test void apiDocsMatchesSnapshot() {} @Test void anotherCase() {}}"
+            "package ru.rutcampustrack.academic.homework; class HomeworkStudentCompletionConcurrencyIT {"
+            "@Test void currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp() {} @Test void anotherCase() {}}"
         )
         subprocess.run(
             ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
@@ -552,7 +552,7 @@ class SafeCases {
     def test_academic_missing_table_retains_exact_named_failed_outcome_and_red_summary(self) -> None:
         classname = self.academic_fixture()
         self.xml(
-            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()">'
+            f'<testcase classname="{classname}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()">'
             f'<failure type="java.lang.IllegalStateException" message="{MARKER}">'
             f"java.lang.IllegalStateException: {MARKER}\n"
             f"Caused by: {COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION}: Schema-validation: missing table [public.assignments]\n"
@@ -563,7 +563,7 @@ class SafeCases {
         report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
         case = report["cases"][0]
         self.assertEqual(case["identity"], "SOURCE_METHOD")
-        self.assertEqual(case["method"], "apiDocsMatchesSnapshot")
+        self.assertEqual(case["method"], "currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp")
         self.assertEqual(case["source"], COLLECTOR.ACADEMIC_SCHEMA_SOURCE)
         self.assertEqual(
             case["sourceSha256"],
@@ -651,10 +651,10 @@ class SafeCases {
         self.xml(
             f'<testcase classname="{classname}" name="anotherCase()">{failure}</testcase>'
             f'<testcase classname="{classname}" name="{MARKER}">{failure}</testcase>'
-            f'<testcase classname="{MARKER}" name="apiDocsMatchesSnapshot()">{failure}</testcase>'
-            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()"/>'
-            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()"><skipped/></testcase>'
-            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()"><error/></testcase>',
+            f'<testcase classname="{MARKER}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()">{failure}</testcase>'
+            f'<testcase classname="{classname}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()"/>'
+            f'<testcase classname="{classname}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()"><skipped/></testcase>'
+            f'<testcase classname="{classname}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()"><error/></testcase>',
             tests=6,
             failures=3,
             skipped=1,
@@ -670,7 +670,7 @@ class SafeCases {
         unit_dir.mkdir()
         self.results = unit_dir
         self.xml(
-            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()">{failure}</testcase>',
+            f'<testcase classname="{classname}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()">{failure}</testcase>',
             tests=1,
             failures=1,
         )
@@ -683,7 +683,7 @@ class SafeCases {
         source = COLLECTOR.MODULES["academic-service"] + "/src/test/java/OtherSource.java"
         classname = self.academic_fixture(source)
         self.xml(
-            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()">'
+            f'<testcase classname="{classname}" name="currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp()">'
             f'<failure type="{COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION}" '
             'message="Schema-validation: missing table [assignments]"/></testcase>',
             tests=1,

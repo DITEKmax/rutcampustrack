@@ -87,11 +87,9 @@ NOTIFICATION_CAUSE_HEADER = re.compile(
     r"(?m)^[ \t]{0,32}Caused by:[ \t]{1,8}([A-Za-z_$][A-Za-z0-9_.$]{0,255})(?=:|\r?$)"
 )
 NOTIFICATION_DIAGNOSTIC_CHARS = 65536
-ACADEMIC_SCHEMA_CLASS = "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT"
-ACADEMIC_SCHEMA_METHOD = "apiDocsMatchesSnapshot"
-ACADEMIC_SCHEMA_SOURCE = (
-    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java"
-)
+ACADEMIC_SCHEMA_CLASS = "ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT"
+ACADEMIC_SCHEMA_METHOD = "currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp"
+ACADEMIC_SCHEMA_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java"
 # Closed names verified against current Academic (22) and Auth (2) @Entity/@Table mappings.
 # Auth names identify accidental cross-owner mappings without exposing arbitrary relations.
 ACADEMIC_SCHEMA_TABLES = (

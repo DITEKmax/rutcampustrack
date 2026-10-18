@@ -2,7 +2,7 @@
 
 Root sole Git/taskdocs/matrix. RULES2b9a859c; children Sol6.1/high/forknone,
 actual metadata UNKNOWN accepted Cloud exception. Native7 slots inclRoot; no CLI plane.
-Published/remote/PR97eade5c, Root foreign25 + reserved reporttypealias preserved.
+Published/remote/PR9928d388, Root foreign25 + reserved reporttypealias preserved.
 
 ## Resources
 
@@ -21,9 +21,9 @@ no refusal bypass. Other checks light CPU1/RSS<=1GiB, no installs.
 | Root | /workspace/rutcampustrack; integration/docs; foreignWIP preserved. |
 | s19_integration_compile | /tmp/rct-s19-auth-runtime; current11 ownedJava10 compile + JUnit1/ArchTest1 PASS; lease RELEASED/processes0. |
 | s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Botfixture exacthelperEXECUTE1 complete/Rootjoined; prior manualschema/COPY published97. |
-| s19_ci_diagnosis | /tmp/rct-s19-e2e; collector2 complete/independentprivacyAPPROVE/Rootjoined; unrelatedWIP preserved. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; collector2 targetcorrection complete/affectedprivacyAPPROVE/Rootjoined; otherWIP preserved. |
 | s19_academic | /tmp/rct-s19-academic; scheduler8 completed/wholeAPPROVE/Rootjoined; runtime bodies unchanged. |
-| ac9_auth_it | /tmp/rct-s19-auth; current97 Authfixture2 complete/joined; syntheticTGbinding2 solewriter finishing. |
+| ac9_auth_it | /tmp/rct-s19-auth; fixture4 published9928, Authcoverage199PASS1snapshotdrift; no activewriter. |
 | ac9_apps | /tmp/rct-s19-apps; Sentryresolver1 complete/Rootjoined/pureViteresolutionPASS; actualbrowser pending. |
 | ac9_contract_generation | /tmp/ac9-contract-generation private mirror; Auth2 ready + existing81consumerPASS; waits officialAcademicsnapshot for atomic5. Prior identityUI WT untouched. |
 | s19_review_producer | independent source APPROVE collector2 privacy; no authoring. |
@@ -32,5 +32,6 @@ Existing worktrees/cache/WIP retained, no new stand per writer. Native current7 
 current8 BFF70, current9 Academic40 andcurrent10 Headman1 PASS reused, not repeated.
 Current11 source ed609daa/2261 freeze; no DB/IT/runtime scheduler execution.
 Monitoring actual97 SUCCESS. Apps1376MiB/2.5CPU CONFIG budget only; combined measuredacceptance pending.
-s19_candidate_ci reads EXACT3 current97 safe artifacts, no rawlogs/source/Git/runtime.
+No active heavy runtime. Current9928 ordinaryCI uses independent disposable GitHub targets;
+root publishes targetedhint2 without cancelling currentusefulrun; no extra stand/wrapper.
 Frozen B013/B014/B015 and production/main/merge/deploy/secrets boundaries unchanged.

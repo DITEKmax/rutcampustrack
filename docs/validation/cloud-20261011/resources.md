@@ -2,7 +2,7 @@
 
 Root sole Git/taskdocs/matrix. RULES2b9a859c; children Sol6.1/high/forknone,
 actual metadata UNKNOWN accepted Cloud exception. Native7 slots inclRoot; no CLI plane.
-Current source is branch HEAD; runtime baseline3f491d64.
+Current source is branch HEAD plus owned WIP; published/runtime baseline92be748.
 Foreign25 + reserved reporttypealias preserved.
 
 ## Resources
@@ -23,19 +23,23 @@ Other checks light CPU1/RSS<=1GiB. Q032 exactconsent executed, no refusals bypas
 
 | Owner | Worktree / scope / state |
 | --- | --- |
-| Root | /workspace/rutcampustrack; local6e5 source17 committed; newFULL2+repeat1 reviewed WIP; foreignWIP preserved. |
-| s19_fixture_compile | /tmp/rct-s19-auth-runtime + privateGradlehome; current14 Academic compileJava/compileTestJava+4unit PASS80.16s/RSS1139511296; inputs2017/2267 stable; RELEASED. Current13 Auth PASS retained. |
-| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q0339 unchanged; U15.1 existingtest addition SOURCEAPPROVE/Rootjoined, actualDBpending. |
-| s19_ci_diagnosis | /tmp/rct-s19-e2e; fixture4 acceptedsource; minimal actualFULLmapping client+4unitcases SOURCEAPPROVE/Rootjoined, native14fourunitPASS; actualUIpending. |
-| ac9_auth_it | /tmp/rct-s19-auth; test TLS URI1 + exact originalV2 semester NULL1 complete/Rootjoined; no runtime. |
-| ac9_apps | /tmp/rct-s19-apps; closedexistingbrowser/checker2 hints APPROVE/Rootjoined; no active local runtime. |
-| ac9_contract_generation | /tmp/ac9-contract-generation; Auth2/scoped81consumerPASS held until officialAcademicsnapshot for atomic5; priorUI WT retained. |
-| s19_review_producer | independent SOURCEAPPROVE Q0339/Appsprivacy2/FULLmapping2; no authoring. |
-| s19_review_synthetic_baseline | fixture4/repeat1 SOURCEAPPROVE; actual3f Homepage U23.3 applicability ACCEPT; no authoring. |
-| s19_3f_ci_observer | completed usefulpushbrowser boundary: both terminal/cleanupPASS; no rawlogs/downloads. |
+| Root | /workspace/rutcampustrack; sole Git/taskdocs/matrix; ready coherent fixes; reserved report alias/foreign25 held. |
+| s19_fixture_compile | /tmp/rct-s19-auth-runtime + private Gradle home; current15 compile PASS/unit fixture FAIL; current16 corrected unit4 PASS; current17 cohort8 compile PASS68.13s/RSS863,178,752B. Lease RELEASED. |
+| ac9_auth_it | /tmp/rct-s19-auth; canonical assignment fixture cohort8 SOURCEAPPROVE/Root joined/current17compilePASS; actual DB pending. Common connection failure cause remains UNKNOWN. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; archived DTO2/notification fixture1/collector2 source approved; unit setup correction joined. |
+| s19_docx_path_diagnosis | /workspace/s19-async-native-primary; existing native hint3 source/TS/privacy case PASS, Root joined; no deadline change. |
+| ac9_apps | /tmp/rct-s19-apps; SDK nested-layout ESM resolver1 source proof PASS/Root joined; actual Apps pipeline pending. |
+| ac9_contract_generation | /tmp/ac9-contract-generation; atomic5 held for corrected official Academic schema; generation/Schedule/mobile2 typecheck/report74 PASS. Full PWA heap limit. |
+| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q033 role fixture approved; actual CLI fifth test + coordinated client CI step under preparation, no runtime. |
+| s19_review_producer | independent archived DTO/collector privacy/Q033 affected reviews approved; no authoring. |
+| s19_review_synthetic_baseline | notification rollback P2 addressed/affected recheck APPROVE; independent cohort review next. |
+| s19_3f_ci_observer | 92b useful browser jobs terminalFAIL/cleanupPASS; next observer only after meaningful push. |
 
-No new stand per writer. Prior current7/8/9/10/11/12 sufficient PASS retained.
-Actual3f Monitoring SUCCESS. Apps1376MiB/2.5CPU remains CONFIG budget only;
-combined measured acceptance pending. All local heavy leases RELEASED; process0.
-OrdinaryCI uses independent disposable targets; previous usefulbrowser completed before next publication.
+No stand per writer. current15:85.88s/RSS1,149,927,424B; outputs100,099,182B,
+Root2018/native2268 stable; compileJava/compileTestJava PASS, four unit setup FAIL.
+The private-field injection correction alone passed current16; outputs87,816,316B;
+Root2018/native2268 stable; processes0/leaseRELEASED. No DB tests.
+92b Monitoring/Security/OpenAPI SUCCESS; CI/Coverage FAIL. Useful current browsers
+finished before the next push; existing PASS remains applicable to unchanged paths.
+Apps1376MiB/2.5CPU remains CONFIG budget only; combined measured proof pending.
 Frozen B013/B014/B015 and production/main/merge/deploy/secrets boundaries unchanged.

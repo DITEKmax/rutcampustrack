@@ -20,6 +20,7 @@ const nativePrimaryAnnotation = 'rct-native-primary-v1';
 const nativePrimaryPaths = {
   SUBJECT_OTP: ['DOCKER_INSPECT', 'JSON_PARSE'],
   SEMESTER_PREVIEW: ['HTTP_GET'],
+  ASYNC_REPORT: ['WAIT_DOWNLOAD'],
 } as const;
 const nativeErrorClasses = [
   'Error',
@@ -48,7 +49,7 @@ const nativeErrorCodes = [
 type NativePrimaryPath = keyof typeof nativePrimaryPaths;
 interface NativePrimaryFailure {
   path: NativePrimaryPath;
-  action: 'DOCKER_INSPECT' | 'JSON_PARSE' | 'HTTP_GET';
+  action: 'DOCKER_INSPECT' | 'JSON_PARSE' | 'HTTP_GET' | 'WAIT_DOWNLOAD';
   errorClass: (typeof nativeErrorClasses)[number];
   code: (typeof nativeErrorCodes)[number];
   exitStatus: number | 'UNKNOWN';
@@ -101,7 +102,7 @@ export function retainNativePrimaryFailure(
   });
 }
 
-/** Reconstruct the two fixed failure projections from untrusted, bounded annotations. */
+/** Reconstruct fixed failure projections from untrusted, bounded annotations. */
 export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFailure[] {
   const result: NativePrimaryFailure[] = [];
   if (!Array.isArray(annotations)) return result;
@@ -129,7 +130,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const code = ownData(value, 'code');
     const exitStatus = ownData(value, 'exitStatus');
     if (
-      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW') ||
+      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW' && path !== 'ASYNC_REPORT') ||
       !nativePrimaryPaths[path].some((candidate) => candidate === action) ||
       !nativeErrorClasses.some((candidate) => candidate === errorClass) ||
       !nativeErrorCodes.some((candidate) => candidate === code) ||

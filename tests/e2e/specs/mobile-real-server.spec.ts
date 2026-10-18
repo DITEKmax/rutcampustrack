@@ -17,6 +17,7 @@ import {
   datasetHttpFailure,
   classifySafeFailure,
   retainHeadmanCleanupFailure,
+  retainNativePrimaryFailure,
   type HeadmanCleanupCause,
 } from '../fixtures/safe-reporter';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
@@ -5662,6 +5663,9 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
             r.request().method() === 'GET',
         );
         const firstDownload = page.waitForEvent('download');
+        void firstDownload.catch((error: unknown) => {
+          retainNativePrimaryFailure(info.annotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', error);
+        });
         await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
         expect((await restored).status()).toBe(200);
         await assertWeeklyDocx(

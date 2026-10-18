@@ -6,20 +6,7 @@ import static org.mockito.Mockito.mockingDetails;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,9 +20,26 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /** Real REST, PostgreSQL exclusion, and effective-date authority evidence. */
 @AutoConfigureMockMvc
@@ -82,8 +86,8 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .content(
                                                         """
-                                {"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s", "validUntilExclusive":null}
-                                """
+{"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s", "validUntilExclusive":null}
+"""
                                                                 .formatted(
                                                                         fixture.semesterId(),
                                                                         from)),
@@ -103,8 +107,9 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
 
         AssignmentRow row =
                 jdbcTemplate.queryForObject(
-                        "SELECT id, teacher_id, subject_id, group_id, semester_id, lesson_type::text, valid_from, "
-                                + "valid_until_exclusive FROM assignments WHERE id = ?",
+                        "SELECT id, teacher_id, subject_id, group_id, semester_id,"
+                                + " lesson_type::text, valid_from, valid_until_exclusive FROM"
+                                + " assignments WHERE id = ?",
                         (rs, rowNum) ->
                                 new AssignmentRow(
                                         rs.getLong(1),
@@ -304,9 +309,9 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                                                                     .APPLICATION_JSON)
                                                                     .content(
                                                                             """
-                                    {"semesterId":%d,"lessonType":"PRACTICE","validFrom":"%s",
-                                     "validUntilExclusive":"%s"}
-                                    """
+{"semesterId":%d,"lessonType":"PRACTICE","validFrom":"%s",
+ "validUntilExclusive":"%s"}
+"""
                                                                                     .formatted(
                                                                                             fixture
                                                                                                     .semesterId(),
@@ -365,8 +370,9 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
 
         List<AssignmentRow> rows =
                 jdbcTemplate.query(
-                        "SELECT id, teacher_id, subject_id, group_id, semester_id, lesson_type::text, valid_from, "
-                                + "valid_until_exclusive FROM assignments WHERE subject_id = ? ORDER BY id",
+                        "SELECT id, teacher_id, subject_id, group_id, semester_id,"
+                                + " lesson_type::text, valid_from, valid_until_exclusive FROM"
+                                + " assignments WHERE subject_id = ? ORDER BY id",
                         (rs, rowNum) ->
                                 new AssignmentRow(
                                         rs.getLong(1),
@@ -410,10 +416,7 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
     @Test
     void inactiveOrMissingTeacherGrantIsRejectedWithoutWrite() throws Exception {
         long subjectId = insertSubject(fixture.groupId(), "L5A grant gate", "lecture");
-        jdbcTemplate.update(
-                "UPDATE user_role_grants SET status = 'suspended' "
-                        + "WHERE user_id = ? AND role = 'teacher'",
-                fixture.teacher2Id());
+        setTeacherStatus(fixture.teacher2Id(), RoleGrantStatus.SUSPENDED);
         LocalDate from = fixture.dateFrom().plusDays(1);
 
         postAssignment(fixture.employee2(), subjectId, "LECTURE", from, null)
@@ -484,21 +487,11 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                 .andReturn());
         long activeAssignmentId = latestAssignmentId(subjectId, "lecture");
 
+        var teacher = identityFixture.select(fixture.teacher1Id(), AuthRole.TEACHER);
         MvcResult result =
                 mockMvc.perform(
                                 MockMvcRequestBuilders.get("/academic/assignments/my")
-                                        .header(
-                                                "X-Internal-Token",
-                                                internalTokens.validToken(
-                                                        fixture.teacher1Id(),
-                                                        UUID.randomUUID(),
-                                                        1,
-                                                        1,
-                                                        "TEACHER",
-                                                        "ACTIVE",
-                                                        null,
-                                                        false,
-                                                        false))
+                                        .with(identityFixture.signed(teacher))
                                         .header("X-User-Role", "TEACHER")
                                         .header("X-Group-Id", "")
                                         .header("X-Is-Headman", "false"))
@@ -510,28 +503,20 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                 .contains(activeAssignmentId)
                 .doesNotContain(futureAssignmentId, expiredAssignmentId);
 
-        jdbcTemplate.update(
-                "UPDATE user_role_grants SET status = 'suspended' "
-                        + "WHERE user_id = ? AND role = 'teacher'",
-                fixture.teacher1Id());
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/academic/assignments/my")
-                                .header(
-                                        "X-Internal-Token",
-                                        internalTokens.validToken(
-                                                fixture.teacher1Id(),
-                                                UUID.randomUUID(),
-                                                1,
-                                                1,
-                                                "TEACHER",
-                                                "ACTIVE",
-                                                null,
-                                                false,
-                                                false))
-                                .header("X-User-Role", "TEACHER")
-                                .header("X-Group-Id", "")
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isForbidden());
+        setTeacherStatus(fixture.teacher1Id(), RoleGrantStatus.SUSPENDED);
+        // A real previously selected session is stale after its only TEACHER grant is suspended.
+        // Current Auth admission rejects it before the domain handler can return a grant denial.
+        MvcResult denied =
+                mockMvc.perform(
+                                MockMvcRequestBuilders.get("/academic/assignments/my")
+                                        .with(identityFixture.signed(teacher))
+                                        .header("X-User-Role", "TEACHER")
+                                        .header("X-Group-Id", "")
+                                        .header("X-Is-Headman", "false"))
+                        .andExpect(status().isUnauthorized())
+                        .andReturn();
+        assertThat(denied.getResponse().getContentAsString())
+                .doesNotContain("\"_embedded\"", "\"assignmentResponseList\"");
     }
 
     private ResultActions postAssignment(
@@ -630,7 +615,8 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                 mockingDetails(repositorySpy).getMockCreationSettings().getDefaultAnswer();
         assertThat(defaultAnswer)
                 .as(
-                        "@MockitoSpyBean must retain Spring Test's delegate to the original Spring Data proxy")
+                        "@MockitoSpyBean must retain Spring Test's delegate to the original Spring"
+                                + " Data proxy")
                 .isNotNull();
         return invocation -> defaultAnswer.answer(invocation);
     }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 
@@ -92,7 +93,9 @@ public class UserAssembler
             List<RoleGrantViewResponse> roles,
             boolean discloseTelegram) {
         String initial =
-                (includeInitialPassword && !entity.isPasswordChanged())
+                (includeInitialPassword
+                                && entity.getStatus() != AccountStatus.ARCHIVED
+                                && !entity.isPasswordChanged())
                         ? authCommands.initialPassword(entity.getId())
                         : null;
         UserResponse response =

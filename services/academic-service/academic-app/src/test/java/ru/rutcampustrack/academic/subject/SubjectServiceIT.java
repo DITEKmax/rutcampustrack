@@ -4,12 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +15,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /** Legacy subject routes exercised against the canonical V25 assignment model. */
 @AutoConfigureMockMvc
@@ -79,7 +82,12 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         assertThat(sameType.get("assignments")).hasSize(2);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM assignment_replacement_operations operation JOIN assignments target ON target.id=operation.target_assignment_id WHERE target.subject_id=? AND operation.operation_kind='ADOPT_UNASSIGNED' AND operation.state='COMMITTED'",
+                                "SELECT COUNT(*) FROM assignment_replacement_operations operation"
+                                        + " JOIN assignments target ON"
+                                        + " target.id=operation.target_assignment_id WHERE"
+                                        + " target.subject_id=? AND"
+                                        + " operation.operation_kind='ADOPT_UNASSIGNED' AND"
+                                        + " operation.state='COMMITTED'",
                                 Long.class,
                                 sameType.get("id").asLong()))
                 .isEqualTo(2L);
@@ -99,16 +107,16 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         LocalDate from = LocalDate.now(MOSCOW).minusDays(1);
         String body =
                 """
-                {
-                  "name":"%s",
-                  "type":"PRACTICE",
-                  "lessonTypes":["PRACTICE"],
-                  "initialAssignments":[
-                    %s,
-                    {"teacherId":999999999,"semesterId":%d,"lessonType":"PRACTICE", "validFrom":"%s"}
-                  ]
-                }
-                """
+{
+  "name":"%s",
+  "type":"PRACTICE",
+  "lessonTypes":["PRACTICE"],
+  "initialAssignments":[
+    %s,
+    {"teacherId":999999999,"semesterId":%d,"lessonType":"PRACTICE", "validFrom":"%s"}
+  ]
+}
+"""
                         .formatted(
                                 name,
                                 assignment(
@@ -220,9 +228,7 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
                         .getContentAsString();
         assertThat(body).contains(ownName).doesNotContain(otherName);
 
-        long adminId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        long adminId = identityFixture.canonical().adminId();
         MockHttpServletRequestBuilder adminRequest =
                 MockMvcRequestBuilders.get("/academic/subjects")
                         .header("X-User-Id", adminId)
@@ -277,10 +283,10 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 """
-                                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,
-                                 "semesterId":%d,"lessonType":"LECTURE","validFrom":"%s",
-                                 "validUntilExclusive":null}
-                                """
+{"employeeNumber":"%s","subjectId":%d,"groupId":%d,
+ "semesterId":%d,"lessonType":"LECTURE","validFrom":"%s",
+ "validUntilExclusive":null}
+"""
                                                         .formatted(
                                                                 fixture.employee1(),
                                                                 assignedSubjectId,
@@ -291,19 +297,9 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
 
         String body =
                 mockMvc.perform(
-                                MockMvcRequestBuilders.get("/academic/subjects")
-                                        .header(
-                                                "X-Internal-Token",
-                                                internalTokens.validToken(
-                                                        fixture.teacher1Id(),
-                                                        UUID.randomUUID(),
-                                                        1,
-                                                        1,
-                                                        "TEACHER",
-                                                        "ACTIVE",
-                                                        null,
-                                                        false,
-                                                        false))
+                                signedTeacher(
+                                                MockMvcRequestBuilders.get("/academic/subjects"),
+                                                fixture.teacher1Id())
                                         .header("X-User-Role", "TEACHER")
                                         .header("X-Group-Id", "")
                                         .header("X-Is-Headman", "false"))

@@ -34,6 +34,7 @@ import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.config.SecurityConfig;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
+import ru.rutcampustrack.auth.dto.SelectActiveRoleRequest;
 import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
@@ -222,7 +223,35 @@ class InitialAdministratorBootstrapIT {
                                 new JdbcAuthSessionQueryAdapter(jdbc, Clock.systemUTC(), null),
                                 sessions);
                 var login = service.login(new LoginRequest("first-admin", INITIAL), "127.0.0.1");
-                var claims = jwt.parseSessionAccessToken(login.accessToken()).getPayload();
+                // ADMIN-only login is deliberately neutral; use the same explicit role-selection
+                // flow as AuthSessionController before protected password change.
+                assertThatThrownBy(() -> jwt.parseSessionAccessToken(login.accessToken()))
+                        .isInstanceOf(io.jsonwebtoken.IncorrectClaimException.class);
+                var bootstrap = jwt.parseBootstrapToken(login.accessToken()).getPayload();
+                assertThat(bootstrap.getSubject()).isEqualTo(Long.toString(uid));
+                var neutral =
+                        new SessionPrincipal(
+                                uid,
+                                UUID.fromString(bootstrap.get("sid", String.class)),
+                                Long.parseLong(bootstrap.get("sv", String.class)),
+                                Long.parseLong(bootstrap.get("rv", String.class)),
+                                null,
+                                null,
+                                null,
+                                false,
+                                false);
+                var selected =
+                        service.selectRole(
+                                neutral,
+                                new SelectActiveRoleRequest(
+                                        "ADMIN", bootstrap.get("sv", String.class)),
+                                null,
+                                null);
+                var access = service.selectedAccess(selected);
+                var claims = jwt.parseSessionAccessToken(access.accessToken()).getPayload();
+                assertThat(claims.getSubject()).isEqualTo(Long.toString(uid));
+                assertThat(claims.get("sid", String.class))
+                        .isEqualTo(bootstrap.get("sid", String.class));
                 assertThat(claims.get("role", String.class)).isEqualTo("ADMIN");
                 var principal =
                         new SessionPrincipal(

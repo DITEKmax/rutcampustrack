@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
 
 /** Real producer-to-in-process-gRPC assignment identity and read evidence. */
 @SpringBootTest(
@@ -238,7 +244,8 @@ class AcademicAssignmentGrpcIT extends AbstractAssignmentAuthorityIT {
                                         today.minusDays(1))));
         long activeAssignmentId =
                 jdbcTemplate.queryForObject(
-                        "SELECT id FROM assignments WHERE subject_id = ? AND lesson_type = 'lecture'::subject_type",
+                        "SELECT id FROM assignments WHERE subject_id = ? AND lesson_type ="
+                                + " 'lecture'::subject_type",
                         Long.class,
                         created.get("id").asLong());
 
@@ -264,10 +271,7 @@ class AcademicAssignmentGrpcIT extends AbstractAssignmentAuthorityIT {
                                 .plusDays(1)
                                 .toString());
 
-        jdbcTemplate.update(
-                "UPDATE user_role_grants SET status = 'suspended' "
-                        + "WHERE user_id = ? AND role = 'teacher'",
-                fixture.teacher1Id());
+        setTeacherStatus(fixture.teacher1Id(), RoleGrantStatus.SUSPENDED);
         assertThatThrownBy(
                         () ->
                                 stub.getTeacherSubjects(

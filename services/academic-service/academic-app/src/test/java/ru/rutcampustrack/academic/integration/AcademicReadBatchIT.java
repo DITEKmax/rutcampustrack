@@ -3,8 +3,7 @@ package ru.rutcampustrack.academic.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import jakarta.persistence.EntityManagerFactory;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.AfterEach;
@@ -18,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
@@ -30,6 +30,9 @@ import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.subject.SubjectAssembler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Real SQL deltas and response fields for the two current-page enrichment paths. */
 class AcademicReadBatchIT extends AbstractAssignmentAuthorityIT {
@@ -120,19 +123,7 @@ class AcademicReadBatchIT extends AbstractAssignmentAuthorityIT {
     @Test
     void homeworkPageUsesOneCompletionQueryForCurrentActorIncludingEmptyPage() {
         long subject = insertSubject(fixture.groupId(), "Batch homework", "lecture");
-        long otherStudent =
-                jdbcTemplate.queryForObject(
-                        """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,group_id)
-                VALUES (?,'synthetic-hash','Batch','Other','student','active',?) RETURNING id
-                """,
-                        Long.class,
-                        "batch-other-" + java.util.UUID.randomUUID().toString().substring(0, 16),
-                        fixture.groupId());
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) VALUES (?,'student','active',?,NOW(),NOW())",
-                otherStudent,
-                fixture.groupId());
+        long otherStudent = insertUser("Batch", "Other", UserRole.STUDENT, fixture.groupId(), null);
         List<Long> ids = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
             ids.add(

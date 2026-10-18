@@ -11,9 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.LocalDate;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +24,14 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
 import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
+
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** End-to-end Academic operation, authorization, and actor/key replay evidence. */
 @AutoConfigureMockMvc
@@ -148,7 +151,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                 .isEqualTo(AssignmentOperationState.COMMITTED);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM assignment_replacement_operations WHERE actor_id=? AND request_key=?",
+                                "SELECT COUNT(*) FROM assignment_replacement_operations WHERE"
+                                        + " actor_id=? AND request_key=?",
                                 Long.class,
                                 fixture.headmanId(),
                                 key))
@@ -173,8 +177,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                 "isolated receipt unavailable"));
         String body =
                 """
-                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
-                """
+{"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
+"""
                         .formatted(
                                 fixture.employee1(),
                                 subject,
@@ -280,8 +284,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                 .andExpect(status().isServiceUnavailable());
         String body =
                 """
-                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
-                """
+{"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
+"""
                         .formatted(
                                 fixture.employee2(),
                                 subject,
@@ -387,20 +391,20 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                 .andExpect(status().isServiceUnavailable());
         var original =
                 jdbcTemplate.queryForMap(
-                        "SELECT operation_id,actor_id,payload_hash FROM assignment_replacement_operations WHERE source_assignment_id=? AND request_key=?",
+                        "SELECT operation_id,actor_id,payload_hash FROM"
+                            + " assignment_replacement_operations WHERE source_assignment_id=? AND"
+                            + " request_key=?",
                         source,
                         key);
         UUID operation = (UUID) original.get("operation_id");
-        jdbcTemplate.update("UPDATE users SET is_headman=false WHERE id=?", fixture.headmanId());
         long currentHeadman =
-                jdbcTemplate.queryForObject(
-                        """
-                INSERT INTO users (login,password_hash,last_name,first_name,role,status,is_headman,group_id,password_changed,created_at,updated_at)
-                VALUES (?,NULL,'Headman','Current','student','active',true,?,false,NOW(),NOW()) RETURNING id
-                """,
-                        Long.class,
-                        "l5a-r-" + UUID.randomUUID().toString().replace("-", "").substring(0, 24),
-                        fixture.groupId());
+                insertUser(
+                        "Headman",
+                        "Current",
+                        ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT,
+                        fixture.groupId(),
+                        null);
+        assignHeadman(currentHeadman, fixture.groupId());
         JsonNode detail =
                 objectMapper.readTree(
                         mockMvc.perform(
@@ -470,7 +474,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
         assertThat(after.getState()).isEqualTo(AssignmentOperationState.COMMITTED);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM assignment_replacement_operations WHERE source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",
+                                "SELECT COUNT(*) FROM assignment_replacement_operations WHERE"
+                                    + " source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",
                                 Long.class,
                                 source))
                 .isEqualTo(1L);
@@ -482,8 +487,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                 .isEqualTo(end);
         String payload =
                 """
-                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
-                """
+{"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
+"""
                         .formatted(
                                 fixture.employee2(),
                                 subject,
@@ -513,11 +518,11 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                         () ->
                                 jdbcTemplate.update(
                                         """
-                INSERT INTO assignments
-                    (teacher_id, subject_id, group_id, semester_id, lesson_type,
-                     valid_from, valid_until_exclusive, lifecycle_state)
-                VALUES (?, ?, ?, ?, 'lecture'::subject_type, ?, ?, 'ACTIVE')
-                """,
+INSERT INTO assignments
+    (teacher_id, subject_id, group_id, semester_id, lesson_type,
+     valid_from, valid_until_exclusive, lifecycle_state)
+VALUES (?, ?, ?, ?, 'lecture'::subject_type, ?, ?, 'ACTIVE')
+""",
                                         fixture.teacher1Id(),
                                         subjectId,
                                         fixture.groupId(),
@@ -554,38 +559,38 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
         UUID operationId =
                 jdbcTemplate.queryForObject(
                         """
-                SELECT operation_id FROM assignment_replacement_operations WHERE request_key = ?
-                """,
+SELECT operation_id FROM assignment_replacement_operations WHERE request_key = ?
+""",
                         UUID.class,
                         requestKey);
         long targetAssignmentId =
                 jdbcTemplate.queryForObject(
                         """
-                SELECT target_assignment_id FROM assignment_replacement_operations WHERE operation_id = ?
-                """,
+SELECT target_assignment_id FROM assignment_replacement_operations WHERE operation_id = ?
+""",
                         Long.class,
                         operationId);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT state FROM assignment_replacement_operations WHERE operation_id = ?
-                """,
+SELECT state FROM assignment_replacement_operations WHERE operation_id = ?
+""",
                                 String.class,
                                 operationId))
                 .isEqualTo("APPLIED");
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT valid_until_exclusive FROM assignments WHERE id = ?
-                """,
+                                SELECT valid_until_exclusive FROM assignments WHERE id = ?
+                                """,
                                 LocalDate.class,
                                 sourceAssignmentId))
                 .isEqualTo(effectiveFrom);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT lifecycle_state FROM assignments WHERE id = ?
-                """,
+                                SELECT lifecycle_state FROM assignments WHERE id = ?
+                                """,
                                 String.class,
                                 targetAssignmentId))
                 .isEqualTo("ACTIVE");
@@ -690,9 +695,9 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM assignment_replacement_operations
-                 WHERE operation_id = ? AND actor_id = ? AND state = 'COMMITTED'
-                """,
+                                SELECT COUNT(*) FROM assignment_replacement_operations
+                                 WHERE operation_id = ? AND actor_id = ? AND state = 'COMMITTED'
+                                """,
                                 Long.class,
                                 operationId,
                                 fixture.headmanId()))
@@ -700,24 +705,24 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT valid_until_exclusive FROM assignments WHERE id = ?
-                """,
+                                SELECT valid_until_exclusive FROM assignments WHERE id = ?
+                                """,
                                 LocalDate.class,
                                 sourceAssignmentId))
                 .isEqualTo(effectiveFrom);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT lifecycle_state FROM assignments WHERE id = ?
-                """,
+                                SELECT lifecycle_state FROM assignments WHERE id = ?
+                                """,
                                 String.class,
                                 targetAssignmentId))
                 .isEqualTo("ACTIVE");
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT valid_until_exclusive FROM assignments WHERE id = ?
-                """,
+                                SELECT valid_until_exclusive FROM assignments WHERE id = ?
+                                """,
                                 LocalDate.class,
                                 targetAssignmentId))
                 .isEqualTo(sourceEnd);
@@ -785,7 +790,9 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                                             "rutcampustrack.assignment_replacement_operation_id",
                                                             operationId.toString());
                                                     jdbcTemplate.update(
-                                                            "UPDATE assignments SET valid_until_exclusive = ? WHERE id = ?",
+                                                            "UPDATE assignments SET"
+                                                                + " valid_until_exclusive = ? WHERE"
+                                                                + " id = ?",
                                                             wrongEnd,
                                                             sourceAssignmentId);
                                                 }))
@@ -801,7 +808,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                                             "rutcampustrack.assignment_replacement_operation_id",
                                                             operationId.toString());
                                                     jdbcTemplate.update(
-                                                            "UPDATE assignments SET lifecycle_state = 'PREPARED' WHERE id = ?",
+                                                            "UPDATE assignments SET lifecycle_state"
+                                                                    + " = 'PREPARED' WHERE id = ?",
                                                             targetAssignmentId);
                                                 }))
                 .isInstanceOf(DataAccessException.class);
@@ -816,7 +824,9 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                                             "rutcampustrack.assignment_replacement_operation_id",
                                                             UUID.randomUUID().toString());
                                                     jdbcTemplate.update(
-                                                            "UPDATE assignments SET valid_until_exclusive = ? WHERE id = ?",
+                                                            "UPDATE assignments SET"
+                                                                + " valid_until_exclusive = ? WHERE"
+                                                                + " id = ?",
                                                             wrongEnd.minusDays(2),
                                                             sourceAssignmentId);
                                                 }))
@@ -827,7 +837,10 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                         .executeWithoutResult(
                                                 status ->
                                                         jdbcTemplate.update(
-                                                                "UPDATE assignment_replacement_operations SET payload_hash = ? WHERE operation_id = ?",
+                                                                "UPDATE"
+                                                                    + " assignment_replacement_operations"
+                                                                    + " SET payload_hash = ? WHERE"
+                                                                    + " operation_id = ?",
                                                                 new byte[32],
                                                                 operationId)))
                 .isInstanceOf(DataAccessException.class);
@@ -837,7 +850,10 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                         .executeWithoutResult(
                                                 status ->
                                                         jdbcTemplate.update(
-                                                                "UPDATE assignment_replacement_operations SET state = 'PREPARED' WHERE operation_id = ?",
+                                                                "UPDATE"
+                                                                    + " assignment_replacement_operations"
+                                                                    + " SET state = 'PREPARED'"
+                                                                    + " WHERE operation_id = ?",
                                                                 operationId)))
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(
@@ -846,7 +862,9 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                         .executeWithoutResult(
                                                 status ->
                                                         jdbcTemplate.update(
-                                                                "DELETE FROM assignment_replacement_operations WHERE operation_id = ?",
+                                                                "DELETE FROM"
+                                                                    + " assignment_replacement_operations"
+                                                                    + " WHERE operation_id = ?",
                                                                 operationId)))
                 .isInstanceOf(DataAccessException.class);
     }
@@ -877,7 +895,8 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
     }
 
     private MockHttpServletRequestBuilder nonOwner(MockHttpServletRequestBuilder request) {
-        return request.header("X-User-Id", fixture.teacher2Id())
+        return signedTeacher(request, fixture.teacher2Id())
+                .header("X-User-Id", fixture.teacher2Id())
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", fixture.groupId())
                 .header("X-Is-Headman", "true");

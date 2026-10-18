@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
 import { writeFile, access } from 'node:fs/promises'
 import { setTimeout } from 'node:timers/promises'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const root = resolve(import.meta.dirname, '../..')
@@ -20,8 +20,8 @@ const server = await createServer({
   configFile: false,
   logLevel: 'silent',
   resolve: {
-    alias: { vue: requireFrontend.resolve('vue/dist/vue.esm-bundler.js') },
-    dedupe: ['@sentry/vue'],
+    alias: { vue: requireFrontend.resolve('vue/dist/vue.esm-bundler.js'),
+      '@sentry/vue': dirname(requireFrontend.resolve('@sentry/vue/package.json')) },
   },
   optimizeDeps: { include: ['vue'] },
   plugins: [

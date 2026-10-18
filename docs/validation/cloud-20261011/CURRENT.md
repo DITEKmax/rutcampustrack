@@ -3,19 +3,17 @@
 Persisted Goal Q031/D037: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
 [TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md),
 [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md), Q033/D038. Goal IN_PROGRESS.
-Root sole Git/taskdocs; codex/server-validation-20261011,
+Root sole Git/taskdocs; branch codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2); no main/merge/deploy.
-Starting26cbe5912f6683a81780a831609dbddbc26feba4; current source is branch HEAD.
-Latest runtime baseline **3f491d64086c01588c195572eb6855c4f448b397**.
-Source17 committed6e5c16e4; new FULLmapping2 + repeat-preservation test1 below.
+Starting26cbe5912f6683a81780a831609dbddbc26feba4. Published/runtime baseline
+**92be74818741044d4a79c62ae2beabdb5a4ba7ae**; current source is HEAD plus owned WIP.
 
 ## Конечный план
 
 [Матрица v3 FROZEN](selected-results-20261018-v3.csv)/[веса](selected-results-20261018-v3.meta.json):
-**25/39,117/196=59.69% плана**, не production readiness.
-Q033 ONLY U14.7/8weight fixed before code; [v2](selected-results-20261018-v2.csv)
-24/38,114/188 and [v1](selected-results-20261018.csv)23/25,110/123 preserved.
-TASK17 прежние9/9 и U15sameDB сохраняются в прежней применимости.
+**25/39,117/196=59.69% плана**, не production readiness. Состав/веса не менялись.
+[v2](selected-results-20261018-v2.csv)24/38,114/188 и [v1](selected-results-20261018.csv)23/25,110/123
+сохранены; TASK17 прежние9/9 и U15 sameDB действуют в прежней применимости.
 
 | КТ | Закрыто / всего | Вес / всего | % плана |
 | --- | --- | --- | --- |
@@ -24,57 +22,49 @@ TASK17 прежние9/9 и U15sameDB сохраняются в прежней �
 | КТ4 changedchains/monitoring/jobs | 13/15 | 70/83 | 84.34 |
 | КТ5 finalgates/review/handoff | 0/1 | 0/5 | 0 |
 
-| Остаток | Конкретное недостающее действие / зависимость |
+| Остаток | Следующее достаточное действие / зависимость |
 | --- | --- |
-| U14.2/.3/.5 | ActualtwoDB create/credentials/grants/transfer/archive/proofs/currentrights/unknownACK/recovery; classify real UI FAIL after setup. |
-| U14.4/.6 | Academic11jobs/singlequeue/2DOCX+shortperiod/lost202/reconnect/currentrights; officialAcademic snapshot→scoped TS generation. |
-| U14.7 | Q033 SOURCEAPPROVE/compilePASS; four DB cases + actual offline CLI/config/privateIPC/fresh-repeat still pending. |
-| U15.1 | NewtwoDB fresh/repeat preserve IDs/credentials/grants/history/sessions/jobs; no reset; bounded existingtest coverage under preparation. |
-| U20.1/.2/.3 | Private synthetic bot exactmenu/headmanroster/teacherToday, currentbinding/mixed/revoked new APIs. |
-| U23.1/.2/.4 | ActualGlitchTipVueJava/Pyro + measuredcombinedresources; U23.3 protectedHomepage and U23.5 PMM decision closed. |
-| U25 | Compatible current CI/Coverage/Security/OpenAPI/monitoring, independent review and exactSHAhandoff. |
+| U14.2/.3/.5 | Create/credentials/grants/transfer/archive/proofs/currentrights/recovery. Разобрать конкретные FAIL, сохранить deny/unknown-outcome сценарии. |
+| U14.4/.6 | Два async DOCX и короткий период/lost202/reconnect/currentrights; официальный Academic snapshot после исправления коллизии схем → существующие генераторы/atomic5. |
+| U14.7 | Q033: 3/4 DB PASS; first-login fixture исправлен по bootstrap→selectRole. Actual CLI/config/privateIPC и fresh/repeat ещё не приняты. |
+| U15.1 | Сохранность двух DB в UserOwnershipLifecycleIT; запуск блокируется context/Flyway/connection ошибкой, причина UNKNOWN. |
+| U20.1/.2/.3 | Private synthetic bot с двумя DB: точное меню/headman roster/teacher Today/currentbinding/revoke. |
+| U23.1/.2/.4 | Реальные Vue/Java GlitchTip, профиль Pyroscope и общий расход. SDK resolver исправлен; Homepage U23.3 и PMM decision U23.5 приняты. |
+| U25 | Финальные совместимые CI/Coverage/Security/OpenAPI/monitoring, review и exact SHA handoff. |
 
-## Доказанное / текущий FAIL
+## Текущее доказательство и работа
 
-U23.3 DONE_CHANGED on3f: actual Homepage unauth401/auth200/threevisiblelinks,
-GT/Pyro proxy200; independent applicability ACCEPT. Failure later at first Vue
-fixture click82 does not invalidate that prefix. It does not prove GTgrouping/Pyro/resources.
-3f Security/OpenAPI/Monitoring SUCCESS; CoverageFAIL Auth/Academic(other7PASS).
-Academic91PASS407FAIL. NewHomework primary: gRPC Resource FileNotFound;
-cached actual Spring6.2.19 proves barecertificatepath→classpath/servletFNF,
-fileURI→readable. One testproperty fixed; TLS unchanged; other407 not assumed samecause.
-Browser Boot+LinkTG/FIRST3 PASS; remaining5/WebKit/worker/geo/helper paths have PASS.
-18week failed before generation in datasetinitialize. Newbaseline typedmetadata
-violated exact originalV2 NULL/NULL guard: one seedline restored, assertions/barriers unchanged.
-Other observed admin/role/semester/proof/map/runtime FAIL require their own primary;
-UI remaining useful paths still running. History/evidence references only in matrix/attempts.
+92b push39151426401 завершён FAILURE; оба browser cleanup SUCCESS. Coverage FAILURE;
+Security/OpenAPI/полный monitoring SUCCESS. Новые actual PASS: map view/download
+после API replacement и semester reconciliation; FIRST3/geo/HW/assignment/Today PASS.
+Другие UI FAIL не объединены одной гипотезой; archive participants SKIPPED после
+checkpoint recovery FAIL. Evidence и прежняя приёмка — в матрице/attempts.
 
-## Ready / owners / next
+Root интегрирует пакет: archived-card credential enrichment fix; уникальное имя
+identity OpenAPI schema; Q033 role-selection fixture; Homework servlet context;
+реальный BEFORE_COMMIT rollback fixture; SDK ESM resolution; прежние CI pins;
+закрытая JDBC диагностика в существующем сборщике. Source reviews приняты.
+current15 compileJava/compileTestJava PASS; unit4 первоначально FAIL из-за
+неинъецированных private полей теста. Исправлен только setup; current16 все4 PASS
+(80.82s), прочий код не повторялся. Runtime DB/UI для нового пакета ещё pending.
 
-[Protocol](BOUNDARY-PROTOCOL-20261018.md), [resources](resources.md).
-Committed17: Q0339 SOURCEAPPROVE; standalonefixture4 SOURCEAPPROVE+cleanuprecheck;
-ResourceURI1 conversionPASS; existingApps boot-hint2 privacyAPPROVE; baselineNULL1.
-Nativecurrent13 all4 Auth/Academic compileJava+compileTestJava PASS85.29s/RSS1082138624;
-2016Root/2266nativeinputs stable; processes0/leaseRELEASED. No DB/tests/launcher run.
-Apps minimal localmount probe NOT_ACCEPTED: incompletecache differsfromCI,
-then RSSguard stopped it; processes0/leaseRELEASED; no blindSDK/optimizer fix.
-New actual product defect: canonical FULL/empty Auth wire skipped Academic converter
-expansion12; PWA correctly hid admin actions. Client+4unitcases SOURCEAPPROVE;
-LIMITED/unknown failclosed contract retained, no UI/oracle change. U15.1 existing
-positivecase repeat-preservation addition SOURCEAPPROVE, old2methods retained.
-Nativecurrent14 AcademiccompileJava+compileTestJava+4exactunitcases PASS80.16s,
-zero fail/error/skip; Root2017/native2267 stable, RSS1139511296, process0/leaseRELEASED.
-U15.1 class compiled only, no DB run; Auth checks from current13 retained.
-Both useful3f browser jobs terminal/cleanupPASS. Root publishes ready commits, then ordinaryCI actualcontexts/bootstrap/repeat/
-DOCX/adminUI/Apps.
-OfficialAuth snapshot+generator/81consumers PASS heldatomic5; Academic snapshot absent.
-Reservedreporttypealias WIP/foreign25 retained; no manualspec/generated edits.
-Next: normalpush/CI correctedcontexts+bootstrap4DB+repeat+FULLUI+realDOCX/modulecause;
-current UI FAIL primary separately, then Academic snapshot→existinggenerators→clients.
-LocalDocker/DB/imagepull NOT_RUN: workspace<4GiB reserve/VFSsameFS; no cleanup.
-Q032 executed; Q033 answered; no ownerquestion pending. No Goal API claimed.
+Owners и ресурсы: [resources](resources.md). Canonical assignment cohort8 принят
+независимым reviewer, current17 compileTestJava PASS68.13s; прежние unit4 PASS сохранены.
+Следующий Q033 пакет проверяет настоящий CLI; runtime DB для cohort8 ещё pending.
+Root не ждёт всех направлений перед публикацией готового пакета.
+Официальные runtime specs92b получены; штатная генерация, два mobile typecheck
+и74 report tests PASS. Atomic5 удержан: схема Operation потеряла subject-deletion
+поля из-за name collision; DTO fix должен дать новый официальный snapshot.
+Полный PWA typecheck достиг heap limit; PASS не заявляется.
 
-[History](attempts.ndjson), [decisions](decisions.md), [questions](questions.md),
-[HANDOFF](HANDOFF-20261017.md); ignored current-wip/latest-checkpoint.safe.json.
-B013/B014/B015 FROZEN. DEFERRED_OWNER: realTelegram/push/install/Safari/alertbot/
-offhostprobe/ownerstand/realdeploy/backup/VPS/multiworker. No reset/secrets/newweb/Angularretirement.
+Следующий шаг: адресные проверки/affected review → один normal push; обычный CI
+даёт актуальные первичные причины и исправленный runtime OpenAPI → atomic5.
+Source-only результат не увеличивает счётчик приёмки. Foreign25 и reserved report
+type alias сохранены. Local Docker/DB/imagepull NOT_RUN: workspace меньше4GiB
+reserve/VFS sameFS; нет cleanup/reset/prune. Вопросов владельцу нет.
+
+[Protocol](BOUNDARY-PROTOCOL-20261018.md), [history](attempts.ndjson),
+[decisions](decisions.md), [questions](questions.md), [handoff](HANDOFF-20261017.md);
+ignored current-wip/latest-checkpoint.safe.json сохраняет точный WIP.
+B013/B014/B015 FROZEN. DEFERRED_OWNER: real Telegram/push/install/Safari/alertbot/
+offhost probe/owner stand/deploy/backup/VPS/multiworker. No reset/secrets/new web/Angular retirement.

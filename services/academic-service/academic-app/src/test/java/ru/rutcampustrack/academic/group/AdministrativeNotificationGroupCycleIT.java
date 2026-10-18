@@ -1,6 +1,10 @@
 package ru.rutcampustrack.academic.group;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,14 +15,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent;
+import ru.rutcampustrack.academic.event.DomainEventListener;
+import ru.rutcampustrack.academic.groupavailability.GroupAvailabilityCoordinator;
+import ru.rutcampustrack.academic.groupavailability.GroupAvailabilityStore;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Actual committed outbox/marker proof under the common owned split fixture's reset lease. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,7 +36,8 @@ import java.time.ZoneOffset;
 class AdministrativeNotificationGroupCycleIT extends AbstractAcademicIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired GroupPromotionService service;
-    @Autowired PlatformTransactionManager transactions;
+    @Autowired GroupAvailabilityCoordinator coordinator;
+    @MockitoSpyBean DomainEventListener events;
     @Autowired ObjectMapper mapper;
 
     @Test
@@ -43,18 +53,44 @@ VALUES ('N4 owned spring cycle',? ,?,false,'SPRING',2025) RETURNING id
                         LocalDate.of(2026, 8, 1),
                         LocalDate.of(2026, 8, 31));
         long first = addGroup("НИТ-111");
-        TransactionTemplate tx = new TransactionTemplate(transactions);
-
-        tx.executeWithoutResult(
-                status -> {
-                    assertThat(service.executeAutomaticallyIfDue()).isPresent();
-                    status.setRollbackOnly();
-                });
+        var rollback = new IllegalStateException("Owned notification transaction rollback");
+        var operation = new AtomicReference<UUID>();
+        // Auth invalidation runs outside the local transaction. The real BEFORE_COMMIT listener
+        // saves the factual outbox; fail only after that save to roll it back with the marker.
+        doAnswer(
+                        invocation -> {
+                            invocation.callRealMethod();
+                            operation.set(
+                                    jdbc.queryForObject(
+                                            "SELECT operation_id FROM"
+                                                + " academic_group_availability_cycle_guards WHERE"
+                                                + " cycle_semester_id=?",
+                                            UUID.class,
+                                            cycleId));
+                            assertThat(markerCount(cycleId)).isOne();
+                            assertThat(eventCount(cycleId)).isOne();
+                            assertThat(groupName(first)).isEqualTo("НИТ-211");
+                            throw rollback;
+                        })
+                .when(events)
+                .onDomainEvent(isA(AdministrativeNotificationGroupPromotionCompletedEvent.class));
+        try {
+            assertThatThrownBy(service::executeAutomaticallyIfDue).isSameAs(rollback);
+        } finally {
+            doCallRealMethod()
+                    .when(events)
+                    .onDomainEvent(
+                            isA(AdministrativeNotificationGroupPromotionCompletedEvent.class));
+        }
         assertThat(markerCount(cycleId)).isZero();
         assertThat(eventCount(cycleId)).isZero();
         assertThat(groupName(first)).isEqualTo("НИТ-111");
 
-        service.executeAutomaticallyIfDue(); // The real service transaction commits.
+        assertThat(operation.get()).isNotNull();
+        assertThat(coordinator.recover(operation.get()).phase())
+                .isEqualTo(GroupAvailabilityStore.Phase.SUCCEEDED);
+        // The committed cycle remains due without repeating the factual notification.
+        assertThat(service.executeAutomaticallyIfDue()).isPresent();
         assertThat(groupName(first)).isEqualTo("НИТ-211");
         assertThat(markerCount(cycleId)).isOne();
         assertThat(eventCount(cycleId)).isOne();

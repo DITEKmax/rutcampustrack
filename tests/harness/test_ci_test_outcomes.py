@@ -696,6 +696,157 @@ class SafeCases {
         self.assertEqual(case["status"], "FAILED")
         self.assertNotIn("failureDiagnostic", case)
 
+    def jdbc_fixture(self, classname: str | None = None, source_path: str | None = None) -> str:
+        classname = classname or next(iter(COLLECTOR.ACADEMIC_JDBC_SOURCES))
+        source = self.root / (source_path or COLLECTOR.ACADEMIC_JDBC_SOURCES[classname])
+        source.parent.mkdir(parents=True, exist_ok=True)
+        package, name = classname.rsplit(".", 1)
+        source.write_text(
+            f"package {package}; class {name} {{ @Test void firstFailure() {{}} @Test void laterFailure() {{}} }}"
+        )
+        subprocess.run(
+            ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
+        )
+        self.results = self.root / COLLECTOR.MODULES["academic-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True, exist_ok=True)
+        self.environment["RCT_CI_TEST_OUTCOME"] = "failure"
+        return classname
+
+    def jdbc_case(self, text: str, native_type: bool = False, message: str = MARKER):
+        case = COLLECTOR.ElementTree.Element("testcase")
+        failure = COLLECTOR.ElementTree.SubElement(
+            case, "failure", type=COLLECTOR.ACADEMIC_JDBC_EXCEPTION if native_type else MARKER, message=message
+        )
+        failure.text = text
+        return case
+
+    def test_academic_jdbc_only_first_source_failed_case_per_owned_class_gets_closed_hint(self) -> None:
+        bodies = []
+        for classname in COLLECTOR.ACADEMIC_JDBC_SOURCES:
+            self.jdbc_fixture(classname)
+            for method in ("firstFailure", "laterFailure"):
+                bodies.append(
+                    f'<testcase classname="{classname}" name="{method}()"><failure message="{MARKER}">Caused by: {COLLECTOR.ACADEMIC_JDBC_EXCEPTION}: FATAL: sorry, too many clients already\n{MARKER}</failure></testcase>'
+                )
+        self.xml("".join(bodies), tests=8, failures=8)
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["summary"]["FAILED"], 8)
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        for first, later in zip(report["cases"][::2], report["cases"][1::2], strict=True):
+            self.assertEqual(first["identity"], "SOURCE_METHOD")
+            self.assertEqual(
+                first["failureDiagnostic"],
+                {
+                    "state": "CLOSED_NATIVE_CAUSE",
+                    "category": "TOO_MANY_CONNECTIONS",
+                    "sqlState": "NOT_OBSERVED",
+                    "nativeCausePresent": True,
+                    "overflow": False,
+                },
+            )
+            self.assertNotIn("failureDiagnostic", later)
+        self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_academic_jdbc_native_sql_states_emit_only_closed_codes_and_categories(self) -> None:
+        for state, category in COLLECTOR.ACADEMIC_JDBC_SQL_STATES.items():
+            with self.subTest(state=state):
+                case = self.jdbc_case(
+                    f"SQL State  : {state}\nCaused by: {COLLECTOR.ACADEMIC_JDBC_EXCEPTION}: {MARKER}\n{MARKER}"
+                )
+                value = COLLECTOR.academic_jdbc_failure_diagnostic(case)
+                self.assertEqual(value["category"], category)
+                self.assertEqual(value["sqlState"], state)
+                self.assertTrue(value["nativeCausePresent"])
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_academic_jdbc_native_literal_slots_never_disclose_names_or_endpoints(self) -> None:
+        messages = [
+            ("AUTHENTICATION_FAILED", f'FATAL: password authentication failed for user "{MARKER}"'),
+            ("MISSING_DATABASE", f'FATAL: database "{MARKER}" does not exist'),
+            ("MISSING_RELATION", f'ERROR: relation "{MARKER}" does not exist'),
+            ("MISSING_COLUMN", f'ERROR: column "{MARKER}" does not exist'),
+            (
+                "CONNECTION_REFUSED",
+                f"Connection to {MARKER} refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.",
+            ),
+            ("SERVER_UNAVAILABLE", "FATAL: the database system is shutting down"),
+        ]
+        for category, message in messages:
+            with self.subTest(category=category):
+                case = self.jdbc_case("", native_type=True, message=message)
+                value = COLLECTOR.academic_jdbc_failure_diagnostic(case)
+                self.assertEqual(value["category"], category)
+                self.assertEqual(value["sqlState"], "NOT_OBSERVED")
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_academic_jdbc_unknown_counterfeit_trailing_and_conflicting_causes_stay_unknown(self) -> None:
+        native = f"Caused by: {COLLECTOR.ACADEMIC_JDBC_EXCEPTION}: "
+        texts = [
+            "SQL State  : 53300\n" + MARKER,
+            native.replace("PSQLException", "PSQLExceptionCounterfeit") + "FATAL: sorry, too many clients already",
+            "prefix " + native + "FATAL: sorry, too many clients already",
+            native + "FATAL: sorry, too many clients already " + MARKER,
+            native + f'ERROR: relation "{MARKER}" does not exist; DROP TABLE x',
+            native + MARKER + "\nSQL State  : 99999",
+            native + MARKER + "\nprefix SQL State  : 53300",
+            native + MARKER + "\nSQL State  : 53300 " + MARKER,
+            native + "FATAL: sorry, too many clients already\nSQL State  : 28P01",
+            native + MARKER + "\nSQL State  : 53300\nSQL State  : 08006",
+        ]
+        for ordinal, text in enumerate(texts):
+            with self.subTest(ordinal=ordinal):
+                value = COLLECTOR.academic_jdbc_failure_diagnostic(self.jdbc_case(text))
+                self.assertEqual(value["state"], "ABSENT_OR_UNRECOGNIZED")
+                self.assertEqual(value["category"], "UNKNOWN")
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_academic_jdbc_caps_partial_lines_and_multiple_failures(self) -> None:
+        limit = COLLECTOR.ACADEMIC_JDBC_DIAGNOSTIC_CHARS
+        native = f"Caused by: {COLLECTOR.ACADEMIC_JDBC_EXCEPTION}: FATAL: sorry, too many clients already"
+        for text in (MARKER * limit + "\n" + native, " " * (limit - 50) + native):
+            value = COLLECTOR.academic_jdbc_failure_diagnostic(self.jdbc_case(text))
+            self.assertEqual(value["category"], "UNKNOWN")
+            self.assertTrue(value["overflow"])
+        case = self.jdbc_case(native)
+        COLLECTOR.ElementTree.SubElement(case, "failure", type=COLLECTOR.ACADEMIC_JDBC_EXCEPTION)
+        self.assertEqual(COLLECTOR.academic_jdbc_failure_diagnostic(case)["category"], "UNKNOWN")
+
+    def test_academic_jdbc_scope_preserves_ordinal_nonfailed_unit_and_wrong_source(self) -> None:
+        classname = self.jdbc_fixture()
+        failure = (
+            f'<failure type="{COLLECTOR.ACADEMIC_JDBC_EXCEPTION}" message="FATAL: sorry, too many clients already"/>'
+        )
+        self.xml(
+            f'<testcase classname="{classname}" name="{MARKER}">{failure}</testcase>'
+            f'<testcase classname="{classname}" name="firstFailure()"/>'
+            f'<testcase classname="{classname}" name="firstFailure()"><error/></testcase>',
+            tests=3,
+            failures=1,
+            errors=1,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertTrue(all("failureDiagnostic" not in row for row in report["cases"]))
+        self.assertEqual(report["cases"][0]["identity"], "ORDINAL_ONLY")
+        self.results = self.results.parent / "test"
+        self.results.mkdir()
+        self.xml(f'<testcase classname="{classname}" name="firstFailure()">{failure}</testcase>', tests=1, failures=1)
+        report = COLLECTOR.collect(self.root, "academic-service", "test", self.environment)
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        original = self.root / COLLECTOR.ACADEMIC_JDBC_SOURCES[classname]
+        original.unlink()
+        subprocess.run(
+            ["git", "rm", "--cached", str(original.relative_to(self.root))],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+        self.jdbc_fixture(classname, COLLECTOR.MODULES["academic-service"] + "/src/test/java/OtherSource.java")
+        self.xml(f'<testcase classname="{classname}" name="firstFailure()">{failure}</testcase>', tests=1, failures=1)
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["cases"][0]["identity"], "SOURCE_METHOD")
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        self.assertNotIn(MARKER, json.dumps(report))
+
 
 if __name__ == "__main__":
     unittest.main()

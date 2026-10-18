@@ -136,6 +136,60 @@ ACADEMIC_SCHEMA_HEADER = re.compile(
     + ACADEMIC_SCHEMA_MISSING
     + r"\r?$"
 )
+# First source-backed failure only in these observed JDBC/Flyway-blocked classes.
+ACADEMIC_JDBC_SOURCES = {
+    "ru.rutcampustrack.academic."
+    + name: "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/" + path
+    for name, path in (
+        ("integration.UserOwnershipLifecycleIT", "integration/UserOwnershipLifecycleIT.java"),
+        ("integration.UserArchiveLifecycleIT", "integration/UserArchiveLifecycleIT.java"),
+        ("map.CampusMapReadRepositoryIT", "map/CampusMapReadRepositoryIT.java"),
+        ("notification.NotificationAudienceIT", "notification/NotificationAudienceIT.java"),
+    )
+}
+ACADEMIC_JDBC_DIAGNOSTIC_CHARS = 65536
+ACADEMIC_JDBC_EXCEPTION = "org.postgresql.util.PSQLException"
+ACADEMIC_JDBC_HEADER = re.compile(
+    r"(?m)^[ \t]{0,32}(?:Caused by:[ \t]{1,8})?"
+    + re.escape(ACADEMIC_JDBC_EXCEPTION)
+    + r"(?::[ \t]{0,8}([^\r\n]{0,2048}))?\r?$"
+)
+ACADEMIC_JDBC_STATE = re.compile(
+    r"(?m)^[ \t]{0,32}(?:SQLSTATE|SQLState|SQL State)[ \t]{0,8}:[ \t]{0,8}([A-Z0-9]{5})[ \t]{0,8}\r?$"
+)
+ACADEMIC_JDBC_SQL_STATES = {
+    "53300": "TOO_MANY_CONNECTIONS",
+    "28P01": "AUTHENTICATION_FAILED",
+    "28000": "AUTHORIZATION_FAILED",
+    "3D000": "MISSING_DATABASE",
+    "42P01": "MISSING_RELATION",
+    "42703": "MISSING_COLUMN",
+    "08001": "CONNECTION_FAILURE",
+    "08006": "CONNECTION_FAILURE",
+    "57P01": "SERVER_UNAVAILABLE",
+    "57P02": "SERVER_UNAVAILABLE",
+    "57P03": "SERVER_UNAVAILABLE",
+}
+# Match whole native message lines; variable slots stay private and are never returned.
+ACADEMIC_JDBC_MESSAGES = (
+    ("TOO_MANY_CONNECTIONS", r"FATAL: sorry, too many clients already"),
+    (
+        "TOO_MANY_CONNECTIONS",
+        r"FATAL: remaining connection slots are reserved for (?:non-replication superuser connections|roles with the SUPERUSER attribute)",
+    ),
+    ("AUTHENTICATION_FAILED", r'FATAL: password authentication failed for user "[^"\r\n]{1,256}"'),
+    ("MISSING_DATABASE", r'FATAL: database "[^"\r\n]{1,256}" does not exist'),
+    ("MISSING_RELATION", r'ERROR: relation "[^"\r\n]{1,256}" does not exist'),
+    ("MISSING_COLUMN", r'ERROR: column "[^"\r\n]{1,256}" does not exist'),
+    (
+        "CONNECTION_REFUSED",
+        r"Connection to [^\r\n]{1,512} refused\. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections\.",
+    ),
+    (
+        "SERVER_UNAVAILABLE",
+        r"FATAL: (?:the database system is (?:shutting down|starting up|in recovery mode)|terminating connection due to administrator command)",
+    ),
+)
 METADATA_ENV = (
     "RCT_CI_PR_HEAD_SHA",
     "RCT_CI_RUN_ID",
@@ -377,6 +431,50 @@ def academic_schema_failure_diagnostic(case: ElementTree.Element) -> dict:
     }
 
 
+def academic_jdbc_failure_diagnostic(case: ElementTree.Element) -> dict:
+    result = {
+        "state": "ABSENT_OR_UNRECOGNIZED",
+        "category": "UNKNOWN",
+        "sqlState": "NOT_OBSERVED",
+        "nativeCausePresent": False,
+        "overflow": False,
+    }
+    failures = case.findall("failure")
+    if len(failures) != 1:
+        return result
+    failure = failures[0]
+    text = failure.text or ""
+    prefix = text[:ACADEMIC_JDBC_DIAGNOSTIC_CHARS]
+    result["overflow"] = len(text) > ACADEMIC_JDBC_DIAGNOSTIC_CHARS
+    if result["overflow"]:
+        prefix = prefix.rsplit("\n", 1)[0] if "\n" in prefix else ""
+    headers = list(ACADEMIC_JDBC_HEADER.finditer(prefix))
+    native = failure.get("type") == ACADEMIC_JDBC_EXCEPTION
+    result["nativeCausePresent"] = native or bool(headers)
+    if not result["nativeCausePresent"]:
+        return result
+    messages = [match.group(1) or "" for match in headers]
+    message = failure.get("message", "")
+    if native and len(message) <= 2048:
+        messages.append(message)
+    categories = {
+        category for value in messages for category, pattern in ACADEMIC_JDBC_MESSAGES if re.fullmatch(pattern, value)
+    }
+    states = {match.group(1) for match in ACADEMIC_JDBC_STATE.finditer(prefix)}
+    if states:
+        result["sqlState"] = (
+            next(iter(states)) if len(states) == 1 and states <= ACADEMIC_JDBC_SQL_STATES.keys() else "OTHER"
+        )
+        if result["sqlState"] == "OTHER":
+            return result
+        categories.add(ACADEMIC_JDBC_SQL_STATES[result["sqlState"]])
+    if categories == {"CONNECTION_FAILURE", "CONNECTION_REFUSED"}:
+        categories = {"CONNECTION_REFUSED"}
+    if len(categories) == 1:
+        result.update(state="CLOSED_NATIVE_CAUSE", category=categories.pop())
+    return result
+
+
 def collect(root: Path, service: str, task: str, environment: dict[str, str]) -> dict:
     if service not in MODULES or task not in {"test", "integrationTest"}:
         raise ValueError("Invalid outcome scope")
@@ -393,6 +491,7 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
     directory = root / module / "build/test-results" / task
     directory_safe = unlinked_scoped_path(root, directory, directory)
     incomplete = not directory_safe
+    jdbc_diagnosed = set()
     paths = sorted(directory.glob("TEST-*.xml")) if directory_safe else []
     for xml_ordinal, path in enumerate(paths, 1):
         if not unlinked_scoped_path(root, path, directory):
@@ -478,6 +577,17 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                     and known["source"] == ACADEMIC_SCHEMA_SOURCE
                 ):
                     safe["failureDiagnostic"] = academic_schema_failure_diagnostic(case)
+                if (
+                    service == "academic-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class in ACADEMIC_JDBC_SOURCES
+                    and known["source"] == ACADEMIC_JDBC_SOURCES[raw_class]
+                    and raw_class not in jdbc_diagnosed
+                ):
+                    safe["failureDiagnostic"] = academic_jdbc_failure_diagnostic(case)
+                    jdbc_diagnosed.add(raw_class)
                 report["cases"].append(safe)
             missing = max(0, (declared["tests"] or 0) - len(nodes))
             counts["NOT_EXECUTED"] += missing

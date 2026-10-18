@@ -243,6 +243,12 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     status: 255,
     message: marker,
   });
+  retainNativePrimaryFailure(nativeAnnotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', {
+    name: 'TimeoutError',
+    message: marker,
+    stack: marker,
+    downloadPath: `/api/report-download/${marker}`,
+  });
   const nativeFacts = [
     {
       path: 'SUBJECT_OTP',
@@ -258,9 +264,16 @@ test('successful sensitive step metadata and worker output are not emitted', asy
       code: 'ECONNRESET',
       exitStatus: 255,
     },
+    {
+      path: 'ASYNC_REPORT',
+      action: 'WAIT_DOWNLOAD',
+      errorClass: 'TimeoutError',
+      code: 'UNKNOWN',
+      exitStatus: 'UNKNOWN',
+    },
   ];
   expect(safeNativePrimaryFailures(nativeAnnotations)).toEqual(nativeFacts);
-  expect(nativeAnnotations).toHaveLength(2);
+  expect(nativeAnnotations).toHaveLength(3);
   expect(JSON.stringify(nativeAnnotations)).not.toContain(marker);
   info.annotations.push(...nativeAnnotations);
   const nativeAnnotation = (value: unknown) => [
@@ -275,6 +288,7 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     marker,
     { ...nativeFacts[0], path: marker },
     { ...nativeFacts[0], action: 'HTTP_GET' },
+    { ...nativeFacts[2], action: 'HTTP_GET' },
     { ...nativeFacts[0], errorClass: marker },
     { ...nativeFacts[0], code: marker },
     { ...nativeFacts[0], exitStatus: -1 },

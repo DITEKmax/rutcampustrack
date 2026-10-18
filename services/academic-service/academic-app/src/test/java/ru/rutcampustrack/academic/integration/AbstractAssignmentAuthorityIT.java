@@ -1,21 +1,34 @@
 package ru.rutcampustrack.academic.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Real database fixtures shared by the L5A assignment authority integration tests. Producers still
- * use the REST entrypoints; SQL here creates isolated users, grants, groups, semesters, and
- * canonical subject type rows only.
+ * use the REST entrypoints. Auth identities, grants and selected sessions use the real split
+ * coordinator; SQL seeds only Academic-owned groups, semesters and canonical subject type rows.
  */
 public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+    private static final AtomicLong TELEGRAM_IDS = new AtomicLong(6_400_000_000L);
 
     private static final String CURRENT_SEMESTER_NAME =
             "L5A current authority semester " + LocalDate.now(MOSCOW);
@@ -26,28 +39,29 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
 
     @Autowired protected ru.rutcampustrack.shared.security.InternalJwtTestFactory internalTokens;
 
+    @Autowired private AcademicUserIdentityOperations identityOperations;
+
+    @Autowired private PlatformTransactionManager fixtureTransactions;
+
     protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
             signedHeadman(
                     org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
                             request,
                     long userId,
                     long groupId) {
-        long rolesVersion =
-                jdbcTemplate.queryForObject(
-                        "SELECT roles_version FROM users WHERE id=?", Long.class, userId);
-        long sessionVersion = 1L;
-        return request.header(
-                "X-Internal-Token",
-                internalTokens.validToken(
-                        userId,
-                        UUID.randomUUID(),
-                        sessionVersion,
-                        rolesVersion,
-                        "HEADMAN",
-                        "ACTIVE",
-                        groupId,
-                        true,
-                        false));
+        var actor = identityFixture.select(userId, AuthRole.HEADMAN);
+        if (!java.util.Objects.equals(actor.claims().groupId(), groupId))
+            throw new IllegalArgumentException("Fixture HEADMAN must own the requested group");
+        return request.with(identityFixture.signed(actor));
+    }
+
+    protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            signedTeacher(
+                    org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+                            request,
+                    long userId) {
+        return request.with(
+                identityFixture.signed(identityFixture.select(userId, AuthRole.TEACHER)));
     }
 
     protected void successfulAdoptionReceipts(
@@ -91,7 +105,8 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
                             Long target = call.getArgument(2);
                             org.assertj.core.api.Assertions.assertThat(
                                             jdbcTemplate.queryForObject(
-                                                    "SELECT lifecycle_state FROM assignments WHERE id=?",
+                                                    "SELECT lifecycle_state FROM assignments WHERE"
+                                                            + " id=?",
                                                     String.class,
                                                     target))
                                     .isEqualTo("PREPARED");
@@ -115,7 +130,9 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
                             UUID operation = call.getArgument(0);
                             org.assertj.core.api.Assertions.assertThat(
                                             jdbcTemplate.queryForObject(
-                                                    "SELECT state FROM assignment_replacement_operations WHERE operation_id=?",
+                                                    "SELECT state FROM"
+                                                        + " assignment_replacement_operations WHERE"
+                                                        + " operation_id=?",
                                                     String.class,
                                                     operation))
                                     .isEqualTo("APPLIED");
@@ -134,54 +151,18 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
         // caller label in the persisted name.
         long groupId =
                 insertGroup("L5A-" + suffix.substring(0, 12) + "-" + suffix.substring(12, 24));
-        long headmanId =
-                insertUser(
-                        "l5a-h-" + suffix.substring(0, 20),
-                        "Headman",
-                        "Student",
-                        "student",
-                        true,
-                        groupId,
-                        null);
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id,role,status,group_id,created_at,updated_at) "
-                        + "VALUES (?,'student','active',?,NOW(),NOW()), (?,'headman','active',?,NOW(),NOW())",
-                headmanId,
-                groupId,
-                headmanId,
-                groupId);
+        long headmanId = insertUser("Headman", "Student", UserRole.STUDENT, groupId, null);
+        assignHeadman(headmanId, groupId);
         String employee1 = "L5A-" + suffix.substring(0, 12) + "-1";
         String employee2 = "L5A-" + suffix.substring(0, 12) + "-2";
         String employeeWithoutGrant = "L5A-" + suffix.substring(0, 12) + "-3";
-        long teacher1 =
-                insertUser(
-                        "l5a-t1-" + suffix.substring(0, 18),
-                        "Teacher",
-                        "One",
-                        "teacher",
-                        false,
-                        null,
-                        employee1);
-        long teacher2 =
-                insertUser(
-                        "l5a-t2-" + suffix.substring(0, 18),
-                        "Teacher",
-                        "Two",
-                        "teacher",
-                        false,
-                        null,
-                        employee2);
+        long teacher1 = insertUser("Teacher", "One", UserRole.TEACHER, null, employee1);
+        long teacher2 = insertUser("Teacher", "Two", UserRole.TEACHER, null, employee2);
         long teacherWithoutGrant =
-                insertUser(
-                        "l5a-t3-" + suffix.substring(0, 18),
-                        "Teacher",
-                        "Three",
-                        "teacher",
-                        false,
-                        null,
-                        employeeWithoutGrant);
-        insertGrant(teacher1, "active");
-        insertGrant(teacher2, "active");
+                insertUser("Teacher", "Three", UserRole.TEACHER, null, employeeWithoutGrant);
+        // The negative fixture retains an ACTIVE directory profile and employee number but
+        // no ACTIVE TEACHER authority. Canonical dismissal preserves that exact admission denial.
+        setTeacherStatus(teacherWithoutGrant, RoleGrantStatus.DISMISSED);
 
         LocalDate dateFrom = allocateSemesterFrom();
         long semesterId =
@@ -213,10 +194,9 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
         }
         StringBuilder sql =
                 new StringBuilder(
-                        "WITH inserted_subject AS ("
-                                + "INSERT INTO subjects (name, type, group_id) VALUES (?, ?::subject_type, ?) RETURNING id"
-                                + "), inserted_lesson_types AS ("
-                                + "INSERT INTO subject_lesson_types (subject_id, lesson_type) ");
+                        "WITH inserted_subject AS (INSERT INTO subjects (name, type, group_id)"
+                            + " VALUES (?, ?::subject_type, ?) RETURNING id), inserted_lesson_types"
+                            + " AS (INSERT INTO subject_lesson_types (subject_id, lesson_type) ");
         for (int index = 0; index < lessonTypes.length; index++) {
             if (index > 0) {
                 sql.append(" UNION ALL ");
@@ -246,8 +226,8 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
             LocalDate to = LocalDate.now(MOSCOW).plusDays(30);
             semesterId =
                     jdbcTemplate.queryForObject(
-                            "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                                    + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
+                            "INSERT INTO semesters (name, date_from, date_to, is_active,"
+                                    + " created_at) VALUES (?, ?, ?, false, NOW()) RETURNING id",
                             Long.class,
                             CURRENT_SEMESTER_NAME,
                             from,
@@ -283,48 +263,78 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     }
 
     protected long insertGroup(String name) {
-        return jdbcTemplate.queryForObject(
-                "INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id",
-                Long.class,
-                name);
+        return new TransactionTemplate(fixtureTransactions)
+                .execute(
+                        status -> {
+                            long groupId =
+                                    jdbcTemplate.queryForObject(
+                                            "INSERT INTO groups (name, is_active) VALUES (?, true)"
+                                                    + " RETURNING id",
+                                            Long.class,
+                                            name);
+                            // This new group has no prior roster. Establish its managed history
+                            // boundary before canonical enrollment; no RPC runs under this lock.
+                            int coverage =
+                                    jdbcTemplate.update(
+                                            "INSERT INTO group_history_coverage"
+                                                    + " (group_id,coverage_from,writer_version)"
+                                                    + " SELECT ?,date_from,? FROM semesters WHERE"
+                                                    + " is_active AND NOT is_archived AND"
+                                                    + " archive_transition='NONE' AND NOT"
+                                                    + " archive_release_pending",
+                                            groupId,
+                                            ru.rutcampustrack.academic.history
+                                                    .HistoricalMembershipService.WRITER_VERSION);
+                            if (coverage != 1)
+                                throw new IllegalStateException(
+                                        "Assignment fixture requires one active semester");
+                            return groupId;
+                        });
     }
 
-    private long insertUser(
-            String login,
-            String lastName,
-            String firstName,
-            String role,
-            boolean headman,
-            Long groupId,
-            String employeeNumber) {
-        return jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                        + "is_headman, group_id, employee_number, password_changed, created_at, updated_at) "
-                        + "VALUES (?, NULL, ?, ?, ?::user_role, 'active'::account_status, ?, ?, ?, false, NOW(), NOW()) "
-                        + "RETURNING id",
-                Long.class,
-                login,
-                lastName,
-                firstName,
-                role,
-                headman,
-                groupId,
-                employeeNumber);
+    protected long insertUser(
+            String lastName, String firstName, UserRole role, Long groupId, String employeeNumber) {
+        var administrator =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                lastName,
+                                firstName,
+                                null,
+                                role,
+                                groupId,
+                                employeeNumber,
+                                role == UserRole.STUDENT ? TELEGRAM_IDS.incrementAndGet() : null),
+                        administrator)
+                .userId();
     }
 
-    private void insertGrant(long userId, String status) {
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'teacher', ?, NULL, NOW(), NOW())",
-                userId,
-                status);
+    protected void setTeacherStatus(long userId, RoleGrantStatus status) {
+        var administrator =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(administrator)) {
+            identityOperations.role(
+                    userId, "TEACHER", new RoleGrantUpdateRequest(status, null, null, null));
+        }
+        identityFixture.catchUpCatalog();
+    }
+
+    protected void assignHeadman(long userId, long groupId) {
+        var administrator =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(administrator)) {
+            identityOperations.headman(groupId, userId, null, false, null);
+        }
+        identityFixture.catchUpCatalog();
     }
 
     private LocalDate allocateSemesterFrom() {
         LocalDate candidate = LocalDate.of(2200, 1, 1);
         while (Boolean.TRUE.equals(
                 jdbcTemplate.queryForObject(
-                        "SELECT EXISTS (SELECT 1 FROM semesters WHERE date_from <= ? AND date_to >= ?)",
+                        "SELECT EXISTS (SELECT 1 FROM semesters WHERE date_from <= ? AND date_to >="
+                                + " ?)",
                         Boolean.class,
                         candidate.plusDays(29),
                         candidate))) {

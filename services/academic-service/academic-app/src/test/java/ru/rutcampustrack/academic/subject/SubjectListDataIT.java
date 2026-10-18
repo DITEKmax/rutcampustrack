@@ -9,12 +9,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import jakarta.persistence.EntityManagerFactory;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.AfterEach;
@@ -28,10 +25,17 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
 import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /** Actual subject HTTP/JPA data oracles; Schedule adoption receipts are a controlled seam. */
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
@@ -184,7 +188,8 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT state FROM assignment_replacement_operations WHERE operation_id=?::uuid",
+                                "SELECT state FROM assignment_replacement_operations WHERE"
+                                        + " operation_id=?::uuid",
                                 String.class,
                                 operationId))
                 .isEqualTo("COMMITTED");
@@ -223,20 +228,9 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
         JsonNode page =
                 response(
                         mockMvc.perform(
-                                        get("/academic/subjects")
-                                                .param("size", "50")
-                                                .header(
-                                                        "X-Internal-Token",
-                                                        internalTokens.validToken(
-                                                                fixture.teacher1Id(),
-                                                                UUID.randomUUID(),
-                                                                1,
-                                                                1,
-                                                                "TEACHER",
-                                                                "ACTIVE",
-                                                                null,
-                                                                false,
-                                                                false)))
+                                        signedTeacher(
+                                                get("/academic/subjects").param("size", "50"),
+                                                fixture.teacher1Id()))
                                 .andExpect(status().isOk())
                                 .andReturn()
                                 .getResponse()

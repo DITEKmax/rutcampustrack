@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SpringBootTest(
         classes = AcademicApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.NONE)
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class HomeworkStudentCompletionConcurrencyIT extends AbstractAcademicIntegrationTest {
 

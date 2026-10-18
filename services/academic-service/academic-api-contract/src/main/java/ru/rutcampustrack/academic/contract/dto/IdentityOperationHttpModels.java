@@ -26,6 +26,7 @@ public final class IdentityOperationHttpModels {
     }
 
     @Schema(
+            name = "IdentityOperationStatus",
             description =
                     "Состояние сохранённой операции изменения пользователя; без секретов и"
                             + " внутренней команды")

@@ -14,10 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +25,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /** Real PostgreSQL and MockMvc proof for the headman subject authority. */
 @AutoConfigureMockMvc
@@ -133,13 +137,13 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 """
-                                {
-                                  "name": "%s",
-                                  "type": "LECTURE",
-                                  "lessonTypes": ["LECTURE"],
-                                  "initialAssignments": [null]
-                                }
-                                """
+                                                {
+                                                  "name": "%s",
+                                                  "type": "LECTURE",
+                                                  "lessonTypes": ["LECTURE"],
+                                                  "initialAssignments": [null]
+                                                }
+                                                """
                                                         .formatted(name)),
                                 fixture))
                 .andExpect(status().isBadRequest());
@@ -162,12 +166,12 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 """
-                                {
-                                  "name": "%s",
-                                  "type": "LECTURE",
-                                  "teacherIds": [%d]
-                                }
-                                """
+                                                {
+                                                  "name": "%s",
+                                                  "type": "LECTURE",
+                                                  "teacherIds": [%d]
+                                                }
+                                                """
                                                         .formatted(name, fixture.teacher1Id())),
                                 fixture))
                 .andExpect(status().isBadRequest());
@@ -203,6 +207,10 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
 
         mockMvc.perform(
                         MockMvcRequestBuilders.put("/academic/subjects/{id}", subjectId)
+                                .with(
+                                        identityFixture.signed(
+                                                identityFixture.select(
+                                                        fixture.headmanId(), AuthRole.HEADMAN)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)
                                 .header("X-User-Id", fixture.headmanId())
@@ -212,6 +220,10 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                 .andExpect(status().isForbidden());
         mockMvc.perform(
                         MockMvcRequestBuilders.post("/academic/subjects")
+                                .with(
+                                        identityFixture.signed(
+                                                identityFixture.select(
+                                                        fixture.headmanId(), AuthRole.STUDENT)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)
                                 .header("X-User-Id", fixture.headmanId())
@@ -252,8 +264,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 """
-                                {"name":"L5A full PUT referenced renamed","type":"LECTURE"}
-                                """),
+{"name":"L5A full PUT referenced renamed","type":"LECTURE"}
+"""),
                                 fixture))
                 .andExpect(status().isConflict());
 
@@ -280,8 +292,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 """
-                                {"name":"L5A singleton renamed","type":"LECTURE"}
-                                """),
+                                                {"name":"L5A singleton renamed","type":"LECTURE"}
+                                                """),
                                 fixture))
                 .andExpect(status().isOk());
         assertThat(lessonTypes(unreferencedId)).containsExactly("lecture");
@@ -313,8 +325,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 """
-                                {"name":"L5A same name renamed","type":"LECTURE"}
-                                """),
+                                                {"name":"L5A same name renamed","type":"LECTURE"}
+                                                """),
                                 fixture))
                 .andExpect(status().isOk());
 
@@ -369,8 +381,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         assertThat(snapshot(subjectId)).isEqualTo(before);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM assignment_replacement_operations "
-                                        + "WHERE source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",
+                                "SELECT COUNT(*) FROM assignment_replacement_operations WHERE"
+                                    + " source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",
                                 Long.class,
                                 assignmentId))
                 .isZero();
@@ -412,9 +424,9 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         assertThat(snapshot(subjectId)).isEqualTo(before);
         var accepted =
                 jdbcTemplate.queryForMap(
-                        "SELECT operation_id,request_key,encode(payload_hash,'hex') AS payload_hash,state "
-                                + "FROM assignment_replacement_operations WHERE source_assignment_id=? "
-                                + "AND operation_kind='CLOSE_UNASSIGN'",
+                        "SELECT operation_id,request_key,encode(payload_hash,'hex') AS"
+                            + " payload_hash,state FROM assignment_replacement_operations WHERE"
+                            + " source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",
                         assignmentId);
         assertThat(accepted.get("state")).isEqualTo("PREPARED");
         assertThat(accepted.get("request_key")).isEqualTo(requestKey);
@@ -450,9 +462,10 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         assertThat(snapshot(subjectId)).isEqualTo(before);
         assertThat(
                         jdbcTemplate.queryForMap(
-                                "SELECT operation_id,request_key,encode(payload_hash,'hex') AS payload_hash,state "
-                                        + "FROM assignment_replacement_operations WHERE source_assignment_id=? "
-                                        + "AND operation_kind='CLOSE_UNASSIGN'",
+                                "SELECT operation_id,request_key,encode(payload_hash,'hex') AS"
+                                    + " payload_hash,state FROM assignment_replacement_operations"
+                                    + " WHERE source_assignment_id=? AND"
+                                    + " operation_kind='CLOSE_UNASSIGN'",
                                 assignmentId))
                 .isEqualTo(accepted);
 
@@ -617,8 +630,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         subject.get("assignments").forEach(node -> summaryIds.add(node.get("id").asLong()));
         List<Long> canonicalIds =
                 jdbcTemplate.query(
-                        "SELECT id FROM assignments WHERE subject_id = ? "
-                                + "ORDER BY semester_id, lesson_type::text, teacher_id, valid_from, id",
+                        "SELECT id FROM assignments WHERE subject_id = ? ORDER BY semester_id,"
+                            + " lesson_type::text, teacher_id, valid_from, id",
                         (rs, rowNum) -> rs.getLong(1),
                         subjectId);
         assertThat(summaryIds).containsExactlyElementsOf(canonicalIds);
@@ -626,7 +639,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
 
     private List<String> lessonTypes(long subjectId) {
         return jdbcTemplate.query(
-                "SELECT lesson_type::text FROM subject_lesson_types WHERE subject_id = ? ORDER BY lesson_type::text",
+                "SELECT lesson_type::text FROM subject_lesson_types WHERE subject_id = ? ORDER BY"
+                    + " lesson_type::text",
                 (rs, rowNum) -> rs.getString(1),
                 subjectId);
     }
@@ -645,8 +659,9 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                         "SELECT name FROM subjects WHERE id = ?", String.class, subjectId);
         List<AssignmentRow> assignments =
                 jdbcTemplate.query(
-                        "SELECT id, teacher_id, subject_id, group_id, semester_id, lesson_type::text, valid_from, "
-                                + "valid_until_exclusive FROM assignments WHERE subject_id = ? ORDER BY id",
+                        "SELECT id, teacher_id, subject_id, group_id, semester_id,"
+                            + " lesson_type::text, valid_from, valid_until_exclusive FROM"
+                            + " assignments WHERE subject_id = ? ORDER BY id",
                         (rs, rowNum) ->
                                 new AssignmentRow(
                                         rs.getLong(1),
@@ -687,8 +702,8 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                 semesterIds.toArray());
         List<OutboxRow> outbox =
                 jdbcTemplate.query(
-                        "SELECT id, event_type, payload::text, status, retry_count, last_error, "
-                                + "created_at::text, sent_at::text FROM academic_outbox ORDER BY id",
+                        "SELECT id, event_type, payload::text, status, retry_count, last_error,"
+                            + " created_at::text, sent_at::text FROM academic_outbox ORDER BY id",
                         (rs, rowNum) ->
                                 new OutboxRow(
                                         rs.getLong(1),

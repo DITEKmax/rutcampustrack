@@ -7,14 +7,14 @@ Q031/D037: эти файлы — persisted Goal; отдельного Goal API �
 Root soleGit/taskdocs; ветка codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), main не merged.
 Stage19 starting HEAD **26cbe5912f6683a81780a831609dbddbc26feba4**.
-Published/executable **da3402ea853133f89c04e7c2db2b18f52eee7971**, local/remote/PR verified.
-Next Apps checkpoint extends da; final commit SHA read after commit, never guessed.
+Published/executable **5ff1a72014de91c9b7a38fc0f0bc5db76c820f43**, local/remote/PR verified.
+Previous executable da3402ea; Rootmatrix/evidence updateWIP belongsnextcoherentcheckpoint.
 Stage17base753173688d633ca07991f4dd73bdcd2698f45d96; received18basee66b1711.
 
 ## Принятие и конечный остаток
 
 [Матрица v2-КТ1 FROZEN](selected-results-20261018-v2.csv)/[веса](selected-results-20261018-v2.meta.json):
-**22/38,107/188=56.91% плана**, не production-readiness. Веса/acceptance зафиксированы.
+**23/38,109/188=57.98% плана**, не production-readiness. Веса/acceptance зафиксированы.
 [Историческая v1](selected-results-20261018.csv)/[meta](selected-results-20261018.meta.json):
 **23/25,110/123=89.43%**, U15 восстановлен из owner/PRbody/review45b5989a/SAFE50821c16.
 U15 oldsameDBrepeat не две новыеDB/VPSrestart. U14 старый parent раскрыт детьми,
@@ -26,7 +26,7 @@ TASK17 функционально9/9 DONE_CHANGED9, начальные6/9 в и�
 | КТ | Принято / всего | Вес / всего | % плана |
 | --- | --- | --- | --- |
 | КТ2: boundary/AAA/contracts/persistence | 8/13 | 32/63 | 50.79 |
-| КТ3: bot/apps | 1/9 | 5/37 | 13.51 |
+| КТ3: bot/apps | 2/9 | 7/37 | 18.92 |
 | КТ4: changedchains/monitoring/jobs | 13/15 | 70/83 | 84.34 |
 | КТ5: finalgates/review/handoff | 0/1 | 0/5 | 0 |
 
@@ -36,7 +36,7 @@ TASK17 функционально9/9 DONE_CHANGED9, начальные6/9 в и�
 | U14.4/.6 | Jobs+Boundary: single domainjobqueue/worker/artifacts и compatibleconsumers/OpenAPI/gRPC; 2DOCX+короткийдругойпериод/уход/lost202/recovery/currentrights. |
 | U15.1 | Academic+Boundary: twoDB fresh/repeat сохраняютIDs/credentials/grants/history/sessions/jobs; newSQLonly. |
 | U20.1/.2/.3 | Bot+BotProducer+Boundary: exactcommon4/studentHW/headmancurrentroster/teacherownToday; privatefreshauthority/choice/timezone/empty/revoke proof. |
-| U23.1/.2/.3/.4/.5 | Apps: actualGlitchTipVueJava+Pyroprofile+protectedHomepage, combinedresourcebudget, PMMjustification; CIruntimeнеcomposePASS. |
+| U23.1/.2/.3/.4 | Apps: actualGlitchTipVueJava+Pyroprofile+protectedHomepage, combinedresourcebudget; CIruntimeнеcomposePASS. |
 | U25 | Root+independentreview: allcurrentgatesPASS/source/executable/PRhead/Q009doconly/handoff. |
 
 ## Текущий связный пакет / failures
@@ -52,14 +52,20 @@ Presplit3 published da: originalheadmancontext beforeSubject, oneMapguard curren
 Academic generatedkeys=false, no secretSELECT/oldSQL/assertion changes. Compile43tasks
 153.06s/RSS1.12GiB, sixhooks and independentS3sourceAPPROVE. daCI39109858933:
 client actual2DOCX/navigation/lost202, authsmoke/remaining5/WebKitonline/workerlogic PASS;
-Academic485IT stillrunning at last check. ActualoldSQLSTATE/terminalCI UNKNOWN.
-Coverage39109858950/Security39109858940/OpenAPI39109858920 activegates; old26FAIL preserved.
+Academic485IT completedPASS. TerminalallCI notPASS; actualoldSQLSTATEUNKNOWN.
+da Coverage39109858950(all10)/Security39109858940/OpenAPI39109858920 SUCCESS.
+Academic safeartifact12130403445:485PASS/0fail/skip, all9oldfailmatchedPASS; originalSQLSTATE
+stillUNKNOWN. da lifecycleFAIL: first2containerinspectidentityguards(fielddiffUNKNOWN),
+transfer own202+6GET200/PENDING, semesterpreviewtransport0+failedrestoration. New5ff CI
+39111397263/Coverage39111397260/Security39111397283 active; OpenAPI39111397255SUCCESS.
 
 Apps39paths+oneauthoredCIhook integrated after independentS3sourceapproval; threeP2
 harness issues fixed/rechecked (cleanup-beforePASS, realidlesamples, structuredstackframes).
-Java+Vueprivacy/compile checks PASS; actual3apps/grouping/profile/resources PENDING nativeCI.
+Java+Vueprivacy/compile checks PASS; 5ffApps CI126 beforeGradle (wrapper mode100644),
+one-line authored bashlauncherfix prepared. Actual3apps/grouping/profile/resources NOT_RUN.
 Bot26Python and Producer25Java sourceapproved, addressed tests PASS; realtwoDB/TLSchainpending.
-No newmatrixclosure fromsource/compile/partialCI. Next normalpush Apps→actualisolatedCI,
+U23.5 DONE_CHANGED: reviewed justified PMM nonselection only (selection.json), no PMM runtime
+claim. Otherthreeapps/DB/runtime rows remain open; no closure from compile/partialCI. Apps5ff published→nativeApps halted beforeGradle (126/nonexecwrapper); one-linebashfix prepared,
 while Auth/Academic concreteoperation/catalog and Jobs domainqueue migration continue.
 
 ## KT0 / writers / восстановление
@@ -75,8 +81,12 @@ singlecopy .agent/evidence/cloud-20261011/current-wip protects against observedT
 Boundary Auth/proto/generated/basecompose/env/routes; Academicprofile/coordinator/catalog;
 Jobs all11domainjobs/AcademicV2/leasedrendererhelpers/Notificationadmit; BotPython;
 ProducerBFF/Attendance/Schedulebotreads; Appsinfra/SDK/build/lock; review independent.
-Bot/Producer/Apps sourceauthors finished; wake sameauthors forfindings. Academic onebounded
-compileleaseCPU0 now; no localDB/Docker/images. Limits/measurements inresources.
+Authruntime ownDB/session/credentialmetadata author separateWTbase5ff; Producer now owns
+Attendance data-only plannedrenderer, Jobs Academicplanner/queue (no BFFcallback or genericJWT).
+CIauthor isolatedWTbase5ff fixes unstableordering-only oracle and safeclosedfielddiff; actual
+first2runtimecauseUNKNOWN, transfer/backendreconciliation stillopen. Academic/Authnewcore
+compilesPASS; source review3Academic/P1Auth findings accepted/correctionsinprogress. Authruntime oneboundedcompileleaseCPU0 (oldsourcecore passed, currentnewownDBtests only
+compile; noDBproof); no localDB/Docker/images. Limits/measurements inresources.
 
 [Evidence/history](attempts.ndjson), [decisions](decisions.md), [questions](questions.md),
 [единственный HANDOFF](HANDOFF-20261017.md) обновляются вместе связнымcheckpoint.

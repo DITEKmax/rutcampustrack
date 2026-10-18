@@ -12,9 +12,9 @@
   },
   "mandatoryRows": 38,
   "mandatoryWeight": 188,
-  "closed": 22,
-  "closedWeight": 107,
-  "percent": 56.91,
+  "closed": 23,
+  "closedWeight": 109,
+  "percent": 57.98,
   "byCheckpoint": {
     "КТ2": {
       "closed": 8,
@@ -24,11 +24,11 @@
       "percent": 50.79
     },
     "КТ3": {
-      "closed": 1,
+      "closed": 2,
       "total": 9,
-      "weight": 5,
+      "weight": 7,
       "denominator": 37,
-      "percent": 13.51
+      "percent": 18.92
     },
     "КТ4": {
       "closed": 13,

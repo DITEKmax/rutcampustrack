@@ -23,6 +23,14 @@ import {
   type LifecycleCleanupCause,
 } from './safe-reporter';
 
+import {
+  canonicalObjectOrder,
+  mountRecords,
+  ownedContainerIdentityAnnotation,
+  ownedContainerIdentityChanges,
+  type OwnedContainerIdentityFailure,
+} from './owned-container-identity';
+
 type Row = Record<string, any>;
 
 type SemesterStage =
@@ -142,6 +150,25 @@ function requireValue(condition: unknown, message: string): asserts condition {
     const error = new Error(message);
     Error.captureStackTrace(error, requireValue);
     throw error;
+  }
+}
+
+function requireOwnedContainerIdentity(
+  current: Row,
+  pin: Row,
+  fixture: OwnedContainerIdentityFailure['fixture'],
+  service: OwnedContainerIdentityFailure['service'],
+  message: string,
+) {
+  const changed = ownedContainerIdentityChanges(current, pin);
+  if (Object.values(changed).some(Boolean)) {
+    const annotations = test.info().annotations;
+    if (!annotations.some((annotation) => annotation.type === ownedContainerIdentityAnnotation))
+      annotations.push({
+        type: ownedContainerIdentityAnnotation,
+        description: JSON.stringify({ fixture, service, changed }),
+      });
+    requireValue(false, message);
   }
 }
 
@@ -642,7 +669,14 @@ async function ownedHistoricalPromotion(
       pin.health === 'healthy',
     'Exact healthy owned Academic database is required',
   );
-  const identity = () => equal(inspect(), pin, 'Owned Academic container identity changed');
+  const identity = () =>
+    requireOwnedContainerIdentity(
+      inspect(),
+      pin,
+      'promotion',
+      'postgres-academic',
+      'Owned Academic container identity changed',
+    );
   const nonce = randomUUID();
   const marker = `RCT-PROMOTION-${nonce}`;
   const alphabet = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
@@ -3033,19 +3067,6 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       ),
     );
   const pins: Record<string, Row> = {};
-  const canonicalObjectOrder = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(canonicalObjectOrder);
-    if (value === null || typeof value !== 'object') return value;
-    return Object.fromEntries(
-      Object.entries(value)
-        .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
-        .map(([key, item]) => [key, canonicalObjectOrder(item)]),
-    );
-  };
-  const mountRecords = (value: unknown): unknown =>
-    Array.isArray(value)
-      ? value.map((record) => JSON.stringify(canonicalObjectOrder(record))).sort()
-      : canonicalObjectOrder(value);
   const identity = (service: string, cap = 5000) => {
     const pin = pins[service];
     requireValue(pin, 'Pinned owned service is required');
@@ -5143,7 +5164,7 @@ function subjectCascadeReadback(deadline: number) {
       throw new Error('Subject deletion container inspection failed');
     }
   };
-  for (const service of ['postgres-academic', 'postgres-schedule', 'mongo-attendance']) {
+  for (const service of ['postgres-academic', 'postgres-schedule', 'mongo-attendance'] as const) {
     const ids = docker([...compose, 'ps', '-q', service])
       .trim()
       .split(/\s+/);
@@ -5163,16 +5184,19 @@ function subjectCascadeReadback(deadline: number) {
     );
     pins[service] = pin;
   }
-  const identity = (service: string) => {
+  const identity = (service: OwnedContainerIdentityFailure['service']) => {
     const pin = pins[service];
-    requireValue(
-      JSON.stringify(inspect(pin.id)) === JSON.stringify(pin),
+    requireOwnedContainerIdentity(
+      inspect(pin.id),
+      pin,
+      'subjectdelete',
+      service,
       'Subject deletion database identity changed',
     );
     return pin.id as string;
   };
   const pg = (kind: 'academic' | 'schedule', sql: string): Row => {
-    const service = `postgres-${kind}`;
+    const service = `postgres-${kind}` as const;
     const raw = docker(
       [
         'exec',

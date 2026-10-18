@@ -9,7 +9,60 @@ import type {
   TestResult,
 } from '@playwright/test/reporter';
 
+import {
+  ownedContainerIdentityAnnotation,
+  ownedContainerIdentityFields,
+  type OwnedContainerIdentityFailure,
+} from './owned-container-identity';
+
 export const safeFailureAnnotation = 'rct-safe-failure-v1';
+
+/** Untrusted annotations retain only closed fixture/service names and fixed boolean fields. */
+export function safeOwnedContainerIdentityFailure(
+  annotations: unknown,
+): OwnedContainerIdentityFailure | undefined {
+  if (!Array.isArray(annotations)) return;
+  for (let index = 0; index < Math.min(annotations.length, 32); index++) {
+    const annotation = ownData(annotations, String(index));
+    if (ownData(annotation, 'type') !== ownedContainerIdentityAnnotation) continue;
+    const description = ownData(annotation, 'description');
+    if (typeof description !== 'string' || description.length > 512) continue;
+    let value: unknown;
+    try {
+      value = JSON.parse(description);
+    } catch {
+      continue;
+    }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+    const keys = Object.keys(value);
+    if (keys.length !== 3 || keys.some((key) => !['fixture', 'service', 'changed'].includes(key)))
+      continue;
+    const fixture = ownData(value, 'fixture');
+    const service = ownData(value, 'service');
+    const changed = ownData(value, 'changed');
+    if (
+      (fixture !== 'promotion' && fixture !== 'subjectdelete') ||
+      (service !== 'postgres-academic' &&
+        service !== 'postgres-schedule' &&
+        service !== 'mongo-attendance') ||
+      (fixture === 'promotion' && service !== 'postgres-academic') ||
+      !changed ||
+      typeof changed !== 'object' ||
+      Array.isArray(changed) ||
+      Object.keys(changed).length !== ownedContainerIdentityFields.length ||
+      ownedContainerIdentityFields.some((field) => typeof ownData(changed, field) !== 'boolean') ||
+      !ownedContainerIdentityFields.some((field) => ownData(changed, field) === true)
+    )
+      continue;
+    return {
+      fixture,
+      service,
+      changed: Object.fromEntries(
+        ownedContainerIdentityFields.map((field) => [field, ownData(changed, field)]),
+      ) as OwnedContainerIdentityFailure['changed'],
+    };
+  }
+}
 
 /** Closed source routes only; IDs are matched in RAM and never copied into diagnostics. */
 const datasetHttpOperations = {
@@ -688,6 +741,7 @@ interface SafeResult {
   diagnostics: SafeFailureDiagnostic[];
   errorLocations: { file: string; line: number }[];
   transferObservation?: TransferObservation;
+  ownedContainerIdentityFailure?: OwnedContainerIdentityFailure;
 }
 
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
@@ -731,6 +785,8 @@ export default class SafeReporter implements Reporter {
     };
     const transferObservation = safeTransferObservation(result.annotations);
     if (transferObservation) row.transferObservation = transferObservation;
+    const identityFailure = safeOwnedContainerIdentityFailure(result.annotations);
+    if (identityFailure) row.ownedContainerIdentityFailure = identityFailure;
     this.results.push(row);
     // Automatic error contexts are created during worker teardown, after afterEach.
     // Replace attached artifact contents with safe metadata as a second boundary.

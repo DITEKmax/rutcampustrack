@@ -5752,7 +5752,7 @@ jobs:
           tests/e2e/node_modules/.bin/playwright install --with-deps chromium
       - name: Compile the actual Java report and check error privacy
         run: |
-          ./gradlew --no-daemon --max-workers=2 --console=plain \
+          bash ./gradlew --no-daemon --max-workers=2 --console=plain \
             '-Dorg.gradle.jvmargs=-Xmx1g -XX:MaxMetaspaceSize=384m -XX:ActiveProcessorCount=2' \
             --system-prop=org.gradle.java.compile-classpath-packaging=true \
             :services:shared:shared-observability:compileJava \

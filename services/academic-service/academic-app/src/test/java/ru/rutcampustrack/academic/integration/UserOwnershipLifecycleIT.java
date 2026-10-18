@@ -11,6 +11,7 @@ import io.grpc.StatusRuntimeException;
 
 import jakarta.persistence.EntityManager;
 
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +23,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ru.rutcampustrack.academic.contract.dto.IdentityOperationHttpModels;
+import ru.rutcampustrack.academic.contract.dto.exportjobs.AcademicExportJobModels;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.exportjobs.ExportJobService;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
 import ru.rutcampustrack.academic.identityoperation.AcademicIdentityCoordinator;
@@ -36,10 +39,18 @@ import ru.rutcampustrack.academic.identityoperation.JdbcAcademicIdentityOperatio
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.user.UserAssembler;
 import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
+import ru.rutcampustrack.auth.dto.ReportDownloadFormat;
+import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +75,7 @@ class UserOwnershipLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired private JdbcAcademicIdentityOperationStore operations;
     @Autowired private AcademicIdentityReconciliationService reconciliation;
     @Autowired private AuthIdentityDataClient identityData;
+    @Autowired private ExportJobService exportJobs;
     @MockitoSpyBean private StudentGroupHistoryRepository history;
     private static final AtomicLong TELEGRAM = new AtomicLong(9_100_000_000L);
     private JdbcTemplate administrator;
@@ -167,6 +179,7 @@ class UserOwnershipLifecycleIT extends AbstractAcademicIntegrationTest {
                                         Boolean.class,
                                         admin.getId()))
                 .isTrue();
+        repeatOwnMigrationsPreservingNonemptyState(student, admin);
     }
 
     @Test
@@ -349,6 +362,191 @@ class UserOwnershipLifecycleIT extends AbstractAcademicIntegrationTest {
                                         System.nanoTime() + TimeUnit.SECONDS.toNanos(3))
                                 .getCredentialsCount())
                 .isOne();
+    }
+
+    private void repeatOwnMigrationsPreservingNonemptyState(
+            UserCreatedResponse student, UserCreatedResponse createdAdmin) {
+        AcademicIdentityIntegrationFixture.SelectedActor selectedStudent;
+        try (var ignored = identityFixture.request(admin)) {
+            selectedStudent = identityFixture.select(student.getId(), AuthRole.STUDENT);
+        }
+        assertThat(selectedStudent.userId()).isEqualTo(student.getId());
+        assertThat(selectedStudent.sessionId()).isNotNull();
+        var selector =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.ADMIN_USERS,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        new IssueReportDownloadTicketRequest.AdminUsersParameters(
+                                "migration-preservation",
+                                null,
+                                null,
+                                null,
+                                null,
+                                ReportDownloadFormat.HTML),
+                        null);
+        UUID job;
+        try (var ignored = identityFixture.request(admin)) {
+            job =
+                    exportJobs
+                            .enqueue(
+                                    admin.claims(),
+                                    new AcademicExportJobModels.Create(UUID.randomUUID(), selector))
+                            .id();
+        }
+        assertThat(
+                        administrator.queryForObject(
+                                "SELECT state='queued' AND attempts=0 AND user_id=? AND"
+                                        + " session_id=? FROM academic_export_jobs WHERE job_id=?",
+                                Boolean.class,
+                                admin.userId(),
+                                admin.sessionId(),
+                                job))
+                .isTrue();
+        assertOwnDatabaseRoles();
+        var authOwner = identityFixture.fixtureOwnerAuthJdbc();
+        var authTables =
+                List.of(
+                        "auth_identities",
+                        "user_role_grants",
+                        "admin_access_profiles",
+                        "auth_sessions",
+                        "auth_identity_operations",
+                        "auth_identity_operation_targets");
+        var academicTables =
+                List.of(
+                        "academic_profiles",
+                        "academic_role_eligibility",
+                        "student_group_history",
+                        "academic_identity_operations",
+                        "academic_identity_operation_targets",
+                        "academic_export_jobs");
+        var authBefore = preservationSnapshot(authOwner, authTables);
+        var academicBefore = preservationSnapshot(administrator, academicTables);
+        // New Flyway instances on already migrated, nonempty own databases.
+        // Repeating migrations is not a process restart, restore or rollback experiment.
+        repeatMigrations(authOwner.getDataSource(), "classpath:db/auth-migration");
+        repeatMigrations(administrator.getDataSource(), "classpath:db/academic-migration");
+        assertThat(authBefore.equals(preservationSnapshot(authOwner, authTables)))
+                .as(
+                        "Auth repeat preserves nonempty identity, credential, grant, session and"
+                                + " ledger state")
+                .isTrue();
+        assertThat(academicBefore.equals(preservationSnapshot(administrator, academicTables)))
+                .as(
+                        "Academic repeat preserves nonempty profile, membership, history, job and"
+                                + " ledger state")
+                .isTrue();
+        assertOwnDatabaseRoles();
+        try (var ignored = identityFixture.request(admin)) {
+            assertInitialCredential(student);
+            assertInitialCredential(createdAdmin);
+            assertThat(exportJobs.status(admin.claims(), job).state()).isEqualTo("queued");
+        }
+    }
+
+    private static void repeatMigrations(DataSource source, String location) {
+        var flyway = Flyway.configure().dataSource(source).locations(location).load();
+        var result = flyway.migrate();
+        assertThat(result.success).isTrue();
+        assertThat(result.migrationsExecuted).isZero();
+        flyway.validate();
+        assertThat(flyway.info().pending()).isEmpty();
+    }
+
+    private static List<String> preservationSnapshot(JdbcTemplate owner, List<String> tables) {
+        var result = new ArrayList<String>();
+        for (String table : tables) {
+            // Every input is a fixed table name above. Hash private row JSON inside this method;
+            // failure output never contains initial material, stored credential hashes or sessions.
+            result.add(
+                    privateRowsDigest(
+                            owner,
+                            "SELECT to_jsonb(t)::text FROM "
+                                    + table
+                                    + " t ORDER BY to_jsonb(t)::text"));
+        }
+        result.add(
+                privateRowsDigest(
+                        owner,
+                        "SELECT to_jsonb(t)::text FROM flyway_schema_history t ORDER BY"
+                                + " installed_rank"));
+        result.add(
+                privateRowsDigest(
+                        owner,
+                        "SELECT jsonb_build_array(c.oid,c.relowner,c.relacl)::text FROM pg_class c"
+                                + " JOIN pg_namespace n ON n.oid=c.relnamespace WHERE"
+                                + " n.nspname='public' ORDER BY c.oid"));
+        result.add(
+                privateRowsDigest(
+                        owner,
+                        "SELECT jsonb_build_array(p.oid,p.proowner,p.proacl)::text FROM pg_proc p"
+                                + " JOIN pg_namespace n ON n.oid=p.pronamespace WHERE"
+                                + " n.nspname='public' ORDER BY p.oid"));
+        result.add(
+                privateRowsDigest(
+                        owner,
+                        "SELECT jsonb_build_array(datname,datdba,datacl)::text FROM pg_database"
+                                + " WHERE datname IN ('auth_db','academic_db') ORDER BY datname"));
+        result.add(
+                privateRowsDigest(
+                        owner,
+                        "SELECT jsonb_build_array(nspname,nspowner,nspacl)::text FROM pg_namespace"
+                                + " WHERE nspname='public'"));
+        return result;
+    }
+
+    private static String privateRowsDigest(JdbcTemplate owner, String query) {
+        var rows = owner.queryForList(query, String.class);
+        assertThat(rows.isEmpty()).as("preservation requires nonempty owner rows").isFalse();
+        try {
+            var digest = MessageDigest.getInstance("SHA-256");
+            for (String row : rows) {
+                digest.update(row.getBytes(StandardCharsets.UTF_8));
+                digest.update((byte) '\n');
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new AssertionError("SHA-256 required");
+        }
+    }
+
+    private void assertOwnDatabaseRoles() {
+        assertOwnDatabaseRole(
+                identityFixture.fixtureOwnerAuthJdbc(), "auth_db", "rct_auth_migrator", true);
+        assertOwnDatabaseRole(administrator, "academic_db", "rct_migrator", true);
+        assertOwnDatabaseRole(identityFixture.authJdbc(), "auth_db", "rct_auth_runtime", false);
+        assertOwnDatabaseRole(jdbc, "academic_db", "rct_academic_runtime", false);
+    }
+
+    private static void assertOwnDatabaseRole(
+            JdbcTemplate database, String name, String principal, boolean migrator) {
+        assertThat(
+                        database.queryForObject(
+                                "SELECT current_database()=? AND current_user=? AND"
+                                    + " session_user=current_user AND NOT rolsuper AND NOT"
+                                    + " rolbypassrls AND NOT rolcreatedb AND NOT rolcreaterole AND"
+                                    + " NOT rolreplication AND NOT"
+                                    + " has_database_privilege(current_user,?,'CONNECT') AND"
+                                    + " has_database_privilege(current_user,current_database(),'CREATE')=?"
+                                    + " AND has_schema_privilege(current_user,'public','CREATE')=?"
+                                    + " AND has_table_privilege(current_user,'public.flyway_schema_history',"
+                                    + " 'SELECT,INSERT,UPDATE,DELETE')=? FROM pg_roles WHERE"
+                                    + " rolname=current_user",
+                                Boolean.class,
+                                name,
+                                principal,
+                                name.equals("auth_db") ? "academic_db" : "auth_db",
+                                migrator,
+                                migrator,
+                                migrator))
+                .isTrue();
     }
 
     private UserCreatedResponse create(CreateUserRequest request) {

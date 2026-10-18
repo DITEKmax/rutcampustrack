@@ -23,19 +23,19 @@ Other checks light CPU1/RSS<=1GiB. Q032 exactconsent executed, no refusals bypas
 
 | Owner | Worktree / scope / state |
 | --- | --- |
-| Root | /workspace/rutcampustrack; integration/docs; ready source17; foreignWIP preserved. |
-| s19_fixture_compile | /tmp/rct-s19-auth-runtime + privateGradlehome; current13 four Auth/Academic compile tasks PASS, inputs2016/2266 stable; RELEASED. |
-| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q0339 SOURCEAPPROVE/Rootjoined; new separate U15.1 existingtest plan only, no frozen9 edits. |
-| s19_ci_diagnosis | /tmp/rct-s19-e2e; standalonefixture4 APPROVE/Rootjoined; Health cleanup finding rechecked, all oracles retained. |
+| Root | /workspace/rutcampustrack; local6e5 source17 committed; newFULL2+repeat1 reviewed WIP; foreignWIP preserved. |
+| s19_fixture_compile | /tmp/rct-s19-auth-runtime + privateGradlehome; current14 Academic compileJava/compileTestJava+4unit PASS80.16s/RSS1139511296; inputs2017/2267 stable; RELEASED. Current13 Auth PASS retained. |
+| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q0339 unchanged; U15.1 existingtest addition SOURCEAPPROVE/Rootjoined, actualDBpending. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; fixture4 acceptedsource; minimal actualFULLmapping client+4unitcases SOURCEAPPROVE/Rootjoined, native14fourunitPASS; actualUIpending. |
 | ac9_auth_it | /tmp/rct-s19-auth; test TLS URI1 + exact originalV2 semester NULL1 complete/Rootjoined; no runtime. |
 | ac9_apps | /tmp/rct-s19-apps; closedexistingbrowser/checker2 hints APPROVE/Rootjoined; no active local runtime. |
 | ac9_contract_generation | /tmp/ac9-contract-generation; Auth2/scoped81consumerPASS held until officialAcademicsnapshot for atomic5; priorUI WT retained. |
-| s19_review_producer | independent SOURCEAPPROVE Q0339 and affected Appsprivacy2; no authoring. |
-| s19_review_synthetic_baseline | fixture4 recheckAPPROVE; actual3f Homepage U23.3 applicability ACCEPT; no authoring. |
-| s19_3f_ci_observer | read-only meaningful push+PR milestones/artifactmetadata; no rawlogs/downloads. |
+| s19_review_producer | independent SOURCEAPPROVE Q0339/Appsprivacy2/FULLmapping2; no authoring. |
+| s19_review_synthetic_baseline | fixture4/repeat1 SOURCEAPPROVE; actual3f Homepage U23.3 applicability ACCEPT; no authoring. |
+| s19_3f_ci_observer | completed usefulpushbrowser boundary: both terminal/cleanupPASS; no rawlogs/downloads. |
 
 No new stand per writer. Prior current7/8/9/10/11/12 sufficient PASS retained.
 Actual3f Monitoring SUCCESS. Apps1376MiB/2.5CPU remains CONFIG budget only;
-combined measured acceptance pending. All local heavy leases RELEASED.
-OrdinaryCI uses independent disposable targets; useful current browser not cancelled.
+combined measured acceptance pending. All local heavy leases RELEASED; process0.
+OrdinaryCI uses independent disposable targets; previous usefulbrowser completed before next publication.
 Frozen B013/B014/B015 and production/main/merge/deploy/secrets boundaries unchanged.

@@ -7,7 +7,7 @@ Root sole Git/taskdocs; codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2); no main/merge/deploy.
 Starting26cbe5912f6683a81780a831609dbddbc26feba4; current source is branch HEAD.
 Latest runtime baseline **3f491d64086c01588c195572eb6855c4f448b397**.
-New reviewed/compiled source17 below awaits its own CI.
+Source17 committed6e5c16e4; new FULLmapping2 + repeat-preservation test1 below.
 
 ## Конечный план
 
@@ -52,18 +52,24 @@ UI remaining useful paths still running. History/evidence references only in mat
 ## Ready / owners / next
 
 [Protocol](BOUNDARY-PROTOCOL-20261018.md), [resources](resources.md).
-Ready17: Q0339 SOURCEAPPROVE; standalonefixture4 SOURCEAPPROVE+cleanuprecheck;
+Committed17: Q0339 SOURCEAPPROVE; standalonefixture4 SOURCEAPPROVE+cleanuprecheck;
 ResourceURI1 conversionPASS; existingApps boot-hint2 privacyAPPROVE; baselineNULL1.
 Nativecurrent13 all4 Auth/Academic compileJava+compileTestJava PASS85.29s/RSS1082138624;
 2016Root/2266nativeinputs stable; processes0/leaseRELEASED. No DB/tests/launcher run.
 Apps minimal localmount probe NOT_ACCEPTED: incompletecache differsfromCI,
 then RSSguard stopped it; processes0/leaseRELEASED; no blindSDK/optimizer fix.
-Root integrates ready17 and updates PR after useful currentbrowser result.
-s19_edge_it_diagnosis prepares U15.1 repeat-preservation in existing ownedtest,
-without delaying this ready package. s19_3f_ci_observer watches meaningful outcomes.
+New actual product defect: canonical FULL/empty Auth wire skipped Academic converter
+expansion12; PWA correctly hid admin actions. Client+4unitcases SOURCEAPPROVE;
+LIMITED/unknown failclosed contract retained, no UI/oracle change. U15.1 existing
+positivecase repeat-preservation addition SOURCEAPPROVE, old2methods retained.
+Nativecurrent14 AcademiccompileJava+compileTestJava+4exactunitcases PASS80.16s,
+zero fail/error/skip; Root2017/native2267 stable, RSS1139511296, process0/leaseRELEASED.
+U15.1 class compiled only, no DB run; Auth checks from current13 retained.
+Both useful3f browser jobs terminal/cleanupPASS. Root publishes ready commits, then ordinaryCI actualcontexts/bootstrap/repeat/
+DOCX/adminUI/Apps.
 OfficialAuth snapshot+generator/81consumers PASS heldatomic5; Academic snapshot absent.
 Reservedreporttypealias WIP/foreign25 retained; no manualspec/generated edits.
-Next: normalpush/CI correctedcontexts+bootstrap4DB+realDOCX/modulecause;
+Next: normalpush/CI correctedcontexts+bootstrap4DB+repeat+FULLUI+realDOCX/modulecause;
 current UI FAIL primary separately, then Academic snapshot→existinggenerators→clients.
 LocalDocker/DB/imagepull NOT_RUN: workspace<4GiB reserve/VFSsameFS; no cleanup.
 Q032 executed; Q033 answered; no ownerquestion pending. No Goal API claimed.

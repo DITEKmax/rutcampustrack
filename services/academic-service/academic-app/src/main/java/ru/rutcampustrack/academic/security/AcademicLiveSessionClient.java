@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import ru.rutcampustrack.academic.admin.AdminAccessService;
 import ru.rutcampustrack.authsecurity.grpc.*;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.admin.AdminAccessProfile;
@@ -34,13 +35,7 @@ public class AcademicLiveSessionClient {
 
     public AdminAccessProfile admit(InternalJwtClaims actor) {
         var admitted = admitCurrent(actor);
-        var profile = admitted.getAdminProfile();
-        return new AdminAccessProfile(
-                actor.userId(),
-                profile.getAssigned(),
-                profile.getMode(),
-                profile.getPermissionsList(),
-                profile.getVersion());
+        return AdminAccessService.profile(actor.userId(), admitted.getAdminProfile());
     }
 
     /**

@@ -190,6 +190,58 @@ ACADEMIC_JDBC_MESSAGES = (
         r"FATAL: (?:the database system is (?:shutting down|starting up|in recovery mode)|terminating connection due to administrator command)",
     ),
 )
+BOOTSTRAP_CLI_CLASS = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
+BOOTSTRAP_CLI_METHOD = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"
+BOOTSTRAP_CLI_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java"
+BOOTSTRAP_CLI_DIAGNOSTIC_CHARS = 65536
+BOOTSTRAP_CLI_EXCEPTIONS = {
+    "java.lang.AssertionError": "ASSERTION",
+    "org.opentest4j.AssertionFailedError": "ASSERTION",
+    "java.lang.IllegalStateException": "ILLEGAL_STATE",
+    "java.lang.IllegalArgumentException": "ILLEGAL_ARGUMENT",
+    "java.lang.NullPointerException": "NULL_POINTER",
+    "java.io.IOException": "IO",
+    "java.nio.file.FileSystemException": "IO",
+    "java.nio.file.AccessDeniedException": "IO",
+    "java.nio.file.NoSuchFileException": "IO",
+    "java.util.concurrent.TimeoutException": "TIMEOUT",
+    "org.testcontainers.containers.ContainerLaunchException": "CONTAINER",
+    "org.testcontainers.containers.ContainerFetchException": "CONTAINER",
+    "com.github.dockerjava.api.exception.DockerException": "DOCKER",
+    "com.github.dockerjava.api.exception.NotFoundException": "DOCKER",
+    "com.github.dockerjava.api.exception.InternalServerErrorException": "DOCKER",
+    "org.springframework.jdbc.CannotGetJdbcConnectionException": "JDBC",
+    "org.springframework.dao.DataIntegrityViolationException": "JDBC",
+    "org.springframework.jdbc.BadSqlGrammarException": "JDBC",
+    "org.postgresql.util.PSQLException": "JDBC",
+    "org.springframework.util.PlaceholderResolutionException": "CONFIG",
+    "com.fasterxml.jackson.core.JsonParseException": "JSON",
+    "com.fasterxml.jackson.databind.JsonMappingException": "JSON",
+}
+BOOTSTRAP_CLI_SITES = {
+    BOOTSTRAP_CLI_METHOD: "TEST",
+    "freshOwnDatabases": "SETUP",
+    "configure": "SETUP",
+    "migrate": "SETUP",
+    "data": "SETUP",
+    "loopback": "SETUP",
+    "runOperatorCli": "CLI_RESULT",
+    "localCliImage": "IMAGE_ADMISSION",
+    "cliProject": "PROJECT_ADMISSION",
+    "cliService": "PRIVATE_CONFIG",
+    "releaseOnlyFreshOwnedContainer": "CLEANUP",
+}
+BOOTSTRAP_CLI_FRAME = re.compile(
+    r"(?m)^[ \t]{0,32}at (?:app//)?"
+    + re.escape(BOOTSTRAP_CLI_CLASS)
+    + r"\.([A-Za-z_$][A-Za-z0-9_$]{0,127})"
+    + r"\(InitialAdministratorBootstrapIT\.java:([1-9][0-9]{0,4})\)\r?$"
+)
+BOOTSTRAP_CLI_DECLARATION = re.compile(
+    r"^    (?:private (?:static )?)?"
+    r"(?:void|String|ObjectNode|Map<String, Object>|DriverManagerDataSource) "
+    r"([A-Za-z_$][A-Za-z0-9_$]*)\("
+)
 METADATA_ENV = (
     "RCT_CI_PR_HEAD_SHA",
     "RCT_CI_RUN_ID",
@@ -482,6 +534,42 @@ def academic_jdbc_failure_diagnostic(case: ElementTree.Element) -> dict:
     return result
 
 
+def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> dict:
+    result = {
+        "state": "ABSENT_OR_UNRECOGNIZED",
+        "exception": "UNKNOWN",
+        "site": "UNKNOWN",
+        "sourceLine": None,
+    }
+    failures = case.findall("failure")
+    if len(failures) != 1:
+        return result
+    failure = failures[0]
+    text = failure.text or ""
+    if len(text) > BOOTSTRAP_CLI_DIAGNOSTIC_CHARS:
+        return {**result, "state": "OVERFLOW"}
+    result["exception"] = BOOTSTRAP_CLI_EXCEPTIONS.get(failure.get("type"), "UNKNOWN")
+    frame = BOOTSTRAP_CLI_FRAME.search(text)
+    if frame and frame[1] in BOOTSTRAP_CLI_SITES:
+        # This exact owned file uses four-space method declarations/closing braces.
+        # A changed shape fails closed; no foreign frame or source text is projected.
+        lines = source.splitlines()
+        line = int(frame[2])
+        for start, content in enumerate(lines, 1):
+            declaration = BOOTSTRAP_CLI_DECLARATION.match(content)
+            if declaration and declaration[1] == frame[1]:
+                end = next(
+                    (offset for offset in range(start + 1, len(lines) + 1) if lines[offset - 1] == "    }"),
+                    start,
+                )
+                if start <= line <= end:
+                    result.update(site=BOOTSTRAP_CLI_SITES[frame[1]], sourceLine=line)
+                    break
+    if result["exception"] != "UNKNOWN" or result["site"] != "UNKNOWN":
+        result["state"] = "PROJECTED"
+    return result
+
+
 def collect(root: Path, service: str, task: str, environment: dict[str, str]) -> dict:
     if service not in MODULES or task not in {"test", "integrationTest"}:
         raise ValueError("Invalid outcome scope")
@@ -595,6 +683,24 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                 ):
                     safe["failureDiagnostic"] = academic_jdbc_failure_diagnostic(case)
                     jdbc_diagnosed.add(raw_class)
+                if (
+                    service == "academic-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class == BOOTSTRAP_CLI_CLASS
+                    and method == BOOTSTRAP_CLI_METHOD
+                    and known["source"] == BOOTSTRAP_CLI_SOURCE
+                    and environment.get("RCT_CI_JOB_ID") == "e2e-auth"
+                    and environment.get("RCT_BOOTSTRAP_CLI_ACCEPTANCE") == "true"
+                ):
+                    source = root / known["source"]
+                    if unlinked_scoped_path(root, source, root / module / "src/test/java"):
+                        source_data = source.read_bytes()
+                        if hashlib.sha256(source_data).hexdigest() == known["sha256"]:
+                            safe["failureDiagnostic"] = bootstrap_cli_failure_diagnostic(
+                                case, source_data.decode("utf8")
+                            )
                 report["cases"].append(safe)
             missing = max(0, (declared["tests"] or 0) - len(nodes))
             counts["NOT_EXECUTED"] += missing

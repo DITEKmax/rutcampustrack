@@ -22,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,6 +36,7 @@ import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.identityoperation.AcademicIdentityPendingException;
+import ru.rutcampustrack.academic.identityoperation.JdbcAcademicIdentityOperationStore;
 import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
@@ -56,6 +58,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired UserService users;
     @Autowired GroupService groups;
     @MockitoSpyBean UserArchiveRepository repository;
+    @MockitoSpyBean JdbcAcademicIdentityOperationStore identityOperationStore;
     @Autowired UserRoleGrantReader grants;
     @Autowired PlatformTransactionManager transactionManager;
     @MockitoSpyBean GroupRepository groupRepository;
@@ -709,6 +712,7 @@ RETURNING id
                         preview.previewDigest(),
                         AcademicIdentityIntegrationFixture.FIRST_FULL_TEST_PASSWORD);
         CountDownLatch groupLocked = new CountDownLatch(1), finishHelper = new CountDownLatch(1);
+        AtomicInteger helperPid = new AtomicInteger();
         doAnswer(
                         invocation -> {
                             // Spring wraps a JDK repository proxy with delegatesTo(original).
@@ -718,6 +722,8 @@ RETURNING id
                                             .getMockCreationSettings()
                                             .getDefaultAnswer()
                                             .answer(invocation);
+                            helperPid.set(
+                                    jdbc.queryForObject("SELECT pg_backend_pid()", Integer.class));
                             groupLocked.countDown();
                             if (!finishHelper.await(10, TimeUnit.SECONDS))
                                 throw new IllegalStateException("helper release timed out");
@@ -731,12 +737,17 @@ RETURNING id
         AtomicInteger archivePid = new AtomicInteger();
         doAnswer(
                         invocation -> {
+                            // Acceptance takes the group lock before Auth prepare and APPLY.
+                            assertThat(
+                                            TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isTrue();
                             archivePid.set(
                                     jdbc.queryForObject("SELECT pg_backend_pid()", Integer.class));
                             return invocation.callRealMethod();
                         })
-                .when(repository)
-                .verifyAcceptedArchive(eq(target), any());
+                .when(identityOperationStore)
+                .accept(any());
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
         ExecutorService workers = Executors.newFixedThreadPool(2);
         Future<?> helperWrite = null, archiveWrite = null;
@@ -760,13 +771,17 @@ RETURNING id
                     .untilAsserted(
                             () -> {
                                 assertThat(archivePid.get()).isPositive();
+                                assertThat(helperPid.get()).isPositive();
                                 assertThat(
                                                 jdbc.queryForObject(
                                                         """
 SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
-  AND query LIKE '%SELECT academic_revision FROM groups WHERE id=%')
+  AND query = 'SELECT id FROM groups WHERE id=$1 FOR UPDATE'
+  AND ? = ANY(pg_blocking_pids(pid)))
 """,
-                                                        Boolean.class, archivePid.get()))
+                                                        Boolean.class,
+                                                        archivePid.get(),
+                                                        helperPid.get()))
                                         .isTrue();
                             });
             finishHelper.countDown();

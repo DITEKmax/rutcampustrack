@@ -4,6 +4,7 @@ import base64
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -125,6 +126,53 @@ def closed_flamegraph_response(code, body):
     return {"http_status": "HTTP_" + str(code) if type(code) is int and code in
             {200, 400, 401, 403, 404, 408, 413, 429, 500, 502, 503, 504} else "UNKNOWN",
             "names": names, "docx_present": b"DocxRenderer" in body}
+
+
+def closed_budget_observation(baseline, profile, disk_before, disk_after):
+    """Only finite measured numbers, never probe fields or volume names."""
+    def number(value):
+        return value if type(value) is int or type(value) is float and math.isfinite(value) else "UNKNOWN"
+
+    def ratio(numerator, denominator):
+        if number(numerator) == "UNKNOWN" or number(denominator) == "UNKNOWN" or denominator <= 0:
+            return "UNKNOWN"
+        try:
+            return number(numerator / denominator)
+        except ArithmeticError:
+            return "UNKNOWN"
+
+    def difference(after, before):
+        if number(after) == "UNKNOWN" or number(before) == "UNKNOWN":
+            return "UNKNOWN"
+        try:
+            return number(after - before)
+        except ArithmeticError:
+            return "UNKNOWN"
+
+    def probe(data):
+        data = data if isinstance(data, dict) else {}
+        operation = data.get("operation")
+        idle = data.get("idle")
+        operation = operation if isinstance(operation, dict) else {}
+        idle = idle if isinstance(idle, dict) else {}
+        return {"operation_peak_rss_bytes": number(operation.get("peak_rss_bytes")),
+                "operation_cpu_ns_per_operation": ratio(operation.get("process_cpu_ns"), operation.get("operations")),
+                "idle_cpu_cores": number(idle.get("cpu_cores"))}
+
+    def disk_bytes(data):
+        if not isinstance(data, dict) or any(number(value) == "UNKNOWN" for value in data.values()):
+            return "UNKNOWN"
+        try:
+            return number(sum(data.values()))
+        except ArithmeticError:
+            return "UNKNOWN"
+
+    before, after = probe(baseline), probe(profile)
+    return {"baseline": before, "profile": after,
+            "disk_before_bytes": disk_bytes(disk_before), "disk_after_bytes": disk_bytes(disk_after),
+            "operation_peak_rss_delta_bytes": difference(after["operation_peak_rss_bytes"], before["operation_peak_rss_bytes"]),
+            "operation_cpu_ratio": ratio(after["operation_cpu_ns_per_operation"], before["operation_cpu_ns_per_operation"]),
+            "idle_cpu_delta_cores": difference(after["idle_cpu_cores"], before["idle_cpu_cores"])}
 
 
 def stage(name):
@@ -292,6 +340,7 @@ def main():
         measurements = {}
         profile_sdk_hint = {}
         flamegraph_hint = {}
+        budget_hint = {}
 
         def docker(*args, **kwargs):
             return run(compose + list(args), env=environment, **kwargs)
@@ -525,6 +574,7 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
             stage("actual-flamegraph-budget")
             flame = wait_for(flamegraph, 90)
             disk_after = volumes()
+            budget_hint = closed_budget_observation(baseline, profile, disk_before, disk_after)
             require(sum(disk_after.values()) < 1024 * MIB, "Disposable data exceeds 1GiB measured budget")
             require(profile["operation"]["peak_rss_bytes"] - baseline["operation"]["peak_rss_bytes"] <= 64 * MIB, "Profiler RSS delta exceeds 64MiB")
             before_cpu = baseline["operation"]["process_cpu_ns"] / baseline["operation"]["operations"]
@@ -570,6 +620,15 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                 primary_failure["pyroscope_sdk_reported"] = profile_sdk_hint
             if flamegraph_hint:
                 primary_failure["pyroscope_query_last_response"] = flamegraph_hint
+            if budget_hint:
+                budget_failures = {
+                    "Disposable data exceeds 1GiB measured budget": "DISK_BYTES",
+                    "Profiler RSS delta exceeds 64MiB": "RSS_DELTA",
+                    "Profiler normalized CPU overhead exceeds 20% CI budget": "OPERATION_CPU_RATIO",
+                    "Idle profiler CPU overhead exceeds 0.05 core": "IDLE_CPU_DELTA",
+                }
+                reason = error.args[0] if isinstance(error, AssertionError) and len(error.args) == 1 and type(error.args[0]) is str else None
+                primary_failure["resource_budget_observed"] = {**budget_hint, "failing_budget": budget_failures.get(reason, "UNKNOWN")}
             if browser is not None:
                 primary_failure["browser_failure"] = browser_hint()
             # Diagnose only this already guarded synthetic namespace, before cleanup.

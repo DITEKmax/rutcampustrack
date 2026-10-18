@@ -740,10 +740,16 @@ public class AcademicUserIdentityOperations {
                                                                     + " студент");
                                                 long group = student.getGroupId();
                                                 if (requestedGroup != null
-                                                                && requestedGroup != group
-                                                        || legacy != null
-                                                                && legacy.groupId() != null
-                                                                && legacy.groupId() != group)
+                                                        && requestedGroup != group)
+                                                    throw new ru.rutcampustrack.academic.exception
+                                                            .ConflictException(
+                                                            "studentId",
+                                                            candidate,
+                                                            "Студент должен состоять в выбранной"
+                                                                    + " группе");
+                                                if (legacy != null
+                                                        && legacy.groupId() != null
+                                                        && legacy.groupId() != group)
                                                     throw new BadRequestException(
                                                             "Студент должен состоять в выбранной"
                                                                     + " группе");

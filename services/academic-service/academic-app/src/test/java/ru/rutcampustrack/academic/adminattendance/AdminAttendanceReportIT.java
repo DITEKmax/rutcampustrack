@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,7 @@ class AdminAttendanceReportIT extends AbstractAcademicIntegrationTest {
     private AttendanceAdminGroupStatsClient attendance;
     private AdminAttendanceReportService reports;
     private AdminAttendanceExportService exports;
-    private ObjectMapper mapper;
+    @Autowired private ObjectMapper mapper;
     private org.springframework.test.web.servlet.MockMvc http;
 
     @AfterEach
@@ -108,7 +107,6 @@ class AdminAttendanceReportIT extends AbstractAcademicIntegrationTest {
                         context,
                         Clock.fixed(Instant.parse("2026-04-01T09:00:00Z"), ZoneOffset.UTC),
                         identityData);
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         exports =
                 new AdminAttendanceExportService(
                         reports,

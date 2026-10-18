@@ -241,7 +241,8 @@ def main():
     os.umask(0o077)
     try:
         exercise(args)
-    except (r.RecoveryError, OSError, ValueError, KeyError):
+    except (r.RecoveryError, OSError, ValueError, KeyError) as error:
+        print("RECOVERY_FAILURE_HINT:" + (error.hint if isinstance(error, r.RecoveryError) and error.hint in r.FAILURE_HINTS else "GUARD"), file=sys.stderr)
         print(
             f"FAIL synthetic recovery: stage={args.failure_stage}; owned resources/artifacts retained", file=sys.stderr
         )

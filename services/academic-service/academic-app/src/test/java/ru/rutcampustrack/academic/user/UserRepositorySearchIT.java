@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.transaction.annotation.Transactional;
 
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 /**
  * Integration tests for {@link UserSpecifications} against PostgreSQL (Testcontainers).
@@ -21,13 +23,12 @@ import ru.rutcampustrack.academic.repository.UserRepository;
  * <p>BUG-006 / Plan 58-01. Проверяет case-insensitive LIKE, escape спецсимволов, комбинацию с
  * role-фильтром, null/blank → без ограничений.
  *
- * <p>Каждый тест в @Transactional — откатывается, БД восстанавливается.
+ * <p>Canonical two-DB fixture resets each test; identities and login allocation use actual Auth.
  */
-@Transactional
 class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private UserRepository userRepository;
-    @Autowired private org.springframework.jdbc.core.JdbcTemplate fixtureJdbc;
+    @Autowired private UserService users;
 
     private Long ivanovId;
     private Long petrovId;
@@ -72,18 +73,35 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
             String middleName,
             UserRole role,
             Long telegramId) {
-        return fixtureJdbc.queryForObject(
-                "INSERT INTO"
-                    + " users(login,password_hash,last_name,first_name,middle_name,role,status,telegram_id,is_headman,password_changed,created_at,updated_at)"
-                    + " VALUES (?,'x',?,?,?,?::user_role,'active',?,false,false,NOW(),NOW())"
-                    + " RETURNING id",
-                Long.class,
-                login,
-                lastName,
-                firstName,
-                middleName,
-                role.name().toLowerCase(java.util.Locale.ROOT),
-                telegramId);
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var created =
+                identityFixture.seedUser(
+                        new CreateUserRequest(
+                                login.replace('_', '-'),
+                                "Fixture",
+                                null,
+                                role,
+                                role == UserRole.STUDENT
+                                        ? identityFixture.canonical().groupId()
+                                        : null,
+                                role == UserRole.TEACHER ? "EMP-" + login : null,
+                                telegramId),
+                        actor);
+        // Auth's generated login keeps the search-only stem after the actual profile rename.
+        try (var ignored = identityFixture.request(actor)) {
+            users.patchUser(
+                    created.userId(),
+                    new PatchUserRequest(
+                            lastName,
+                            firstName,
+                            middleName == null ? "" : middleName,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null));
+        }
+        return created.userId();
     }
 
     @Test
@@ -129,6 +147,14 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void matchesSearch_escapesLikeWildcard() {
+        Long wildcardId =
+                insertUser(
+                        "search_wildcard",
+                        "Про500",
+                        "Контроль",
+                        null,
+                        UserRole.STUDENT,
+                        888888888L);
         // "50%" должен найти пользователя с фамилией "Про50%" (literal),
         // но НЕ работать как wildcard, т.е. "Иван" не должен попасть.
         Specification<User> spec = UserSpecifications.matchesSearch("50%");
@@ -137,7 +163,8 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
         assertThat(page.getContent())
                 .extracting(User::getId)
                 .contains(percentUserId)
-                .doesNotContain(ivanovId);
+                .doesNotContain(ivanovId)
+                .doesNotContain(wildcardId);
     }
 
     @Test

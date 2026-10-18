@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import ru.rutcampustrack.academic.grpc.HeadmanStatsScopeReadService;
+import ru.rutcampustrack.academic.grpc.HeadmanStatsScopeRequest;
 import ru.rutcampustrack.reportrendering.grpc.*;
 import ru.rutcampustrack.schedule.grpc.*;
 import ru.rutcampustrack.teacher.grpc.*;
@@ -23,18 +25,21 @@ public class AcademicReportPlanBuilder {
 
     private final ReportPlanSnapshotReader snapshots;
     private final LocalReportAuthority local;
+    private final HeadmanStatsScopeReadService headmanScopes;
     private final String scheduleToken;
     private final String scheduleAuthority;
 
     public AcademicReportPlanBuilder(
             ReportPlanSnapshotReader snapshots,
             LocalReportAuthority local,
+            HeadmanStatsScopeReadService headmanScopes,
             @Value("${grpc.service-identity.academic-report-to-schedule-token:}")
                     String scheduleToken,
             @Value("${grpc.client.schedule-service.security.authority-override:schedule-service}")
                     String scheduleAuthority) {
         this.snapshots = snapshots;
         this.local = local;
+        this.headmanScopes = headmanScopes;
         this.scheduleToken = scheduleToken;
         this.scheduleAuthority = scheduleAuthority;
     }
@@ -101,7 +106,23 @@ public class AcademicReportPlanBuilder {
                 }
             }
         remainingMillis(job);
-        var plan = snapshots.snapshot(job, discovery, lessons, Instant.now()).toBuilder();
+        ReportPlanSnapshotReader.HeadmanScope admittedScope = null;
+        if (ReportPlanSnapshotReader.requiresHeadmanScope(job)) {
+            var request =
+                    HeadmanStatsScopeRequest.newBuilder()
+                            .setGroupId(job.identity().actor().groupId());
+            if (job.identity().semesterId() != null)
+                request.setSemesterId(job.identity().semesterId());
+            // Current Auth admission and its local rechecks must finish before the owner RR read.
+            admittedScope =
+                    new ReportPlanSnapshotReader.HeadmanScope(
+                            job, headmanScopes.read(job.identity().actor(), request.build()));
+        }
+        remainingMillis(job);
+        var plan =
+                snapshots
+                        .snapshot(job, discovery, lessons, Instant.now(), admittedScope)
+                        .toBuilder();
         switch (report.kind()) {
             case TEACHER_JOURNAL -> {
                 var p = report.teacherJournal();

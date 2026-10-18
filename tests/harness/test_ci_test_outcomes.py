@@ -848,6 +848,163 @@ class SafeCases {
         self.assertNotIn("failureDiagnostic", report["cases"][0])
         self.assertNotIn(MARKER, json.dumps(report))
 
+    def bootstrap_cli_failure_fixture(self) -> tuple[str, str]:
+        source = self.root / COLLECTOR.BOOTSTRAP_CLI_SOURCE
+        source.parent.mkdir(parents=True)
+        method = COLLECTOR.BOOTSTRAP_CLI_METHOD
+        source.write_text(
+            "package ru.rutcampustrack.academic.bootstrap;\n"
+            "class InitialAdministratorBootstrapIT {\n"
+            "    @Test\n"
+            f"    void {method}() {{\n"
+            "        runOperatorCli();\n"
+            "    }\n"
+            "    private static ObjectNode runOperatorCli() {\n"
+            "        throw new AssertionError();\n"
+            "    }\n"
+            "    void freshOwnDatabases() {\n"
+            "        configure();\n"
+            "    }\n"
+            "}\n"
+        )
+        subprocess.run(["git", "add", COLLECTOR.BOOTSTRAP_CLI_SOURCE], cwd=self.root, check=True, capture_output=True)
+        self.results = self.root / COLLECTOR.MODULES["academic-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment.update(
+            RCT_CI_JOB_ID="e2e-auth", RCT_BOOTSTRAP_CLI_ACCEPTANCE="true", RCT_CI_TEST_OUTCOME="failure"
+        )
+        return COLLECTOR.BOOTSTRAP_CLI_CLASS, method
+
+    def test_bootstrap_cli_failure_projects_only_closed_type_and_owned_source_site(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        for failure_type, helper, line, exception, site in (
+            ("java.lang.AssertionError", "runOperatorCli", 8, "ASSERTION", "CLI_RESULT"),
+            ("org.postgresql.util.PSQLException", "freshOwnDatabases", 11, "JDBC", "SETUP"),
+            ("org.opentest4j.AssertionFailedError", method, 5, "ASSERTION", "TEST"),
+        ):
+            with self.subTest(site=site):
+                self.xml(
+                    f'<testcase classname="{classname}" name="{method}()"><failure type="{failure_type}" message="{MARKER}">'
+                    f"{MARKER}\n\tat foreign.{MARKER}.method({MARKER}.java:73190)\n"
+                    f"\tat app//{classname}.{helper}(InitialAdministratorBootstrapIT.java:{line})\n"
+                    f"Caused by: private.{MARKER}: {MARKER}\n</failure></testcase>",
+                    tests=1,
+                    failures=1,
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                self.assertEqual(
+                    report["cases"][0]["failureDiagnostic"],
+                    {
+                        "state": "PROJECTED",
+                        "exception": exception,
+                        "site": site,
+                        "sourceLine": line,
+                    },
+                )
+                self.assertEqual(report["cases"][0]["status"], "FAILED")
+                self.assertEqual(report["cases"][0]["identity"], "SOURCE_METHOD")
+                self.assertEqual(report["summary"]["FAILED"], 1)
+                self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+                self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_bootstrap_cli_failure_rejects_foreign_or_unbound_source_lines(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        for frame in (
+            f"at foreign.{MARKER}.runOperatorCli(InitialAdministratorBootstrapIT.java:8)",
+            f"at {classname}.runOperatorCli({MARKER}.java:8)",
+            f"at {classname}.{MARKER}(InitialAdministratorBootstrapIT.java:8)",
+            f"at {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:99999)",
+            f"at {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:5)",
+            f"at {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:8) {MARKER}",
+            # First owned frame is unknown: do not skip it to manufacture a recognized site.
+            (
+                f"at {classname}.{MARKER}(InitialAdministratorBootstrapIT.java:8)\n"
+                f"at {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:8)"
+            ),
+        ):
+            with self.subTest(frame=frame):
+                self.xml(
+                    f'<testcase classname="{classname}" name="{method}()"><failure type="java.lang.AssertionError" message="{MARKER}">'
+                    f"{frame}\n{MARKER}</failure></testcase>",
+                    tests=1,
+                    failures=1,
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                self.assertEqual(
+                    report["cases"][0]["failureDiagnostic"],
+                    {
+                        "state": "PROJECTED",
+                        "exception": "ASSERTION",
+                        "site": "UNKNOWN",
+                        "sourceLine": None,
+                    },
+                )
+                self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_bootstrap_cli_failure_unknown_and_oversize_never_copy_native_text(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        for body, state in (
+            (MARKER, "ABSENT_OR_UNRECOGNIZED"),
+            (MARKER + "x" * COLLECTOR.BOOTSTRAP_CLI_DIAGNOSTIC_CHARS, "OVERFLOW"),
+        ):
+            with self.subTest(state=state):
+                self.xml(
+                    f'<testcase classname="{classname}" name="{method}()"><failure type="private.{MARKER}" message="{MARKER}">'
+                    f"{body}</failure></testcase>",
+                    tests=1,
+                    failures=1,
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                self.assertEqual(
+                    report["cases"][0]["failureDiagnostic"],
+                    {
+                        "state": state,
+                        "exception": "UNKNOWN",
+                        "site": "UNKNOWN",
+                        "sourceLine": None,
+                    },
+                )
+                self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_bootstrap_cli_failure_diagnostic_does_not_expand_case_or_job_admission(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        failure = f'<failure type="java.lang.AssertionError">{MARKER}</failure>'
+        for name, outcome, job in (
+            (method + "()", "", "e2e-auth"),
+            (method + "()", f'<skipped message="{MARKER}"/>', "e2e-auth"),
+            ("runOperatorCli()", failure, "e2e-auth"),
+            (MARKER, failure, "e2e-auth"),
+            (method + "()", failure, "java-integration-test"),
+        ):
+            with self.subTest(name=name, job=job):
+                self.environment["RCT_CI_JOB_ID"] = job
+                self.xml(
+                    f'<testcase classname="{classname}" name="{name}">{outcome}</testcase>',
+                    tests=1,
+                    failures=int("failure" in outcome),
+                    skipped=int("skipped" in outcome),
+                )
+                report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+                self.assertNotIn("failureDiagnostic", report["cases"][0])
+                self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+                self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_bootstrap_cli_failure_wrong_source_path_has_no_diagnostic(self) -> None:
+        classname, method = self.bootstrap_cli_failure_fixture()
+        source = self.root / COLLECTOR.BOOTSTRAP_CLI_SOURCE
+        renamed = source.with_name("OtherCases.java")
+        source.rename(renamed)
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True, capture_output=True)
+        self.xml(
+            f'<testcase classname="{classname}" name="{method}()"><failure type="java.lang.AssertionError">{MARKER}</failure></testcase>',
+            tests=1,
+            failures=1,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["cases"][0]["identity"], "SOURCE_METHOD")
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        self.assertNotIn(MARKER, json.dumps(report))
+
     def test_bootstrap_cli_truthful_job_requires_explicit_exact_scope_flag(self) -> None:
         for service, task, flag in (
             ("academic-service", "integrationTest", None),

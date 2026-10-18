@@ -1,21 +1,30 @@
 package ru.rutcampustrack.academic.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.group.GroupService;
+import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Verifies findByGroupId / findByRole return users in Cyrillic-alphabetical order via the ru_icu
@@ -23,26 +32,26 @@ import java.util.List;
  * between «Е» and «Ж».
  *
  * <p>Insertion order in this test is intentionally NOT alphabetical, so a regression to heap-scan
- * ordering would put «Янов» first.
+ * ordering would put «Янов» first. Actual Auth/Academic lifecycle backs archive exclusion; only
+ * Attendance impact transport is doubled.
  */
-@Transactional
 class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private UserRepository userRepository;
-    @Autowired private org.springframework.jdbc.core.JdbcTemplate fixtureJdbc;
-    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
-    @Autowired private GroupRepository groupRepository;
+    @Autowired private GroupService groups;
+    @Autowired private UserArchiveService archives;
+    @MockitoBean private AttendanceUserImpactGrpcClient attendance;
 
     @Test
     void findByGroupId_returnsCyrillicSortedOrder() {
-        Long groupId = createGroup("СОРТ-021");
+        Long groupId = createGroup("СОРТ-111");
 
         // Insert deliberately out of order: Я → А → Ё → И. Heap scan would
         // preserve this; ICU ORDER BY must yield А, Ё, И, Я.
-        insertStudent(groupId, "sort_yanov", "Янов", "Ян", "Янович", 1001L);
-        insertStudent(groupId, "sort_abramov", "Абрамов", "Антон", "Андреевич", 1002L);
-        insertStudent(groupId, "sort_yozhik", "Ёжиков", "Ефим", "Егорович", 1003L);
-        insertStudent(groupId, "sort_ivanov", "Иванов", "Иван", "Иванович", 1004L);
+        insertStudent(groupId, "Янов", "Ян", "Янович", 1001L);
+        insertStudent(groupId, "Абрамов", "Антон", "Андреевич", 1002L);
+        insertStudent(groupId, "Ёжиков", "Ефим", "Егорович", 1003L);
+        insertStudent(groupId, "Иванов", "Иван", "Иванович", 1004L);
 
         List<User> students = userRepository.findByGroupId(groupId);
 
@@ -53,12 +62,12 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void findByGroupIdPageable_returnsCyrillicSortedOrder() {
-        Long groupId = createGroup("СОРТ-022");
+        Long groupId = createGroup("СОРТ-112");
 
-        insertStudent(groupId, "p_yanov", "Янов", "Ян", "Янович", 2001L);
-        insertStudent(groupId, "p_abramov", "Абрамов", "Антон", "Андреевич", 2002L);
-        insertStudent(groupId, "p_yozhik", "Ёжиков", "Ефим", "Егорович", 2003L);
-        insertStudent(groupId, "p_ivanov", "Иванов", "Иван", "Иванович", 2004L);
+        insertStudent(groupId, "Янов", "Ян", "Янович", 2001L);
+        insertStudent(groupId, "Абрамов", "Антон", "Андреевич", 2002L);
+        insertStudent(groupId, "Ёжиков", "Ефим", "Егорович", 2003L);
+        insertStudent(groupId, "Иванов", "Иван", "Иванович", 2004L);
 
         Pageable pageable = PageRequest.of(0, 50);
         List<User> students = userRepository.findByGroupId(groupId, pageable).getContent();
@@ -70,17 +79,14 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void findByGroupId_excludesArchivedAndSorts() {
-        Long groupId = createGroup("СОРТ-023");
+        Long groupId = createGroup("СОРТ-113");
 
-        insertStudent(groupId, "arch_active1", "Богданов", "Борис", "Борисович", 3001L);
-        Long archivedId =
-                insertStudent(groupId, "arch_archived", "Абрамов", "Антон", "Андреевич", 3002L);
-        insertStudent(groupId, "arch_active2", "Васильев", "Виктор", "Витальевич", 3003L);
+        insertStudent(groupId, "Богданов", "Борис", "Борисович", 3001L);
+        Long archivedId = insertStudent(groupId, "Абрамов", "Антон", "Андреевич", 3002L);
+        insertStudent(groupId, "Васильев", "Виктор", "Витальевич", 3003L);
 
         // Archive Абрамов — он не должен попасть в выдачу.
-        entityManager.flush();
-        fixtureJdbc.update("UPDATE users SET status='archived' WHERE id=?", archivedId);
-        entityManager.clear();
+        archive(archivedId);
 
         List<User> students = userRepository.findByGroupId(groupId);
 
@@ -88,32 +94,45 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
     }
 
     private Long createGroup(String name) {
-        Group g = new Group();
-        g.setName(name);
-        g.setActive(true);
-        g.setCreatedAt(OffsetDateTime.now());
-        return groupRepository.save(g).getId();
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(actor)) {
+            return groups.createGroup(new CreateGroupRequest(name)).getId();
+        }
     }
 
     private Long insertStudent(
-            Long groupId,
-            String login,
-            String lastName,
-            String firstName,
-            String middleName,
-            Long telegramId) {
-        entityManager.flush();
-        return fixtureJdbc.queryForObject(
-                "INSERT INTO"
-                    + " users(login,password_hash,last_name,first_name,middle_name,role,status,telegram_id,group_id,is_headman,password_changed,created_at,updated_at)"
-                    + " VALUES (?,'x',?,?,?,'student','active',?,?,false,false,NOW(),NOW())"
-                    + " RETURNING id",
-                Long.class,
-                login,
-                lastName,
-                firstName,
-                middleName,
-                telegramId,
-                groupId);
+            Long groupId, String lastName, String firstName, String middleName, Long telegramId) {
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                lastName,
+                                firstName,
+                                middleName,
+                                UserRole.STUDENT,
+                                groupId,
+                                null,
+                                telegramId),
+                        actor)
+                .userId();
+    }
+
+    private void archive(long user) {
+        when(attendance.preview(user))
+                .thenReturn(
+                        UserImpactSnapshot.newBuilder()
+                                .setUserId(user)
+                                .setObservedAtEpochMs(Instant.now().toEpochMilli())
+                                .setSnapshotDigest("b".repeat(64))
+                                .build());
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        Preview preview;
+        try (var ignored = identityFixture.request(actor)) {
+            preview = archives.preview(user);
+        }
+        var request = new ArchiveRequest(UUID.randomUUID(), preview.previewDigest(), null);
+        try (var ignored = identityFixture.request(actor, request.operationId())) {
+            archives.archive(user, request);
+        }
     }
 }

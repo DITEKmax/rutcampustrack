@@ -9,26 +9,33 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * PostgreSQL proof for the canonical ADMIN headman transaction. The assertions cover the durable
@@ -53,16 +60,15 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
     @Test
     void currentHeadmanCompositionUsesFreshGrantRosterAndGroupRoles() {
         Fixture fixture = fixture("composition");
-        assignmentService.assign(
-                fixture.groupId(), new AssignHeadmanRequest(fixture.firstId(), null));
+        assign(fixture.groupId(), new AssignHeadmanRequest(fixture.firstId(), null));
         jdbc.update(
-                "INSERT INTO headman_assistants "
-                        + "(group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
-                        + "VALUES (?, ?, ARRAY['view_stats']::varchar[], ?, true, NOW())",
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by,"
+                    + " is_active, assigned_at) VALUES (?, ?, ARRAY['view_stats']::varchar[], ?,"
+                    + " true, NOW())",
                 fixture.groupId(),
                 fixture.thirdId(),
                 adminId());
-        var actor = compositionActor(fixture.firstId(), fixture.groupId(), "HEADMAN", true);
+        var actor = identityFixture.select(fixture.firstId(), AuthRole.HEADMAN).claims();
         var snapshot = compositionReadService.read(actor, fixture.groupId());
         assertThat(snapshot.getGroupName()).isEqualTo(fixture.name());
         assertThat(snapshot.getMembersList())
@@ -81,11 +87,9 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(
                         () ->
                                 compositionReadService.read(
-                                        compositionActor(
-                                                fixture.thirdId(),
-                                                fixture.groupId(),
-                                                "STUDENT",
-                                                false),
+                                        identityFixture
+                                                .select(fixture.thirdId(), AuthRole.STUDENT)
+                                                .claims(),
                                         fixture.groupId()))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
         assertThatThrownBy(() -> compositionReadService.read(actor, fixture.groupId() + 1))
@@ -96,7 +100,13 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                         + "WHERE group_id = ?",
                 fixture.groupId());
         String changedLogin = "roster_" + Long.toUnsignedString(System.nanoTime(), 36);
-        jdbc.update("UPDATE users SET login = ? WHERE id = ?", changedLogin, fixture.thirdId());
+        identityFixture
+                .fixtureOwnerAuthJdbc()
+                .update(
+                        "UPDATE auth_identities SET login=? WHERE id=?",
+                        changedLogin,
+                        fixture.thirdId());
+        identityFixture.catchUpCatalog();
         Long added = student("composition_new", "Александр", fixture.groupId());
         var fresh = compositionReadService.read(actor, fixture.groupId());
         assertThat(fresh.getMembersList())
@@ -105,16 +115,9 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
         assertThat(fresh.getMembersList().getLast().getLogin()).isEqualTo(changedLogin);
         assertThat(fresh.getMembersList().getLast().getGroupRole()).isEqualTo("STUDENT");
         // Durable transfer invalidates the old signed HEADMAN identity on the next read.
-        assignmentService.assign(
-                fixture.groupId(), new AssignHeadmanRequest(fixture.secondId(), fixture.firstId()));
+        assign(fixture.groupId(), new AssignHeadmanRequest(fixture.secondId(), fixture.firstId()));
         assertThatThrownBy(() -> compositionReadService.read(actor, fixture.groupId()))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
-    }
-
-    private static ru.rutcampustrack.shared.security.InternalJwtClaims compositionActor(
-            long userId, long groupId, String role, boolean headman) {
-        return new ru.rutcampustrack.shared.security.InternalJwtClaims(
-                userId, java.util.UUID.randomUUID(), 1, 1, role, "ACTIVE", groupId, headman, false);
     }
 
     @Test
@@ -139,9 +142,9 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                 .andExpect(jsonPath("$.activatesDraft", equalTo(true)));
 
         jdbc.update(
-                "INSERT INTO headman_assistants "
-                        + "(group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
-                        + "VALUES (?, ?, ARRAY['manage_homework']::varchar[], ?, true, NOW())",
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by,"
+                    + " is_active, assigned_at) VALUES (?, ?, ARRAY['manage_homework']::varchar[],"
+                    + " ?, true, NOW())",
                 fixture.groupId(),
                 fixture.thirdId(),
                 adminId);
@@ -151,7 +154,7 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
         assertThat(preview.currentHeadmanId()).isEqualTo(fixture.firstId());
 
         HeadmanAssignmentResponse changed =
-                assignmentService.assign(
+                assign(
                         fixture.groupId(),
                         new AssignHeadmanRequest(fixture.secondId(), fixture.firstId()));
         assertThat(changed.changed()).isTrue();
@@ -159,39 +162,41 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
 
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM user_role_grants "
-                                        + "WHERE group_id = ? AND role = 'headman' AND status = 'active'",
+                                "SELECT count(*) FROM academic_role_directory WHERE group_id = ?"
+                                        + " AND role = 'headman' AND status = 'active'",
                                 Long.class,
                                 fixture.groupId()))
                 .isEqualTo(1L);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'headman'",
+                                "SELECT status FROM academic_role_directory WHERE user_id = ? AND"
+                                        + " role = 'headman'",
                                 String.class,
                                 fixture.firstId()))
                 .isEqualTo("suspended");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT is_headman FROM users WHERE id = ?",
+                                "SELECT is_headman FROM academic_user_directory WHERE id = ?",
                                 Boolean.class,
                                 fixture.firstId()))
                 .isFalse();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT is_headman FROM users WHERE id = ?",
+                                "SELECT is_headman FROM academic_user_directory WHERE id = ?",
                                 Boolean.class,
                                 fixture.secondId()))
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT is_active FROM headman_assistants WHERE group_id = ? AND student_id = ?",
+                                "SELECT is_active FROM headman_assistants WHERE group_id = ? AND"
+                                        + " student_id = ?",
                                 Boolean.class,
                                 fixture.groupId(),
                                 fixture.thirdId()))
                 .isFalse();
 
         HeadmanAssignmentResponse repeat =
-                assignmentService.assign(
+                assign(
                         fixture.groupId(),
                         new AssignHeadmanRequest(fixture.secondId(), fixture.secondId()));
         assertThat(repeat.changed()).isFalse();
@@ -208,69 +213,60 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void activeStudentGrantKeepsMultiRoleHeadmanEligibleDuringProfileSync() {
-        Fixture fixture = fixture("multi_role");
-        jdbc.update(
-                "UPDATE users SET role = 'teacher', status = 'suspended', employee_number = ?, group_id = NULL, "
-                        + "updated_at = NOW() WHERE id = ?",
-                "EMP-" + fixture.firstId(),
-                fixture.firstId());
-        jdbc.update(
-                "INSERT INTO user_role_grants "
-                        + "(user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'teacher', 'suspended', NULL, NOW(), NOW())",
-                fixture.firstId());
-
+        Fixture fixture = fixture("multi_role", true);
         HeadmanAssignmentResponse assigned =
-                assignmentService.assign(
-                        fixture.groupId(), new AssignHeadmanRequest(fixture.firstId(), null));
+                assign(fixture.groupId(), new AssignHeadmanRequest(fixture.firstId(), null));
         assertThat(assigned.changed()).isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM user_role_grants "
-                                        + "WHERE user_id = ? AND role = 'headman' AND status = 'active' AND group_id = ?",
+                                "SELECT count(*) FROM academic_role_directory WHERE user_id = ? AND"
+                                    + " role = 'headman' AND status = 'active' AND group_id = ?",
                                 Long.class,
                                 fixture.firstId(),
                                 fixture.groupId()))
                 .isEqualTo(1L);
 
-        userService.patchUser(
+        patchUser(
                 fixture.firstId(),
                 new PatchUserRequest(null, "Обновлён", null, null, null, null, null, null));
 
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT role FROM users WHERE id = ?",
+                                "SELECT role FROM academic_user_directory WHERE id = ?",
                                 String.class,
                                 fixture.firstId()))
                 .isEqualTo("teacher");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM user_role_grants "
-                                        + "WHERE user_id = ? AND role = 'headman' AND status = 'active' AND group_id = ?",
+                                "SELECT count(*) FROM academic_role_directory WHERE user_id = ? AND"
+                                    + " role = 'headman' AND status = 'active' AND group_id = ?",
                                 Long.class,
                                 fixture.firstId(),
                                 fixture.groupId()))
                 .isEqualTo(1L);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'teacher'",
+                                "SELECT status FROM academic_role_directory WHERE user_id = ? AND"
+                                        + " role = 'teacher'",
                                 String.class,
                                 fixture.firstId()))
                 .isEqualTo("suspended");
 
-        userService.updateRoleGrant(
+        updateRoleGrant(
                 fixture.firstId(),
                 "STUDENT",
                 new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'student'",
+                                "SELECT status FROM academic_role_directory WHERE user_id = ? AND"
+                                        + " role = 'student'",
                                 String.class,
                                 fixture.firstId()))
                 .isEqualTo("suspended");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'headman'",
+                                "SELECT status FROM academic_role_directory WHERE user_id = ? AND"
+                                        + " role = 'headman'",
                                 String.class,
                                 fixture.firstId()))
                 .isEqualTo("suspended");
@@ -281,36 +277,33 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
             throws Exception {
         Fixture fixture = fixture("legacy");
 
-        userService.patchUser(
+        patchUser(
                 fixture.firstId(),
                 new PatchUserRequest(null, null, null, true, null, null, null, null));
 
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM user_role_grants "
-                                        + "WHERE group_id = ? AND role = 'headman' AND status = 'active'",
+                                "SELECT count(*) FROM academic_role_directory WHERE group_id = ?"
+                                        + " AND role = 'headman' AND status = 'active'",
                                 Long.class,
                                 fixture.groupId()))
                 .isEqualTo(1L);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT is_headman FROM users WHERE id = ?",
+                                "SELECT is_headman FROM academic_user_directory WHERE id = ?",
                                 Boolean.class,
                                 fixture.firstId()))
                 .isTrue();
 
         jdbc.update(
-                "INSERT INTO headman_assistants "
-                        + "(group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
-                        + "VALUES (?, ?, ARRAY['view_stats']::varchar[], ?, true, NOW())",
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by,"
+                    + " is_active, assigned_at) VALUES (?, ?, ARRAY['view_stats']::varchar[], ?,"
+                    + " true, NOW())",
                 fixture.groupId(),
                 fixture.thirdId(),
                 adminId());
-        jdbc.update(
-                "INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
-                        + "VALUES (?, ?, CURRENT_DATE - 1, 'initial-enrollment')",
-                fixture.firstId(),
-                fixture.groupId());
+        // The real create operation already committed its managed enrollment history.
+        var formerHeadman = identityFixture.select(fixture.firstId(), AuthRole.HEADMAN).claims();
         var before = headmanMutationSnapshot(fixture);
 
         patchHeadman(fixture.firstId(), "{\"isHeadman\":false,\"lastName\":\"Отказ\"}")
@@ -323,33 +316,27 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                 .andExpect(jsonPath("$.headman", equalTo(true)));
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM user_role_grants "
-                                        + "WHERE group_id = ? AND role = 'headman' AND status = 'active'",
+                                "SELECT count(*) FROM academic_role_directory WHERE group_id = ?"
+                                        + " AND role = 'headman' AND status = 'active'",
                                 Long.class,
                                 fixture.groupId()))
                 .isEqualTo(1L);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'headman'",
+                                "SELECT status FROM academic_role_directory WHERE user_id = ? AND"
+                                        + " role = 'headman'",
                                 String.class,
                                 fixture.firstId()))
                 .isEqualTo("suspended");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT is_active FROM headman_assistants WHERE group_id = ? AND student_id = ?",
+                                "SELECT is_active FROM headman_assistants WHERE group_id = ? AND"
+                                        + " student_id = ?",
                                 Boolean.class,
                                 fixture.groupId(),
                                 fixture.thirdId()))
                 .isFalse();
-        assertThatThrownBy(
-                        () ->
-                                compositionReadService.read(
-                                        compositionActor(
-                                                fixture.firstId(),
-                                                fixture.groupId(),
-                                                "HEADMAN",
-                                                true),
-                                        fixture.groupId()))
+        assertThatThrownBy(() -> compositionReadService.read(formerHeadman, fixture.groupId()))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
 
         // A false flag on an ordinary student must not remove the other current headman.
@@ -358,13 +345,15 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
                 .andExpect(jsonPath("$.headman", equalTo(false)));
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT user_id FROM user_role_grants WHERE group_id = ? AND role = 'headman' AND status = 'active'",
+                                "SELECT user_id FROM academic_role_directory WHERE group_id = ? AND"
+                                        + " role = 'headman' AND status = 'active'",
                                 Long.class,
                                 fixture.groupId()))
                 .isEqualTo(fixture.secondId());
         assertThat(
                         jdbc.queryForList(
-                                "SELECT * FROM student_group_history WHERE group_id = ? ORDER BY id",
+                                "SELECT * FROM student_group_history WHERE group_id = ? ORDER BY"
+                                        + " id",
                                 fixture.groupId()))
                 .isEqualTo(before.get("history"));
     }
@@ -386,22 +375,26 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
         return Map.of(
                 "users",
                         jdbc.queryForList(
-                                "SELECT id, last_name, first_name, group_id, status, is_headman, roles_version, updated_at "
-                                        + "FROM users WHERE id IN (?, ?, ?) ORDER BY id",
+                                "SELECT id, last_name, first_name, group_id, status, is_headman,"
+                                        + " roles_version, updated_at FROM academic_user_directory"
+                                        + " WHERE id IN (?, ?, ?) ORDER BY id",
                                 fixture.firstId(),
                                 fixture.secondId(),
                                 fixture.thirdId()),
                 "grants",
                         jdbc.queryForList(
-                                "SELECT * FROM user_role_grants WHERE group_id = ? ORDER BY id",
+                                "SELECT * FROM academic_role_directory WHERE group_id = ? ORDER BY"
+                                        + " id",
                                 fixture.groupId()),
                 "assistants",
                         jdbc.queryForList(
-                                "SELECT to_jsonb(h)::text AS state FROM headman_assistants h WHERE group_id = ? ORDER BY id",
+                                "SELECT to_jsonb(h)::text AS state FROM headman_assistants h WHERE"
+                                        + " group_id = ? ORDER BY id",
                                 fixture.groupId()),
                 "history",
                         jdbc.queryForList(
-                                "SELECT * FROM student_group_history WHERE group_id = ? ORDER BY id",
+                                "SELECT * FROM student_group_history WHERE group_id = ? ORDER BY"
+                                        + " id",
                                 fixture.groupId()),
                 "outbox",
                         jdbc.queryForList(
@@ -413,44 +406,31 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
         Fixture fixture = fixture("race");
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
-            CompletableFuture<HeadmanAssignmentResponse> first =
+            CompletableFuture<Integer> first =
                     CompletableFuture.supplyAsync(
-                            () ->
-                                    assignmentService.assign(
-                                            fixture.groupId(),
-                                            new AssignHeadmanRequest(fixture.firstId(), null)),
+                            () -> assignStatus(fixture.groupId(), fixture.firstId(), null),
                             executor);
-            CompletableFuture<HeadmanAssignmentResponse> second =
+            CompletableFuture<Integer> second =
                     CompletableFuture.supplyAsync(
-                            () ->
-                                    assignmentService.assign(
-                                            fixture.groupId(),
-                                            new AssignHeadmanRequest(fixture.secondId(), null)),
+                            () -> assignStatus(fixture.groupId(), fixture.secondId(), null),
                             executor);
-            CompletableFuture.allOf(first, second).handle((ignored, failure) -> null).join();
-
+            CompletableFuture.allOf(first, second).join();
             long successes = 0;
             long conflicts = 0;
-            for (CompletableFuture<HeadmanAssignmentResponse> result :
-                    new CompletableFuture[] {first, second}) {
-                try {
-                    result.join();
-                    successes++;
-                } catch (CompletionException error) {
-                    if (error.getCause()
-                            instanceof ru.rutcampustrack.academic.exception.ConflictException) {
-                        conflicts++;
-                    } else {
-                        throw error;
-                    }
+            for (CompletableFuture<Integer> result : List.of(first, second)) {
+                int status = result.join();
+                if (status == 200) successes++;
+                else {
+                    assertThat(status).isEqualTo(409);
+                    conflicts++;
                 }
             }
             assertThat(successes).isEqualTo(1);
             assertThat(conflicts).isEqualTo(1);
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT count(*) FROM user_role_grants "
-                                            + "WHERE group_id = ? AND role = 'headman' AND status = 'active'",
+                                    "SELECT count(*) FROM academic_role_directory WHERE group_id ="
+                                            + " ? AND role = 'headman' AND status = 'active'",
                                     Long.class,
                                     fixture.groupId()))
                     .isEqualTo(1L);
@@ -460,27 +440,62 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    void archivedGroupAndNonMemberAreRejected() {
+    void archivedGroupAndNonMemberAreRejected() throws Exception {
         Fixture source = fixture("invalid_source");
         Fixture other = fixture("invalid_other");
 
-        assertThatThrownBy(
-                        () ->
-                                assignmentService.assign(
-                                        source.groupId(),
-                                        new AssignHeadmanRequest(other.firstId(), null)))
-                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
-
+        assertThat(assignStatus(source.groupId(), other.firstId(), null)).isEqualTo(409);
         jdbc.update("UPDATE groups SET is_active = false WHERE id = ?", source.groupId());
-        assertThatThrownBy(
-                        () ->
-                                assignmentService.assign(
-                                        source.groupId(),
-                                        new AssignHeadmanRequest(source.firstId(), null)))
-                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        assertThat(assignStatus(source.groupId(), source.firstId(), null)).isEqualTo(409);
+    }
+
+    private HeadmanAssignmentResponse assign(long groupId, AssignHeadmanRequest request) {
+        try (var ignored = identityFixture.request(admin())) {
+            return assignmentService.assign(groupId, request);
+        }
+    }
+
+    private void patchUser(long userId, PatchUserRequest request) {
+        try (var ignored = identityFixture.request(admin())) {
+            userService.patchUser(userId, request);
+        }
+    }
+
+    private void updateRoleGrant(long userId, String role, RoleGrantUpdateRequest request) {
+        try (var ignored = identityFixture.request(admin())) {
+            userService.updateRoleGrant(userId, role, request);
+        }
+    }
+
+    private int assignStatus(long groupId, long candidate, Long expected) {
+        try {
+            return mockMvc.perform(
+                            put("/academic/groups/{id}/headman", groupId)
+                                    .with(identityFixture.signed(admin(), UUID.randomUUID()))
+                                    .contentType(APPLICATION_JSON)
+                                    .content(
+                                            "{\"studentId\":"
+                                                    + candidate
+                                                    + ",\"expectedHeadmanId\":"
+                                                    + expected
+                                                    + "}"))
+                    .andReturn()
+                    .getResponse()
+                    .getStatus();
+        } catch (Exception failure) {
+            throw new AssertionError("Actual headman HTTP request failed", failure);
+        }
+    }
+
+    private SelectedActor admin() {
+        return identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
     }
 
     private Fixture fixture(String label) {
+        return fixture(label, false);
+    }
+
+    private Fixture fixture(String label, boolean teacherFirst) {
         long entropy = System.nanoTime() + SEQUENCE.getAndIncrement();
         char[] letters = {
             'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С'
@@ -493,46 +508,71 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
         String name = alphabetic + "-" + numeric;
         Long groupId =
                 jdbc.queryForObject(
-                        "INSERT INTO groups (name, alphabetic_code, numeric_code, current_course, "
-                                + "training_duration_years, duration_status, is_active, created_at) "
-                                + "VALUES (?, ?, ?, ?, 9, 'KNOWN', true, NOW()) RETURNING id",
+                        "INSERT INTO groups (name, alphabetic_code, numeric_code, current_course,"
+                            + " training_duration_years, duration_status, is_active, created_at)"
+                            + " VALUES (?, ?, ?, ?, 9, 'KNOWN', true, NOW()) RETURNING id",
                         Long.class,
                         name,
                         alphabetic,
                         numeric,
                         Integer.parseInt(numeric.substring(0, 1)));
-        Long first = student(label + "_first", "Первый", groupId);
+        jdbc.update(
+                "INSERT INTO group_history_coverage(group_id,coverage_from,writer_version) "
+                        + "SELECT ?,date_from,? FROM semesters WHERE id=?",
+                groupId,
+                ru.rutcampustrack.academic.history.HistoricalMembershipService.WRITER_VERSION,
+                identityFixture.canonical().semesterId());
+        Long first;
+        if (teacherFirst) {
+            String employee = "EMP-HEADMAN-" + SEQUENCE.incrementAndGet();
+            first =
+                    identityFixture
+                            .seedUser(
+                                    new CreateUserRequest(
+                                            "Тестов",
+                                            "Первый",
+                                            null,
+                                            UserRole.TEACHER,
+                                            null,
+                                            employee,
+                                            null),
+                                    admin())
+                            .userId();
+            updateRoleGrant(
+                    first,
+                    "STUDENT",
+                    new RoleGrantUpdateRequest(
+                            RoleGrantStatus.ACTIVE,
+                            groupId,
+                            null,
+                            610000007000L + SEQUENCE.incrementAndGet()));
+            updateRoleGrant(
+                    first,
+                    "TEACHER",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, employee, null));
+        } else first = student(label + "_first", "Первый", groupId);
         Long second = student(label + "_second", "Второй", groupId);
         Long third = student(label + "_third", "Третий", groupId);
         return new Fixture(groupId, name, first, second, third);
     }
 
     private Long student(String login, String firstName, Long groupId) {
-        String boundedLogin =
-                login.substring(0, Math.min(login.length(), 12))
-                        + "_"
-                        + Long.toUnsignedString(System.nanoTime(), 36);
-        Long id =
-                jdbc.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                                + "is_headman, group_id, password_changed, created_at, updated_at) "
-                                + "VALUES (?, 'x', 'Тестов', ?, 'student', 'active', false, ?, false, NOW(), NOW()) "
-                                + "RETURNING id",
-                        Long.class,
-                        boundedLogin,
-                        firstName,
-                        groupId);
-        jdbc.update(
-                "INSERT INTO user_role_grants "
-                        + "(user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
-                id,
-                groupId);
-        return id;
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                "Тестов",
+                                firstName,
+                                null,
+                                UserRole.STUDENT,
+                                groupId,
+                                null,
+                                610000007000L + SEQUENCE.incrementAndGet()),
+                        admin())
+                .userId();
     }
 
     private Long adminId() {
-        return jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        return identityFixture.canonical().adminId();
     }
 
     private record Fixture(Long groupId, String name, Long firstId, Long secondId, Long thirdId) {}

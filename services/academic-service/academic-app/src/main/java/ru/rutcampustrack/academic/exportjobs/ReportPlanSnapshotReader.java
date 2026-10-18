@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.exportjobs;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ public class ReportPlanSnapshotReader {
     private final SubjectRepository subjects;
     private final AssignmentRepository assignments;
     private final AcademicReadService reads;
-    private final HeadmanStatsScopeReadService headmanScope;
+    private final JdbcTemplate jdbc;
     private final HeadmanGroupCompositionReadService composition;
 
     public ReportPlanSnapshotReader(
@@ -39,7 +40,7 @@ public class ReportPlanSnapshotReader {
             SubjectRepository subjects,
             AssignmentRepository assignments,
             AcademicReadService reads,
-            HeadmanStatsScopeReadService headmanScope,
+            JdbcTemplate jdbc,
             HeadmanGroupCompositionReadService composition) {
         this.local = local;
         this.semesters = semesters;
@@ -47,7 +48,7 @@ public class ReportPlanSnapshotReader {
         this.subjects = subjects;
         this.assignments = assignments;
         this.reads = reads;
-        this.headmanScope = headmanScope;
+        this.jdbc = jdbc;
         this.composition = composition;
     }
 
@@ -79,8 +80,12 @@ public class ReportPlanSnapshotReader {
             ExportJobRepository.Job job,
             Discovery discovery,
             List<LessonResponse> lessons,
-            Instant generatedAt) {
+            Instant generatedAt,
+            HeadmanScope admittedScope) {
         local.requireWithinSnapshot(job.identity(), false);
+        if (!Objects.equals(discovery.semesterId(), job.identity().semesterId()))
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        var scope = requireHeadmanScope(job, discovery, admittedScope);
         if (lessons.size() > 5000) throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
         var p = job.identity().report();
         var actor = job.identity().actor();
@@ -115,6 +120,9 @@ public class ReportPlanSnapshotReader {
                             .setName(group.getName())
                             .setIsActive(group.isActive()));
         }
+        if (scope != null
+                && !groupMap.get(scope.getGroupId()).getName().equals(scope.getGroupName()))
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
         if (p.kind() == ReportDownloadKind.HEADMAN_GROUP_COMPOSITION) {
             plan.setGroupComposition(composition.read(actor, actor.groupId()));
             if (plan.getGroupComposition().getMembersCount() > 5000
@@ -127,12 +135,7 @@ public class ReportPlanSnapshotReader {
                     && p.kind() != ReportDownloadKind.HEADMAN_STATS_TREND)
                 throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
             plan.setViewStatsAuthorized(true);
-            plan.setHeadmanStatsScope(
-                    headmanScope.read(
-                            actor,
-                            HeadmanStatsScopeRequest.newBuilder()
-                                    .setGroupId(actor.groupId())
-                                    .build()));
+            plan.setHeadmanStatsScope(scope);
             var students = new HashSet<Long>();
             for (Long groupId : discovery.groupIds()) {
                 var roster = GroupMembersResponse.newBuilder();
@@ -151,6 +154,17 @@ public class ReportPlanSnapshotReader {
                 semesters
                         .findByIdUncached(discovery.semesterId())
                         .orElseThrow(() -> ExportJobRepository.error(HttpStatus.FORBIDDEN));
+        if (scope != null) {
+            var selected = scope.getSelectedSemester();
+            if (!selected.getName().equals(semester.getName())
+                    || !selected.getDateFrom().equals(semester.getDateFrom().toString())
+                    || !selected.getDateTo().equals(semester.getDateTo().toString())
+                    || !semester.getDateFrom().equals(discovery.from())
+                    || !semester.getDateTo().equals(discovery.to())
+                    || selected.getActive() != semester.isActive()
+                    || selected.getArchived() != semester.isArchived())
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        }
         plan.setSemester(semester(semester));
         plan.addSemesterStates(state(semester));
         var seenLessons = new HashSet<Long>();
@@ -326,18 +340,62 @@ public class ReportPlanSnapshotReader {
             plan.setTeacherAssignments(dated);
         } else {
             plan.setViewStatsAuthorized(true);
-            plan.setHeadmanStatsScope(
-                    headmanScope.read(
-                            actor,
-                            HeadmanStatsScopeRequest.newBuilder()
-                                    .setGroupId(actor.groupId())
-                                    .setSemesterId(semester.getId())
-                                    .build()));
+            plan.setHeadmanStatsScope(scope);
         }
         if (uniqueStudents.size() > 5000 || plan.build().getSerializedSize() > 20 * 1024 * 1024)
             throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
         return plan.build();
     }
+
+    static boolean requiresHeadmanScope(ExportJobRepository.Job job) {
+        return switch (job.identity().report().kind()) {
+            case HEADMAN_WEEKLY_CURRENT,
+                    HEADMAN_WEEKLY_SELECTED,
+                    HEADMAN_STATS,
+                    HEADMAN_STATS_TREND,
+                    HEADMAN_SUBJECT_JOURNAL ->
+                    true;
+            default -> false;
+        };
+    }
+
+    private HeadmanStatsScopeResponse requireHeadmanScope(
+            ExportJobRepository.Job job, Discovery discovery, HeadmanScope admitted) {
+        if (!requiresHeadmanScope(job)) {
+            if (admitted != null) throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            return null;
+        }
+        if (admitted == null || !job.equals(admitted.job()) || admitted.response() == null)
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        var scope = admitted.response();
+        if (!Objects.equals(job.identity().actor().groupId(), scope.getGroupId())
+                || !discovery.groupIds().equals(List.of(scope.getGroupId()))
+                || scope.getGroupName().isBlank()
+                || scope.hasSelectedSemester() != (discovery.semesterId() != null)
+                || scope.hasSelectedSemester()
+                        && scope.getSelectedSemester().getId() != discovery.semesterId()
+                || discovery.semesterId() == null && scope.hasActiveSemesterId())
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        // Scope membership is current non-archived STUDENT eligibility, not a dated roster.
+        // Bind its summary to the same RR snapshot as all current and historical plan rosters.
+        var membership =
+                jdbc.queryForObject(
+                        """
+SELECT count(*) FILTER (WHERE e.status='ACTIVE') AS active, count(*) AS total
+FROM academic_role_eligibility e JOIN academic_profiles p ON p.id=e.user_id
+WHERE e.role='STUDENT' AND e.group_id=? AND e.status<>'ARCHIVED'
+""",
+                        (rs, row) -> new long[] {rs.getLong("active"), rs.getLong("total")},
+                        scope.getGroupId());
+        if (membership == null
+                || membership[0] != scope.getMembershipActive()
+                || membership[1] != scope.getMembershipTotal())
+            throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+        return scope;
+    }
+
+    /** A current admitted response bound to the exact owner job, actor and frozen selector. */
+    public record HeadmanScope(ExportJobRepository.Job job, HeadmanStatsScopeResponse response) {}
 
     private static StudentInfo student(User user) {
         return StudentInfo.newBuilder()

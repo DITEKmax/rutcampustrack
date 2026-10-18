@@ -14,7 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,11 +34,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import ru.rutcampustrack.academic.contract.dto.subject.SubjectDeletionModels.*;
-import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 import ru.rutcampustrack.academic.security.AcademicLiveSessionClient;
 import ru.rutcampustrack.authsecurity.grpc.AuthSecurityCapabilityServiceGrpc;
 import ru.rutcampustrack.authsecurity.grpc.StoredSessionIdentity;
+import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.shared.security.PublicKeyProvider;
 import ru.rutcampustrack.shared.security.admin.AdminAccessProfile;
 import ru.rutcampustrack.subjectdeletion.grpc.*;
 
@@ -46,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /** Real REST/PG/fences/outbox with explicit Auth and participant transport doubles. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Import(InternalJwtTestConfig.class)
+@Import(SubjectDeletionHttpIT.TestKeys.class)
 @AutoConfigureMockMvc
 @TestPropertySource(
         properties = {
@@ -55,6 +59,32 @@ import java.util.concurrent.atomic.AtomicInteger;
             "grpc.service-identity.academic-to-auth-token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         })
 class SubjectDeletionHttpIT {
+    @TestConfiguration
+    static class TestKeys {
+        @Bean
+        InternalJwtTestFactory internalJwtTestFactory() {
+            return new InternalJwtTestFactory();
+        }
+
+        @Bean
+        @Primary
+        PublicKeyProvider testPublicKeyProvider(
+                InternalJwtProperties properties, InternalJwtTestFactory signer) {
+            return new PublicKeyProvider(properties) {
+                @Override
+                public void init() {}
+
+                @Override
+                public void refresh() {}
+
+                @Override
+                public java.security.PublicKey getPublicKey() {
+                    return signer.publicKey();
+                }
+            };
+        }
+    }
+
     static final PostgreSQLContainer<?> POSTGRES =
             new PostgreSQLContainer<>("postgres:16")
                     .withDatabaseName(

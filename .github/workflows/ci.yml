@@ -554,7 +554,7 @@ jobs:
                   method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
                   test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java'
                   source = test_source.read_bytes()
-                  assert hashlib.sha256(source).hexdigest() == 'c1bc6549965096b3c00669aed4f7ef91f676977d7e94fa4031b12f53fdf307f3'
+                  assert hashlib.sha256(source).hexdigest() == '6db8d2a6f6bf6ee68d57f000295e64e1db3794b060500c37a3f1c735948486bf'
                   archive = (b'        archive(target, request);\n'
                              b'        assertThat(\n'
                              b'                        jdbc.queryForObject(\n'
@@ -578,7 +578,7 @@ jobs:
                           .isEqualTo(1);
           '''
                   negative = source.replace(anchor, archive + update + oracle)
-                  assert hashlib.sha256(negative).hexdigest() == 'a5e736d55aa7e8b1a74fa402b69ab72aee309b6596b8f0c9e90cbeac75aca6ed'
+                  assert hashlib.sha256(negative).hexdigest() == 'fce0bc358b97294cd24c72e3741c417da71ecd3d2f4ff3a704d486d09b37229f'
                   assert negative.count(archive + update + oracle) == 1
                   rule_line = negative[:negative.index(archive + update + oracle)].count(b'\n') + len((archive + update + oracle).splitlines())
                   replacements = {test_source: negative}

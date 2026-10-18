@@ -5201,7 +5201,7 @@ jobs:
           umask 077
           printf 'RCT_APP_RECOVERY_RUN=%s\nRCT_APP_RECOVERY_PROJECT=%s\n' "$RCT_APP_RECOVERY_RUN" "$RCT_APP_RECOVERY_PROJECT" >> "$GITHUB_ENV"
           python3 - <<'PY_RECOVERY'
-          import datetime, importlib.util, json, os, re, stat, subprocess
+          import datetime, importlib.util, json, os, re, stat, subprocess, time
           from pathlib import Path
           from zoneinfo import ZoneInfo
 
@@ -5245,6 +5245,101 @@ jobs:
                   application_failure['reason'] = 'COMMAND_EXIT'
                   if type(exit_status) is int and -255 <= exit_status <= 255:
                       application_failure['exitStatus'] = exit_status
+
+          def application_service_observation():
+              # Only the original pinned startup set; neither restored DBs nor discovered names.
+              names = ('redis', 'rabbitmq', 'auth-service', 'academic-service', 'schedule-service',
+                       'attendance-service', 'document-renderer-service', 'mobile-bff', 'api-gateway',
+                       'notification-web', 'pwa-nginx', 'mini-app-nginx', 'nginx')
+              wanted = {'redis', 'rabbitmq', *writers}
+              result = {'capture': 'PARTIAL', 'unsupportedService': bool(wanted - set(names)),
+                        'services': []}
+              selected = []
+              for name in names:
+                  if name not in wanted:
+                      continue
+                  row = {'service': name, 'identity': 'UNKNOWN', 'status': 'UNKNOWN',
+                         'health': 'UNKNOWN', 'oomKilled': 'UNKNOWN', 'exitCode': 'UNKNOWN'}
+                  result['services'].append(row)
+                  pin = sources.get(name, {})
+                  labels = pin.get('Config', {}).get('Labels', {})
+                  cid, image = ids.get(name), pin.get('Image')
+                  if (not isinstance(cid, str) or not re.fullmatch('[0-9a-f]{64}', cid)
+                          or pin.get('Id') != cid
+                          or not isinstance(image, str) or not re.fullmatch('sha256:[0-9a-f]{64}', image)
+                          or labels.get('com.docker.compose.project') != 'rct-e2e'
+                          or labels.get('com.docker.compose.service') != name):
+                      row['identity'] = 'PIN_MISMATCH'
+                      continue
+                  selected.append((name, cid, image, row))
+              deadline = time.monotonic() + 8
+              identity_format = ('{"id":{{json .Id}},"image":{{json .Image}},'
+                                 '"project":{{json (index .Config.Labels "com.docker.compose.project")}},'
+                                 '"service":{{json (index .Config.Labels "com.docker.compose.service")}}')
+
+              def read_selected(pins, state=False):
+                  remaining = deadline - time.monotonic()
+                  if not pins or remaining <= 0:
+                      return None
+                  template = identity_format
+                  if state:
+                      template = template[:-1] + (',"status":{{json .State.Status}},'
+                          '"health":{{if .State.Health}}{{json .State.Health.Status}}{{else}}null{{end}},'
+                          '"oomKilled":{{json .State.OOMKilled}},"exitCode":{{json .State.ExitCode}}}')
+                  response = subprocess.run(['docker', 'inspect', '--format', template,
+                                             *(pin[1] for pin in pins)],
+                                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                            timeout=min(4, remaining))
+                  if response.returncode != 0 or len(response.stdout) > 16384:
+                      return None
+                  records = [json.loads(line) for line in response.stdout.splitlines()]
+                  if (len(records) != len(pins) or any(type(item) is not dict for item in records)
+                          or len({item.get('id') for item in records}) != len(pins)):
+                      return None
+                  return {item.get('id'): item for item in records}
+
+              def matches(current, name, cid, image):
+                  return (current.get('id') == cid and current.get('image') == image
+                          and current.get('project') == 'rct-e2e' and current.get('service') == name)
+
+              # Admission precedes the state query. Recheck ownership before reading its fields.
+              admitted = []
+              first = read_selected(selected)
+              if first is None:
+                  result['capture'] = 'INSPECT_UNAVAILABLE'
+                  return result
+              for pin in selected:
+                  name, cid, image, row = pin
+                  if not matches(first.get(cid, {}), name, cid, image):
+                      row['identity'] = 'MISMATCH'
+                  else:
+                      row['identity'] = 'MATCHED'
+                      admitted.append(pin)
+              second = read_selected(admitted, state=True)
+              if second is None:
+                  result['capture'] = 'STATE_UNAVAILABLE'
+                  return result
+              for name, cid, image, row in admitted:
+                  current = second.get(cid, {})
+                  if not matches(current, name, cid, image):
+                      row['identity'] = 'MISMATCH'
+                      continue
+                  status, health = current.get('status'), current.get('health')
+                  row['status'] = status if status in {
+                      'created', 'running', 'paused', 'restarting', 'removing', 'exited', 'dead',
+                  } else 'UNKNOWN'
+                  row['health'] = ('NONE' if health is None else health if health in {
+                      'starting', 'healthy', 'unhealthy',
+                  } else 'UNKNOWN')
+                  oom, code = current.get('oomKilled'), current.get('exitCode')
+                  row['oomKilled'] = oom if type(oom) is bool else 'UNKNOWN'
+                  row['exitCode'] = code if type(code) is int and 0 <= code <= 255 else 'UNKNOWN'
+              if (not result['unsupportedService'] and all(row['identity'] == 'MATCHED'
+                      and row['status'] != 'UNKNOWN' and row['health'] != 'UNKNOWN'
+                      and row['oomKilled'] != 'UNKNOWN' and row['exitCode'] != 'UNKNOWN'
+                      for row in result['services'])):
+                  result['capture'] = 'COMPLETE'
+              return result
 
           def verify_failure(stderr, *, timed_out=False):
               # Only exact verifier constants become public; never publish captured stderr.
@@ -5538,7 +5633,22 @@ jobs:
                       print('Lifecycle diagnostic unavailable; original failure retained')
               if stage == 'application':
                   retain_application_failure(error)
-                  print(json.dumps({'stage': 'APPLICATION', **application_failure}, sort_keys=True))
+                  try:
+                      services = application_service_observation()
+                  except Exception:
+                      services = {'capture': 'UNAVAILABLE', 'unsupportedService': False, 'services': []}
+                  receipt = {'stage': 'APPLICATION', **application_failure, 'serviceObservation': services}
+                  try:
+                      data = (json.dumps(receipt, sort_keys=True) + '\n').encode('ascii')
+                      if len(data) > 16384:
+                          raise ValueError('Closed application failure receipt exceeds its bound')
+                      fd = os.open(work / 'artifacts' / 'admit' / 'application-failure.safe.json',
+                                   os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+                      with os.fdopen(fd, 'wb') as stream:
+                          stream.write(data)
+                  except Exception:
+                      print('Application failure receipt unavailable; original failure retained')
+                  print(json.dumps(receipt, sort_keys=True))
               error_class = application_failure['errorClass'] if stage == 'application' else type(error).__name__
               print('FAIL application recovery stage=' + stage + ' class=' + error_class)
               raise SystemExit(1)
@@ -5554,6 +5664,7 @@ jobs:
             ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/seed/lifecycle.safe.json
             ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/seed/lifecycle-server.safe.json
             ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/admit/verification.safe.json
+            ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/admit/application-failure.safe.json
           if-no-files-found: warn
           retention-days: 7
 

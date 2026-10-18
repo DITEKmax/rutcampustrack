@@ -24,14 +24,33 @@ GIB = 1024**3
 SERVICES = {"glitchtip-db", "glitchtip", "pyroscope", "homepage", "observer-proxy"}
 MARKER = "synthetic-private@example.invalid"
 CURRENT_STAGE = "source"
+DIAGNOSTIC_REASONS = {"INVALID_MOUNT", "PERMISSION_DENIED", "UNHEALTHY_DEPENDENCY",
+                      "OUT_OF_MEMORY", "READ_ONLY_FS", "NGINX_CONFIG", "PYRO_CONFIG", "DATABASE"}
+
+
+def closed_reason(text, service=None):
+    patterns = [
+        ("INVALID_MOUNT", r"invalid mount (?:path|config)|mount path must be absolute"),
+        ("READ_ONLY_FS", r"read-only file system|\berrno 30\b"),
+        ("PERMISSION_DENIED", r"permission denied|operation not permitted"),
+        ("UNHEALTHY_DEPENDENCY", r"dependency failed to start|container .+ is unhealthy"),
+        ("OUT_OF_MEMORY", r"java\.lang\.outofmemoryerror|cannot allocate memory"),
+    ]
+    if service == "observer-proxy":
+        patterns.append(("NGINX_CONFIG", r"nginx: \[(?:emerg|alert)\]|nginx: configuration file .+ test failed"))
+    elif service == "pyroscope":
+        patterns.append(("PYRO_CONFIG", r"yaml: unmarshal errors|field .+ not found in type|(?:failed|error).*(?:parsing|loading) config"))
+    elif service in {"glitchtip", "glitchtip-db"}:
+        patterns.append(("DATABASE", r"django\.db\.(?:utils\.)?(?:operationalerror|programmingerror|integrityerror)|psycopg[23]?\.operationalerror|fatal:.*database"))
+    return next((label for label, pattern in patterns if re.search(pattern, text.lower())), "UNKNOWN")
 
 
 def safe_failure(error):
     result = {"failure_class": type(error).__name__}
     if isinstance(error, subprocess.CalledProcessError):
         kind = error.cmd if isinstance(error.cmd, str) and error.cmd in {"docker", "java", "node", "sudo", "openssl"} else "other"
-        reason = error.output if error.output in {"INVALID_MOUNT", "PERMISSION_DENIED", "UNHEALTHY_DEPENDENCY", "OUT_OF_MEMORY"} else "UNKNOWN"
-        result.update({"command_kind": kind, "exit_code": error.returncode, "reason": reason})
+        reason = error.output if isinstance(error.output, str) and error.output in DIAGNOSTIC_REASONS else "UNKNOWN"
+        result.update({"command_kind": kind, "exit_code": error.returncode if type(error.returncode) is int else None, "reason": reason})
     return result
 
 
@@ -80,16 +99,7 @@ def run(command, env=None, timeout=120, check=True):
         kind = Path(command[0]).name
         if kind not in {"docker", "java", "node", "sudo", "openssl"}:
             kind = "other"
-        reason = "UNKNOWN"
-        for label, pattern in [
-            ("INVALID_MOUNT", r"invalid mount (?:path|config)|mount path must be absolute"),
-            ("PERMISSION_DENIED", r"permission denied|operation not permitted"),
-            ("UNHEALTHY_DEPENDENCY", r"dependency failed to start|container .+ is unhealthy"),
-            ("OUT_OF_MEMORY", r"java\.lang\.outofmemoryerror|cannot allocate memory"),
-        ]:
-            if re.search(pattern, result.stderr.lower()):
-                reason = label
-                break
+        reason = closed_reason(result.stderr)
         # CalledProcessError carries only closed fields, never arguments or raw output.
         raise subprocess.CalledProcessError(result.returncode, kind, output=reason)
     return result
@@ -325,10 +335,12 @@ def main():
             require(shutil.disk_usage("/tmp").free >= 4 * GIB, "Image extraction violated disk floor")
             stage("isolated-startup")
             docker("up", "-d", timeout=120)
+            stage("operator-loopback-port")
             origin = port("observer-proxy", 8080)
             # Exact host:port allowlist; wildcard is never used as authentication.
             config["services"]["homepage"]["environment"]["HOMEPAGE_ALLOWED_HOSTS"] = origin.removeprefix("http://") + ",homepage:3000"
             composefile.write_text(json.dumps(config))
+            stage("homepage-exact-host-restart")
             docker("up", "-d", "--no-deps", "homepage", timeout=60)
             stage("homepage-readiness")
             wait_for(lambda: request(origin, auth=True)[0] == 200, 120)
@@ -455,6 +467,29 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                        "qualification": "Actual isolated GlitchTip/Java+Vue SDKs/CPU flamegraph/operator links. Synthetic Vue operations exercise the shared adapter under PWA/TMA prefixes; not a full authenticated business journey. Effective retention is checked; seven-day wall-clock expiry is not elapsed. 16GiB Cloud capacity is not a 32GiB VPS benchmark."}
         except BaseException as error:
             primary_failure = {**safe_failure(error), "stage": CURRENT_STAGE}
+            # Diagnose only this already guarded synthetic namespace, before cleanup.
+            # No State.Error, environment, IDs, log text, arguments or URLs leave memory.
+            try:
+                states = {}
+                for identifier in guarded_resources()["containers"]:
+                    fields = ('{"service":{{json (index .Config.Labels "com.docker.compose.service")}},'
+                              '"status":{{json .State.Status}},"exit_code":{{.State.ExitCode}},'
+                              '"oom_killed":{{.State.OOMKilled}},"health":'
+                              '{{if .State.Health}}{{json .State.Health.Status}}{{else}}"none"{{end}}}')
+                    raw_state = json.loads(run(["docker", "inspect", "--format", fields, identifier], timeout=10).stdout)
+                    service = raw_state.get("service")
+                    state = {key: raw_state.get(key) for key in ["status", "exit_code", "oom_killed", "health"]}
+                    require(service in SERVICES and service not in states, "Unexpected diagnostic service")
+                    require(state["status"] in {"created", "running", "paused", "restarting", "removing", "exited", "dead"}, "Unexpected diagnostic state")
+                    require(type(state["exit_code"]) is int and type(state["oom_killed"]) is bool, "Unexpected diagnostic types")
+                    require(state["health"] in {"none", "starting", "healthy", "unhealthy"}, "Unexpected diagnostic health")
+                    logs = run(["docker", "logs", "--tail", "40", identifier], timeout=10, check=False)
+                    state["log_capture"] = "PASS" if logs.returncode == 0 else "FAIL"
+                    state["reason"] = closed_reason(logs.stdout + "\n" + logs.stderr, service) if logs.returncode == 0 else "UNKNOWN"
+                    states[service] = state
+                primary_failure["container_states"] = {"result": "PASS", "services": states}
+            except BaseException as diagnostic_error:
+                primary_failure["container_states"] = {"result": "FAIL", **safe_failure(diagnostic_error)}
         finally:
             stop_sampler.set()
             stage("verified-owned-cleanup")

@@ -1,7 +1,12 @@
 package ru.rutcampustrack.attendance.event;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -10,12 +15,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -134,6 +146,101 @@ class EventConsumerTest {
                 "consumer-test-correlation",
                 "payload",
                 payload);
+    }
+
+    @Test
+    void initialMembershipFailureKeepsPrivateCorrelationAndOnlyClosedDiagnosticFacts() {
+        var initial = org.mockito.Mockito.mock(InitialMembershipAttendanceBackfillService.class);
+        eventConsumer.setInitialMembershipBackfills(initial);
+        String privatePayload = "PRIVATE_INITIAL_MEMBERSHIP_PAYLOAD_MARKER";
+        String privateError = "PRIVATE_INITIAL_MEMBERSHIP_ERROR_MARKER";
+        String eventId = UUID.randomUUID().toString();
+        var envelope =
+                Map.<String, Object>of(
+                        "event_type",
+                        InitialMembershipAttendanceBackfillService.TYPE,
+                        "event_id",
+                        eventId,
+                        "trace_id",
+                        "0123456789abcdef0123456789abcdef",
+                        "request_id",
+                        "33333333-3333-4333-8333-333333333333",
+                        "source",
+                        "academic-service",
+                        "payload",
+                        Map.of("private", privatePayload));
+        var logger = (Logger) LoggerFactory.getLogger(EventConsumer.class);
+        Level previousLevel = logger.getLevel();
+        var previousMdc = MDC.getCopyOfContextMap();
+        var appender =
+                new ListAppender<ILoggingEvent>() {
+                    @Override
+                    protected void append(ILoggingEvent event) {
+                        event.prepareForDeferredProcessing();
+                        super.append(event);
+                    }
+                };
+        appender.setContext(logger.getLoggerContext());
+        appender.start();
+        logger.addAppender(appender);
+        logger.setLevel(Level.WARN);
+        try {
+            MDC.put("eventId", "previous-event");
+            MDC.put("requestId", "previous-request");
+            MDC.put("originTraceId", "previous-origin");
+            MDC.put("traceId", "framework-trace");
+            var failures =
+                    Map.of(
+                            new ru.rutcampustrack.attendance.exception
+                                    .AcademicServiceUnavailableException(privateError),
+                            "ACADEMIC_UNAVAILABLE",
+                            new IllegalStateException(privateError),
+                            "OTHER");
+            for (var entry : failures.entrySet()) {
+                RuntimeException failure = entry.getKey();
+                doThrow(failure).when(initial).handle(envelope);
+                assertSame(
+                        failure,
+                        assertThrows(
+                                RuntimeException.class, () -> eventConsumer.onEvent(envelope)));
+                var record = appender.list.getLast();
+                assertEquals(
+                        "event consumption failure family=INITIAL_MEMBERSHIP category="
+                                + entry.getValue(),
+                        record.getFormattedMessage());
+                assertEquals(Level.WARN, record.getLevel());
+                assertNull(record.getThrowableProxy());
+                assertEquals(1, record.getArgumentArray().length);
+                assertTrue(record.getArgumentArray()[0] instanceof Enum<?>);
+                assertFalse(record.getFormattedMessage().contains(privatePayload));
+                assertFalse(record.getFormattedMessage().contains(privateError));
+                assertEquals(eventId, record.getMDCPropertyMap().get("eventId"));
+                assertEquals(
+                        "33333333-3333-4333-8333-333333333333",
+                        record.getMDCPropertyMap().get("requestId"));
+                assertEquals(
+                        "0123456789abcdef0123456789abcdef",
+                        record.getMDCPropertyMap().get("originTraceId"));
+                assertEquals("framework-trace", record.getMDCPropertyMap().get("traceId"));
+                assertEquals("previous-event", MDC.get("eventId"));
+                assertEquals("previous-request", MDC.get("requestId"));
+                assertEquals("previous-origin", MDC.get("originTraceId"));
+                assertEquals("framework-trace", MDC.get("traceId"));
+            }
+            assertEquals(2, appender.list.size());
+            org.mockito.Mockito.doNothing().when(initial).handle(envelope);
+            assertDoesNotThrow(() -> eventConsumer.onEvent(envelope));
+            assertEquals(2, appender.list.size());
+            assertEquals("previous-event", MDC.get("eventId"));
+            assertEquals("previous-request", MDC.get("requestId"));
+            assertEquals("previous-origin", MDC.get("originTraceId"));
+        } finally {
+            logger.detachAppender(appender);
+            appender.stop();
+            logger.setLevel(previousLevel);
+            MDC.clear();
+            if (previousMdc != null) MDC.setContextMap(previousMdc);
+        }
     }
 
     @Test

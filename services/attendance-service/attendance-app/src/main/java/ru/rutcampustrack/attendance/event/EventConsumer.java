@@ -75,7 +75,24 @@ public class EventConsumer extends AbstractEventConsumer {
         }
 
         if (InitialMembershipAttendanceBackfillService.TYPE.equals(eventType)) {
-            withTraceContext(envelope, () -> initialMembershipBackfills.handle(envelope));
+            withTraceContext(
+                    envelope,
+                    () -> {
+                        try {
+                            initialMembershipBackfills.handle(envelope);
+                        } catch (RuntimeException failure) {
+                            try {
+                                // Existing private MDC correlates the durable work; no payload or
+                                // exception text.
+                                log.warn(
+                                        "event consumption failure family=INITIAL_MEMBERSHIP"
+                                                + " category={}",
+                                        lessonClosedFailure(failure));
+                            } finally {
+                                throw failure;
+                            }
+                        }
+                    });
             return;
         }
 

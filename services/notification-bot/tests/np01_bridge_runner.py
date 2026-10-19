@@ -35,6 +35,64 @@ logging.disable(logging.CRITICAL)
 _phase = "setup"
 _checks = 0
 _headman_read_outcome = "UNKNOWN"
+_headman_read_stage = "UNKNOWN"
+_headman_read_cause = "UNKNOWN"
+_bot_read_stages = frozenset(
+    (
+        "BFF_IDENTITY",
+        "BFF_AUTH",
+        "BFF_AUTH_RESPONSE",
+        "BFF_ACADEMIC",
+        "BFF_SCOPE_RESPONSE",
+        "BFF_GROUP",
+        "BFF_DAY",
+        "BFF_SELECTION",
+        "BFF_SUMMARY",
+        "BFF_ATTENDANCE",
+        "BFF_ATTENDANCE_RESPONSE",
+        "BFF_ROSTER",
+        "BFF_RECHECK_GROUP",
+        "BFF_RECHECK_RESPONSE",
+        "BFF_FINAL_SELECTION",
+        "ATTENDANCE_IDENTITY",
+        "ATTENDANCE_AUTH",
+        "ATTENDANCE_AUTH_RESPONSE",
+        "ATTENDANCE_ACADEMIC",
+        "ATTENDANCE_SCOPE_RESPONSE",
+        "ATTENDANCE_GROUP",
+        "ATTENDANCE_SCHEDULE",
+        "ATTENDANCE_CURRENT",
+        "ATTENDANCE_REPORT",
+        "ATTENDANCE_ROWS",
+        "ATTENDANCE_SUMMARY",
+        "ATTENDANCE_STATISTICS",
+        "ATTENDANCE_RECHECK",
+        "ATTENDANCE_FINAL_CURRENT",
+        "ACADEMIC_IDENTITY",
+        "ACADEMIC_AUTH_BEFORE",
+        "ACADEMIC_QUERY",
+        "ACADEMIC_AUTH_AFTER",
+    )
+)
+_bot_read_causes = frozenset(
+    (
+        "STATUS_UNAVAILABLE",
+        "STATUS_DEADLINE_EXCEEDED",
+        "STATUS_UNAUTHENTICATED",
+        "STATUS_PERMISSION_DENIED",
+        "STATUS_FAILED_PRECONDITION",
+        "STATUS_INVALID_ARGUMENT",
+        "STATUS_NOT_FOUND",
+        "STATUS_OTHER",
+        "DATA_ACCESS",
+        "HISTORY",
+        "TIME",
+        "ARGUMENT",
+        "STATE",
+        "NULL",
+        "RUNTIME",
+    )
+)
 _auth_boundary = {"actual_auth_tls": False, "old_academic_denied": False, "old_credential_denied": False}
 
 
@@ -658,7 +716,7 @@ async def own_homework_main():
 
 async def hosted_role_menu_main():
     """Read the existing CI services; only Node's owned fixture can change domain state."""
-    global _phase, _headman_read_outcome
+    global _phase, _headman_read_outcome, _headman_read_stage, _headman_read_cause
     from bot.grpc_client.bot_read_client import BotReadGrpcClient
     from bot.handlers.prefs import (
         CREDENTIALS_LABEL,
@@ -832,6 +890,22 @@ async def hosted_role_menu_main():
                                 grpc.StatusCode.UNAVAILABLE: "RPC_STATUS_UNAVAILABLE",
                                 grpc.StatusCode.DEADLINE_EXCEEDED: "RPC_STATUS_DEADLINE_EXCEEDED",
                             }.get(reported_status, "RPC_STATUS_OTHER")
+                        trailers = grpc.aio.AioRpcError.trailing_metadata(reported_context)
+                        if type(trailers) is grpc.aio.Metadata:
+                            stages = grpc.aio.Metadata.get_all(trailers, "rct-bot-read-stage")
+                            causes = grpc.aio.Metadata.get_all(trailers, "rct-bot-read-cause")
+                            if (
+                                type(stages) is list
+                                and len(stages) == 1
+                                and type(stages[0]) is str
+                                and type(causes) is list
+                                and len(causes) == 1
+                                and type(causes[0]) is str
+                                and stages[0] in _bot_read_stages
+                                and causes[0] in _bot_read_causes
+                            ):
+                                _headman_read_stage = stages[0]
+                                _headman_read_cause = causes[0]
                     elif reported_context is None:
                         _headman_read_outcome = "LOCAL_UNAVAILABLE"
                 except Exception:
@@ -919,7 +993,15 @@ if __name__ == "__main__":
                     "failures": 1,
                     "checks": _checks,
                     "phase": _phase,
-                    **({"headmanReadOutcome": _headman_read_outcome} if sys.argv[1:] == ["--hosted-role-menu"] else {}),
+                    **(
+                        {
+                            "headmanReadOutcome": _headman_read_outcome,
+                            "readStage": _headman_read_stage,
+                            "readCause": _headman_read_cause,
+                        }
+                        if sys.argv[1:] == ["--hosted-role-menu"]
+                        else {}
+                    ),
                     "actual_auth_tls": False,
                     "old_academic_denied": False,
                     "old_credential_denied": False,

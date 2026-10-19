@@ -660,14 +660,14 @@ jobs:
                   assert admin_line == 223
                   admin_production = app / 'src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportService.java'
                   admin_current = admin_production.read_bytes()
-                  assert hashlib.sha256(admin_current).hexdigest() == '0176504ec5d922fa35c9e627cb8f9ceec60234b198896484e5401aec87ec53c6'
+                  assert hashlib.sha256(admin_current).hexdigest() == 'd825a049647d89154e896af8678bca0a4660736001dda0d3dc8ff5fc1bffa2ba'
                   admin_anchor = (b'            rows.sort(comparator(sort, direction));\n'
                                   b'            requireCurrentAccess();\n'
                                   b'            return new FullReport(')
                   admin_changed = admin_anchor.replace(b'            requireCurrentAccess();\n', b'')
                   assert admin_current.count(admin_anchor) == 1
                   admin_negative = admin_current.replace(admin_anchor, admin_changed)
-                  assert hashlib.sha256(admin_negative).hexdigest() == 'f61f5b4e700d75c2d502a79185e33d9ebd9466edf4b71cabfb6f762ed05a9786'
+                  assert hashlib.sha256(admin_negative).hexdigest() == '98bc925e781f6be5c5bff11df62b41e52a7c4886f5c2dd496fba68fdc778a4fe'
                   assert admin_negative.replace(admin_changed, admin_anchor) == admin_current
                   admin_rights = {'package': 'ru.rutcampustrack.academic.adminattendance.AdminAttendanceReportIT',
                                   'method': 'otherRegistryGrantsCannotReadAndRevocationDuringRemoteReadReturnsNoRows',
@@ -1548,7 +1548,7 @@ jobs:
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:
                   assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == '77f3fa756acbff72f9d890bfa8bd7cea43f3b0a55361ff6327a53316b54e694e'
-                  assert hashlib.sha256(admin_rights['production'].read_bytes()).hexdigest() == '0176504ec5d922fa35c9e627cb8f9ceec60234b198896484e5401aec87ec53c6'
+                  assert hashlib.sha256(admin_rights['production'].read_bytes()).hexdigest() == 'd825a049647d89154e896af8678bca0a4660736001dda0d3dc8ff5fc1bffa2ba'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(admin_rights['source'])]) == b''
                   proof['adminRightsRule']['sourceRestoredExact'] = True
               if service == 'auth-service' and current:
@@ -3705,6 +3705,101 @@ jobs:
                                reportedAmbiguityEvidence=[])
               return value
 
+          INITIAL_MEMBERSHIP_CATEGORIES = {
+              'ACADEMIC_UNAVAILABLE', 'SCHEDULE_UNAVAILABLE', 'RESOURCE_NOT_FOUND',
+              'INVALID_ARGUMENT', 'TRANSACTION_ROLLBACK', 'MONGO_TRANSACTION',
+              'DUPLICATE_KEY', 'EFFECT_REJECTED', 'OTHER',
+          }
+
+          INITIAL_MEMBERSHIP_STARTUP_BANNER = {
+              '  .   ____          _            __ _ _',
+              " /\\\\ / ___'_ __ _ _(_)_ __  __ _ \\ \\ \\ \\",
+              "( ( )\\___ | '_ | '_| | '_ \\/ _` | \\ \\ \\ \\",
+              ' \\\\/  ___)| |_)| | | | | || (_| |  ) ) ) )',
+              "  '  |____| .__|_| |_|_| |_\\__, | / / / /",
+              ' =========|_|==============|___/=/_/_/_/',
+          }
+
+          def initial_membership_output(counts='UNKNOWN'):
+              return {'state': 'UNKNOWN' if counts == 'UNKNOWN' else 'REPORTED',
+                      'sourceStage': 'INITIAL_MEMBERSHIP', 'categoryCounts': counts}
+
+          def is_initial_membership_failure(value):
+              keys = {
+                  'schema', 'phase', 'configuredListenerAttempts', 'measuredListenerAttempts',
+                  'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
+                  'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
+                  'duplicateAttempted', 'retainedDlqCopies', 'restorationSucceeded', 'clockUnchanged',
+                  'cleanupOutcome', 'firstRestartFailure', 'mainCloseLastRead',
+                  'firstHttp500OwnedServices', 'strandedLastRead', 'setupQuiescenceLastRead',
+              }
+              if (type(value) is not dict or set(value) != keys
+                      or value['schema'] != 'semester-reconciliation.v5' or value['phase'] != 'SETUP'
+                      or type(value['configuredListenerAttempts']) is not int
+                      or value['configuredListenerAttempts'] != 3
+                      or value['measuredListenerAttempts'] != 'UNKNOWN'
+                      or value['retainedDlqCopies'] != 'UNKNOWN'
+                      or value['cleanupOutcome'] != 'PASSED'
+                      or any(value[key] is not False for key in (
+                          'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
+                          'sameArchiveCompleted', 'duplicateBusinessUnchanged',
+                          'recoveryPublishAttempted', 'duplicateAttempted'))
+                      or any(value[key] is not True for key in ('restorationSucceeded', 'clockUnchanged'))
+                      or any(value[key] is not None for key in (
+                          'firstRestartFailure', 'mainCloseLastRead', 'firstHttp500OwnedServices',
+                          'strandedLastRead'))):
+                  return False
+              read = value['setupQuiescenceLastRead']
+              counters = {'mainReady', 'mainUnacked', 'mainConsumers', 'deadReady', 'deadUnacked',
+                          'retryReady', 'retryUnacked', 'scheduleUnproven', 'scheduleLegacy', 'scheduleDue'}
+              return (type(read) is dict and set(read) == counters | {
+                          'firstFailed', 'initialExpectedApplied', 'initialNoPendingWork', 'initialProducerSent'}
+                      and all(type(read[key]) is int and 0 <= read[key] <= 1000000 for key in counters)
+                      and read['firstFailed'] == 'DLQ_READY' and read['deadReady'] > 0
+                      and read['mainReady'] == 0 and read['mainUnacked'] == 0 and read['mainConsumers'] == 1
+                      and read['initialExpectedApplied'] is True
+                      and read['initialNoPendingWork'] is False and read['initialProducerSent'] is True)
+
+          def classify_initial_membership(payload):
+              # Reported bounded-log counts do not identify an event or establish DLQ causality.
+              counts = {category: 0 for category in sorted(INITIAL_MEMBERSHIP_CATEGORIES)}
+              lines = payload.splitlines()
+              if len(payload) > LIMIT or len(lines) >= 2000:
+                  return initial_membership_output()
+              startup, startup_lines = True, 0
+              for line in lines:
+                  if len(line) > 131072:
+                      return initial_membership_output()
+                  try:
+                      record = decode(line)
+                  except (ValueError, UnicodeError, RecursionError):
+                      # Only the source-proven JVM/Spring preamble before any JSON is noise.
+                      if (startup and startup_lines < 16 and (
+                              line == b'' or line in {item.encode() for item in INITIAL_MEMBERSHIP_STARTUP_BANNER}
+                              or re.fullmatch(rb'Picked up JAVA_TOOL_OPTIONS: [^\r\n]{1,8192}', line)
+                              or re.fullmatch(rb' :: Spring Boot :: {1,64}\(v3\.5\.16\)', line))):
+                          startup_lines += 1
+                          continue
+                      return initial_membership_output()
+                  startup = False
+                  if type(record) is not dict:
+                      return initial_membership_output()
+                  if (record.get('logger') != 'ru.rutcampustrack.attendance.event.EventConsumer'
+                          or record.get('level') != 'WARN'):
+                      continue
+                  message = record.get('msg')
+                  if type(message) is not str:
+                      return initial_membership_output()
+                  if not message.startswith('event consumption failure family=INITIAL_MEMBERSHIP'):
+                      continue
+                  match = re.fullmatch(r'event consumption failure family=INITIAL_MEMBERSHIP category=([A-Z_]+)', message)
+                  if not match or match[1] not in INITIAL_MEMBERSHIP_CATEGORIES:
+                      return initial_membership_output()
+                  counts[match[1]] += 1
+                  if sum(counts.values()) > 200:
+                      return initial_membership_output()
+              return initial_membership_output(counts) if sum(counts.values()) else initial_membership_output()
+
           def frame_sources(config):
               if config[4] != 'DATASET_ATTENDANCE_MARK_HTTP':
                   return OWN_FRAME_SOURCES
@@ -4179,12 +4274,20 @@ jobs:
                   raise ValueError('Missing canonical MARK witness')
               return value
 
-          def load_failure(config):
+          def load_failure(config, initial_membership=False):
               if (os.environ.get('GITHUB_ACTIONS') != 'true'
                       or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
                       or os.environ.get('RCT_E2E_SYNTHETIC_SEED') != 'true'):
                   raise ValueError('Disposable diagnostic unavailable')
-              if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
+              if initial_membership:
+                  if config[4] != 'DATASET_ATTENDANCE_REPORT_HTTP':
+                      raise ValueError('Initial membership diagnostic unavailable')
+                  source = Path('services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java')
+                  info = source.lstat()
+                  if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
+                          or hashlib.sha256(source.read_bytes()).hexdigest() != 'ae695f1550b0f7f4aef4717ce29039235d85b494f51a3216fe4abbf366367757'):
+                      raise ValueError('Initial membership diagnostic source changed')
+              elif config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
                   verify_homework_sources()
               elif config[4] == 'STUDENT_STATS_HTTP503':
                   for source, digest in STATS_SOURCES.items():
@@ -4206,7 +4309,7 @@ jobs:
                   info = directory.lstat()
                   if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700 or info.st_uid != os.getuid():
                       raise ValueError('Invalid private directory')
-              path = work.joinpath(*config[2], 'safe-results.json')
+              path = work / 'reconciliation.safe.json' if initial_membership else work.joinpath(*config[2], 'safe-results.json')
               before = path.lstat()
               with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
                   info = os.fstat(stream.fileno())
@@ -4219,7 +4322,7 @@ jobs:
                       raise ValueError('Closed input changed')
               return decode(raw)
 
-          def collect(config):
+          def collect(config, initial_membership=False):
               global result
               deadline, remaining_bytes = time.monotonic() + 15, LIMIT
               def remaining():
@@ -4254,20 +4357,35 @@ jobs:
                   return bytes(payload)
               compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
                          '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
-              services = ('academic-service', 'schedule-service', 'api-gateway') if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP' else ((config[5],) if config[4] == 'STUDENT_STATS_HTTP503' else (config[5], 'api-gateway'))
+              services = ('attendance-service',) if initial_membership else (('academic-service', 'schedule-service', 'api-gateway') if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP' else ((config[5],) if config[4] == 'STUDENT_STATS_HTTP503' else (config[5], 'api-gateway')))
               payloads = {}
               for service in services:
                   cid = call([*compose, 'ps', '-q', service]).decode().strip()
                   if not re.fullmatch('[0-9a-f]{64}', cid):
                       raise ValueError('Owned service unavailable')
                   template = '[{{json .Id}},{{json (index .Config.Labels "com.docker.compose.project")}},{{json (index .Config.Labels "com.docker.compose.service")}},{{json .State.Running}}]'
+                  started_at = None
+                  if initial_membership:
+                      template = template[:-1] + ',{{json .State.StartedAt}}]'
                   def verify():
-                      if decode(call(['docker', 'inspect', '--format', template, cid])) != [cid, 'rct-e2e', service, True]:
+                      nonlocal started_at
+                      identity = decode(call(['docker', 'inspect', '--format', template, cid]))
+                      if initial_membership:
+                          if (type(identity) is not list or len(identity) != 5
+                                  or identity[:4] != [cid, 'rct-e2e', service, True]
+                                  or type(identity[4]) is not str
+                                  or not re.fullmatch(r'[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z', identity[4])):
+                              raise ValueError('Owned service start unavailable')
+                          if started_at is None:
+                              started_at = identity[4]
+                          if identity[4] != started_at:
+                              raise ValueError('Owned service restarted')
+                      elif identity != [cid, 'rct-e2e', service, True]:
                           raise ValueError('Owned service changed')
                   verify()
-                  result = output('UNAVAILABLE_LOG_CAPTURE', config[6])
-                  payload = call(['docker', 'logs', '--since', '180s', '--tail', '200', cid], True)
-                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
+                  result = initial_membership_output() if initial_membership else output('UNAVAILABLE_LOG_CAPTURE', config[6])
+                  payload = call(['docker', 'logs', '--since', started_at if initial_membership else '180s', '--tail', '2000' if initial_membership else '200', cid], True)
+                  result = initial_membership_output() if initial_membership else output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
                   verify()
                   payloads[service] = payload
               return payloads
@@ -4276,25 +4394,36 @@ jobs:
           try:
               config = STAGES[os.environ['RCT_HTTP500_DIAGNOSTIC_STAGE']]
               result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
-              failure = load_failure(config)
-              result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
-              if is_target_failure(failure, config):
-                  request_id = None
-                  if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP':
-                      result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
-                      request_id = load_mark_request_id(config)
-                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
-                  payloads = collect(config)
-                  result = output('UNAVAILABLE_LOG_FORMAT', config[6])
-                  if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
-                      result = classify_homework(payloads, config)
-                  elif config[4] == 'STUDENT_STATS_HTTP503':
-                      result = classify(payloads[config[5]], config)
-                  else:
-                      domain = classify(payloads[config[5]], config, request_id=request_id)
-                      gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
-                      result = combine(domain, gateway, config)
-                      result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway, request_id=request_id)
+              initial_failure = False
+              if config[4] == 'DATASET_ATTENDANCE_REPORT_HTTP':
+                  try:
+                      initial_failure = is_initial_membership_failure(load_failure(config, initial_membership=True))
+                  except Exception:
+                      pass
+              if initial_failure:
+                  result = initial_membership_output()
+                  payloads = collect(config, initial_membership=True)
+                  result = classify_initial_membership(payloads['attendance-service'])
+              else:
+                  failure = load_failure(config)
+                  result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
+                  if is_target_failure(failure, config):
+                      request_id = None
+                      if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP':
+                          result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
+                          request_id = load_mark_request_id(config)
+                      result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
+                      payloads = collect(config)
+                      result = output('UNAVAILABLE_LOG_FORMAT', config[6])
+                      if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
+                          result = classify_homework(payloads, config)
+                      elif config[4] == 'STUDENT_STATS_HTTP503':
+                          result = classify(payloads[config[5]], config)
+                      else:
+                          domain = classify(payloads[config[5]], config, request_id=request_id)
+                          gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
+                          result = combine(domain, gateway, config)
+                          result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway, request_id=request_id)
           except Exception:
               pass
           print(json.dumps(result, sort_keys=True))
@@ -5202,6 +5331,9 @@ jobs:
                                  'firstRestartFailure', 'mainCloseLastRead'}
               if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5'}:
                   keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
+              if (type(value) is dict and value.get('schema') == 'semester-reconciliation.v5'
+                      and 'setupQuiescenceLastRead' in value):
+                  keys.add('setupQuiescenceLastRead')
               if (type(value) is not dict or set(value) != keys
                       or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5'}
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
@@ -5253,6 +5385,23 @@ jobs:
                           or stranded['deadReadyClass'] not in {'ZERO', 'ONE', 'MANY', 'UNKNOWN'}
                           or stranded['deadReadyOne'] != (stranded['deadReadyClass'] == 'ONE')):
                       raise ValueError('Invalid closed reconciliation dead-ready class')
+              if 'setupQuiescenceLastRead' in value:
+                  setup = value['setupQuiescenceLastRead']
+                  setup_counts = {'mainReady', 'mainUnacked', 'mainConsumers', 'deadReady',
+                                  'deadUnacked', 'retryReady', 'retryUnacked', 'scheduleUnproven',
+                                  'scheduleLegacy', 'scheduleDue'}
+                  setup_bools = {'initialExpectedApplied', 'initialNoPendingWork', 'initialProducerSent'}
+                  setup_causes = {'UNOBSERVED', 'MAIN_READY', 'MAIN_UNACKED', 'MAIN_CONSUMER',
+                                  'DLQ_READY', 'DLQ_UNACKED', 'RETRY_READY', 'RETRY_UNACKED',
+                                  'SCHEDULE_UNPROVEN', 'SCHEDULE_LEGACY', 'SCHEDULE_DUE',
+                                  'INITIAL_EXPECTED', 'INITIAL_PENDING', 'INITIAL_PRODUCER'}
+                  if setup is not None and (
+                          type(setup) is not dict or set(setup) != setup_counts | setup_bools | {'firstFailed'}
+                          or type(setup['firstFailed']) is not str or setup['firstFailed'] not in setup_causes
+                          or not all(setup[key] is None or (type(setup[key]) is int
+                                     and 0 <= setup[key] <= 1_000_000) for key in setup_counts)
+                          or not all(type(setup[key]) is bool for key in setup_bools)):
+                      raise ValueError('Invalid closed reconciliation setup quiescence read')
               restored = (value['restorationSucceeded'] is True
                           and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
           except Exception:

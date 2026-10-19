@@ -81,6 +81,60 @@ const nativeBotReadOutcomes = [
   'RETURNED_READY_CURRENT_LESSON',
   'UNKNOWN',
 ] as const;
+const nativeBotReadStages = [
+  'BFF_IDENTITY',
+  'BFF_AUTH',
+  'BFF_AUTH_RESPONSE',
+  'BFF_ACADEMIC',
+  'BFF_SCOPE_RESPONSE',
+  'BFF_GROUP',
+  'BFF_DAY',
+  'BFF_SELECTION',
+  'BFF_SUMMARY',
+  'BFF_ATTENDANCE',
+  'BFF_ATTENDANCE_RESPONSE',
+  'BFF_ROSTER',
+  'BFF_RECHECK_GROUP',
+  'BFF_RECHECK_RESPONSE',
+  'BFF_FINAL_SELECTION',
+  'ATTENDANCE_IDENTITY',
+  'ATTENDANCE_AUTH',
+  'ATTENDANCE_AUTH_RESPONSE',
+  'ATTENDANCE_ACADEMIC',
+  'ATTENDANCE_SCOPE_RESPONSE',
+  'ATTENDANCE_GROUP',
+  'ATTENDANCE_SCHEDULE',
+  'ATTENDANCE_CURRENT',
+  'ATTENDANCE_REPORT',
+  'ATTENDANCE_ROWS',
+  'ATTENDANCE_SUMMARY',
+  'ATTENDANCE_STATISTICS',
+  'ATTENDANCE_RECHECK',
+  'ATTENDANCE_FINAL_CURRENT',
+  'ACADEMIC_IDENTITY',
+  'ACADEMIC_AUTH_BEFORE',
+  'ACADEMIC_QUERY',
+  'ACADEMIC_AUTH_AFTER',
+  'UNKNOWN',
+] as const;
+const nativeBotReadCauses = [
+  'STATUS_UNAVAILABLE',
+  'STATUS_DEADLINE_EXCEEDED',
+  'STATUS_UNAUTHENTICATED',
+  'STATUS_PERMISSION_DENIED',
+  'STATUS_FAILED_PRECONDITION',
+  'STATUS_INVALID_ARGUMENT',
+  'STATUS_NOT_FOUND',
+  'STATUS_OTHER',
+  'DATA_ACCESS',
+  'HISTORY',
+  'TIME',
+  'ARGUMENT',
+  'STATE',
+  'NULL',
+  'RUNTIME',
+  'UNKNOWN',
+] as const;
 type NativePrimaryPath = keyof typeof nativePrimaryPaths;
 interface NativePrimaryFailure {
   path: NativePrimaryPath;
@@ -94,6 +148,8 @@ interface NativePrimaryFailure {
   phase?: (typeof nativeBotPhases)[number];
   checks?: number | 'UNKNOWN';
   headmanReadOutcome?: (typeof nativeBotReadOutcomes)[number];
+  readStage?: (typeof nativeBotReadStages)[number];
+  readCause?: (typeof nativeBotReadCauses)[number];
 }
 
 /** First facts only; no raw messages, commands, output, paths or object-supplied class names. */
@@ -178,12 +234,18 @@ export function retainNativePrimaryFailure(
   const transport = path === 'SEMESTER_PREVIEW' ? { transportHint } : {};
   const checks = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'checks') : undefined;
   const headmanReadOutcome = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'headmanReadOutcome') : undefined;
+  const readStage = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'readStage') : undefined;
+  const readCause = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'readCause') : undefined;
   const botPhase =
     path === 'BOT_ROLE_MENU'
       ? {
           phase: nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN',
           ...(headmanReadOutcome === undefined ? {} : {
             headmanReadOutcome: nativeBotReadOutcomes.find((value) => value === headmanReadOutcome) ?? 'UNKNOWN',
+          }),
+          ...(readStage === undefined && readCause === undefined ? {} : {
+            readStage: nativeBotReadStages.find((value) => value === readStage) ?? 'UNKNOWN',
+            readCause: nativeBotReadCauses.find((value) => value === readCause) ?? 'UNKNOWN',
           }),
           checks:
             typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
@@ -220,6 +282,8 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const phase = ownData(value, 'phase');
     const checks = ownData(value, 'checks');
     const headmanReadOutcome = ownData(value, 'headmanReadOutcome');
+    const readStage = ownData(value, 'readStage');
+    const readCause = ownData(value, 'readCause');
     const boundedChecks =
       typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
         ? checks
@@ -231,6 +295,8 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     if (path === 'BOT_ROLE_MENU') fields.push('phase');
     if (path === 'BOT_ROLE_MENU' && checks !== undefined) fields.push('checks');
     if (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined) fields.push('headmanReadOutcome');
+    if (path === 'BOT_ROLE_MENU' && readStage !== undefined) fields.push('readStage');
+    if (path === 'BOT_ROLE_MENU' && readCause !== undefined) fields.push('readCause');
     const keys = Object.keys(value);
     if (
       keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
@@ -239,6 +305,10 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       (path === 'BOT_ROLE_MENU' && !nativeBotPhases.some((candidate) => candidate === phase)) ||
       (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined &&
         !nativeBotReadOutcomes.some((candidate) => candidate === headmanReadOutcome)) ||
+      (path === 'BOT_ROLE_MENU' &&
+        ((readStage === undefined) !== (readCause === undefined) ||
+          (readStage !== undefined && !nativeBotReadStages.some((candidate) => candidate === readStage)) ||
+          (readCause !== undefined && !nativeBotReadCauses.some((candidate) => candidate === readCause)))) ||
       (path === 'ASYNC_REPORT' &&
         state === 'error' &&
         !nativeJobErrors.some((candidate) => candidate === errorCode))
@@ -275,6 +345,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
         phase,
         ...(checks === undefined ? {} : { checks: boundedChecks }),
         ...(headmanReadOutcome === undefined ? {} : { headmanReadOutcome }),
+        ...(readStage === undefined ? {} : { readStage, readCause }),
       } : {}),
     } as NativePrimaryFailure);
   }

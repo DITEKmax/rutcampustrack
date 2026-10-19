@@ -100,6 +100,20 @@ public final class DirectedBotReadGrpcService
     }
 
     BotHeadmanCurrentAttendanceResponse headman(BotHeadmanCurrentAttendanceRequest request) {
+        String[] stage = {"BFF_IDENTITY"};
+        try {
+            return headmanRead(request, stage);
+        } catch (RuntimeException error) {
+            var status =
+                    error instanceof StatusRuntimeException rpc
+                            ? rpc.getStatus()
+                            : unavailable().getStatus();
+            throw status.asRuntimeException(failureProvenance(error, stage[0]));
+        }
+    }
+
+    private BotHeadmanCurrentAttendanceResponse headmanRead(
+            BotHeadmanCurrentAttendanceRequest request, String[] stage) {
         var identity = request.getIdentity();
         validateIdentity(identity);
         if (request.getSelectedLessonId() < 0) throw Status.INVALID_ARGUMENT.asRuntimeException();
@@ -107,17 +121,21 @@ public final class DirectedBotReadGrpcService
         LocalDate date = date(now);
         BotReadCapability capability =
                 BotReadCapability.BOT_READ_CAPABILITY_HEADMAN_CURRENT_ATTENDANCE_READ;
-        var admission = admit(identity, capability);
+        var admission = admit(identity, capability, stage);
         var scope =
                 scope(
                         identity,
                         BotAcademicReadAction.BOT_ACADEMIC_READ_ACTION_HEADMAN_CURRENT,
-                        date);
+                        date,
+                        stage);
+        stage[0] = "BFF_GROUP";
         if (scope.getOwnGroupId() <= 0
                 || scope.getOwnGroupName().isBlank()
                 || !admission.getAuthorizedGroupIdsList().contains(scope.getOwnGroupId()))
             throw unavailable();
+        stage[0] = "BFF_DAY";
         var lessons = dependencies.day(scope.getOwnGroupId(), scope.getSemesterId(), date);
+        stage[0] = "BFF_SELECTION";
         var selection =
                 CurrentHeadmanLessonPolicy.select(
                         scope.getOwnGroupId(),
@@ -129,6 +147,7 @@ public final class DirectedBotReadGrpcService
                 BotHeadmanCurrentAttendanceResponse.newBuilder()
                         .setServerNow(offset(now))
                         .setEducationalDate(date.toString());
+        stage[0] = "BFF_SUMMARY";
         switch (selection.state()) {
             case NO_CURRENT ->
                     response.setState(
@@ -141,12 +160,15 @@ public final class DirectedBotReadGrpcService
                                             .toList());
             case READY -> {
                 var selected = summary(selection.lesson(), scope);
+                stage[0] = "BFF_ATTENDANCE";
                 var attendance = dependencies.attendance(identity, selected.getLessonId());
+                stage[0] = "BFF_ATTENDANCE_RESPONSE";
                 if (!attendance.hasLesson()
                         || !attendance.getLesson().equals(selected)
                         || !attendance.getEducationalDate().equals(date.toString())
                         || !date(Instant.parse(attendance.getServerNow())).equals(date))
                     throw unavailable();
+                stage[0] = "BFF_ROSTER";
                 validateRoster(scope, attendance);
                 response.setState(BotCurrentAttendanceState.BOT_CURRENT_ATTENDANCE_STATE_READY)
                         .setLesson(attendance.getLesson())
@@ -155,8 +177,9 @@ public final class DirectedBotReadGrpcService
                         .setServerNow(attendance.getServerNow());
             }
         }
-        recheck(identity, capability, scope, date);
+        recheck(identity, capability, scope, date, stage);
         // Do not return a lesson or callback choices after their current time window ended.
+        stage[0] = "BFF_FINAL_SELECTION";
         var latest =
                 CurrentHeadmanLessonPolicy.select(
                         scope.getOwnGroupId(),
@@ -173,7 +196,14 @@ public final class DirectedBotReadGrpcService
 
     private CheckBotOwnAuthorityResponse admit(
             DirectedBotIdentity identity, BotReadCapability capability) {
+        return admit(identity, capability, null);
+    }
+
+    private CheckBotOwnAuthorityResponse admit(
+            DirectedBotIdentity identity, BotReadCapability capability, String[] stage) {
+        if (stage != null) stage[0] = "BFF_AUTH";
         var authority = dependencies.check(identity, capability);
+        if (stage != null) stage[0] = "BFF_AUTH_RESPONSE";
         if (authority.getUserId() != identity.getExpectedUserId()
                 || authority.getTelegramBindingVersion() != identity.getExpectedBindingVersion()
                 || authority.getRolesVersion() != identity.getExpectedRolesVersion()
@@ -183,7 +213,17 @@ public final class DirectedBotReadGrpcService
 
     private BotAcademicScopeResponse scope(
             DirectedBotIdentity identity, BotAcademicReadAction action, LocalDate date) {
+        return scope(identity, action, date, null);
+    }
+
+    private BotAcademicScopeResponse scope(
+            DirectedBotIdentity identity,
+            BotAcademicReadAction action,
+            LocalDate date,
+            String[] stage) {
+        if (stage != null) stage[0] = "BFF_ACADEMIC";
         var scope = dependencies.scope(identity, action);
+        if (stage != null) stage[0] = "BFF_SCOPE_RESPONSE";
         if (scope.getUserId() != identity.getExpectedUserId()
                 || scope.getTelegramBindingVersion() != identity.getExpectedBindingVersion()
                 || scope.getRolesVersion() != identity.getExpectedRolesVersion()
@@ -202,11 +242,22 @@ public final class DirectedBotReadGrpcService
             BotReadCapability capability,
             BotAcademicScopeResponse before,
             LocalDate date) {
-        var admission = admit(identity, capability);
+        recheck(identity, capability, before, date, null);
+    }
+
+    private void recheck(
+            DirectedBotIdentity identity,
+            BotReadCapability capability,
+            BotAcademicScopeResponse before,
+            LocalDate date,
+            String[] stage) {
+        var admission = admit(identity, capability, stage);
+        if (stage != null) stage[0] = "BFF_RECHECK_GROUP";
         if (before.getOwnGroupId() > 0
                 && !admission.getAuthorizedGroupIdsList().contains(before.getOwnGroupId()))
             throw unavailable();
-        var after = scope(identity, before.getAction(), date);
+        var after = scope(identity, before.getAction(), date, stage);
+        if (stage != null) stage[0] = "BFF_RECHECK_RESPONSE";
         if (!before.toBuilder()
                         .clearServerNow()
                         .build()
@@ -334,9 +385,74 @@ public final class DirectedBotReadGrpcService
             observer.onError(
                     Status.fromCode(code)
                             .withDescription("current bot read unavailable")
-                            .asRuntimeException());
+                            .asRuntimeException(failureProvenance(error, null)));
         } catch (RuntimeException error) {
             observer.onError(unavailable());
         }
+    }
+
+    // Diagnostic values are closed labels only, never copied exception text or arbitrary trailers.
+    private static final io.grpc.Metadata.Key<String> READ_STAGE =
+            io.grpc.Metadata.Key.of("rct-bot-read-stage", io.grpc.Metadata.ASCII_STRING_MARSHALLER);
+    private static final io.grpc.Metadata.Key<String> READ_CAUSE =
+            io.grpc.Metadata.Key.of("rct-bot-read-cause", io.grpc.Metadata.ASCII_STRING_MARSHALLER);
+
+    private static io.grpc.Metadata failureProvenance(RuntimeException error, String stage) {
+        String cause;
+        if (error instanceof StatusRuntimeException rpc) {
+            cause =
+                    switch (rpc.getStatus().getCode()) {
+                        case UNAVAILABLE -> "STATUS_UNAVAILABLE";
+                        case DEADLINE_EXCEEDED -> "STATUS_DEADLINE_EXCEEDED";
+                        case UNAUTHENTICATED -> "STATUS_UNAUTHENTICATED";
+                        case PERMISSION_DENIED -> "STATUS_PERMISSION_DENIED";
+                        case FAILED_PRECONDITION -> "STATUS_FAILED_PRECONDITION";
+                        case INVALID_ARGUMENT -> "STATUS_INVALID_ARGUMENT";
+                        case NOT_FOUND -> "STATUS_NOT_FOUND";
+                        default -> "STATUS_OTHER";
+                    };
+        } else if (error instanceof java.time.DateTimeException) cause = "TIME";
+        else if (error instanceof IllegalArgumentException) cause = "ARGUMENT";
+        else if (error instanceof IllegalStateException) cause = "STATE";
+        else if (error instanceof NullPointerException) cause = "NULL";
+        else cause = "RUNTIME";
+        if (error instanceof StatusRuntimeException rpc) {
+            String inherited = single(rpc.getTrailers(), READ_STAGE);
+            String inheritedCause = single(rpc.getTrailers(), READ_CAUSE);
+            if (inherited != null
+                    && inheritedCause != null
+                    && inherited.length() <= 48
+                    && inheritedCause.length() <= 32
+                    && inherited.matches(
+                            "BFF_(IDENTITY|AUTH|AUTH_RESPONSE|ACADEMIC|SCOPE_RESPONSE|GROUP|DAY|SELECTION|SUMMARY|ATTENDANCE|ATTENDANCE_RESPONSE|ROSTER|RECHECK_GROUP|RECHECK_RESPONSE|FINAL_SELECTION)|ATTENDANCE_(IDENTITY|AUTH|AUTH_RESPONSE|ACADEMIC|SCOPE_RESPONSE|GROUP|SCHEDULE|CURRENT|REPORT|ROWS|SUMMARY|STATISTICS|RECHECK|FINAL_CURRENT)|ACADEMIC_(IDENTITY|AUTH_BEFORE|QUERY|AUTH_AFTER)")
+                    && inheritedCause.matches(
+                            "STATUS_UNAVAILABLE|STATUS_DEADLINE_EXCEEDED|STATUS_UNAUTHENTICATED|STATUS_PERMISSION_DENIED|STATUS_FAILED_PRECONDITION|STATUS_INVALID_ARGUMENT|STATUS_NOT_FOUND|STATUS_OTHER|DATA_ACCESS|HISTORY|TIME|ARGUMENT|STATE|NULL|RUNTIME")
+                    && (stage == null
+                            || ((stage.equals("BFF_ACADEMIC") || stage.equals("BFF_ATTENDANCE"))
+                                    && inherited.startsWith(
+                                            stage.equals("BFF_ACADEMIC")
+                                                    ? "ACADEMIC_"
+                                                    : "ATTENDANCE_"))
+                            || (stage.equals("BFF_ATTENDANCE")
+                                    && inherited.startsWith("ACADEMIC_")))) {
+                stage = inherited;
+                cause = inheritedCause;
+            }
+        }
+        if (stage == null) return null;
+        var trailers = new io.grpc.Metadata();
+        trailers.put(READ_STAGE, stage);
+        trailers.put(READ_CAUSE, cause);
+        return trailers;
+    }
+
+    private static String single(io.grpc.Metadata trailers, io.grpc.Metadata.Key<String> key) {
+        if (trailers == null) return null;
+        Iterable<String> values = trailers.getAll(key);
+        if (values == null) return null;
+        var iterator = values.iterator();
+        if (!iterator.hasNext()) return null;
+        String value = iterator.next();
+        return iterator.hasNext() ? null : value;
     }
 }

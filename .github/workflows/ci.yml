@@ -1743,10 +1743,11 @@ jobs:
           retention-days: 7
 
       - name: Verify cache commit regression against exact old semantics and restored source
-        if: matrix.service.name == 'academic-service'
+        if: ${{ !cancelled() && matrix.service.name == 'academic-service' }}
         timeout-minutes: 15
         run: |
           umask 077
+          git -c core.fileMode=false diff --exit-code -- services proto event-schemas
           python3 - <<'PY_CACHE_COMMIT'
           import hashlib, json, os, pathlib, re, shutil, subprocess, tempfile
           import xml.etree.ElementTree as ET

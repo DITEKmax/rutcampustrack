@@ -410,6 +410,14 @@ const datasetHttpStages = Object.fromEntries(
   Object.keys(datasetHttpOperations).map((cause) => [cause, 'DATASET_HTTP']),
 ) as Record<DatasetHttpCause, 'DATASET_HTTP'>;
 
+const subjectCreateProblemStages = {
+  SUBJECT_CREATE_PROBLEM_ASSIGNMENT_ADOPTION_PENDING: 'SUBJECT_CREATE_PROBLEM',
+  SUBJECT_CREATE_PROBLEM_IDENTITY_PUBLICATION_PENDING: 'SUBJECT_CREATE_PROBLEM',
+  SUBJECT_CREATE_PROBLEM_GATEWAY_DEPENDENCY_UNAVAILABLE: 'SUBJECT_CREATE_PROBLEM',
+  SUBJECT_CREATE_PROBLEM_OTHER: 'SUBJECT_CREATE_PROBLEM',
+  SUBJECT_CREATE_PROBLEM_UNKNOWN: 'SUBJECT_CREATE_PROBLEM',
+} as const;
+
 const headmanCleanupStages = {
   HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ: 'HEADMAN_CLEANUP',
   HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY: 'HEADMAN_CLEANUP',
@@ -484,6 +492,7 @@ const failureStages = {
   CLOCK_WINDOW_GUARD: 'TEACHING_CLOCK',
   INVALID_TIME_VALUE: 'UNKNOWN',
   ...datasetHttpStages,
+  ...subjectCreateProblemStages,
   ...headmanCleanupStages,
   ...lifecycleCleanupStages,
   ...lifecycleTransportStages,
@@ -805,6 +814,11 @@ export function safeFailureDiagnostics(
         : reported && match[2] === '0'
           ? { stage: 'UNKNOWN', cause: match[1] as ReportedFailureHint, httpStatus: 0 }
           : failureDiagnostic();
+      if (diagnostic.stage === 'SUBJECT_CREATE_PROBLEM') {
+        if (match?.[0] !== description || diagnostic.httpStatus !== 503) continue;
+        if (!result.some((item) => item.stage === diagnostic.stage)) result.push(diagnostic);
+        continue;
+      }
       const lifecycleCleanup = Object.prototype.hasOwnProperty.call(
         lifecycleCleanupStages,
         diagnostic.cause,
@@ -909,6 +923,36 @@ function retainLifecycleDiagnostic(
   if (previous.length >= 8 && !discardReportedFailureHint(annotations)) return;
   if (annotations.length >= 32) return;
   annotations.push({ type: safeFailureAnnotation, description: `${cause}:${status}` });
+}
+
+/** Untrusted response metadata only: no body, identifiers or free text leave this projection. */
+export function closedSubjectCreateProblem(
+  value: unknown,
+): keyof typeof subjectCreateProblemStages {
+  if (ownData(value, 'status') !== 503) return 'SUBJECT_CREATE_PROBLEM_UNKNOWN';
+  const type = ownData(value, 'type');
+  const code = ownData(value, 'code');
+  const extraCode = ownData(ownData(value, 'extras'), 'code');
+  if (type === 'https://api.rutcampustrack.ru/problems/assignment-adoption-pending')
+    return 'SUBJECT_CREATE_PROBLEM_ASSIGNMENT_ADOPTION_PENDING';
+  if (
+    type === 'https://api.rutcampustrack.ru/problems/identity-state-unavailable' &&
+    extraCode === 'IDENTITY_PUBLICATION_PENDING'
+  )
+    return 'SUBJECT_CREATE_PROBLEM_IDENTITY_PUBLICATION_PENDING';
+  if (type === undefined && code === 'DEPENDENCY_UNAVAILABLE')
+    return 'SUBJECT_CREATE_PROBLEM_GATEWAY_DEPENDENCY_UNAVAILABLE';
+  return typeof type === 'string' || typeof code === 'string' || typeof extraCode === 'string'
+    ? 'SUBJECT_CREATE_PROBLEM_OTHER'
+    : 'SUBJECT_CREATE_PROBLEM_UNKNOWN';
+}
+
+/** First failed POST subject response only; the original HTTP failure remains separate. */
+export function retainDatasetSubjectCreateProblem(
+  annotations: TestResult['annotations'],
+  value: unknown,
+): void {
+  retainLifecycleDiagnostic(annotations, closedSubjectCreateProblem(value), 503);
 }
 /** Retain the original preview transport, before the caller rethrows the identical error. */
 export function retainSemesterPreviewTransport(

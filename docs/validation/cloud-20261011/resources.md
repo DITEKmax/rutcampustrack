@@ -20,16 +20,16 @@ Native39 exactAuthCommand127109e5 overlay; other38inputs unchanged. Root/native 
 | Owner | Scope / state |
 | --- | --- |
 | Root | /workspace/rutcampustrack; sole Git/docs/matrix/PR; normalpush14 e5c/PRdraft verified; receive currentCI primary evidence. |
-| a05_native34_compile | Reporter finite BOTchecks+subject previewGET ready/joined/RootroutineAPPROVE; current503 existing-channel followup active; UIreportedcaller handedR2aa/joined. |
+| a05_native34_compile | first SubjectCreate503 existing-response finite category joined, independentAPPROVE; no retry/body publication. Writer released. |
 | r658_archive_race | /tmp/rct-s19-auth; Auth pending-headman/effective-reconcile correction2 source ready/joined; writer released. |
 | r9cf_cache_fixture_review | Independent zero-binding fixture addressedAPPROVE; malformed0 gets exactINVALID_ARGUMENT; runtimeNOT_RUN. |
-| r2aa_registry_render_rca | /tmp/rct-s19-apps; authored exactzero-binding fixture/joined/independentAPPROVE. Independently approvedcache+completeGitleaks gate corrections; writerreleased. |
-| r9cf_report_registry_review | /tmp/rct-s19-pool-budget; current-cache gate maintenance independentAPPROVE/joined; spring closedstatus/frame observation only joined, all277asserts exact; writerreleased. |
+| r2aa_registry_render_rca | /tmp/rct-s19-apps; authored exactzero-binding fixture/joined/independentAPPROVE. Independently approvedcache+completeGitleaks and addressed exactline/path config; writerreleased. |
+| r9cf_report_registry_review | /tmp/rct-s19-pool-budget; current-cache gate and independent eligibility/clean-source guard joined; Spring finite observation retains all277asserts. Released. |
 | r2aa_bootstrap_config_rca | /tmp/rct-s19-apps; synthetic CLI private config owner UID:GID/0700/0600 fixture1 joined; Root routine review; released. |
-| r9cf_event_outbox_rca | /tmp/rct-s19-e2e; authored complete-range pinned Gitleaks+oneexacttypefingerprint correction; independentwholeAPPROVE/joined, writerreleased. ScannerNOT_RUN locally. |
-| s19_9cf_ci_observer | e5c push39184835129/PR39184841614/Cov39184841585 metadata observer active; Security39184841586 GitleaksFAIL, OpenAPI39184841589SUCCESS; old8c5 closed/no repolls. Push AuthIT/Apps/Monitoring and both Synthetic SUCCESS; primary acceptance Root. |
+| r9cf_event_outbox_rca | /tmp/rct-s19-e2e; complete-history pinned Gitleaks + exact rule/path/type-line AND config joined/independent addressedAPPROVE. One official8.24.3 synthetic scan PASS/.582s/51960KiB, three expected findings, no realrepo scan. Released. |
+| s19_9cf_ci_observer | e5c push39184835129/PR39184841614/Cov39184841585 metadata observer finished; Security39184841586 GitleaksFAIL, OpenAPI39184841589SUCCESS; old8c5 closed/no repolls. Push AuthIT/Apps/Monitoring and both Synthetic SUCCESS; primary acceptance Root. |
 
 Accepted33/39, weight170/196; U14.3 closed on8c5; U14.4 currente5c registry6PASS/currentrights+outage/restoration/freshPDF accepted. U14.7 actualCLI+4core accepted; source-only corrections do not close remaining runtime criteria.
-Next: ordinaryprecommit/publish coherent6source+5docs; currente5cCLI/restore andUIRCA continue; actual exact-restore12157058652/9f042ebf PASS accepted, no whole application recovery claim. App attachment tool unavailable/timedout, no repeatedcall.
+Next: final scoped hooks and one normalpush of b0a plus addressed config/cache eligibility/503 diagnostics; newordinaryCI required; actual exact-restore12157058652/9f042ebf PASS accepted, no whole application recovery claim. App attachment tool unavailable/timedout, no repeatedcall.
 No owner question; no production/main/merge/deploy/real credentials. B013/B014/B015 FROZEN.
 External device/owner/deploy acceptance remains deferred, not PASS.

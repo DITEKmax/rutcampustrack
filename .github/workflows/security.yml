@@ -170,7 +170,7 @@ jobs:
           scan_status=0
           "$tool_dir/gitleaks" detect --source . --redact=100 --exit-code=2 \
             --report-format=sarif --report-path=results.sarif \
-            --gitleaks-ignore-path=.gitleaksignore --log-opts="$log_opts" || scan_status=$?
+            --config=.gitleaks.toml --gitleaks-ignore-path=.gitleaksignore --log-opts="$log_opts" || scan_status=$?
           if [[ "$scan_status" -eq 0 || "$scan_status" -eq 2 ]]; then
             if [[ -s results.sarif ]]; then
               echo 'has_report=true' >> "$GITHUB_OUTPUT"

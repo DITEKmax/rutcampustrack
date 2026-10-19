@@ -14,7 +14,11 @@ import { expect, type APIRequestContext, type APIResponse, type Page } from '@pl
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
 import { test as base, requirePrivateArtifacts } from './artifact-privacy';
-import { datasetHttpFailure } from './safe-reporter';
+import {
+  datasetHttpFailure,
+  retainDatasetSubjectCreateProblem,
+  retainFirstDatasetHttpFailure,
+} from './safe-reporter';
 
 type Role = Exclude<CurrentSession['activeRole'], null>;
 type Model = Record<string, any>;
@@ -108,7 +112,28 @@ function retainMarkRequestId(response: APIResponse, method: string, path: string
   }
 }
 
-/** Status-only diagnostics keep generated initial passwords and bearer tokens out of reports. */
+/** Read the already captured response only; rejected/oversized metadata stays unknown. */
+async function readSubjectCreateProblem(response: APIResponse): Promise<unknown> {
+  try {
+    const headers = response.headers();
+    const contentType = headers['content-type'];
+    const length = headers['content-length'];
+    if (
+      typeof contentType !== 'string' ||
+      contentType.length > 96 ||
+      !/^application\/problem\+json(?:\s*;\s*charset=utf-8)?$/i.test(contentType) ||
+      (length !== undefined && (!/^(?:0|[1-9][0-9]{0,3})$/.test(length) || Number(length) > 4096))
+    )
+      return;
+    const body = await response.body();
+    if (body.length > 4096) return;
+    return JSON.parse(body.toString('utf8'));
+  } catch {
+    return;
+  }
+}
+
+/** Closed diagnostics keep generated initial passwords and bearer tokens out of reports. */
 export class Actor {
   constructor(
     readonly request: APIRequestContext,
@@ -132,7 +157,17 @@ export class Actor {
     });
     if (!statuses.includes(response.status())) {
       retainMarkRequestId(response, method, path);
-      throw datasetHttpFailure(method, path, response.status());
+      const failure = datasetHttpFailure(method, path, response.status());
+      if (method === 'POST' && path === '/api/academic/subjects' && response.status() === 503) {
+        try {
+          const annotations = base.info().annotations;
+          retainFirstDatasetHttpFailure(annotations, failure);
+          retainDatasetSubjectCreateProblem(annotations, await readSubjectCreateProblem(response));
+        } catch {
+          // Diagnostic refusal cannot replace the original rejected request.
+        }
+      }
+      throw failure;
     }
     return response.status() === 204 ? {} : response.json();
   }

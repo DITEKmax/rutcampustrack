@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Exact TypeScript prop type annotation"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^frontends/mobile-core/src/features/notifications/NotificationsScreen\.vue$''']
+regexes = ['''^[ \t]*api: NotificationsV2Api;[ \t]*$''']

@@ -2,5 +2,3 @@
 63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12
 # Public JJWT 0.12.6 API jar SHA256, verified against the cached public artifact; no credential.
 docs/validation/cloud-20261011/attempts.ndjson:generic-api-key:2479
-# False positive: a TypeScript property type, without a credential literal.
-70f56323d9836c0b335f8b6633c274f0719cdbb4:frontends/mobile-core/src/features/notifications/NotificationsScreen.vue:generic-api-key:27

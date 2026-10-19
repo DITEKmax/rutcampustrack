@@ -2956,8 +2956,79 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     ackSourceTypeMatches: boolean;
   };
   type CountClass = 'ZERO' | 'ONE' | 'MANY' | 'INVALID';
+  const readinessSources = {
+    GATEWAY_ISSUER_CLIENT: {
+      logger: 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
+      stages: ['REQUEST_BUILD', 'AUTH_TRANSPORT', 'AUTH_HTTP', 'AUTH_RESPONSE'],
+    },
+    GATEWAY_ISSUER_FILTER: {
+      logger: 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
+      stages: ['EXPECTATIONS', 'FORWARDED_IDENTITY'],
+    },
+    ACADEMIC_CONTEXT: {
+      logger: 'ru.rutcampustrack.academic.security.AcademicUserContextFilter',
+      stages: ['CURRENT_CONTEXT'],
+    },
+    SCHEDULE_CLIENT: {
+      logger: 'ru.rutcampustrack.academic.grpc.ScheduleGrpcClient',
+      stages: ['SCHEDULE_PREVIEW'],
+    },
+    ACADEMIC_PREVIEW: {
+      logger: 'ru.rutcampustrack.academic.semester.SemesterDeletionPreviewService',
+      stages: [
+        'ATTENDANCE_PREVIEW',
+        'ECHO_FENCE',
+        'ACADEMIC_DIGEST',
+        'SCHEDULE_DIGEST',
+        'ATTENDANCE_DIGEST',
+        'COUNTS',
+      ],
+    },
+  } as const;
+  const readinessCauses = [
+    'DNS',
+    'CONNECT',
+    'TLS',
+    'TIMEOUT',
+    'TRANSPORT_IO',
+    'RPC_STATUS',
+    'CREDENTIAL_CONFIGURATION',
+    'HTTP_REJECTED',
+    'RESPONSE_REJECTED',
+    'IDENTITY_REJECTED',
+    'INVALID_ARGUMENT',
+    'ECHO_OR_FENCE_INVALID',
+    'DIGEST_INVALID',
+    'NEGATIVE_COUNT',
+    'UNEXPECTED',
+    'UNKNOWN',
+  ] as const;
+  type ReadinessWarn = {
+    source: keyof typeof readinessSources;
+    stage: string;
+    status: string;
+    cause: (typeof readinessCauses)[number];
+  };
+  type ReadinessLog = {
+    state: 'REPORTED' | 'UNKNOWN';
+    unknownReason:
+      | 'NONE'
+      | 'NO_REQUEST'
+      | 'LOG_READ'
+      | 'LOG_BYTE_LIMIT'
+      | 'LOG_TAIL_LIMIT'
+      | 'LOG_FORMAT'
+      | 'LOG_RECORD_SHAPE'
+      | 'TARGET_TEMPLATE'
+      | 'TARGET_CORRELATION'
+      | 'MATCH_COUNT_LIMIT'
+      | 'NO_MATCHING_WARN'
+      | 'AMBIGUOUS';
+    matchedCount: number;
+    last: ReadinessWarn | null;
+  };
   const diagnostic = {
-    schema: 'semester-reconciliation.v8',
+    schema: 'semester-reconciliation.v9',
     phase: 'SETUP',
     configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',
@@ -2994,6 +3065,8 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       mainUnackedZero: boolean;
       deadReadyClass: 'ZERO' | 'ONE' | 'MANY' | 'UNKNOWN';
     } | null,
+    recoveryHealthLastRead: null as RecoveryHealthRead | null,
+    readinessFailureLog: null as ReadinessLog | null,
     archiveReadinessLastRead: null as {
       httpStatus: number | null;
       transport:
@@ -3128,7 +3201,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
               args.length === expected.length &&
               args.every((value, index) => value === expected[index]);
             const inspectFormat =
-              '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}';
+              '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"startedAt":{{json .State.StartedAt}},"healthLog":{{json .State.Health.Log}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}';
             if (
               matches([
                 'exec',
@@ -3246,7 +3319,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
         [
           'inspect',
           '--format',
-          '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
+          '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"startedAt":{{json .State.StartedAt}},"healthLog":{{json .State.Health.Log}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
           id,
         ],
         undefined,
@@ -3470,7 +3543,85 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
     docker([...compose, 'stop', '--timeout', '10', service], undefined, {}, 15000);
     requireValue(identity(service).running === false, 'Owned service must stop');
   };
-  const restart = async (service: string) => {
+  type RecoveryHealthRead = {
+    channelState: 'READY' | 'IDLE' | 'CONNECTING' | 'TRANSIENT_FAILURE' | 'SHUTDOWN' | 'UNKNOWN';
+    fresh: boolean | null;
+  };
+  const recoveryHealthRead = (
+    rows: unknown,
+    since: number,
+    observedAt: number,
+  ): RecoveryHealthRead => {
+    const unknown = (): RecoveryHealthRead => ({ channelState: 'UNKNOWN', fresh: null });
+    try {
+      if (!Array.isArray(rows) || rows.length === 0 || rows.length > 5) return unknown();
+      const row = rows.at(-1);
+      if (
+        row === null ||
+        typeof row !== 'object' ||
+        Array.isArray(row) ||
+        Object.getPrototypeOf(row) !== Object.prototype ||
+        Object.keys(row).sort().join(',') !== 'End,ExitCode,Output,Start' ||
+        row.ExitCode !== 0 ||
+        typeof row.Start !== 'string' ||
+        typeof row.End !== 'string' ||
+        typeof row.Output !== 'string' ||
+        Buffer.byteLength(row.Output, 'utf8') > 4096 ||
+        !Number.isFinite(since) ||
+        !Number.isFinite(observedAt)
+      )
+        return unknown();
+      const utc = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/;
+      if (
+        !utc.test(row.Start) ||
+        !utc.test(row.End) ||
+        row.Start.trim() !== row.Start ||
+        row.End.trim() !== row.End
+      )
+        return unknown();
+      const start = Date.parse(row.Start),
+        end = Date.parse(row.End);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || end > observedAt)
+        return unknown();
+      if (
+        new Date(start).toISOString().slice(0, 19) !== row.Start.slice(0, 19) ||
+        new Date(end).toISOString().slice(0, 19) !== row.End.slice(0, 19) ||
+        row.Start.replace(
+          /(?:\.(\d{1,9}))?Z$/,
+          (_, fraction = '') => `.${fraction.padEnd(9, '0')}Z`,
+        ) >
+          row.End.replace(
+            /(?:\.(\d{1,9}))?Z$/,
+            (_, fraction = '') => `.${fraction.padEnd(9, '0')}Z`,
+          )
+      )
+        return unknown();
+      const body = JSON.parse(row.Output);
+      if (
+        body?.status !== 'UP' ||
+        body?.components?.grpcChannel?.status !== 'UP' ||
+        body?.components?.grpcChannel?.details === null ||
+        typeof body?.components?.grpcChannel?.details !== 'object' ||
+        Array.isArray(body.components.grpcChannel.details) ||
+        !Object.hasOwn(body.components.grpcChannel.details, 'schedule-service')
+      )
+        return unknown();
+      const state: unknown = body.components.grpcChannel.details['schedule-service'];
+      if (
+        state !== 'READY' &&
+        state !== 'IDLE' &&
+        state !== 'CONNECTING' &&
+        state !== 'TRANSIENT_FAILURE' &&
+        state !== 'SHUTDOWN'
+      )
+        return unknown();
+      return { channelState: state, fresh: start >= since };
+    } catch {
+      // Only the finite connectivity state leaves this private existing health response.
+      return unknown();
+    }
+  };
+  const restart = async (service: string, scheduleReturnedAt?: number) => {
     if (!stopped.has(service)) return;
     const restartEnd = performance.now() + budget(45000);
     const remaining = () => {
@@ -3498,7 +3649,38 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
         };
       }
     };
-    identity(service, Math.min(5000, remaining()));
+    const before = identity(service, Math.min(5000, remaining()));
+    const passiveReady =
+      service === 'attendance-service' && !cleaning && scheduleReturnedAt !== undefined;
+    const recovered = (current: Row) => {
+      if (!passiveReady) return current.running && current.health === 'healthy';
+      requireValue(
+        before.running === true &&
+          typeof before.startedAt === 'string' &&
+          before.startedAt.length > 0 &&
+          current.startedAt === before.startedAt,
+        'Same owned Attendance process must recover without restart',
+      );
+      const initialAddresses = networkAddresses(before.networks);
+      const currentAddresses = networkAddresses(current.networks);
+      const pinnedAddresses = networkAddresses(pins[service].networks);
+      requireValue(
+        initialAddresses !== null &&
+          currentAddresses !== null &&
+          pinnedAddresses !== null &&
+          JSON.stringify(initialAddresses) === JSON.stringify(pinnedAddresses) &&
+          JSON.stringify(initialAddresses) === JSON.stringify(currentAddresses),
+        'Owned Attendance network addresses changed',
+      );
+      const health = recoveryHealthRead(current.healthLog, scheduleReturnedAt!, Date.now());
+      diagnostic.recoveryHealthLastRead = health;
+      return (
+        current.running &&
+        current.health === 'healthy' &&
+        health.channelState === 'READY' &&
+        health.fresh === true
+      );
+    };
     try {
       docker(
         [
@@ -3533,7 +3715,10 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       throw error;
     }
     let current = identity(service, Math.min(5000, remaining()));
-    while (current.running && current.health === 'starting') {
+    while (
+      current.running &&
+      (current.health === 'starting' || (passiveReady && !recovered(current)))
+    ) {
       const left = Math.floor(restartEnd - performance.now());
       if (left <= 0) break;
       await new Promise((resolve) => setTimeout(resolve, Math.min(250, left)));
@@ -3542,10 +3727,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       current = identity(service, Math.min(5000, afterDelay));
     }
     recordRestartFailure(current);
-    requireValue(
-      current.running && current.health === 'healthy',
-      'Same owned service must recover',
-    );
+    requireValue(recovered(current), 'Same owned service must recover');
     requireValue(performance.now() <= restartEnd, 'Owned restart deadline exhausted');
     stopped.delete(service);
   };
@@ -3814,6 +3996,146 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       payload_encoding: 'base64',
     });
     requireValue(sent.routed === true, 'Exact targeted copy must route to Attendance');
+  };
+  let readinessRequest: { id: string; since: string; until: string } | undefined;
+  const captureReadinessFailure = () => {
+    const unknown = (reason: ReadinessLog['unknownReason']): ReadinessLog => ({
+      state: 'UNKNOWN',
+      unknownReason: reason,
+      matchedCount: 0,
+      last: null,
+    });
+    const previousNativeFailure = nativeFailure;
+    try {
+      if (!readinessRequest) {
+        diagnostic.readinessFailureLog = unknown('NO_REQUEST');
+        return;
+      }
+      let count = 0;
+      let last: ReadinessWarn | null = null;
+      for (const service of ['api-gateway', 'academic-service']) {
+        const current = identity(service, 2000);
+        if (!current.running) {
+          diagnostic.readinessFailureLog = unknown('LOG_READ');
+          return;
+        }
+        const payload = docker(
+          [
+            'logs',
+            '--since',
+            readinessRequest.since,
+            '--until',
+            readinessRequest.until,
+            '--tail',
+            '2000',
+            pins[service].id,
+          ],
+          undefined,
+          {},
+          2000,
+        );
+        const after = identity(service, 2000);
+        if (!after.running || after.startedAt !== current.startedAt) {
+          diagnostic.readinessFailureLog = unknown('LOG_READ');
+          return;
+        }
+        if (Buffer.byteLength(payload, 'utf8') >= 262144) {
+          diagnostic.readinessFailureLog = unknown('LOG_BYTE_LIMIT');
+          return;
+        }
+        const lines = payload.split(/\r?\n/);
+        if (lines.at(-1) === '') lines.pop();
+        if (lines.length >= 2000) {
+          diagnostic.readinessFailureLog = unknown('LOG_TAIL_LIMIT');
+          return;
+        }
+        for (const line of lines) {
+          if (Buffer.byteLength(line, 'utf8') > 131072) {
+            diagnostic.readinessFailureLog = unknown('LOG_BYTE_LIMIT');
+            return;
+          }
+          let record: unknown;
+          try {
+            record = JSON.parse(line);
+          } catch {
+            diagnostic.readinessFailureLog = unknown('LOG_FORMAT');
+            return;
+          }
+          if (typeof record !== 'object' || record === null || Array.isArray(record)) {
+            diagnostic.readinessFailureLog = unknown('LOG_RECORD_SHAPE');
+            return;
+          }
+          const row = record as Record<string, unknown>;
+          const sources = Object.keys(readinessSources) as (keyof typeof readinessSources)[];
+          const owned = sources.filter(
+            (source) =>
+              readinessSources[source].logger === row.logger &&
+              (service === 'api-gateway') === source.startsWith('GATEWAY_'),
+          );
+          if (owned.length !== 1 || row.level !== 'WARN') continue;
+          if (typeof row.msg !== 'string') {
+            diagnostic.readinessFailureLog = unknown('TARGET_TEMPLATE');
+            return;
+          }
+          if (!row.msg.startsWith('semester.preview failure ')) continue;
+          if (
+            typeof row.requestId !== 'string' ||
+            row.requestId.length !== 36 ||
+            !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(row.requestId)
+          ) {
+            diagnostic.readinessFailureLog = unknown('TARGET_CORRELATION');
+            return;
+          }
+          if (row.requestId !== readinessRequest.id) continue;
+          const match =
+            /^semester\.preview failure source=([A-Z_]+) stage=([A-Z_]+) status=([A-Z_0-9]+) cause=([A-Z_]+)$/.exec(
+              row.msg,
+            );
+          if (
+            !match ||
+            match[0] !== row.msg ||
+            match[1] !== owned[0] ||
+            !(readinessSources[owned[0]].stages as readonly string[]).includes(match[2]) ||
+            !(readinessCauses as readonly string[]).includes(match[4])
+          ) {
+            diagnostic.readinessFailureLog = unknown('TARGET_TEMPLATE');
+            return;
+          }
+          const stage = match[2],
+            status = match[3];
+          const validStatus =
+            stage === 'AUTH_HTTP'
+              ? /^HTTP_[1-5][0-9]{2}$/.test(status) && status !== 'HTTP_200'
+              : stage === 'AUTH_RESPONSE'
+                ? status === 'HTTP_200'
+                : stage === 'CURRENT_CONTEXT'
+                  ? (replayStatuses as readonly string[]).includes(status) && status !== 'NONE'
+                  : stage === 'SCHEDULE_PREVIEW' || stage === 'ATTENDANCE_PREVIEW'
+                    ? (replayStatuses as readonly string[]).includes(status)
+                    : status === 'NONE';
+          if (!validStatus) {
+            diagnostic.readinessFailureLog = unknown('TARGET_TEMPLATE');
+            return;
+          }
+          if (++count > 200) {
+            diagnostic.readinessFailureLog = unknown('MATCH_COUNT_LIMIT');
+            return;
+          }
+          last = { source: owned[0], stage, status, cause: match[4] as ReadinessWarn['cause'] };
+        }
+      }
+      diagnostic.readinessFailureLog =
+        count === 1
+          ? { state: 'REPORTED', unknownReason: 'NONE', matchedCount: 1, last }
+          : count > 1
+            ? { state: 'UNKNOWN', unknownReason: 'AMBIGUOUS', matchedCount: count, last: null }
+            : unknown('NO_MATCHING_WARN');
+    } catch {
+      diagnostic.readinessFailureLog = unknown('LOG_READ');
+    } finally {
+      // Diagnostic read failures cannot replace the original readiness exception/native carrier.
+      nativeFailure = previousNativeFailure;
+    }
   };
   let replaySince: string | undefined;
   let replayAckEventId: string | undefined;
@@ -4096,6 +4418,8 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
   };
   try {
     for (const service of [
+      'api-gateway',
+      'academic-service',
       'schedule-service',
       'attendance-service',
       'postgres-schedule',
@@ -4529,8 +4853,8 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       .toBe(true);
     await stranded();
     await restart('schedule-service');
-    // Preserve the original same-container full-health barrier and stopped bookkeeping.
-    await restart('attendance-service');
+    // Observe automatic channel recovery without resetting the running Attendance process.
+    await restart('attendance-service', Date.now());
     diagnostic.phase = 'PENDING_ARCHIVE';
     budget(10000, { archive: true }, true);
     for (const service of ['schedule-service', 'attendance-service']) {
@@ -4548,6 +4872,8 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           async () => {
             const remaining = Math.floor(readinessEnd - performance.now());
             requireValue(remaining > 0, 'Directed archive readiness deadline exhausted');
+            const requestedAt = new Date().toISOString();
+            readinessRequest = undefined;
             let response: APIResponse;
             try {
               response = await admin!.request.get(
@@ -4594,7 +4920,20 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
                   stateVersionMatches: null,
                 };
               }
-              if (response.status() === 503) return false;
+              if (response.status() === 503) {
+                try {
+                  const id: unknown = response.headers()['x-request-id'];
+                  if (
+                    typeof id === 'string' &&
+                    id.length === 36 &&
+                    /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(id)
+                  )
+                    readinessRequest = { id, since: requestedAt, until: new Date().toISOString() };
+                } catch {
+                  // Missing correlation stays UNKNOWN; never inspect or retain response content.
+                }
+                return false;
+              }
               requireValue(response.status() === 200, 'Directed archive readiness read rejected');
               const preview = await response.json();
               if (!cleaning) {
@@ -4824,6 +5163,11 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     originalFailure = { error };
     if (diagnostic.phase === 'EXACT_REPLAY' && diagnostic.recoveryPublishAttempted)
       captureReplayFailure();
+    if (
+      diagnostic.phase === 'PENDING_ARCHIVE' &&
+      diagnostic.archiveReadinessLastRead?.httpStatus === 503
+    )
+      captureReadinessFailure();
     diagnostic.strandedLastRead = strandedLastRead;
     captureHttp500OwnedServices(error);
     retainFirstDatasetHttpFailure(info.annotations, error);

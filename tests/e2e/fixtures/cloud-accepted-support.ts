@@ -1,5 +1,5 @@
 import { createHmac, randomUUID } from 'node:crypto';
-import type { Page, Response } from '@playwright/test';
+import type { Frame, Page, Request, Response } from '@playwright/test';
 import {
   test,
   expect,
@@ -45,10 +45,40 @@ export async function selectRole(page: Page, label: string) {
 }
 
 export async function reloadSession(page: Page): Promise<CurrentSession> {
-  const response = http(page, '/api/auth/session', 'GET');
+  const mainFrame = page.mainFrame();
+  let reloadStarted = false;
+  let committed = false;
+  let ownedRequest: Request | undefined;
+  const onNavigation = (frame: Frame): void => {
+    if (reloadStarted && frame === mainFrame) committed = true;
+  };
+  const onRequest = (request: Request): void => {
+    if (!committed || ownedRequest) return;
+    try {
+      if (
+        request.frame() === mainFrame &&
+        request.method() === 'GET' &&
+        new URL(request.url()).pathname === '/api/auth/session'
+      )
+        ownedRequest = request;
+    } catch {
+      // Worker and early-navigation requests may not expose a frame.
+    }
+  };
   let action: 'NAVIGATION' | 'WAIT_RESPONSE' | 'HTTP_STATUS' | 'JSON_DECODE' = 'NAVIGATION';
   let httpStatus: number | null = null;
   try {
+    page.on('framenavigated', onNavigation);
+    page.on('request', onRequest);
+    const response = page.waitForResponse(
+      (candidate) =>
+        candidate.request() === ownedRequest &&
+        new URL(candidate.url()).pathname === '/api/auth/session' &&
+        candidate.request().method() === 'GET',
+    );
+    // Navigation failure can finish this helper before its original waiter rejects.
+    void response.catch(() => undefined);
+    reloadStarted = true;
     await page.reload();
     action = 'WAIT_RESPONSE';
     const current = await response;
@@ -67,6 +97,10 @@ export async function reloadSession(page: Page): Promise<CurrentSession> {
       // Diagnostic failures must not replace the original reload failure.
     }
     throw error;
+  } finally {
+    page.off('framenavigated', onNavigation);
+    page.off('request', onRequest);
+    ownedRequest = undefined;
   }
 }
 

@@ -2,21 +2,12 @@ package ru.rutcampustrack.gateway.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -30,10 +21,24 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
 import reactor.core.publisher.Mono;
+
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 import ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter;
+
+import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Exchanges one locally validated access token for a live, signed internal identity. The downstream
@@ -79,6 +84,12 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         try {
             expectations = readExpectations(exchange);
         } catch (RuntimeException e) {
+            log.warn(
+                    "semester.preview failure source=GATEWAY_ISSUER_FILTER stage=EXPECTATIONS"
+                        + " status=NONE cause={}",
+                    e instanceof IllegalArgumentException || e instanceof JwtException
+                            ? "IDENTITY_REJECTED"
+                            : "UNEXPECTED");
             return serviceUnavailable(exchange);
         }
 
@@ -119,6 +130,12 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
                             response.userId());
             forwardedExchange = exchange.mutate().request(request).build();
         } catch (RuntimeException e) {
+            log.warn(
+                    "semester.preview failure source=GATEWAY_ISSUER_FILTER stage=FORWARDED_IDENTITY"
+                        + " status=NONE cause={}",
+                    e instanceof IllegalArgumentException || e instanceof JwtException
+                            ? "IDENTITY_REJECTED"
+                            : "UNEXPECTED");
             return Mono.error(unavailable(e));
         }
 

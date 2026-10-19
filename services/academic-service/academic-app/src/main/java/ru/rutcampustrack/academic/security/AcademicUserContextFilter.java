@@ -25,6 +25,8 @@ import java.io.IOException;
  */
 @Component
 public class AcademicUserContextFilter extends DualModeUserContextFilter {
+    private static final org.slf4j.Logger previewLog =
+            org.slf4j.LoggerFactory.getLogger(AcademicUserContextFilter.class);
 
     private final RequestContext requestContext;
     private final InternalJwtProperties properties;
@@ -121,6 +123,11 @@ public class AcademicUserContextFilter extends DualModeUserContextFilter {
         try {
             super.doFilterInternal(request, response, chain);
         } catch (io.grpc.StatusRuntimeException unavailable) {
+            previewLog.warn(
+                    "semester.preview failure source=ACADEMIC_CONTEXT stage=CURRENT_CONTEXT"
+                        + " status={} cause={}",
+                    unavailable.getStatus().getCode().name(),
+                    previewCause(unavailable, true));
             response.sendError(
                     HttpServletResponse.SC_SERVICE_UNAVAILABLE,
                     "Current session authority unavailable");
@@ -167,5 +174,33 @@ public class AcademicUserContextFilter extends DualModeUserContextFilter {
             requestContext.setGroupId(Long.parseLong(groupIdHeader));
         }
         requestContext.setHeadman(Boolean.parseBoolean(request.getHeader("X-Is-Headman")));
+    }
+
+    private static String previewCause(Throwable failure, boolean rpc) {
+        boolean dns = false, tls = false, connect = false, timeout = false, io = false;
+        try {
+            for (int depth = 0;
+                    failure != null && depth < 8;
+                    depth++, failure = failure.getCause()) {
+                dns |=
+                        failure instanceof java.net.UnknownHostException
+                                || failure instanceof java.nio.channels.UnresolvedAddressException;
+                tls |= failure instanceof javax.net.ssl.SSLException;
+                connect |= failure instanceof java.net.ConnectException;
+                timeout |=
+                        failure instanceof java.net.SocketTimeoutException
+                                || failure instanceof java.net.http.HttpTimeoutException
+                                || failure instanceof java.util.concurrent.TimeoutException;
+                io |= failure instanceof java.io.IOException;
+            }
+        } catch (RuntimeException ignored) {
+            return "UNKNOWN";
+        }
+        if (dns) return "DNS";
+        if (tls) return "TLS";
+        if (connect) return "CONNECT";
+        if (timeout) return "TIMEOUT";
+        if (io) return "TRANSPORT_IO";
+        return rpc ? "RPC_STATUS" : "UNKNOWN";
     }
 }

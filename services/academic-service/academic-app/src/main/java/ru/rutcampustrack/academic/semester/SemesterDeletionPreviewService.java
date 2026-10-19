@@ -1,10 +1,7 @@
 package ru.rutcampustrack.academic.semester;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionPreviewResponse;
 import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPriorState;
@@ -16,9 +13,16 @@ import ru.rutcampustrack.academic.grpc.AttendanceSemesterDeletionGrpcClient;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+
 /** Read-only three-domain preview shared by initial confirmation and sealed drift detection. */
 @Service
 public class SemesterDeletionPreviewService {
+    private static final org.slf4j.Logger previewLog =
+            org.slf4j.LoggerFactory.getLogger(SemesterDeletionPreviewService.class);
 
     private final SemesterRepository semesters;
     private final AcademicSemesterDeletionSnapshotReader academicReader;
@@ -77,12 +81,16 @@ public class SemesterDeletionPreviewService {
         AcademicSemesterDeletionSnapshotReader.Snapshot academic = academicReader.read(semesterId);
         final ru.rutcampustrack.schedule.grpc.SemesterDeletionParticipantPreview schedule;
         final ru.rutcampustrack.attendance.grpc.SemesterDeletionParticipantPreview attendance;
+        boolean scheduleRead = true;
         try {
             schedule = scheduleClient.previewSemesterDeletion(semesterId);
+            scheduleRead = false;
             attendance = attendanceClient.preview(semesterId);
         } catch (SemesterDeletionDependencyUnavailableException unavailable) {
+            if (!scheduleRead) previewAttendanceFailure(unavailable);
             throw unavailable;
         } catch (RuntimeException unavailable) {
+            if (!scheduleRead) previewAttendanceFailure(unavailable);
             throw new SemesterDeletionDependencyUnavailableException(
                     "Не удалось получить согласованный preview всех доменов", unavailable);
         }
@@ -90,12 +98,15 @@ public class SemesterDeletionPreviewService {
                 || attendance.getSemesterId() != semesterId
                 || schedule.getObservedFenceVersion() < 0
                 || attendance.getObservedFenceVersion() < 0) {
+            previewLog.warn(
+                    "semester.preview failure source=ACADEMIC_PREVIEW stage=ECHO_FENCE status=NONE"
+                        + " cause=ECHO_OR_FENCE_INVALID");
             throw new SemesterDeletionDependencyUnavailableException(
                     "Домен вернул preview для другой или неподтверждённой версии семестра");
         }
-        requireDigest(academic.participantDigest());
-        requireDigest(schedule.getParticipantDigest());
-        requireDigest(attendance.getParticipantDigest());
+        requireDigest(academic.participantDigest(), "ACADEMIC_DIGEST");
+        requireDigest(schedule.getParticipantDigest(), "SCHEDULE_DIGEST");
+        requireDigest(attendance.getParticipantDigest(), "ATTENDANCE_DIGEST");
         if (academic.assignments() < 0
                 || academic.homeworks() < 0
                 || schedule.getScheduleTemplatesCount() < 0
@@ -103,6 +114,9 @@ public class SemesterDeletionPreviewService {
                 || schedule.getLessonsCount() < 0
                 || attendance.getAttendanceMarksCount() < 0
                 || attendance.getStudentRequestsCount() < 0) {
+            previewLog.warn(
+                    "semester.preview failure source=ACADEMIC_PREVIEW stage=COUNTS status=NONE"
+                        + " cause=NEGATIVE_COUNT");
             throw new SemesterDeletionDependencyUnavailableException(
                     "Домен вернул отрицательный preview count");
         }
@@ -190,8 +204,12 @@ public class SemesterDeletionPreviewService {
         }
     }
 
-    private static void requireDigest(String digest) {
+    private static void requireDigest(String digest, String stage) {
         if (digest == null || !digest.matches("[0-9a-fA-F]{64}")) {
+            previewLog.warn(
+                    "semester.preview failure source=ACADEMIC_PREVIEW stage={} status=NONE"
+                        + " cause=DIGEST_INVALID",
+                    stage);
             throw new SemesterDeletionDependencyUnavailableException(
                     "Домен вернул некорректный opaque digest");
         }
@@ -213,5 +231,58 @@ public class SemesterDeletionPreviewService {
             return new SemesterDeletionPreviewResponse(
                     semesterId, semesterName, priorState, stateVersion, digest, counts);
         }
+    }
+
+    private static void previewAttendanceFailure(RuntimeException failure) {
+        String status = previewStatus(failure);
+        previewLog.warn(
+                "semester.preview failure source=ACADEMIC_PREVIEW stage=ATTENDANCE_PREVIEW"
+                    + " status={} cause={}",
+                status,
+                previewCause(failure, !"NONE".equals(status)));
+    }
+
+    private static String previewStatus(Throwable failure) {
+        try {
+            for (int depth = 0;
+                    failure != null && depth < 8;
+                    depth++, failure = failure.getCause()) {
+                if (failure instanceof io.grpc.StatusRuntimeException rpc)
+                    return rpc.getStatus().getCode().name();
+                if (failure instanceof io.grpc.StatusException rpc)
+                    return rpc.getStatus().getCode().name();
+            }
+        } catch (RuntimeException ignored) {
+            return "NONE";
+        }
+        return "NONE";
+    }
+
+    private static String previewCause(Throwable failure, boolean rpc) {
+        boolean dns = false, tls = false, connect = false, timeout = false, io = false;
+        try {
+            for (int depth = 0;
+                    failure != null && depth < 8;
+                    depth++, failure = failure.getCause()) {
+                dns |=
+                        failure instanceof java.net.UnknownHostException
+                                || failure instanceof java.nio.channels.UnresolvedAddressException;
+                tls |= failure instanceof javax.net.ssl.SSLException;
+                connect |= failure instanceof java.net.ConnectException;
+                timeout |=
+                        failure instanceof java.net.SocketTimeoutException
+                                || failure instanceof java.net.http.HttpTimeoutException
+                                || failure instanceof java.util.concurrent.TimeoutException;
+                io |= failure instanceof java.io.IOException;
+            }
+        } catch (RuntimeException ignored) {
+            return "UNKNOWN";
+        }
+        if (dns) return "DNS";
+        if (tls) return "TLS";
+        if (connect) return "CONNECT";
+        if (timeout) return "TIMEOUT";
+        if (io) return "TRANSPORT_IO";
+        return rpc ? "RPC_STATUS" : "UNKNOWN";
     }
 }

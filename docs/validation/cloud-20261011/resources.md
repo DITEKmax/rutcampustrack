@@ -1,7 +1,7 @@
 # Resources / owners — current checkpoint
 
 Root sole Git/taskdocs/matrix integrator; native slots7 includingRoot. Newtask agents Sol6.1/high/forknone; actualmodelmetadata UNKNOWN accepted Cloudexception. RULES2b9a859c, no globalconfiguration/controlplane change.
-Current task branch/draftPR2 published09aa8753 (exactSHA attempts/resume); coherent15filecheckpoint normalcommitted/pushed/remoteverified, hooksPASSnoDrift. Foreign25 preserved; indexempty. Earlier approvalcapacity errors retained in attempts; sameofficialGit/metadata recovered, no alternativechannel/model.
+Current task branch/draftPR2 published28271672 (exactSHA attempts/resume); coherent9filecheckpoint normalcommitted/pushed/remoteverified, hooksPASSnoDrift. Foreign25 preserved; indexempty. Earlier approvalcapacity errors retained in attempts; sameofficialGit/metadata recovered, no alternativechannel/model.
 
 ## Capacity / leases
 
@@ -12,13 +12,19 @@ Security lastactual /tmp/r9cf-gitleaks-current-ee-384-20261019: exact3908..0c0/p
 
 | Owner | Current scope / state |
 | --- | --- |
-| Root | Sole Git/taskdocs/matrix; published09aa/all9source exact integrated/CacheAPPROVE/Native50sourceeq; candidate4source(Security2+SESSION_RELOAD2)+5taskdocsWIP; Java frozen/Native50 remainsapplicable. Foreign25/indexempty preserved; taskdocs checkpoint WIP. |
+| Root | Sole Git/taskdocs/matrix; published2827/all4source exact/CacheAPPROVE/Native50Java-sourceeq; postpublication5taskdocsWIP only; Java frozen/Native50 remainsapplicable. Foreign25/indexempty preserved; taskdocs checkpoint WIP. |
 | a05_native34_compile | Native49 PASS/released, Native50 actualPASS: oneAttendance3tasksEXECUTED/31freshXMLPASS/106.66s/RSS1122582528/output108205241≤128MiB; exact5 posts/allotherinputs/30absences/PythonTS stable/allnewPIDsreaped. FinalTMP4441976832B; no rerun. Read-only shortmode assessment complete: no dispatch/input/currentorbase; choose coherentnormalCI, no reorder. |
 | r2aa_registry_render_rca | Current SESSION_RELOAD2d8447d6e exactRootjoined/CacheAPPROVE,72purecontrols/legacyexact; phase/status/closedtransport only, sameerroridentity/noappcalls/bodyreads/timeouts/assertionchanges. ActualrolecasecauseUNKNOWN. Earlier pipeline exact-type error_kind16finite/55purecontrols/CacheAPPROVE, frozen. Existing2DOCX+4meterdeltasPASS; laterGatewayOpenAPIbeforeHTTPresponse failureoriginUNKNOWN. |
 | r9cf_report_registry_review | Sole CIwriter existing2readers v8+legacy3–7/cap4096, exact ec925dcaConsumerpin/v8 wire joined,692typedvectorsPASS/CacheAPPROVE. SecurityCURRENTcb21fb27 earlieraccepted; newHANDOFF2c7d3a025 exactRootjoined/CacheAPPROVE,30causalcontrols/11copies12blobs+166CURRENTprojectionsunchanged. OnlyONEdeclaredprosefile/count26; default208/otherlimits/ignore/wholevalueveto preserved, no rescan/newCIalone. |
 | r9cf_event_outbox_rca | Sole6fileauthor: Attendance exception/client/consumer/2tests +existingD9fixturev8; existingcause7finiteorigins. No RPC/retry/ACK/TX/timer/oraclechanges; actualgrpc1.82.4 typedchain/exactframeworkmarkers only, no rawThrowable/description/trailers. Frozenfe16c00e/Rootjoined/CacheAPPROVE/Native50PASS; no otherreachableownedUNAVAILABLEmarkers. |
 | r9cf_cache_fixture_review | Securitycb21fb27 andpipeline58a7dce1 independentlyAPPROVE/no findings; actualv7receiptsVALIDboth/no readerexception. Eventv8+CI targetedAPPROVE/no findings; no authorship/runtime/network. |
-| s19_9cf_ci_observer | All09aaruns terminal12:05:13UTC/closed, no morepoll; nextnormalpublishedruns await; old855runs terminal/no furtherpoll. PushterminalFAIL_D9/clientwholeSUCCESSincludingCLI72; PRlifecycleSUCCESS inclD9/restore/participants; bothAcademicSUCCESS. Coverage/OpenAPI/Apps/MonitoringSUCCESS, SecurityFAIL. Closed855/oldddc excluded, no cancel. |
+| s19_9cf_ci_observer | Only active2827runs39249647168/39249658964/39249658154/39249658346/39249658130. All09aa/855/ddc closed/no morepoll; old855runs terminal/no furtherpoll. PushterminalFAIL_D9/clientwholeSUCCESSincludingCLI72; PRlifecycleSUCCESS inclD9/restore/participants; bothAcademicSUCCESS. Coverage/OpenAPI/Apps/MonitoringSUCCESS, SecurityFAIL. Closed855/oldddc excluded, no cancel. |
 
 Accepted v3 FROZEN38/39 weight191/196 afteractual09aa push+PRoriginalD9v8PASS/Cacheindependentacceptance; earlier855counterFAIL/exactoriginUNKNOWNretained/no historicalfixclaim. RealPGrestorecurrentd5dPASS retained; U14.3DONE_CHANGED; U25open (SecurityHANDOFF2publication/currentPRrolelogoutRCA/finalgates). Historicalv1/v2/TASK17 results retained. PRbody855 exactverified/openDraft/current37/39; attach_artifactSUCCESS, no mainmerge.
 Noownerquestion. B013/B014/B015FROZEN; no production/mainmerge/deploy/secrets/reset. Ownerexternalacceptance DEFERRED_LOCAL/OWNER_MANUAL_PENDING, notPASS. Current/history singlecanonical evidence pointers andattempts, no rawlogs/ZIPcopiesinGit.
+
+2026-10-19 current2827: actualD9bothFAIL/PRroleFAIL, R2 onePRrole and Event onePUSHD9 bounded safeprimary diagnosis in independent ignored directories; observer currentCI metadata only, Root soleGit/docs. No localheavy/Docker/DB/newCI; allWIP/foreign25 preserved.
+
+2026-10-19 bounded native preparation PASS/read-only: TMP4439953408B/workspace4189872128B, after existing floors+128MiB outputcap slack10768384B/29122560B. No build/overlay. Prospective Gateway+Academic compile4 then existing pure GatewayFilterTest11; no WireMock listener/IT. Fresh prelaunch floors required. Root created three detached sparse worktrees at2827; R2 one-source reviewed patch exactintegrated, Report5Java+CI/Eventfixture remain isolated. All currentCI terminal/no polling/heavy0.
+
+2026-10-19 Native51 PASS/released: one162.45s invocation,4compile+GatewayFilterTestEXECUTED/fresh11PASS, peakRSS1296678912B, changedoutputs117108725B<128MiB; minTMP4428165120B/finalTMP4424007680B/minworkspace4189827072B. Root/native2095/2275stable/5posts/30absences/PythonTS preserved; allnewPIDsreaped/old157125Z untouched. No localheavy remains. Source8files reviewed/exactintegrated, CI/TSjoin didnotaffectJava guard; nextscopedhooks/onepublish/fullCI, no native rerun.

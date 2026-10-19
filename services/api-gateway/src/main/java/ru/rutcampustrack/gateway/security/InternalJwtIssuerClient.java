@@ -63,9 +63,14 @@ public class InternalJwtIssuerClient {
         try {
             request = new AuthAdmissionRequest(accessToken);
         } catch (RuntimeException e) {
+            log.warn(
+                    "semester.preview failure source=GATEWAY_ISSUER_CLIENT stage=REQUEST_BUILD"
+                        + " status=NONE cause={}",
+                    e instanceof IllegalArgumentException ? "INVALID_ARGUMENT" : "UNEXPECTED");
             return Mono.error(unavailable());
         }
 
+        var previewHttpStatus = new java.util.concurrent.atomic.AtomicInteger();
         return webClient
                 .post()
                 .uri(ADMIT_PATH)
@@ -75,6 +80,7 @@ public class InternalJwtIssuerClient {
                 .bodyValue(request)
                 .exchangeToMono(
                         response -> {
+                            previewHttpStatus.set(response.statusCode().value());
                             if (response.statusCode().value() == HttpStatus.OK.value()) {
                                 return decodeAdmission(response);
                             }
@@ -88,10 +94,26 @@ public class InternalJwtIssuerClient {
                                         ? error
                                         : unavailable(error))
                 .doOnError(
-                        error ->
-                                log.warn(
-                                        "Auth admission request failed ({})",
-                                        error.getClass().getSimpleName()));
+                        error -> {
+                            int observed = previewHttpStatus.get();
+                            boolean http = observed >= 100 && observed <= 599;
+                            String stage =
+                                    !http
+                                            ? "AUTH_TRANSPORT"
+                                            : observed == 200 ? "AUTH_RESPONSE" : "AUTH_HTTP";
+                            String cause = previewCause(error, false);
+                            if ("UNKNOWN".equals(cause) && http)
+                                cause = observed == 200 ? "RESPONSE_REJECTED" : "HTTP_REJECTED";
+                            log.warn(
+                                    "semester.preview failure source=GATEWAY_ISSUER_CLIENT stage={}"
+                                        + " status={} cause={}",
+                                    stage,
+                                    http ? "HTTP_" + observed : "NONE",
+                                    cause);
+                            log.warn(
+                                    "Auth admission request failed ({})",
+                                    error.getClass().getSimpleName());
+                        });
     }
 
     /**
@@ -217,5 +239,33 @@ public class InternalJwtIssuerClient {
 
     private static InternalIssuerUnavailableException unavailable(Throwable cause) {
         return new InternalIssuerUnavailableException("Auth authority unavailable", cause);
+    }
+
+    private static String previewCause(Throwable failure, boolean rpc) {
+        boolean dns = false, tls = false, connect = false, timeout = false, io = false;
+        try {
+            for (int depth = 0;
+                    failure != null && depth < 8;
+                    depth++, failure = failure.getCause()) {
+                dns |=
+                        failure instanceof java.net.UnknownHostException
+                                || failure instanceof java.nio.channels.UnresolvedAddressException;
+                tls |= failure instanceof javax.net.ssl.SSLException;
+                connect |= failure instanceof java.net.ConnectException;
+                timeout |=
+                        failure instanceof java.net.SocketTimeoutException
+                                || failure instanceof java.net.http.HttpTimeoutException
+                                || failure instanceof java.util.concurrent.TimeoutException;
+                io |= failure instanceof java.io.IOException;
+            }
+        } catch (RuntimeException ignored) {
+            return "UNKNOWN";
+        }
+        if (dns) return "DNS";
+        if (tls) return "TLS";
+        if (connect) return "CONNECT";
+        if (timeout) return "TIMEOUT";
+        if (io) return "TRANSPORT_IO";
+        return rpc ? "RPC_STATUS" : "UNKNOWN";
     }
 }

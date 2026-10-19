@@ -4,14 +4,13 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
@@ -43,6 +42,11 @@ import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest;
 import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Phase 61 / D-04: gRPC клиент academic→schedule. Используется в {@code HomeworkService} для
  * валидации: пара {@code (groupId, date, lessonNumber)} существует и её subject совпадает с {@code
@@ -55,6 +59,8 @@ import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
  */
 @Component
 public class ScheduleGrpcClient {
+    private static final org.slf4j.Logger previewLog =
+            org.slf4j.LoggerFactory.getLogger(ScheduleGrpcClient.class);
 
     private static final Metadata.Key<String> INTERNAL_TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
@@ -356,10 +362,12 @@ public class ScheduleGrpcClient {
                             SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE;
                     case SEAL_ARCHIVE ->
                             throw new IllegalArgumentException(
-                                    "SEAL_ARCHIVE is a local Academic/Attendance command, not a Schedule RPC");
+                                    "SEAL_ARCHIVE is a local Academic/Attendance command, not a"
+                                        + " Schedule RPC");
                     case PREPARE_DELETE, SEAL_DELETE, RELEASE_DELETE, COMMIT_DELETE ->
                             throw new IllegalArgumentException(
-                                    "Delete commands require the exact deletion participant digest");
+                                    "Delete commands require the exact deletion participant"
+                                        + " digest");
                 };
         try {
             return directedStub()
@@ -377,7 +385,12 @@ public class ScheduleGrpcClient {
     }
 
     public SemesterDeletionParticipantPreview previewSemesterDeletion(long semesterId) {
-        if (semesterId <= 0) throw new IllegalArgumentException("semesterId must be positive");
+        if (semesterId <= 0) {
+            previewLog.warn(
+                    "semester.preview failure source=SCHEDULE_CLIENT stage=SCHEDULE_PREVIEW"
+                        + " status=NONE cause=INVALID_ARGUMENT");
+            throw new IllegalArgumentException("semesterId must be positive");
+        }
         try {
             return directedStub()
                     .withDeadlineAfter(3, TimeUnit.SECONDS)
@@ -386,8 +399,23 @@ public class ScheduleGrpcClient {
                                     .setSemesterId(semesterId)
                                     .build());
         } catch (StatusRuntimeException error) {
+            previewLog.warn(
+                    "semester.preview failure source=SCHEDULE_CLIENT stage=SCHEDULE_PREVIEW"
+                        + " status={} cause={}",
+                    error.getStatus().getCode().name(),
+                    previewCause(error, true));
             throw mapBindingError(
                     error, "получить предварительный расчёт расписания для удаления семестра");
+        } catch (RuntimeException error) {
+            String cause =
+                    !DirectedServiceCredential.isCanonicalToken(academicToScheduleToken)
+                            ? "CREDENTIAL_CONFIGURATION"
+                            : previewCause(error, false);
+            previewLog.warn(
+                    "semester.preview failure source=SCHEDULE_CLIENT stage=SCHEDULE_PREVIEW"
+                        + " status=NONE cause={}",
+                    cause);
+            throw error;
         }
     }
 
@@ -497,7 +525,8 @@ public class ScheduleGrpcClient {
         String internalToken = requestContext.getInternalToken();
         if (actorId == null || actorId <= 0 || internalToken == null || internalToken.isBlank()) {
             throw new ScheduleServiceUnavailableException(
-                    "Нельзя вызвать binding API без подписанного аутентифицированного пользователя");
+                    "Нельзя вызвать binding API без подписанного аутентифицированного"
+                        + " пользователя");
         }
         if (!DirectedServiceCredential.isCanonicalToken(academicToScheduleToken)) {
             throw new ScheduleServiceUnavailableException(
@@ -527,5 +556,33 @@ public class ScheduleGrpcClient {
         }
         return new ScheduleServiceUnavailableException(
                 "Не удалось " + action + " в schedule-service: " + error.getStatus(), error);
+    }
+
+    private static String previewCause(Throwable failure, boolean rpc) {
+        boolean dns = false, tls = false, connect = false, timeout = false, io = false;
+        try {
+            for (int depth = 0;
+                    failure != null && depth < 8;
+                    depth++, failure = failure.getCause()) {
+                dns |=
+                        failure instanceof java.net.UnknownHostException
+                                || failure instanceof java.nio.channels.UnresolvedAddressException;
+                tls |= failure instanceof javax.net.ssl.SSLException;
+                connect |= failure instanceof java.net.ConnectException;
+                timeout |=
+                        failure instanceof java.net.SocketTimeoutException
+                                || failure instanceof java.net.http.HttpTimeoutException
+                                || failure instanceof java.util.concurrent.TimeoutException;
+                io |= failure instanceof java.io.IOException;
+            }
+        } catch (RuntimeException ignored) {
+            return "UNKNOWN";
+        }
+        if (dns) return "DNS";
+        if (tls) return "TLS";
+        if (connect) return "CONNECT";
+        if (timeout) return "TIMEOUT";
+        if (io) return "TRANSPORT_IO";
+        return rpc ? "RPC_STATUS" : "UNKNOWN";
     }
 }

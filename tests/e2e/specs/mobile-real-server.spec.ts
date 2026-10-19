@@ -3968,6 +3968,59 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       groupId: dataset.group.id,
       telegramId: multirole.telegramId,
     });
+    type ReconnectKind = 'refresh' | 'current';
+    const pendingAuth = new Map<Request, ReconnectKind>();
+    const authHttp = {
+      refresh: { requested: false, responded: false, failed: false },
+      current: { requested: false, responded: false, failed: false },
+    };
+    let httpObservationUnknown = false;
+    let observingReconnect = false;
+    const priorAuth = new Set<Request>();
+    const authKind = (request: Request): ReconnectKind | undefined => {
+      const url = new URL(request.url());
+      if (url.origin !== new URL(page.url()).origin) return;
+      if (url.pathname === '/api/auth/refresh' && request.method() === 'POST') return 'refresh';
+      if (url.pathname === '/api/auth/session' && request.method() === 'GET') return 'current';
+    };
+    const observeAuthRequest = (request: Request) => {
+      try {
+        const kind = authKind(request);
+        if (!kind) return;
+        // A bounded identity set observes old HTTP work without retaining its contents.
+        if (pendingAuth.size < 16) pendingAuth.set(request, kind);
+        else httpObservationUnknown = true;
+        if (observingReconnect) authHttp[kind].requested = true;
+      } catch {
+        httpObservationUnknown = true;
+      }
+    };
+    const observeAuthResponse = (response: Response) => {
+      const kind = pendingAuth.get(response.request());
+      if (observingReconnect && kind) authHttp[kind].responded = true;
+    };
+    const finishAuthRequest = (request: Request) => {
+      pendingAuth.delete(request);
+      priorAuth.delete(request);
+    };
+    const failAuthRequest = (request: Request) => {
+      const kind = pendingAuth.get(request);
+      if (observingReconnect && kind) authHttp[kind].failed = true;
+      finishAuthRequest(request);
+    };
+    const detachAuthObservation = () => {
+      page.off('request', observeAuthRequest);
+      page.off('response', observeAuthResponse);
+      page.off('requestfinished', finishAuthRequest);
+      page.off('requestfailed', failAuthRequest);
+      pendingAuth.clear();
+      priorAuth.clear();
+    };
+    // Include requests already in flight when the native page wrapper is installed.
+    page.on('request', observeAuthRequest);
+    page.on('response', observeAuthResponse);
+    page.on('requestfinished', finishAuthRequest);
+    page.on('requestfailed', failAuthRequest);
     let rolePrimary: { error: unknown } | undefined;
     try {
       const logged = await loginPwa(page, multirole);
@@ -4006,6 +4059,113 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           resolveCurrent?.(response);
         }
       };
+      for (const request of pendingAuth.keys()) priorAuth.add(request);
+      observingReconnect = true;
+      const reconnectObserver = await page.evaluateHandle(() => {
+        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
+          return { read: () => null, restore: () => {} };
+        const original = descriptor.value as typeof fetch;
+        type Phase = 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED';
+        const refresh = {
+          phase: 'NOT_CALLED' as Phase,
+          beforeOnline: false,
+          multiple: false,
+        };
+        const current = {
+          phase: 'NOT_CALLED' as Phase,
+          beforeOnline: false,
+          multiple: false,
+        };
+        let observationUnknown = false;
+        let offlineSeen = false;
+        let onlineSeen = false;
+        const offline = () => {
+          offlineSeen = true;
+        };
+        const online = () => {
+          onlineSeen = true;
+        };
+        const observed: typeof fetch = function (this: unknown, ...args) {
+          let first: typeof refresh | undefined;
+          try {
+            const [input, init] = args;
+            const request = input instanceof globalThis.Request ? input : null;
+            const method = (init?.method ?? request?.method ?? 'GET').toUpperCase();
+            const address =
+              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+            if (typeof address === 'string') {
+              const url = new URL(address, location.href);
+              const state =
+                url.origin !== location.origin
+                  ? undefined
+                  : method === 'POST' && url.pathname === '/api/auth/refresh'
+                    ? refresh
+                    : method === 'GET' && url.pathname === '/api/auth/session'
+                      ? current
+                      : undefined;
+              if (state) {
+                if (state.phase === 'NOT_CALLED') {
+                  state.phase = 'PENDING';
+                  state.beforeOnline = !onlineSeen;
+                  first = state;
+                } else state.multiple = true;
+              }
+            }
+          } catch {
+            observationUnknown = true;
+            // Observation never changes native arguments, promises, responses or errors.
+          }
+          let promise: ReturnType<typeof fetch>;
+          try {
+            promise = Reflect.apply(original, this, args);
+          } catch (error) {
+            if (first) first.phase = 'REJECTED';
+            throw error;
+          }
+          if (first) {
+            const state = first;
+            try {
+              void promise
+                .then(
+                  () => {
+                    state.phase = 'FULFILLED';
+                  },
+                  () => {
+                    state.phase = 'REJECTED';
+                  },
+                )
+                .catch(() => {});
+            } catch {
+              observationUnknown = true;
+              // An observation failure must not replace the original promise.
+            }
+          }
+          return promise;
+        };
+        Object.defineProperty(globalThis, 'fetch', {
+          ...descriptor,
+          value: observed,
+        });
+        // Capture runs before the app's bubble listener can synchronously call fetch.
+        addEventListener('offline', offline, { capture: true, passive: true });
+        addEventListener('online', online, { capture: true, passive: true });
+        return {
+          read: () => ({
+            observationUnknown,
+            offlineSeen,
+            onlineSeen,
+            online: navigator.onLine,
+            refresh: { ...refresh },
+            current: { ...current },
+          }),
+          restore: () => {
+            removeEventListener('offline', offline, true);
+            removeEventListener('online', online, true);
+            Object.defineProperty(globalThis, 'fetch', descriptor);
+          },
+        };
+      });
       page.on('request', countRole);
       try {
         await context.setOffline(true);
@@ -4035,9 +4195,64 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           response = await current;
         } catch (error) {
           if (currentTimedOut) {
-            if (refreshStatus === undefined)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_UNOBSERVED').toBe(true);
-            else if (refreshStatus === 200)
+            if (refreshStatus === undefined) {
+              const observed = await reconnectObserver
+                .evaluate((value) => value.read())
+                .catch(() => null);
+              if (observed === null)
+                expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
+              else if (httpObservationUnknown || observed.observationUnknown)
+                expect.soft(false, 'D002_RECONNECT_HTTP_OBSERVATION_UNKNOWN').toBe(true);
+              else if (!observed.offlineSeen)
+                expect.soft(false, 'D002_RECONNECT_OFFLINE_UNOBSERVED').toBe(true);
+              else if (!observed.onlineSeen && observed.online)
+                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_ONLINE').toBe(true);
+              else if (!observed.onlineSeen)
+                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_OFFLINE').toBe(true);
+              else if (!observed.online)
+                expect.soft(false, 'D002_RECONNECT_ONLINE_SEEN_NAVIGATOR_OFFLINE').toBe(true);
+              else if ([...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'))
+                expect.soft(false, 'D002_RECONNECT_PRIOR_REFRESH_HTTP_PENDING').toBe(true);
+              else if (priorAuth.size > 0)
+                expect.soft(false, 'D002_RECONNECT_PRIOR_CURRENT_HTTP_PENDING').toBe(true);
+              else if (observed.refresh.multiple || observed.current.multiple)
+                expect.soft(false, 'D002_RECONNECT_MULTIPLE_NATIVE_CALLS_UNKNOWN').toBe(true);
+              else if (observed.refresh.beforeOnline || observed.current.beforeOnline)
+                expect.soft(false, 'D002_RECONNECT_PREONLINE_NATIVE_CALL_UNKNOWN').toBe(true);
+              else if (observed.current.phase === 'REJECTED')
+                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_REJECTED').toBe(true);
+              else if (observed.current.phase === 'PENDING')
+                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_PENDING').toBe(true);
+              else if (observed.current.phase === 'FULFILLED')
+                expect
+                  .soft(false, 'D002_RECONNECT_CURRENT_NATIVE_FULFILLED_RESPONSE_GAP')
+                  .toBe(true);
+              else if (authHttp.current.responded)
+                expect
+                  .soft(false, 'D002_RECONNECT_CURRENT_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                  .toBe(true);
+              else if (authHttp.current.failed)
+                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+              else if (authHttp.current.requested)
+                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+              else if (observed.refresh.phase === 'REJECTED')
+                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_REJECTED').toBe(true);
+              else if (observed.refresh.phase === 'PENDING')
+                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_PENDING').toBe(true);
+              else if (observed.refresh.phase === 'FULFILLED')
+                expect
+                  .soft(false, 'D002_RECONNECT_REFRESH_NATIVE_FULFILLED_RESPONSE_GAP')
+                  .toBe(true);
+              else if (authHttp.refresh.responded)
+                expect
+                  .soft(false, 'D002_RECONNECT_REFRESH_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                  .toBe(true);
+              else if (authHttp.refresh.failed)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+              else if (authHttp.refresh.requested)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+              else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
+            } else if (refreshStatus === 200)
               expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
             else if (refreshStatus === 401)
               expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
@@ -4074,6 +4289,18 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       } finally {
         page.off('request', countRole);
         page.off('response', observeReconnect);
+        detachAuthObservation();
+        let observerCleanup: { error: unknown } | undefined;
+        try {
+          await reconnectObserver.evaluate((value) => value.restore());
+        } catch (error) {
+          observerCleanup = { error };
+        }
+        try {
+          await reconnectObserver.dispose();
+        } catch (error) {
+          observerCleanup ??= { error };
+        }
         if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
         if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
         if (!onlineRestored) {
@@ -4083,6 +4310,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
             if (!offlinePrimary) throw error;
           }
         }
+        if (!offlinePrimary && observerCleanup) throw observerCleanup.error;
       }
       await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
       await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
@@ -4094,6 +4322,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       rolePrimary = { error };
       throw error;
     } finally {
+      detachAuthObservation();
       let cleanupFailure: { error: unknown } | undefined;
       try {
         await context.setOffline(false);
@@ -4101,7 +4330,10 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         cleanupFailure = { error };
       }
       try {
-        await dataset.admin.call('PUT', rolePath, { status: 'ACTIVE', groupId: dataset.group.id });
+        await dataset.admin.call('PUT', rolePath, {
+          status: 'ACTIVE',
+          groupId: dataset.group.id,
+        });
       } catch (error) {
         cleanupFailure ??= { error };
       }

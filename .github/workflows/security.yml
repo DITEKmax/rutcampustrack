@@ -318,6 +318,29 @@ jobs:
                   return ((document['head'], document['parent'], document['merge'], tree[1])
                           if tree else None)
 
+              def postdoc_tuple(document):
+                  # Compatibility for the published correction receipt, not new Git field aliases.
+                  required = {
+                      'utc', 'stage', 'event', 'startingFixHead', 'testedSource', 'PRcheckout',
+                      'sameTree', 'runs', 'authorVerified', 'designatedExternalReview',
+                      'historicalV3', 'sourceInventory', 'taskdocPublication', 'boundaries'}
+                  if (type(document) is not dict or set(document) != required
+                          or document['stage'] != 'F01-F09-independent-PR2-corrections'
+                          or document['event'] != 'AUTHOR_VERIFIED_ALL9_CURRENT_GATES_SUCCESS_INTERNAL_REVIEW_APPROVE'
+                          or not all(type(document[key]) is str and 0 < len(document[key]) <= 4096
+                                     and document[key].isprintable() for key in required - {'runs'})
+                          or document['authorVerified'] != '9/9'
+                          or document['designatedExternalReview'] != 'PENDING0/9'
+                          or re.fullmatch(r'20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?\+00:00', document['utc']) is None
+                          or type(document['runs']) is not list or len(document['runs']) != 5
+                          or not all(type(run) is int and 0 < run < 10 ** 12 for run in document['runs'])
+                          or len(set(document['runs'])) != 5
+                          or not all(hex40.fullmatch(document[key])
+                                     for key in ('startingFixHead', 'testedSource', 'PRcheckout', 'sameTree'))):
+                      return None
+                  return (document['testedSource'], document['startingFixHead'],
+                          document['PRcheckout'], document['sameTree'])
+
               current_header_ancestry = {}
 
               def current_header_slots(line, path="docs/validation/cloud-20261011/CURRENT.md"):
@@ -448,6 +471,11 @@ jobs:
                                   add(value, start, end)
                               elif key == 'sameTree' and value.startswith(publication[3]):
                                   add(publication[3], start, end)
+                          postdoc = postdoc_tuple(document_value)
+                          if (True, postdoc) in publication_witnesses:
+                              slots = {'testedSource': 0, 'startingFixHead': 1, 'PRcheckout': 2, 'sameTree': 3}
+                              if key in slots and value == postdoc[slots[key]]:
+                                  add(value, start, end)
                       remote_main = journal and keys == ("evidence", "remote_main_sha")
                       readback_ref = spec["path"] == "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json" and keys in {
                           ("real_remote_readback",), ("actual_checkout", "official_git_parents", 1),
@@ -805,6 +833,7 @@ jobs:
               generated = ["[extend]", "path = " + json.dumps(str(base)), ""]
               allowlists = {rule: [] for rule in ("sourcegraph-access-token", "generic-api-key")}
               fetched_merge = None
+              fetched_postdoc_merge = None
               for spec in files:
                   path = spec["path"]
                   values = set()
@@ -815,6 +844,7 @@ jobs:
                   references = set()
                   raw_references = set()
                   publications = set()
+                  postdoc_publications = set()
                   for blob in inventory[path]:
                       blob_text = content(blob)
                       if (spec['kind'] == 'journal'
@@ -828,6 +858,9 @@ jobs:
                               publication = publication_tuple(document)
                               if publication:
                                   publications.add(publication)
+                              postdoc = postdoc_tuple(document)
+                              if postdoc:
+                                  postdoc_publications.add(postdoc)
                       for match in re.finditer(r"[a-fA-F0-9]{40,}", blob_text):
                           if match.end() - match.start() != 40:
                               continue
@@ -853,19 +886,32 @@ jobs:
                       object_kinds = {value: kind for value, kind in zip(ordered, result.stdout.splitlines())
                                       if kind in {'commit', 'tree', 'blob', 'tag'}}
                   publication_witnesses = set()
-                  for publication in sorted(publications):
+                  # At most one missing merge per exact receipt class (two classes total).
+                  for postdoc, publication in ([(False, item) for item in sorted(publications)]
+                                               + [(True, item) for item in sorted(postdoc_publications)]):
                       head, parent, merge, tree = publication
                       if head not in public_commits or parent not in public_commits or tree not in public_trees:
                           continue
                       head_parents = git('rev-list', '--parents', '-n', '1', head).split()
-                      if (not head_parents or head_parents[0] != head or parent not in head_parents[1:]
+                      if (not head_parents or head_parents[0] != head
+                              or not postdoc and parent not in head_parents[1:]
                               or git('rev-parse', head + '^{tree}') != tree):
                           continue
+                      if postdoc:
+                          try:
+                              ancestry = [subprocess.run(
+                                  ['git', 'merge-base', '--is-ancestor', before, after],
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5).returncode
+                                  for before, after in ((parent, head), (head, current))]
+                          except (OSError, subprocess.TimeoutExpired):
+                              continue
+                          if any(ancestry):
+                              continue
                       if merge not in public_commits:
                           if merge in object_kinds:
                               continue
-                          # At most one qualified missing merge; never change refs, depth or config.
-                          if fetched_merge is not None:
+                          # Each typed class retains its own one-fetch bound; no refs/depth/config writes.
+                          if (fetched_postdoc_merge if postdoc else fetched_merge) is not None:
                               raise ValueError
                           repository = os.environ.get('GITHUB_REPOSITORY', '')
                           if (re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository) is None
@@ -873,7 +919,10 @@ jobs:
                                       'https://github.com/' + repository,
                                       'https://github.com/' + repository + '.git'}):
                               raise ValueError
-                          fetched_merge = merge
+                          if postdoc:
+                              fetched_postdoc_merge = merge
+                          else:
+                              fetched_merge = merge
                           process = subprocess.Popen([
                               'git', 'fetch', '--no-tags', '--no-write-fetch-head',
                               '--no-recurse-submodules', 'origin', merge],
@@ -896,7 +945,7 @@ jobs:
                       if (merge_parents and merge_parents[0] == merge and head in merge_parents[1:]
                               and len(merge_parents) == 3
                               and git('rev-parse', merge + '^{tree}') == tree):
-                          publication_witnesses.add(publication)
+                          publication_witnesses.add((True, publication) if postdoc else publication)
                   legacy_refs = set()
                   instruction_witnesses = set()
                   baseline_allowed, trusted_records = occurrences(

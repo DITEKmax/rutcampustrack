@@ -136,6 +136,57 @@ class AttendanceOwnBotReadGrpcServiceTest {
         assertStatus(read(true, 101), Status.Code.UNAVAILABLE);
     }
 
+    @Test
+    void actualProducerAcceptsOffsetScopeAndEmitsItsLegalMinutePrecisionTimestamp() {
+        String producerNow =
+                NOW.atZone(ru.rutcampustrack.attendance.journal.JournalLessonPolicy.MOSCOW)
+                        .toOffsetDateTime()
+                        .toString();
+        assertThat(producerNow).isEqualTo("2026-10-18T00:15+03:00");
+        for (String timestamp :
+                List.of(
+                        producerNow,
+                        NOW.toString(),
+                        "2026-10-18T00:15:00+03:00",
+                        "2026-10-18T00:15:00.123456789+03:00",
+                        "2026-10-17T17:15-04:00")) {
+            valid();
+            when(dependencies.scope(IDENTITY))
+                    .thenReturn(scope().toBuilder().setServerNow(timestamp).build());
+            when(records.findByLessonId(101L)).thenReturn(List.of());
+            var result = read(true, 101);
+            assertThat(result.error).isNull();
+            assertThat(result.values)
+                    .singleElement()
+                    .satisfies(
+                            response -> {
+                                assertThat(response.getServerNow()).isEqualTo(producerNow);
+                                assertThat(response.getEducationalDate()).isEqualTo("2026-10-18");
+                                assertThat(response.getRowsCount()).isEqualTo(4);
+                                assertThat(response.getStatistics().getUnmarkedCount())
+                                        .isEqualTo(4);
+                            });
+        }
+    }
+
+    @Test
+    void malformedOffsetOrAnotherMoscowDateCannotReadAttendanceRecords() {
+        valid();
+        for (String timestamp :
+                List.of(
+                        "",
+                        "not-a-timestamp",
+                        "2026-10-18T00:15",
+                        "2026-13-18T00:15+03:00",
+                        "2026-10-18T00:15+14:00",
+                        "2026-10-18T23:30-03:00")) {
+            when(dependencies.scope(IDENTITY))
+                    .thenReturn(scope().toBuilder().setServerNow(timestamp).build());
+            assertStatus(read(true, 101), Status.Code.UNAVAILABLE);
+        }
+        verifyNoInteractions(records);
+    }
+
     private void valid() {
         when(dependencies.check(IDENTITY)).thenReturn(authority());
         when(dependencies.scope(IDENTITY)).thenReturn(scope());

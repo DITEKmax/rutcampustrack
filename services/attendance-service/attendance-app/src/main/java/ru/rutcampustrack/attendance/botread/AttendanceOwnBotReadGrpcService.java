@@ -19,6 +19,7 @@ import ru.rutcampustrack.shared.web.time.EducationalTime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -193,7 +194,8 @@ public final class AttendanceOwnBotReadGrpcService
                 || scope.getOwnGroupName().isBlank()
                 || scope.getSemesterId() <= 0
                 || !scope.getEducationalDate().equals(today.toString())
-                || !Instant.parse(scope.getServerNow())
+                || !OffsetDateTime.parse(scope.getServerNow())
+                        .toInstant()
                         .atZone(JournalLessonPolicy.MOSCOW)
                         .toLocalDate()
                         .equals(today)) throw unavailable();

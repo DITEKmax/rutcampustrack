@@ -319,7 +319,8 @@ jobs:
                               token = match.group()
                               pack = key in {"pack", "packId", "capacity"} and "pack" in value.lower()
                               public = value == token and token.lower() in public_objects and public_context
-                              if public or legacy and (value == token or token.lower() in public_objects or pack):
+                              if public or legacy and (value == token or token.lower() in public_objects or pack
+                                                       or whole_legacy and token in legacy_refs):
                                   add(token, start, end)
                       journal = spec["kind"] == "journal"
                       remote_main = journal and keys == ("evidence", "remote_main_sha")
@@ -608,10 +609,10 @@ jobs:
                       blob = object_at(commit, path)
                       if blob is not None:
                           blobs.add(blob)
-                          witness(commit, path, blob)
+                          witness(commit, path)
                   return sorted(blobs)
 
-              def witness(commit, path, blob):
+              def witness(commit, path):
                   nonlocal total_bytes
                   if path not in pin_sources:
                       return
@@ -630,7 +631,7 @@ jobs:
                       if result.returncode or len(result.stdout) != size:
                           raise ValueError
                       source_hashes[source] = hashlib.sha256(result.stdout).hexdigest()
-                  ci_witnesses.setdefault((path, blob), set()).add(source_hashes[source])
+                  ci_witnesses.setdefault(path, set()).add(source_hashes[source])
 
               def content(blob):
                   if int(git("cat-file", "-s", blob)) > limits["file_bytes"]:
@@ -655,7 +656,7 @@ jobs:
                   trusted_blobs[path] = trusted
                   if trusted is not None:
                       blobs = sorted(set(blobs) | {trusted})
-                      witness(trusted_revision, path, trusted)
+                      witness(trusted_revision, path)
                   all_blobs.update(blobs)
                   for blob in blobs:
                       total_bytes += int(git("cat-file", "-s", blob))
@@ -696,20 +697,19 @@ jobs:
                   instruction_witnesses = set()
                   baseline_allowed, trusted_records = occurrences(
                       spec, content(trusted), public_objects, seed_refs=legacy_refs,
-                      ci_hashes=ci_witnesses.get((path, trusted), ()), instruction_witnesses=instruction_witnesses)
+                      ci_hashes=ci_witnesses.get(path, ()), instruction_witnesses=instruction_witnesses)
                   if len(baseline_allowed) > limits["values_per_file"]:
                       raise ValueError
                   legacy_pins = {value for value in baseline_allowed if hex64.fullmatch(value)}
                   baseline_allowed, _ = occurrences(
                       spec, content(trusted), public_objects, trusted_records, legacy_refs,
-                      ci_hashes=ci_witnesses.get((path, trusted), ()), legacy_pins=legacy_pins,
+                      ci_hashes=ci_witnesses.get(path, ()), legacy_pins=legacy_pins,
                       instruction_witnesses=instruction_witnesses)
                   if len(baseline_allowed) > limits["values_per_file"]:
                       raise ValueError
                   values.update(baseline_allowed)
                   values.update(value for value in raw_references if value.lower() in public_objects)
-                  for blob in inventory[path]:
-                      values.update(ci_witnesses.get((path, blob), ()))
+                  values.update(ci_witnesses.get(path, ()))
                   if len(values) > 2 * limits["values_per_file"]:
                       raise ValueError
                   values.update(labels)
@@ -732,7 +732,7 @@ jobs:
                           allowed = baseline_allowed
                       else:
                           allowed, _ = occurrences(spec, text, public_objects, trusted_records, legacy_refs,
-                                                   ci_hashes=ci_witnesses.get((path, blob), ()), legacy_pins=legacy_pins,
+                                                   ci_hashes=ci_witnesses.get(path, ()), legacy_pins=legacy_pins,
                                                    instruction_witnesses=instruction_witnesses)
                       if not set(allowed).issubset(values):
                           raise ValueError

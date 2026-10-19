@@ -17,6 +17,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -166,8 +167,8 @@ public final class DirectedBotReadGrpcService
                 if (!attendance.hasLesson()
                         || !attendance.getLesson().equals(selected)
                         || !attendance.getEducationalDate().equals(date.toString())
-                        || !date(Instant.parse(attendance.getServerNow())).equals(date))
-                    throw unavailable();
+                        || !date(OffsetDateTime.parse(attendance.getServerNow()).toInstant())
+                                .equals(date)) throw unavailable();
                 stage[0] = "BFF_ROSTER";
                 validateRoster(scope, attendance);
                 response.setState(BotCurrentAttendanceState.BOT_CURRENT_ATTENDANCE_STATE_READY)
@@ -231,7 +232,8 @@ public final class DirectedBotReadGrpcService
                 || scope.getEligibilityRevision() <= 0
                 || scope.getSemesterId() <= 0
                 || !scope.getEducationalDate().equals(date.toString())
-                || !date(Instant.parse(scope.getServerNow())).equals(date)) throw unavailable();
+                || !date(OffsetDateTime.parse(scope.getServerNow()).toInstant()).equals(date))
+            throw unavailable();
         if (LocalDate.parse(scope.getSemesterDateTo())
                 .isBefore(LocalDate.parse(scope.getSemesterDateFrom()))) throw unavailable();
         return scope;

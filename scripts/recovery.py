@@ -804,6 +804,50 @@ def main():
         # Unexpected diagnostics never include DB subprocess output/credentials.
         hint = getattr(error, "hint", "GUARD")
         print("RECOVERY_FAILURE_HINT:" + (hint if hint in FAILURE_HINTS else "GUARD"), file=sys.stderr)
+        guard_reasons = {
+            'Unsupported recovery admin identity': 'RECOVERY_ADMIN_IDENTITY',
+            'Schema reference database already exists': 'SCHEMA_REFERENCE_EXISTS',
+            'Created schema reference identity is missing': 'SCHEMA_REFERENCE_MISSING',
+            'Schema reference identity changed; cleanup refused': 'SCHEMA_REFERENCE_CLEANUP_IDENTITY',
+            'Three distinct DB containers are required': 'TARGET_CONTAINER_DISTINCTNESS',
+            'DB target is not running': 'TARGET_NOT_RUNNING',
+            'Restore accepts only the explicit labeled disposable project': 'TARGET_DISPOSABLE_IDENTITY',
+            'Restored Mongo/files inventory differs; keep target isolated': 'MONGO_FILES_INVENTORY',
+            'Explicit credential file is missing': 'CREDENTIAL_FILE_MISSING',
+            'Choose exactly one of --no-files or --files-dir': 'FILE_MODE',
+            'Target project must start rct-recovery-': 'TARGET_PROJECT',
+            'Mongo target is not fresh; restore refused': 'MONGO_TARGET_NOT_FRESH',
+            'PostgreSQL target is not fresh; restore refused': 'POSTGRES_TARGET_NOT_FRESH',
+            'Unsupported/incomplete PostgreSQL access inventory': 'ACCESS_INVENTORY_SHAPE',
+            'PostgreSQL access inventory must include its database': 'ACCESS_DATABASE_MISSING',
+            'Unsupported PostgreSQL access object': 'ACCESS_OBJECT_SHAPE',
+            'Duplicate PostgreSQL access object': 'ACCESS_OBJECT_DUPLICATE',
+            'Bundle must be a real directory': 'BUNDLE_DIRECTORY',
+            'Bundle incomplete or contains unexpected artifacts': 'BUNDLE_CONTENTS',
+            'Unsupported/incomplete manifest; format 3 with owner/ACL evidence is required': 'BUNDLE_MANIFEST',
+            'Unsupported files mode in manifest': 'BUNDLE_FILES_MODE',
+            'Restore files mode does not match bundle; refused before target writes': 'BUNDLE_MODE_MISMATCH',
+            'Incomplete/unexpected database inventory': 'BUNDLE_DATABASE_INVENTORY',
+            'Database-only bundle declares files; restore refused': 'BUNDLE_DECLARES_FILES',
+            'Bundle artifacts must be regular files': 'BUNDLE_ARTIFACT_KIND',
+            'Bundle lacks mandatory PostgreSQL access evidence; a new format-3 backup is required': 'BUNDLE_ACCESS_EVIDENCE',
+            'Container arguments must be explicit names/IDs': 'CONTAINER_ARGUMENTS',
+        }
+        guard_reason = "UNKNOWN"
+        if hint == "GUARD":
+            if isinstance(error, RecoveryError):
+                guard_reason = guard_reasons.get(str(error), "UNKNOWN")
+            elif isinstance(error, OSError):
+                guard_reason = "OS_ERROR"
+            elif isinstance(error, json.JSONDecodeError):
+                guard_reason = "JSON_PARSE"
+            elif isinstance(error, KeyError):
+                guard_reason = "KEY_ERROR"
+            elif isinstance(error, tarfile.TarError):
+                guard_reason = "TAR_ERROR"
+            elif isinstance(error, ValueError):
+                guard_reason = "INVALID_VALUE"
+        print("RECOVERY_GUARD_REASON:" + guard_reason, file=sys.stderr)
         print(f"FAIL recovery: {error}", file=sys.stderr)
         return 1
     return 0

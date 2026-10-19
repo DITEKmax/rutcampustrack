@@ -161,6 +161,109 @@ class DirectedBotReadGrpcServiceTest {
         assertStatus(headman(0), Status.Code.FAILED_PRECONDITION);
     }
 
+    @Test
+    void headmanReadyAcceptsActualProducerOffsetTimestampsWithoutLosingRosterOrStatistics() {
+        String producerNow =
+                NOW.atZone(CurrentHeadmanLessonPolicy.MOSCOW).toOffsetDateTime().toString();
+        assertThat(producerNow).isEqualTo("2026-10-18T00:15+03:00");
+        for (String timestamp :
+                List.of(
+                        producerNow,
+                        NOW.toString(),
+                        "2026-10-18T00:15:00+03:00",
+                        "2026-10-18T00:15:00.123456789+03:00",
+                        "2026-10-17T17:15-04:00")) {
+            readyHeadman(timestamp, timestamp);
+            var result = headman(0);
+            assertThat(result.error).isNull();
+            assertThat(result.values)
+                    .singleElement()
+                    .satisfies(
+                            response -> {
+                                assertThat(response.getState())
+                                        .isEqualTo(
+                                                BotCurrentAttendanceState
+                                                        .BOT_CURRENT_ATTENDANCE_STATE_READY);
+                                assertThat(response.getLesson().getLessonId()).isEqualTo(101);
+                                assertThat(response.getServerNow()).isEqualTo(timestamp);
+                                assertThat(response.getEducationalDate()).isEqualTo("2026-10-18");
+                                assertThat(response.getRowsList())
+                                        .singleElement()
+                                        .satisfies(
+                                                row -> {
+                                                    assertThat(row.getStudentId()).isEqualTo(71);
+                                                    assertThat(row.getRecordPresent()).isFalse();
+                                                });
+                                assertThat(response.getStatistics().getRosterCount()).isEqualTo(1);
+                                assertThat(response.getStatistics().getUnmarkedCount())
+                                        .isEqualTo(1);
+                            });
+        }
+    }
+
+    @Test
+    void headmanScopeAndAttendanceRejectMalformedOffsetOrAnotherMoscowDate() {
+        for (String timestamp :
+                List.of(
+                        "",
+                        "not-a-timestamp",
+                        "2026-10-18T00:15",
+                        "2026-13-18T00:15+03:00",
+                        "2026-10-18T00:15+14:00",
+                        "2026-10-18T23:30-03:00")) {
+            readyHeadman(timestamp, NOW.toString());
+            assertStatus(headman(0), Status.Code.UNAVAILABLE);
+            readyHeadman(NOW.toString(), timestamp);
+            assertStatus(headman(0), Status.Code.UNAVAILABLE);
+        }
+    }
+
+    private void readyHeadman(String scopeNow, String attendanceNow) {
+        authorize(BotReadCapability.BOT_READ_CAPABILITY_HEADMAN_CURRENT_ATTENDANCE_READ);
+        var action = BotAcademicReadAction.BOT_ACADEMIC_READ_ACTION_HEADMAN_CURRENT;
+        when(dependencies.scope(IDENTITY, action))
+                .thenReturn(
+                        scope(action).toBuilder()
+                                .setServerNow(scopeNow)
+                                .addRoster(
+                                        BotScopeRosterMember.newBuilder()
+                                                .setStudentId(71)
+                                                .setDisplayName("Староста"))
+                                .build());
+        when(dependencies.day(33, 9, java.time.LocalDate.of(2026, 10, 18)))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(lesson(101)).build());
+        when(dependencies.attendance(IDENTITY, 101))
+                .thenReturn(
+                        BotOwnLessonAttendanceResponse.newBuilder()
+                                .setLesson(
+                                        BotLessonSummary.newBuilder()
+                                                .setLessonId(101)
+                                                .setGroupId(33)
+                                                .setSubjectId(22)
+                                                .setSemesterId(9)
+                                                .setGroupName("УИТ-311")
+                                                .setSubjectName("Математика")
+                                                .setLessonType("lecture")
+                                                .setLessonDate("2026-10-18")
+                                                .setLessonNumber(1)
+                                                .setStartTime("00:00")
+                                                .setEndTime("00:30")
+                                                .setStatus("active")
+                                                .setOneOff(true))
+                                .setServerNow(attendanceNow)
+                                .setEducationalDate("2026-10-18")
+                                .addRows(
+                                        BotAttendanceRow.newBuilder()
+                                                .setStudentId(71)
+                                                .setDisplayName("Староста")
+                                                .setRecordPresent(false))
+                                .setStatistics(
+                                        BotAttendanceStatistics.newBuilder()
+                                                .setRosterCount(1)
+                                                .setUnmarkedCount(1))
+                                .build());
+    }
+
     private void authorize(BotReadCapability capability) {
         when(dependencies.check(IDENTITY, capability)).thenReturn(authority(capability));
     }

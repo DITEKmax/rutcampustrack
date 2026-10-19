@@ -3720,9 +3720,10 @@ jobs:
               ' =========|_|==============|___/=/_/_/_/',
           }
 
-          def initial_membership_output(counts='UNKNOWN'):
+          def initial_membership_output(counts='UNKNOWN', unknown_reason='UNKNOWN'):
               return {'state': 'UNKNOWN' if counts == 'UNKNOWN' else 'REPORTED',
-                      'sourceStage': 'INITIAL_MEMBERSHIP', 'categoryCounts': counts}
+                      'sourceStage': 'INITIAL_MEMBERSHIP', 'categoryCounts': counts,
+                      'unknownReason': unknown_reason if counts == 'UNKNOWN' else 'NOT_APPLICABLE'}
 
           def is_initial_membership_failure(value):
               keys = {
@@ -3764,12 +3765,14 @@ jobs:
               # Reported bounded-log counts do not identify an event or establish DLQ causality.
               counts = {category: 0 for category in sorted(INITIAL_MEMBERSHIP_CATEGORIES)}
               lines = payload.splitlines()
-              if len(payload) > LIMIT or len(lines) >= 2000:
-                  return initial_membership_output()
+              if len(payload) > LIMIT:
+                  return initial_membership_output(unknown_reason='LOG_BYTE_LIMIT')
+              if len(lines) >= 2000:
+                  return initial_membership_output(unknown_reason='LOG_TAIL_LIMIT')
               startup, startup_lines = True, 0
               for line in lines:
                   if len(line) > 131072:
-                      return initial_membership_output()
+                      return initial_membership_output(unknown_reason='LOG_LINE_LIMIT')
                   try:
                       record = decode(line)
                   except (ValueError, UnicodeError, RecursionError):
@@ -3780,25 +3783,26 @@ jobs:
                               or re.fullmatch(rb' :: Spring Boot :: {1,64}\(v3\.5\.16\)', line))):
                           startup_lines += 1
                           continue
-                      return initial_membership_output()
+                      return initial_membership_output(unknown_reason='LOG_FORMAT')
                   startup = False
                   if type(record) is not dict:
-                      return initial_membership_output()
+                      return initial_membership_output(unknown_reason='LOG_RECORD_SHAPE')
                   if (record.get('logger') != 'ru.rutcampustrack.attendance.event.EventConsumer'
                           or record.get('level') != 'WARN'):
                       continue
                   message = record.get('msg')
                   if type(message) is not str:
-                      return initial_membership_output()
+                      return initial_membership_output(unknown_reason='TARGET_MESSAGE_SHAPE')
                   if not message.startswith('event consumption failure family=INITIAL_MEMBERSHIP'):
                       continue
                   match = re.fullmatch(r'event consumption failure family=INITIAL_MEMBERSHIP category=([A-Z_]+)', message)
                   if not match or match[1] not in INITIAL_MEMBERSHIP_CATEGORIES:
-                      return initial_membership_output()
+                      return initial_membership_output(unknown_reason='TARGET_TEMPLATE')
                   counts[match[1]] += 1
                   if sum(counts.values()) > 200:
-                      return initial_membership_output()
-              return initial_membership_output(counts) if sum(counts.values()) else initial_membership_output()
+                      return initial_membership_output(unknown_reason='MATCH_COUNT_LIMIT')
+              return (initial_membership_output(counts) if sum(counts.values())
+                      else initial_membership_output(unknown_reason='NO_MATCHING_WARN'))
 
           def frame_sources(config):
               if config[4] != 'DATASET_ATTENDANCE_MARK_HTTP':
@@ -4424,8 +4428,21 @@ jobs:
                           gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
                           result = combine(domain, gateway, config)
                           result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway, request_id=request_id)
-          except Exception:
-              pass
+          except Exception as error:
+              if 'initial_failure' in locals() and initial_failure:
+                  reason = {
+                      'Diagnostic byte limit': 'CAPTURE_BYTE_LIMIT',
+                      'Diagnostic command failed': 'CAPTURE_COMMAND_FAILURE',
+                      'Owned service unavailable': 'OWNED_SERVICE_UNAVAILABLE',
+                      'Owned service start unavailable': 'OWNERSHIP_UNAVAILABLE',
+                      'Owned service changed': 'OWNERSHIP_CHANGED',
+                      'Owned service restarted': 'OWNERSHIP_CHANGED',
+                  }.get(str(error), 'CAPTURE_UNAVAILABLE')
+                  if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)):
+                      reason = 'CAPTURE_TIMEOUT'
+                  elif isinstance(error, (UnicodeError, json.JSONDecodeError)):
+                      reason = 'CAPTURE_FORMAT'
+                  result = initial_membership_output(unknown_reason=reason)
           print(json.dumps(result, sort_keys=True))
           PY_HTTP500_DIAGNOSTIC
 
@@ -5475,7 +5492,7 @@ jobs:
           stage = 'source'
           application_failure = {'action': 'UNKNOWN', 'reason': 'UNKNOWN',
                                  'errorClass': 'UNKNOWN', 'errno': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
-          backup_failure = {'action': 'UNKNOWN', 'hint': 'UNKNOWN',
+          backup_failure = {'action': 'UNKNOWN', 'hint': 'UNKNOWN', 'guardReason': 'UNKNOWN',
                             'errorClass': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
 
           def retain_backup_failure(error=None, *, exit_status=None, stderr=None):
@@ -5510,6 +5527,48 @@ jobs:
                              b'RESTORE_DIFF_TABLES'}
                   if len(hints) == 1 and hints[0] in allowed:
                       backup_failure['hint'] = hints[0].decode('ascii')
+                      if hints[0] == b'GUARD':
+                          reasons = [line for line in stderr.split(b'\n')
+                                     if line.startswith(b'RECOVERY_GUARD_REASON')]
+                          allowed_reasons = {
+                              b'OS_ERROR',
+                              b'JSON_PARSE',
+                              b'KEY_ERROR',
+                              b'TAR_ERROR',
+                              b'INVALID_VALUE',
+                              b'ACCESS_DATABASE_MISSING',
+                              b'ACCESS_INVENTORY_SHAPE',
+                              b'ACCESS_OBJECT_DUPLICATE',
+                              b'ACCESS_OBJECT_SHAPE',
+                              b'BUNDLE_ACCESS_EVIDENCE',
+                              b'BUNDLE_ARTIFACT_KIND',
+                              b'BUNDLE_CONTENTS',
+                              b'BUNDLE_DATABASE_INVENTORY',
+                              b'BUNDLE_DECLARES_FILES',
+                              b'BUNDLE_DIRECTORY',
+                              b'BUNDLE_FILES_MODE',
+                              b'BUNDLE_MANIFEST',
+                              b'BUNDLE_MODE_MISMATCH',
+                              b'CONTAINER_ARGUMENTS',
+                              b'CREDENTIAL_FILE_MISSING',
+                              b'FILE_MODE',
+                              b'MONGO_FILES_INVENTORY',
+                              b'MONGO_TARGET_NOT_FRESH',
+                              b'POSTGRES_TARGET_NOT_FRESH',
+                              b'RECOVERY_ADMIN_IDENTITY',
+                              b'SCHEMA_REFERENCE_CLEANUP_IDENTITY',
+                              b'SCHEMA_REFERENCE_EXISTS',
+                              b'SCHEMA_REFERENCE_MISSING',
+                              b'TARGET_CONTAINER_DISTINCTNESS',
+                              b'TARGET_DISPOSABLE_IDENTITY',
+                              b'TARGET_NOT_RUNNING',
+                              b'TARGET_PROJECT',
+                              b'UNKNOWN',
+                          }
+                          if len(reasons) == 1:
+                              reason = re.fullmatch(rb'RECOVERY_GUARD_REASON:([A-Z_]{1,64})', reasons[0])
+                              if reason and reason[1] in allowed_reasons:
+                                  backup_failure['guardReason'] = reason[1].decode('ascii')
 
           def retain_application_failure(error=None, *, exit_status=None):
               if stage != 'application':

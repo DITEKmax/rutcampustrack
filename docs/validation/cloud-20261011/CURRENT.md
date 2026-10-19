@@ -3,8 +3,8 @@
 Goal Q031/D037 **IN_PROGRESS**, без дедлайна: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
 [TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md), [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md).
 Ветка codex/server-validation-20261011; [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2).
-Starting26cbe5912f6683a81780a831609dbddbc26feba4; последняя опубликованная/проверенная база
-**e5c211195653ecb71cbffd786632a4fd3fe83ab3**. Local b0a2a9cf сохранён; связный increment готовится к одному normalpush; main/merge/deploy нет.
+Starting26cbe5912f6683a81780a831609dbddbc26feba4; опубликованная candidate-база
+**d3bf1e005ec466cabc804bf71dddb290feca5ad1**. Ordinary CI/PR/Coverage39189867926/74151/74206 продолжаются; main/merge/deploy нет.
 
 ## Конечный план
 
@@ -43,11 +43,11 @@ Application recovery12158801161/0924ae35 seedFAIL987ms POSTsubjects503; checkpoi
 
 ## Следующий связный пакет / владельцы
 
-Root интегрировал complete-history pinnedGitleaks8.24.3 с точным rule+path+type-line AND allowlist; все208default rules сохранены.
-Старый hash-only fingerprint убран только из собственного неопубликованного increment. Synthetic scanner3expectedfindings/exit2 PASS; addressed independentAPPROVE.
-Current-cache negative сохраняет DBsplit; независимый шаг выполняется после чужого FAIL только на clean source. Exactbinding0 INVALID_ARGUMENT fixture принят независимо.
-FiniteSpring/BOT/preview/ADMINcaller и firstsubjectPOST503 observations используют прежние failure channels; assertions/identity/restoration/первичная ошибка сохранены.
-Root — soleGit/docs/matrix/PR; writers/reviewers released, heavy lease свободен. Source checks приняты; final scoped hooks → commit → один normalpush → ordinaryCI.
+Current d3bf cache12160190170/d821bf38 PASS: exact immediate-eviction negative1FAIL, restored commit+rollback2PASS, source-restored true.
+Spring12159134953/f732a19a точно выявил previewAssertJ1132 expected409/actual200; execute409/domain guard сохранён. Exact descriptor correction joined/RootroutineAPPROVE.
+Apps PR12159234458/2a066ae9 RSS_DELTA FAIL71786496B>64MiB, pushApps PASS; heapcommit varies, exclusivecauseUNKNOWN. Onefile fixed192+PreTouch BOTH baseline/profile joined/independentAPPROVE; rawRSS64/absolute384/workload preserved, newactualUNKNOWN.
+Gitleaks redacted1789findings:1568 proven publicGitobjects; residual provenance active. Exacttypeallowlist работает; default bare40 fragmentwide rule не менялся. Все findings пока красные, coverage не сокращено.
+Root — soleGit/docs/matrix/PR; r9cf_event — bounded Security provenance; observer — current jobs. Two reviewed source corrections publish while existing usefulCI continues; heavy lease свободен.
 Native39 compilePASS52.90s/sourceexact остаётся применим к последнему Java изменению; новых Java изменений в пакете нет.
 LocalDocker/DB/pulls NOT_RUN: workspace ниже4GiB Dockerreserve/VFSsameFS; без cleanup/reset/prune, foreign25 сохранены.
 [Resources/owners](resources.md), [protocol](BOUNDARY-PROTOCOL-20261018.md), [decisions](decisions.md), [questions](questions.md).

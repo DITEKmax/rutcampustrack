@@ -411,7 +411,10 @@ def main():
             process_env = dict(environment)
             process_env.update({"RCT_PYROSCOPE_ADDRESS": address or "http://127.0.0.1:9/pyroscope", "RCT_JAVA_GLITCHTIP_DSN": dsn or ""})
             resultfile = work / (mode + ".json")
-            completed = run(["java", "-Xms64m", "-Xmx192m", "-XX:MaxDirectMemorySize=32m", "-cp", classpath,
+            # Fix and touch the same heap before both RSS windows; adaptive commitment is not profiler overhead.
+            heap_args = (["-Xms192m", "-Xmx192m", "-XX:+AlwaysPreTouch"]
+                         if mode in {"baseline", "profile"} else ["-Xms64m", "-Xmx192m"])
+            completed = run(["java", *heap_args, "-XX:MaxDirectMemorySize=32m", "-cp", classpath,
                  "ru.rutcampustrack.attendance.report.ObservabilityProbe", mode, str(resultfile)], env=process_env, timeout=100)
             if mode == "profile":
                 profile_sdk_hint.update(closed_profile_sdk(completed.stderr[:64 * 1024] +

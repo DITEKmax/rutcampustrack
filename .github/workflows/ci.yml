@@ -847,7 +847,7 @@ jobs:
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(spring_source)]) == b''
                   spring_lines = spring_test.decode().splitlines()
                   assert spring_lines[1073].strip() == 'void unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState()'
-                  assert spring_lines[1130].strip() == '.andExpect(status().isConflict());'
+                  assert spring_lines[1131].strip() == 'assertThat(unfinishedPreview.getResponse().getStatus()).isEqualTo(409);'
                   spring_service = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java'
                   spring_repository = app / 'src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java'
                   spring_faults = {
@@ -879,7 +879,7 @@ jobs:
                       'testSourceSha256': hashlib.sha256(spring_test).hexdigest(),
                       'productionSourceSha256': {str(path): values[0] for path, values in spring_faults.items()},
                       'counterexampleSourceSha256': {str(path): values[3] for path, values in spring_faults.items()},
-                      'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:1131)'}
+                      'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:1132)'}
 
                   # Captured teacher pairs moved to Academic; T008 grant policy is unchanged.
                   teacher_source = app / 'src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java'
@@ -1521,12 +1521,12 @@ jobs:
                       messageKind=spring_kind,
                       expectedHttpStatus=int(spring_status.group(1)) if spring_status is not None else 'UNKNOWN',
                       actualHttpStatus=int(spring_status.group(2)) if spring_status is not None else 'UNKNOWN')
-                  assert re.fullmatch(r'Status expected:<409> but was:<200>', spring_message)
+                  assert re.fullmatch(r'\s*expected:\s*409\s+but was:\s*200\s*', spring_message)
                   spring_named_lines = re.findall(
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
                       + re.escape(spring_completion['package'] + '.' + spring_completion['method'])
                       + r'\(GroupPromotionCycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', spring_failure.text or '')
-                  assert spring_named_lines == ['1131']
+                  assert spring_named_lines == ['1132']
                   proof['springCompletionRule'].update(
                       state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
                       tests=1, failures=1, errors=0, skipped=0,

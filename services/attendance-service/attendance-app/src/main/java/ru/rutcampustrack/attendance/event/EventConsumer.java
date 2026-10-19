@@ -243,9 +243,12 @@ public class EventConsumer extends AbstractEventConsumer {
             try {
                 // Existing MDC supplies correlation; never attach the exception or envelope.
                 log.warn(
-                        "lesson.closed failure stage={} category={}",
+                        "lesson.closed failure stage={} category={} rpc={} status={} cause={}",
                         stage,
-                        lessonClosedFailure(failure));
+                        lessonClosedFailure(failure),
+                        lessonClosedRpc(stage, failure),
+                        lessonClosedStatus(failure),
+                        lessonClosedCause(failure));
             } finally {
                 throw failure;
             }
@@ -269,6 +272,84 @@ public class EventConsumer extends AbstractEventConsumer {
         DUPLICATE_KEY,
         EFFECT_REJECTED,
         OTHER
+    }
+
+    private enum LessonClosedRpc {
+        NONE,
+        ACADEMIC_GROUP_MEMBERS,
+        SCHEDULE_LESSON_BY_ID
+    }
+
+    private enum LessonClosedCause {
+        NONE,
+        SEMANTIC_REJECTION,
+        MONGO_TRANSIENT_TRANSACTION,
+        MONGO_UNKNOWN_COMMIT,
+        MONGO_WRITE_CONFLICT,
+        MONGO_DUPLICATE_KEY,
+        MONGO_OTHER,
+        TRANSACTION_ROLLBACK,
+        OTHER
+    }
+
+    private enum NoRpcStatus {
+        NONE
+    }
+
+    private static Enum<?> lessonClosedStatus(RuntimeException failure) {
+        io.grpc.Status.Code code = null;
+        if (failure
+                instanceof
+                ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException
+                        academic) {
+            code = academic.getStatusCode();
+        } else if (failure
+                instanceof
+                ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException
+                        schedule) {
+            code = schedule.getStatusCode();
+        }
+        return code == null ? NoRpcStatus.NONE : code;
+    }
+
+    private static LessonClosedRpc lessonClosedRpc(
+            LessonClosedStage stage, RuntimeException failure) {
+        if (stage != LessonClosedStage.PREPARE || lessonClosedStatus(failure) == NoRpcStatus.NONE) {
+            return LessonClosedRpc.NONE;
+        }
+        return failure
+                        instanceof
+                        ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException
+                ? LessonClosedRpc.ACADEMIC_GROUP_MEMBERS
+                : LessonClosedRpc.SCHEDULE_LESSON_BY_ID;
+    }
+
+    private static LessonClosedCause lessonClosedCause(RuntimeException failure) {
+        if (lessonClosedStatus(failure) != NoRpcStatus.NONE) return LessonClosedCause.NONE;
+        Throwable current = failure;
+        for (int depth = 0; current != null && depth < 12; depth++, current = current.getCause()) {
+            if (current instanceof com.mongodb.MongoException mongo) {
+                if (mongo.hasErrorLabel("UnknownTransactionCommitResult"))
+                    return LessonClosedCause.MONGO_UNKNOWN_COMMIT;
+                if (mongo.hasErrorLabel("TransientTransactionError"))
+                    return LessonClosedCause.MONGO_TRANSIENT_TRANSACTION;
+                if (mongo.getCode() == 112) return LessonClosedCause.MONGO_WRITE_CONFLICT;
+                if (mongo.getCode() == 11000) return LessonClosedCause.MONGO_DUPLICATE_KEY;
+                return LessonClosedCause.MONGO_OTHER;
+            }
+            if (current instanceof org.springframework.dao.DuplicateKeyException)
+                return LessonClosedCause.MONGO_DUPLICATE_KEY;
+        }
+        if (failure instanceof org.springframework.transaction.UnexpectedRollbackException)
+            return LessonClosedCause.TRANSACTION_ROLLBACK;
+        if (failure
+                        instanceof
+                        ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException
+                || failure
+                        instanceof
+                        ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException)
+            return LessonClosedCause.SEMANTIC_REJECTION;
+        return LessonClosedCause.OTHER;
     }
 
     private enum InitialMembershipFailure {

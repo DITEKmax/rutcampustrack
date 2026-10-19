@@ -517,10 +517,9 @@ export class MobileDataset {
       expectedHeadmanId: null,
     });
     this.headmanActor = await admit(this.request, this.headman, 'HEADMAN');
-    this.subject = await this.headmanActor.call(
-      'POST',
-      '/api/academic/subjects',
-      {
+    const subjectResponse = await this.request.post('/api/academic/subjects', {
+      headers: this.headmanActor.headers(),
+      data: {
         name: this.marker,
         type: 'LECTURE',
         lessonTypes: ['LECTURE'],
@@ -534,21 +533,164 @@ export class MobileDataset {
           },
         ],
       },
-      [201],
-    );
-    // Publication/adoption can be asynchronous; re-read actual authority instead of bypassing its fences.
-    await expect
-      .poll(
-        async () => {
-          this.subject = await this.headmanActor.call(
-            'GET',
-            `/api/academic/subjects/${this.subject.id}`,
+    });
+    if (subjectResponse.status() === 201) {
+      this.subject = await subjectResponse.json();
+      // Publication/adoption can be asynchronous; re-read actual authority instead of bypassing its fences.
+      await expect
+        .poll(
+          async () => {
+            this.subject = await this.headmanActor.call(
+              'GET',
+              `/api/academic/subjects/${this.subject.id}`,
+            );
+            return this.subject.assignments?.length ?? 0;
+          },
+          {
+            timeout: 60000,
+            message: 'Synthetic assignment adoption becomes published',
+          },
+        )
+        .toBeGreaterThan(0);
+    } else {
+      const failure = datasetHttpFailure(
+        'POST',
+        '/api/academic/subjects',
+        subjectResponse.status(),
+      );
+      const problem =
+        subjectResponse.status() === 503
+          ? ((await readSubjectProblem(subjectResponse)) as Model | undefined)
+          : undefined;
+      // A pending adoption is already durable: resume its exact handle, never create again.
+      const deadline = performance.now() + 60000;
+      try {
+        const extras = problem?.extras;
+        const pending = extras?.pendingAdoptions;
+        const handle = Array.isArray(pending) && pending.length === 1 ? pending[0] : undefined;
+        const positiveId = (value: unknown): value is number =>
+          typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+        if (
+          subjectResponse.status() !== 503 ||
+          problem?.status !== 503 ||
+          problem.type !== 'https://api.rutcampustrack.ru/problems/assignment-adoption-pending' ||
+          problem.code != null ||
+          !extras ||
+          Object.keys(extras).sort().join(',') !== 'pendingAdoptions,subjectId' ||
+          !positiveId(extras.subjectId) ||
+          !handle ||
+          Object.keys(handle).sort().join(',') !== 'adoptionOperationId,targetAssignmentId' ||
+          !positiveId(handle.targetAssignmentId) ||
+          typeof handle.adoptionOperationId !== 'string' ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+            handle.adoptionOperationId,
+          )
+        )
+          throw failure;
+        const subjectId = extras.subjectId;
+        const targetId = handle.targetAssignmentId;
+        const operationId = handle.adoptionOperationId;
+        const matchesTuple = (row: Model) =>
+          row &&
+          row.teacherId === this.teacher.id &&
+          row.semesterId === this.semester.id &&
+          row.lessonType === 'LECTURE' &&
+          row.validFrom === this.semester.dateFrom &&
+          row.validUntilExclusive === null;
+        const remainingTimeout = () => {
+          const remaining = Math.floor(deadline - performance.now());
+          if (remaining <= 0) throw failure;
+          return Math.min(10000, remaining);
+        };
+        while (true) {
+          const current = await this.request.get(`/api/academic/subjects/${subjectId}`, {
+            headers: this.headmanActor.headers(),
+            timeout: remainingTimeout(),
+          });
+          if (current.status() !== 200) throw failure;
+          this.subject = await current.json();
+          if (
+            this.subject.id !== subjectId ||
+            this.subject.name !== this.marker ||
+            this.subject.groupId !== this.group.id ||
+            this.subject.type !== 'LECTURE' ||
+            !Array.isArray(this.subject.lessonTypes) ||
+            this.subject.lessonTypes.length !== 1 ||
+            this.subject.lessonTypes[0] !== 'LECTURE' ||
+            !Array.isArray(this.subject.assignments) ||
+            !Array.isArray(this.subject.pendingAdoptions)
+          )
+            throw failure;
+          if (this.subject.assignments.length === 1) {
+            const published = this.subject.assignments[0];
+            if (
+              published.id !== targetId ||
+              !matchesTuple(published) ||
+              this.subject.pendingAdoptions.length !== 0
+            )
+              throw failure;
+            remainingTimeout();
+            break;
+          }
+          const admitted = this.subject.pendingAdoptions[0];
+          if (
+            this.subject.assignments.length !== 0 ||
+            this.subject.pendingAdoptions.length !== 1 ||
+            !admitted ||
+            admitted.targetAssignmentId !== targetId ||
+            admitted.adoptionOperationId !== operationId ||
+            admitted.subjectId !== subjectId ||
+            admitted.groupId !== this.group.id ||
+            !['PREPARED', 'APPLIED'].includes(admitted.state) ||
+            !matchesTuple(admitted)
+          )
+            throw failure;
+          const resumed = await this.request.post(
+            `/api/academic/assignments/${targetId}/resume-adoption?operationId=${operationId}`,
+            {
+              headers: this.headmanActor.headers(),
+              timeout: remainingTimeout(),
+            },
           );
-          return this.subject.assignments?.length ?? 0;
-        },
-        { timeout: 60000, message: 'Synthetic assignment adoption becomes published' },
-      )
-      .toBeGreaterThan(0);
+          if (resumed.status() !== 200) {
+            const stillPending =
+              resumed.status() === 503
+                ? ((await readSubjectProblem(resumed)) as Model | undefined)
+                : undefined;
+            const resumedExtras = stillPending?.extras;
+            const resumedHandles = resumedExtras?.pendingAdoptions;
+            if (
+              stillPending?.status !== 503 ||
+              stillPending.type !== problem.type ||
+              stillPending.code != null ||
+              !resumedExtras ||
+              Object.keys(resumedExtras).sort().join(',') !== 'pendingAdoptions,subjectId' ||
+              resumedExtras.subjectId !== subjectId ||
+              !Array.isArray(resumedHandles) ||
+              resumedHandles.length !== 1 ||
+              !resumedHandles[0] ||
+              Object.keys(resumedHandles[0]).sort().join(',') !==
+                'adoptionOperationId,targetAssignmentId' ||
+              resumedHandles[0].targetAssignmentId !== targetId ||
+              resumedHandles[0].adoptionOperationId !== operationId
+            )
+              throw failure;
+          }
+          await setTimeout(Math.min(1000, remainingTimeout()));
+        }
+      } catch {
+        if (subjectResponse.status() === 503) {
+          try {
+            const annotations = base.info().annotations;
+            retainFirstDatasetHttpFailure(annotations, failure);
+            retainDatasetSubjectCreateProblem(annotations, problem);
+          } catch {
+            // Diagnostic refusal cannot replace the original rejected request.
+          }
+        }
+        throw failure;
+      }
+    }
     this.lesson = await this.headmanActor.call(
       'POST',
       '/api/schedule/one-off-lessons',

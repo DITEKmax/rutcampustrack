@@ -625,6 +625,8 @@ const failureStages = {
   DATASET_TARGET_GUARD: 'DATASET_TARGET',
   DATASET_CREDENTIALS_MISSING: 'DATASET_USER',
   ACTOR_LOGIN_HTTP: 'ACTOR_LOGIN',
+  ACTOR_LOGIN_GATEWAY_LOCAL: 'ACTOR_LOGIN',
+  ACTOR_LOGIN_AUTH_SERVICE: 'ACTOR_LOGIN',
   ACTOR_SESSION_HTTP: 'ACTOR_SESSION',
   ACTOR_ROLE_HTTP: 'ACTOR_ROLE',
   BROWSER_ROLE_DENIED: 'BROWSER_ROLE',
@@ -1009,6 +1011,18 @@ export function safeFailureDiagnostics(
               description,
             )
           : null;
+      if (match?.[1] === 'ACTOR_LOGIN_GATEWAY_LOCAL' || match?.[1] === 'ACTOR_LOGIN_AUTH_SERVICE') {
+        if (description !== `${match[1]}:429`) continue;
+        if (
+          !result.some(
+            (item) =>
+              item.cause === 'ACTOR_LOGIN_GATEWAY_LOCAL' ||
+              item.cause === 'ACTOR_LOGIN_AUTH_SERVICE',
+          )
+        )
+          result.push(failureDiagnostic(match[1], 429));
+        continue;
+      }
       const valid = match && Object.prototype.hasOwnProperty.call(failureStages, match[1]);
       const reported = match && isReportedHint(match[1]);
       const diagnostic: SafeFailureDiagnostic = valid

@@ -304,6 +304,133 @@ class EventConsumerTest {
     }
 
     @Test
+    void lessonClosedFailureReportsTypedRpcAndLocalCauseWithoutPrivateData() {
+        String privateError = "PRIVATE_LESSON_ERROR";
+        var event =
+                scheduleEnvelope(
+                        "lesson.closed", Map.of("lesson_id", 1, "group_id", 10, "semester_id", 3));
+        var logger = (Logger) LoggerFactory.getLogger(EventConsumer.class);
+        var previousLevel = logger.getLevel();
+        var previousMdc = MDC.getCopyOfContextMap();
+        var appender =
+                new ListAppender<ILoggingEvent>() {
+                    @Override
+                    protected void append(ILoggingEvent entry) {
+                        entry.prepareForDeferredProcessing();
+                        super.append(entry);
+                    }
+                };
+        appender.setContext(logger.getLoggerContext());
+        appender.start();
+        logger.addAppender(appender);
+        logger.setLevel(Level.WARN);
+        try {
+            MDC.put("eventId", "previous-event");
+            var failures = new java.util.LinkedHashMap<RuntimeException, String>();
+            for (var code : io.grpc.Status.Code.values()) {
+                var academic =
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException(privateError, code);
+                var schedule =
+                        new ru.rutcampustrack.attendance.exception
+                                .ScheduleServiceUnavailableException(privateError, code);
+                assertSame(code, academic.getStatusCode());
+                assertSame(code, schedule.getStatusCode());
+                boolean retryable =
+                        code == io.grpc.Status.Code.UNAVAILABLE
+                                || code == io.grpc.Status.Code.DEADLINE_EXCEEDED;
+                assertEquals(retryable, academic.isRetryable());
+                assertEquals(retryable, schedule.isRetryable());
+                failures.put(
+                        academic,
+                        "ACADEMIC_UNAVAILABLE rpc=ACADEMIC_GROUP_MEMBERS status="
+                                + code
+                                + " cause=NONE");
+                failures.put(
+                        schedule,
+                        "SCHEDULE_UNAVAILABLE rpc=SCHEDULE_LESSON_BY_ID status="
+                                + code
+                                + " cause=NONE");
+            }
+            failures.put(
+                    new ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException(
+                            privateError),
+                    "ACADEMIC_UNAVAILABLE rpc=NONE status=NONE cause=SEMANTIC_REJECTION");
+            failures.put(
+                    new ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException(
+                            privateError),
+                    "SCHEDULE_UNAVAILABLE rpc=NONE status=NONE cause=SEMANTIC_REJECTION");
+            var unknownCommit = new com.mongodb.MongoException(112, privateError);
+            unknownCommit.addLabel("UnknownTransactionCommitResult");
+            failures.put(unknownCommit, "OTHER rpc=NONE status=NONE cause=MONGO_UNKNOWN_COMMIT");
+            var transientTransaction = new com.mongodb.MongoException(1, privateError);
+            transientTransaction.addLabel("TransientTransactionError");
+            failures.put(
+                    new org.springframework.dao.DataAccessResourceFailureException(
+                            privateError, transientTransaction),
+                    "OTHER rpc=NONE status=NONE cause=MONGO_TRANSIENT_TRANSACTION");
+            failures.put(
+                    new com.mongodb.MongoException(112, privateError),
+                    "OTHER rpc=NONE status=NONE cause=MONGO_WRITE_CONFLICT");
+            failures.put(
+                    new com.mongodb.MongoException(11000, privateError),
+                    "OTHER rpc=NONE status=NONE cause=MONGO_DUPLICATE_KEY");
+            failures.put(
+                    new com.mongodb.MongoException(123, privateError),
+                    "OTHER rpc=NONE status=NONE cause=MONGO_OTHER");
+            failures.put(
+                    new org.springframework.transaction.UnexpectedRollbackException(privateError),
+                    "TRANSACTION_ROLLBACK rpc=NONE status=NONE cause=TRANSACTION_ROLLBACK");
+            failures.put(
+                    new IllegalStateException(privateError),
+                    "OTHER rpc=NONE status=NONE cause=OTHER");
+            for (var entry : failures.entrySet()) {
+                doThrow(entry.getKey()).when(lessonEventService).prepareLessonClosed(1L, 10L, 3L);
+                int before = appender.list.size();
+                assertSame(
+                        entry.getKey(),
+                        assertThrows(RuntimeException.class, () -> eventConsumer.onEvent(event)));
+                assertEquals(before + 1, appender.list.size());
+                var record = appender.list.getLast();
+                assertEquals(
+                        "lesson.closed failure stage=PREPARE category=" + entry.getValue(),
+                        record.getFormattedMessage());
+                assertEquals(5, record.getArgumentArray().length);
+                for (var argument : record.getArgumentArray())
+                    assertTrue(argument instanceof Enum<?>);
+                assertNull(record.getThrowableProxy());
+                assertFalse(record.getFormattedMessage().contains(privateError));
+                assertFalse(record.getFormattedMessage().contains((String) event.get("event_id")));
+                assertEquals(event.get("event_id"), record.getMDCPropertyMap().get("eventId"));
+                assertEquals("previous-event", MDC.get("eventId"));
+            }
+            // Typed dependency errors outside the owned PREPARE caller never claim an RPC method.
+            var snapshot =
+                    new LessonEventService.LessonClosedSnapshot(1L, 10L, 3L, null, null, null);
+            org.mockito.Mockito.doReturn(snapshot)
+                    .when(lessonEventService)
+                    .prepareLessonClosed(1L, 10L, 3L);
+            var failure =
+                    new ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException(
+                            privateError, io.grpc.Status.Code.INTERNAL);
+            doThrow(failure).when(lessonEventService).applyLessonClosed(snapshot);
+            assertSame(
+                    failure,
+                    assertThrows(RuntimeException.class, () -> eventConsumer.onEvent(event)));
+            assertEquals(
+                    "lesson.closed failure stage=TRANSACTION category=ACADEMIC_UNAVAILABLE rpc=NONE"
+                            + " status=INTERNAL cause=NONE",
+                    appender.list.getLast().getFormattedMessage());
+        } finally {
+            logger.detachAppender(appender);
+            appender.stop();
+            logger.setLevel(previousLevel);
+            MDC.clear();
+            if (previousMdc != null) MDC.setContextMap(previousMdc);
+        }
+    }
+
+    @Test
     void semesterArchived_triggersRefresh() {
         eventConsumer.onEvent(envelope("semester.archived", Map.of("semester_id", 1)));
         verify(semesterCacheService).refresh();

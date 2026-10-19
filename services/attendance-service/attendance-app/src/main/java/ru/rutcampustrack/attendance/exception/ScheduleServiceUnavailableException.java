@@ -13,6 +13,10 @@ public class ScheduleServiceUnavailableException extends RuntimeException {
         this.statusCode = statusCode;
     }
 
+    public io.grpc.Status.Code getStatusCode() {
+        return statusCode;
+    }
+
     public boolean isRetryable() {
         return statusCode == io.grpc.Status.Code.UNAVAILABLE
                 || statusCode == io.grpc.Status.Code.DEADLINE_EXCEEDED;

@@ -2845,8 +2845,112 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     samePinnedId: boolean | 'UNKNOWN';
     sameNetworkAddresses: boolean | 'UNKNOWN';
   };
+  const replayStages = ['RECEIPT', 'PAYLOAD', 'PREPARE', 'TRANSACTION'] as const;
+  const replayCategories = [
+    'ACADEMIC_UNAVAILABLE',
+    'SCHEDULE_UNAVAILABLE',
+    'RESOURCE_NOT_FOUND',
+    'INVALID_ARGUMENT',
+    'TRANSACTION_ROLLBACK',
+    'MONGO_TRANSACTION',
+    'DUPLICATE_KEY',
+    'EFFECT_REJECTED',
+    'OTHER',
+  ] as const;
+  const replayMethods = ['NONE', 'ACADEMIC_GROUP_MEMBERS', 'SCHEDULE_LESSON_BY_ID'] as const;
+  const replayStatuses = [
+    'NONE',
+    'OK',
+    'CANCELLED',
+    'UNKNOWN',
+    'INVALID_ARGUMENT',
+    'DEADLINE_EXCEEDED',
+    'NOT_FOUND',
+    'ALREADY_EXISTS',
+    'PERMISSION_DENIED',
+    'RESOURCE_EXHAUSTED',
+    'FAILED_PRECONDITION',
+    'ABORTED',
+    'OUT_OF_RANGE',
+    'UNIMPLEMENTED',
+    'INTERNAL',
+    'UNAVAILABLE',
+    'DATA_LOSS',
+    'UNAUTHENTICATED',
+  ] as const;
+  const replayCauses = [
+    'NONE',
+    'SEMANTIC_REJECTION',
+    'MONGO_TRANSIENT_TRANSACTION',
+    'MONGO_UNKNOWN_COMMIT',
+    'MONGO_WRITE_CONFLICT',
+    'MONGO_DUPLICATE_KEY',
+    'MONGO_OTHER',
+    'TRANSACTION_ROLLBACK',
+    'OTHER',
+  ] as const;
+  const ackCategories = [
+    'INVALID_ARGUMENT',
+    'SQL_PERMISSION',
+    'SQL_UNDEFINED_TABLE',
+    'SQL_UNDEFINED_COLUMN',
+    'SQL_CONSTRAINT',
+    'SQL_SERIALIZATION',
+    'SQL_DEADLOCK',
+    'SQL_CONNECTION',
+    'SQL_OTHER',
+    'DATA_ACCESS',
+    'OTHER',
+  ] as const;
+  type ReplayWarn = {
+    stage: (typeof replayStages)[number];
+    category: (typeof replayCategories)[number];
+    rpc: (typeof replayMethods)[number];
+    status: (typeof replayStatuses)[number];
+    cause: (typeof replayCauses)[number];
+  };
+  type ReplayLog<T> = {
+    state: 'REPORTED' | 'UNKNOWN';
+    unknownReason:
+      | 'NONE'
+      | 'NO_SOURCE_EVENT'
+      | 'NO_ACK_EVENT'
+      | 'LOG_READ'
+      | 'LOG_BYTE_LIMIT'
+      | 'LOG_TAIL_LIMIT'
+      | 'LOG_FORMAT'
+      | 'LOG_RECORD_SHAPE'
+      | 'TARGET_TEMPLATE'
+      | 'TARGET_CORRELATION'
+      | 'MATCH_COUNT_LIMIT'
+      | 'NO_MATCHING_WARN';
+    matchedCount: number;
+    last: T | null;
+  };
+  type ReplayChecks = {
+    ledgerApplied: boolean;
+    oneClaim: boolean;
+    oneReceipt: boolean;
+    receiptApplied: boolean;
+    receiptSourceEventMatches: boolean;
+    receiptTargetMatches: boolean;
+    receiptSemesterMatches: boolean;
+    receiptTypeMatches: boolean;
+    receiptHashMatches: boolean;
+    ackEventMatchesLedger: boolean;
+    ackSourceMatches: boolean;
+    ackTypeMatches: boolean;
+    ackVersionMatches: boolean;
+    ackSourceEventMatches: boolean;
+    ackHashMatches: boolean;
+    ackTargetMatches: boolean;
+    ackApplied: boolean;
+    ackSemesterMatches: boolean;
+    ackSourceTypeMatches: boolean;
+  };
+  type CountClass = 'ZERO' | 'ONE' | 'MANY' | 'INVALID';
   const diagnostic = {
-    schema: 'semester-reconciliation.v5',
+    schema: 'semester-reconciliation.v6',
     phase: 'SETUP',
     configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',
@@ -2882,6 +2986,21 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       mainReadyZero: boolean;
       mainUnackedZero: boolean;
       deadReadyClass: 'ZERO' | 'ONE' | 'MANY' | 'UNKNOWN';
+    } | null,
+    replayLastRead: null as {
+      ledgerState: 'PENDING' | 'APPLIED' | 'ERROR' | 'OTHER';
+      ledgerReceiptIdPresent: boolean;
+      claimCount: CountClass;
+      receiptCount: CountClass;
+      ackCount: CountClass;
+      receiptResult: 'APPLIED' | 'ERROR' | 'OTHER_OR_ABSENT';
+      ackOutboxStatus: 'PENDING' | 'SENT' | 'OTHER_OR_ABSENT';
+      checks: ReplayChecks;
+      firstFailed: keyof ReplayChecks | 'NONE';
+    } | null,
+    replayFailureLog: null as {
+      attendance: ReplayLog<ReplayWarn>;
+      schedule: ReplayLog<{ category: (typeof ackCategories)[number] }>;
     } | null,
     setupQuiescenceLastRead: null as {
       firstFailed: string;
@@ -3665,6 +3784,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       );
       diagnostic.duplicateAttempted = true;
     }
+    if (!duplicate && !cleaning) replaySince = new Date().toISOString();
     const sent = await broker('exchanges/%2F/amq.default/publish', {
       properties,
       routing_key: 'attendance-service.events',
@@ -3672,6 +3792,119 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       payload_encoding: 'base64',
     });
     requireValue(sent.routed === true, 'Exact targeted copy must route to Attendance');
+  };
+  let replaySince: string | undefined;
+  let replayAckEventId: string | undefined;
+  const countClass = (value: unknown): CountClass =>
+    typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0
+      ? 'INVALID'
+      : value === 0
+        ? 'ZERO'
+        : value === 1
+          ? 'ONE'
+          : 'MANY';
+  const captureReplayFailure = () => {
+    const unknown = <T>(reason: ReplayLog<T>['unknownReason']): ReplayLog<T> => ({
+      state: 'UNKNOWN',
+      unknownReason: reason,
+      matchedCount: 0,
+      last: null,
+    });
+    const read = <T>(
+      service: 'attendance-service' | 'schedule-service',
+      eventId: string | undefined,
+      decodeWarn: (message: string) => T | null,
+    ): ReplayLog<T> => {
+      if (!eventId || !replaySince)
+        return unknown(service === 'attendance-service' ? 'NO_SOURCE_EVENT' : 'NO_ACK_EVENT');
+      const previousNativeFailure = nativeFailure;
+      try {
+        // Same owned container, bounded existing command primitive; no raw log is retained.
+        const current = identity(service);
+        if (!current.running) return unknown('LOG_READ');
+        const payload = docker(
+          ['logs', '--since', replaySince, '--tail', '2000', pins[service].id],
+          undefined,
+          {},
+          2000,
+        );
+        if (Buffer.byteLength(payload, 'utf8') >= 262144) return unknown('LOG_BYTE_LIMIT');
+        const lines = payload.split(/\r?\n/);
+        if (lines.at(-1) === '') lines.pop();
+        if (lines.length >= 2000) return unknown('LOG_TAIL_LIMIT');
+        let count = 0;
+        let last: T | null = null;
+        for (const line of lines) {
+          if (Buffer.byteLength(line, 'utf8') > 131072) return unknown('LOG_BYTE_LIMIT');
+          let record: unknown;
+          try {
+            record = JSON.parse(line);
+          } catch {
+            return unknown('LOG_FORMAT');
+          }
+          if (typeof record !== 'object' || record === null || Array.isArray(record))
+            return unknown('LOG_RECORD_SHAPE');
+          const row = record as Record<string, unknown>;
+          const logger =
+            service === 'attendance-service'
+              ? 'ru.rutcampustrack.attendance.event.EventConsumer'
+              : 'ru.rutcampustrack.schedule.event.EventConsumer';
+          if (row.logger !== logger || row.level !== 'WARN') continue;
+          if (typeof row.msg !== 'string') return unknown('TARGET_TEMPLATE');
+          const prefix =
+            service === 'attendance-service'
+              ? 'lesson.closed failure '
+              : 'archive.effect.ack failure ';
+          if (!row.msg.startsWith(prefix)) continue;
+          if (typeof row.eventId !== 'string') return unknown('TARGET_CORRELATION');
+          if (row.eventId !== eventId) continue;
+          const decoded = decodeWarn(row.msg);
+          if (!decoded) return unknown('TARGET_TEMPLATE');
+          if (++count > 200) return unknown('MATCH_COUNT_LIMIT');
+          last = decoded;
+        }
+        return count
+          ? { state: 'REPORTED', unknownReason: 'NONE', matchedCount: count, last }
+          : unknown('NO_MATCHING_WARN');
+      } catch {
+        return unknown('LOG_READ');
+      } finally {
+        nativeFailure = previousNativeFailure;
+      }
+    };
+    const attendance = read<ReplayWarn>('attendance-service', scope.event, (message) => {
+      const match =
+        /^lesson\.closed failure stage=([A-Z_]+) category=([A-Z_]+) rpc=([A-Z_]+) status=([A-Z_]+) cause=([A-Z_]+)$/.exec(
+          message,
+        );
+      if (
+        !match ||
+        !(replayStages as readonly string[]).includes(match[1]) ||
+        !(replayCategories as readonly string[]).includes(match[2]) ||
+        !(replayMethods as readonly string[]).includes(match[3]) ||
+        !(replayStatuses as readonly string[]).includes(match[4]) ||
+        !(replayCauses as readonly string[]).includes(match[5])
+      )
+        return null;
+      return {
+        stage: match[1],
+        category: match[2],
+        rpc: match[3],
+        status: match[4],
+        cause: match[5],
+      } as ReplayWarn;
+    });
+    const schedule = read<{ category: (typeof ackCategories)[number] }>(
+      'schedule-service',
+      replayAckEventId,
+      (message) => {
+        const match = /^archive\.effect\.ack failure category=([A-Z_]+)$/.exec(message);
+        return match && (ackCategories as readonly string[]).includes(match[1])
+          ? { category: match[1] as (typeof ackCategories)[number] }
+          : null;
+      },
+    );
+    diagnostic.replayFailureLog = { attendance, schedule };
   };
   const awaitApplied = async () => {
     await expect
@@ -3681,6 +3914,57 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
             value = consumer(),
             r = value.receipt[0];
           const ack = value.acks[0] && JSON.parse(value.acks[0].payload);
+          if (!cleaning) {
+            const checks: ReplayChecks = {
+              ledgerApplied: row.state === 'APPLIED',
+              oneClaim: value.claims === 1,
+              oneReceipt: value.receipt.length === 1,
+              receiptApplied: r?.result === 'APPLIED',
+              receiptSourceEventMatches: r?.source_event_id === scope.event,
+              receiptTargetMatches: r?.target === 'ATTENDANCE',
+              receiptSemesterMatches: Number(r?.semester_id) === scope.semester,
+              receiptTypeMatches: r?.source_event_type === 'lesson.closed',
+              receiptHashMatches: r?.payload_hash === expected!.hash,
+              ackEventMatchesLedger: ack?.event_id === row.receipt_event_id,
+              ackSourceMatches: ack?.source === 'attendance-service',
+              ackTypeMatches: ack?.event_type === 'semester.archive.effect.ack',
+              ackVersionMatches: ack?.event_version === 1,
+              ackSourceEventMatches: ack?.payload?.source_event_id === scope.event,
+              ackHashMatches: ack?.payload?.payload_hash === expected!.hash,
+              ackTargetMatches: ack?.payload?.target === 'ATTENDANCE',
+              ackApplied: ack?.payload?.result === 'APPLIED',
+              ackSemesterMatches: Number(ack?.payload?.semester_id) === scope.semester,
+              ackSourceTypeMatches: ack?.payload?.source_event_type === 'lesson.closed',
+            };
+            diagnostic.replayLastRead = {
+              ledgerState: ['PENDING', 'APPLIED', 'ERROR'].includes(row.state)
+                ? row.state
+                : 'OTHER',
+              ledgerReceiptIdPresent:
+                typeof row.receipt_event_id === 'string' && row.receipt_event_id.length > 0,
+              claimCount: countClass(value.claims),
+              receiptCount: countClass(value.receipt.length),
+              ackCount: countClass(value.acks.length),
+              receiptResult:
+                r?.result === 'APPLIED' || r?.result === 'ERROR' ? r.result : 'OTHER_OR_ABSENT',
+              ackOutboxStatus:
+                value.acks[0]?.status === 'pending'
+                  ? 'PENDING'
+                  : value.acks[0]?.status === 'sent'
+                    ? 'SENT'
+                    : 'OTHER_OR_ABSENT',
+              checks,
+              firstFailed:
+                (Object.keys(checks) as (keyof ReplayChecks)[]).find((key) => !checks[key]) ??
+                'NONE',
+            };
+            replayAckEventId =
+              value.acks.length === 1 &&
+              typeof ack?.event_id === 'string' &&
+              /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(ack.event_id)
+                ? ack.event_id
+                : undefined;
+          }
           return (
             row.state === 'APPLIED' &&
             value.claims === 1 &&
@@ -4034,7 +4318,10 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             else if (!initial.noPendingWork) quiescence.firstFailed = 'INITIAL_PENDING';
             else if (!initial.producerSent) quiescence.firstFailed = 'INITIAL_PRODUCER';
             const count = (value: unknown): number | null =>
-              typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 1_000_000
+              typeof value === 'number' &&
+              Number.isInteger(value) &&
+              value >= 0 &&
+              value <= 1_000_000
                 ? value
                 : null;
             diagnostic.setupQuiescenceLastRead = {
@@ -4482,6 +4769,8 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
   } catch (error) {
     if (nativeFailure !== undefined && nativeFailure.error === error) nativeFailure.report();
     originalFailure = { error };
+    if (diagnostic.phase === 'EXACT_REPLAY' && diagnostic.recoveryPublishAttempted)
+      captureReplayFailure();
     diagnostic.strandedLastRead = strandedLastRead;
     captureHttp500OwnedServices(error);
     retainFirstDatasetHttpFailure(info.annotations, error);
@@ -4609,7 +4898,12 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     }
     try {
       cleanupStage = 'CLEANUP_SEMESTER_WRITE';
-      writeFileSync(join(run, 'reconciliation.safe.json'), `${JSON.stringify(diagnostic)}\n`, {
+      const safeDiagnostic = `${JSON.stringify(diagnostic)}\n`;
+      requireValue(
+        Buffer.byteLength(safeDiagnostic, 'utf8') <= 4096,
+        'Reconciliation diagnostic must remain bounded',
+      );
+      writeFileSync(join(run, 'reconciliation.safe.json'), safeDiagnostic, {
         mode: 0o600,
         flag: 'wx',
       });

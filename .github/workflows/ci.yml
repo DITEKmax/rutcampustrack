@@ -3743,9 +3743,10 @@ jobs:
                   'duplicateAttempted', 'retainedDlqCopies', 'restorationSucceeded', 'clockUnchanged',
                   'cleanupOutcome', 'firstRestartFailure', 'mainCloseLastRead',
                   'firstHttp500OwnedServices', 'strandedLastRead', 'setupQuiescenceLastRead',
+                  'replayLastRead', 'replayFailureLog',
               }
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] != 'semester-reconciliation.v5' or value['phase'] != 'SETUP'
+                      or value['schema'] != 'semester-reconciliation.v6' or value['phase'] != 'SETUP'
                       or type(value['configuredListenerAttempts']) is not int
                       or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -3758,7 +3759,7 @@ jobs:
                       or any(value[key] is not True for key in ('restorationSucceeded', 'clockUnchanged'))
                       or any(value[key] is not None for key in (
                           'firstRestartFailure', 'mainCloseLastRead', 'firstHttp500OwnedServices',
-                          'strandedLastRead'))):
+                          'strandedLastRead', 'replayLastRead', 'replayFailureLog'))):
                   return False
               read = value['setupQuiescenceLastRead']
               counters = {'mainReady', 'mainUnacked', 'mainConsumers', 'deadReady', 'deadUnacked',
@@ -4299,7 +4300,7 @@ jobs:
                   source = Path('services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java')
                   info = source.lstat()
                   if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
-                          or hashlib.sha256(source.read_bytes()).hexdigest() != '4f5bcdb53f55f596d848bc2704ef914e37eb08e4a76166984f8ff6e4ddd252ce'):
+                          or hashlib.sha256(source.read_bytes()).hexdigest() != 'e60c0297fb3e32dcb6ef73b46e32cfbceb4a1cb63c4238868978f88b9ed05a8b'):
                       raise ValueError('Initial membership diagnostic source changed')
               elif config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
                   verify_homework_sources()
@@ -5356,13 +5357,15 @@ jobs:
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
                                  'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
                                  'firstRestartFailure', 'mainCloseLastRead'}
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6'}:
                   keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
               if (type(value) is dict and value.get('schema') == 'semester-reconciliation.v5'
                       and 'setupQuiescenceLastRead' in value):
                   keys.add('setupQuiescenceLastRead')
+              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v6':
+                  keys |= {'setupQuiescenceLastRead', 'replayLastRead', 'replayFailureLog'}
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5'}
+                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6'}
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -5388,7 +5391,7 @@ jobs:
                       or type(last_read['status']) is not str
                       or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
                   raise ValueError('Invalid closed reconciliation main close read')
-              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5'}:
+              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6'}:
                   services = value['firstHttp500OwnedServices']
                   if services is not None:
                       if type(services) is not dict or set(services) != {'ATTENDANCE', 'SCHEDULE'}:
@@ -5402,12 +5405,12 @@ jobs:
                               raise ValueError('Invalid closed reconciliation service state')
                   stranded = value['strandedLastRead']
                   stranded_flags = {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
-                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] == 'semester-reconciliation.v5' else set())
+                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6'} else set())
                   if stranded is not None and (
                           type(stranded) is not dict or set(stranded) != stranded_keys
                           or not all(type(stranded[key]) is bool for key in stranded_flags)):
                       raise ValueError('Invalid closed reconciliation stranded read')
-                  if stranded is not None and value['schema'] == 'semester-reconciliation.v5' and (
+                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6'} and (
                           type(stranded['deadReadyClass']) is not str
                           or stranded['deadReadyClass'] not in {'ZERO', 'ONE', 'MANY', 'UNKNOWN'}
                           or stranded['deadReadyOne'] != (stranded['deadReadyClass'] == 'ONE')):
@@ -5429,6 +5432,85 @@ jobs:
                                      and 0 <= setup[key] <= 1_000_000) for key in setup_counts)
                           or not all(type(setup[key]) is bool for key in setup_bools)):
                       raise ValueError('Invalid closed reconciliation setup quiescence read')
+              if value['schema'] == 'semester-reconciliation.v6':
+                  replay = value['replayLastRead']
+                  replay_checks = (
+                      'ledgerApplied', 'oneClaim', 'oneReceipt', 'receiptApplied',
+                      'receiptSourceEventMatches', 'receiptTargetMatches', 'receiptSemesterMatches',
+                      'receiptTypeMatches', 'receiptHashMatches', 'ackEventMatchesLedger',
+                      'ackSourceMatches', 'ackTypeMatches', 'ackVersionMatches',
+                      'ackSourceEventMatches', 'ackHashMatches', 'ackTargetMatches',
+                      'ackApplied', 'ackSemesterMatches', 'ackSourceTypeMatches')
+                  if replay is not None:
+                      if (value['phase'] not in {'EXACT_REPLAY', 'DUPLICATE'}
+                              or type(replay) is not dict or set(replay) != {
+                                  'ledgerState', 'ledgerReceiptIdPresent', 'claimCount',
+                                  'receiptCount', 'ackCount', 'receiptResult', 'ackOutboxStatus',
+                                  'checks', 'firstFailed'}
+                              or type(replay['ledgerState']) is not str
+                              or replay['ledgerState'] not in {'PENDING', 'APPLIED', 'ERROR', 'OTHER'}
+                              or type(replay['ledgerReceiptIdPresent']) is not bool
+                              or not all(type(replay[key]) is str and replay[key] in {
+                                  'ZERO', 'ONE', 'MANY', 'INVALID'}
+                                  for key in ('claimCount', 'receiptCount', 'ackCount'))
+                              or type(replay['receiptResult']) is not str
+                              or replay['receiptResult'] not in {'APPLIED', 'ERROR', 'OTHER_OR_ABSENT'}
+                              or type(replay['ackOutboxStatus']) is not str
+                              or replay['ackOutboxStatus'] not in {'PENDING', 'SENT', 'OTHER_OR_ABSENT'}
+                              or type(replay['checks']) is not dict
+                              or set(replay['checks']) != set(replay_checks)
+                              or not all(type(flag) is bool for flag in replay['checks'].values())
+                              or replay['firstFailed'] != next(
+                                  (key for key in replay_checks if not replay['checks'][key]), 'NONE')):
+                          raise ValueError('Invalid closed reconciliation replay read')
+                  logs = value['replayFailureLog']
+                  if logs is not None:
+                      if (value['phase'] != 'EXACT_REPLAY' or type(logs) is not dict
+                              or set(logs) != {'attendance', 'schedule'}):
+                          raise ValueError('Invalid closed reconciliation replay log')
+                      unknown_reasons = {
+                          'NO_SOURCE_EVENT', 'NO_ACK_EVENT', 'LOG_READ', 'LOG_BYTE_LIMIT',
+                          'LOG_TAIL_LIMIT', 'LOG_FORMAT', 'LOG_RECORD_SHAPE', 'TARGET_TEMPLATE',
+                          'TARGET_CORRELATION', 'MATCH_COUNT_LIMIT', 'NO_MATCHING_WARN'}
+                      attendance_fields = {
+                          'stage': {'RECEIPT', 'PAYLOAD', 'PREPARE', 'TRANSACTION'},
+                          'category': {'ACADEMIC_UNAVAILABLE', 'SCHEDULE_UNAVAILABLE',
+                              'RESOURCE_NOT_FOUND', 'INVALID_ARGUMENT', 'TRANSACTION_ROLLBACK',
+                              'MONGO_TRANSACTION', 'DUPLICATE_KEY', 'EFFECT_REJECTED', 'OTHER'},
+                          'rpc': {'NONE', 'ACADEMIC_GROUP_MEMBERS', 'SCHEDULE_LESSON_BY_ID'},
+                          'status': {'NONE', 'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT',
+                              'DEADLINE_EXCEEDED', 'NOT_FOUND', 'ALREADY_EXISTS', 'PERMISSION_DENIED',
+                              'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION', 'ABORTED', 'OUT_OF_RANGE',
+                              'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED'},
+                          'cause': {'NONE', 'SEMANTIC_REJECTION', 'MONGO_TRANSIENT_TRANSACTION',
+                              'MONGO_UNKNOWN_COMMIT', 'MONGO_WRITE_CONFLICT', 'MONGO_DUPLICATE_KEY',
+                              'MONGO_OTHER', 'TRANSACTION_ROLLBACK', 'OTHER'},
+                      }
+                      schedule_fields = {'category': {'INVALID_ARGUMENT', 'SQL_PERMISSION',
+                          'SQL_UNDEFINED_TABLE', 'SQL_UNDEFINED_COLUMN', 'SQL_CONSTRAINT',
+                          'SQL_SERIALIZATION', 'SQL_DEADLOCK', 'SQL_CONNECTION', 'SQL_OTHER',
+                          'DATA_ACCESS', 'OTHER'}}
+                      for service, fields in (('attendance', attendance_fields), ('schedule', schedule_fields)):
+                          log = logs[service]
+                          if (type(log) is not dict
+                                  or set(log) != {'state', 'unknownReason', 'matchedCount', 'last'}
+                                  or type(log['matchedCount']) is not int
+                                  or not 0 <= log['matchedCount'] <= 200):
+                              raise ValueError('Invalid closed reconciliation replay log shape')
+                          if log['state'] == 'UNKNOWN':
+                              if (type(log['unknownReason']) is not str
+                                      or log['unknownReason'] not in unknown_reasons
+                                      or log['matchedCount'] != 0 or log['last'] is not None):
+                                  raise ValueError('Invalid closed reconciliation replay log refusal')
+                          elif log['state'] == 'REPORTED':
+                              last = log['last']
+                              if (log['unknownReason'] != 'NONE' or log['matchedCount'] < 1
+                                      or type(last) is not dict or set(last) != set(fields)
+                                      or not all(type(last[key]) is str and last[key] in allowed
+                                                 for key, allowed in fields.items())):
+                                  raise ValueError('Invalid closed reconciliation replay log projection')
+                          else:
+                              raise ValueError('Invalid closed reconciliation replay log state')
               restored = (value['restorationSucceeded'] is True
                           and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
           except Exception:

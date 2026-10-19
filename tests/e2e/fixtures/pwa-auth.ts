@@ -1,4 +1,5 @@
-import { expect, type Page, type Response } from '@playwright/test';
+import { expect, test, type Page, type Response } from '@playwright/test';
+import { safeFailureAnnotation } from './safe-reporter';
 import type { TestUser } from './users';
 
 export interface CurrentSession {
@@ -78,7 +79,11 @@ export async function loginPwa(
           return await submit(false);
         }
       }
-      if (login.status() !== 200) throw new Error(`Synthetic actor login: HTTP ${login.status()}`);
+      if (login.status() !== 200) {
+        const failure = new Error(`Synthetic actor login: HTTP ${login.status()}`);
+        if (login.status() === 429) await retainLoginRateLimit(login);
+        throw failure;
+      }
       expect(login.status()).toBe(200);
       const { accessToken } = (await login.json()) as { accessToken: string };
       expect(typeof accessToken).toBe('string');
@@ -127,4 +132,45 @@ export async function logoutPwa(page: Page): Promise<void> {
   ]);
   expect(response.status()).toBe(204);
   await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
+}
+
+/** Inspect only an already returned normal login rejection; this cannot retry or replace it. */
+async function retainLoginRateLimit(response: Response): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const body = await Promise.race([
+      response.body(),
+      new Promise<undefined>((resolve) => {
+        timer = setTimeout(() => resolve(undefined), 250);
+      }),
+    ]);
+    if (!Buffer.isBuffer(body) || body.length > 4096) return;
+    const problem: unknown = JSON.parse(body.toString('utf8'));
+    if (!problem || typeof problem !== 'object' || Array.isArray(problem)) return;
+    if (Object.getOwnPropertyDescriptor(problem, 'status')?.value !== 429) return;
+    const type: unknown = Object.getOwnPropertyDescriptor(problem, 'type')?.value;
+    const marker =
+      type === 'https://ruttrack.site/problems/rate-limit-exceeded'
+        ? 'ACTOR_LOGIN_GATEWAY_LOCAL:429'
+        : type === 'https://api.rutcampustrack.ru/problems/rate-limit-exceeded'
+          ? 'ACTOR_LOGIN_AUTH_SERVICE:429'
+          : undefined;
+    if (marker === undefined) return;
+    const annotations = test.info().annotations;
+    if (
+      annotations.length >= 32 ||
+      annotations.some(
+        (annotation) =>
+          annotation.type === safeFailureAnnotation &&
+          (annotation.description === 'ACTOR_LOGIN_GATEWAY_LOCAL:429' ||
+            annotation.description === 'ACTOR_LOGIN_AUTH_SERVICE:429'),
+      )
+    )
+      return;
+    annotations.push({ type: safeFailureAnnotation, description: marker });
+  } catch {
+    // Malformed, unavailable, or late response observations preserve the original failure.
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
 }

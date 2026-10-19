@@ -1,20 +1,22 @@
 package ru.rutcampustrack.schedule.event;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
 import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Generic RabbitMQ event consumer for Schedule Service.
@@ -73,11 +75,64 @@ public class EventConsumer extends AbstractEventConsumer {
                         case "subject.deleted" -> handleSubjectDeleted(envelope);
                         case "lesson.transfer.participant.applied" ->
                                 handleLessonTransferAcknowledged(envelope);
-                        case "semester.archive.effect.ack" ->
+                        case "semester.archive.effect.ack" -> {
+                            try {
                                 handleSemesterArchiveEffectAcknowledgement(envelope);
+                            } catch (RuntimeException failure) {
+                                try {
+                                    log.warn(
+                                            "archive.effect.ack failure category={}",
+                                            archiveEffectAckFailure(failure));
+                                } finally {
+                                    throw failure;
+                                }
+                            }
+                        }
                         default -> log.trace("Ignoring unknown event type: {}", eventType);
                     }
                 });
+    }
+
+    private enum ArchiveEffectAckFailure {
+        INVALID_ARGUMENT,
+        SQL_PERMISSION,
+        SQL_UNDEFINED_TABLE,
+        SQL_UNDEFINED_COLUMN,
+        SQL_CONSTRAINT,
+        SQL_SERIALIZATION,
+        SQL_DEADLOCK,
+        SQL_CONNECTION,
+        SQL_OTHER,
+        DATA_ACCESS,
+        OTHER
+    }
+
+    private static ArchiveEffectAckFailure archiveEffectAckFailure(RuntimeException failure) {
+        Throwable current = failure;
+        for (int depth = 0; current != null && depth < 12; depth++, current = current.getCause()) {
+            if (current instanceof java.sql.SQLException sql) {
+                String state = sql.getSQLState();
+                if (state == null) return ArchiveEffectAckFailure.SQL_OTHER;
+                return switch (state) {
+                    case "42501" -> ArchiveEffectAckFailure.SQL_PERMISSION;
+                    case "42P01" -> ArchiveEffectAckFailure.SQL_UNDEFINED_TABLE;
+                    case "42703" -> ArchiveEffectAckFailure.SQL_UNDEFINED_COLUMN;
+                    case "40001" -> ArchiveEffectAckFailure.SQL_SERIALIZATION;
+                    case "40P01" -> ArchiveEffectAckFailure.SQL_DEADLOCK;
+                    default ->
+                            state.matches("23[0-9A-Z]{3}")
+                                    ? ArchiveEffectAckFailure.SQL_CONSTRAINT
+                                    : state.matches("08[0-9A-Z]{3}")
+                                            ? ArchiveEffectAckFailure.SQL_CONNECTION
+                                            : ArchiveEffectAckFailure.SQL_OTHER;
+                };
+            }
+        }
+        if (failure instanceof IllegalArgumentException)
+            return ArchiveEffectAckFailure.INVALID_ARGUMENT;
+        if (failure instanceof org.springframework.dao.DataAccessException)
+            return ArchiveEffectAckFailure.DATA_ACCESS;
+        return ArchiveEffectAckFailure.OTHER;
     }
 
     @SuppressWarnings("unchecked")

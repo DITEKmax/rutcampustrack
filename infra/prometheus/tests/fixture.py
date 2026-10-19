@@ -31,6 +31,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         for instance, value in [("a:9091", 95), ("b:9091", 10)]:
             labels = f'job="academic-service",instance="{instance}",environment="synthetic",area="heap",id="old"'
             values += [f"jvm_memory_used_bytes{{{labels}}} {value}", f"jvm_memory_max_bytes{{{labels}}} 100"]
+        # Same RPC method on two downstream services must remain two series
+        # after production target-label precedence and retained dashboard grouping.
+        for downstream, status, multiplier in [("ScheduleGrpcService", "OK", 1), ("AuthGrpcService", "UNAVAILABLE", 2)]:
+            labels = f'grpc_service="{downstream}",method="Get",status="{status}"'
+            for bound, fraction in [("0.01", 0.5), ("0.1", 1), ("+Inf", 1)]:
+                values.append(f'grpc_client_duration_seconds_bucket{{{labels},le="{bound}"}} {elapsed * multiplier * fraction}')
+            values.append(f'grpc_client_duration_seconds_count{{{labels}}} {elapsed * multiplier}')
+            values.append(f'grpc_client_duration_seconds_sum{{{labels}}} {elapsed * multiplier * 0.02}')
         self.send_response(200)
         self.end_headers()
         self.wfile.write(("\n".join(values) + "\n").encode())

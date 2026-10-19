@@ -66,6 +66,15 @@ class KeyboardSyncClient:
             logger.exception("Redis error reading keyboard version for telegram_id=%d", telegram_id)
             return None
 
+    async def invalidate_user_keyboard(self, telegram_id: int) -> bool:
+        """Confirm durable pending before a fallback replaces a synced keyboard."""
+        try:
+            await self._redis.hdel(self._USER_VERSION_KEY, str(telegram_id))
+            return True
+        except Exception:
+            logger.exception("Redis error invalidating keyboard version for telegram_id=%d", telegram_id)
+            return False
+
     async def close(self) -> None:
         await self._redis.aclose()
 
@@ -88,35 +97,47 @@ async def sync_registered_keyboards(
     *,
     delay_seconds: float = 0.05,
     bot_menu_client=None,
+    retry_delay_seconds: float = 1.0,
 ) -> None:
-    """Push the current reply keyboard to registered users whose version is stale."""
+    """Recover stale keyboards, with at most three attempts per user at startup."""
     user_ids = await keyboard_sync.get_registered_user_ids()
     sent = 0
     skipped = 0
     failed = 0
 
     for telegram_id in user_ids:
-        scope = await resolve_menu_scope(bot_menu_client, telegram_id)
-        options = scope.keyboard_options if scope else {}
-        keyboard = main_keyboard(**options)
-        keyboard_version = keyboard_signature(**options)
-        stored_version = await keyboard_sync.get_user_keyboard_version(telegram_id)
-        if stored_version == keyboard_version:
-            skipped += 1
-            continue
-
-        try:
-            await bot.send_message(
-                chat_id=telegram_id,
-                text="Клавиатура обновлена.",
-                reply_markup=keyboard,
-                disable_notification=True,
-            )
-            await keyboard_sync.mark_user_synced(telegram_id, keyboard_version)
-            sent += 1
-        except Exception:
-            failed += 1
-            logger.debug("Failed to sync keyboard for telegram_id=%d", telegram_id, exc_info=True)
+        fallback_sent = False
+        for attempt in range(3):
+            scope = await resolve_menu_scope(bot_menu_client, telegram_id)
+            options = scope.keyboard_options if scope else {}
+            keyboard_version = keyboard_signature(**options)
+            stored_version = await keyboard_sync.get_user_keyboard_version(telegram_id)
+            if scope is not None and stored_version == keyboard_version:
+                skipped += 1
+                break
+            try:
+                # An unavailable role read can only deliver common actions. It cannot
+                # acknowledge a role keyboard, even if its old signature was stored.
+                # If Redis cannot confirm pending, retain that previous keyboard.
+                pending = await keyboard_sync.invalidate_user_keyboard(telegram_id)
+                if scope is not None or (pending and not fallback_sent):
+                    await bot.send_message(
+                        chat_id=telegram_id,
+                        text="Клавиатура обновлена.",
+                        reply_markup=main_keyboard(**options),
+                        disable_notification=True,
+                    )
+                    sent += 1
+                    fallback_sent = scope is None
+                if scope is not None:
+                    await keyboard_sync.mark_user_synced(telegram_id, keyboard_version)
+                    break
+            except Exception:
+                logger.debug("Failed to sync keyboard for telegram_id=%d", telegram_id, exc_info=True)
+            if attempt == 2:
+                failed += 1
+            elif retry_delay_seconds > 0:
+                await asyncio.sleep(retry_delay_seconds)
 
         if delay_seconds > 0:
             await asyncio.sleep(delay_seconds)

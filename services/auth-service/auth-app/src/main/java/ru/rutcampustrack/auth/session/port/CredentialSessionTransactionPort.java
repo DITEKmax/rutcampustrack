@@ -23,6 +23,14 @@ public interface CredentialSessionTransactionPort {
     boolean issuePasswordResetTicket(long userId, CredentialHash ticketHash, Instant expiresAt);
 
     /**
+     * Issue for an already active ADMIN only after live FULL administrative authorization under the
+     * caller's transaction/identity locks. Persist that authority with the one-way ticket hash;
+     * ordinary tickets must never acquire it when their target is later promoted.
+     */
+    boolean issueAdministrativePasswordResetTicket(
+            long userId, CredentialHash ticketHash, Instant expiresAt);
+
+    /**
      * Consume the ticket, replace the credential, revoke every prior session, and append the event
      * atomically.
      */

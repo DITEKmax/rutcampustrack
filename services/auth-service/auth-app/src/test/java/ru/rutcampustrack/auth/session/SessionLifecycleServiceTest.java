@@ -1073,6 +1073,12 @@ class SessionLifecycleServiceTest {
         }
 
         @Override
+        public boolean issueAdministrativePasswordResetTicket(
+                long userId, CredentialHash ticketHash, Instant expiresAt) {
+            throw new UnsupportedOperationException("password reset is outside this test double");
+        }
+
+        @Override
         public PasswordResetResult completePasswordReset(PasswordResetCommand command) {
             throw new UnsupportedOperationException("password reset is outside this test double");
         }

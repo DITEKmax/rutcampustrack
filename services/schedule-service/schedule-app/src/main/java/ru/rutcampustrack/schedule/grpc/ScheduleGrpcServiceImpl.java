@@ -233,6 +233,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         Map<Long, LessonTransferWriter.TransferState> transferStates = transferStates(lessonIds);
         Map<Long, Long> occurrenceRevisions = occurrenceRevisions(lessonIds);
         Map<Long, LessonRoomWriter.RoomChange> roomChanges = roomChanges(lessons);
+        java.util.Set<Long> movedLessons = movedLessons(lessonIds);
         List<LessonResponse> responses =
                 lessons.stream()
                         .map(
@@ -242,7 +243,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                                 itemById.get(l.getScheduleItemId()),
                                                 transferStates.get(l.getId()),
                                                 occurrenceRevisions.get(l.getId()),
-                                                roomChanges.get(l.getId())))
+                                                roomChanges.get(l.getId()),
+                                                movedLessons.contains(l.getId())))
                         .toList();
 
         OffsetDateTime updatedAt =
@@ -333,7 +335,13 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         // identity and current physical snapshots used by HomeworkService.
         // Focused legacy read tests still use the three-argument constructor.
         if (homeworkBindingService != null) {
-            responseObserver.onNext(homeworkBindingService.resolveLesson(request));
+            LessonResponse resolved = homeworkBindingService.resolveLesson(request);
+            responseObserver.onNext(
+                    resolved.toBuilder()
+                            .setMoved(
+                                    movedLessons(List.of(resolved.getId()))
+                                            .contains(resolved.getId()))
+                            .build());
             responseObserver.onCompleted();
             return;
         }
@@ -540,7 +548,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 item,
                 transferState,
                 occurrenceRevision,
-                roomChanges(List.of(lesson)).get(lesson.getId()));
+                roomChanges(List.of(lesson)).get(lesson.getId()),
+                movedLessons(List.of(lesson.getId())).contains(lesson.getId()));
     }
 
     private LessonResponse buildResponse(
@@ -548,7 +557,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
             ScheduleItem item,
             LessonTransferWriter.TransferState transferState,
             Long occurrenceRevision,
-            LessonRoomWriter.RoomChange roomChange) {
+            LessonRoomWriter.RoomChange roomChange,
+            boolean moved) {
         Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
         Long subjectId =
                 lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
@@ -585,6 +595,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                         .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
                         .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
                         .setOccurrenceRevision(occurrenceRevision == null ? 0 : occurrenceRevision)
+                        .setMoved(moved)
                         .setCurrent(lesson.isCurrent());
         if ("cancelled".equalsIgnoreCase(response.getStatus())
                 && lesson.getCancelReason() != null) {
@@ -606,6 +617,12 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         return lessonTransferWriter == null
                 ? Map.of()
                 : lessonTransferWriter.pendingStatesForLessons(lessonIds);
+    }
+
+    private java.util.Set<Long> movedLessons(List<Long> lessonIds) {
+        return lessonTransferWriter == null
+                ? java.util.Set.of()
+                : lessonTransferWriter.movedLessonIds(lessonIds);
     }
 
     private Map<Long, LessonRoomWriter.RoomChange> roomChanges(List<Lesson> lessons) {

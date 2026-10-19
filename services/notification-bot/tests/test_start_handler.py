@@ -7,9 +7,10 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
-from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL
+from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, keyboard_signature, main_keyboard
 from bot.handlers.start import cmd_credentials, cmd_links, cmd_start
 from bot.services.bot_menu import BotGrant, MenuScope
+from bot.services.keyboard_sync import KeyboardSyncClient, sync_registered_keyboards
 
 
 def _message(user_id=12345, *, chat_id=12345, chat_type="private", sender=True):
@@ -253,3 +254,124 @@ async def test_password_changed_fallback_uses_only_newly_confirmed_profile_with_
     if handler is cmd_credentials:
         assert "Пароль: уже изменён" in rendered
     assert menu.own_profile.await_count == menu.menu_scope.await_count == 2
+
+
+@pytest.mark.parametrize("failure", ["profile", "role", "card", "refresh", "send", "fallback_send"])
+async def test_start_failure_never_acknowledges_role_keyboard_and_startup_recovers(fake_redis, failure):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
+    signature = keyboard_signature(**scope.keyboard_options)
+    # A previous successful /start must not conceal the common-keyboard fallback.
+    await client.mark_user_synced(12345, signature)
+    menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=scope))
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=False))
+    message = _message()
+    if failure in {"profile", "fallback_send"}:
+        menu.own_profile.side_effect = RuntimeError("outage")
+    elif failure == "role":
+        menu.menu_scope.side_effect = RuntimeError("outage")
+    elif failure == "card":
+        cards.deliver.side_effect = RuntimeError("render unavailable")
+    elif failure == "refresh":
+        menu.own_profile.side_effect = [_profile(), RuntimeError("outage")]
+    elif failure == "send":
+        message.answer.side_effect = [RuntimeError("provider failure"), None]
+    if failure == "fallback_send":
+        message.answer.side_effect = RuntimeError("provider failure")
+        with pytest.raises(RuntimeError):
+            await cmd_start(message, None, None, client, cards, menu)
+    else:
+        await cmd_start(message, None, None, client, cards, menu)
+        labels = [b.text for row in message.answer.await_args.kwargs["reply_markup"].keyboard for b in row]
+        assert len(labels) == 4
+    assert await client.get_registered_user_ids() == [12345]
+    assert await client.get_user_keyboard_version(12345) is None
+    menu.menu_scope = AsyncMock(return_value=scope)
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await sync_registered_keyboards(bot, client, None, delay_seconds=0, bot_menu_client=menu)
+    labels = [b.text for row in bot.send_message.await_args.kwargs["reply_markup"].keyboard for b in row]
+    assert HOMEWORK_TODAY_LABEL in labels
+    assert await client.get_user_keyboard_version(12345) == signature
+
+
+@pytest.mark.parametrize("card_delivered", [False, True])
+async def test_start_acknowledges_actual_role_keyboard_only_after_delivery(fake_redis, card_delivered):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10), BotGrant("HEADMAN", 10)))
+    menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=scope))
+    delivered = []
+
+    async def send(*args, **kwargs):
+        assert await client.get_user_keyboard_version(12345) is None
+        delivered.append(kwargs["reply_markup"])
+
+    async def card(*args, **kwargs):
+        if card_delivered:
+            await send(**kwargs)
+        return card_delivered
+
+    message = _message()
+    message.answer.side_effect = send
+    cards = SimpleNamespace(deliver=AsyncMock(side_effect=card))
+    await cmd_start(message, None, None, client, cards, menu)
+    assert len(delivered) == 1
+    labels = [b.text for row in delivered[0].keyboard for b in row]
+    assert len(labels) == len(set(labels))
+    assert HOMEWORK_TODAY_LABEL in labels
+    assert await client.get_user_keyboard_version(12345) == keyboard_signature(**scope.keyboard_options)
+
+
+@pytest.mark.parametrize("failure", ["profile", "role", "card", "card_after_keyboard", "unknown"])
+async def test_start_preserves_truthful_role_keyboard_when_pending_invalidation_fails(fake_redis, monkeypatch, failure):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
+    signature = keyboard_signature(**scope.keyboard_options)
+    await client.mark_user_synced(12345, signature)
+    visible = main_keyboard(**scope.keyboard_options)
+    original_hdel = fake_redis.hdel
+    invalidations = 0
+
+    async def hdel(*args, **kwargs):
+        nonlocal invalidations
+        invalidations += 1
+        if invalidations == 1:
+            raise RuntimeError("one-shot Redis failure")
+        return await original_hdel(*args, **kwargs)
+
+    monkeypatch.setattr(fake_redis, "hdel", hdel)
+
+    async def answer(*args, **kwargs):
+        nonlocal visible
+        if kwargs.get("reply_markup") is not None:
+            visible = kwargs["reply_markup"]
+
+    message = _message()
+    message.answer.side_effect = answer
+    menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=scope))
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=False))
+    if failure == "profile":
+        menu.own_profile.side_effect = RuntimeError("profile RPC unavailable")
+    elif failure == "role":
+        menu.menu_scope.side_effect = RuntimeError("role RPC unavailable")
+    elif failure == "unknown":
+        menu.own_profile.return_value = _profile(False)
+    else:
+
+        async def failed_card(*args, **kwargs):
+            if failure == "card_after_keyboard":
+                await message.answer("nonsecret placeholder", reply_markup=kwargs["reply_markup"])
+            raise RuntimeError("credential card unavailable")
+
+        cards.deliver.side_effect = failed_card
+    await cmd_start(message, None, None, client, cards, menu)
+    assert message.answer.await_args.kwargs["reply_markup"] is None
+    expected = [button.text for row in main_keyboard(**scope.keyboard_options).keyboard for button in row]
+    assert [button.text for row in visible.keyboard for button in row] == expected
+    assert await client.get_user_keyboard_version(12345) == signature
+    assert await client.get_registered_user_ids() == [12345]
+    menu.menu_scope = AsyncMock(return_value=scope)
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    # Recovery may skip only because /start has preserved the actually visible role keyboard.
+    bot.send_message.assert_not_awaited()
+    assert [button.text for row in visible.keyboard for button in row] == expected

@@ -795,7 +795,7 @@ public final class TeacherAttendanceReadGrpcService
                         .setGeneration(safeInt(lesson.getGeneration()))
                         .setRevision(safeInt(lesson.getRevision()))
                         .setOneOff(lesson.getScheduleItemId() <= 0)
-                        .setMoved(lesson.getRevision() > 1 || lesson.getGeneration() > 1)
+                        .setMoved(lesson.getMoved())
                         .setCancelled("cancelled".equalsIgnoreCase(lesson.getStatus()));
         if ("cancelled".equalsIgnoreCase(lesson.getStatus()) && lesson.hasCancellationReason()) {
             response.setCancellationReason(lesson.getCancellationReason());

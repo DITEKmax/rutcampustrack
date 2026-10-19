@@ -178,13 +178,20 @@ WHERE id = ? AND password_hash = ?
 
     private static final String PASSWORD_RESET_TICKET_USER_SQL =
             """
-            SELECT user_id
+            SELECT user_id, token_hash
             FROM password_reset_tokens
             WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
             """;
 
     private static final String LOCK_PASSWORD_RESET_TICKET_SQL =
             PASSWORD_RESET_TICKET_USER_SQL + " FOR UPDATE";
+
+    private static final String FIND_PASSWORD_RESET_TICKET_SQL =
+            """
+            SELECT user_id, token_hash
+            FROM password_reset_tokens
+            WHERE token_hash IN (?, ?) AND used_at IS NULL AND expires_at > ?
+            """;
 
     private static final String MARK_PASSWORD_RESET_TICKET_USED_SQL =
             """
@@ -199,6 +206,10 @@ UPDATE auth_identities
 SET password_hash = ?, password_changed = TRUE, initial_password = NULL, generated_password_origin = NULL
 WHERE id = ?
 """;
+
+    // This namespace is written only by the FULL-authorized active-ADMIN issue path. HTTP
+    // completion supplies SHA-256(ticket), never this persisted authority marker.
+    private static final String ADMINISTRATIVE_RESET_PREFIX = "admin:";
 
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
@@ -306,10 +317,24 @@ WHERE id = ?
     @Override
     public boolean issuePasswordResetTicket(
             long userId, CredentialHash ticketHash, Instant expiresAt) {
+        return issuePasswordResetTicket(userId, ticketHash, expiresAt, false);
+    }
+
+    @Override
+    public boolean issueAdministrativePasswordResetTicket(
+            long userId, CredentialHash ticketHash, Instant expiresAt) {
+        return issuePasswordResetTicket(userId, ticketHash, expiresAt, true);
+    }
+
+    private boolean issuePasswordResetTicket(
+            long userId, CredentialHash ticketHash, Instant expiresAt, boolean administrative) {
         Objects.requireNonNull(ticketHash, "ticketHash");
         Objects.requireNonNull(expiresAt, "expiresAt");
         if (userId <= 0) {
             throw new IllegalArgumentException("userId must be positive");
+        }
+        if (ticketHash.value().startsWith(ADMINISTRATIVE_RESET_PREFIX)) {
+            throw new IllegalArgumentException("ticket hash must not contain authority metadata");
         }
         PasswordResetTicketIssue outcome =
                 inTransaction(
@@ -318,7 +343,9 @@ WHERE id = ?
                             if (user == null || !user.admitted()) {
                                 return PasswordResetTicketIssue.UNAVAILABLE;
                             }
-                            if (hasActiveAdminGrant(userId)) return PasswordResetTicketIssue.DENIED;
+                            if (hasActiveAdminGrant(userId) != administrative) {
+                                return PasswordResetTicketIssue.DENIED;
+                            }
                             // Issue and completion both lock this user before ticket rows. A failed
                             // insert
                             // rolls back the supersede; a waiting completion rechecks used_at under
@@ -328,7 +355,10 @@ WHERE id = ?
                             return jdbcTemplate.update(
                                                     INSERT_PASSWORD_RESET_TICKET_SQL,
                                                     userId,
-                                                    ticketHash.value(),
+                                                    administrative
+                                                            ? ADMINISTRATIVE_RESET_PREFIX
+                                                                    + ticketHash.value()
+                                                            : ticketHash.value(),
                                                     timestamp(expiresAt))
                                             == 1
                                     ? PasswordResetTicketIssue.ISSUED
@@ -749,26 +779,37 @@ WHERE id = ?
     }
 
     private PasswordResetResult completePasswordResetInTransaction(PasswordResetCommand command) {
-        List<Long> userIds =
+        if (command.ticketHash().value().startsWith(ADMINISTRATIVE_RESET_PREFIX)) {
+            return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
+        }
+        String suppliedHash = command.ticketHash().value();
+        List<ResetTicketRow> tickets =
                 jdbcTemplate.query(
-                        PASSWORD_RESET_TICKET_USER_SQL,
-                        (resultSet, rowNum) -> resultSet.getLong(1),
-                        command.ticketHash().value(),
+                        FIND_PASSWORD_RESET_TICKET_SQL,
+                        (rs, rowNum) ->
+                                new ResetTicketRow(
+                                        rs.getLong("user_id"), rs.getString("token_hash")),
+                        suppliedHash,
+                        ADMINISTRATIVE_RESET_PREFIX + suppliedHash,
                         timestamp(command.now()));
-        if (userIds.isEmpty()) {
+        if (tickets.size() != 1) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
 
-        long userId = userIds.getFirst();
+        ResetTicketRow ticket = tickets.getFirst();
+        long userId = ticket.userId();
         UserRow user = findUser(userId, true);
-        if (user == null || !user.admitted() || hasActiveAdminGrant(userId)) {
+        if (user == null
+                || !user.admitted()
+                || (hasActiveAdminGrant(userId)
+                        && !ticket.storedHash().startsWith(ADMINISTRATIVE_RESET_PREFIX))) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
         List<Long> lockedTickets =
                 jdbcTemplate.query(
                         LOCK_PASSWORD_RESET_TICKET_SQL,
                         (resultSet, rowNum) -> resultSet.getLong(1),
-                        command.ticketHash().value(),
+                        ticket.storedHash(),
                         timestamp(command.now()));
         if (lockedTickets.isEmpty()) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
@@ -785,7 +826,7 @@ WHERE id = ?
                 jdbcTemplate.update(
                         MARK_PASSWORD_RESET_TICKET_USED_SQL,
                         timestamp(command.now()),
-                        command.ticketHash().value(),
+                        ticket.storedHash(),
                         timestamp(command.now()));
         if (ticketConsumed != 1) {
             throw new IllegalStateException(
@@ -815,6 +856,8 @@ WHERE id = ?
         failureInjector.after("password-reset.outbox");
         return PasswordResetResult.success(userId, revoked);
     }
+
+    private record ResetTicketRow(long userId, String storedHash) {}
 
     private SessionRow clearUnselectableActive(SessionRow session, List<RoleGrant> grants) {
         if (session.activeRoleGrantId() == null) {

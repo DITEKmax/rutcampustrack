@@ -210,6 +210,17 @@ public final class SessionLifecycleService {
                 Objects.requireNonNull(expiresAt, "expiresAt"));
     }
 
+    /** Caller has verified live FULL authority for this active ADMIN in the same transaction. */
+    public boolean issueAdministrativePasswordResetTicket(
+            long userId,
+            CredentialSessionTransactionPort.CredentialHash ticketHash,
+            Instant expiresAt) {
+        return credentialPort.issueAdministrativePasswordResetTicket(
+                userId,
+                Objects.requireNonNull(ticketHash, "ticketHash"),
+                Objects.requireNonNull(expiresAt, "expiresAt"));
+    }
+
     public CredentialSessionTransactionPort.PasswordResetResult completePasswordReset(
             PasswordResetRequest request) {
         Objects.requireNonNull(request, "request");

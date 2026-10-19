@@ -1248,7 +1248,7 @@ public final class TeacherReadFacade {
                 emptyToNull(lesson.getRoom()),
                 lesson.getStatus(),
                 lesson.getScheduleItemId() <= 0,
-                lesson.getRevision() > 1 || lesson.getGeneration() > 1,
+                lesson.getMoved(),
                 "cancelled".equalsIgnoreCase(lesson.getStatus()),
                 "cancelled".equalsIgnoreCase(lesson.getStatus())
                         ? nullable(lesson.getCancellationReason())

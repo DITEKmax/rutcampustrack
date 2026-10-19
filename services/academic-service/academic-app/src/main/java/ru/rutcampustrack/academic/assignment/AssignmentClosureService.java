@@ -46,6 +46,7 @@ public class AssignmentClosureService {
     private final RequestContext context;
     private final ScheduleGrpcClient schedule;
     private final JdbcTemplate jdbc;
+    private final AssignmentTeacherEligibility teacherEligibility;
     private final TransactionTemplate transaction;
     private final TransactionTemplate outsideTransaction;
 
@@ -56,6 +57,7 @@ public class AssignmentClosureService {
             RequestContext context,
             ScheduleGrpcClient schedule,
             JdbcTemplate jdbc,
+            AssignmentTeacherEligibility teacherEligibility,
             PlatformTransactionManager transactionManager) {
         this.assignments = assignments;
         this.operations = operations;
@@ -63,6 +65,7 @@ public class AssignmentClosureService {
         this.context = context;
         this.schedule = schedule;
         this.jdbc = jdbc;
+        this.teacherEligibility = teacherEligibility;
         this.transaction = new TransactionTemplate(transactionManager);
         this.transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.outsideTransaction = new TransactionTemplate(transactionManager);
@@ -497,6 +500,8 @@ public class AssignmentClosureService {
                 operations.findByIdForUpdate(operationId).orElseThrow();
         if (operation.getState() != AssignmentOperationState.PREPARED) return;
         requireReceipt(operation, receipt, "APPLIED");
+        if (operation.getOperationKind() == AssignmentOperationKind.ADOPT_UNASSIGNED)
+            teacherEligibility.requireEligible(assignment.getTeacherId());
         operation.markApplied(receipt.getState(), 0, 0);
         operations.saveAndFlush(operation);
         jdbc.queryForObject(

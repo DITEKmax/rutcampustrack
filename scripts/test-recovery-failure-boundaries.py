@@ -87,6 +87,41 @@ class RecoveryFailureBoundaries(unittest.TestCase):
         # An accidentally unmocked native command must fail before Docker/DB access.
         self.enterContext(patch.object(r.subprocess, "run", side_effect=AssertionError("Native command forbidden")))
 
+    def test_production_credentials_require_schedule_migrator_and_separate_cluster_admin(self):
+        root = self.retained / "production-credentials"
+        root.mkdir()
+        args = arguments(root)
+        values = {
+            key: "synthetic-only-" + str(index)
+            for index, key in enumerate((
+                "POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
+                "POSTGRES_SCHEDULE_MIGRATION_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD",
+                "POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD", "MONGO_ROOT_PASSWORD",
+            ))
+        }
+        values.update(POSTGRES_RECOVERY_ADMIN_USER="rct_bootstrap",
+                      POSTGRES_SCHEDULE_RECOVERY_ADMIN_USER="rct_bootstrap")
+
+        def write(inputs):
+            args.env_file.write_text("".join(key + "=" + value + "\n" for key, value in inputs.items()))
+
+        write(values)
+        secret = r.credentials(args.env_file)
+        targets = r.pg_targets(args, secret)
+        self.assertEqual([row[4] for row in targets], ["rct_migrator", "rct_auth_migrator", "rct_migrator"])
+        self.assertEqual(targets[2][3], "POSTGRES_SCHEDULE_MIGRATION_PASSWORD")
+        # The old runtime credential cannot silently substitute for a migrator.
+        incomplete = dict(values)
+        incomplete["POSTGRES_SCHEDULE_PASSWORD"] = incomplete.pop("POSTGRES_SCHEDULE_MIGRATION_PASSWORD")
+        write(incomplete)
+        with self.assertRaises(r.RecoveryError):
+            r.credentials(args.env_file)
+        incomplete = dict(values)
+        del incomplete["POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD"]
+        write(incomplete)
+        with self.assertRaises(r.RecoveryError):
+            r.credentials(args.env_file)
+
     def test_partial_dump_is_retained_without_success_manifest_and_retry_needs_new_output(self):
         root = self.retained / "partial"
         root.mkdir()
@@ -108,7 +143,7 @@ class RecoveryFailureBoundaries(unittest.TestCase):
         secret = {
             key: "SYNTHETIC-ONLY"
             for key in ("POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
-                        "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD")
+                        "POSTGRES_SCHEDULE_MIGRATION_PASSWORD", "MONGO_ROOT_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD")
         }
         with (
             patch.object(r, "credentials", return_value=secret),
@@ -186,7 +221,7 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                 secret = {
                     key: "SYNTHETIC-ONLY"
                     for key in ("POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
-                        "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD")
+                        "POSTGRES_SCHEDULE_MIGRATION_PASSWORD", "MONGO_ROOT_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD")
                 }
                 with (
                     patch.object(r, "credentials", return_value=secret),

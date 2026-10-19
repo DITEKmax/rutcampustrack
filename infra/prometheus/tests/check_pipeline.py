@@ -148,10 +148,10 @@ def e2e_scrape_config():
         assert job["static_configs"] == [
             {"targets": [name + ":" + str(port)], "labels": {"environment": "production", "service": name}}
         ]
+        assert job.get("honor_labels", False) is False, "retain production target-label precedence"
         job.update(
             scrape_interval="5s",
             scrape_timeout="5s",
-            honor_labels=True,
             sample_limit=3000,
             body_size_limit="8MB",
             metric_relabel_configs=[{"source_labels": ["__name__"], "regex": allow, "action": "keep"}],
@@ -242,6 +242,11 @@ def e2e_live_panel_queries(query, expected, safe):
                 expression = expression.replace(name, json.dumps(replacement)[1:-1])
             assert "$" not in expression
             rows = values(expression)
+            if filename == "grpc-latency.json" and panel_id in {1, 2, 3, 4}:
+                for row in rows:
+                    labels = row["metric"]
+                    assert labels["service"] == job and labels["grpc_service"]
+                    assert "exported_service" not in labels
             numbers = [float(row["value"][1]) for row in rows]
             target_absent = absent.get(index) if isinstance(absent, dict) else absent
             if target_absent is not None:
@@ -364,6 +369,19 @@ def e2e_live_panel_queries(query, expected, safe):
         if job in {"academic-service", "schedule-service", "attendance-service"}:
             count = values('grpc_client_duration_seconds_count{job="' + job + '"}')
             assert count and sum(float(r["value"][1]) for r in count) > 0
+            for row in count:
+                labels = row["metric"]
+                assert labels["service"] == job and labels["environment"] == "synthetic"
+                assert re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", labels["grpc_service"])
+                assert re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", labels["method"])
+                assert "exported_service" not in labels, "downstream label must not collide at ingestion"
+            identities = {(row["metric"]["service"], row["metric"]["grpc_service"], row["metric"]["method"])
+                          for row in count}
+            # Query the retained panel's grouping against the actual ingested series.
+            grouped = values('count by (service, grpc_service, method) (grpc_client_duration_seconds_count{job="'
+                             + job + '"})')
+            assert {(row["metric"]["service"], row["metric"]["grpc_service"], row["metric"]["method"])
+                    for row in grouped} == identities
             recent = values('sum(rate(grpc_client_duration_seconds_count{job="' + job + '"}[5m]))')
             assert len(recent) == 1 and math.isfinite(float(recent[0]["value"][1]))
             for panel in [1, 2, 3]:
@@ -1159,6 +1177,16 @@ def main():
                 "static_configs": [{"targets": ["notification-web:9094"]}],
             }
         )
+        grpc_identity = copy.deepcopy(next(job for job in yaml.safe_load(
+            (ROOT / "infra/prometheus/prometheus.yml").read_text())["scrape_configs"]
+            if job["job_name"] == "academic-service"))
+        assert grpc_identity.get("honor_labels", False) is False
+        grpc_identity.update(job_name="grpc-identity-fixture", metrics_path="/metrics", scrape_interval="1s",
+                             metric_relabel_configs=[{"source_labels": ["__name__"],
+                                 "regex": "grpc_client_duration_seconds_(bucket|sum|count)", "action": "keep"}])
+        grpc_identity["static_configs"] = [{"targets": ["notification-web:9094"],
+                                            "labels": {"service": "academic-service", "environment": "synthetic"}}]
+        prom["scrape_configs"].append(grpc_identity)
         prom["rule_files"] = []
         for job in prom["scrape_configs"]:
             for target in job.get("static_configs", []):
@@ -1666,6 +1694,29 @@ def main():
                 pass
             else:
                 raise AssertionError("invalid query must produce a query error")
+            _STATE["phase"] = "GRPC_IDENTITY"
+            selector = '{job="grpc-identity-fixture"}'
+            wait(lambda: len(samples("grpc_client_duration_seconds_count" + selector)) == 2)
+            expected_rpc = {("ScheduleGrpcService", "OK"), ("AuthGrpcService", "UNAVAILABLE")}
+            raw_rpc = samples("grpc_client_duration_seconds_count" + selector)
+            for row in raw_rpc:
+                labels = row["metric"]
+                assert labels["service"] == "academic-service" and labels["method"] == "Get"
+                assert labels["environment"] == "synthetic" and "exported_service" not in labels
+            assert {(row["metric"]["grpc_service"], row["metric"]["status"]) for row in raw_rpc} == expected_rpc
+            # Execute the actual provisioned panel expressions with only fixed selectors substituted.
+            for panel_id in [1, 2, 3, 4]:
+                expression = dashboard_expression("grpc-latency.json", panel_id)
+                expression = expression.replace('job=~".*"', 'job="grpc-identity-fixture"')
+                wait(lambda expression=expression: bool(samples(expression)) and all(
+                    math.isfinite(float(row["value"][1])) for row in samples(expression)))
+                rows = samples(expression)
+                downstreams = {row["metric"]["grpc_service"] for row in rows}
+                assert downstreams == ({"AuthGrpcService"} if panel_id == 4 else {name for name, _ in expected_rpc})
+                assert all(row["metric"]["service"] == "academic-service" for row in rows)
+            checks.append({"grpc_identity": {"honor_labels": False, "source_service": "academic-service",
+                           "downstream_services": sorted(name for name, _ in expected_rpc),
+                           "same_method": "Get", "retained_panels": [1, 2, 3, 4], "series_preserved": 2}})
             trace = uuid.uuid4().hex
             span = uuid.uuid4().hex[:16]
             request_id = str(uuid.uuid4())

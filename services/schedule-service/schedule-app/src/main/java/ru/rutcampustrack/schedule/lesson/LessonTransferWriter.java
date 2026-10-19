@@ -495,6 +495,57 @@ public class LessonTransferWriter {
         return rows.size();
     }
 
+    /**
+     * A move is an accepted change of slot, not a general revision or generation. Read all prior
+     * transfer snapshots so a later room-only template operation or restore cannot erase the
+     * occurrence's already accepted move provenance. PENDING/ERROR concern downstream
+     * acknowledgements: the physical slot change and these snapshots were committed atomically
+     * before either state is visible.
+     */
+    public java.util.Set<Long> movedLessonIds(List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) return java.util.Set.of();
+        Array array = null;
+        try {
+            array =
+                    jdbc.execute(
+                            (Connection connection) ->
+                                    connection.createArrayOf(
+                                            "bigint", lessonIds.toArray(Long[]::new)));
+            List<Long> moved =
+                    jdbc.queryForList(
+                            """
+SELECT physical.id FROM lessons physical
+ WHERE physical.id = ANY(?::bigint[])
+   AND EXISTS (
+       SELECT 1 FROM lesson_lifecycle_entries entry
+         JOIN lesson_transfer_operations operation
+           ON operation.operation_id = entry.transfer_operation_id
+        WHERE entry.occurrence_id = physical.occurrence_id
+          AND operation.occurrence_id = entry.occurrence_id
+          AND operation.source_generation <= physical.generation
+          AND ROW((operation.source_snapshot->>'date')::date,
+                  (operation.source_snapshot->>'lesson_number')::integer,
+                  (operation.source_snapshot->>'start_time')::time,
+                  (operation.source_snapshot->>'end_time')::time)
+              IS DISTINCT FROM
+              ROW((operation.target_snapshot->>'date')::date,
+                  (operation.target_snapshot->>'lesson_number')::integer,
+                  (operation.target_snapshot->>'start_time')::time,
+                  (operation.target_snapshot->>'end_time')::time))
+""",
+                            Long.class,
+                            array);
+            return java.util.Set.copyOf(moved);
+        } finally {
+            if (array != null) {
+                try {
+                    array.free();
+                } catch (SQLException ignored) {
+                }
+            }
+        }
+    }
+
     public Map<Long, TransferState> pendingStatesForLessons(List<Long> lessonIds) {
         if (lessonIds == null || lessonIds.isEmpty()) return Map.of();
         Array array = null;

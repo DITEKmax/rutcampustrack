@@ -19,7 +19,6 @@ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.AssignmentReplacementOperation;
 import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -28,8 +27,6 @@ import ru.rutcampustrack.academic.repository.AssignmentReplacementOperationRepos
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectLessonTypeRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
 
@@ -50,8 +47,7 @@ public class AssignmentReplacementService {
     private final AssignmentAuthority assignmentAuthority;
     private final SemesterRepository semesterRepository;
     private final SubjectLessonTypeRepository lessonTypeRepository;
-    private final UserRepository userRepository;
-    private final UserRoleGrantRepository grantRepository;
+    private final AssignmentTeacherEligibility teacherEligibility;
     private final RequestContext requestContext;
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final JdbcTemplate jdbc;
@@ -63,8 +59,7 @@ public class AssignmentReplacementService {
             AssignmentAuthority assignmentAuthority,
             SemesterRepository semesterRepository,
             SubjectLessonTypeRepository lessonTypeRepository,
-            UserRepository userRepository,
-            UserRoleGrantRepository grantRepository,
+            AssignmentTeacherEligibility teacherEligibility,
             RequestContext requestContext,
             ScheduleGrpcClient scheduleGrpcClient,
             JdbcTemplate jdbc,
@@ -74,8 +69,7 @@ public class AssignmentReplacementService {
         this.assignmentAuthority = assignmentAuthority;
         this.semesterRepository = semesterRepository;
         this.lessonTypeRepository = lessonTypeRepository;
-        this.userRepository = userRepository;
-        this.grantRepository = grantRepository;
+        this.teacherEligibility = teacherEligibility;
         this.requestContext = requestContext;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.jdbc = jdbc;
@@ -210,21 +204,7 @@ public class AssignmentReplacementService {
         if (targetTeacherId == source.getTeacherId()) {
             throw new ConflictException("Новый преподаватель совпадает с исходным");
         }
-        User targetTeacher =
-                userRepository
-                        .findById(targetTeacherId)
-                        .orElseThrow(
-                                () ->
-                                        new ResourceNotFoundException(
-                                                "Teacher", "id", targetTeacherId));
-        if (grantRepository
-                .findByUserIdAndRoleAndStatus(
-                        targetTeacher.getId(),
-                        AssignmentAuthority.TEACHER_ROLE,
-                        AssignmentAuthority.ACTIVE_STATUS)
-                .isEmpty()) {
-            throw new AccessDeniedException("У нового преподавателя нет активного права TEACHER");
-        }
+        teacherEligibility.requireEligible(targetTeacherId);
         assignmentRepository
                 .findActiveOverlapping(
                         targetTeacherId,
@@ -357,6 +337,7 @@ public class AssignmentReplacementService {
                 semester,
                 operation.getTargetValidUntil(),
                 AssignmentLifecycle.PREPARED);
+        teacherEligibility.requireEligible(target.getTeacherId());
         operation.markApplied(
                 receipt.getState(), receipt.getMovedCount(), receipt.getSkippedCount());
         operationRepository.saveAndFlush(operation);

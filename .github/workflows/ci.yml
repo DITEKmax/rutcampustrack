@@ -6301,7 +6301,12 @@ jobs:
               values = {
                   'POSTGRES_ACADEMIC_MIGRATION_PASSWORD': passwords['e2e-pg-migration-password'],
                   'POSTGRES_AUTH_MIGRATION_PASSWORD': passwords['e2e-pg-auth-migration-password'],
-                  'POSTGRES_SCHEDULE_PASSWORD': config['services']['postgres-schedule']['environment']['POSTGRES_PASSWORD'],
+                  # Explicit mapping for this pre-existing isolated E2E owner only.
+                  # Production/disposable production-principal drills use rct_migrator.
+                  'POSTGRES_SCHEDULE_MIGRATION_PASSWORD': config['services']['postgres-schedule']['environment']['POSTGRES_PASSWORD'],
+                  'POSTGRES_SCHEDULE_RECOVERY_USER': config['services']['postgres-schedule']['environment']['POSTGRES_USER'],
+                  'POSTGRES_SCHEDULE_RECOVERY_ADMIN_USER': config['services']['postgres-schedule']['environment']['POSTGRES_USER'],
+                  'POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD': config['services']['postgres-schedule']['environment']['POSTGRES_PASSWORD'],
                   'MONGO_ROOT_PASSWORD': config['services']['mongo-attendance']['environment']['MONGODB_ROOT_PASSWORD'],
                   'POSTGRES_RECOVERY_ADMIN_USER': environment['POSTGRES_USER'],
                   'POSTGRES_RECOVERY_ADMIN_PASSWORD': environment['POSTGRES_PASSWORD'],
@@ -6885,6 +6890,8 @@ jobs:
           cache: 'gradle'
       - name: Setup Gradle for the existing application transport IT
         uses: gradle/actions/setup-gradle@v6
+      - name: Check the complete synthetic production environment contract
+        run: python3 scripts/test-env-prod.py --compose-config
       - name: Install bounded config parser and exact telemetry tools
         id: tools
         shell: bash

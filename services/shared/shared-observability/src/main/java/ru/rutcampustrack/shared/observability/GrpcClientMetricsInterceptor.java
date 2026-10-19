@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  *
  * <ul>
  *   <li>{@code grpc.client.duration} — {@link Timer} histogram, измеряет время от {@code start()}
- *       до {@code onClose()}. Теги: {@code service}, {@code method}, {@code status} (OK,
+ *       до {@code onClose()}. Теги: {@code grpc_service}, {@code method}, {@code status} (OK,
  *       UNAVAILABLE, ...).
  *   <li>{@code grpc.client.requests_total} — counter через Timer.count(), разбит по {@code status}
  *       для error-rate в Grafana.
@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class GrpcClientMetricsInterceptor implements ClientInterceptor {
 
+    // Keep the downstream identity distinct from the scrape target service label.
     private static final String TIMER_NAME = "grpc.client.duration";
 
     private final MeterRegistry meterRegistry;
@@ -107,7 +108,7 @@ public class GrpcClientMetricsInterceptor implements ClientInterceptor {
                 k ->
                         Timer.builder(TIMER_NAME)
                                 .description("gRPC client call duration")
-                                .tag("service", serviceName)
+                                .tag("grpc_service", serviceName)
                                 .tag("method", methodName)
                                 .tag("status", statusCode)
                                 .register(meterRegistry));

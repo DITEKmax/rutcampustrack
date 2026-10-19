@@ -76,6 +76,29 @@ class AttendanceOwnBotReadGrpcServiceTest {
     }
 
     @Test
+    void movedUsesScheduleSlotProvenanceRatherThanRoomRevisionOrRestoredGeneration() {
+        valid();
+        when(records.findByLessonId(101L)).thenReturn(List.of());
+        for (boolean moved : List.of(false, true)) {
+            for (String state : List.of("", "COMPLETED", "ERROR")) {
+                when(dependencies.lesson(101))
+                        .thenReturn(
+                                lesson().toBuilder()
+                                        .setRoom("B-205")
+                                        .setRevision(8)
+                                        .setGeneration(3)
+                                        .setTransferOperationId(state.isEmpty() ? "" : "operation")
+                                        .setTransferState(state)
+                                        .setMoved(moved)
+                                        .build());
+                var result = read(true, 101);
+                assertThat(result.error).isNull();
+                assertThat(result.values.getFirst().getLesson().getMoved()).isEqualTo(moved);
+            }
+        }
+    }
+
+    @Test
     void missingServiceCallerAndInvalidPrivateChatReadNothing() {
         assertStatus(read(false, 101), Status.Code.UNAUTHENTICATED);
         Result result = new Result();

@@ -62,6 +62,8 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     @MockitoBean private AcademicGrpcClient academic;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private LessonTransferWriter transferWriter;
+    @Autowired private LessonRoomWriter roomWriter;
+    @Autowired private ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl grpc;
     @Autowired private EventConsumer eventConsumer;
     @Autowired private ObjectMapper objectMapper;
 
@@ -144,6 +146,8 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                         Long.class,
                         fixture.occurrenceId());
         assertThat(target).isNotEqualTo(fixture.sourceLessonId());
+        assertThat(grpcLesson(fixture.sourceLessonId()).getMoved()).isFalse();
+        assertMovedProjection(target, false);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT start_time FROM lessons WHERE id = ?",
@@ -181,6 +185,41 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                         ((Map<?, ?>) payload(eventEnvelope(updated.getFirst())).get("target"))
                                 .get("room"))
                 .isEqualTo("B-205");
+        // The room-only generation is not a move. A later real slot change is,
+        // including after its target's room/revision changes again in place.
+        var moved =
+                transferWriter.transfer(
+                        target,
+                        fixture.actorId(),
+                        new TransferLessonRequest(
+                                fixture.targetDate(), 3, null, null, null, "2", UUID.randomUUID()));
+        long movedTarget = Long.parseLong(moved.targetLessonId());
+        assertThat(grpcLesson(fixture.sourceLessonId()).getMoved()).isFalse();
+        assertThat(grpcLesson(target).getMoved()).isTrue();
+        assertMovedProjection(movedTarget, true);
+        var movedBatch =
+                objectMapper.readValue(
+                        jdbcTemplate.queryForObject(
+                                "SELECT payload::text FROM lesson_transfer_binding_batches WHERE"
+                                        + " operation_id = ? AND batch_index = 0",
+                                String.class,
+                                UUID.fromString(moved.operationId())),
+                        new TypeReference<Map<String, Object>>() {});
+        ack(movedBatch, "attendance-service", "ATTENDANCE", -1, "APPLIED");
+        ack(movedBatch, "academic-service", "ACADEMIC", 0, "APPLIED");
+        assertMovedProjection(movedTarget, true);
+        var preparedRoom = archiveFence.prepareBusinessWrite(fixture.semesterId());
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                .execute(
+                        status ->
+                                roomWriter.change(
+                                        movedTarget,
+                                        fixture.actorId(),
+                                        UUID.randomUUID(),
+                                        new ru.rutcampustrack.schedule.contract.dto.lesson
+                                                .ChangeLessonRoomRequest("C-306", "3"),
+                                        preparedRoom));
+        assertMovedProjection(movedTarget, true);
     }
 
     @Test
@@ -223,6 +262,29 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                                 Long.class,
                                 fixture.occurrenceId()))
                 .isEqualTo(1L);
+        long target = Long.parseLong(accepted.targetLessonId());
+        assertMovedProjection(target, true);
+        String hash =
+                jdbcTemplate.queryForObject(
+                        "SELECT encode(operation_hash, 'hex') FROM lesson_transfer_operations WHERE"
+                                + " operation_id = ?",
+                        String.class,
+                        UUID.fromString(accepted.operationId()));
+        transferWriter.acknowledge(
+                accepted.operationId(),
+                "ATTENDANCE",
+                -1,
+                "ERROR",
+                "TARGET_DATA_CONFLICT",
+                hash,
+                fixture.sourceLessonId(),
+                target,
+                false);
+        assertThat(transferWriter.status(UUID.fromString(accepted.operationId())).state())
+                .isEqualTo("ERROR");
+        // ERROR records failed downstream acknowledgement after the slot commit;
+        // it does not roll back the accepted physical move.
+        assertMovedProjection(target, true);
     }
 
     @Test
@@ -550,6 +612,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                                 Long.class,
                                 fixture.occurrenceId()))
                 .isZero();
+        assertMovedProjection(fixture.sourceLessonId(), false);
         jdbcTemplate.update(
                 """
                 INSERT INTO lesson_homework_bindings
@@ -1306,6 +1369,61 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", group)
                 .header("X-Is-Headman", "true");
+    }
+
+    private ru.rutcampustrack.schedule.grpc.LessonResponse grpcLesson(long lesson) {
+        var observer =
+                new io.grpc.stub.StreamObserver<ru.rutcampustrack.schedule.grpc.LessonResponse>() {
+                    ru.rutcampustrack.schedule.grpc.LessonResponse value;
+
+                    public void onNext(ru.rutcampustrack.schedule.grpc.LessonResponse response) {
+                        value = response;
+                    }
+
+                    public void onError(Throwable error) {
+                        throw new AssertionError(error);
+                    }
+
+                    public void onCompleted() {}
+                };
+        grpc.getLessonById(
+                ru.rutcampustrack.schedule.grpc.LessonByIdRequest.newBuilder()
+                        .setLessonId(lesson)
+                        .build(),
+                observer);
+        assertThat(observer.value).isNotNull();
+        return observer.value;
+    }
+
+    private void assertMovedProjection(long lesson, boolean moved) {
+        assertThat(grpcLesson(lesson).getMoved()).isEqualTo(moved);
+        var observer =
+                new io.grpc.stub.StreamObserver<ru.rutcampustrack.schedule.grpc.LessonsResponse>() {
+                    ru.rutcampustrack.schedule.grpc.LessonsResponse value;
+
+                    public void onNext(ru.rutcampustrack.schedule.grpc.LessonsResponse response) {
+                        value = response;
+                    }
+
+                    public void onError(Throwable error) {
+                        throw new AssertionError(error);
+                    }
+
+                    public void onCompleted() {}
+                };
+        grpc.getLessonsByGroup(
+                ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest.newBuilder()
+                        .setGroupId(fixture.groupId())
+                        .setSemesterId(fixture.semesterId())
+                        .setDateFrom(fixture.sourceDate().toString())
+                        .setDateTo(fixture.targetDate().toString())
+                        .build(),
+                observer);
+        assertThat(observer.value).isNotNull();
+        assertThat(observer.value.getLessonsList())
+                .filteredOn(value -> value.getId() == lesson)
+                .singleElement()
+                .satisfies(value -> assertThat(value.getMoved()).isEqualTo(moved));
     }
 
     private void ack(

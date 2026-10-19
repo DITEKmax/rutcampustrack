@@ -8,16 +8,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+
 import ru.rutcampustrack.academic.grpc.SubjectInfo;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
@@ -36,6 +32,12 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 /** The server filters a selected journal period and types before pagination. */
 @ExtendWith(MockitoExtension.class)
@@ -227,13 +229,28 @@ class TeacherReadFacadeTest {
                                 .addLessons(teacherMismatch)
                                 .addLessons(contextMismatch)
                                 .addLessons(ownLesson)
+                                .addLessons(
+                                        lesson(107L, "2026-09-10", 2, "10:40:00").toBuilder()
+                                                .setRoom("B-205")
+                                                .setRevision(8))
+                                .addLessons(
+                                        lesson(108L, "2026-09-10", 3, "12:20:00").toBuilder()
+                                                .setGeneration(3))
+                                .addLessons(
+                                        lesson(109L, "2026-09-10", 4, "14:00:00").toBuilder()
+                                                .setMoved(true))
                                 .build());
 
         TeacherReadFacade facade =
                 new TeacherReadFacade(requestContext, academic, schedule, attendance);
         var result = facade.day(9L, LocalDate.of(2026, 9, 10));
 
-        assertThat(result.lessons()).extracting(lesson -> lesson.id()).containsExactly("101");
+        assertThat(result.lessons())
+                .extracting(lesson -> lesson.id())
+                .containsExactly("101", "107", "108", "109");
+        assertThat(result.lessons())
+                .extracting(lesson -> lesson.moved())
+                .containsExactly(false, false, false, true);
     }
 
     @Test

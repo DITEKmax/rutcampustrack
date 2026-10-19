@@ -78,7 +78,27 @@ public class ScheduleSubjectDeletionParticipant {
         }
         if (command.getAction() == SubjectDeletionAction.RELEASE) {
             if (epoch != null && "COMMITTING".equals(epoch.state())) throw conflict();
-            if (epoch != null)
+            if (epoch == null)
+                // The same semester/subject locks serialize this tombstone with PREPARE. Keep
+                // the full command tuple even though no domain rows were ever fenced.
+                jdbc.update(
+                        """
+INSERT INTO schedule_subject_deletion_participants(operation_id,subject_id,semester_id,group_id,actor_id,
+    participant_digest,manifest,command_manifest,manifest_digest,state)
+VALUES (?,?,?,?,?,?,'[]'::JSONB,?,?,'RELEASED')
+""",
+                        UUID.fromString(command.getOperationId()),
+                        command.getSubjectId(),
+                        command.getSemesterId(),
+                        command.getGroupId(),
+                        command.getActorId(),
+                        command.getParticipantDigest(),
+                        command.toBuilder()
+                                .setAction(SubjectDeletionAction.PREPARE)
+                                .build()
+                                .toByteArray(),
+                        command.getManifestDigest());
+            else
                 jdbc.update(
                         "UPDATE schedule_subject_deletion_participants SET"
                                 + " state='RELEASED',updated_at=NOW() WHERE operation_id=?",

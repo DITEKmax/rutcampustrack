@@ -8,15 +8,17 @@ services:
     environment:
       TZ: Europe/Moscow
       POSTGRES_DB: academic_db
-      POSTGRES_USER: rct_user
+      POSTGRES_USER: rct_bootstrap
       POSTGRES_PASSWORD: ${POSTGRES_RECOVERY_ADMIN_PASSWORD:?required}
       POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
       POSTGRES_AUTH_PASSWORD: ${POSTGRES_AUTH_PASSWORD:?required}
-      POSTGRES_ACADEMIC_MIGRATION_PASSWORD: ${POSTGRES_ACADEMIC_MIGRATION_PASSWORD:?required}
+      POSTGRES_RUNTIME_PASSWORD: ${POSTGRES_ACADEMIC_LEGACY_RUNTIME_PASSWORD:?required}
+      POSTGRES_ACADEMIC_RUNTIME_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_ACADEMIC_MIGRATION_PASSWORD:?required}
+      POSTGRES_MONITOR_PASSWORD: ${POSTGRES_ACADEMIC_MONITOR_PASSWORD:?required}
       POSTGRES_AUTH_MIGRATION_PASSWORD: ${POSTGRES_AUTH_MIGRATION_PASSWORD:?required}
-    configs:
-      - source: recovery-academic-init
-        target: /docker-entrypoint-initdb.d/10-recovery-owners.sql
+    volumes:
+      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
     tmpfs:
       - /var/lib/postgresql/data
     mem_limit: 256m
@@ -39,8 +41,13 @@ services:
     environment:
       TZ: Europe/Moscow
       POSTGRES_DB: schedule_db
-      POSTGRES_USER: rct_user
-      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}
+      POSTGRES_USER: rct_bootstrap
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD:?required}
+      POSTGRES_RUNTIME_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}
+      POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_SCHEDULE_MIGRATION_PASSWORD:?required}
+      POSTGRES_MONITOR_PASSWORD: ${POSTGRES_SCHEDULE_MONITOR_PASSWORD:?required}
+    volumes:
+      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
     tmpfs:
       - /var/lib/postgresql/data
     mem_limit: 256m
@@ -89,38 +96,3 @@ networks:
   default:
     labels:
       io.rutcampustrack.recovery: disposable
-
-# Disposable bootstrap only; no production mounts or role changes are invoked.
-configs:
-  recovery-academic-init:
-    content: |
-      \getenv academic_password POSTGRES_ACADEMIC_PASSWORD
-      \getenv auth_password POSTGRES_AUTH_PASSWORD
-      \getenv academic_migration_password POSTGRES_ACADEMIC_MIGRATION_PASSWORD
-      \getenv auth_migration_password POSTGRES_AUTH_MIGRATION_PASSWORD
-      CREATE ROLE rct_migrator LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
-      CREATE ROLE rct_auth_migrator LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
-      CREATE ROLE rct_academic_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
-      CREATE ROLE rct_auth_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
-      SELECT format('ALTER ROLE rct_migrator PASSWORD %L', :'academic_migration_password') \gexec
-      SELECT format('ALTER ROLE rct_auth_migrator PASSWORD %L', :'auth_migration_password') \gexec
-      SELECT format('ALTER ROLE rct_academic_runtime PASSWORD %L', :'academic_password') \gexec
-      SELECT format('ALTER ROLE rct_auth_runtime PASSWORD %L', :'auth_password') \gexec
-      ALTER DATABASE academic_db OWNER TO rct_migrator;
-      REVOKE ALL ON DATABASE academic_db FROM PUBLIC;
-      GRANT CONNECT ON DATABASE academic_db TO rct_academic_runtime;
-      REVOKE ALL ON SCHEMA public FROM PUBLIC;
-      ALTER SCHEMA public OWNER TO rct_migrator;
-      GRANT USAGE ON SCHEMA public TO rct_academic_runtime;
-      ALTER DEFAULT PRIVILEGES FOR ROLE rct_migrator IN SCHEMA public GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO rct_academic_runtime;
-      ALTER DEFAULT PRIVILEGES FOR ROLE rct_migrator IN SCHEMA public GRANT USAGE,SELECT ON SEQUENCES TO rct_academic_runtime;
-      CREATE DATABASE auth_db OWNER rct_auth_migrator;
-      REVOKE ALL ON DATABASE auth_db FROM PUBLIC;
-      GRANT CONNECT ON DATABASE auth_db TO rct_auth_runtime;
-      REVOKE CONNECT ON DATABASE postgres,template1 FROM PUBLIC;
-      \connect auth_db
-      REVOKE ALL ON SCHEMA public FROM PUBLIC;
-      ALTER SCHEMA public OWNER TO rct_auth_migrator;
-      GRANT USAGE ON SCHEMA public TO rct_auth_runtime;
-      ALTER DEFAULT PRIVILEGES FOR ROLE rct_auth_migrator IN SCHEMA public GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO rct_auth_runtime;
-      ALTER DEFAULT PRIVILEGES FOR ROLE rct_auth_migrator IN SCHEMA public GRANT USAGE,SELECT ON SEQUENCES TO rct_auth_runtime;

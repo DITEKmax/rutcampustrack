@@ -88,22 +88,28 @@ def credentials(path):
             values[match[1]] = value
     for key in (
         "POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
-        "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD",
+        "POSTGRES_SCHEDULE_MIGRATION_PASSWORD", "MONGO_ROOT_PASSWORD",
+        "POSTGRES_SCHEDULE_RECOVERY_ADMIN_USER", "POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD",
         "POSTGRES_RECOVERY_ADMIN_USER", "POSTGRES_RECOVERY_ADMIN_PASSWORD",
     ):
         if not values.get(key):
             raise RecoveryError(f"Missing credential: {key}", "INPUT_CREDENTIAL")
-    require(values["POSTGRES_RECOVERY_ADMIN_USER"] in ("rct_user", "rct_bootstrap"),
-            "Unsupported recovery admin identity")
+    for key in ("POSTGRES_RECOVERY_ADMIN_USER", "POSTGRES_SCHEDULE_RECOVERY_ADMIN_USER"):
+        require(values[key] in ("rct_user", "rct_bootstrap"), "Unsupported recovery admin identity")
+    # Production uses rct_migrator. The existing isolated application E2E stack
+    # may explicitly select its pre-existing sandbox owner; never create it here.
+    require(values.get("POSTGRES_SCHEDULE_RECOVERY_USER", "rct_migrator") in ("rct_migrator", "rct_user"),
+            "Unsupported recovery database identity")
     return values
 
 
-def pg_targets(args):
+def pg_targets(args, secret):
     # Auth and Academic share a process, never a database or owner credential.
     return (
         ("academic", args.academic_container, "academic_db", "POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "rct_migrator"),
         ("auth", args.academic_container, "auth_db", "POSTGRES_AUTH_MIGRATION_PASSWORD", "rct_auth_migrator"),
-        ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "rct_user"),
+        ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_MIGRATION_PASSWORD",
+         secret.get("POSTGRES_SCHEDULE_RECOVERY_USER", "rct_migrator")),
     )
 
 
@@ -125,7 +131,7 @@ def pg_query(container, password, db, sql, *, user="rct_user", stream_sql=False)
     )
 
 
-def pg_schema(container, password, db, *, user="rct_user"):
+def pg_schema(container, password, db, *, user):
     # DDL-only native scratch comparison changes object owner. Access is compared separately
     # against the original named owners/ACLs; real archive/restore never discards privileges.
     schema = run(
@@ -209,7 +215,7 @@ def validate_access(value):
             "PostgreSQL access inventory must include its database")
 
 
-def canonical_reference_schema(container, password, db, schema, *, user="rct_user"):
+def canonical_reference_schema(container, password, db, schema, *, user):
     # PostgreSQL reparses dump expressions (casts/AND grouping). Compare its own
     # deparsed reference, never discard constraints/indexes or normalize SQL text.
     require(user in ("rct_user", "rct_bootstrap"), "Unsupported recovery admin identity")
@@ -264,7 +270,7 @@ def canonical_reference_schema(container, password, db, schema, *, user="rct_use
 
 def compare_restored_inventory(args, secret, expected):
     actual = inventory(args, secret)
-    for label, container, db, key, user in pg_targets(args):
+    for label, container, db, key, user in pg_targets(args, secret):
         try:
             require(
                 {k: v for k, v in expected[label].items() if k != "schema"}
@@ -319,9 +325,11 @@ def compare_restored_inventory(args, secret, expected):
         require(
             canonical_reference_schema(
                 container,
-                secret[key] if label == "schedule" else secret["POSTGRES_RECOVERY_ADMIN_PASSWORD"],
+                secret["POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD" if label == "schedule"
+                       else "POSTGRES_RECOVERY_ADMIN_PASSWORD"],
                 db, expected[label]["schema"],
-                user="rct_user" if label == "schedule" else secret["POSTGRES_RECOVERY_ADMIN_USER"],
+                user=secret["POSTGRES_SCHEDULE_RECOVERY_ADMIN_USER" if label == "schedule"
+                            else "POSTGRES_RECOVERY_ADMIN_USER"],
             )
             == actual[label]["schema"],
             f"Restored {label} schema differs from PostgreSQL reference; keep target isolated",
@@ -379,7 +387,7 @@ def file_mode(args):
 
 def inventory(args, secret):
     result = {}
-    for label, container, db, key, user in pg_targets(args):
+    for label, container, db, key, user in pg_targets(args, secret):
         password = secret[key]
         tables = json.loads(
             pg_query(
@@ -548,7 +556,7 @@ def backup(args):
     before = inventory(args, secret)
     args.output.mkdir(parents=True, exist_ok=False, mode=0o700)
     # No success manifest on failure; partial artifacts are retained for diagnosis.
-    for label, container, db, key, user in pg_targets(args):
+    for label, container, db, key, user in pg_targets(args, secret):
         name = label + ".dump"
         with (args.output / name).open("xb") as output:
             run(
@@ -602,7 +610,7 @@ def restore(args):
         return
     secret = credentials(args.env_file)
     check_targets(args, restore=True)
-    for label, container, db, key, user in pg_targets(args):
+    for label, container, db, key, user in pg_targets(args, secret):
         count = pg_query(
             container,
             secret[key],
@@ -620,7 +628,7 @@ def restore(args):
     # pg_dump object ACLs are relative to built-in defaults, not target role defaults.
     # Per-schema defaults are additive: empty only this owner's existing bootstrap
     # table/sequence slots before CREATE; the archive restores source DEFAULT ACLs later.
-    for label, container, db, key, user in pg_targets(args):
+    for label, container, db, key, user in pg_targets(args, secret):
         # The database owner can differ from the migration/schema owner. Require
         # the exact source database identity without widening default-ACL scope.
         access_hex = json.dumps(expected[label]["access"]["objects"], ensure_ascii=True).encode("utf-8").hex()
@@ -671,7 +679,7 @@ BEGIN
 END;
 $rct_recovery_defaults$;
 """, user=user, stream_sql=True)
-    for label, container, db, key, user in pg_targets(args):
+    for label, container, db, key, user in pg_targets(args, secret):
         name = label + ".dump"
         with (args.bundle / name).open("rb") as source:
             run(

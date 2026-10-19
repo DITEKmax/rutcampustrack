@@ -106,6 +106,12 @@ async def cmd_start(
     if not await _private_only(message):
         return
     telegram_id = private_sender(message)
+    keyboard_pending = keyboard_sync is None
+    if keyboard_sync is not None:
+        # Keep failures discoverable by the bounded startup recovery, including
+        # first-time users and users whose old role signature is still current.
+        await keyboard_sync.register_user(telegram_id)
+        keyboard_pending = await keyboard_sync.invalidate_user_keyboard(telegram_id)
     keyboard = main_keyboard()
     try:
         if bot_menu_client is None:
@@ -117,7 +123,7 @@ async def cmd_start(
                 "⚠️ <b>Аккаунт не найден</b>\n\n"
                 "Ваш Telegram пока не привязан к системе.\n\n"
                 "Обратитесь к старосте вашей группы, чтобы он привязал ваш аккаунт.",
-                reply_markup=keyboard,
+                reply_markup=keyboard if keyboard_pending else None,
                 parse_mode="HTML",
             )
             return
@@ -126,7 +132,6 @@ async def cmd_start(
         scope = await _require_profile_scope(bot_menu_client, telegram_id, response)
         options = scope.keyboard_options
         keyboard = main_keyboard(**options)
-        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**options))
         display_name = html.escape(str(response.display_name or ""))
         if credential_cards is not None and await credential_cards.deliver(
             message,
@@ -135,6 +140,7 @@ async def cmd_start(
             footer=f"\n\n{_WHERE_TO_MARK_BLOCK}\n\n{_INSTALL_BLOCK}",
             reply_markup=keyboard,
         ):
+            await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**options))
             return
         response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
         keyboard = main_keyboard(**scope.keyboard_options)
@@ -151,13 +157,16 @@ async def cmd_start(
             reply_markup=keyboard,
             parse_mode="HTML",
         )
+        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**scope.keyboard_options))
 
     except Exception:
         # D-14: service unavailability
         logger.warning("Own Auth profile unavailable for /start")
         await message.answer(
             "⚠️ <b>Сервис временно недоступен</b>\n\nПопробуйте ещё раз чуть позже.",
-            reply_markup=main_keyboard(),
+            # Redis may still hold the signature of the previous role keyboard.
+            # Preserve that keyboard until its pending state is durably recorded.
+            reply_markup=main_keyboard() if keyboard_pending else None,
             parse_mode="HTML",
         )
 

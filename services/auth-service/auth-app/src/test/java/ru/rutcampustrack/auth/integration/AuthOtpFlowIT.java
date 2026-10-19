@@ -1305,6 +1305,156 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 .containsOnly("no-store");
     }
 
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void fullAdminRecoveryOfActiveAdminBindsAuthorityAndRetainsTicketLifecycle() throws Exception {
+        String login = "admin-reset-" + UUID.randomUUID().toString().substring(0, 16);
+        long target = seedUnicodePasswordActor(login, 810000000011L);
+        try {
+            activateOnlyAdminGrant(target);
+            TokenResponse old = loginUser(login, "password");
+            TokenResponse full = loginAdmin();
+            List<Map<String, Object>> roles =
+                    jdbc.queryForList(
+                            "SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id", target);
+
+            ResponseEntity<JsonNode> decoy = requestOwnedReset(Map.of("login", login));
+            String challenge = decoy.getBody().path("challengeId").asText();
+            assertThat(verifyOwnedReset(challenge, ownedResetCode(challenge)).getStatusCode())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
+            List<Object> beforeIssue = unicodePasswordState(target);
+            assertThat(
+                            issueAdminRecovery(loginStudent("password").accessToken(), target)
+                                    .getStatusCode())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+            assertThat(unicodePasswordState(target)).isEqualTo(beforeIssue);
+
+            ResponseEntity<JsonNode> issued = issueAdminRecovery(full.accessToken(), target);
+            assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(hasNoStoreDirective(issued.getHeaders().getCacheControl())).isTrue();
+            String ticket = recoveryTicket(issued.getBody().path("url").asText());
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT token_hash FROM password_reset_tokens WHERE user_id=?"
+                                        + " AND used_at IS NULL",
+                                    String.class,
+                                    target))
+                    .isEqualTo("admin:" + resetChallengeHash(ticket));
+            List<Object> beforeForgery = unicodePasswordState(target);
+            for (String forged :
+                    List.of(
+                            "admin:" + ticket,
+                            resetChallengeHash(ticket),
+                            UUID.randomUUID().toString())) {
+                assertThat(completeOwnedReset(forged).getStatusCode()).isEqualTo(HttpStatus.GONE);
+                assertThat(unicodePasswordState(target)).isEqualTo(beforeForgery);
+            }
+            // A supplied persisted marker plus hash also exceeds the public DTO's 64-char limit.
+            assertThat(completeOwnedReset("admin:" + resetChallengeHash(ticket)).getStatusCode())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(unicodePasswordState(target)).isEqualTo(beforeForgery);
+
+            ResponseEntity<JsonNode> replacement = issueAdminRecovery(full.accessToken(), target);
+            assertThat(replacement.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(completeOwnedReset(ticket).getStatusCode()).isEqualTo(HttpStatus.GONE);
+            String expired = recoveryTicket(replacement.getBody().path("url").asText());
+            jdbc.update(
+                    "UPDATE password_reset_tokens SET expires_at=NOW()-INTERVAL '1 second' WHERE"
+                        + " user_id=? AND used_at IS NULL",
+                    target);
+            List<Object> beforeExpiry = unicodePasswordState(target);
+            assertThat(completeOwnedReset(expired).getStatusCode()).isEqualTo(HttpStatus.GONE);
+            assertThat(unicodePasswordState(target)).isEqualTo(beforeExpiry);
+
+            ResponseEntity<JsonNode> fresh = issueAdminRecovery(full.accessToken(), target);
+            assertThat(fresh.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            String freshTicket = recoveryTicket(fresh.getBody().path("url").asText());
+            assertThat(bearerSessionStatus(old.accessToken())).isEqualTo(HttpStatus.OK);
+            assertThat(completeOwnedReset(freshTicket).getStatusCode())
+                    .isEqualTo(HttpStatus.NO_CONTENT);
+            assertUnicodePasswordCommitted(target, "AdminBoundaryReset42!", "password");
+            assertThat(bearerSessionStatus(old.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refreshStatus(old.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(
+                            jdbc.queryForList(
+                                    "SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",
+                                    target))
+                    .isEqualTo(roles);
+            List<Object> afterComplete = unicodePasswordState(target);
+            assertThat(completeOwnedReset(freshTicket).getStatusCode()).isEqualTo(HttpStatus.GONE);
+            assertThat(unicodePasswordState(target)).isEqualTo(afterComplete);
+            assertThat(loginUser(login, "AdminBoundaryReset42!").accessToken()).isNotBlank();
+        } finally {
+            cleanUnicodePasswordActors(target);
+        }
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void limitedAdminCannotIssueForAdminOrUpgradeOrdinaryRecoveryAfterPromotion() throws Exception {
+        String suffix = UUID.randomUUID().toString().substring(0, 16);
+        String actorLogin = "limited-reset-" + suffix;
+        long actor = seedUnicodePasswordActor(actorLogin, null);
+        Long target = null;
+        try {
+            activateOnlyAdminGrant(actor);
+            new TransactionTemplate(transactionManager)
+                    .executeWithoutResult(
+                            status -> {
+                                UUID operation = AuthDatabaseFixture.fence(jdbc, actor);
+                                jdbc.update(
+                                        "UPDATE admin_access_profiles SET mode='LIMITED',"
+                                            + " permissions=ARRAY['USER_CREDENTIALS_MANAGE'],"
+                                            + " version=version+1 WHERE user_id=?",
+                                        actor);
+                                AuthDatabaseFixture.unfence(jdbc, operation, actor);
+                            });
+            TokenResponse limited = selectAdminRole(loginUser(actorLogin, "password"));
+            String targetLogin = "promoted-reset-" + suffix;
+            target = seedUnicodePasswordActor(targetLogin, null);
+            ResponseEntity<JsonNode> issued = issueAdminRecovery(limited.accessToken(), target);
+            assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            String ordinaryTicket = recoveryTicket(issued.getBody().path("url").asText());
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT token_hash FROM password_reset_tokens WHERE user_id=?"
+                                        + " AND used_at IS NULL",
+                                    String.class,
+                                    target))
+                    .isEqualTo(resetChallengeHash(ordinaryTicket));
+            activateOnlyAdminGrant(target);
+            List<Object> before = unicodePasswordState(target);
+            assertThat(issueAdminRecovery(limited.accessToken(), target).getStatusCode())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+            for (String forged : List.of(ordinaryTicket, "admin:" + ordinaryTicket)) {
+                assertThat(completeOwnedReset(forged).getStatusCode()).isEqualTo(HttpStatus.GONE);
+                assertThat(unicodePasswordState(target)).isEqualTo(before);
+            }
+            assertThat(
+                            restTemplate
+                                    .postForEntity(
+                                            "/auth/password-reset/complete",
+                                            Map.of(
+                                                    "resetTicket",
+                                                    ordinaryTicket,
+                                                    "newPassword",
+                                                    "AdminBoundaryReset42!",
+                                                    "administrative",
+                                                    true,
+                                                    "origin",
+                                                    "admin",
+                                                    "full",
+                                                    true),
+                                            JsonNode.class)
+                                    .getStatusCode())
+                    .isEqualTo(HttpStatus.GONE);
+            assertThat(unicodePasswordState(target)).isEqualTo(before);
+        } finally {
+            cleanUnicodePasswordActors(actor, target);
+        }
+    }
+
     private ResponseEntity<JsonNode> issueAdminRecovery(String token, long id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
@@ -1612,7 +1762,10 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     }
 
     private TokenResponse loginAdmin() {
-        TokenResponse bootstrap = loginUser("admin", "password");
+        return selectAdminRole(loginUser("admin", "password"));
+    }
+
+    private TokenResponse selectAdminRole(TokenResponse bootstrap) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(bootstrap.accessToken());
         ResponseEntity<JsonNode> selected =

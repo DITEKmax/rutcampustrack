@@ -700,6 +700,90 @@ class SubjectDeletionHttpIT {
     }
 
     @Test
+    void expiredUnacknowledgedPrepareCancelsOnlyAfterBothReleaseReceiptsAndUnblocksLocalFences()
+            throws Exception {
+        var preview = body(signed(get(path() + "/deletion-preview")), 200);
+        var loseFirstRelease = new AtomicBoolean(true);
+        List<SubjectDeletionCommand> releases = new ArrayList<>();
+        doAnswer(
+                        call -> {
+                            SubjectDeletionCommand c = call.getArgument(0);
+                            if (c.getAction() == SubjectDeletionAction.PREPARE)
+                                throw new IllegalStateException(
+                                        "Owned PREPARE response unavailable");
+                            if (c.getAction() == SubjectDeletionAction.RELEASE) {
+                                releases.add(c);
+                                if (loseFirstRelease.getAndSet(false))
+                                    throw new IllegalStateException("Owned RELEASE response lost");
+                            }
+                            return receipt(c, true);
+                        })
+                .when(participants)
+                .schedule(any());
+        UUID operation = UUID.randomUUID();
+        assertThat(
+                        body(
+                                        confirm(
+                                                UUID.randomUUID(),
+                                                new ConfirmRequest(
+                                                        operation,
+                                                        preview.path("previewDigest").asText(),
+                                                        "S".repeat(32),
+                                                        "123456")),
+                                        202)
+                                .path("phase")
+                                .asText())
+                .isEqualTo("PREPARING");
+        jdbc.update(
+                "UPDATE subject_deletion_operations SET created_at=NOW()-INTERVAL '301 seconds'"
+                    + " WHERE operation_id=?",
+                operation);
+        clearInvocations(participants);
+        coordinator.advance(operation);
+        assertThat(
+                        jdbc.queryForMap(
+                                "SELECT phase,schedule_state,attendance_state FROM"
+                                    + " subject_deletion_operations WHERE operation_id=?",
+                                operation))
+                .containsEntry("phase", "RELEASING")
+                .containsEntry("schedule_state", "PENDING")
+                .containsEntry("attendance_state", "RELEASED");
+        assertThatThrownBy(
+                        () ->
+                                jdbc.update(
+                                        "UPDATE subjects SET name='Still fenced' WHERE id=?",
+                                        subject))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
+        assertThatThrownBy(() -> semesterService.beginArchiveTransition(1L))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        coordinator.advance(operation);
+        coordinator.advance(operation); // Terminal recovery must not re-prepare either participant.
+        assertThat(
+                        jdbc.queryForMap(
+                                "SELECT phase,schedule_state,attendance_state FROM"
+                                    + " subject_deletion_operations WHERE operation_id=?",
+                                operation))
+                .containsEntry("phase", "CANCELLED")
+                .containsEntry("schedule_state", "RELEASED")
+                .containsEntry("attendance_state", "RELEASED");
+        assertThat(releases).hasSize(2);
+        assertThat(releases.get(1)).isEqualTo(releases.getFirst());
+        verify(participants, never())
+                .schedule(argThat(c -> c.getAction() != SubjectDeletionAction.RELEASE));
+        verify(participants, never())
+                .attendance(argThat(c -> c.getAction() != SubjectDeletionAction.RELEASE));
+        assertThat(scheduleCommits.get()).isZero();
+        assertThat(attendanceCommits.get()).isZero();
+        assertThat(jdbc.update("UPDATE subjects SET name='Writable again' WHERE id=?", subject))
+                .isEqualTo(1);
+        assertThat(count("SELECT count(*) FROM homeworks WHERE subject_id=?", subject))
+                .isEqualTo(1);
+        assertThat(count("SELECT count(*) FROM academic_outbox WHERE event_type='subject.deleted'"))
+                .isZero();
+        semesterService.beginArchiveTransition(1L);
+    }
+
+    @Test
     void localOutboxRefusalRetainsCommittedRemoteReceiptsAndRollsBackLocalCascade()
             throws Exception {
         var preview = body(signed(get(path() + "/deletion-preview")), 200);

@@ -336,7 +336,7 @@ def database_snapshot(args, op, secret):
     ids = ",".join(str(v) for v in [op["source_lesson_id"], op["target_lesson_id"], *args.history_lesson_ids])
     occurrence_id = int(op["occurrence_id"])
 
-    targets = {label: (container, db, key, user) for label, container, db, key, user in r.pg_targets(args)}
+    targets = {label: (container, db, key, user) for label, container, db, key, user in r.pg_targets(args, secret)}
 
     def pg(store, name, where):
         container, db, key, user = targets[store]

@@ -468,6 +468,17 @@ SELECT EXISTS(SELECT 1 FROM academic_role_eligibility WHERE user_id=? AND role='
         UUID id = uuid(expected.id());
         var current = load(id, true);
         if (current.phase() != AcademicIdentityCoordinator.Phase.ACCEPTED) return current;
+        // Serialize pending-fence installation with assignment admission/final activation.
+        // Match APPLY's operation -> profile order; CREATE has no local profile yet.
+        for (long userId :
+                prepared.getTargetsList().stream()
+                        .mapToLong(target -> target.getUserId())
+                        .distinct()
+                        .sorted()
+                        .toArray()) {
+            jdbc.queryForList(
+                    "SELECT id FROM academic_profiles WHERE id=? FOR UPDATE", Long.class, userId);
+        }
         for (int n = 0; n < prepared.getTargetsCount(); n++) {
             var target = prepared.getTargets(n);
             if (jdbc.update(

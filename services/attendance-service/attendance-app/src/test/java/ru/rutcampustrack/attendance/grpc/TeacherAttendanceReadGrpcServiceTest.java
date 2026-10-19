@@ -312,13 +312,19 @@ public class TeacherAttendanceReadGrpcServiceTest {
         ExcuseRepository excuses = mock(ExcuseRepository.class);
         RequestAttachmentRepository attachments = mock(RequestAttachmentRepository.class);
 
-        LessonResponse own = lesson(101L, 12L, 71L);
+        LessonResponse own =
+                lesson(101L, 12L, 71L).toBuilder()
+                        .setRoom("B-205")
+                        .setRevision(8)
+                        .setGeneration(3)
+                        .build();
         LessonResponse practice =
                 LessonResponse.newBuilder(own)
                         .setId(202L)
                         .setDate("2025-12-02")
                         .setLessonNumber(2)
                         .setLessonType("practice")
+                        .setMoved(true)
                         .build();
         LessonResponse foreignContext =
                 LessonResponse.newBuilder(own).setId(303L).setGroupId(44L).build();
@@ -375,6 +381,7 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                         lessonObserver));
 
         assertThat(lessonObserver.error).isNull();
+        assertThat(lessonObserver.value.getLesson().getMoved()).isFalse();
         assertThat(lessonObserver.value.getRosterList()).hasSize(2);
         assertThat(lessonObserver.value.getRosterList())
                 .filteredOn(entry -> entry.getStudentId() == 501L)
@@ -414,6 +421,9 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                         mixedTypesObserver));
 
         assertThat(mixedTypesObserver.error).isNull();
+        assertThat(mixedTypesObserver.value.getLessonsList())
+                .extracting(lesson -> lesson.getMoved())
+                .containsExactly(false, true);
         assertThat(mixedTypesObserver.value.getLessonsList())
                 .extracting(lesson -> lesson.getLessonId())
                 .containsExactly(101L, 202L);

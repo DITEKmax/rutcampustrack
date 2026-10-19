@@ -62,6 +62,9 @@ class DirectedBotReadGrpcServiceTest {
                 .thenReturn(
                         LessonsResponse.newBuilder()
                                 .addLessons(lesson(101))
+                                .addLessons(lesson(104).toBuilder().setRoom("B-205").setRevision(8))
+                                .addLessons(lesson(105).toBuilder().setGeneration(3))
+                                .addLessons(lesson(106).toBuilder().setMoved(true))
                                 .addLessons(lesson(102).toBuilder().setAssignedTeacherId(72))
                                 .addLessons(lesson(103).toBuilder().setGroupId(99))
                                 .build());
@@ -74,7 +77,10 @@ class DirectedBotReadGrpcServiceTest {
                             assertThat(value.getEducationalDate()).isEqualTo("2026-10-18");
                             assertThat(value.getLessonsList())
                                     .extracting(BotLessonSummary::getLessonId)
-                                    .containsExactly(101L);
+                                    .containsExactly(101L, 104L, 105L, 106L);
+                            assertThat(value.getLessonsList())
+                                    .extracting(BotLessonSummary::getMoved)
+                                    .containsExactly(false, false, false, true);
                             assertThat(value.getLessons(0).getGroupName()).isEqualTo("УИТ-311");
                         });
     }
@@ -129,7 +135,7 @@ class DirectedBotReadGrpcServiceTest {
                 .thenReturn(
                         LessonsResponse.newBuilder()
                                 .addLessons(lesson(101))
-                                .addLessons(lesson(102))
+                                .addLessons(lesson(102).toBuilder().setMoved(true))
                                 .build());
         var empty = headman(0);
         assertThat(empty.error).isNull();
@@ -142,6 +148,9 @@ class DirectedBotReadGrpcServiceTest {
         assertThat(choice.values.getFirst().getChoicesList())
                 .extracting(BotLessonSummary::getLessonId)
                 .containsExactly(101L, 102L);
+        assertThat(choice.values.getFirst().getChoicesList())
+                .extracting(BotLessonSummary::getMoved)
+                .containsExactly(false, true);
         verify(dependencies, never()).attendance(any(), anyLong());
     }
 

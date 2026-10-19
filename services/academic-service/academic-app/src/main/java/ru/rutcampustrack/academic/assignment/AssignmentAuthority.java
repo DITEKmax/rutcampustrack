@@ -8,7 +8,6 @@ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
-import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -16,8 +15,6 @@ import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectLessonTypeRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -39,8 +36,7 @@ public class AssignmentAuthority {
     private final SemesterRepository semesterRepository;
     private final SubjectRepository subjectRepository;
     private final SubjectLessonTypeRepository lessonTypeRepository;
-    private final UserRepository userRepository;
-    private final UserRoleGrantRepository grantRepository;
+    private final AssignmentTeacherEligibility teacherEligibility;
     private AssignmentClosureService closureService;
     @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
@@ -54,14 +50,12 @@ public class AssignmentAuthority {
             SemesterRepository semesterRepository,
             SubjectRepository subjectRepository,
             SubjectLessonTypeRepository lessonTypeRepository,
-            UserRepository userRepository,
-            UserRoleGrantRepository grantRepository) {
+            AssignmentTeacherEligibility teacherEligibility) {
         this.assignmentRepository = assignmentRepository;
         this.semesterRepository = semesterRepository;
         this.subjectRepository = subjectRepository;
         this.lessonTypeRepository = lessonTypeRepository;
-        this.userRepository = userRepository;
-        this.grantRepository = grantRepository;
+        this.teacherEligibility = teacherEligibility;
     }
 
     /** Locks the semester row before any assignment validation or insert. */
@@ -138,6 +132,16 @@ public class AssignmentAuthority {
                                 groupId, subjectId, request.semesterId(), request.lessonType());
             }
         }
+        // Identity operations lock all target profiles in ID order. A user-supplied batch may
+        // list them in the opposite order, so acquire the whole teacher set before any insert.
+        java.util.SortedSet<Long> teachers = new java.util.TreeSet<>();
+        for (var request : initial) {
+            if (request.teacherId() == null || request.teacherId() <= 0)
+                throw new BadRequestException(
+                        "teacherId", "ID преподавателя должен быть положительным");
+            teachers.add(request.teacherId());
+        }
+        for (Long teacher : teachers) teacherEligibility.requireEligible(teacher);
         java.util.List<Assignment> targets = new java.util.ArrayList<>();
         for (var request : initial)
             targets.add(
@@ -201,16 +205,7 @@ public class AssignmentAuthority {
             throw new BadRequestException("lessonType", "Тип занятия не разрешён для предмета");
         }
 
-        User teacher =
-                userRepository
-                        .findById(teacherId)
-                        .orElseThrow(
-                                () -> new ResourceNotFoundException("Teacher", "id", teacherId));
-        if (grantRepository
-                .findByUserIdAndRoleAndStatus(teacher.getId(), TEACHER_ROLE, ACTIVE_STATUS)
-                .isEmpty()) {
-            throw new AccessDeniedException("У преподавателя нет активного права TEACHER");
-        }
+        teacherEligibility.requireEligible(teacherId);
 
         validateDates(semester, validFrom, validUntilExclusive);
         if (independentAdmission)

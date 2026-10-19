@@ -56,6 +56,8 @@ public class AttendanceSubjectDeletionParticipant {
         Document epoch = mongo.findById(command.getOperationId(), Document.class, EPOCHS);
         if (epoch != null) {
             if (!Objects.equals(epoch.getString("identity"), identity(command))) throw conflict();
+            if (command.getAction() == SubjectDeletionAction.COMMIT
+                    || command.getAction() == SubjectDeletionAction.RELEASE) fenceIds(epoch);
             String state = epoch.getString("state");
             if ("DELETED".equals(state)) {
                 if (command.getAction() != SubjectDeletionAction.COMMIT) throw conflict();
@@ -67,7 +69,22 @@ public class AttendanceSubjectDeletionParticipant {
                 return savedReceipt(command, epoch);
         }
         if (command.getAction() == SubjectDeletionAction.RELEASE) {
-            if (epoch != null) {
+            if (epoch == null) {
+                // The unique operation _id is also PREPARE's transactional write. Whichever
+                // insert loses a race aborts; a successful RELEASE must survive late delivery.
+                epoch =
+                        new Document("_id", command.getOperationId())
+                                .append("identity", identity(command))
+                                .append("subject_id", command.getSubjectId())
+                                .append("semester_id", command.getSemesterId())
+                                .append("group_id", command.getGroupId())
+                                .append("state", "RELEASED")
+                                .append("rows", 0L)
+                                .append("mixed", 0L)
+                                .append("fence_ids", List.of())
+                                .append("digest", command.getParticipantDigest());
+                mongo.insert(epoch, EPOCHS);
+            } else {
                 for (long id : fenceIds(epoch))
                     mongo.updateFirst(
                             Query.query(
@@ -82,18 +99,7 @@ public class AttendanceSubjectDeletionParticipant {
                         new Update().set("state", "RELEASED"),
                         EPOCHS);
             }
-            return epoch == null
-                    ? SubjectDeletionReceipt.newBuilder()
-                            .setOperationId(command.getOperationId())
-                            .setSubjectId(command.getSubjectId())
-                            .setGroupId(command.getGroupId())
-                            .setSemesterId(command.getSemesterId())
-                            .setParticipantDigest(command.getParticipantDigest())
-                            .setAction(command.getAction())
-                            .setManifestDigest(command.getManifestDigest())
-                            .setActorId(command.getActorId())
-                            .build()
-                    : savedReceipt(command, epoch);
+            return savedReceipt(command, epoch);
         }
         if (epoch == null && command.getAction() != SubjectDeletionAction.PREPARE) throw conflict();
         if (epoch == null) {
@@ -412,9 +418,10 @@ public class AttendanceSubjectDeletionParticipant {
 
     private static Set<Long> fenceIds(Document epoch) {
         Object saved = epoch.get("fence_ids");
-        if (!(saved instanceof List<?> values) || values.isEmpty()) throw conflict();
+        if (!(saved instanceof List<?> values)) throw conflict();
         Set<Long> ids = new TreeSet<>();
         for (Object value : values) {
+            if (!(value instanceof Long || value instanceof Integer)) throw conflict();
             Long id = number(value);
             if (id == null || id <= 0 || !ids.add(id)) throw conflict();
         }

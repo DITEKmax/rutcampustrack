@@ -61,10 +61,17 @@ public class AdminPasswordResetService {
                     AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         try {
-            if (!sessions.issuePasswordResetTicket(
-                    userId,
-                    new CredentialSessionTransactionPort.CredentialHash(material.ticketHash()),
-                    material.response().expiresAt())) {
+            var ticketHash =
+                    new CredentialSessionTransactionPort.CredentialHash(material.ticketHash());
+            // authorize holds the target identity lock and requires FULL for active ADMINs.
+            // A ticket issued for an ordinary target must remain ordinary after later promotion.
+            boolean issued =
+                    users.hasActiveAdminGrant(userId)
+                            ? sessions.issueAdministrativePasswordResetTicket(
+                                    userId, ticketHash, material.response().expiresAt())
+                            : sessions.issuePasswordResetTicket(
+                                    userId, ticketHash, material.response().expiresAt());
+            if (!issued) {
                 throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
             }
         } catch (RuntimeException exception) {

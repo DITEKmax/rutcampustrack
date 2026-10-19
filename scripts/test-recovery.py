@@ -154,15 +154,19 @@ def exercise(args):
     r.write_json(args.work_dir / "owned-projects.json", projects)
     for project in projects:
         # Synthetic-only credentials, deliberately different source/target passwords.
-        password = project + "-disposable-only"
+        keys = (
+            "POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_AUTH_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD",
+            "POSTGRES_ACADEMIC_LEGACY_RUNTIME_PASSWORD", "POSTGRES_ACADEMIC_MIGRATION_PASSWORD",
+            "POSTGRES_AUTH_MIGRATION_PASSWORD", "POSTGRES_SCHEDULE_MIGRATION_PASSWORD",
+            "POSTGRES_ACADEMIC_MONITOR_PASSWORD", "POSTGRES_SCHEDULE_MONITOR_PASSWORD",
+            "POSTGRES_RECOVERY_ADMIN_PASSWORD", "POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD", "MONGO_ROOT_PASSWORD",
+        )
+        values = {key: project + "-" + str(index) + "-disposable-only" for index, key in enumerate(keys)}
+        values.update(POSTGRES_RECOVERY_ADMIN_USER="rct_bootstrap",
+                      POSTGRES_SCHEDULE_RECOVERY_ADMIN_USER="rct_bootstrap",
+                      RCT_RECOVERY_PG_IMAGE=args.pg_image, RCT_RECOVERY_MONGO_IMAGE=args.mongo_image)
         (args.work_dir / (project + ".env")).write_text(
-            f"POSTGRES_ACADEMIC_PASSWORD={password}\nPOSTGRES_SCHEDULE_PASSWORD={password}\n"
-            f"POSTGRES_AUTH_PASSWORD={password}\nPOSTGRES_ACADEMIC_MIGRATION_PASSWORD={password}\n"
-            f"POSTGRES_AUTH_MIGRATION_PASSWORD={password}\n"
-            f"POSTGRES_RECOVERY_ADMIN_USER=rct_user\nPOSTGRES_RECOVERY_ADMIN_PASSWORD={password}\n"
-            f"MONGO_ROOT_PASSWORD={password}\nRCT_RECOVERY_PG_IMAGE={args.pg_image}\n"
-            f"RCT_RECOVERY_MONGO_IMAGE={args.mongo_image}\n",
-            encoding="utf-8",
+            "".join(key + "=" + value + "\n" for key, value in values.items()), encoding="utf-8",
         )
     source_project, dest_project = projects
     args.failure_stage = "SOURCE_START"
@@ -170,7 +174,7 @@ def exercise(args):
     args.failure_stage = "SOURCE_IDENTIFY"
     source = target(args.work_dir, source_project)
     secret = r.credentials(source.env_file)
-    for label, container, db, key, user in r.pg_targets(source):
+    for label, container, db, key, user in r.pg_targets(source, secret):
         args.failure_stage = "SOURCE_SEED_" + label.upper()
         r.pg_query(
             container,
@@ -179,9 +183,20 @@ def exercise(args):
             "CREATE TABLE recovery_probe(id bigserial PRIMARY KEY, payload text NOT NULL); INSERT INTO recovery_probe(payload) VALUES ('Привет — recovery'),('second row'); CREATE INDEX recovery_payload_idx ON recovery_probe(payload);",
             user=user,
         )
-        if label in ("academic", "auth"):
-            runtime = "rct_academic_runtime" if label == "academic" else "rct_auth_runtime"
-            r.pg_query(container, secret[key], db, f"""
+        runtime = {"academic": "rct_academic_runtime", "auth": "rct_auth_runtime", "schedule": "rct_runtime"}[label]
+        # The fixture invokes the actual production initializer, with no rct_user.
+        roles = json.loads(r.pg_query(container, secret[key], db, """
+SELECT json_agg(json_build_object('name',rolname,'super',rolsuper,'createdb',rolcreatedb,
+ 'createrole',rolcreaterole,'bypassrls',rolbypassrls,'replication',rolreplication))
+FROM pg_roles WHERE rolname LIKE 'rct_%';
+""", user=user))
+        r.require({role["name"] for role in roles} == ({"rct_bootstrap", "rct_runtime", "rct_migrator", "rct_monitor"}
+                  | ({"rct_auth_runtime", "rct_academic_runtime", "rct_auth_migrator"} if label != "schedule" else set())),
+                  "Disposable roles differ from production principals")
+        r.require(all(not any(role[flag] for flag in ("super", "createdb", "createrole", "bypassrls", "replication"))
+                      for role in roles if role["name"] != "rct_bootstrap"),
+                  "Application roles must retain production minimum privileges")
+        r.pg_query(container, secret[key], db, f"""
 CREATE TABLE recovery_private(id integer PRIMARY KEY,payload text NOT NULL);
 INSERT INTO recovery_private VALUES(1,'synthetic-private-probe');
 REVOKE ALL ON recovery_private FROM {runtime};
@@ -243,11 +258,10 @@ ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
     r.restore(dest)
     args.failure_stage = "RESTORED_RUNTIME_ACL"
     restored_secret = r.credentials(dest.env_file)
-    for label, container, db, key, user in r.pg_targets(dest):
-        if label not in ("academic", "auth"):
-            continue
-        runtime = "rct_academic_runtime" if label == "academic" else "rct_auth_runtime"
-        password = restored_secret["POSTGRES_ACADEMIC_PASSWORD" if label == "academic" else "POSTGRES_AUTH_PASSWORD"]
+    for label, container, db, key, user in r.pg_targets(dest, restored_secret):
+        runtime = {"academic": "rct_academic_runtime", "auth": "rct_auth_runtime", "schedule": "rct_runtime"}[label]
+        password = restored_secret[{"academic": "POSTGRES_ACADEMIC_PASSWORD", "auth": "POSTGRES_AUTH_PASSWORD",
+                                    "schedule": "POSTGRES_SCHEDULE_PASSWORD"}[label]]
         r.require(r.pg_query(container, password, db, "SELECT id FROM recovery_private", user=runtime) == "1",
                   "Restored explicit column grant was lost")
         r.require(r.pg_query(container, password, db, "SELECT recovery_probe_function()", user=runtime) == "42",
@@ -256,9 +270,18 @@ ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
                        "restored runtime cannot read an ungranted column")
         expect_refusal(lambda: r.pg_query(container, password, db, "INSERT INTO recovery_private VALUES(2,'refused')", user=runtime),
                        "restored runtime cannot write a protected table")
-        other_db = "auth_db" if label == "academic" else "academic_db"
-        expect_refusal(lambda: r.pg_query(container, password, other_db, "SELECT 1", user=runtime),
-                       "restored runtime cannot connect to the other owner's database")
+        expect_refusal(lambda: r.pg_query(container, password, db, "CREATE TABLE forbidden_runtime_ddl(id integer)", user=runtime),
+                       "restored runtime cannot create schema objects")
+        monitor_password = restored_secret["POSTGRES_SCHEDULE_MONITOR_PASSWORD" if label == "schedule"
+                                           else "POSTGRES_ACADEMIC_MONITOR_PASSWORD"]
+        r.require(r.pg_query(container, monitor_password, db, "SELECT current_user", user="rct_monitor") == "rct_monitor",
+                  "Restored monitor credential/CONNECT is invalid")
+        expect_refusal(lambda: r.pg_query(container, monitor_password, db, "SELECT payload FROM recovery_private", user="rct_monitor"),
+                       "restored monitor cannot read application data")
+        if label != "schedule":
+            other_db = "auth_db" if label == "academic" else "academic_db"
+            expect_refusal(lambda: r.pg_query(container, password, other_db, "SELECT 1", user=runtime),
+                           "restored runtime cannot connect to the other owner's database")
     # Remove files guard from this refusal check so it reaches the DB freshness guard.
     args.failure_stage = "REFUSAL_NONEMPTY"
     dest.files_dir = args.work_dir / "never-created-repeat-files"
@@ -272,7 +295,7 @@ ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
             "bundle_manifest_sha256": r.digest(source.output / "manifest.json"),
             "checks": [
                 "all three PG databases: exact data/schema/sequences/owners/ACL/default privileges",
-                "restored Auth/Academic runtime explicit column/function grants and protected DML/cross-DB denial",
+                "production principals (no rct_user); all runtime column/function grants and protected DML/DDL/monitor/cross-DB denial",
                 "both Mongo documents/indexes/options",
                 "all file bytes/paths",
                 "overwrite/corruption/project/nonempty refusal",

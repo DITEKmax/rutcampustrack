@@ -575,6 +575,7 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
         assertThat(initial.getRoom()).isEqualTo("A-204");
         assertThat(initial.hasPreviousRoom()).isFalse();
         assertThat(initial.getRoomChangeState()).isEqualTo("unknown");
+        assertThat(initial.getMoved()).isFalse();
 
         UUID key = UUID.randomUUID();
         JsonNode receipt = change(lesson, key, "B-205", "1", 200);
@@ -651,6 +652,7 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
             assertThat(response.hasPreviousRoom()).isEqualTo(previous != null);
             if (previous != null) assertThat(response.getPreviousRoom()).isEqualTo(previous);
             assertThat(response.getRoomChangeState()).isEqualTo("changed");
+            assertThat(response.getMoved()).isFalse();
         }
     }
 

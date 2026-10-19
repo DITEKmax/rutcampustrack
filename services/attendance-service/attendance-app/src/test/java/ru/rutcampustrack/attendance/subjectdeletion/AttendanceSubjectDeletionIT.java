@@ -35,6 +35,8 @@ import ru.rutcampustrack.subjectdeletion.grpc.*;
 
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.UnaryOperator;
 
 /** Replica-set Mongo transactions, real effective mapping/history/outbox, no external service. */
 @DataMongoTest
@@ -84,7 +86,7 @@ class AttendanceSubjectDeletionIT {
         }
     }
 
-    @Autowired MongoTemplate mongo;
+    @MockitoSpyBean MongoTemplate mongo;
     @Autowired AttendanceSubjectDeletionParticipant participant;
     @Autowired PairWriteCoordinator pairs;
     @Autowired MongoTransactionManager manager;
@@ -105,8 +107,222 @@ class AttendanceSubjectDeletionIT {
 
     @BeforeEach
     void freshOwnedDatabase() {
-        reset(outbox);
+        reset(mongo, outbox);
         for (String collection : mongo.getCollectionNames()) mongo.dropCollection(collection);
+    }
+
+    @Test
+    void emptySubjectCommitsOrReleasesWithPersistedEmptyFencesAndStableTerminalRetries() {
+        for (var action : List.of(SubjectDeletionAction.RELEASE, SubjectDeletionAction.COMMIT)) {
+            var c = emptyPrepare();
+            participant.apply(c);
+            participant.apply(c.toBuilder().setAction(SubjectDeletionAction.SEAL).build());
+            assertThat(epoch(c).getList("fence_ids", Long.class)).isEmpty();
+            var terminal = c.toBuilder().setAction(action).build();
+            var receipt = participant.apply(terminal);
+            assertThat(receipt.getAffectedRows()).isZero();
+            assertThat(receipt.getMixedTickets()).isZero();
+            assertThat(participant.apply(terminal)).isEqualTo(receipt);
+            assertThat(epoch(c).getString("state"))
+                    .isEqualTo(action == SubjectDeletionAction.COMMIT ? "DELETED" : "RELEASED");
+            for (var late : List.of(SubjectDeletionAction.PREPARE, SubjectDeletionAction.SEAL))
+                assertThatThrownBy(() -> participant.apply(c.toBuilder().setAction(late).build()))
+                        .isInstanceOf(IllegalStateException.class);
+            assertThatThrownBy(
+                            () ->
+                                    participant.apply(
+                                            c.toBuilder()
+                                                    .setAction(
+                                                            action == SubjectDeletionAction.COMMIT
+                                                                    ? SubjectDeletionAction.RELEASE
+                                                                    : SubjectDeletionAction.COMMIT)
+                                                    .build()))
+                    .isInstanceOf(IllegalStateException.class);
+        }
+        assertThat(mongo.count(new Query(), "student_checkin_pairs")).isZero();
+        assertThat(mongo.count(new Query(), "subject_delete_test_outbox")).isEqualTo(1);
+    }
+
+    @Test
+    void missingMalformedDuplicateOrNonIntegralSavedFenceIdsStillRefuseCommitAndRelease() {
+        var c = emptyPrepare();
+        participant.apply(c);
+        participant.apply(c.toBuilder().setAction(SubjectDeletionAction.SEAL).build());
+        List<Object> malformed =
+                Arrays.asList(
+                        null,
+                        "not-a-list",
+                        List.of(11L, 11L),
+                        List.of(0L),
+                        List.of(-1L),
+                        List.of("11"),
+                        Arrays.asList((Object) null),
+                        List.of(11.5),
+                        List.of(Double.MAX_VALUE));
+        for (Object saved : malformed) {
+            mongo.updateFirst(
+                    Query.query(Criteria.where("_id").is(c.getOperationId())),
+                    saved == null
+                            ? new Update().unset("fence_ids")
+                            : new Update().set("fence_ids", saved),
+                    "subject_deletion_participants");
+            for (var action :
+                    List.of(SubjectDeletionAction.COMMIT, SubjectDeletionAction.RELEASE)) {
+                assertThatThrownBy(() -> participant.apply(c.toBuilder().setAction(action).build()))
+                        .isInstanceOf(IllegalStateException.class);
+                assertThat(epoch(c).getString("state")).isEqualTo("SEALED");
+                assertThat(mongo.count(new Query(), "subject_delete_test_outbox")).isZero();
+            }
+        }
+    }
+
+    @Test
+    void releaseBeforePrepareDurablyRejectsLatePhasesAndEveryChangedTupleWithoutFences() {
+        seed();
+        var c = prepare();
+        var release = c.toBuilder().setAction(SubjectDeletionAction.RELEASE).build();
+        var receipt = participant.apply(release);
+        var released = epoch(c);
+        assertThat(released.getString("state")).isEqualTo("RELEASED");
+        assertThat(released.getList("fence_ids", Long.class)).isEmpty();
+        assertThat(participant.apply(release)).isEqualTo(receipt);
+        assertLateAndMismatchedCommandsRefused(c);
+        assertThat(epoch(c)).isEqualTo(released);
+        assertThat(mongo.findById("target-mark", Document.class, "attendances")).isNotNull();
+        assertThat(mongo.count(new Query(), "student_checkin_pairs")).isZero();
+        assertThat(mongo.count(new Query(), "subject_delete_test_outbox")).isZero();
+        assertWritableAfterRelease();
+        var fresh = prepare();
+        participant.apply(fresh);
+        participant.apply(fresh.toBuilder().setAction(SubjectDeletionAction.RELEASE).build());
+        assertWritableAfterRelease();
+    }
+
+    @Test
+    void releaseAndPrepareReadingMissingEpochRaceThroughTheSameUniqueTransactionalKey()
+            throws Exception {
+        seed();
+        var c = prepare();
+        // Avoid implicit collection creation being the source of the transaction conflict.
+        mongo.createCollection("subject_deletion_participants");
+        assertWritableAfterRelease();
+        var bothReadMissingEpoch = new CyclicBarrier(2);
+        doAnswer(
+                        call -> {
+                            Object result = call.callRealMethod();
+                            assertThat(result).isNull();
+                            bothReadMissingEpoch.await(5, TimeUnit.SECONDS);
+                            return result;
+                        })
+                .when(mongo)
+                .findById(
+                        eq(c.getOperationId()),
+                        eq(Document.class),
+                        eq("subject_deletion_participants"));
+        var pool = Executors.newFixedThreadPool(2);
+        List<Future<Throwable>> attempts = new ArrayList<>();
+        List<Throwable> outcomes = new ArrayList<>();
+        try {
+            for (var action : List.of(SubjectDeletionAction.PREPARE, SubjectDeletionAction.RELEASE))
+                attempts.add(
+                        pool.submit(
+                                () -> {
+                                    try {
+                                        participant.apply(c.toBuilder().setAction(action).build());
+                                        return null;
+                                    } catch (RuntimeException failure) {
+                                        return failure;
+                                    }
+                                }));
+            for (var attempt : attempts) outcomes.add(attempt.get(15, TimeUnit.SECONDS));
+        } finally {
+            for (var attempt : attempts) if (!attempt.isDone()) attempt.cancel(true);
+            pool.shutdownNow();
+            assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+            reset(mongo);
+        }
+        assertThat(outcomes.stream().filter(Objects::isNull).count()).isEqualTo(1);
+        for (Throwable failure : outcomes) {
+            if (failure == null) continue;
+            assertThat(isMongoEpochRace(failure))
+                    .as("unique epoch race aborts the losing transaction")
+                    .isTrue();
+        }
+        // A failed RELEASE is retried by the coordinator; only its durable success is acknowledged.
+        participant.apply(c.toBuilder().setAction(SubjectDeletionAction.RELEASE).build());
+        assertThat(epoch(c).getString("state")).isEqualTo("RELEASED");
+        assertLateAndMismatchedCommandsRefused(c);
+        assertWritableAfterRelease();
+        assertThat(mongo.findById("target-mark", Document.class, "attendances")).isNotNull();
+        assertThat(mongo.count(new Query(), "subject_delete_test_outbox")).isZero();
+    }
+
+    private Document epoch(SubjectDeletionCommand c) {
+        return mongo.findById(c.getOperationId(), Document.class, "subject_deletion_participants");
+    }
+
+    private void assertLateAndMismatchedCommandsRefused(SubjectDeletionCommand c) {
+        for (var action :
+                List.of(
+                        SubjectDeletionAction.PREPARE,
+                        SubjectDeletionAction.SEAL,
+                        SubjectDeletionAction.COMMIT))
+            assertThatThrownBy(() -> participant.apply(c.toBuilder().setAction(action).build()))
+                    .isInstanceOf(IllegalStateException.class);
+        List<UnaryOperator<SubjectDeletionCommand.Builder>> changes =
+                List.of(
+                        b -> b.setActorId(99),
+                        b -> b.setSubjectId(102).clearLessons(),
+                        b -> b.setSemesterId(4).clearLessons(),
+                        b -> b.setGroupId(6).clearLessons(),
+                        b -> b.setParticipantDigest("b".repeat(64)),
+                        b -> b.setManifestDigest("b".repeat(64)),
+                        SubjectDeletionCommand.Builder::clearLessons);
+        for (var change : changes)
+            assertThatThrownBy(
+                            () ->
+                                    participant.apply(
+                                            change.apply(c.toBuilder())
+                                                    .setAction(SubjectDeletionAction.RELEASE)
+                                                    .build()))
+                    .isInstanceOf(IllegalStateException.class);
+    }
+
+    private void assertWritableAfterRelease() {
+        assertThat(
+                        mongo.count(
+                                Query.query(
+                                        Criteria.where("subject_delete_operation").exists(true)),
+                                "student_checkin_pairs"))
+                .isZero();
+        new TransactionTemplate(manager)
+                .executeWithoutResult(status -> pairs.lockLessons(3L, List.of(11L, 12L), 5L, NOW));
+    }
+
+    private static boolean isMongoEpochRace(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause())
+            if (cause instanceof com.mongodb.MongoException mongoFailure
+                    && (mongoFailure.hasErrorLabel("TransientTransactionError")
+                            || mongoFailure.getCode() == 112
+                            || mongoFailure.getCode() == 11000)) return true;
+        return false;
+    }
+
+    private SubjectDeletionCommand emptyPrepare() {
+        var preview =
+                SubjectDeletionCommand.newBuilder()
+                        .setOperationId(UUID.randomUUID().toString())
+                        .setSubjectId(101)
+                        .setSemesterId(3)
+                        .setGroupId(5)
+                        .setActorId(9)
+                        .setAction(SubjectDeletionAction.PREVIEW)
+                        .build();
+        return preview.toBuilder()
+                .setAction(SubjectDeletionAction.PREPARE)
+                .setParticipantDigest(participant.apply(preview).getParticipantDigest())
+                .setManifestDigest("a".repeat(64))
+                .build();
     }
 
     @Test

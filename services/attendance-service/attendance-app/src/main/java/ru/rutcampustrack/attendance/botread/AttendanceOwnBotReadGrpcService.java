@@ -250,7 +250,7 @@ public final class AttendanceOwnBotReadGrpcService
                 .setRoom(lesson.getRoom())
                 .setStatus(lesson.getStatus())
                 .setCancelled(false)
-                .setMoved(lesson.getRevision() > 1 || lesson.getGeneration() > 1)
+                .setMoved(lesson.getMoved())
                 .setOneOff(lesson.getScheduleItemId() <= 0)
                 .build();
     }

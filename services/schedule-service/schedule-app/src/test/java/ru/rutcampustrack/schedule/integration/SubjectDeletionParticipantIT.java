@@ -15,7 +15,11 @@ import ru.rutcampustrack.schedule.subjectdeletion.ScheduleSubjectDeletionPartici
 import ru.rutcampustrack.subjectdeletion.grpc.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.*;
+import java.util.function.UnaryOperator;
 
 /** Real canonical PG rows/guards/outbox, controlled service transport is tested separately. */
 class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
@@ -40,6 +44,156 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
         resetScheduleData();
         lesson = seed(20, 1, 30);
         seed(21, 2, 31);
+    }
+
+    @Test
+    void releaseBeforePreparePersistsExactTerminalTupleAndLeavesOrdinaryWritesAvailable()
+            throws Exception {
+        var c = prepare();
+        var release = c.toBuilder().setAction(SubjectDeletionAction.RELEASE).build();
+        var receipt = participant.apply(release);
+        assertThat(receipt.getAffectedRows()).isZero();
+        assertThat(state(c)).isEqualTo("RELEASED");
+        byte[] saved =
+                jdbcTemplate.queryForObject(
+                        "SELECT command_manifest FROM schedule_subject_deletion_participants WHERE"
+                            + " operation_id=?",
+                        byte[].class,
+                        UUID.fromString(c.getOperationId()));
+        assertThat(SubjectDeletionCommand.parseFrom(saved)).isEqualTo(c);
+        assertThat(participant.apply(release)).isEqualTo(receipt);
+        assertLateAndMismatchedCommandsRefused(c);
+        assertThat(state(c)).isEqualTo("RELEASED");
+        assertThat(count("SELECT count(*) FROM lessons WHERE subject_id=20")).isEqualTo(1);
+        assertThat(count("SELECT count(*) FROM schedule_outbox WHERE event_type='lesson.deleted'"))
+                .isZero();
+        jdbcTemplate.update("UPDATE lessons SET revision=revision+1 WHERE id=?", lesson);
+        var fresh = prepare();
+        participant.apply(fresh);
+        participant.apply(fresh.toBuilder().setAction(SubjectDeletionAction.RELEASE).build());
+        jdbcTemplate.update("UPDATE lessons SET revision=revision+1 WHERE id=?", lesson);
+        seed(22, 3, 30); // The cancelled operation also leaves its semester writable.
+    }
+
+    @Test
+    void emptySubjectCommitsOrReleasesAndTerminalCommandsCannotResurrectItsEpoch() {
+        for (var action : List.of(SubjectDeletionAction.RELEASE, SubjectDeletionAction.COMMIT)) {
+            var request =
+                    SubjectDeletionCommand.newBuilder()
+                            .setOperationId(UUID.randomUUID().toString())
+                            .setSubjectId(99)
+                            .setSemesterId(30)
+                            .setGroupId(10)
+                            .setActorId(42)
+                            .setAction(SubjectDeletionAction.PREVIEW)
+                            .build();
+            var c =
+                    request.toBuilder()
+                            .setParticipantDigest(participant.apply(request).getParticipantDigest())
+                            .setManifestDigest("a".repeat(64))
+                            .setAction(SubjectDeletionAction.PREPARE)
+                            .build();
+            participant.apply(c);
+            participant.apply(c.toBuilder().setAction(SubjectDeletionAction.SEAL).build());
+            var terminal = c.toBuilder().setAction(action).build();
+            var receipt = participant.apply(terminal);
+            assertThat(receipt.getAffectedRows()).isZero();
+            assertThat(receipt.getLessonsList()).isEmpty();
+            assertThat(participant.apply(terminal)).isEqualTo(receipt);
+            for (var late : List.of(SubjectDeletionAction.PREPARE, SubjectDeletionAction.SEAL))
+                assertThatThrownBy(() -> participant.apply(c.toBuilder().setAction(late).build()))
+                        .isInstanceOf(IllegalStateException.class);
+            assertThatThrownBy(
+                            () ->
+                                    participant.apply(
+                                            c.toBuilder()
+                                                    .setAction(
+                                                            action == SubjectDeletionAction.COMMIT
+                                                                    ? SubjectDeletionAction.RELEASE
+                                                                    : SubjectDeletionAction.COMMIT)
+                                                    .build()))
+                    .isInstanceOf(IllegalStateException.class);
+            assertThat(state(c))
+                    .isEqualTo(action == SubjectDeletionAction.COMMIT ? "DELETED" : "RELEASED");
+        }
+        assertThat(count("SELECT count(*) FROM lessons")).isEqualTo(2);
+    }
+
+    @Test
+    void releaseRacingPrepareAlwaysFinishesWithDurableReleasedEpochAndNoWriteFence()
+            throws Exception {
+        var c = prepare();
+        var entered = new CyclicBarrier(2);
+        var pool = Executors.newFixedThreadPool(2);
+        List<Future<Throwable>> attempts = new ArrayList<>();
+        List<Throwable> outcomes = new ArrayList<>();
+        try {
+            for (var action : List.of(SubjectDeletionAction.PREPARE, SubjectDeletionAction.RELEASE))
+                attempts.add(
+                        pool.submit(
+                                () -> {
+                                    entered.await(5, TimeUnit.SECONDS);
+                                    try {
+                                        participant.apply(c.toBuilder().setAction(action).build());
+                                        return null;
+                                    } catch (RuntimeException failure) {
+                                        return failure;
+                                    }
+                                }));
+            for (var attempt : attempts) outcomes.add(attempt.get(15, TimeUnit.SECONDS));
+        } finally {
+            for (var attempt : attempts) if (!attempt.isDone()) attempt.cancel(true);
+            pool.shutdownNow();
+            assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
+        assertThat(outcomes.get(1))
+                .as("RELEASE succeeds whichever transaction acquired locks first")
+                .isNull();
+        if (outcomes.getFirst() != null)
+            assertThat(outcomes.getFirst()).isInstanceOf(IllegalStateException.class);
+        assertThat(state(c)).isEqualTo("RELEASED");
+        assertThat(count("SELECT count(*) FROM schedule_subject_deletion_participants"))
+                .isEqualTo(1);
+        participant.apply(c.toBuilder().setAction(SubjectDeletionAction.RELEASE).build());
+        assertLateAndMismatchedCommandsRefused(c);
+        jdbcTemplate.update("UPDATE lessons SET revision=revision+1 WHERE id=?", lesson);
+        assertThat(count("SELECT count(*) FROM lessons WHERE subject_id=20")).isEqualTo(1);
+        assertThat(count("SELECT count(*) FROM schedule_outbox WHERE event_type='lesson.deleted'"))
+                .isZero();
+    }
+
+    private String state(SubjectDeletionCommand c) {
+        return jdbcTemplate.queryForObject(
+                "SELECT state FROM schedule_subject_deletion_participants WHERE operation_id=?",
+                String.class,
+                UUID.fromString(c.getOperationId()));
+    }
+
+    private void assertLateAndMismatchedCommandsRefused(SubjectDeletionCommand c) {
+        for (var action :
+                List.of(
+                        SubjectDeletionAction.PREPARE,
+                        SubjectDeletionAction.SEAL,
+                        SubjectDeletionAction.COMMIT))
+            assertThatThrownBy(() -> participant.apply(c.toBuilder().setAction(action).build()))
+                    .isInstanceOf(IllegalStateException.class);
+        List<UnaryOperator<SubjectDeletionCommand.Builder>> changes =
+                List.of(
+                        b -> b.setActorId(99),
+                        b -> b.setSubjectId(21),
+                        b -> b.setSemesterId(31),
+                        b -> b.setGroupId(11),
+                        b -> b.setParticipantDigest("b".repeat(64)),
+                        b -> b.setManifestDigest("b".repeat(64)),
+                        SubjectDeletionCommand.Builder::clearLessons);
+        for (var change : changes)
+            assertThatThrownBy(
+                            () ->
+                                    participant.apply(
+                                            change.apply(c.toBuilder())
+                                                    .setAction(SubjectDeletionAction.RELEASE)
+                                                    .build()))
+                    .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

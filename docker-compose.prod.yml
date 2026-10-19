@@ -46,7 +46,7 @@ services:
     mem_limit: 192m
     mem_reservation: 128m
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U rct_user -d academic_db']
+      test: ['CMD-SHELL', 'pg_isready -U rct_bootstrap -d academic_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -82,7 +82,7 @@ services:
     mem_limit: 256m
     mem_reservation: 192m
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U rct_user -d schedule_db']
+      test: ['CMD-SHELL', 'pg_isready -U rct_bootstrap -d schedule_db']
       interval: 10s
       timeout: 5s
       retries: 5

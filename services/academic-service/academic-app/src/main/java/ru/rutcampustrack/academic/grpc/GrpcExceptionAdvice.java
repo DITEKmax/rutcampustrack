@@ -44,6 +44,15 @@ public class GrpcExceptionAdvice {
                         "Assignment state is incompatible with this operation");
             }
         }
+        if (e instanceof io.grpc.StatusRuntimeException failure
+                && failure.getStatus().getCode() == Status.Code.UNAVAILABLE) {
+            String description = failure.getStatus().getDescription();
+            if ("group identity operation is pending".equals(description)
+                    || "identity operation publication is pending".equals(description)) {
+                return Status.UNAVAILABLE.withDescription(
+                        "Academic identity read is temporarily unavailable");
+            }
+        }
         log.error("gRPC internal error", e);
         return Status.INTERNAL.withDescription("Internal server error").withCause(e);
     }

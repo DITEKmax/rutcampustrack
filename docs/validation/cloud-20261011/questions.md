@@ -235,3 +235,12 @@ ANSWERED_OWNER. Initial block:  Prepared seven-module compileJava+compileTestJav
 ## Q033 — 18.10.2026: initial administrator для fresh split БД
 
 ANSWERED_OWNER/D038, 2026-10-18T16:41:33.681661+00:00: «Подготовить одноразовый bootstrap в коде (рекомендую)». Контекст: новые active migrationchains не создают sampleactors, canonical usercreate требует существующего liveadmin; oldbrowserTEST_USERS ожидает исторический V2. Code-only operator bootstrap согласован; реальные accounts/secrets/deploy остаются вне scope. Disposable synthetic baseline выполняется независимо; новый CLI — отдельный ограниченный контракт/веса до implementation, без повторного вопроса владельцу.
+
+
+## Q034 — historical CONNECT/Mark500 cause evidence versus current functional acceptance
+
+State: ANSWERED — D039. Existing last ownerGO required actual causes of D9 Academic→Schedule CONNECT/503 and preparatory HEADMAN attendance PUT500. Old35078 safe primaries retain closed source/stage/status/cause or HTTP outcome, but not the underlying exception/commit outcome. Current0de paired original D9v10 and both bot paths passed; new passive/closed diagnostics and5source-method helper tests are verified, no speculative reconnect/write retry was introduced. Missing historical observations cannot be reconstructed from these successes.
+
+Question in main Cloud chat: accept explicitly preserved historical cause UNKNOWN as an exception, allowing U25 closure ONLY after all final green gates and independent review, with diagnostics retained for a future natural failure; or keep U25 open until actual causes are established. Recommendation: first option, with no old-error fixed/environmental claim and no new broad rerun only to seek a failure. This is a proposed acceptance exception, not inferred approval. At ask time the pending answer blocked only final closure. It was subsequently answered by D039 below; current final gates and independent review are now accepted.
+
+2026-10-19T16:26:53.338607+00:00: Q034 ANSWERED exact: «Принять ограничение после зелёных gates и review (рекомендую)». Owner accepts preserved historical CONNECT/503 and Mark500 underlying UNKNOWN as an explicit diagnostic limitation ONLY after all final green gates and independent review. No old-failure fixed/environmental claim; new bounded diagnostics retained for future natural failure. Gates/review/othercriteria and FROZEN unchanged.

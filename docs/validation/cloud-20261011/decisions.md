@@ -448,3 +448,12 @@ D034/Q030 exact: «кст хороший вопрос, я мб на claudflare �
 ## D038/Q033 — 18.10.2026: одноразовый initial-admin bootstrap как код
 
 2026-10-18T16:41:33.681661+00:00: Владелец выбрал «Подготовить одноразовый bootstrap в коде (рекомендую)». Требуется operator-only команда без публичного HTTP endpoint/стандартного пароля, секрет из защищённого файла, отказ при уже созданном администраторе. Auth AAA/Academic profile границы и безопасный partial-failure/retry сохраняются; production-команду не выполнять. Новый обязательный результат будет отдельно взвешен до реализации в v3; старые v1/v2 не превращаются в процент расширенной цели. Изолированный synthetic baseline browserstand — отдельная подготовка теста, не способ создания реальных администраторов.
+
+
+## D039/Q034 — 19.10.2026: historical failure cause limitation after current acceptance
+
+2026-10-19T16:26:53.338607+00:00: Владелец выбрал «Принять ограничение после зелёных gates и review (рекомендую)». Current0de paired original D9v10 and both bot paths passed; safe35078 evidence did not retain the underlying exception/commit outcome needed to reconstruct old Academic CONNECT/503 and preparatory attendance Mark500. Their exact historical causes remain UNKNOWN, not fixed/environmental. Owner explicitly accepts this as a diagnostic limitation for final U25 closure ONLY after all required compatible current gates SUCCESS and independent final review. Retain reviewed/tested bounded capture for a future natural failure; no additional broad run solely to hunt a failure.
+
+Supersedes only the requirement to establish those two unavailable historical causes before closing U25. It does not waive real current failures, assertions, runtime/business/rights/recovery/idempotency/ACK proofs, independent review or CI/Coverage/Security/OpenAPI/monitoring gates. Does not authorize speculative product fixes or blind writes, weaken tests/timeouts, change the frozen39rows/196weights, reopen deferred scope or unfreeze B013/B014/B015. Goal remains IN_PROGRESS until the stated conditions are actually met.
+
+2026-10-19T16:44:20.801843+00:00: D039 conditions now actually met on tested0de: allfivegates terminalSUCCESS and finalindependentreviewAPPROVE; preservehistoricalUNKNOWN/no fixed/environmentalclaim. D009 final8taskdoc-only publication/sourceidentity/readback remains deliveryguard, notnewproductacceptance orproductionauthorization.

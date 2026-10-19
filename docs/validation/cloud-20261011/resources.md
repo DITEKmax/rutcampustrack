@@ -1,9 +1,13 @@
-# Resources / owners — current checkpoint
+# Resources / owners — final Cloud acceptance
 
-Root sole Git/taskdocs/matrix integrator; native slots7 includingRoot. Newtask agents Sol6.1/high/forknone; actualmodelmetadata UNKNOWN accepted Cloudexception. RULES2b9a859c, no globalconfiguration/controlplane change.
-Current task branch/draftPR2 published28271672 (exactSHA attempts/resume); coherent9filecheckpoint normalcommitted/pushed/remoteverified, hooksPASSnoDrift. Foreign25 preserved; indexempty. Earlier approvalcapacity errors retained in attempts; sameofficialGit/metadata recovered, no alternativechannel/model.
+Root sole Git/taskdocs/matrix integrator. Tested executable0de43c15; all5currentgates terminalSUCCESS, independentfinalreviewAPPROVE, accepted39/39_196/196 withD039historicalUNKNOWN diagnosticlimitation. Final8taskdoc-only D009 publication guarded separately; sourceinputs unchanged. PR2draft/unmerged, attachmentpresent. Foreign25pathinventory/index/authorWIP/worktrees preserved. OrdinarySol6.1/high, actualmetadataUNKNOWN acceptedCloudexception, RULES2b9a859c unchanged; AstraonceENDED/no reuse/defaultchange.
 
-## Capacity / leases
+All task agents/reviewer/observer released, heavy0; no localGradle/Docker/DB/pulls/prune/reset running or requested. Owner-authorizedcachecleanup alreadycomplete: oneownunusedrecoverable duplicate org.testcontainers:testcontainers:1.21.4 removed17,793,024B/retainedROexact, no recursiveoperation. ObservedTMP4417069056→4434862080B, workspace4177440768B unchanged, limits/reserveunchanged/nohousekeepingfitclaim. HistoricalPID157125Z/RSS0 untouched,8knowncontrolplaneEACCES/globalnegativeNOTclaimed. Privatecleanupreceipt126b68d9 at /tmp/rct-s19-cache-inventory-20261019/cleanup.safe.json. No othercache/data/evidence/WT/key deletionauthorizedbythisresult. Newhelper compile/execution coveredbycurrenthosted5SOURCE_METHODPASS; no duplicateNative run.
+
+Anyfutureheavyworkrequiresfreshresourcecheck+lease, notthesehistoricalmeasurements. B013/B014/B015FROZEN, manual/deploy/production/VPS/secrets/realbackup/multiworker remainexcluded/deferrednotPASS. The retained sections below are HISTORICAL snapshots; old activeowners/queuedruns/capacity refer to their namedrevisions, notcurrentstate.
+
+## Retained historical capacity / leases
+
 
 Latest measured workspace4205420544B/TMP4537503744B; cgroup17,179,869,184B max/CPUquota4. Docker28.4 VFSsameFS below4GiB reserve: no localDocker/DB/pulls/prune/reset/cleanup.
 Native50 PASS/released; noactiveheavy runtime, prior49/48released. All earlier heavy leases RELEASED. Native46 PASS: exactAttendance3tasksEXECUTED/17freshXMLPASS/88.16s/RSS1138208768B/output103769719B; sourceeq/newPIDsreaped. LatestNative48terminalTMP4479778816B/workspace4201730048B; noownedruntime. Native45 retained. Historical nonchild157125Z/PPID1/RSS0 untouched. Native mirror /tmp/rct-s19-auth-runtime /privateGH /tmp/rct-s19-auth-gradle-home, JDK21.0.12.1/Gradle8.12; persistentQ032 offlineIPCauthorization retained.
@@ -45,3 +49,6 @@ U25Mark500 diagnostic scope on35078: two fresh sparse detachedWTs (oldfrozenWTun
 - One-shot ownerauthorizedAstra/high readonlyRCA completed; actualmetadataUNKNOWN, nofiles/runtimes/children/defaultchanges, nofurtherusewithoutnewownerGO. CurrentEvent+Report ordinarySol6.1/high retain35078 isolatedWTs: D9TS vsJava+CIcontract, no sharedwrites. NativeleaseNONE; onlylightcontrols untilstableJavaandfreshcapacity.
 
 - NativechangedJava preparation ENV_BLOCKED: freshTMP4418719744B <floor4294967296+fullcap134217728=4429185024B (short10465280B); workspace4178694144B passes. Nooverlay/Gradle/heavy/cleanup. LocalnewJava compile/testNOT_RUN; existingNative51 unchangedproofretained. Noreserveweakening; ordinaryCIchecks newsource.
+
+
+2026-10-19 current0de owner-authorized exactcache cleanup: only unused duplicate org.testcontainers:testcontainers:1.21.4 removed,17,793,024B allocated/free reclaimed; retained localRO original byteexact. Exact paths/no symlink/inodes/UID/mode/WT exclusion/process reference guards; historical157125Z independently confirmed and untouched,8knowncontrolplaneEACCES/globalnegativeNOTclaimed. ProtectedHEAD/index/WIP/foreign25 path-list/WTinventory byteexact. TMP4417069056→4434862080B, workspace4177440768B unchanged; reserve/limits unchanged, no newGradle/Docker. Privatecleanupreceipt126b68d9 in /tmp/rct-s19-cache-inventory-20261019/cleanup.safe.json. Current0de hostedAcademicunit SOURCE_METHOD5newhelperPASSED artifact12199126426/safe8dde40e9, so no duplicatelocalcompile. D9/Mark500 causes stillawaitactualcurrentprimary. Astraonceended/no reuse.

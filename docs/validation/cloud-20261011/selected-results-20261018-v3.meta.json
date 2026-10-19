@@ -12,12 +12,12 @@
   },
   "mandatoryRows": 39,
   "mandatoryWeight": 196,
-  "closed": 33,
-  "closedWeight": 170,
-  "percent": 86.73,
+  "closed": 39,
+  "closedWeight": 196,
+  "percent": 100.0,
   "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
   "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
-  "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking.",
+  "riskGate": "All5testedsourcecurrentgatesSUCCESS and independentfinalreviewAPPROVE; D039historicalUNKNOWN limitationaccepted. DoNOTclaimnewscanner/CIexecutiononfinaldocsSHA orproduction/manualPASS; D009sourceidentity+normalpublicationproofrequired.",
   "previousVersion": "selected-results-20261018-v2.csv",
   "historicalV2": {
     "closed": 24,
@@ -29,33 +29,35 @@
   "delta": "OwnerQ033/D038 adds ONLYU14.7 weight8 operatorfirstadmin trustroot+2DBrecovery. 38+1=39;188+8=196; no parent-childdoublecredit. Weightfixedbeforeimplementation afterboundedsource design; v1/v2 preserved.",
   "byCheckpoint": {
     "КТ2": {
-      "closed": 13,
+      "closed": 14,
       "total": 14,
-      "weight": 66,
+      "weight": 71,
       "denominator": 71,
-      "percent": 92.96
+      "percent": 100.0
     },
     "КТ3": {
-      "closed": 6,
+      "closed": 9,
       "total": 9,
-      "weight": 26,
+      "weight": 37,
       "denominator": 37,
-      "percent": 70.27
+      "percent": 100.0
     },
     "КТ4": {
-      "closed": 14,
+      "closed": 15,
       "total": 15,
-      "weight": 78,
+      "weight": 83,
       "denominator": 83,
-      "percent": 93.98
+      "percent": 100.0
     },
     "КТ5": {
-      "closed": 0,
+      "closed": 1,
       "total": 1,
-      "weight": 0,
+      "weight": 5,
       "denominator": 5,
-      "percent": 0.0
+      "percent": 100.0
     }
   },
-  "latestAccepted": "U14.7 Q033 actuale5c CLI1PASS12158825618/ff648942 plus exactsame-source4corePASS12158670472/25089ef9 includingrealfirstlogin/change/restart/unknownresult/concurrency/currentDBdeny. U14.4 registry6PASS retained. Current33/39,170/196; U25redgates remainopen, not readiness orproductionexecution."
+  "latestAccepted": "U25 finalCacheindependentAPPROVE: exactsource0de/all5terminalSUCCESS/gates114c31a5/pairedoriginalD9+bothbot+helperSOURCE_METHOD/PRcheckoutprovenance/38priorclosuresapplicable. 39/39_196/196 selectedCloudplan, notproduction. D039historicalcauseUNKNOWNacceptedlimitation; nooldfixed/environmentalclaim. FinalD009docs-onlyguardedpublication/sourceidentity/readback required forpublisheddelivery.",
+  "statusSnapshotUtc": "2026-10-19T16:44:20.799031+00:00",
+  "acceptanceException": "D039/Q034 owneraccepts historicalCONNECT+Mark500underlyingUNKNOWN diagnosticlimitation ONLYafterallfinalgreen+independentreview; nooldfixed/environmentalclaim; noinventory/weight/denominatorchange"
 }

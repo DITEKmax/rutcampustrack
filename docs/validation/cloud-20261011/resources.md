@@ -1,32 +1,35 @@
-# Current resources / sole writers — 18.10.2026
+# Resources / owners — current checkpoint
 
-Root sole Git/taskdocs/matrix; RULES2b9a859c; native7 slots inclRoot. New tasks
-Sol6.1/high/forknone; actualmetadataUNKNOWN accepted exception; no CLI controlplane.
-Publisheda05b0e872b5ec0f757ef160b239b7502e3a85cfc + ownedWIP; foreign25 preserved.
+Root — sole Git/taskdocs/matrix integrator. RULES2b9a859c; native slots7 includingRoot.
+New tasks Sol6.1/high/forknone; actual runtime metadata UNKNOWN is the accepted Cloud exception.
+Published2aa7d648d8231d8a855330d62b37673c45a84059; owned correction WIP; foreign25 preserved.
 
-## Resources
+## Runtime
 
-Last measuredworkspace4219346944B<4GiB Dockerreserve; TMP4745818112B;16GiB cgroup,
-CPUquota4/cpuset0–4. Docker28.4 VFSsameFS. No localDocker/DB/pulls/cleanup/reset/prune.
-Native /tmp/rct-s19-auth-runtime, privateGH /tmp/rct-s19-auth-gradle-home;
-Q032 offline JDK21.0.12.1/Gradle8.12/existing launcher. Current33 PASS76.71s/RSS914272256B; allPIDs reaped. Current34 output128MiB stop preserved; proto/main completed. Current35 test compile PASS83.65s/RSS1036062720B; both source manifests unchanged. Lease/freeze RELEASED; no liveJava, oldPID157125 Z/RSS0.
-Auth+Academic main/test12Java compiled (AuthTestUP_TO_DATE), no forced rerun.
-CPU1/RSS<=2.5GiB/output<=128MiB/TMP>=4GiB/workspace>=3.75GiB; no tests/downloads/servers.
-Native31/32 PASS53.58/58.98s, peakRSS851025920/866045952B; priorPIDs fully reaped.
-Ordinary CI uses isolated hosted resources; no stand per author.
+Last measured beforeNative38: workspace4215869440B, TMP4691382272B;16GiB cgroup,
+CPUquota4/cpuset0–4. Docker28.4 VFSsameFS; workspace below4GiB Dockerreserve.
+No localDocker/DB/pulls/cleanup/reset/prune. Ordinary CI uses its own isolated hosted resources.
+Native mirror /tmp/rct-s19-auth-runtime; privateGH /tmp/rct-s19-auth-gradle-home;
+JDK21.0.12.1/Gradle8.12, existing run11 launcher, Q032 offline IPC authorization.
+CPU1/RSS<=2.5GiB/changedoutputs<=128MiB/TMP>=4GiB/workspace>=3.75GiB;
+no tests/servers/downloads/DB. Old PID157125 is an exited Z/PPID1/RSS0, not reaped or touched.
+Prior33–37 outputs/receipts retained. Native37 PASS64.95s/RSS907993088B/output106274242B;
+its live processes fully reaped. Native38 PASS76.42s/RSS1084379136B/output111880826B; Auth main/test + Academic bootstrap test compiled.
+Exact3Java pins /tmp/rct-s19-native38-inputs.json; lease/freeze RELEASED, all38processes fully reaped/liveJava0.
 
 | Owner | Scope / state |
 | --- | --- |
-| Root | /workspace/rutcampustrack; sole Git/docs/matrix integration; a05 normalpush/PR verified. |
-| a05_native34_compile | Native mirror/privateGH; current34proto/main+35testcompile and36test7 compilePASS63.30s/RSS861233152B; released. |
-| r658_archive_race | /tmp/rct-s19-auth; History11 independentAPPROVE/joined. Panelprobe1 joined; BotBridgephase1 joined; HistoryNPE applicability readonlycomplete, released. |
-| b836_contract_fixes | /tmp/rct-s19-contract-corrections; report9 APPROVE/joined; CI stale-binding1 joined; GroupRegistry+Headman2 canonicalfixtures joined/APPROVE; released. |
-| r9cf_report_registry_review | Report9 whole+addressed APPROVE; no self-authored corrections. |
-| r9cf_recovery_review | /tmp/rct-s19-apps; Q033 diagnostics6 whole APPROVE/joined; filter4 prioraccepted, writer released. |
-| r9cf_cache_fixture_review | History11 whole APPROVE; Q0336 prior APPROVE; reviewer released. |
-| r9cf_event_outbox_rca | /tmp/rct-s19-e2e; fixture2 APPROVE/joined; hosted-bot config1 joined; archive3 requestfixtures joined/APPROVE; released. |
-| s19_academic_grpc_rca | /tmp/rct-s19-pool-budget; np01 format1 standardRuff/AST PASS/joined; writer released. |
-| s19_9cf_ci_observer | Metadata-onlya05 push39173748709/PR39173757390/Coverage39173757556; terminalSecurity/OpenAPI SUCCESS notrepolling. |
+| Root | /workspace/rutcampustrack; Git/docs/matrix/PR; source13 precommitPASS1.59s/no drift; prepare one coherent publication. |
+| a05_native34_compile | Native38 PASS exact3Java/sourceeq; lease/freeze released, outputs retained. |
+| r658_archive_race | /tmp/rct-s19-auth; Auth pending-headman/effective-reconcile correction2 source ready/joined; writer released. |
+| r9cf_cache_fixture_review | Independent Auth2 whole+P1 addressed APPROVE. Promotion2DB fixture/subject-condition diagnostic joined; released. |
+| r2aa_registry_render_rca | /tmp/rct-s19-apps; FULL report guard1 joined/native37PASS; released. |
+| r9cf_report_registry_review | Independent Report9+FULL addressed APPROVE. Four CI restoration pins/finite existing counts joined; released. |
+| r2aa_bootstrap_config_rca | /tmp/rct-s19-apps; synthetic CLI private config owner UID:GID/0700/0600 fixture1 joined; Root routine review; released. |
+| r9cf_event_outbox_rca | /tmp/rct-s19-e2e; hosted phase2/Recovery finite hint1 joined; Root privacy review; released. |
+| s19_9cf_ci_observer | 2aa push/PR/Coverage terminalFAIL; Security/OpenAPI/Monitoring/PythonSUCCESS. Publications+ownedcleanup complete; observer released. |
 
-30/39 accepted outcomes; source-only changes do not close runtime criteria.
-No production/main/merge/deploy/realcredentials. B013/B014/B015 FROZEN; externalmanuals deferred.
+Accepted30/39, weight146/196; source-only corrections do not close runtime criteria.
+Next: one normal branch push/PR update of reviewed coherent17-file checkpoint and ordinary CI.
+No owner question; no production/main/merge/deploy/real credentials. B013/B014/B015 FROZEN.
+External device/owner/deploy acceptance remains deferred, not PASS.

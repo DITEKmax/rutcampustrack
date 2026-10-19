@@ -737,10 +737,8 @@ async function ownedHistoricalPromotion(
         'coverage',(SELECT COALESCE(jsonb_agg(to_jsonb(h) ORDER BY group_id),'[]') FROM group_history_coverage h JOIN groups g ON g.id=h.group_id
           WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
              OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz)),
-        'empty', NOT EXISTS (SELECT 1 FROM users u JOIN groups g ON g.id=u.group_id
-          WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
-             OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz))
-          AND NOT EXISTS (SELECT 1 FROM user_role_grants r JOIN groups g ON g.id=r.group_id
+        'empty', NOT EXISTS (SELECT 1 FROM academic_profiles p
+          JOIN academic_role_eligibility r ON r.user_id=p.id JOIN groups g ON g.id=r.group_id
           WHERE (g.alphabetic_code=${quote(aPrefix)} AND g.created_at=${quote(aCreated)}::timestamptz)
              OR (g.alphabetic_code=${quote(bPrefix)} AND g.created_at=${quote(bCreated)}::timestamptz))
           AND NOT EXISTS (SELECT 1 FROM student_group_history h JOIN groups g ON g.id=h.group_id
@@ -769,7 +767,38 @@ async function ownedHistoricalPromotion(
       `BEGIN; SET LOCAL statement_timeout='2000ms'; SET LOCAL lock_timeout='1000ms'; ${command} COMMIT;`,
       true,
     );
-    return json(raw.trim());
+    const result = json(raw.trim());
+    if (operation === 'owned') {
+      // Auth owns admission grants after the split. Keep their independent emptiness
+      // witness, scoped only to the exact owned groups returned by Academic above.
+      const groupIds = result.groups.map((group: Row) => Number(group.id)).join(',');
+      const auth = json(
+        native(
+          [
+            'exec',
+            '-i',
+            '-e',
+            'PGPASSWORD',
+            pin.id,
+            'psql',
+            '-X',
+            '-qAt',
+            '-U',
+            'rct_user',
+            '-d',
+            'auth_db',
+            '-v',
+            'ON_ERROR_STOP=1',
+          ],
+          `BEGIN READ ONLY; SET LOCAL statement_timeout='2000ms'; SET LOCAL lock_timeout='1000ms';
+          SELECT json_build_object('empty',NOT EXISTS(SELECT 1 FROM user_role_grants
+            WHERE group_id=ANY(ARRAY[${groupIds}]::bigint[]))); ROLLBACK;`,
+          true,
+        ).trim(),
+      );
+      result.empty = result.empty === true && auth.empty === true;
+    }
+    return result;
   };
   const call = async (method: 'GET' | 'PUT', path: string, data?: Row): Promise<Row> => {
     const response = await request.fetch(path, {
@@ -5757,11 +5786,20 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
       };
       const databaseBefore = readback(scope, 'BEFORE');
       requireValue(
-        databaseBefore.academic.operationCount === 0 &&
-          databaseBefore.schedule.participantCount === 0 &&
-          databaseBefore.attendance.epochCount === 0 &&
-          databaseBefore.attendance.controlMarks.length === 1,
-        'Exact owned scope is unclaimed and control attendance exists before deletion',
+        databaseBefore.academic.operationCount === 0,
+        'Owned Academic subject deletion scope is unclaimed before deletion',
+      );
+      requireValue(
+        databaseBefore.schedule.participantCount === 0,
+        'Owned Schedule subject deletion scope is unclaimed before deletion',
+      );
+      requireValue(
+        databaseBefore.attendance.epochCount === 0,
+        'Owned Attendance subject deletion scope is unclaimed before deletion',
+      );
+      requireValue(
+        databaseBefore.attendance.controlMarks.length === 1,
+        'Owned control attendance exists before subject deletion',
       );
       await otp.bind();
       const preview = await headman.call('GET', `${subjectPath}/deletion-preview`);

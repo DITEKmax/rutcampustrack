@@ -27,6 +27,12 @@ BUNDLE_FORMAT = 3  # Exact owners/ACL/default privileges are mandatory before an
 FAILURE_HINTS = frozenset({
     "GUARD", "INPUT_CREDENTIAL", "PG_QUERY", "PG_SCHEMA", "PG_DUMP", "PG_RESTORE",
     "MONGO_QUERY", "MONGO_DUMP", "MONGO_RESTORE", "INSPECT", "OTHER_TOOL",
+    "RESTORE_DIFF_TABLES", "RESTORE_DIFF_SEQUENCES", "RESTORE_DIFF_ACCESS_OBJECT_SET",
+    "RESTORE_DIFF_ACCESS_OWNER", "RESTORE_DIFF_ACCESS_ACL", "RESTORE_DIFF_ACCESS_ORDER",
+    "RESTORE_DIFF_OTHER_SHAPE", "RESTORE_DIFF_ACCESS_ACL_DATABASE",
+    "RESTORE_DIFF_ACCESS_ACL_SCHEMA", "RESTORE_DIFF_ACCESS_ACL_RELATION",
+    "RESTORE_DIFF_ACCESS_ACL_COLUMN", "RESTORE_DIFF_ACCESS_ACL_FUNCTION",
+    "RESTORE_DIFF_ACCESS_ACL_TYPE", "RESTORE_DIFF_ACCESS_ACL_DEFAULT",
 })
 
 
@@ -256,11 +262,57 @@ def canonical_reference_schema(container, password, db, schema, *, user="rct_use
 def compare_restored_inventory(args, secret, expected):
     actual = inventory(args, secret)
     for label, container, db, key, user in pg_targets(args):
-        require(
-            {k: v for k, v in expected[label].items() if k != "schema"}
-            == {k: v for k, v in actual[label].items() if k != "schema"},
-            f"Restored {label} data/sequences/owners/access differ; keep target isolated",
-        )
+        try:
+            require(
+                {k: v for k, v in expected[label].items() if k != "schema"}
+                == {k: v for k, v in actual[label].items() if k != "schema"},
+                f"Restored {label} data/sequences/owners/access differ; keep target isolated",
+            )
+        except RecoveryError as mismatch:
+            hint = "RESTORE_DIFF_OTHER_SHAPE"
+            before, after = expected[label], actual[label]
+            if (set(before) == set(after) == {"schema", "tables", "sequences", "access"}
+                    and all(type(value[field]) is list
+                            for value in (before, after) for field in ("tables", "sequences"))):
+                if before["tables"] != after["tables"]:
+                    hint = "RESTORE_DIFF_TABLES"
+                elif before["sequences"] != after["sequences"]:
+                    hint = "RESTORE_DIFF_SEQUENCES"
+                elif before["access"] != after["access"]:
+                    try:
+                        validate_access(before["access"])
+                        validate_access(after["access"])
+                    except RecoveryError:
+                        pass
+                    else:
+                        before_objects = before["access"]["objects"]
+                        after_objects = after["access"]["objects"]
+                        if (sorted((row["kind"], row["name"]) for row in before_objects)
+                                != sorted((row["kind"], row["name"]) for row in after_objects)):
+                            hint = "RESTORE_DIFF_ACCESS_OBJECT_SET"
+                        else:
+                            before_acl = {(row["kind"], row["name"], row["owner"]): row["acl"]
+                                          for row in before_objects}
+                            after_acl = {(row["kind"], row["name"], row["owner"]): row["acl"]
+                                         for row in after_objects}
+                            if before_acl.keys() != after_acl.keys():
+                                hint = "RESTORE_DIFF_ACCESS_OWNER"
+                            elif before_acl != after_acl:
+                                kind = next(key[0] for key in sorted(before_acl)
+                                            if before_acl[key] != after_acl[key])
+                                hint = {
+                                    "DATABASE": "RESTORE_DIFF_ACCESS_ACL_DATABASE",
+                                    "SCHEMA": "RESTORE_DIFF_ACCESS_ACL_SCHEMA",
+                                    "RELATION": "RESTORE_DIFF_ACCESS_ACL_RELATION",
+                                    "COLUMN": "RESTORE_DIFF_ACCESS_ACL_COLUMN",
+                                    "FUNCTION": "RESTORE_DIFF_ACCESS_ACL_FUNCTION",
+                                    "TYPE": "RESTORE_DIFF_ACCESS_ACL_TYPE",
+                                    "DEFAULT": "RESTORE_DIFF_ACCESS_ACL_DEFAULT",
+                                }.get(kind.split("_", 1)[0], "RESTORE_DIFF_ACCESS_ACL")
+                            else:
+                                hint = "RESTORE_DIFF_ACCESS_ORDER"
+            mismatch.hint = hint
+            raise
         require(
             canonical_reference_schema(
                 container,

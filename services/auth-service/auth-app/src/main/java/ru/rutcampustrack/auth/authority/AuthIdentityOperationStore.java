@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ru.rutcampustrack.auth.security.SessionPrincipal;
@@ -69,6 +70,8 @@ public class AuthIdentityOperationStore {
         this.jdbc = jdbc;
         this.mapper = mapper;
         this.tx = new TransactionTemplate(manager);
+        // Reservation checks after an advisory-lock wait need a fresh statement snapshot.
+        this.tx.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         this.admins = new AuthAdminJdbcAuthority(jdbc);
         this.rejections = new AuthIdentityRejectionStore(jdbc);
         this.noops = new AuthAdminAccessNoopReceipts(jdbc);
@@ -132,7 +135,7 @@ public class AuthIdentityOperationStore {
                                     ? request.getKind()
                                     : reconciliation.authorizationKind();
                     requireCommandPermission(actorProfile, authorizationKind, request);
-                    if (!validateHeadmanAggregate(request))
+                    if (!validateHeadmanAggregate(request, authorizationKind))
                         return rejections.insert(
                                 request,
                                 canonical,
@@ -1156,7 +1159,8 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
         if (!allowed) throw error(Status.PERMISSION_DENIED, "IDENTITY_COMMAND_SCOPE_DENIED");
     }
 
-    private boolean validateHeadmanAggregate(PrepareIdentityOperationRequest request) {
+    private boolean validateHeadmanAggregate(
+            PrepareIdentityOperationRequest request, IdentityOperationKind authorizationKind) {
         var affected =
                 request.getTargetsList().stream()
                         .map(IdentityTargetCommand::getUserId)
@@ -1176,6 +1180,21 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
                                                         && g.hasGroupId()
                                                         && g.getGroupId() == headman.getGroupId()))
                     throw invalid();
+                if (authorizationKind
+                                == IdentityOperationKind.IDENTITY_OPERATION_KIND_HEADMAN_REPLACE
+                        && Boolean.TRUE.equals(
+                                jdbc.queryForObject(
+                                        """
+SELECT EXISTS(SELECT 1 FROM auth_identity_operations o
+ JOIN auth_identity_operation_targets t USING(operation_id)
+ WHERE o.phase='PREPARED_FENCED' AND t.desired_grants @>
+ jsonb_build_array(jsonb_build_object('role','HEADMAN','status','ACTIVE','group',?::bigint)))
+""",
+                                        Boolean.class,
+                                        headman.getGroupId())))
+                    // The earlier global-lock statement has finished. A newly committed
+                    // reservation is visible even when this transaction waited for that lock.
+                    return false;
                 var existing =
                         jdbc.queryForList(
                                 "SELECT user_id FROM user_role_grants WHERE role='headman' AND"
@@ -1185,7 +1204,7 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
                 // Global operation lock still proves no reservation exists for this UUID.
                 // Persist a definite CAS loss instead of turning it into uncertain PENDING.
                 if (existing.stream().anyMatch(id -> !affected.contains(id))) {
-                    if (request.getKind()
+                    if (authorizationKind
                             == IdentityOperationKind.IDENTITY_OPERATION_KIND_HEADMAN_REPLACE)
                         return false;
                     throw error(Status.ABORTED, "HEADMAN_STATE_STALE");

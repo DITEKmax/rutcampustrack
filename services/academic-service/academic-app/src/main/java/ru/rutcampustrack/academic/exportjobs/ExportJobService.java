@@ -126,7 +126,7 @@ public class ExportJobService {
             if (profile == null
                     || !profile.assigned()
                     || profile.userId() != admitted.actor().userId()
-                    || !profile.allows("USERS_VIEW")
+                    || (!profile.full() && !profile.allows("USERS_VIEW"))
                     || profile.full() != admitted.full())
                 throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
             return CheckAdminAccessResponse.newBuilder()

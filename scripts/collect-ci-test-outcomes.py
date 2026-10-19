@@ -198,6 +198,35 @@ HEADMAN_RACE_MARKER = re.compile(
     r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):\s*)?"
     r"HEADMAN_RACE_HTTP_DIAGNOSTIC_V1 category=(" + "|".join(HEADMAN_RACE_HTTP_CATEGORIES) + r")"
 )
+BOT_BRIDGE_CLASS = "ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT"
+BOT_BRIDGE_METHOD = "actualAcademicTlsOwnCardsReachPythonDispatcherAndExactProviderCleanup"
+BOT_BRIDGE_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java"
+BOT_BRIDGE_PHASES = (
+    "SETUP",
+    "REAL_TLS_DIRECTED_AUTH_BOUNDARIES",
+    "OWN_ROLES_NATIVE_DISPATCHER",
+    "PRIVACY_BEFORE_ANY_LOOKUP",
+    "FOREIGN_UID_DENIAL",
+    "ORIGINAL_UID_CLEANUP_AFTER_REBIND",
+    "EVENT_BEFORE_REGISTER",
+    "LATE_EDIT_AFTER_EXACT_DELETE",
+    "UNCERTAIN_OUTCOME_PRESERVES_DURABLE_RETRY",
+    "SETTLED_SANITIZE_FALLBACK",
+    "OLD_EVENT_CANNOT_REMOVE_LATER_CARD",
+    "GRANT_REVOCATION_NO_NEW_DELIVERY",
+    "ARCHIVE_PRESERVES_EXACT_OLD_CARD_CLEANUP",
+    "OWN_HOMEWORK_PROFILE",
+    "OWN_HOMEWORK_HANDLERS",
+    "OWN_HOMEWORK_TRANSPORT_DENIALS",
+    "OWN_HOMEWORK_REVOKED_GRANT",
+    "OWN_HOMEWORK_REBOUND_TELEGRAM",
+    "COMPLETE",
+    "OTHER",
+)
+BOT_BRIDGE_MARKER = re.compile(
+    r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):[ \t]{0,8})?"
+    r"\[NP01_BRIDGE branch=(OWN_HOMEWORK|CREDENTIALS) phase=(" + "|".join(BOT_BRIDGE_PHASES) + r")\]"
+)
 BOOTSTRAP_CLI_CLASS = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
 BOOTSTRAP_CLI_METHOD = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"
 BOOTSTRAP_CLI_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java"
@@ -583,6 +612,46 @@ def headman_race_failure_diagnostic(case: ElementTree.Element) -> dict:
     return result
 
 
+def bot_bridge_failure_diagnostic(case: ElementTree.Element) -> dict:
+    result = {"state": "ABSENT_OR_UNRECOGNIZED"}
+    failures = case.findall("failure")
+    if len(failures) != 1 or failures[0].get("type") not in {
+        "java.lang.AssertionError", "org.opentest4j.AssertionFailedError"
+    }:
+        return result
+    failure = failures[0]
+    markers = set()
+    for carrier in (failure.get("message", ""), failure.text or ""):
+        # Inspect only complete first lines, never a truncated marker or arbitrary suffix.
+        start = 0
+        observed = []
+        for _ in range(2):
+            end = carrier.find("\n", start, start + 257)
+            if end < 0:
+                if len(carrier) - start > 256:
+                    return result
+                line = carrier[start:]
+            else:
+                line = carrier[start:end]
+            line = line.removesuffix("\r")
+            if "NP01_BRIDGE" in line:
+                match = BOT_BRIDGE_MARKER.fullmatch(line)
+                if match is None:
+                    return result
+                observed.append(match.groups())
+            if end < 0:
+                break
+            start = end + 1
+        if len(observed) > 1:
+            return result
+        markers.update(observed)
+    # JUnit normally mirrors the same assertion in message and the first stack line.
+    if len(markers) == 1:
+        branch, phase = markers.pop()
+        return {"state": "CLOSED_MARKER", "branch": branch, "phase": phase}
+    return result
+
+
 def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> dict:
     result = {
         "state": "ABSENT_OR_UNRECOGNIZED",
@@ -766,6 +835,16 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                     and known["source"] == HEADMAN_RACE_SOURCE
                 ):
                     safe["failureDiagnostic"] = headman_race_failure_diagnostic(case)
+                if (
+                    service == "academic-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class == BOT_BRIDGE_CLASS
+                    and method == BOT_BRIDGE_METHOD
+                    and known["source"] == BOT_BRIDGE_SOURCE
+                ):
+                    safe["failureDiagnostic"] = bot_bridge_failure_diagnostic(case)
                 if (
                     service == "academic-service"
                     and task == "integrationTest"

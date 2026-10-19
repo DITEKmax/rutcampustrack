@@ -22,6 +22,7 @@ const nativePrimaryPaths = {
   SUBJECT_OTP: ['DOCKER_INSPECT', 'JSON_PARSE'],
   SEMESTER_PREVIEW: ['HTTP_GET'],
   ASYNC_REPORT: ['WAIT_DOWNLOAD'],
+  BOT_ROLE_MENU: ['CHILD_EXIT'],
 } as const;
 const nativeErrorClasses = [
   'Error',
@@ -55,16 +56,28 @@ const nativeTransportHints = [
   'TLS_CERTIFICATE', 'TLS_HANDSHAKE', 'ECONNRESET', 'ECONNREFUSED',
   'REQUEST_CONTEXT_DISPOSED', 'REQUEST_TIMEOUT', 'UNKNOWN',
 ] as const;
+const nativeBotPhases = [
+  'setup',
+  'hosted_private_current_menu',
+  'hosted_private_guard',
+  'hosted_teacher_today_and_empty',
+  'hosted_headman_current_roster_statistics',
+  'hosted_fresh_binding',
+  'hosted_revoked_headman_and_late_callback',
+  'hosted_role_menu_complete',
+  'UNKNOWN',
+] as const;
 type NativePrimaryPath = keyof typeof nativePrimaryPaths;
 interface NativePrimaryFailure {
   path: NativePrimaryPath;
-  action: 'DOCKER_INSPECT' | 'JSON_PARSE' | 'HTTP_GET' | 'WAIT_DOWNLOAD';
+  action: 'DOCKER_INSPECT' | 'JSON_PARSE' | 'HTTP_GET' | 'WAIT_DOWNLOAD' | 'CHILD_EXIT';
   errorClass: (typeof nativeErrorClasses)[number];
   code: (typeof nativeErrorCodes)[number];
   exitStatus: number | 'UNKNOWN';
   state?: (typeof nativeJobStates)[number];
   errorCode?: (typeof nativeJobErrors)[number];
   transportHint?: (typeof nativeTransportHints)[number];
+  phase?: (typeof nativeBotPhases)[number];
 }
 
 /** First facts only; no raw messages, commands, output, paths or object-supplied class names. */
@@ -147,9 +160,12 @@ export function retainNativePrimaryFailure(
     }
   }
   const transport = path === 'SEMESTER_PREVIEW' ? { transportHint } : {};
+  const botPhase = path === 'BOT_ROLE_MENU'
+    ? { phase: nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN' }
+    : {};
   annotations.push({
     type: nativePrimaryAnnotation,
-    description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport }),
+    description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport, ...botPhase }),
   });
 }
 
@@ -173,15 +189,18 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const state = ownData(value, 'state');
     const errorCode = ownData(value, 'errorCode');
     const transportHint = ownData(value, 'transportHint');
+    const phase = ownData(value, 'phase');
     const fields = ['path', 'action', 'errorClass', 'code', 'exitStatus'];
     if (path === 'SEMESTER_PREVIEW') fields.push('transportHint');
     if (path === 'ASYNC_REPORT') fields.push('state');
     if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
+    if (path === 'BOT_ROLE_MENU') fields.push('phase');
     const keys = Object.keys(value);
     if (
       keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
       (path === 'SEMESTER_PREVIEW' && !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
       (path === 'ASYNC_REPORT' && !nativeJobStates.some((candidate) => candidate === state)) ||
+      (path === 'BOT_ROLE_MENU' && !nativeBotPhases.some((candidate) => candidate === phase)) ||
       (path === 'ASYNC_REPORT' &&
         state === 'error' &&
         !nativeJobErrors.some((candidate) => candidate === errorCode))
@@ -192,7 +211,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const code = ownData(value, 'code');
     const exitStatus = ownData(value, 'exitStatus');
     if (
-      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW' && path !== 'ASYNC_REPORT') ||
+      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW' && path !== 'ASYNC_REPORT' && path !== 'BOT_ROLE_MENU') ||
       !nativePrimaryPaths[path].some((candidate) => candidate === action) ||
       !nativeErrorClasses.some((candidate) => candidate === errorClass) ||
       !nativeErrorCodes.some((candidate) => candidate === code) ||
@@ -214,6 +233,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       exitStatus,
       ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
       ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
+      ...(path === 'BOT_ROLE_MENU' ? { phase } : {}),
     } as NativePrimaryFailure);
   }
   return result;

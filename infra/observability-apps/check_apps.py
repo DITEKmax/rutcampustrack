@@ -156,6 +156,13 @@ def closed_budget_observation(baseline, profile, disk_before, disk_after):
         operation = operation if isinstance(operation, dict) else {}
         idle = idle if isinstance(idle, dict) else {}
         return {"operation_peak_rss_bytes": number(operation.get("peak_rss_bytes")),
+                "operation_count": number(operation.get("operations")),
+                "operation_duration_ns": number(operation.get("duration_ns")),
+                "models_per_render": number(operation.get("models_per_render")),
+                "heap_used_before_bytes": number(operation.get("heap_used_before_bytes")),
+                "heap_committed_before_bytes": number(operation.get("heap_committed_before_bytes")),
+                "heap_used_after_bytes": number(operation.get("heap_used_after_bytes")),
+                "heap_committed_after_bytes": number(operation.get("heap_committed_after_bytes")),
                 "operation_cpu_ns_per_operation": ratio(operation.get("process_cpu_ns"), operation.get("operations")),
                 "idle_cpu_cores": number(idle.get("cpu_cores"))}
 
@@ -575,6 +582,13 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
             flame = wait_for(flamegraph, 90)
             disk_after = volumes()
             budget_hint = closed_budget_observation(baseline, profile, disk_before, disk_after)
+            budget_hint["source_build_identity"] = {
+                "qualification": "SOURCE_NOT_EXECUTABLE_IMAGE",
+                "source_sha": revision,
+                "probe_source_sha256": hashlib.sha256((ROOT / "infra/observability-apps/java/ru/rutcampustrack/attendance/report/ObservabilityProbe.java").read_bytes()).hexdigest(),
+                "renderer_source_sha256": hashlib.sha256((ROOT / "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/DocxRenderer.java").read_bytes()).hexdigest(),
+            }
+            budget_hint["heap_sampling"] = "MEASUREMENT_ENDPOINTS_NOT_PEAK"
             require(sum(disk_after.values()) < 1024 * MIB, "Disposable data exceeds 1GiB measured budget")
             require(profile["operation"]["peak_rss_bytes"] - baseline["operation"]["peak_rss_bytes"] <= 64 * MIB, "Profiler RSS delta exceeds 64MiB")
             before_cpu = baseline["operation"]["process_cpu_ns"] / baseline["operation"]["operations"]

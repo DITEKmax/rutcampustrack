@@ -5793,7 +5793,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
 // Only the fixture holds user/admin bearers; the Python process receives two directed bot capabilities.
 test('actual private bot menu roster and teacher Today use hosted current authority', async ({
   activeHeadmanDataset: dataset,
-}) => {
+}, info) => {
   const run = process.env.GITHUB_RUN_ID;
   const attempt = process.env.GITHUB_RUN_ATTEMPT;
   const root = resolve(__dirname, '../../..');
@@ -6121,6 +6121,10 @@ test('actual private bot menu roster and teacher Today use hosted current author
     } catch {
       throw new Error('Hosted bot child omitted safe outcomes');
     }
+    if (exit !== 0)
+      retainNativePrimaryFailure(
+        info.annotations, 'BOT_ROLE_MENU', 'CHILD_EXIT', { status: exit }, facts,
+      );
     expect(exit).toBe(0);
     expect(
       facts.qualified === true &&

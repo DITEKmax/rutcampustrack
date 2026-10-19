@@ -1421,6 +1421,14 @@ jobs:
                   elif service == 'auth-service':
                       expected_names.add(subject_digest['method'] + '()')
                   total = str(len(expected_names))
+                  observed_counts = {key: boundary_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  observed_cases = boundary_suite.findall('testcase')
+                  proof['acceptedBoundaryRule'].update(
+                      observedSuiteCounts={key: int(value) if value is not None and re.fullmatch(r'(?:0|[1-9][0-9]?|100)', value) else 'UNKNOWN'
+                                           for key, value in observed_counts.items()},
+                      expectedCount=len(expected_names),
+                      testcaseCount=len(observed_cases) if len(observed_cases) <= 100 else 'UNKNOWN',
+                      knownExpectedNamesExact={case.get('name') for case in observed_cases} == expected_names)
                   assert boundary_suite.tag == 'testsuite' and boundary_suite.get('name') == accepted_boundary['package']
                   assert {key: boundary_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
                       'tests': total, 'failures': total, 'errors': '0', 'skipped': '0'}
@@ -1517,15 +1525,15 @@ jobs:
                   assert path.read_bytes() == content
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
               if additional is not None and current:
-                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
+                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == 'ee838949ab03c847fcbbff78192e209a4da5066ad71fe28d9bc4037b67c5fefc'
                   proof['additionalRule']['sourceRestoredExact'] = True
               if audit is not None and current:
                   assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '03df4515b701067f8a71624867338c6745c9da45ed420492f7d4723e81388204'
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:
-                  assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == 'd0d844748441cd4cb0fd9a2bb98b21e92ff0faecf146a5706b6cb40f894c9cd0'
-                  assert hashlib.sha256(admin_rights['production'].read_bytes()).hexdigest() == '6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36'
+                  assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == '77f3fa756acbff72f9d890bfa8bd7cea43f3b0a55361ff6327a53316b54e694e'
+                  assert hashlib.sha256(admin_rights['production'].read_bytes()).hexdigest() == '0176504ec5d922fa35c9e627cb8f9ceec60234b198896484e5401aec87ec53c6'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(admin_rights['source'])]) == b''
                   proof['adminRightsRule']['sourceRestoredExact'] = True
               if service == 'auth-service' and current:
@@ -1535,7 +1543,7 @@ jobs:
               if service == 'notification-service' and current:
                   proof['sourceRestoredExact'] = True
               if service == 'academic-service' and current:
-                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == 'e4c28850a60ae3c0207205d9f651edaa89e2700e3d26bc0cd9ceef60dd97a374'
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '6db8d2a6f6bf6ee68d57f000295e64e1db3794b060500c37a3f1c735948486bf'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(test_source)]) == b''
                   proof['sourceRestoredExact'] = True
               if scoped_read is not None and current:

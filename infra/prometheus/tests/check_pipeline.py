@@ -503,7 +503,8 @@ def e2e_gateway_openapi(docker, safe):
                 )
         if producer == "auth-service":
             assert paths["/auth/login"]["post"]["security"] == []
-            export = paths["/auth/export-jobs"]["post"]
+        if producer == "academic-service":
+            export = paths["/academic/export-jobs"]["post"]
             assert {"bearerAuth": []} in export["security"] and {"202", "503"} <= set(export["responses"])
             assert isinstance(doc["components"].get("schemas"), dict)
             status = doc["components"]["schemas"]["Status"]

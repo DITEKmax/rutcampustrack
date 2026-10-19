@@ -711,7 +711,7 @@ class InitialAdministratorBootstrapIT {
                 Files.writeString(authPassword, DB_PASSWORD);
                 Files.setPosixFilePermissions(
                         authPassword,
-                        java.nio.file.attribute.PosixFilePermissions.fromString("r--r--r--"));
+                        java.nio.file.attribute.PosixFilePermissions.fromString("rw-------"));
             }
             var first = runOperatorCli(requestFile, compose, CliInvocation.FRESH);
             assertThat(
@@ -859,14 +859,23 @@ class InitialAdministratorBootstrapIT {
         Files.createDirectory(
                 config,
                 java.nio.file.attribute.PosixFilePermissions.asFileAttribute(
-                        java.nio.file.attribute.PosixFilePermissions.fromString("rwxr-xr-x")));
+                        java.nio.file.attribute.PosixFilePermissions.fromString("rwx------")));
+        // The synthetic one-shot uses its private fixture owner's UID, independent of image USER.
+        var ownership = Files.readAttributes(config, "unix:uid,gid");
+        if (!(ownership.get("uid") instanceof Integer uid)
+                || uid <= 0
+                || !(ownership.get("gid") instanceof Integer gid)
+                || gid <= 0)
+            throw new AssertionError("non-root owned CLI config required");
         Path password = config.resolve("spring.flyway.password");
         Files.writeString(password, DB_PASSWORD);
         Files.setPosixFilePermissions(
-                password, java.nio.file.attribute.PosixFilePermissions.fromString("r--r--r--"));
+                password, java.nio.file.attribute.PosixFilePermissions.fromString("rw-------"));
         return Map.of(
                 "image",
                 image,
+                "user",
+                uid + ":" + gid,
                 "pull_policy",
                 "never",
                 "network_mode",

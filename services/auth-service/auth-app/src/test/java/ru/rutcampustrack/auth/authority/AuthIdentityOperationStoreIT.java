@@ -391,6 +391,244 @@ VALUES(?,?,?,1,?,?,?,?,'PASSWORD')
         verifyNoInteractions(expired);
     }
 
+    @Test
+    void pendingHeadmanReservesOnlyItsGroupAndRejectsOtherCandidateWithoutAuthorityEffects() {
+        long group = 16000000 + actor.userId();
+        var firstCreate = studentInGroup(group);
+        var first = operations.commit(commit(firstCreate, operations.prepare(firstCreate)));
+        var secondCreate = studentInGroup(group);
+        var second = operations.commit(commit(secondCreate, operations.prepare(secondCreate)));
+        var otherCreate = studentInGroup(group + 1000000);
+        var other = operations.commit(commit(otherCreate, operations.prepare(otherCreate)));
+        var winner = headmanCommand(first, false, 1);
+        var prepared = operations.prepare(winner);
+        assertThat(prepared.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_PREPARED_FENCED);
+        var loser = headmanCommand(second, false, 1);
+        String beforeLoser = adminNoopEffects(second.getTargets(0).getUserId());
+        String beforeWinner = adminNoopEffects(first.getTargets(0).getUserId());
+        long catalogBefore = clock();
+
+        var rejected = operations.prepare(loser);
+        assertThat(rejected.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_REJECTED);
+        assertThat(rejected.getErrorCode()).isEqualTo("PREPARE_REJECTED_TARGET_CONFLICT");
+        assertThat(rejected.getTargetsCount()).isZero();
+        assertThat(count("auth_identity_operation_rejections", loser)).isOne();
+        assertThat(count("auth_identity_operations", loser)).isZero();
+        assertThat(count("auth_identity_operation_targets", loser)).isZero();
+        assertThat(adminNoopEffects(second.getTargets(0).getUserId())).isEqualTo(beforeLoser);
+        assertThat(adminNoopEffects(first.getTargets(0).getUserId())).isEqualTo(beforeWinner);
+        assertThat(clock()).isEqualTo(catalogBefore);
+        assertThat(operations.get(get(winner))).isEqualTo(prepared);
+
+        var unavailable = mock(AuthInternalActorReader.class);
+        when(unavailable.read())
+                .thenThrow(new IllegalStateException("past actor is not replay authority"));
+        var restarted = store(unavailable);
+        assertThat(restarted.prepare(loser)).isEqualTo(rejected);
+        assertThat(restarted.get(get(loser))).isEqualTo(rejected);
+        assertThat(restarted.rejectUnprepared(reject(loser))).isEqualTo(rejected);
+        verifyNoInteractions(unavailable);
+        var independent = headmanCommand(other, false, 1);
+        assertThat(
+                        operations
+                                .commit(commit(independent, operations.prepare(independent)))
+                                .getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        assertThat(operations.prepare(winner)).isEqualTo(prepared);
+        var committed = operations.commit(commit(winner, prepared));
+        assertThat(committed.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        var revoke = roleCommand(committed, "HEADMAN", "SUSPENDED", 2, 0);
+        assertThat(operations.commit(commit(revoke, operations.prepare(revoke))).getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        // Historical committed desired grants do not reserve a now-revoked group forever.
+        var later = headmanCommand(second, false, 1);
+        assertThat(operations.commit(commit(later, operations.prepare(later))).getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        assertThat(operations.prepare(winner)).isEqualTo(committed);
+        assertThat(restarted.prepare(loser)).isEqualTo(rejected);
+        verifyNoInteractions(unavailable);
+    }
+
+    @Test
+    void headmanReservationIsVisibleAfterGlobalLockWaitAndFailedSafeDoesNotReserveGroup()
+            throws Exception {
+        long group = 18000000 + actor.userId();
+        var firstCreate = studentInGroup(group);
+        var first = operations.commit(commit(firstCreate, operations.prepare(firstCreate)));
+        var secondCreate = studentInGroup(group);
+        var second = operations.commit(commit(secondCreate, operations.prepare(secondCreate)));
+        var winner = headmanCommand(first, false, 1);
+        var loser = headmanCommand(second, false, 1);
+        var holderPid = new CompletableFuture<Integer>();
+        var release = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+        IdentityOperationResult prepared;
+        IdentityOperationResult rejected;
+        try {
+            var holding =
+                    executor.submit(
+                            () ->
+                                    new TransactionTemplate(transactions)
+                                            .execute(
+                                                    status -> {
+                                                        assertThat(
+                                                                        runtime.queryForObject(
+                                                                                "SHOW transaction_isolation",
+                                                                                String.class))
+                                                                .isEqualTo("read committed");
+                                                        var result = operations.prepare(winner);
+                                                        holderPid.complete(
+                                                                runtime.queryForObject(
+                                                                        "SELECT pg_backend_pid()",
+                                                                        Integer.class));
+                                                        try {
+                                                            assertThat(
+                                                                            release.await(
+                                                                                    20,
+                                                                                    TimeUnit
+                                                                                            .SECONDS))
+                                                                    .isTrue();
+                                                        } catch (InterruptedException interrupted) {
+                                                            Thread.currentThread().interrupt();
+                                                            throw new IllegalStateException(
+                                                                    "reservation holder"
+                                                                            + " interrupted",
+                                                                    interrupted);
+                                                        }
+                                                        return result;
+                                                    }));
+            int blocker = holderPid.get(10, TimeUnit.SECONDS);
+            var waiting = executor.submit(() -> operations.prepare(loser));
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            boolean lockObserved = false;
+            while (System.nanoTime() < deadline) {
+                lockObserved =
+                        Boolean.TRUE.equals(
+                                runtime.queryForObject(
+                                        """
+SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database()
+ AND usename=current_user AND state='active' AND wait_event_type='Lock'
+ AND ?=ANY(pg_blocking_pids(pid)))
+""",
+                                        Boolean.class,
+                                        blocker));
+                if (lockObserved) break;
+                Thread.sleep(10);
+            }
+            assertThat(lockObserved)
+                    .as("actual pending PREPARE waits for the global reservation lock")
+                    .isTrue();
+            assertThat(waiting.isDone()).isFalse();
+            release.countDown();
+            prepared = holding.get(10, TimeUnit.SECONDS);
+            rejected = waiting.get(10, TimeUnit.SECONDS);
+        } finally {
+            release.countDown();
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
+        assertThat(prepared.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_PREPARED_FENCED);
+        assertThat(rejected.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_REJECTED);
+        assertThat(rejected.getErrorCode()).isEqualTo("PREPARE_REJECTED_TARGET_CONFLICT");
+        assertThat(count("auth_identity_operations", loser)).isZero();
+        assertThat(count("auth_identity_operation_rejections", loser)).isOne();
+
+        var failed =
+                operations.fail(
+                        FailIdentityOperationRequest.newBuilder()
+                                .setOperationId(winner.getOperationId())
+                                .setCommandHash(winner.getCommandHash())
+                                .setExpectedOperationRevision(prepared.getOperationRevision())
+                                .setErrorCode("ACADEMIC_CONFLICT")
+                                .build());
+        assertThat(failed.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_FAILED_SAFE);
+        assertThat(
+                        owner.queryForObject(
+                                "SELECT fence_operation_id FROM auth_identities WHERE id=?",
+                                UUID.class,
+                                first.getTargets(0).getUserId()))
+                .isEqualTo(UUID.fromString(winner.getOperationId()));
+        var retry = headmanCommand(second, false, 1);
+        var retryPrepared = operations.prepare(retry);
+        assertThat(retryPrepared.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_PREPARED_FENCED);
+        assertThat(operations.prepare(winner)).isEqualTo(failed);
+        assertThat(operations.prepare(loser)).isEqualTo(rejected);
+        var reconciliation =
+                hash(
+                        winner.toBuilder()
+                                .setOperationId(UUID.randomUUID().toString())
+                                .setKind(IdentityOperationKind.IDENTITY_OPERATION_KIND_RECONCILE)
+                                .setTargets(
+                                        0,
+                                        winner.getTargets(0).toBuilder()
+                                                .setExpectedRolesVersion(
+                                                        prepared.getTargets(0)
+                                                                .getFinalRolesVersion())
+                                                .setSupersedesFailedOperationId(
+                                                        winner.getOperationId())));
+        String beforeReconciliation = adminNoopEffects(first.getTargets(0).getUserId());
+        String beforePending = adminNoopEffects(second.getTargets(0).getUserId());
+        long beforeCatalog = clock();
+        var reconcileRejected = operations.prepare(reconciliation);
+        assertThat(reconcileRejected.getKind())
+                .isEqualTo(IdentityOperationKind.IDENTITY_OPERATION_KIND_RECONCILE);
+        assertThat(reconcileRejected.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_REJECTED);
+        assertThat(reconcileRejected.getErrorCode()).isEqualTo("PREPARE_REJECTED_TARGET_CONFLICT");
+        assertThat(reconcileRejected.getTargetsCount()).isZero();
+        assertThat(count("auth_identity_operation_rejections", reconciliation)).isOne();
+        assertThat(count("auth_identity_operations", reconciliation)).isZero();
+        assertThat(count("auth_identity_operation_targets", reconciliation)).isZero();
+        assertThat(adminNoopEffects(first.getTargets(0).getUserId()))
+                .isEqualTo(beforeReconciliation);
+        assertThat(adminNoopEffects(second.getTargets(0).getUserId())).isEqualTo(beforePending);
+        assertThat(clock()).isEqualTo(beforeCatalog);
+        assertThat(operations.get(get(winner))).isEqualTo(failed);
+        assertThat(operations.get(get(retry))).isEqualTo(retryPrepared);
+        var unavailable = mock(AuthInternalActorReader.class);
+        when(unavailable.read())
+                .thenThrow(new IllegalStateException("past actor is not replay authority"));
+        var restarted = store(unavailable);
+        assertThat(restarted.prepare(reconciliation)).isEqualTo(reconcileRejected);
+        assertThat(restarted.get(get(reconciliation))).isEqualTo(reconcileRejected);
+        assertThat(restarted.rejectUnprepared(reject(reconciliation))).isEqualTo(reconcileRejected);
+        verifyNoInteractions(unavailable);
+
+        var retryCommitted = operations.commit(commit(retry, retryPrepared));
+        assertThat(retryCommitted.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        var committedConflict =
+                hash(reconciliation.toBuilder().setOperationId(UUID.randomUUID().toString()));
+        var committedRejected = operations.prepare(committedConflict);
+        assertThat(committedRejected.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_REJECTED);
+        assertThat(committedRejected.getErrorCode()).isEqualTo("PREPARE_REJECTED_TARGET_CONFLICT");
+        assertThat(count("auth_identity_operation_rejections", committedConflict)).isOne();
+        assertThat(count("auth_identity_operations", committedConflict)).isZero();
+        var revoke = roleCommand(retryCommitted, "HEADMAN", "SUSPENDED", 2, 0);
+        assertThat(operations.commit(commit(revoke, operations.prepare(revoke))).getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        // The fixed failed HEADMAN intent can reconcile with a fresh key once the group is free.
+        var released =
+                hash(reconciliation.toBuilder().setOperationId(UUID.randomUUID().toString()));
+        var releasedPrepared = operations.prepare(released);
+        assertThat(releasedPrepared.getKind())
+                .isEqualTo(IdentityOperationKind.IDENTITY_OPERATION_KIND_RECONCILE);
+        assertThat(releasedPrepared.getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_PREPARED_FENCED);
+        assertThat(operations.commit(commit(released, releasedPrepared)).getPhase())
+                .isEqualTo(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_COMMITTED);
+        assertThat(restarted.prepare(reconciliation)).isEqualTo(reconcileRejected);
+        verifyNoInteractions(unavailable);
+    }
+
     private PrepareIdentityOperationRequest studentInGroup(long group) {
         var command = create(UUID.randomUUID());
         return hash(

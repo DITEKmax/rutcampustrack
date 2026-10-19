@@ -106,6 +106,8 @@ public final class ObservabilityProbe {
         // Warm the actual operation equally before sampling both modes.
         if (operation) renderer.render(models);
         Files.writeString(control.resolve("phase"), mode + (operation ? "-operation" : "-idle"));
+        // Heap endpoints explain commitment/usage; they are not a sampled or true peak.
+        var heapBefore = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
         PEAK.set(rss());
         long start = System.nanoTime();
         long cpu = OS.getProcessCpuTime();
@@ -119,6 +121,7 @@ public final class ObservabilityProbe {
         }
         long elapsed = System.nanoTime() - start;
         long consumed = OS.getProcessCpuTime() - cpu;
+        var heapAfter = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
         Files.writeString(control.resolve("phase"), mode + "-between-phases");
         return Map.of(
                 "duration_ns",
@@ -129,6 +132,16 @@ public final class ObservabilityProbe {
                 PEAK.get(),
                 "operations",
                 count,
+                "models_per_render",
+                models.size(),
+                "heap_used_before_bytes",
+                heapBefore.getUsed(),
+                "heap_committed_before_bytes",
+                heapBefore.getCommitted(),
+                "heap_used_after_bytes",
+                heapAfter.getUsed(),
+                "heap_committed_after_bytes",
+                heapAfter.getCommitted(),
                 "cpu_cores",
                 (double) consumed / elapsed);
     }

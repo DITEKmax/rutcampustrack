@@ -89,6 +89,32 @@ public class AuthReportSecurityClient implements ReportSecurityAuthority {
     }
 
     @Override
+    public Admission admitPlan(
+            StoredReportIdentity identity,
+            boolean full,
+            UUID jobId,
+            UUID leaseId,
+            String planDigest,
+            long deadlineNanos) {
+        if (jobId == null
+                || leaseId == null
+                || planDigest == null
+                || !planDigest.matches("[0-9a-f]{64}"))
+            throw Status.INVALID_ARGUMENT.asRuntimeException();
+        var request =
+                request(identity, full)
+                        .setOwnerResourceId(jobId.toString())
+                        .setLeaseId(leaseId.toString())
+                        .setSelectorHash(planDigest);
+        return admission(
+                directed(
+                                AuthSecurityCapabilityServiceGrpc.getAdmitStoredSessionMethod()
+                                        .getFullMethodName(),
+                                deadlineNanos)
+                        .admitStoredSession(request.build()));
+    }
+
+    @Override
     public Capability issue(StoredReportIdentity identity, boolean full, UUID jobId) {
         var reply =
                 directed(

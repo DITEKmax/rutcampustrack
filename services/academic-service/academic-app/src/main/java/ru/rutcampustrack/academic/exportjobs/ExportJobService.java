@@ -158,6 +158,151 @@ public class ExportJobService {
         }
     }
 
+    /** Exact transient ADMIN_GROUP_ATTENDANCE read authority; no bearer is retained. */
+    public GroupAttendanceReadScope groupAttendanceReadScope(ExportJobRepository.Job job) {
+        if (job == null
+                || job.leaseId() == null
+                || job.identity().report().kind() != ReportDownloadKind.ADMIN_GROUP_ATTENDANCE)
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        ExportJobRepository.requireLease(job, job.leaseId());
+        return new GroupAttendanceReadScope(job);
+    }
+
+    public final class GroupAttendanceReadScope {
+        private final ExportJobRepository.Job expected;
+        private final long deadlineNanos;
+
+        private GroupAttendanceReadScope(ExportJobRepository.Job expected) {
+            this.expected = expected;
+            long remaining =
+                    Duration.between(Instant.now(), expected.leaseUntil().minusSeconds(30))
+                            .toNanos();
+            if (remaining <= 0) throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+            deadlineNanos = System.nanoTime() + remaining;
+        }
+
+        public void requireBinding(
+                UUID job,
+                UUID lease,
+                InternalJwtClaims actor,
+                ru.rutcampustrack.academic.contract.dto.adminattendance.AdminAttendanceReportModels
+                                .Export
+                        query) {
+            if (!expected.id().equals(job)
+                    || !expected.leaseId().equals(lease)
+                    || !expected.identity().actor().equals(actor))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            requireSelector(query);
+        }
+
+        public void requireSelector(
+                ru.rutcampustrack.academic.contract.dto.adminattendance.AdminAttendanceReportModels
+                                .Export
+                        query) {
+            var selected = expected.identity().report().adminGroupAttendance();
+            if (query == null
+                    || query.sort() == null
+                    || query.direction() == null
+                    || query.format() == null
+                    || !selected.semesterId().equals(query.semesterId())
+                    || !selected.search().equals(query.search())
+                    || !selected.sort().equals(query.sort().name())
+                    || !selected.direction().equals(query.direction().name())
+                    || !selected.format().code().equals(query.format().name()))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        }
+
+        public ExportJobRepository.Job job() {
+            requireDeadline();
+            var current = owned(expected.identity().actor(), expected.id());
+            ExportJobRepository.requireLease(current, expected.leaseId());
+            if (!expected.identity().equals(current.identity()))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            return current;
+        }
+
+        public long remainingNanos() {
+            requireDeadline();
+            return deadlineNanos - System.nanoTime();
+        }
+
+        public void check() {
+            var current = job();
+            local.require(current.identity(), false);
+            requireProfile(admit(current.identity(), false, null, null, deadlineNanos));
+            job();
+        }
+
+        public ReportSecurityAuthority.Admission admitPlan(
+                ru.rutcampustrack.reportrendering.grpc.ReportRenderPlan plan) {
+            check();
+            var current = job();
+            var actor = current.identity().actor();
+            var wire = plan.getActor();
+            if (!plan.hasAdminGroupStats()
+                    || plan.getAdminGroupStats().getSemesterId() != current.identity().semesterId()
+                    || !plan.getReportKind()
+                            .equals(ReportDownloadKind.ADMIN_GROUP_ATTENDANCE.code())
+                    || !plan.getJobId().equals(current.id().toString())
+                    || !plan.getLeaseId().equals(current.leaseId().toString())
+                    || wire.getUserId() != actor.userId()
+                    || !wire.getSessionId().equals(actor.sessionId().toString())
+                    || wire.getSessionVersion() != actor.sessionVersion()
+                    || wire.getRolesVersion() != actor.rolesVersion()
+                    || !wire.getRole().equals(actor.role())
+                    || !wire.getStatus().equals(actor.status())
+                    || wire.hasGroupId() != (actor.groupId() != null)
+                    || wire.hasGroupId() && !Objects.equals(wire.getGroupId(), actor.groupId())
+                    || wire.getIsHeadman() != actor.isHeadman()
+                    || wire.getReadOnly() != actor.readOnly())
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            String hash;
+            try {
+                hash =
+                        HexFormat.of()
+                                .formatHex(
+                                        java.security.MessageDigest.getInstance("SHA-256")
+                                                .digest(plan.toByteArray()));
+            } catch (java.security.NoSuchAlgorithmException impossible) {
+                throw new IllegalStateException(impossible);
+            }
+            try {
+                var admitted =
+                        security.admitPlan(
+                                current.identity(),
+                                false,
+                                current.id(),
+                                current.leaseId(),
+                                hash,
+                                deadlineNanos);
+                requireProfile(admitted);
+                job();
+                return admitted;
+            } catch (StatusRuntimeException failure) {
+                throw map(failure);
+            }
+        }
+
+        private void requireProfile(ReportSecurityAuthority.Admission admitted) {
+            var p = admitted.adminProfile();
+            if (!expected.identity().actor().equals(admitted.actor())
+                    || p == null
+                    || !p.assigned()
+                    || p.userId() != admitted.actor().userId()
+                    || p.full() != admitted.full()
+                    || !p.full() && !p.allows("DASHBOARD_VIEW"))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            requireDeadline();
+        }
+
+        private void requireDeadline() {
+            if (org.springframework.transaction.support.TransactionSynchronizationManager
+                            .isActualTransactionActive()
+                    || System.nanoTime() >= deadlineNanos)
+                throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
     public Download file(InternalJwtClaims actor, UUID id) {
         var job = owned(actor, id);
         authorize(job);

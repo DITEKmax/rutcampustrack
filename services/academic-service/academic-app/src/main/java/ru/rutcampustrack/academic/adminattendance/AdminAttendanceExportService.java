@@ -49,6 +49,10 @@ public class AdminAttendanceExportService {
 
     public List<FormatOption> formats() {
         reports.requireCurrentAccess();
+        return formatOptions();
+    }
+
+    private static List<FormatOption> formatOptions() {
         return List.of(
                 new FormatOption("html", "HTML", "text/html", "html"),
                 new FormatOption("pdf", "PDF", "application/pdf", "pdf"),
@@ -66,10 +70,25 @@ public class AdminAttendanceExportService {
     }
 
     public Download generate(Export query, UUID jobId, UUID leaseId) {
-        reports.requireCurrentAccess();
+        return generate(query, jobId, leaseId, null);
+    }
+
+    public Download generate(
+            Export query,
+            UUID jobId,
+            UUID leaseId,
+            ru.rutcampustrack.academic.exportjobs.ExportJobService.GroupAttendanceReadScope scope) {
+        if (scope == null) reports.requireCurrentAccess();
+        else {
+            scope.requireBinding(jobId, leaseId, context.getClaims(), query);
+            scope.check();
+        }
         requireJob(query, jobId, leaseId);
         var report =
-                reports.full(query.semesterId(), query.search(), query.sort(), query.direction());
+                scope == null
+                        ? reports.full(
+                                query.semesterId(), query.search(), query.sort(), query.direction())
+                        : reports.fullForReport(query, scope);
         List<List<Object>> rows =
                 report.rows().stream()
                         .map(
@@ -121,13 +140,18 @@ public class AdminAttendanceExportService {
             throw new ResponseStatusException(
                     HttpStatus.PAYLOAD_TOO_LARGE, "Файл превышает допустимый размер");
         // Recheck both the live capability and exact lease after potentially slow rendering.
-        reports.requireCurrentAccess();
+        if (scope == null) reports.requireCurrentAccess();
+        else {
+            scope.requireBinding(jobId, leaseId, context.getClaims(), query);
+            reports.recheckReport(query, report, scope);
+        }
         requireJob(query, jobId, leaseId);
         var format =
-                formats().stream()
-                        .filter(value -> value.code().equals(query.format().name()))
-                        .findFirst()
-                        .orElseThrow();
+                (scope == null ? formats() : formatOptions())
+                        .stream()
+                                .filter(value -> value.code().equals(query.format().name()))
+                                .findFirst()
+                                .orElseThrow();
         return new Download(
                 "admin-group-attendance." + format.extension(),
                 format.mime(),

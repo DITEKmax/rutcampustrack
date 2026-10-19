@@ -25,7 +25,8 @@ public class GrpcAuthInterceptor implements ServerInterceptor {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
 
-        if (BotReadScheduleIdentityInterceptor.admitted(call)) {
+        if (BotReadScheduleIdentityInterceptor.admitted(call)
+                || SubjectDeletionServiceIdentityInterceptor.admitted(call)) {
             return next.startCall(call, headers);
         }
 

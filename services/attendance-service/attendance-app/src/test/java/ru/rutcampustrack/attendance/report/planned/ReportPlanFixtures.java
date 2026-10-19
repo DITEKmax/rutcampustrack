@@ -202,6 +202,28 @@ public final class ReportPlanFixtures {
         return base.build();
     }
 
+    public static InternalJwtClaims adminActor() {
+        return new InternalJwtClaims(7, SESSION, 2, 5, "ADMIN", "ACTIVE", null, false, false);
+    }
+
+    public static ReportRenderPlan adminPlan() {
+        return plan("HEADMAN_STATS", "html").toBuilder()
+                .clearSelector()
+                .clearHeadmanStatsScope()
+                .clearViewStatsAuthorized()
+                .clearRosters()
+                .addRosters(ReportGroupRoster.newBuilder().setGroupId(33).setRoster(roster(true)))
+                .setActor(identity(adminActor()))
+                .setReportKind("ADMIN_GROUP_ATTENDANCE")
+                .setAdminGroupStats(
+                        ru.rutcampustrack.attendance.grpc.AdminGroupStatsQuery.newBuilder()
+                                .setSemesterId(9)
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .addGroupIds(33))
+                .build();
+    }
+
     public static LessonResponse lesson() {
         return LessonResponse.newBuilder()
                 .setId(101)

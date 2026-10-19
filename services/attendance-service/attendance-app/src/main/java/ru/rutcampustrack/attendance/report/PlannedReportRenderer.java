@@ -47,6 +47,11 @@ public final class PlannedReportRenderer {
         this.converter = converter;
     }
 
+    public ru.rutcampustrack.attendance.grpc.AdminGroupStatsSnapshot readAdminGroupStats(
+            AdmittedReportPlan plan) {
+        return AdminGroupStatsReadService.readPlanned(reports, plan);
+    }
+
     public RenderReportResponse render(AdmittedReportPlan plan) {
         var source = plan.source();
         return switch (source.getReportKind()) {

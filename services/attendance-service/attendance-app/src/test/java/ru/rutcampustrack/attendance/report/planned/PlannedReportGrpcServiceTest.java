@@ -40,6 +40,83 @@ class PlannedReportGrpcServiceTest {
     }
 
     @Test
+    void adminStatsMethodRequiresExactReportCapabilityAndDiscardsAfterExpiry() {
+        var plan = ReportPlanFixtures.adminPlan();
+        String cap =
+                capability(plan, Instant.now().plusSeconds(45), ReportPlanFixtures.adminActor());
+        var result =
+                ru.rutcampustrack.attendance.grpc.AdminGroupStatsSnapshot.newBuilder()
+                        .setSemesterId(9)
+                        .build();
+        when(renderer.readAdminGroupStats(any())).thenReturn(result);
+        var accepted = invokeAdmin(plan, cap);
+        assertThat(accepted.result).isEqualTo(result);
+        assertThat(accepted.completed).isTrue();
+        verify(validator, times(2))
+                .validateAcademicReport(
+                        cap,
+                        plan.getReportKind(),
+                        AdmittedReportPlan.digest(plan),
+                        plan.getJobId(),
+                        plan.getLeaseId());
+        assertThatThrownBy(() -> validator.validate(cap)).isInstanceOf(InternalJwtException.class);
+        var changed = plan.toBuilder().setLeaseId(UUID.randomUUID().toString()).build();
+        assertThat(Status.fromThrowable(invokeAdmin(changed, cap).error).getCode())
+                .isEqualTo(Status.Code.UNAUTHENTICATED);
+        assertThat(
+                        Status.fromThrowable(
+                                        invokeAdmin(
+                                                        ReportPlanFixtures.plan(
+                                                                "HEADMAN_STATS", "html"),
+                                                        cap)
+                                                .error)
+                                .getCode())
+                .isEqualTo(Status.Code.PERMISSION_DENIED);
+        doReturn(ReportPlanFixtures.adminActor())
+                .doThrow(new InternalJwtException("expired during read"))
+                .when(validator)
+                .validateAcademicReport(
+                        eq(cap), anyString(), anyString(), anyString(), anyString());
+        var expired = invokeAdmin(plan, cap);
+        assertThat(expired.result).isNull();
+        assertThat(expired.completed).isFalse();
+        assertThat(Status.fromThrowable(expired.error).getCode())
+                .isEqualTo(Status.Code.UNAUTHENTICATED);
+    }
+
+    private AdminRecording invokeAdmin(ReportRenderPlan plan, String cap) {
+        var observer = new AdminRecording();
+        Context.current()
+                .withValue(PlannedReportIdentityInterceptor.CAPABILITY, cap)
+                .withValue(ServicePrincipal.CONTEXT_KEY, ServicePrincipal.ACADEMIC_SERVICE)
+                .run(
+                        () ->
+                                service.readAdminGroupStats(
+                                        RenderReportRequest.newBuilder().setPlan(plan).build(),
+                                        observer));
+        return observer;
+    }
+
+    private static final class AdminRecording
+            implements StreamObserver<ru.rutcampustrack.attendance.grpc.AdminGroupStatsSnapshot> {
+        ru.rutcampustrack.attendance.grpc.AdminGroupStatsSnapshot result;
+        Throwable error;
+        boolean completed;
+
+        public void onNext(ru.rutcampustrack.attendance.grpc.AdminGroupStatsSnapshot value) {
+            result = value;
+        }
+
+        public void onError(Throwable value) {
+            error = value;
+        }
+
+        public void onCompleted() {
+            completed = true;
+        }
+    }
+
+    @Test
     void signedCapabilityBindsWholeMaterialAndStoredSessionBeforeAndAfterRendering() {
         var plan = ReportPlanFixtures.plan("HEADMAN_STATS", "html");
         when(renderer.render(any()))
@@ -160,6 +237,12 @@ class PlannedReportGrpcServiceTest {
         assertThat(intercept(interceptor, method, token, true, 2)).isFalse();
         assertThat(intercept(interceptor, method, null, true, 1)).isFalse();
         assertThat(intercept(interceptor, method, "unknown", true, 1)).isFalse();
+        String adminMethod =
+                ReportRenderingServiceGrpc.getReadAdminGroupStatsMethod().getFullMethodName();
+        assertThat(intercept(interceptor, adminMethod, token, true, 1)).isTrue();
+        assertThat(intercept(interceptor, adminMethod, token, false, 1)).isFalse();
+        assertThat(intercept(interceptor, adminMethod, token, true, 0)).isFalse();
+        assertThat(intercept(interceptor, adminMethod, token, true, 2)).isFalse();
         assertThat(intercept(interceptor, "attendance.Attendance/Mark", token, true, 1)).isFalse();
         assertThat(intercept(interceptor, "attendance.Attendance/Mark", null, false, 0)).isTrue();
     }
@@ -180,7 +263,11 @@ class PlannedReportGrpcServiceTest {
     }
 
     private static String capability(ReportRenderPlan plan, Instant expiry) {
-        var actor = ReportPlanFixtures.actor(false, false);
+        return capability(plan, expiry, ReportPlanFixtures.actor(false, false));
+    }
+
+    private static String capability(
+            ReportRenderPlan plan, Instant expiry, InternalJwtClaims actor) {
         return Jwts.builder()
                 .header()
                 .keyId(InternalJwtTestFactory.KEY_ID)
@@ -196,7 +283,7 @@ class PlannedReportGrpcServiceTest {
                 .claim("rv", Long.toString(actor.rolesVersion()))
                 .claim("role", actor.role())
                 .claim("status", actor.status())
-                .claim("group_id", Long.toString(actor.groupId()))
+                .claim("group_id", actor.groupId() == null ? null : Long.toString(actor.groupId()))
                 .claim("is_headman", actor.isHeadman())
                 .claim("readOnly", actor.readOnly())
                 .claim("report_kind", plan.getReportKind())

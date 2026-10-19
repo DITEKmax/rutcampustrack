@@ -17,6 +17,135 @@ import java.util.List;
 
 class AdmittedReportPlanTest {
     @Test
+    void canonicalAdminCalculationExcludesCancelledMarksEvenForCapturedClosedLessons() {
+        var source = ReportPlanFixtures.adminPlan();
+        var admitted = AdmittedReportPlan.admit(source, ReportPlanFixtures.adminActor());
+        var marks =
+                org.mockito.Mockito.mock(
+                        ru.rutcampustrack.attendance.shared.port.AttendanceReadPort.class);
+        var academic =
+                org.mockito.Mockito.mock(
+                        ru.rutcampustrack.attendance.grpc.AcademicGrpcClient.class);
+        var schedule =
+                org.mockito.Mockito.mock(
+                        ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient.class);
+        var reports =
+                new ru.rutcampustrack.attendance.report.ReportService(
+                        marks,
+                        academic,
+                        schedule,
+                        org.mockito.Mockito.mock(
+                                ru.rutcampustrack.attendance.semester.SemesterCacheService.class),
+                        org.mockito.Mockito.mock(
+                                ru.rutcampustrack.attendance.security.RequestContext.class),
+                        java.time.Clock.systemUTC(),
+                        org.mockito.Mockito.mock(
+                                ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort
+                                        .class));
+        var cancelled =
+                new ru.rutcampustrack.attendance.shared.port.AttendanceRecord(
+                        101L,
+                        1L,
+                        33L,
+                        22L,
+                        java.time.LocalDate.of(2026, 10, 14),
+                        1,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.CANCELLED,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceSource.AUTO_SCHEDULER,
+                        null);
+        var present =
+                new ru.rutcampustrack.attendance.shared.port.AttendanceRecord(
+                        101L,
+                        2L,
+                        33L,
+                        22L,
+                        java.time.LocalDate.of(2026, 10, 14),
+                        1,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.PRESENT,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceSource.AUTO_SCHEDULER,
+                        null);
+        org.mockito.Mockito.when(marks.findByLessonIds(List.of(101L)))
+                .thenReturn(List.of(cancelled, present));
+        var mixed =
+                ru.rutcampustrack.attendance.report.AdminGroupStatsReadService.readPlanned(
+                                reports, admitted)
+                        .getGroups(0);
+        assertThat(mixed.getCountedLessons()).isEqualTo(1);
+        assertThat(mixed.getPresent()).isEqualTo(1);
+        assertThat(mixed.getAbsent()).isEqualTo(1); // Missing historical mark remains ABSENT.
+        assertThat(mixed.getExcused()).isZero();
+        assertThat(mixed.getOpportunities()).isEqualTo(2);
+        assertThat(mixed.getPresentPercent()).isEqualTo(50);
+        var allCancelled =
+                new java.util.ArrayList<
+                        ru.rutcampustrack.attendance.shared.port.AttendanceRecord>();
+        for (long user = 1; user <= 3; user++)
+            allCancelled.add(
+                    new ru.rutcampustrack.attendance.shared.port.AttendanceRecord(
+                            101L,
+                            user,
+                            33L,
+                            22L,
+                            java.time.LocalDate.of(2026, 10, 14),
+                            1,
+                            ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.CANCELLED,
+                            ru.rutcampustrack.attendance.contract.enums.AttendanceSource
+                                    .AUTO_SCHEDULER,
+                            null));
+        org.mockito.Mockito.when(marks.findByLessonIds(List.of(101L))).thenReturn(allCancelled);
+        var empty =
+                ru.rutcampustrack.attendance.report.AdminGroupStatsReadService.readPlanned(
+                                reports, admitted)
+                        .getGroups(0);
+        assertThat(empty.getCountedLessons()).isEqualTo(1);
+        assertThat(empty.getPresent()).isZero();
+        assertThat(empty.getAbsent()).isZero();
+        assertThat(empty.getExcused()).isZero();
+        assertThat(empty.getOpportunities()).isZero();
+        assertThat(empty.hasPresentPercent()).isFalse();
+        assertThat(empty.hasPresentOrExcusedPercent()).isFalse();
+        org.mockito.Mockito.verifyNoInteractions(academic, schedule);
+    }
+
+    @Test
+    void adminDataPlanHasExactGroupsSemesterAndDatedRostersWithoutOrdinaryUserAuthority() {
+        var source = ReportPlanFixtures.adminPlan();
+        var plan = AdmittedReportPlan.admit(source, ReportPlanFixtures.adminActor());
+        assertThat(plan.getGroupMembers(33L, java.time.LocalDate.of(2026, 10, 14), 9L))
+                .isEqualTo(ReportPlanFixtures.roster(true));
+        assertThatThrownBy(() -> plan.getGroup(44L)).isInstanceOf(AccessDeniedException.class);
+        for (var changed :
+                List.of(
+                        source.toBuilder()
+                                .setAdminGroupStats(
+                                        source.getAdminGroupStats().toBuilder().addGroupIds(44))
+                                .build(),
+                        source.toBuilder()
+                                .setAdminGroupStats(
+                                        source.getAdminGroupStats().toBuilder().setSemesterId(10))
+                                .build(),
+                        source.toBuilder()
+                                .setAdminGroupStats(
+                                        source.getAdminGroupStats().toBuilder()
+                                                .setDateTo("2027-01-01"))
+                                .build(),
+                        source.toBuilder().setViewStatsAuthorized(true).build(),
+                        source.toBuilder().addRosters(source.getRosters(0)).build(),
+                        source.toBuilder().clearRosters().build())) {
+            assertThatThrownBy(
+                            () ->
+                                    AdmittedReportPlan.admit(
+                                            changed, ReportPlanFixtures.adminActor()))
+                    .isInstanceOfAny(AccessDeniedException.class, ReportValidationException.class);
+        }
+        assertThatThrownBy(
+                        () ->
+                                AdmittedReportPlan.admit(
+                                        source, ReportPlanFixtures.actor(false, false)))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
     void helperViewStatsAndDatedReadsStayBoundToImmutableOwnScope() {
         var source = ReportPlanFixtures.plan("HEADMAN_STATS", "html");
         var plan = AdmittedReportPlan.admit(source, ReportPlanFixtures.actor(false, false));

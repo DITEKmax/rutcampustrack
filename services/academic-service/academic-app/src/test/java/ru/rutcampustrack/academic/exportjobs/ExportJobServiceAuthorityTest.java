@@ -249,4 +249,146 @@ class ExportJobServiceAuthorityTest {
         verify(local).require(identity, false);
         verifyNoInteractions(repository);
     }
+
+    @Test
+    void groupReportScopeAcceptsCurrentFullAndLimitedDashboardButRejectsRevocationAndLostLease() {
+        var selected =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.ADMIN_GROUP_ATTENDANCE,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        new IssueReportDownloadTicketRequest.AdminGroupAttendanceParameters(
+                                "9", "Группа", "GROUP_NAME", "ASC", ReportDownloadFormat.HTML));
+        var stored =
+                new StoredReportIdentity(
+                        actor, selected, Instant.now().plusSeconds(300), 3, 9L, null);
+        var job =
+                new ExportJobRepository.Job(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        stored,
+                        "preparing",
+                        1,
+                        UUID.randomUUID(),
+                        Instant.now().plusSeconds(90),
+                        false,
+                        null,
+                        null,
+                        Instant.now());
+        when(repository.load(job.id())).thenReturn(job);
+        var full =
+                new ReportSecurityAuthority.Admission(
+                        actor,
+                        "transient",
+                        Instant.now().plusSeconds(30),
+                        true,
+                        new ru.rutcampustrack.shared.security.admin.AdminAccessProfile(
+                                actor.userId(), true, "FULL", java.util.List.of(), 1));
+        var limited =
+                new ReportSecurityAuthority.Admission(
+                        actor,
+                        "transient",
+                        Instant.now().plusSeconds(30),
+                        false,
+                        new ru.rutcampustrack.shared.security.admin.AdminAccessProfile(
+                                actor.userId(),
+                                true,
+                                "LIMITED",
+                                java.util.List.of("DASHBOARD_VIEW"),
+                                2));
+        var revoked =
+                new ReportSecurityAuthority.Admission(
+                        actor,
+                        "transient",
+                        Instant.now().plusSeconds(30),
+                        false,
+                        new ru.rutcampustrack.shared.security.admin.AdminAccessProfile(
+                                actor.userId(), false, "", java.util.List.of(), 3));
+        when(security.admit(eq(stored), eq(false), isNull(), isNull(), anyLong()))
+                .thenReturn(full, limited, revoked);
+        var scope = service.groupAttendanceReadScope(job);
+        scope.check();
+        scope.check();
+        assertThatThrownBy(scope::check)
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        failure ->
+                                assertThat(failure.getStatusCode())
+                                        .isEqualTo(HttpStatus.FORBIDDEN));
+        assertThatThrownBy(
+                        () ->
+                                scope.requireBinding(
+                                        job.id(),
+                                        UUID.randomUUID(),
+                                        actor,
+                                        new ru.rutcampustrack.academic.contract.dto.adminattendance
+                                                .AdminAttendanceReportModels.Export(
+                                                "9",
+                                                "Группа",
+                                                ru.rutcampustrack.academic.contract.dto
+                                                        .adminattendance.AdminAttendanceReportModels
+                                                        .Sort.GROUP_NAME,
+                                                ru.rutcampustrack.academic.contract.dto
+                                                        .adminattendance.AdminAttendanceReportModels
+                                                        .Direction.ASC,
+                                                ru.rutcampustrack.academic.contract.dto
+                                                        .adminattendance.AdminAttendanceReportModels
+                                                        .Format.html)))
+                .isInstanceOf(ResponseStatusException.class);
+        when(repository.load(job.id()))
+                .thenReturn(
+                        new ExportJobRepository.Job(
+                                job.id(),
+                                job.requestId(),
+                                stored,
+                                "preparing",
+                                2,
+                                UUID.randomUUID(),
+                                Instant.now().plusSeconds(90),
+                                false,
+                                null,
+                                null,
+                                Instant.now()));
+        assertThatThrownBy(scope::check).isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void groupPlanAuthorityNeverStartsAfterAbsoluteBudgetAndUsesRemainingTime() {
+        var observed = new AtomicReference<CallOptions>();
+        var client = deadlineClient(observed);
+        assertThatThrownBy(
+                        () ->
+                                client.admitPlan(
+                                        identity,
+                                        false,
+                                        UUID.randomUUID(),
+                                        UUID.randomUUID(),
+                                        "a".repeat(64),
+                                        System.nanoTime() - 1))
+                .isInstanceOf(StatusRuntimeException.class);
+        assertThat(observed.get()).isNull();
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(100);
+        Deadline ceiling = Deadline.after(101, TimeUnit.MILLISECONDS);
+        Throwable failure =
+                catchThrowable(
+                        () ->
+                                client.admitPlan(
+                                        identity,
+                                        false,
+                                        UUID.randomUUID(),
+                                        UUID.randomUUID(),
+                                        "a".repeat(64),
+                                        deadline));
+        assertThat(failure).isInstanceOf(StatusRuntimeException.class);
+        if (observed.get() == null) assertThat(System.nanoTime()).isGreaterThanOrEqualTo(deadline);
+        else assertThat(observed.get().getDeadline().isBefore(ceiling)).isTrue();
+    }
 }

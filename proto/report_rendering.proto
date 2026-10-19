@@ -5,17 +5,20 @@ option java_multiple_files = true;
 option java_package = "ru.rutcampustrack.reportrendering.grpc";
 
 import "academic.proto";
+import "attendance.proto";
 import "schedule.proto";
 import "teacher_reads.proto";
 import "auth_security_capabilities.proto";
 
-// Academic-only TLS+x-service-token, exact RenderReport method. The independent
+// Academic-only TLS+x-service-token, the two exact report methods below. The independent
 // x-report-capability metadata carries an Auth academic_report token bound to
 // SHA256(plan.toByteArray()), job, lease, kind and the complete actor tuple.
 // This receiver reads Attendance marks only; it never calls Auth/Academic/
 // Schedule, creates RequestContext, or accepts a generic internal/CRUD token.
 service ReportRenderingService {
   rpc RenderReport(RenderReportRequest) returns (RenderReportResponse);
+  // Same directed report authority; returns aggregates only, never ordinary user data.
+  rpc ReadAdminGroupStats(RenderReportRequest) returns (rutcampustrack.attendance.AdminGroupStatsSnapshot);
 }
 message RenderReportRequest { ReportRenderPlan plan = 1; }
 message RenderReportResponse {
@@ -91,5 +94,6 @@ message ReportRenderPlan {
     ReportTrendSelector trend = 24;
     ReportCompositionSelector composition = 25;
     ReportSubjectJournalSelector subject_journal = 26;
+    rutcampustrack.attendance.AdminGroupStatsQuery admin_group_stats = 27;
   }
 }

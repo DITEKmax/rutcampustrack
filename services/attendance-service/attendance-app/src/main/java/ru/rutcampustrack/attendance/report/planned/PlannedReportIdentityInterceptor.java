@@ -36,6 +36,9 @@ public final class PlannedReportIdentityInterceptor implements ServerInterceptor
                         Map.of(
                                 ReportRenderingServiceGrpc.getRenderReportMethod()
                                         .getFullMethodName(),
+                                ServicePrincipal.ACADEMIC_SERVICE,
+                                ReportRenderingServiceGrpc.getReadAdminGroupStatsMethod()
+                                        .getFullMethodName(),
                                 ServicePrincipal.ACADEMIC_SERVICE),
                         DirectedServiceCredential.tryCreate(
                                         ServicePrincipal.ACADEMIC_SERVICE,
@@ -48,9 +51,11 @@ public final class PlannedReportIdentityInterceptor implements ServerInterceptor
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
-        if (!ReportRenderingServiceGrpc.getRenderReportMethod()
-                .getFullMethodName()
-                .equals(call.getMethodDescriptor().getFullMethodName())) {
+        String method = call.getMethodDescriptor().getFullMethodName();
+        if (!ReportRenderingServiceGrpc.getRenderReportMethod().getFullMethodName().equals(method)
+                && !ReportRenderingServiceGrpc.getReadAdminGroupStatsMethod()
+                        .getFullMethodName()
+                        .equals(method)) {
             Iterable<String> tokens = headers.getAll(DirectedServiceCredential.TOKEN_METADATA_KEY);
             if (tokens != null && configuredToken != null) {
                 for (String candidate : tokens) {

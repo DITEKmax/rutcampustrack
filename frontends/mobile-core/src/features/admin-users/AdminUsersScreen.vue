@@ -564,7 +564,6 @@ async function completeAccessOperation(
   syncRecoveryCandidates();
   recoveryReady.value = null;
   error.value = null;
-  saving.value = false;
   accessLoading.value = true;
   notice.value = result.recovered
     ? 'Операция восстановлена.'

@@ -2883,6 +2883,22 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       mainUnackedZero: boolean;
       deadReadyClass: 'ZERO' | 'ONE' | 'MANY' | 'UNKNOWN';
     } | null,
+    setupQuiescenceLastRead: null as {
+      firstFailed: string;
+      mainReady: number | null;
+      mainUnacked: number | null;
+      mainConsumers: number | null;
+      deadReady: number | null;
+      deadUnacked: number | null;
+      retryReady: number | null;
+      retryUnacked: number | null;
+      scheduleUnproven: number | null;
+      scheduleLegacy: number | null;
+      scheduleDue: number | null;
+      initialExpectedApplied: boolean;
+      initialNoPendingWork: boolean;
+      initialProducerSent: boolean;
+    } | null,
   };
   let strandedLastRead: typeof diagnostic.strandedLastRead = null;
   const stopped = new Set<string>();
@@ -4017,6 +4033,26 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             else if (!initial.expectedApplied) quiescence.firstFailed = 'INITIAL_EXPECTED';
             else if (!initial.noPendingWork) quiescence.firstFailed = 'INITIAL_PENDING';
             else if (!initial.producerSent) quiescence.firstFailed = 'INITIAL_PRODUCER';
+            const count = (value: unknown): number | null =>
+              typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 1_000_000
+                ? value
+                : null;
+            diagnostic.setupQuiescenceLastRead = {
+              firstFailed: quiescence.firstFailed,
+              mainReady: count(q.main?.messages_ready),
+              mainUnacked: count(q.main?.messages_unacknowledged),
+              mainConsumers: count(q.main?.consumers),
+              deadReady: count(q.dead?.messages_ready),
+              deadUnacked: count(q.dead?.messages_unacknowledged),
+              retryReady: count(q.retry?.messages_ready),
+              retryUnacked: count(q.retry?.messages_unacknowledged),
+              scheduleUnproven: count(state?.unproven),
+              scheduleLegacy: count(state?.legacy),
+              scheduleDue: count(state?.due),
+              initialExpectedApplied: initial.expectedApplied,
+              initialNoPendingWork: initial.noPendingWork,
+              initialProducerSent: initial.producerSent,
+            };
             return (
               q.main.messages_ready === 0 &&
               q.main.messages_unacknowledged === 0 &&

@@ -820,8 +820,22 @@ async def hosted_role_menu_main():
             except BotReadDenied:
                 _headman_read_outcome = "RPC_DENIED"
                 raise
-            except BotReadUnavailable:
+            except BotReadUnavailable as error:
                 _headman_read_outcome = "RPC_UNAVAILABLE"
+                try:
+                    reported_context = BaseException.__context__.__get__(error)
+                    if type(reported_context) is grpc.aio.AioRpcError:
+                        reported_status = grpc.aio.AioRpcError.code(reported_context)
+                        if type(reported_status) is grpc.StatusCode:
+                            _headman_read_outcome = {
+                                grpc.StatusCode.UNAUTHENTICATED: "RPC_STATUS_UNAUTHENTICATED",
+                                grpc.StatusCode.UNAVAILABLE: "RPC_STATUS_UNAVAILABLE",
+                                grpc.StatusCode.DEADLINE_EXCEEDED: "RPC_STATUS_DEADLINE_EXCEEDED",
+                            }.get(reported_status, "RPC_STATUS_OTHER")
+                    elif reported_context is None:
+                        _headman_read_outcome = "LOCAL_UNAVAILABLE"
+                except Exception:
+                    pass
                 raise
             if current.state == "NO_CURRENT":
                 _headman_read_outcome = "RETURNED_NO_CURRENT"

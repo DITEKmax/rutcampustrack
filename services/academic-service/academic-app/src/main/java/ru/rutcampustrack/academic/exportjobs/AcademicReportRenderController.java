@@ -90,7 +90,8 @@ public class AcademicReportRenderController {
                                                 job.identity().report().adminGroupAttendance(),
                                                 AdminAttendanceReportModels.Export.class),
                                         job.id(),
-                                        job.leaseId());
+                                        job.leaseId(),
+                                        jobs.groupAttendanceReadScope(job));
                         yield new ExportJobService.GeneratedFile(
                                 result.content(),
                                 result.contentType(),

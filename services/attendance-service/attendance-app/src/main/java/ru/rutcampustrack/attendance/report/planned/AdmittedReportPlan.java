@@ -93,6 +93,7 @@ public final class AdmittedReportPlan
         checkCount(plan.getTeacherSubjects().getSubjectsCount());
         checkCount(plan.getTeacherAssignments().getAssignmentsCount());
         boolean teacher = "TEACHER".equals(actor.domainRole());
+        boolean admin = "ADMIN_GROUP_ATTENDANCE".equals(plan.getReportKind());
         Set<GroupSubject> teacherPairs = new HashSet<>();
         Set<Long> scopeGroups = new HashSet<>();
         if (teacher) {
@@ -101,6 +102,16 @@ public final class AdmittedReportPlan
                 if (subject.getGroupId() <= 0 || subject.getSubjectId() <= 0) throw malformed();
                 teacherPairs.add(new GroupSubject(subject.getGroupId(), subject.getSubjectId()));
                 scopeGroups.add(subject.getGroupId());
+            }
+        } else if (admin) {
+            var query = plan.getAdminGroupStats();
+            if (query.getGroupIdsCount() == 0 || query.getGroupIdsCount() > MAX_ITEMS)
+                throw malformed();
+            long previous = 0;
+            for (long group : query.getGroupIdsList()) {
+                if (group <= previous) throw malformed();
+                scopeGroups.add(group);
+                previous = group;
             }
         } else {
             if (actor.groupId() == null || actor.groupId() <= 0) throw denied();
@@ -111,6 +122,7 @@ public final class AdmittedReportPlan
         for (var group : groups.values()) {
             if (!allowedGroups.contains(group.getId()) || group.getName().isBlank()) throw denied();
         }
+        if (admin && !groups.keySet().equals(allowedGroups)) throw denied();
         subjects = index(plan.getSubjectsList(), SubjectInfo::getSubjectId);
         for (var subject : subjects.values()) {
             if (!allowedGroups.contains(subject.getGroupId())
@@ -135,6 +147,7 @@ public final class AdmittedReportPlan
             var roster = value.getRoster();
             if (!value.hasRoster() || roster.hasAsOfDate() != roster.hasSemesterId())
                 throw malformed();
+            if (admin && !roster.hasAsOfDate()) throw malformed();
             String date = roster.hasAsOfDate() ? roster.getAsOfDate() : "";
             long rosterSemester = roster.hasSemesterId() ? roster.getSemesterId() : 0;
             if (roster.hasSemesterId()
@@ -157,6 +170,7 @@ public final class AdmittedReportPlan
         lessons = index(plan.getLessonsList(), LessonResponse::getId);
         for (var lesson : lessons.values()) {
             requireGroup(lesson.getGroupId());
+            if (admin && !lesson.getStatus().equalsIgnoreCase("closed")) throw malformed();
             if (lesson.getSemesterId() != semesterId
                     || lesson.getSubjectId() <= 0
                     || !subjects.containsKey(lesson.getSubjectId())
@@ -268,11 +282,26 @@ public final class AdmittedReportPlan
                     case "HEADMAN_STATS_TREND" -> ReportRenderPlan.SelectorCase.TREND;
                     case "HEADMAN_GROUP_COMPOSITION" -> ReportRenderPlan.SelectorCase.COMPOSITION;
                     case "HEADMAN_SUBJECT_JOURNAL" -> ReportRenderPlan.SelectorCase.SUBJECT_JOURNAL;
+                    case "ADMIN_GROUP_ATTENDANCE" ->
+                            ReportRenderPlan.SelectorCase.ADMIN_GROUP_STATS;
                     default -> throw malformed();
                 };
         if (source.getSelectorCase() != expected) throw malformed();
         if (source.getReportKind().startsWith("TEACHER_")) {
             if (!"TEACHER".equals(actor.domainRole())) throw denied();
+        } else if ("ADMIN_GROUP_ATTENDANCE".equals(source.getReportKind())) {
+            if (!"ADMIN".equals(actor.domainRole())
+                    || !source.hasSemester()
+                    || source.hasTeacherSubjects()
+                    || source.hasTeacherAssignments()
+                    || source.hasHeadmanStatsScope()
+                    || source.hasGroupComposition()
+                    || source.getViewStatsAuthorized()) throw denied();
+            var query = source.getAdminGroupStats();
+            if (query.getSemesterId() <= 0
+                    || query.getSemesterId() != source.getSemester().getId()
+                    || !query.getDateFrom().equals(source.getSemester().getDateFrom())
+                    || !query.getDateTo().equals(source.getSemester().getDateTo())) throw denied();
         } else {
             if (!"STUDENT".equals(actor.domainRole()) || actor.groupId() == null) throw denied();
             boolean composition = "HEADMAN_GROUP_COMPOSITION".equals(source.getReportKind());

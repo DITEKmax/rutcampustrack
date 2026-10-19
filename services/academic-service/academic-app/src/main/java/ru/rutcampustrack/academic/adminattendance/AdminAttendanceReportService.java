@@ -111,6 +111,63 @@ public class AdminAttendanceReportService {
         }
     }
 
+    public FullReport fullForReport(
+            Export query,
+            ru.rutcampustrack.academic.exportjobs.ExportJobService.GroupAttendanceReadScope scope) {
+        scope.requireSelector(query);
+        scope.check();
+        long id = positiveId(query.semesterId());
+        if (query.search() == null
+                || query.search().length() > 200
+                || query.sort() == null
+                || query.direction() == null) throw invalid();
+        String search = query.search().trim();
+        try {
+            var selected = repository.select(id, search);
+            List<Row> rows = new ArrayList<>();
+            for (var value : attendance.readReport(selected, scope)) {
+                long total = value.getOpportunities();
+                rows.add(
+                        new Row(
+                                Long.toString(value.getGroupId()),
+                                selected.groups().get(value.getGroupId()),
+                                value.getCountedLessons(),
+                                value.getPresent(),
+                                value.getAbsent(),
+                                value.getExcused(),
+                                total,
+                                total == 0 ? null : value.getPresentPercent(),
+                                total == 0 ? null : value.getPresentOrExcusedPercent(),
+                                total == 0 ? DataState.NO_DATA : DataState.AVAILABLE));
+            }
+            rows.sort(comparator(query.sort(), query.direction()));
+            if (!selected.equals(repository.select(id, search))) throw unavailable();
+            scope.check();
+            return new FullReport(
+                    selected.semester(),
+                    search,
+                    query.sort(),
+                    query.direction(),
+                    clock.instant(),
+                    List.copyOf(rows));
+        } catch (DataAccessException | ArithmeticException unavailable) {
+            throw unavailable();
+        }
+    }
+
+    void recheckReport(
+            Export query,
+            FullReport report,
+            ru.rutcampustrack.academic.exportjobs.ExportJobService.GroupAttendanceReadScope scope) {
+        scope.check();
+        var names = new java.util.HashMap<Long, String>();
+        for (var row : report.rows()) names.put(Long.valueOf(row.groupId()), row.groupName());
+        var current = repository.select(positiveId(query.semesterId()), query.search().trim());
+        if (!report.semester().equals(current.semester()) || !names.equals(current.groups()))
+            throw unavailable();
+        scope.check();
+    }
+
     /**
      * Live Auth checks run before/after completed local reads, never under their DB transaction.
      */

@@ -27,6 +27,16 @@ public interface ReportSecurityAuthority {
             UUID leaseId,
             String planDigest);
 
+    default Admission admitPlan(
+            StoredReportIdentity identity,
+            boolean requiresFull,
+            UUID jobId,
+            UUID leaseId,
+            String planDigest,
+            long deadlineNanos) {
+        throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+    }
+
     Capability issue(StoredReportIdentity identity, boolean requiresFull, UUID jobId);
 
     Redemption redeem(String ticket);

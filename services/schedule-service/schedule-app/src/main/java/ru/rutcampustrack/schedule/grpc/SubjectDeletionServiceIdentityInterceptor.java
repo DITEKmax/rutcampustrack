@@ -5,6 +5,8 @@ import io.grpc.*;
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import ru.rutcampustrack.shared.security.grpc.*;
 
@@ -13,7 +15,10 @@ import java.util.Map;
 
 /** The new mutation method requires the existing directed Academic credential over TLS. */
 @GrpcGlobalServerInterceptor
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class SubjectDeletionServiceIdentityInterceptor implements ServerInterceptor {
+    private static final String METHOD =
+            "rutcampustrack.subjectdeletion.SubjectDeletionParticipant/Apply";
     private final ServiceIdentityServerInterceptor delegate;
 
     public SubjectDeletionServiceIdentityInterceptor(
@@ -28,10 +33,13 @@ public class SubjectDeletionServiceIdentityInterceptor implements ServerIntercep
         delegate =
                 new ServiceIdentityServerInterceptor(
                         ServicePrincipal.SCHEDULE_SERVICE,
-                        Map.of(
-                                "rutcampustrack.subjectdeletion.SubjectDeletionParticipant/Apply",
-                                ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.of(METHOD, ServicePrincipal.ACADEMIC_SERVICE),
                         credentials);
+    }
+
+    static boolean admitted(ServerCall<?, ?> call) {
+        return METHOD.equals(call.getMethodDescriptor().getFullMethodName())
+                && ServicePrincipal.ACADEMIC_SERVICE.equals(ServicePrincipal.CONTEXT_KEY.get());
     }
 
     @Override

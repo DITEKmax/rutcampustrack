@@ -99,6 +99,28 @@ public class AdminGroupStatsReadService {
                 lessons.add(value.build());
             }
         }
+        return aggregate(query, groups, lessons, reports);
+    }
+
+    public static AdminGroupStatsSnapshot readPlanned(
+            ReportService reports,
+            ru.rutcampustrack.attendance.report.planned.AdmittedReportPlan plan) {
+        if (!"ADMIN_GROUP_ATTENDANCE".equals(plan.source().getReportKind()))
+            throw Status.PERMISSION_DENIED.asRuntimeException();
+        var query = plan.source().getAdminGroupStats();
+        return aggregate(
+                query,
+                new java.util.LinkedHashSet<>(query.getGroupIdsList()),
+                plan.getLessonsByIds(
+                        plan.source().getLessonsList().stream().map(l -> l.getId()).toList()),
+                reports.forPlan(plan));
+    }
+
+    private static AdminGroupStatsSnapshot aggregate(
+            AdminGroupStatsQuery query,
+            Set<Long> groups,
+            List<LessonInfo> lessons,
+            ReportService reports) {
         var result =
                 AdminGroupStatsSnapshot.newBuilder()
                         .setSemesterId(query.getSemesterId())

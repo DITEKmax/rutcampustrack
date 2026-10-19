@@ -618,14 +618,24 @@ def restore(args):
     # Per-schema defaults are additive: empty only this owner's existing bootstrap
     # table/sequence slots before CREATE; the archive restores source DEFAULT ACLs later.
     for label, container, db, key, user in pg_targets(args):
-        pg_query(container, secret[key], db, """
+        # The database owner can differ from the migration/schema owner. Require
+        # the exact source database identity without widening default-ACL scope.
+        access_hex = json.dumps(expected[label]["access"]["objects"], ensure_ascii=True).encode("utf-8").hex()
+        pg_query(container, secret[key], db, f"""
 DO $rct_recovery_defaults$
 DECLARE
+  source_access jsonb := convert_from(decode('{access_hex}','hex'),'UTF8')::jsonb;
   owner_oid oid := current_user::regrole::oid;
   slot record;
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_database
-                 WHERE datname=current_database() AND datdba=owner_oid)
+  IF NOT EXISTS (
+       SELECT 1 FROM pg_database d
+       JOIN LATERAL jsonb_array_elements(source_access) source_row(value)
+         ON source_row.value->>'kind'='DATABASE'
+         AND source_row.value->>'name'=d.datname
+         AND source_row.value->>'owner'=pg_get_userbyid(d.datdba)
+       WHERE d.datname=current_database()
+     )
      OR EXISTS (
        SELECT 1 FROM pg_default_acl d
        LEFT JOIN pg_namespace n ON n.oid=d.defaclnamespace

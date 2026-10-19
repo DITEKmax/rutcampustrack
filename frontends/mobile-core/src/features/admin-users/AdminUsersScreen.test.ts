@@ -1047,6 +1047,50 @@ async function confirmAccessAction(root: TestElement, action: 'update' | 'revoke
   await click(button(root, action === 'update' ? 'Применить права' : 'Отозвать права'))
 }
 describe('AdminAccess durable screen observer', () => {
+  it('keeps Back blocked until a saved grant refreshes the target roles, then reopens persisted rights', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const assignedUser = await createAdminUsersReviewApis('permissions-mixed').client.getUser(3)
+    const assignedProfile: AdminAccessProfile = {
+      ...accessBaseline,
+      permissions: ['USERS_VIEW', 'USERS_MANAGE'],
+      version: 1,
+    }
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+    await flush()
+    await click(nodes(root).find((node) => node.props['data-user-id'] === 3)!)
+    await click(button(root, 'Редактировать данные'))
+    await click(button(root, 'Назначить права администратора'))
+    const update = vi.spyOn(accessClient, 'updateUserAccess').mockResolvedValue(assignedProfile)
+    vi.spyOn(accessClient, 'getUserAccess').mockResolvedValue(assignedProfile)
+    let finishUserRead!: (user: typeof assignedUser) => void
+    vi.spyOn(client, 'getUser').mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishUserRead = resolve
+        }),
+    )
+    await confirmAccessAction(root)
+    expect(update).toHaveBeenCalledOnce()
+    expect(text(root)).toContain('Права администратора сохранены.')
+    const back = () =>
+      nodes(root).find((node) => node.tag === 'button' && node.props['aria-label'] === 'Назад')!
+    expect(back().props.disabled).toBe(true)
+    await click(back())
+    expect(nodes(root).some((node) => node.props['data-view'] === 'permissions')).toBe(true)
+    finishUserRead(assignedUser)
+    await flush()
+    expect(back().props.disabled).toBe(false)
+    await click(back())
+    expect(nodes(root).some((node) => node.props['data-view'] === 'edit')).toBe(true)
+    await click(button(root, 'Настроить права администратора'))
+    expect(
+      nodes(root).find((node) => node.props['data-permission'] === 'USERS_VIEW')!.checked,
+    ).toBe(true)
+    expect(
+      nodes(root).find((node) => node.props['data-permission'] === 'USERS_MANAGE')!.checked,
+    ).toBe(true)
+    expect(update).toHaveBeenCalledOnce()
+  })
   it.each(['update', 'revoke'] as const)(
     'keeps %s pending, then retries only fresh reads after confirmed completion',
     async (action) => {

@@ -75,6 +75,101 @@ public class ReportPlanSnapshotReader {
         return new Discovery(semesterId, range.from(), range.to(), groupIds);
     }
 
+    /** One ordinary historical group/date snapshot; callers release it after bounded fragments. */
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public AdminUnit adminUnit(
+            ExportJobRepository.Job job,
+            ru.rutcampustrack.academic.adminattendance.AdminAttendanceReadRepository.Selection
+                    selected,
+            long groupId,
+            LocalDate date,
+            List<LessonResponse> lessons,
+            Instant generatedAt) {
+        local.requireWithinSnapshot(job.identity(), false);
+        if (job.identity().report().kind() != ReportDownloadKind.ADMIN_GROUP_ATTENDANCE
+                || !selected.groups().containsKey(groupId)
+                || lessons.isEmpty()
+                || lessons.size() > 5000) throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        local.requireGroupReadable(groupId);
+        var group =
+                groups.findById(groupId)
+                        .orElseThrow(() -> ExportJobRepository.error(HttpStatus.FORBIDDEN));
+        var semester =
+                semesters
+                        .findByIdUncached(Long.valueOf(selected.semester().id()))
+                        .orElseThrow(() -> ExportJobRepository.error(HttpStatus.FORBIDDEN));
+        var expected = selected.semester();
+        if (!expected.name().equals(semester.getName())
+                || !expected.dateFrom().equals(semester.getDateFrom())
+                || !expected.dateTo().equals(semester.getDateTo())
+                || expected.active() != semester.isActive()
+                || expected.archived() != semester.isArchived()
+                || !selected.groups().get(groupId).equals(group.getName())
+                || !expected.id()
+                        .equals(job.identity().report().adminGroupAttendance().semesterId()))
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        var actor = job.identity().actor();
+        var identity =
+                StoredSessionIdentity.newBuilder()
+                        .setUserId(actor.userId())
+                        .setSessionId(actor.sessionId().toString())
+                        .setSessionVersion(actor.sessionVersion())
+                        .setRolesVersion(actor.rolesVersion())
+                        .setRole(actor.role())
+                        .setStatus(actor.status())
+                        .setIsHeadman(actor.isHeadman())
+                        .setReadOnly(actor.readOnly());
+        if (actor.groupId() != null) identity.setGroupId(actor.groupId());
+        var plan =
+                ReportRenderPlan.newBuilder()
+                        .setActor(identity)
+                        .setJobId(job.id().toString())
+                        .setLeaseId(job.leaseId().toString())
+                        .setReportKind(ReportDownloadKind.ADMIN_GROUP_ATTENDANCE.code())
+                        .setGeneratedAt(generatedAt.toString())
+                        .setSemester(semester(semester))
+                        .addSemesterStates(state(semester))
+                        .addGroups(
+                                GroupResponse.newBuilder()
+                                        .setId(groupId)
+                                        .setName(group.getName())
+                                        .setIsActive(group.isActive()));
+        var ids = new TreeSet<Long>();
+        for (var lesson : lessons) {
+            if (lesson.getGroupId() != groupId
+                    || lesson.getSemesterId() != semester.getId()
+                    || !lesson.getDate().equals(date.toString())
+                    || !lesson.getStatus().equalsIgnoreCase("closed"))
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            ids.add(lesson.getSubjectId());
+        }
+        var found = subjects.findAllById(ids);
+        if (found.size() != ids.size())
+            throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+        for (var subject : found) {
+            if (subject.getGroupId() != groupId)
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            plan.addSubjects(
+                    SubjectInfo.newBuilder()
+                            .setSubjectId(subject.getId())
+                            .setGroupId(groupId)
+                            .setSubjectName(subject.getName())
+                            .setSubjectType(subject.getType().name().toLowerCase(Locale.ROOT)));
+        }
+        plan.addAllLessons(lessons);
+        var roster = reads.fetchHistoricalGroupMembers(groupId, date, semester.getId());
+        var response =
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate(date.toString())
+                        .setSemesterId(semester.getId());
+        for (var user : roster.students()) response.addStudents(student(user));
+        return new AdminUnit(
+                plan.build(),
+                ReportGroupRoster.newBuilder().setGroupId(groupId).setRoster(response).build());
+    }
+
+    public record AdminUnit(ReportRenderPlan plan, ReportGroupRoster roster) {}
+
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public ReportRenderPlan snapshot(
             ExportJobRepository.Job job,

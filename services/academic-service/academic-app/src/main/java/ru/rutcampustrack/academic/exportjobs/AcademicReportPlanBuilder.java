@@ -58,57 +58,7 @@ public class AcademicReportPlanBuilder {
                 job.identity().actor().role().equals("TEACHER")
                         ? local.teacherScope(job.identity().actor().userId())
                         : null;
-        if (discovery.semesterId() != null)
-            for (Long group : discovery.groupIds()) {
-                long millis = remainingMillis(job);
-                if (schedule == null)
-                    throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
-                var credential =
-                        ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential.tryCreate(
-                                        ru.rutcampustrack.shared.security.grpc.ServicePrincipal
-                                                .ACADEMIC_SERVICE,
-                                        ru.rutcampustrack.shared.security.grpc.ServicePrincipal
-                                                .SCHEDULE_SERVICE,
-                                        scheduleToken)
-                                .orElseThrow(
-                                        () ->
-                                                ExportJobRepository.error(
-                                                        HttpStatus.SERVICE_UNAVAILABLE));
-                var response =
-                        schedule.withCallCredentials(
-                                        ru.rutcampustrack.shared.security.grpc
-                                                .ServiceTokenCallCredentials.forMethod(
-                                                credential,
-                                                scheduleAuthority,
-                                                ScheduleGrpcServiceGrpc.getGetLessonsByGroupMethod()
-                                                        .getFullMethodName()))
-                                .withDeadlineAfter(Math.min(3000, millis), TimeUnit.MILLISECONDS)
-                                .getLessonsByGroup(
-                                        LessonsByGroupRequest.newBuilder()
-                                                .setGroupId(group)
-                                                .setSemesterId(discovery.semesterId())
-                                                .setDateFrom(discovery.from().toString())
-                                                .setDateTo(discovery.to().toString())
-                                                .build());
-                if (response.getLessonsCount() > 5000)
-                    throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
-                for (var lesson : response.getLessonsList()) {
-                    if (lesson.getGroupId() != group
-                            || lesson.getSemesterId() != discovery.semesterId())
-                        throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
-                    if (teacherScope != null
-                            && !teacherScope
-                                    .tuples()
-                                    .contains(
-                                            new ru.rutcampustrack.shared.security.teacher
-                                                    .TeacherReportScope.Tuple(
-                                                    lesson.getGroupId(), lesson.getSubjectId())))
-                        continue;
-                    lessons.add(lesson);
-                    if (lessons.size() > 5000)
-                        throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
-                }
-            }
+        lessons.addAll(readLessons(job, discovery, teacherScope));
         remainingMillis(job);
         ReportPlanSnapshotReader.HeadmanScope admittedScope = null;
         if (ReportPlanSnapshotReader.requiresHeadmanScope(job)) {
@@ -252,6 +202,104 @@ public class AcademicReportPlanBuilder {
         remainingMillis(job);
         local.require(job.identity(), false);
         return plan.build();
+    }
+
+    public List<LessonResponse> adminLessons(
+            ExportJobRepository.Job job,
+            ru.rutcampustrack.academic.adminattendance.AdminAttendanceReadRepository.Selection
+                    selected) {
+        if (TransactionSynchronizationManager.isActualTransactionActive())
+            throw new IllegalStateException("Report plan transport under transaction");
+        local.require(job.identity(), false);
+        if (job.identity().report().kind()
+                        != ru.rutcampustrack.auth.dto.ReportDownloadKind.ADMIN_GROUP_ATTENDANCE
+                || !selected.semester()
+                        .id()
+                        .equals(job.identity().report().adminGroupAttendance().semesterId()))
+            throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        var discovery =
+                new ReportPlanSnapshotReader.Discovery(
+                        Long.valueOf(selected.semester().id()),
+                        selected.semester().dateFrom(),
+                        selected.semester().dateTo(),
+                        selected.groups().keySet().stream().sorted().toList());
+        var result = readLessons(job, discovery, null);
+        var seen = new HashSet<Long>();
+        for (var lesson : result) {
+            LocalDate date = LocalDate.parse(lesson.getDate());
+            if (lesson.getId() <= 0
+                    || !seen.add(lesson.getId())
+                    || lesson.getSubjectId() <= 0
+                    || date.isBefore(discovery.from())
+                    || date.isAfter(discovery.to())
+                    || !Set.of("planned", "active", "closed", "cancelled", "transferred")
+                            .contains(lesson.getStatus().toLowerCase(Locale.ROOT))
+                    || !Set.of("lecture", "practice", "lab")
+                            .contains(lesson.getLessonType().toLowerCase(Locale.ROOT))
+                    || !Set.of("", "COMPLETED").contains(lesson.getTransferState()))
+                throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        local.require(job.identity(), false);
+        return List.copyOf(result);
+    }
+
+    private List<LessonResponse> readLessons(
+            ExportJobRepository.Job job,
+            ReportPlanSnapshotReader.Discovery discovery,
+            ru.rutcampustrack.shared.security.teacher.TeacherReportScope teacherScope) {
+        var lessons = new ArrayList<LessonResponse>();
+        if (discovery.semesterId() != null)
+            for (Long group : discovery.groupIds()) {
+                long millis = remainingMillis(job);
+                if (schedule == null)
+                    throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+                var credential =
+                        ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential.tryCreate(
+                                        ru.rutcampustrack.shared.security.grpc.ServicePrincipal
+                                                .ACADEMIC_SERVICE,
+                                        ru.rutcampustrack.shared.security.grpc.ServicePrincipal
+                                                .SCHEDULE_SERVICE,
+                                        scheduleToken)
+                                .orElseThrow(
+                                        () ->
+                                                ExportJobRepository.error(
+                                                        HttpStatus.SERVICE_UNAVAILABLE));
+                var response =
+                        schedule.withCallCredentials(
+                                        ru.rutcampustrack.shared.security.grpc
+                                                .ServiceTokenCallCredentials.forMethod(
+                                                credential,
+                                                scheduleAuthority,
+                                                ScheduleGrpcServiceGrpc.getGetLessonsByGroupMethod()
+                                                        .getFullMethodName()))
+                                .withDeadlineAfter(Math.min(3000, millis), TimeUnit.MILLISECONDS)
+                                .getLessonsByGroup(
+                                        LessonsByGroupRequest.newBuilder()
+                                                .setGroupId(group)
+                                                .setSemesterId(discovery.semesterId())
+                                                .setDateFrom(discovery.from().toString())
+                                                .setDateTo(discovery.to().toString())
+                                                .build());
+                if (response.getLessonsCount() > 5000)
+                    throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
+                for (var lesson : response.getLessonsList()) {
+                    if (lesson.getGroupId() != group
+                            || lesson.getSemesterId() != discovery.semesterId())
+                        throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+                    if (teacherScope != null
+                            && !teacherScope
+                                    .tuples()
+                                    .contains(
+                                            new ru.rutcampustrack.shared.security.teacher
+                                                    .TeacherReportScope.Tuple(
+                                                    lesson.getGroupId(), lesson.getSubjectId())))
+                        continue;
+                    lessons.add(lesson);
+                    if (lessons.size() > 5000)
+                        throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
+                }
+            }
+        return lessons;
     }
 
     static long remainingMillis(ExportJobRepository.Job job) {

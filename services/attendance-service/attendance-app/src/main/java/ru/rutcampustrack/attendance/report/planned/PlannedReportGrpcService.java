@@ -100,4 +100,85 @@ public final class PlannedReportGrpcService
                             .asRuntimeException());
         }
     }
+
+    @Override
+    public void readAdminGroupStats(
+            RenderReportRequest request,
+            StreamObserver<ru.rutcampustrack.attendance.grpc.AdminGroupStatsSnapshot> observer) {
+        try {
+            String capability = PlannedReportIdentityInterceptor.requireCapability();
+            if (!request.hasPlan() || !request.getUnknownFields().asMap().isEmpty())
+                throw Status.INVALID_ARGUMENT.asRuntimeException();
+            var source = request.getPlan();
+            if (!"ADMIN_GROUP_ATTENDANCE".equals(source.getReportKind()))
+                throw Status.PERMISSION_DENIED.asRuntimeException();
+            String hash = AdmittedReportPlan.digest(source);
+            var actor =
+                    validator.validateAcademicReport(
+                            capability,
+                            source.getReportKind(),
+                            hash,
+                            source.getJobId(),
+                            source.getLeaseId());
+            var plan = AdmittedReportPlan.admit(source, actor);
+            if (Context.current().isCancelled()) throw Status.CANCELLED.asRuntimeException();
+            var result = renderer.readAdminGroupStats(plan);
+            if (result.getSerializedSize() > AdmittedReportPlan.MAX_BYTES)
+                throw Status.RESOURCE_EXHAUSTED.asRuntimeException();
+            // A slow renderer never discloses bytes after the exact render admission expired.
+            var after =
+                    validator.validateAcademicReport(
+                            capability,
+                            source.getReportKind(),
+                            hash,
+                            source.getJobId(),
+                            source.getLeaseId());
+            if (!actor.equals(after)) throw Status.UNAUTHENTICATED.asRuntimeException();
+            if (Context.current().isCancelled()) throw Status.CANCELLED.asRuntimeException();
+            observer.onNext(result);
+            observer.onCompleted();
+        } catch (InternalJwtException denied) {
+            observer.onError(
+                    Status.UNAUTHENTICATED
+                            .withDescription("Report authority expired or invalid")
+                            .asRuntimeException());
+        } catch (AccessDeniedException denied) {
+            observer.onError(
+                    Status.PERMISSION_DENIED
+                            .withDescription("Report scope denied")
+                            .asRuntimeException());
+        } catch (ReportExportTooLargeException | PayloadTooLargeException tooLarge) {
+            observer.onError(
+                    Status.RESOURCE_EXHAUSTED
+                            .withDescription("Report exceeds its size limit")
+                            .asRuntimeException());
+        } catch (ReportValidationException
+                | BadRequestException
+                | IllegalArgumentException
+                | java.time.DateTimeException invalid) {
+            observer.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription("Invalid report plan or selector")
+                            .asRuntimeException());
+        } catch (StatusRuntimeException failure) {
+            Status.Code code = failure.getStatus().getCode();
+            if (!java.util.Set.of(
+                            Status.Code.UNAUTHENTICATED,
+                            Status.Code.PERMISSION_DENIED,
+                            Status.Code.INVALID_ARGUMENT,
+                            Status.Code.RESOURCE_EXHAUSTED,
+                            Status.Code.FAILED_PRECONDITION,
+                            Status.Code.CANCELLED)
+                    .contains(code)) code = Status.Code.UNAVAILABLE;
+            observer.onError(
+                    Status.fromCode(code)
+                            .withDescription("Report rendering unavailable")
+                            .asRuntimeException());
+        } catch (RuntimeException unavailable) {
+            observer.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("Report rendering unavailable")
+                            .asRuntimeException());
+        }
+    }
 }

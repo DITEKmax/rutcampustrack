@@ -19,6 +19,7 @@ import { TEST_USERS } from './users';
 import {
   retainFirstDatasetHttpFailure,
   retainSemesterPreviewTransport,
+  safeNativePrimaryFailures,
   retainNativePrimaryFailure,
   retainLifecycleCleanupFailure,
   type LifecycleCleanupCause,
@@ -4195,46 +4196,68 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       );
     }
     const readinessEnd = performance.now() + budget(10000);
-    await expect
-      .poll(
-        async () => {
-          const remaining = Math.floor(readinessEnd - performance.now());
-          requireValue(remaining > 0, 'Directed archive readiness deadline exhausted');
-          let response: APIResponse;
-          try {
-            response = await admin!.request.get(
-              `/api/academic/semesters/${scope.semester}/delete-preview`,
-              { headers: admin!.headers(), timeout: Math.min(2000, remaining) },
-            );
-          } catch (error) {
-            retainSemesterPreviewTransport(info.annotations, error);
-            // Retain only the transport class; never inspect native request details.
-            if (error instanceof playwrightErrors.TimeoutError)
-              expect.soft(false, 'D9_PREVIEW_REQUEST_TIMEOUT').toBe(true);
-            else expect.soft(false, 'D9_PREVIEW_REQUEST_OTHER').toBe(true);
-            throw error;
-          }
-          try {
-            if (response.status() === 503) return false;
-            requireValue(response.status() === 200, 'Directed archive readiness read rejected');
-            const preview = await response.json();
-            requireValue(
-              preview.semesterId === scope.semester &&
-                preview.priorState === 'ACTIVE' &&
-                preview.stateVersion === previous!.stateVersion,
-              'Directed archive readiness semester identity changed',
-            );
-            return true;
-          } finally {
-            await response.dispose();
-          }
-        },
-        {
-          timeout: Math.max(1, Math.floor(readinessEnd - performance.now())),
-          message: 'Academic directed archive dependencies are ready',
-        },
-      )
-      .toBe(true);
+    let lastReadinessTransport: { error: unknown } | undefined;
+    try {
+      await expect
+        .poll(
+          async () => {
+            const remaining = Math.floor(readinessEnd - performance.now());
+            requireValue(remaining > 0, 'Directed archive readiness deadline exhausted');
+            let response: APIResponse;
+            try {
+              response = await admin!.request.get(
+                `/api/academic/semesters/${scope.semester}/delete-preview`,
+                { headers: admin!.headers(), timeout: Math.min(2000, remaining) },
+              );
+            } catch (error) {
+              const observed: TestInfo['annotations'] = [];
+              retainSemesterPreviewTransport(observed, error);
+              const hint = safeNativePrimaryFailures(observed).find(
+                (failure) => failure.path === 'SEMESTER_PREVIEW',
+              )?.transportHint;
+              if (hint === 'ECONNRESET' || hint === 'ECONNREFUSED') {
+                lastReadinessTransport = { error };
+                return false;
+              }
+              lastReadinessTransport = undefined;
+              retainSemesterPreviewTransport(info.annotations, error);
+              // Retain only the transport class; never inspect native request details.
+              if (error instanceof playwrightErrors.TimeoutError)
+                expect.soft(false, 'D9_PREVIEW_REQUEST_TIMEOUT').toBe(true);
+              else expect.soft(false, 'D9_PREVIEW_REQUEST_OTHER').toBe(true);
+              throw error;
+            }
+            lastReadinessTransport = undefined;
+            try {
+              if (response.status() === 503) return false;
+              requireValue(response.status() === 200, 'Directed archive readiness read rejected');
+              const preview = await response.json();
+              requireValue(
+                preview.semesterId === scope.semester &&
+                  preview.priorState === 'ACTIVE' &&
+                  preview.stateVersion === previous!.stateVersion,
+                'Directed archive readiness semester identity changed',
+              );
+              return true;
+            } finally {
+              await response.dispose();
+            }
+          },
+          {
+            timeout: Math.max(1, Math.floor(readinessEnd - performance.now())),
+            message: 'Academic directed archive dependencies are ready',
+          },
+        )
+        .toBe(true);
+    } catch (error) {
+      if (lastReadinessTransport) {
+        const original = lastReadinessTransport.error;
+        retainSemesterPreviewTransport(info.annotations, original);
+        expect.soft(false, 'D9_PREVIEW_REQUEST_OTHER').toBe(true);
+        throw original;
+      }
+      throw error;
+    }
     budget(10000, { archive: true }, true);
     archiveStarted = true;
     authorityDirty = true;
@@ -5797,6 +5820,32 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
         databaseBefore.attendance.epochCount === 0,
         'Owned Attendance subject deletion scope is unclaimed before deletion',
       );
+      if (databaseBefore.attendance.controlMarks.length !== 1) {
+        if (databaseBefore.attendance.controlMarks.length === 0) {
+          const controlDecisionLesson = decided.lessons.find(
+            (row: Row) =>
+              Number(row.lessonId) === kept &&
+              Number(row.subjectId) === Number(control.id) &&
+              Number(row.groupId) === Number(dataset.group.id) &&
+              Number(row.semesterId) === Number(dataset.semester.id),
+          );
+          requireValue(
+            Number(decided.summary.studentId) === dataset.student.id && controlDecisionLesson,
+            'SUBJECT_CONTROL_BEFORE_ZERO_DECISION_PAIR_MISSING',
+          );
+          requireValue(
+            controlDecisionLesson.attendanceStatus === 'EXCUSED',
+            'SUBJECT_CONTROL_BEFORE_ZERO_DECISION_STATUS_NOT_EXCUSED',
+          );
+          requireValue(
+            controlDecisionLesson.attendanceSource === 'HEADMAN_EXCUSE',
+            'SUBJECT_CONTROL_BEFORE_ZERO_DECISION_SOURCE_NOT_HEADMAN_EXCUSE',
+          );
+          requireValue(false, 'SUBJECT_CONTROL_BEFORE_ZERO_DESPITE_EXCUSED_DECISION');
+        } else if (databaseBefore.attendance.controlMarks.length > 1) {
+          requireValue(false, 'SUBJECT_CONTROL_BEFORE_MULTIPLE');
+        }
+      }
       requireValue(
         databaseBefore.attendance.controlMarks.length === 1,
         'Owned control attendance exists before subject deletion',

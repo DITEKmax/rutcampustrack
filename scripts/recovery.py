@@ -614,6 +614,50 @@ def restore(args):
         "print(JSON.stringify(['attendance_db','notification_db'].map(n=>db.getSiblingDB(n).getCollectionInfos().length)))",
     )
     require(counts == [0, 0], "Mongo target is not fresh; restore refused")
+    # pg_dump object ACLs are relative to built-in defaults, not target role defaults.
+    # Per-schema defaults are additive: empty only this owner's existing bootstrap
+    # table/sequence slots before CREATE; the archive restores source DEFAULT ACLs later.
+    for label, container, db, key, user in pg_targets(args):
+        pg_query(container, secret[key], db, """
+DO $rct_recovery_defaults$
+DECLARE
+  owner_oid oid := current_user::regrole::oid;
+  slot record;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_database
+                 WHERE datname=current_database() AND datdba=owner_oid)
+     OR EXISTS (
+       SELECT 1 FROM pg_default_acl d
+       LEFT JOIN pg_namespace n ON n.oid=d.defaclnamespace
+       WHERE d.defaclrole<>owner_oid
+         OR d.defaclnamespace=0 OR d.defaclobjtype NOT IN ('r','S')
+         OR (n.nspowner IS DISTINCT FROM owner_oid
+             AND n.nspowner IS DISTINCT FROM 'pg_database_owner'::regrole::oid)
+         OR n.nspname IN ('pg_catalog','information_schema') OR n.nspname ~ '^pg_'
+     ) THEN
+    RAISE EXCEPTION 'Unsupported PostgreSQL target default privileges';
+  END IF;
+  FOR slot IN
+    SELECT DISTINCT n.nspname,
+      CASE d.defaclobjtype WHEN 'r' THEN 'TABLES' WHEN 'S' THEN 'SEQUENCES' END AS object_type,
+      a.grantee
+    FROM pg_default_acl d JOIN pg_namespace n ON n.oid=d.defaclnamespace
+    CROSS JOIN LATERAL aclexplode(d.defaclacl) a
+    WHERE d.defaclrole=owner_oid
+    ORDER BY 1,2,3
+  LOOP
+    EXECUTE format(
+      'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA %I REVOKE ALL PRIVILEGES ON %s FROM %s RESTRICT',
+      current_user, slot.nspname, slot.object_type,
+      CASE WHEN slot.grantee=0 THEN 'PUBLIC' ELSE format('%I',pg_get_userbyid(slot.grantee)) END
+    );
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM pg_default_acl WHERE defaclrole=owner_oid) THEN
+    RAISE EXCEPTION 'PostgreSQL target default privileges were not reset';
+  END IF;
+END;
+$rct_recovery_defaults$;
+""", user=user)
     for label, container, db, key, user in pg_targets(args):
         name = label + ".dump"
         with (args.bundle / name).open("rb") as source:
@@ -633,6 +677,40 @@ def restore(args):
                 ),
                 stdin=source,
             )
+        # GRANT to the current owner is effective-rights neutral when target ACL is
+        # NULL. Materialize only an explicitly stored, identical source built-in ACL.
+        # Hex keeps inventory identifiers/ACL text out of SQL and dollar-quote syntax.
+        access_hex = json.dumps(expected[label]["access"]["objects"], ensure_ascii=True).encode("utf-8").hex()
+        pg_query(container, secret[key], db, f"""
+DO $rct_recovery_owner_acl$
+DECLARE
+  source_access jsonb := convert_from(decode('{access_hex}','hex'),'UTF8')::jsonb;
+  slot record;
+BEGIN
+  FOR slot IN
+    SELECT n.nspname, c.relname,
+      CASE WHEN c.relkind='S' THEN 'SEQUENCE' ELSE 'TABLE' END AS object_type
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    JOIN LATERAL jsonb_array_elements(source_access) source_row(value)
+      ON source_row.value->>'kind'='RELATION_'||c.relkind::text
+      AND source_row.value->>'name'=quote_ident(n.nspname)||'.'||quote_ident(c.relname)
+      AND source_row.value->>'owner'=current_user
+    WHERE c.relkind IN ('r','p','S','v','m','f')
+      AND c.relowner=current_user::regrole::oid AND c.relacl IS NULL
+      AND n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname !~ '^pg_'
+      AND source_row.value->'acl'=(
+        SELECT jsonb_agg(a::text ORDER BY a::text COLLATE "C")
+        FROM unnest(acldefault(
+          CASE WHEN c.relkind='S' THEN 's'::"char" ELSE 'r'::"char" END,c.relowner)) a
+      )
+    ORDER BY n.nspname COLLATE "C", c.relname COLLATE "C"
+  LOOP
+    EXECUTE format('GRANT ALL PRIVILEGES ON %s %I.%I TO %I',
+                   slot.object_type, slot.nspname, slot.relname, current_user);
+  END LOOP;
+END;
+$rct_recovery_owner_acl$;
+""", user=user)
     for db, name in (("attendance_db", "attendance.archive"), ("notification_db", "notification.archive")):
         with (args.bundle / name).open("rb") as source:
             run(

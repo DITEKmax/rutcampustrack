@@ -431,9 +431,6 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       await expect(
         users.getByRole('heading', { name: 'Права доступа', exact: true }),
       ).toBeVisible();
-      await expect(
-        users.getByRole('radio', { name: 'Выбранные права', exact: true }),
-      ).toBeChecked();
     };
     const confirm = async (grant: boolean, method: 'PUT' | 'DELETE', labels: string[]) => {
       const dialog = page.getByRole('dialog', {
@@ -453,6 +450,7 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       return response.request().postDataJSON();
     };
     await openEditor(false);
+    await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
     const view = users.getByRole('checkbox', { name: 'Просмотр пользователей', exact: true });
     const manage = users.getByRole('checkbox', { name: 'Управление пользователями', exact: true });
     await manage.check();
@@ -470,6 +468,7 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     expect(assigned.version).toBeGreaterThan(before.version);
     await expect(users.getByText('Права администратора сохранены.', { exact: true })).toBeVisible();
     await openEditor(true);
+    await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
     await expect(view).toBeChecked();
     await expect(manage).toBeChecked();
     await manage.uncheck();
@@ -487,6 +486,7 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     expect(updated.version).toBeGreaterThan(assigned.version);
     await expect(users.getByText('Права администратора сохранены.', { exact: true })).toBeVisible();
     await openEditor(true);
+    await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
     await expect(view).toBeChecked();
     await expect(manage).not.toBeChecked();
     await users.getByRole('button', { name: 'Отозвать права администратора', exact: true }).click();
@@ -523,7 +523,15 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       ),
     ).toBe(false);
     // ADMIN21: bind the existing own teacher with a partial profile edit and authoritative readback.
+    await expect(users.getByRole('heading', { name: 'Права доступа', exact: true })).toBeVisible();
     await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(
+      users.getByRole('heading', { name: 'Редактировать данные', exact: true }),
+    ).toBeVisible();
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(users.getByRole('heading', { name: 'Пользователь', exact: true })).toBeVisible();
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(users.getByRole('heading', { name: 'Пользователи', exact: true })).toBeVisible();
     await users
       .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
       .fill(teacherBefore.login);

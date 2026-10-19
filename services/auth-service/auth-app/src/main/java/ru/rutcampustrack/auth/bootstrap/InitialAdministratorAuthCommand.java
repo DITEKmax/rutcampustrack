@@ -66,11 +66,13 @@ public final class InitialAdministratorAuthCommand {
             phase = "CONFIG";
             var environment = new StandardEnvironment();
             ConfigDataEnvironmentPostProcessor.applyTo(environment);
+            var password = environment.getRequiredProperty("spring.flyway.password");
+            if (password.isEmpty()) throw refused();
             var data =
                     new DriverManagerDataSource(
                             environment.getRequiredProperty("spring.datasource.url"),
                             environment.getRequiredProperty("spring.flyway.user"),
-                            environment.getRequiredProperty("spring.flyway.password"));
+                            password);
             phase = "EXECUTE";
             var reply = new InitialAdministratorAuthCommand(data).execute(args[0], request);
             phase = "OUTPUT";

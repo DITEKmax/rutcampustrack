@@ -225,7 +225,7 @@ BOT_BRIDGE_PHASES = (
 )
 BOT_BRIDGE_MARKER = re.compile(
     r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):[ \t]{0,8})?"
-    r"\[NP01_BRIDGE branch=(OWN_HOMEWORK|CREDENTIALS) phase=(" + "|".join(BOT_BRIDGE_PHASES) + r")\]"
+    r"\[NP01_BRIDGE branch=(OWN_HOMEWORK|CREDENTIALS) phase=(" + "|".join(BOT_BRIDGE_PHASES) + r")\] ?"
 )
 BOOTSTRAP_CLI_CLASS = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
 BOOTSTRAP_CLI_METHOD = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"

@@ -12,9 +12,9 @@
   },
   "mandatoryRows": 39,
   "mandatoryWeight": 196,
-  "closed": 30,
-  "closedWeight": 146,
-  "percent": 74.49,
+  "closed": 31,
+  "closedWeight": 154,
+  "percent": 78.57,
   "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
   "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
   "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking.",
@@ -29,11 +29,11 @@
   "delta": "OwnerQ033/D038 adds ONLYU14.7 weight8 operatorfirstadmin trustroot+2DBrecovery. 38+1=39;188+8=196; no parent-childdoublecredit. Weightfixedbeforeimplementation afterboundedsource design; v1/v2 preserved.",
   "byCheckpoint": {
     "КТ2": {
-      "closed": 11,
+      "closed": 12,
       "total": 14,
-      "weight": 50,
+      "weight": 58,
       "denominator": 71,
-      "percent": 70.42
+      "percent": 81.69
     },
     "КТ3": {
       "closed": 6,
@@ -57,5 +57,5 @@
       "percent": 0.0
     }
   },
-  "latestAccepted": "U23.1/U23.2/U23.4 actual9cf Apps SUCCESS + independent applicability ACCEPT; realerrors/profile/restart/resourcephases/outage/cleanup. Source9cf, canonical12151983958/apps.json SHA2222f88f7ddc2acf5c793bac193238775497d42af9d01f6b6809f7011f199ba5. No VPS/fullauthenticatedjourney/7dayelapsed claim."
+  "latestAccepted": "U14.3 actual8c5 Auth207/store33 + Academic named6Headman inclCAS/currentauthority/replacement and11History+2Archive PASS; independentwhole/effectiveRECONCILE addressedAPPROVE. Canonical12156207894/23e5a9de +12156407708/9a213c05. ExecutablePR95661 tree04d976a6 equals8c5. U25 and other8rows remainopen; no wholeGoalPASS."
 }

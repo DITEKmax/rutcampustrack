@@ -811,10 +811,12 @@ async def hosted_role_menu_main():
                 (row["uid"], row["display_name"], row["status"], row["record_present"]) for row in fixtures["roster"]
             )
             check(
-                sorted((row.student_id, row.display_name, row.status, row.record_present) for row in current.rows)
+                sorted(
+                    (row.student_id, row.display_name, row.status.upper(), row.record_present) for row in current.rows
+                )
                 == expected
             )
-            check(any(row.status == "ABSENT" and row.record_present for row in current.rows))
+            check(any(row.status.upper() == "ABSENT" and row.record_present for row in current.rows))
             check(any(not row.record_present and not row.status for row in current.rows))
             replies = await feed(headman["chat"], HEADMAN_LABEL)
             rendered = text(replies)

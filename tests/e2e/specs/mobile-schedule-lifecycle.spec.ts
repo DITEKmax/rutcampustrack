@@ -278,10 +278,10 @@ function seedPastHomework(dataset: MobileDataset, lesson: PhysicalLesson, itemId
       AND a.teacher_id=${dataset.teacher.id} AND a.lesson_type='lecture'
       AND a.valid_from<=${day}::date
       AND (a.valid_until_exclusive IS NULL OR a.valid_until_exclusive>${day}::date))
-    AND EXISTS (SELECT 1 FROM user_role_grants WHERE user_id=${actor}
-      AND role='headman' AND status='active' AND group_id=${group})
-    AND EXISTS (SELECT 1 FROM user_role_grants WHERE user_id=${dataset.student.id}
-      AND role='student' AND status='active' AND group_id=${group})`;
+    AND EXISTS (SELECT 1 FROM academic_role_eligibility WHERE user_id=${actor}
+      AND role='HEADMAN' AND status='ACTIVE' AND group_id=${group})
+    AND EXISTS (SELECT 1 FROM academic_role_eligibility WHERE user_id=${dataset.student.id}
+      AND role='STUDENT' AND status='ACTIVE' AND group_id=${group})`;
   const homeworkId = idFrom(
     sql(
       'postgres-academic',

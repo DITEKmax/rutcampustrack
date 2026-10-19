@@ -171,7 +171,8 @@ async function ordinaryRegistryExport(
       expect(denied.status()).toBe(409);
       expect((await denied.json()).code === 'SESSION_STATE_STALE').toBe(true);
     }
-    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
+    // Bearer-free capability redemption rejects stale stored authority with 403.
+    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(403);
 
     // Refresh the browser's owning session, whose cookie is independent of the
     // synthetic actors above; a new login would change ownership and yield 404.
@@ -207,7 +208,7 @@ async function ordinaryRegistryExport(
         })
       ).status(),
     ).toBe(403);
-    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(409);
+    expect((await dataset.request.get(freshTicket.downloadPath)).status()).toBe(403);
     const unchanged = await dataset.admin.call('GET', `/api/academic/users/${target.id}`);
     expect(unchanged.initialPassword === target.password).toBe(true);
   }
@@ -970,7 +971,7 @@ function registryOutageFailedFacts(until: number, jobId: string) {
 SET LOCAL statement_timeout = '3s';
 SET LOCAL lock_timeout = '1s';
 SELECT json_build_object(
-  'failedWithoutFile', coalesce((SELECT state = 'error' AND error_code = 'GENERATION_FAILED' AND attempts = 3 AND content IS NULL FROM auth_export_jobs WHERE job_id = '${jobId}'), false),
+  'failedWithoutFile', coalesce((SELECT state = 'error' AND error_code = 'GENERATION_FAILED' AND attempts = 3 AND content IS NULL FROM academic_export_jobs WHERE job_id = '${jobId}'), false),
   'noSuccessfulExport', NOT EXISTS (SELECT 1 FROM audit_log WHERE action = 'registry.export' AND extras->>'jobId' = '${jobId}' AND succeeded));
 ROLLBACK;`;
   const output = registryDocker(

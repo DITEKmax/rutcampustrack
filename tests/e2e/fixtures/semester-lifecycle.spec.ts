@@ -3053,7 +3053,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     last: ReadinessWarn | null;
   };
   const diagnostic = {
-    schema: 'semester-reconciliation.v10',
+    schema: 'semester-reconciliation.v11',
     phase: 'SETUP',
     configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',
@@ -3091,6 +3091,10 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       deadReadyClass: 'ZERO' | 'ONE' | 'MANY' | 'UNKNOWN';
     } | null,
     recoveryHealthLastRead: null as RecoveryHealthRead | null,
+    academicRecoveryHealthLastRead: null as {
+      channelState: RecoveryHealthRead['channelState'];
+      fresh: boolean;
+    } | null,
     readinessFailureLog: null as ReadinessLog | null,
     archiveReadinessLastRead: null as {
       httpStatus: number | null;
@@ -3718,11 +3722,47 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       );
       const health = recoveryHealthRead(current.healthLog, scheduleReturnedAt!, Date.now());
       diagnostic.recoveryHealthLastRead = health;
+      // Passive Docker health snapshots do not initiate an Academic business RPC.
+      const academic = identity('academic-service', Math.min(5000, remaining()));
+      const academicPin = pins['academic-service'];
+      requireValue(
+        academicPin.running === true &&
+          typeof academicPin.startedAt === 'string' &&
+          academicPin.startedAt.length > 0 &&
+          academic.startedAt === academicPin.startedAt,
+        'Same pinned Academic process must recover without restart',
+      );
+      const academicAddresses = networkAddresses(academic.networks);
+      const academicPinnedAddresses = networkAddresses(academicPin.networks);
+      const academicMembership = networkMembership(academic.networks);
+      const academicPinnedMembership = networkMembership(academicPin.networks);
+      requireValue(
+        academicAddresses !== null &&
+          academicPinnedAddresses !== null &&
+          academicMembership !== null &&
+          academicPinnedMembership !== null &&
+          JSON.stringify(academicAddresses) === JSON.stringify(academicPinnedAddresses) &&
+          JSON.stringify(academicMembership) === JSON.stringify(academicPinnedMembership),
+        'Pinned Academic network addresses changed',
+      );
+      const academicHealth = recoveryHealthRead(
+        academic.healthLog,
+        scheduleReturnedAt!,
+        Date.now(),
+      );
+      diagnostic.academicRecoveryHealthLastRead = {
+        channelState: academicHealth.channelState,
+        fresh: academicHealth.fresh === true,
+      };
       return (
         current.running &&
         current.health === 'healthy' &&
         health.channelState === 'READY' &&
-        health.fresh === true
+        health.fresh === true &&
+        academic.running === true &&
+        academic.health === 'healthy' &&
+        (academicHealth.channelState === 'READY' || academicHealth.channelState === 'IDLE') &&
+        academicHealth.fresh === true
       );
     };
     try {

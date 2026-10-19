@@ -3751,10 +3751,12 @@ jobs:
                   'firstHttp500OwnedServices', 'strandedLastRead', 'setupQuiescenceLastRead',
                   'replayLastRead', 'replayFailureLog', 'archiveReadinessLastRead',
               }
-              if type(value) is dict and value.get('schema') in ('semester-reconciliation.v9', 'semester-reconciliation.v10'):
+              if type(value) is dict and value.get('schema') in ('semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'):
                   keys |= {'readinessFailureLog', 'recoveryHealthLastRead'}
+              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v11':
+                  keys.add('academicRecoveryHealthLastRead')
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in ('semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10') or value['phase'] != 'SETUP'
+                      or value['schema'] not in ('semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11') or value['phase'] != 'SETUP'
                       or type(value['configuredListenerAttempts']) is not int
                       or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -3768,8 +3770,10 @@ jobs:
                       or any(value[key] is not None for key in (
                           'firstRestartFailure', 'mainCloseLastRead', 'firstHttp500OwnedServices',
                           'strandedLastRead', 'replayLastRead', 'replayFailureLog', 'archiveReadinessLastRead'))
-                      or (value['schema'] in ('semester-reconciliation.v9', 'semester-reconciliation.v10') and any(value[key] is not None
-                          for key in ('readinessFailureLog', 'recoveryHealthLastRead')))):
+                      or (value['schema'] in ('semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11') and any(value[key] is not None
+                          for key in ('readinessFailureLog', 'recoveryHealthLastRead')))
+                      or (value['schema'] == 'semester-reconciliation.v11'
+                          and value['academicRecoveryHealthLastRead'] is not None)):
                   return False
               read = value['setupQuiescenceLastRead']
               counters = {'mainReady', 'mainUnacked', 'mainConsumers', 'deadReady', 'deadUnacked',
@@ -5605,19 +5609,21 @@ jobs:
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
                                  'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
                                  'firstRestartFailure', 'mainCloseLastRead'}
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}:
                   keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
               if (type(value) is dict and value.get('schema') == 'semester-reconciliation.v5'
                       and 'setupQuiescenceLastRead' in value):
                   keys.add('setupQuiescenceLastRead')
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}:
                   keys |= {'setupQuiescenceLastRead', 'replayLastRead', 'replayFailureLog'}
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}:
                   keys.add('archiveReadinessLastRead')
-              if type(value) is dict and value.get('schema') in ('semester-reconciliation.v9', 'semester-reconciliation.v10'):
+              if type(value) is dict and value.get('schema') in ('semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'):
                   keys |= {'readinessFailureLog', 'recoveryHealthLastRead'}
+              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v11':
+                  keys.add('academicRecoveryHealthLastRead')
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}
+                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -5643,7 +5649,7 @@ jobs:
                       or type(last_read['status']) is not str
                       or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
                   raise ValueError('Invalid closed reconciliation main close read')
-              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
+              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}:
                   services = value['firstHttp500OwnedServices']
                   if services is not None:
                       if type(services) is not dict or set(services) != {'ATTENDANCE', 'SCHEDULE'}:
@@ -5657,12 +5663,12 @@ jobs:
                               raise ValueError('Invalid closed reconciliation service state')
                   stranded = value['strandedLastRead']
                   stranded_flags = {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
-                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'} else set())
+                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'} else set())
                   if stranded is not None and (
                           type(stranded) is not dict or set(stranded) != stranded_keys
                           or not all(type(stranded[key]) is bool for key in stranded_flags)):
                       raise ValueError('Invalid closed reconciliation stranded read')
-                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'} and (
+                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'} and (
                           type(stranded['deadReadyClass']) is not str
                           or stranded['deadReadyClass'] not in {'ZERO', 'ONE', 'MANY', 'UNKNOWN'}
                           or stranded['deadReadyOne'] != (stranded['deadReadyClass'] == 'ONE')):
@@ -5684,7 +5690,7 @@ jobs:
                                      and 0 <= setup[key] <= 1_000_000) for key in setup_counts)
                           or not all(type(setup[key]) is bool for key in setup_bools)):
                       raise ValueError('Invalid closed reconciliation setup quiescence read')
-              if value['schema'] in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
+              if value['schema'] in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}:
                   replay = value['replayLastRead']
                   replay_checks = (
                       'ledgerApplied', 'oneClaim', 'oneReceipt', 'receiptApplied',
@@ -5739,7 +5745,7 @@ jobs:
                               'MONGO_OTHER', 'TRANSACTION_ROLLBACK', 'OTHER'} | ({
                               'CONNECT', 'DNS', 'TLS', 'TRANSPORT_IO', 'CHANNEL_SHUTDOWN',
                               'SERVER_UNAVAILABLE', 'UNKNOWN'}
-                              if value['schema'] in {'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'} else set()),
+                              if value['schema'] in {'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'} else set()),
                       }
                       schedule_fields = {'category': {'INVALID_ARGUMENT', 'SQL_PERMISSION',
                           'SQL_UNDEFINED_TABLE', 'SQL_UNDEFINED_COLUMN', 'SQL_CONSTRAINT',
@@ -5766,7 +5772,7 @@ jobs:
                                   raise ValueError('Invalid closed reconciliation replay log projection')
                           else:
                               raise ValueError('Invalid closed reconciliation replay log state')
-              if value['schema'] in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
+              if value['schema'] in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'}:
                   readiness = value['archiveReadinessLastRead']
                   if readiness is not None:
                       flags = ('semesterMatches', 'priorStateActive', 'stateVersionMatches')
@@ -5787,7 +5793,17 @@ jobs:
                               or (status == 200 and not (all(readiness[key] is None for key in flags)
                                                         or all(type(readiness[key]) is bool for key in flags)))):
                           raise ValueError('Invalid closed reconciliation archive readiness status')
-              if value['schema'] in ('semester-reconciliation.v9', 'semester-reconciliation.v10'):
+              if value['schema'] == 'semester-reconciliation.v11':
+                  academic_health = value['academicRecoveryHealthLastRead']
+                  if academic_health is not None and (
+                          value['phase'] not in {'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
+                          or type(academic_health) is not dict
+                          or set(academic_health) != {'channelState', 'fresh'}
+                          or type(academic_health['channelState']) is not str
+                          or academic_health['channelState'] not in {'READY', 'IDLE', 'CONNECTING', 'TRANSIENT_FAILURE', 'SHUTDOWN', 'UNKNOWN'}
+                          or type(academic_health['fresh']) is not bool):
+                      raise ValueError('Invalid closed reconciliation Academic recovery health')
+              if value['schema'] in ('semester-reconciliation.v9', 'semester-reconciliation.v10', 'semester-reconciliation.v11'):
                   health = value['recoveryHealthLastRead']
                   if health is not None and (
                           value['phase'] not in {'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
@@ -5810,7 +5826,7 @@ jobs:
                               or not 0 <= failure['matchedCount'] <= 200):
                           raise ValueError('Invalid closed reconciliation readiness failure shape')
                       # Fixed markers are interpreted only against these exact five owned sources.
-                      for name, digest in {**{'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java': 'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java': '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java': '86c4ff19cebb79624dc6b6abf39673a25f92d5fdb89ef7b8c11296fe2824bee3', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java': ('5b396cdff796e553832d349c5879a6ca443ee26585865d644ae801ab724a0742' if value['schema'] == 'semester-reconciliation.v10' else '9ea65fd830f3e43f41953acf8da5089702fb0fd067e83496e7976813f647b22f'), 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java': 'b62364adcf6a03522665740e5cb609cd8702a018091daad2a4f2e2c86080c32c'}, **({'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/SchedulePreviewFailureObservation.java': 'c133a0fbd3cead04d9c27470f479bf6f9a162d9fe65acaa851a201d29976dca2'} if value['schema'] == 'semester-reconciliation.v10' else {})}.items():
+                      for name, digest in {**{'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java': 'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java': '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java': '86c4ff19cebb79624dc6b6abf39673a25f92d5fdb89ef7b8c11296fe2824bee3', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java': ('5b396cdff796e553832d349c5879a6ca443ee26585865d644ae801ab724a0742' if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11') else '9ea65fd830f3e43f41953acf8da5089702fb0fd067e83496e7976813f647b22f'), 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java': 'b62364adcf6a03522665740e5cb609cd8702a018091daad2a4f2e2c86080c32c'}, **({'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/SchedulePreviewFailureObservation.java': 'c133a0fbd3cead04d9c27470f479bf6f9a162d9fe65acaa851a201d29976dca2'} if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11') else {})}.items():
                           source = Path(name)
                           source_info = source.lstat()
                           if (not stat.S_ISREG(source_info.st_mode) or not 0 < source_info.st_size <= 262144
@@ -5826,7 +5842,7 @@ jobs:
                       elif failure['state'] == 'REPORTED':
                           last = failure['last']
                           sources = {'GATEWAY_ISSUER_CLIENT': {'REQUEST_BUILD', 'AUTH_HTTP', 'AUTH_RESPONSE', 'AUTH_TRANSPORT'}, 'GATEWAY_ISSUER_FILTER': {'FORWARDED_IDENTITY', 'EXPECTATIONS'}, 'ACADEMIC_CONTEXT': {'CURRENT_CONTEXT'}, 'SCHEDULE_CLIENT': {'SCHEDULE_PREVIEW'}, 'ACADEMIC_PREVIEW': {'ATTENDANCE_DIGEST', 'ATTENDANCE_PREVIEW', 'ECHO_FENCE', 'ACADEMIC_DIGEST', 'COUNTS', 'SCHEDULE_DIGEST'}}
-                          if value['schema'] == 'semester-reconciliation.v10':
+                          if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11'):
                               if (type(last) is not dict or set(last) != {
                                       'source', 'stage', 'status', 'cause', 'scheduleTransport'}):
                                   raise ValueError('Invalid closed reconciliation schedule transport shape')

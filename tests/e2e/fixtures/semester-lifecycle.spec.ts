@@ -2950,7 +2950,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   };
   type CountClass = 'ZERO' | 'ONE' | 'MANY' | 'INVALID';
   const diagnostic = {
-    schema: 'semester-reconciliation.v6',
+    schema: 'semester-reconciliation.v7',
     phase: 'SETUP',
     configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',
@@ -2986,6 +2986,21 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       mainReadyZero: boolean;
       mainUnackedZero: boolean;
       deadReadyClass: 'ZERO' | 'ONE' | 'MANY' | 'UNKNOWN';
+    } | null,
+    archiveReadinessLastRead: null as {
+      httpStatus: number | null;
+      transport:
+        | 'TLS_CERTIFICATE'
+        | 'TLS_HANDSHAKE'
+        | 'ECONNRESET'
+        | 'ECONNREFUSED'
+        | 'REQUEST_CONTEXT_DISPOSED'
+        | 'REQUEST_TIMEOUT'
+        | 'UNKNOWN'
+        | null;
+      semesterMatches: boolean | null;
+      priorStateActive: boolean | null;
+      stateVersionMatches: boolean | null;
     } | null,
     replayLastRead: null as {
       ledgerState: 'PENDING' | 'APPLIED' | 'ERROR' | 'OTHER';
@@ -4538,6 +4553,15 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               const hint = safeNativePrimaryFailures(observed).find(
                 (failure) => failure.path === 'SEMESTER_PREVIEW',
               )?.transportHint;
+              if (!cleaning) {
+                diagnostic.archiveReadinessLastRead = {
+                  httpStatus: null,
+                  transport: hint ?? 'UNKNOWN',
+                  semesterMatches: null,
+                  priorStateActive: null,
+                  stateVersionMatches: null,
+                };
+              }
               if (hint === 'ECONNRESET' || hint === 'ECONNREFUSED') {
                 lastReadinessTransport = { error };
                 return false;
@@ -4552,9 +4576,31 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             }
             lastReadinessTransport = undefined;
             try {
+              if (!cleaning) {
+                const status = response.status();
+                diagnostic.archiveReadinessLastRead = {
+                  httpStatus:
+                    Number.isInteger(status) && status >= 100 && status <= 599 ? status : null,
+                  transport: null,
+                  semesterMatches: null,
+                  priorStateActive: null,
+                  stateVersionMatches: null,
+                };
+              }
               if (response.status() === 503) return false;
               requireValue(response.status() === 200, 'Directed archive readiness read rejected');
               const preview = await response.json();
+              if (!cleaning) {
+                const object =
+                  typeof preview === 'object' && preview !== null && !Array.isArray(preview);
+                diagnostic.archiveReadinessLastRead = {
+                  httpStatus: 200,
+                  transport: null,
+                  semesterMatches: object && preview.semesterId === scope.semester,
+                  priorStateActive: object && preview.priorState === 'ACTIVE',
+                  stateVersionMatches: object && preview.stateVersion === previous!.stateVersion,
+                };
+              }
               requireValue(
                 preview.semesterId === scope.semester &&
                   preview.priorState === 'ACTIVE' &&

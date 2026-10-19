@@ -1,7 +1,7 @@
 # Resources / owners — current checkpoint
 
 Root sole Git/taskdocs/matrix integrator; native slots7 includingRoot. Newtask agents Sol6.1/high/forknone; actualmodelmetadata UNKNOWN accepted Cloudexception. RULES2b9a859c, no globalconfiguration/controlplane change.
-Current task branch/draftPR2 published1fbf23f8c3560013fe4d24090a63b14229c89fe5; coherent7filecheckpoint normalcommitted/pushed/remoteverified, hooksPASSnoDrift. Foreign25 preserved; indexempty. Earlier approvalcapacity errors retained in attempts; sameofficialGit/metadata recovered, no alternativechannel/model.
+Current task branch/draftPR2 publishedddc9f4dd95371e0dc41c5c02becaecf590af03c6; coherent16filecheckpoint normalcommitted/pushed/remoteverified, hooksPASSnoDrift. Foreign25 preserved; indexempty. Earlier approvalcapacity errors retained in attempts; sameofficialGit/metadata recovered, no alternativechannel/model.
 
 ## Capacity / leases
 
@@ -12,13 +12,13 @@ Security lastactual /tmp/r9cf-gitleaks-current-ee-384-20261019: exact3908..0c0/p
 
 | Owner | Current scope / state |
 | --- | --- |
-| Root | SoleGit/docs/matrix, HEAD1fb+ready11source/5docs. Exact3packets7ac8ee7f/355ba7a3/67eec277 joined, CacheAPPROVE/Native49PASS; NEW Scheduleunit explicitlyowned, foreign25 preserved. One normal16filecheckpoint next. |
+| Root | SoleGit/docs/matrix, publishedddc9f4dd95371e0dc41c5c02becaecf590af03c6 normal16filecheckpoint/remoteverified/hooksPASS_NO_DRIFT. 11source reviewed/Native49 Java-inputeqddc; foreign25 preserved/indexempty. Nowpostpublication5taskdocWIP only, sourceWIP security.yml exactauthor136149de/CacheAPPROVE; docs5 preserved. |
 | a05_native34_compile | Native49 PASS/released:4compile+2testEXECUTED/2freshXML18+1/0failerrorSkip110.98s/RSS1256062976B/output112482576B≤128MiB, current49SHAab57f573. JavaRoot2095/native2275/30absences/nativePythonTS stable/allnewPIDsreaped; notwholeappequivalence. LatestTMP4462612480/workspace4200697856. |
 | r2aa_registry_render_rca | Frozen/released pwa-auth/safe-reporter patch67eec277/posts8f823259/773e91ab: existing429response-only fixedorigincategories,49purecontrols/CacheAPPROVE. No request/retry/session/caller/IP/limitchange. HWsessionreuse withdrawn/P1closed/exactHEADfd5b45f9; actual429causeUNKNOWN. |
-| r9cf_report_registry_review | Frozen/released exact2packet355ba7a3 Rootjoined/CacheAPPROVE: mobile-dataset durable503exactresume/original60s/noPOSTrecreate +strictCIv6reader/sourcepin. WT/tmp/rct-s19-pool-budget HEADb836b194/24foreignWIPpreserved. UnderlyingafterCommitcauseUNKNOWN. |
-| r9cf_event_outbox_rca | Frozen/released exact7packet7ac8ee7f Rootjoined/CacheAPPROVE/Native49PASS, NEW Scheduleunit explicit. WT/tmp/rct-s19-e2e HEAD5ff1a720/Root1fbpreimages/4901foreigntrackedunchanged. Existingv6snapshot+joinedclosedWARN only; retry/TX/INITIAL/oracles intact. |
-| r9cf_cache_fixture_review | Coherent11source APPROVE7ac8ee7f+355ba7a3+67eec277/no findings; earlier37closureapplicability retained. NewHWsessionregressionP1 closedbywithdrawal. Reviewerread-only/no runtime/fixes; released. |
-| s19_9cf_ci_observer | Current1fb allterminal09:33/RELEASED: bothCIFAIL, Cov/Sec/OpenAPISUCCESS; bothAcademic/Apps/Monitoring/CLI success; pushclientPASS/PRHW429FAIL. 3canonicalfailedprimaries supplied/readonce; nooldretry ornewpolls. |
+| r9cf_report_registry_review | Security136149de released/CacheAPPROVE/rootjoined; v7CI df052355 exactRootjoined/CacheAPPROVE, released, separateWT/no fullhistory rescan. Exact2packet355ba7a3 Rootjoined/CacheAPPROVE: mobile-dataset durable503exactresume/original60s/noPOSTrecreate +strictCIv6reader/sourcepin. WT/tmp/rct-s19-pool-budget HEADb836b194/24foreignWIPpreserved. UnderlyingafterCommitcauseUNKNOWN. |
+| r9cf_event_outbox_rca | Fixturev723629eb8 exactRootjoined/CacheAPPROVE, frozen/released; ONE MAIN preview outcome, no newrequest/timeout/oraclechange; earlier exact7packet7ac8ee7f Rootjoined/CacheAPPROVE/Native49PASS, NEW Scheduleunit explicit. WT/tmp/rct-s19-e2e HEAD5ff1a720/Root1fbpreimages/4901foreigntrackedunchanged. Existingv6snapshot+joinedclosedWARN only; retry/TX/INITIAL/oracles intact. |
+| r9cf_cache_fixture_review | Coherent11source APPROVE7ac8ee7f+355ba7a3+67eec277/no findings; earlier37closureapplicability retained. NewHWsessionregressionP1 closedbywithdrawal. Reviewerread-only/no runtime/fixes; Security136149de APPROVE; v7fixture/CIincrement APPROVE/no findings/released. |
+| s19_9cf_ci_observer | Currentddc metadata-only: push39232864762/PR39232874382/Cov39232874444/Sec39232874389/OpenAPI39232874410. PRmergefac30d26/source ddc exacttree443b5770 verified. Current OpenAPI/Apps/Monitoring SUCCESS; Security FAILURE/public Git metadata RCA. All1fb terminal/no oldretry/polls; canonical3failedprimaries alreadyreadonce. |
 
-Accepted v3 FROZEN37/39 weight183/196 afterU14.3reopened forcurrentarchiveFAIL/sourceconfirmedGrpcAdviceUNAVAILABLE→INTERNALbug. RealPGrestorecurrentd5dPASS retained; U14.3/U25 open. Historicalv1/v2/TASK17 results retained. PRbody1fb exactverified/openDraft/current37/39; attach_artifactSUCCESS, no mainmerge.
+Accepted v3 FROZEN37/39 weight183/196 afterU14.3reopened forcurrentarchiveFAIL/sourceconfirmedGrpcAdviceUNAVAILABLE→INTERNALbug. RealPGrestorecurrentd5dPASS retained; U14.3/U25 open. Historicalv1/v2/TASK17 results retained. PRbodyddc exactverified/openDraft/current37/39; attach_artifactSUCCESS, no mainmerge.
 Noownerquestion. B013/B014/B015FROZEN; no production/mainmerge/deploy/secrets/reset. Ownerexternalacceptance DEFERRED_LOCAL/OWNER_MANUAL_PENDING, notPASS. Current/history singlecanonical evidence pointers andattempts, no rawlogs/ZIPcopiesinGit.

@@ -276,6 +276,48 @@ jobs:
                   emit(value)
                   return digest.digest()
 
+              def source_ready_heads(document):
+                  # Two existing source-ready notes have one exact public head slot each.
+                  required = {
+                      'utc', 'event', 'base', 'Event', 'Report', 'adoptionFact', 'Native49',
+                      'HWartifact', 'HWZipSha256', 'HWSafeSha256', 'HWfacts', 'R2', 'matrix', 'newDocuments'}
+                  if (type(document) is not dict or set(document) != required
+                          or document['event'] != 'boundedD9v6+durableAdoptionContinuation-GO-HW429fixtureRCA'
+                          or not all(type(document[key]) is str and len(document[key]) <= 4096
+                                     for key in required - {'HWartifact', 'newDocuments'})
+                          or type(document['HWartifact']) is not int or document['HWartifact'] <= 0
+                          or type(document['newDocuments']) is not bool
+                          or not hex40.fullmatch(document['base'])
+                          or not all(hex64.fullmatch(document[key])
+                                     for key in ('HWZipSha256', 'HWSafeSha256'))):
+                      return {}
+                  patterns = {'Event': 'GO7fileexistingv6snapshot\\+typedAttendance/ScheduleACKWARNdiagnostic,\\ NEWpureScheduleEventConsumerTest\\ explicitabsence;\\ assignedWTretainedHEAD([a-f0-9]{40})/Root1fbcontentpins;\\ no\\ clients/retry/business/oracle/timeouts/INITIALtemplatechange', 'Report': 'GOmobile\\-dataset\\.ts\\ exactdurable503existingresume\\ inunchanged60sbudget\\ \\+soleCIv6consumerguard/sourcepins;\\ WT/tmp/rct\\-s19\\-pool\\-budget\\ HEAD([a-f0-9]{40}),\\ twoRoot1fbpreimages55c193ea/01a73bd3;\\ other24WTfilespreserved'}
+                  matches = {key: re.fullmatch(pattern, document[key]) for key, pattern in patterns.items()}
+                  return ({key: match[1] for key, match in matches.items()}
+                          if all(matches.values()) else {})
+
+              def publication_tuple(document):
+                  # A label is not a Git witness: parents and trees are checked below.
+                  required = {
+                      'utc', 'event', 'head', 'parent', 'inventory', 'hooks', 'commitSeconds',
+                      'pushSeconds', 'normalPushRemoteVerified', 'foreign25RawNulSha256',
+                      'PR2', 'merge', 'sameTree', 'native48', 'runs', 'next', 'matrix'}
+                  if (type(document) is not dict or set(document) != required
+                          or document['event'] != 'published1fb-normal7filecheckpoint+PRexact-newCI'
+                          or document['normalPushRemoteVerified'] is not True
+                          or not all(type(document[key]) is str and len(document[key]) <= 4096
+                                     for key in required - {'commitSeconds', 'pushSeconds',
+                                                           'normalPushRemoteVerified', 'runs'})
+                          or not all(type(document[key]) in {int, Decimal} and 0 <= document[key] <= 3600
+                                     for key in ('commitSeconds', 'pushSeconds'))
+                          or type(document['runs']) is not dict
+                          or not all(hex40.fullmatch(document[key]) for key in ('head', 'parent', 'merge'))
+                          or not hex64.fullmatch(document['foreign25RawNulSha256'])):
+                      return None
+                  tree = re.fullmatch('([a-f0-9]{40})\\ metadataverified', document['sameTree'])
+                  return ((document['head'], document['parent'], document['merge'], tree[1])
+                          if tree else None)
+
               def credential_operand(value, label):
                   for match in binding.finditer(value):
                       # Free-form suffix text does not prove an operand boundary.
@@ -284,7 +326,8 @@ jobs:
                   return False
 
               def occurrences(spec, text, public_objects, trusted_records=None, legacy_refs=(),
-                              seed_refs=None, ci_hashes=(), legacy_pins=(), instruction_witnesses=None):
+                              seed_refs=None, ci_hashes=(), legacy_pins=(), instruction_witnesses=None,
+                              public_commits=(), publication_witnesses=()):
                   allowed = {}
                   records = set()
                   known_parents = {path for path, _ in trusted_records or () if path is not None}
@@ -305,7 +348,7 @@ jobs:
                           offset = text.find(value, offset + len(value), end)
 
                   def scalar(value, keys, start, end, legacy, public_context, whole_legacy,
-                             producer_legacy, direct_labels=False, instruction=False):
+                             producer_legacy, direct_labels=False, instruction=False, document_value=None):
                       if not isinstance(value, str) or forbidden(keys):
                           return
                       named = [key for key in keys if isinstance(key, str)]
@@ -323,6 +366,18 @@ jobs:
                                                        or whole_legacy and token in legacy_refs):
                                   add(token, start, end)
                       journal = spec["kind"] == "journal"
+                      if (journal and spec['path'] == 'docs/validation/cloud-20261011/attempts.ndjson'
+                              and public_context and not bound and len(keys) == 1):
+                          heads = source_ready_heads(document_value)
+                          token = heads.get(key)
+                          if token and token in legacy_refs and token in public_commits:
+                              add(token, start, end)
+                          publication = publication_tuple(document_value)
+                          if publication in publication_witnesses:
+                              if key == 'merge' and value == publication[2]:
+                                  add(value, start, end)
+                              elif key == 'sameTree' and value.startswith(publication[3]):
+                                  add(publication[3], start, end)
                       remote_main = journal and keys == ("evidence", "remote_main_sha")
                       readback_ref = spec["path"] == "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json" and keys in {
                           ("real_remote_readback",), ("actual_checkout", "official_git_parents", 1),
@@ -466,7 +521,7 @@ jobs:
                                   instruction_witnesses.add(witness)
                               instruction = root_trusted and witness in instruction_witnesses
                           scalar(value, keys, begin, end, legacy and not note_record,
-                                 parent in known_parents, root_trusted, producer_legacy, note_record, instruction)
+                                 parent in known_parents, root_trusted, producer_legacy, note_record, instruction, document_value)
 
                   kind = spec["kind"]
                   if kind == "journal":
@@ -666,6 +721,7 @@ jobs:
 
               generated = ["[extend]", "path = " + json.dumps(str(base)), ""]
               allowlists = {rule: [] for rule in ("sourcegraph-access-token", "generic-api-key")}
+              fetched_merge = None
               for spec in files:
                   path = spec["path"]
                   values = set()
@@ -675,8 +731,21 @@ jobs:
                   # Public Git object equality is an additional proof for embedded revision references.
                   references = set()
                   raw_references = set()
+                  publications = set()
                   for blob in inventory[path]:
-                      for match in re.finditer(r"[a-fA-F0-9]{40,}", content(blob)):
+                      blob_text = content(blob)
+                      if (spec['kind'] == 'journal'
+                              and path == 'docs/validation/cloud-20261011/attempts.ndjson'):
+                          for line in blob_text.splitlines():
+                              try:
+                                  document = json.loads(line, object_pairs_hook=pairs, parse_float=Decimal,
+                                      parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
+                              except (ValueError, RecursionError):
+                                  continue
+                              publication = publication_tuple(document)
+                              if publication:
+                                  publications.add(publication)
+                      for match in re.finditer(r"[a-fA-F0-9]{40,}", blob_text):
                           if match.end() - match.start() != 40:
                               continue
                           raw_references.add(match.group())
@@ -686,6 +755,9 @@ jobs:
                           if len(references) > limits["values_per_file"]:
                               raise ValueError
                   public_objects = set()
+                  public_commits = set()
+                  public_trees = set()
+                  object_kinds = {}
                   if references:
                       ordered = sorted(references)
                       result = subprocess.run(["git", "cat-file", "--batch-check=%(objecttype)"],
@@ -693,18 +765,69 @@ jobs:
                       if result.returncode or len(result.stdout.splitlines()) != len(ordered):
                           raise ValueError
                       public_objects = {value for value, kind in zip(ordered, result.stdout.splitlines()) if kind in {"commit", "tree"}}
+                      public_commits = {value for value, kind in zip(ordered, result.stdout.splitlines()) if kind == 'commit'}
+                      public_trees = {value for value, kind in zip(ordered, result.stdout.splitlines()) if kind == 'tree'}
+                      object_kinds = {value: kind for value, kind in zip(ordered, result.stdout.splitlines())
+                                      if kind in {'commit', 'tree', 'blob', 'tag'}}
+                  publication_witnesses = set()
+                  for publication in sorted(publications):
+                      head, parent, merge, tree = publication
+                      if head not in public_commits or parent not in public_commits or tree not in public_trees:
+                          continue
+                      head_parents = git('rev-list', '--parents', '-n', '1', head).split()
+                      if (not head_parents or head_parents[0] != head or parent not in head_parents[1:]
+                              or git('rev-parse', head + '^{tree}') != tree):
+                          continue
+                      if merge not in public_commits:
+                          if merge in object_kinds:
+                              continue
+                          # At most one qualified missing merge; never change refs, depth or config.
+                          if fetched_merge is not None:
+                              raise ValueError
+                          repository = os.environ.get('GITHUB_REPOSITORY', '')
+                          if (re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository) is None
+                                  or git('remote', 'get-url', 'origin') not in {
+                                      'https://github.com/' + repository,
+                                      'https://github.com/' + repository + '.git'}):
+                              raise ValueError
+                          fetched_merge = merge
+                          process = subprocess.Popen([
+                              'git', 'fetch', '--no-tags', '--no-write-fetch-head',
+                              '--no-recurse-submodules', 'origin', merge],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                          try:
+                              if process.wait(timeout=20) != 0:
+                                  raise ValueError
+                          except subprocess.TimeoutExpired:
+                              try:
+                                  os.killpg(process.pid, 9)
+                              except ProcessLookupError:
+                                  pass
+                              process.wait(timeout=5)
+                              raise ValueError from None
+                          if git('cat-file', '-t', merge) != 'commit':
+                              raise ValueError
+                          public_objects.add(merge)
+                          public_commits.add(merge)
+                      merge_parents = git('rev-list', '--parents', '-n', '1', merge).split()
+                      if (merge_parents and merge_parents[0] == merge and head in merge_parents[1:]
+                              and len(merge_parents) == 3
+                              and git('rev-parse', merge + '^{tree}') == tree):
+                          publication_witnesses.add(publication)
                   legacy_refs = set()
                   instruction_witnesses = set()
                   baseline_allowed, trusted_records = occurrences(
                       spec, content(trusted), public_objects, seed_refs=legacy_refs,
-                      ci_hashes=ci_witnesses.get(path, ()), instruction_witnesses=instruction_witnesses)
+                      ci_hashes=ci_witnesses.get(path, ()), instruction_witnesses=instruction_witnesses,
+                      public_commits=public_commits, publication_witnesses=publication_witnesses)
                   if len(baseline_allowed) > limits["values_per_file"]:
                       raise ValueError
                   legacy_pins = {value for value in baseline_allowed if hex64.fullmatch(value)}
                   baseline_allowed, _ = occurrences(
                       spec, content(trusted), public_objects, trusted_records, legacy_refs,
                       ci_hashes=ci_witnesses.get(path, ()), legacy_pins=legacy_pins,
-                      instruction_witnesses=instruction_witnesses)
+                      instruction_witnesses=instruction_witnesses, public_commits=public_commits,
+                      publication_witnesses=publication_witnesses)
                   if len(baseline_allowed) > limits["values_per_file"]:
                       raise ValueError
                   values.update(baseline_allowed)
@@ -733,7 +856,8 @@ jobs:
                       else:
                           allowed, _ = occurrences(spec, text, public_objects, trusted_records, legacy_refs,
                                                    ci_hashes=ci_witnesses.get(path, ()), legacy_pins=legacy_pins,
-                                                   instruction_witnesses=instruction_witnesses)
+                                                   instruction_witnesses=instruction_witnesses, public_commits=public_commits,
+                      publication_witnesses=publication_witnesses)
                       if not set(allowed).issubset(values):
                           raise ValueError
                       seen_allowed.update(allowed)

@@ -324,7 +324,15 @@ public class EventConsumer extends AbstractEventConsumer {
                 : LessonClosedRpc.SCHEDULE_LESSON_BY_ID;
     }
 
-    private static LessonClosedCause lessonClosedCause(RuntimeException failure) {
+    private static Enum<?> lessonClosedCause(RuntimeException failure) {
+        if (failure
+                        instanceof
+                        ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException
+                                schedule
+                && schedule.getStatusCode() == io.grpc.Status.Code.UNAVAILABLE
+                && schedule.getUnavailableOrigin() != null) {
+            return schedule.getUnavailableOrigin();
+        }
         if (lessonClosedStatus(failure) != NoRpcStatus.NONE) return LessonClosedCause.NONE;
         Throwable current = failure;
         for (int depth = 0; current != null && depth < 12; depth++, current = current.getCause()) {

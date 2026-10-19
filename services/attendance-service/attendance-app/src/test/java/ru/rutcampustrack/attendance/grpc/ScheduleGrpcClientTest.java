@@ -1,6 +1,10 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
@@ -193,5 +197,194 @@ class ScheduleGrpcClientTest {
         assertThrows(
                 ScheduleServiceUnavailableException.class,
                 () -> client.getScopedLessonById(42L, 10L, 30L));
+    }
+
+    @Test
+    void getLessonByIdRetainsOnlyClosedUnavailableOrigins() {
+        String privateDetail = "PRIVATE_TRANSPORT_DETAIL";
+        var cases =
+                new java.util.LinkedHashMap<
+                        StatusRuntimeException,
+                        ScheduleServiceUnavailableException.UnavailableOrigin>();
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new java.net.ConnectException(privateDetail))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.CONNECT);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new java.net.UnknownHostException(privateDetail))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.DNS);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new java.nio.channels.UnresolvedAddressException())
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.DNS);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new javax.net.ssl.SSLHandshakeException(privateDetail))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.TLS);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new java.security.cert.CertificateException(privateDetail))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.TLS);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new java.io.IOException(privateDetail))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.TRANSPORT_IO);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(
+                                new java.io.IOException(
+                                        privateDetail,
+                                        new javax.net.ssl.SSLException(privateDetail)))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.TLS);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(
+                                new java.io.IOException(
+                                        privateDetail,
+                                        new java.net.UnknownHostException(privateDetail)))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.DNS);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(
+                                new java.io.IOException(
+                                        privateDetail,
+                                        new java.net.ConnectException(privateDetail)))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.CONNECT);
+        // Typed evidence takes priority over an otherwise recognized static marker.
+        cases.put(
+                Status.UNAVAILABLE
+                        .withDescription("Channel shutdown invoked")
+                        .withCause(new javax.net.ssl.SSLException(privateDetail))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.TLS);
+        for (String description :
+                java.util.List.of(
+                        "Channel shutdown invoked",
+                        "Channel shutdownNow invoked",
+                        "Subchannel shutdown invoked")) {
+            cases.put(
+                    Status.UNAVAILABLE.withDescription(description).asRuntimeException(),
+                    ScheduleServiceUnavailableException.UnavailableOrigin.CHANNEL_SHUTDOWN);
+        }
+        cases.put(
+                Status.UNAVAILABLE
+                        .withDescription("Server shutdownNow invoked")
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.SERVER_UNAVAILABLE);
+        for (String description :
+                java.util.List.of(
+                        privateDetail,
+                        "server unavailable",
+                        "Channel shutdown invoked ",
+                        "Channel shutdown invoked\n",
+                        "channel shutdown invoked",
+                        "Server shutdownNow invoked " + privateDetail)) {
+            cases.put(
+                    Status.UNAVAILABLE.withDescription(description).asRuntimeException(),
+                    ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN);
+        }
+        cases.put(
+                Status.UNAVAILABLE.asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN);
+        var first = new IllegalStateException(privateDetail);
+        var second = new IllegalStateException(privateDetail);
+        first.initCause(second);
+        second.initCause(first);
+        cases.put(
+                Status.UNAVAILABLE.withCause(first).asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN);
+        Throwable inside = new java.net.ConnectException(privateDetail);
+        for (int i = 0; i < 10; i++) inside = new IllegalStateException(privateDetail, inside);
+        cases.put(
+                Status.UNAVAILABLE.withCause(inside).asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.CONNECT);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(new IllegalStateException(privateDetail, inside))
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN);
+        cases.put(
+                Status.UNAVAILABLE
+                        .withCause(
+                                new RuntimeException(privateDetail) {
+                                    @Override
+                                    public synchronized Throwable getCause() {
+                                        throw new IllegalStateException(privateDetail);
+                                    }
+                                })
+                        .asRuntimeException(),
+                ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN);
+        var trailers = new io.grpc.Metadata();
+        trailers.put(
+                io.grpc.Metadata.Key.of("private-test", io.grpc.Metadata.ASCII_STRING_MARSHALLER),
+                privateDetail);
+        cases.put(
+                new StatusRuntimeException(
+                        Status.UNAVAILABLE.withDescription(privateDetail), trailers),
+                ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN);
+        for (var entry : cases.entrySet()) {
+            doThrow(entry.getKey()).when(mockStub).getLessonById(any());
+            var failure =
+                    assertThrows(
+                            ScheduleServiceUnavailableException.class,
+                            () -> client.getLessonById(42L));
+            assertEquals(entry.getValue(), failure.getUnavailableOrigin());
+            assertEquals(Status.Code.UNAVAILABLE, failure.getStatusCode());
+            assertTrue(failure.isRetryable());
+            assertNull(failure.getCause());
+            assertEquals(0, failure.getSuppressed().length);
+            assertEquals("Schedule Service unavailable: UNAVAILABLE", failure.getMessage());
+            assertFalse(failure.toString().contains(privateDetail));
+        }
+        verify(mockStub, org.mockito.Mockito.times(cases.size()))
+                .withDeadlineAfter(3, java.util.concurrent.TimeUnit.SECONDS);
+        verify(mockStub, org.mockito.Mockito.times(cases.size()))
+                .getLessonById(LessonByIdRequest.newBuilder().setLessonId(42L).build());
+    }
+
+    @Test
+    void otherStatusesAndLegacyConstructorsNeverAcquireAnUnavailableOrigin() {
+        for (var code : Status.Code.values()) {
+            if (code == Status.Code.UNAVAILABLE) continue;
+            doThrow(
+                            Status.fromCode(code)
+                                    .withDescription("Server shutdownNow invoked")
+                                    .withCause(new java.net.ConnectException("PRIVATE_DETAIL"))
+                                    .asRuntimeException())
+                    .when(mockStub)
+                    .getLessonById(any());
+            if (code == Status.Code.NOT_FOUND) {
+                assertThrows(ResourceNotFoundException.class, () -> client.getLessonById(42L));
+            } else {
+                var failure =
+                        assertThrows(
+                                ScheduleServiceUnavailableException.class,
+                                () -> client.getLessonById(42L));
+                assertEquals(code, failure.getStatusCode());
+                assertNull(failure.getUnavailableOrigin());
+                assertNull(failure.getCause());
+                assertEquals(code == Status.Code.DEADLINE_EXCEEDED, failure.isRetryable());
+            }
+        }
+        assertNull(new ScheduleServiceUnavailableException("legacy").getUnavailableOrigin());
+        assertNull(
+                new ScheduleServiceUnavailableException("legacy", Status.Code.UNAVAILABLE)
+                        .getUnavailableOrigin());
+        assertNull(
+                new ScheduleServiceUnavailableException(
+                                "legacy",
+                                Status.Code.INTERNAL,
+                                ScheduleServiceUnavailableException.UnavailableOrigin.CONNECT)
+                        .getUnavailableOrigin());
     }
 }

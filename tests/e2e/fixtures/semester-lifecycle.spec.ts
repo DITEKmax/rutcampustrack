@@ -2888,6 +2888,13 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     'MONGO_OTHER',
     'TRANSACTION_ROLLBACK',
     'OTHER',
+    'CONNECT',
+    'DNS',
+    'TLS',
+    'CHANNEL_SHUTDOWN',
+    'TRANSPORT_IO',
+    'SERVER_UNAVAILABLE',
+    'UNKNOWN',
   ] as const;
   const ackCategories = [
     'INVALID_ARGUMENT',
@@ -2950,7 +2957,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   };
   type CountClass = 'ZERO' | 'ONE' | 'MANY' | 'INVALID';
   const diagnostic = {
-    schema: 'semester-reconciliation.v7',
+    schema: 'semester-reconciliation.v8',
     phase: 'SETUP',
     configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',

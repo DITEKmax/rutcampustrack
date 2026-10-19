@@ -318,6 +318,52 @@ jobs:
                   return ((document['head'], document['parent'], document['merge'], tree[1])
                           if tree else None)
 
+              current_header_ancestry = {}
+
+              def current_header_slots(line):
+                  # Only the observed CURRENT header fields, never arbitrary prose hashes.
+                  patterns = [
+                      ('Published/executable\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'HEAD'),)),
+                      ('Published/remote/PR\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'HEAD'),)),
+                      ('Stage19\\ base\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'),)),
+                      ('Stage19\\ starting\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'),)),
+                      ('Starting([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'),)),
+                      ('Starting/published\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'), (1, 'HEAD'))),
+                      ('Starting\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'),)),
+                      ('Ветка\\ `codex/server\\-validation\\-20261011`,\\ \\[draft\\ PR2\\]\\(https://github\\.com/DITEKmax/rutcampustrack/pull/2\\);\\ starting\\ \\*\\*([a-f0-9]{40})\\*\\*,\\ опубликованный\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'), (2, 'HEAD'))),
+                      ('Ветка\\ `codex/server\\-validation\\-20261011`,\\ \\[draft\\ PR2\\]\\(https://github\\.com/DITEKmax/rutcampustrack/pull/2\\)\\.\\ Starting\\ `([a-f0-9]{40})`;\\ published\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'), (2, 'HEAD'))),
+                      ('Ветка\\ `codex/server\\-validation\\-20261011`,\\ \\[draft\\ PR2\\]\\(https://github\\.com/DITEKmax/rutcampustrack/pull/2\\)\\.\\ Starting\\ `([a-f0-9]{40})`;\\ опубликованный\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'), (2, 'HEAD'))),
+                  ]
+                  result = []
+                  for pattern, roles in patterns:
+                      match = re.match(pattern, line)
+                      if match:
+                          for group, role in roles:
+                              result.append((role, match[group], *match.span(group)))
+                  return result
+
+              def verified_current_headers(slots, public_commits):
+                  slots = list(dict.fromkeys(slots))
+                  starting = [slot for slot in slots if slot[0] == 'STARTING']
+                  heads = [slot for slot in slots if slot[0] == 'HEAD']
+                  if (len(starting) != 1 or len(heads) > 1
+                          or any(slot[1] not in public_commits for slot in slots)):
+                      return ()
+                  pairs = ([(starting[0][1], heads[0][1]), (heads[0][1], current)]
+                           if heads else [(starting[0][1], current)])
+                  for pair in pairs:
+                      if pair not in current_header_ancestry:
+                          try:
+                              status = subprocess.run(
+                                  ['git', 'merge-base', '--is-ancestor', *pair],
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+                              current_header_ancestry[pair] = status.returncode == 0
+                          except (OSError, subprocess.TimeoutExpired):
+                              current_header_ancestry[pair] = False
+                      if not current_header_ancestry[pair]:
+                          return ()
+                  return slots
+
               def credential_operand(value, label):
                   for match in binding.finditer(value):
                       # Free-form suffix text does not prove an operand boundary.
@@ -622,6 +668,7 @@ jobs:
                   elif kind == "prose":
                       offset = 0
                       fenced = False
+                      current_headers = []
                       assignment = re.compile(r"^\s*(?:[-*]\s+)?[A-Za-z_][A-Za-z0-9_.-]*\s*[:=]|[\"'][A-Za-z_][A-Za-z0-9_.-]*[\"']\s*[:=]")
                       for line in text.splitlines(keepends=True):
                           if line.lstrip().startswith(("```", "~~~")):
@@ -630,6 +677,10 @@ jobs:
                               document(line, offset, note_record=True)
                           elif (not fenced and not binding.search(line) and not assignment.search(line)
                                 ):
+                              if (spec['path'] == 'docs/validation/cloud-20261011/CURRENT.md'
+                                      and len(line.encode('utf-8')) <= 4096):
+                                  current_headers.extend((role, token, offset + begin, offset + end)
+                                      for role, token, begin, end in current_header_slots(line))
                               for label in labels:
                                   begin = line.find(label)
                                   while begin >= 0:
@@ -637,6 +688,9 @@ jobs:
                                           add(label, offset + begin, offset + begin + len(label))
                                       begin = line.find(label, begin + len(label))
                           offset += len(line)
+                      if spec['path'] == 'docs/validation/cloud-20261011/CURRENT.md':
+                          for role, token, begin, end in verified_current_headers(current_headers, public_commits):
+                              add(token, begin, end)
                   else:
                       raise ValueError
                   return allowed, records

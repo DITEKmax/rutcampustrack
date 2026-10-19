@@ -360,6 +360,16 @@ class EventConsumerTest {
                     new ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException(
                             privateError),
                     "SCHEDULE_UNAVAILABLE rpc=NONE status=NONE cause=SEMANTIC_REJECTION");
+            for (var origin :
+                    ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException
+                            .UnavailableOrigin.values()) {
+                failures.put(
+                        new ru.rutcampustrack.attendance.exception
+                                .ScheduleServiceUnavailableException(
+                                privateError, io.grpc.Status.Code.UNAVAILABLE, origin),
+                        "SCHEDULE_UNAVAILABLE rpc=SCHEDULE_LESSON_BY_ID status=UNAVAILABLE cause="
+                                + origin);
+            }
             var unknownCommit = new com.mongodb.MongoException(112, privateError);
             unknownCommit.addLabel("UnknownTransactionCommitResult");
             failures.put(unknownCommit, "OTHER rpc=NONE status=NONE cause=MONGO_UNKNOWN_COMMIT");

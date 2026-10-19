@@ -7,6 +7,7 @@ for the application/broker trace required by M01/M04. Only an owned CI project r
 import base64
 import copy
 import hashlib
+import http.client
 import ipaddress
 import json
 import math
@@ -14,6 +15,8 @@ import os
 import re
 import shutil
 import signal
+import socket
+import ssl
 import subprocess
 import sys
 import tempfile
@@ -884,12 +887,24 @@ def e2e_async_browser():
             safe["phase"] = "COMPLETE"
         except (AssertionError, subprocess.SubprocessError, OSError, ValueError, KeyError) as error:
             primary = error
-            safe["error_kind"] = (
-                type(error).__name__
-                if type(error).__name__
-                in {"AssertionError", "CalledProcessError", "TimeoutExpired", "OSError", "HTTPError", "URLError"}
-                else "OTHER"
-            )
+            safe["error_kind"] = {
+                AssertionError: "AssertionError",
+                subprocess.CalledProcessError: "CalledProcessError",
+                subprocess.TimeoutExpired: "TimeoutExpired",
+                OSError: "OSError",
+                urllib.error.HTTPError: "HTTPError",
+                urllib.error.URLError: "URLError",
+                TimeoutError: "TimeoutError",
+                ConnectionResetError: "ConnectionResetError",
+                ConnectionRefusedError: "ConnectionRefusedError",
+                ConnectionAbortedError: "ConnectionAbortedError",
+                BrokenPipeError: "BrokenPipeError",
+                http.client.RemoteDisconnected: "RemoteDisconnected",
+                ssl.SSLError: "SSLError",
+                ssl.SSLCertVerificationError: "SSLCertVerificationError",
+                ssl.SSLEOFError: "SSLEOFError",
+                socket.gaierror: "gaierror",
+            }.get(type(error), "OTHER")
             if safe["phase"] == "BROWSER_REAL_DOWNLOADS" and browser is not None:
                 safe["browser_failure_metrics"] = e2e_export_failure_snapshot(query, failure_baseline)
         finally:

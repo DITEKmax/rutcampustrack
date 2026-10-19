@@ -244,3 +244,11 @@ criteria/review/currentgates; старыйостаток/существенны�
 ## Уточнение Q033 / D038 — initial administrator (18.10.2026)
 
 Владелец включил одноразовый operator-only initial-admin bootstrap как код: секрет из защищённого файла, без публичного endpoint/стандартного пароля, отказ при уже созданном администраторе; согласованная двухбазовая готовность/recovery и credential lifecycle сохраняются. Production запуск не разрешён. Решение и граница — decisions.md D038, BOUNDARY-PROTOCOL-20261018.md; новый результат учитывается versioned delta матрицы до реализации. Тестовый baseline browserstand не является production bootstrap.
+
+## Уточнение владельца 19.10.2026 — D9 и Gitleaks
+
+Это приоритет текущих U14.3/U25 и Q031/D037, не новая цель/знаменатель. Сохранить WIP/owners; текущие CI не отменять. Сначала один свежий safeD9 primary: фаза/последний HTTP или transport/три identity booleans; отдельно prerequisite, replay/receipt/ACK, cleanup и reader/format. UNKNOWN не основание менять businesslogic. Для503/UNAVAILABLE использовать закрытые стадии/корреляцию без body/payload/secret/PII; достаточные причины собирать одним increment.
+
+Проверить actualreader против except/pass masking: INVALID_RECEIPT/READER_FAILURE вводить только по установленному основанию. Gitleaks publicGitrefs распознавать узким типизированным форматом и provenance/ancestry, не по одному новому SHA. Сохранить default208rules/fullhistory+merge scan/wholevalue unknown+credential veto/18RED, без wholepathignore/arbitrary40hex; новые taskmetadata компактны. Сохранить отдельное PR/push DOCX/pipeline расхождение.
+
+Рассмотреть boundedexistingD9mode после mandatoryownedprep/guards/outages/timers/cleanup; не строить framework/controlplane. При несоразмерном workflowchange собрать один coherentpackage; final обычный fullCI обязателен, push/PR различаются. Не менять timeouts/limits/assertions/statuses/ACK/retry/DLQ/idempotency ради green, не чистить queues/data, не запускать localDocker/DB/pulls ниже reserve. B013/B014/B015FROZEN и no production/deploy/mainmerge/rotation сохраняются.

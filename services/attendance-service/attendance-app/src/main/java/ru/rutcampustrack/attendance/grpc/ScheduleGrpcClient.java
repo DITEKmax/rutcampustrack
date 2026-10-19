@@ -69,8 +69,54 @@ public class ScheduleGrpcClient {
             }
             throw new ScheduleServiceUnavailableException(
                     "Schedule Service unavailable: " + e.getStatus().getCode(),
-                    e.getStatus().getCode());
+                    e.getStatus().getCode(),
+                    e.getStatus().getCode() == io.grpc.Status.Code.UNAVAILABLE
+                            ? unavailableOrigin(e)
+                            : null);
         }
+    }
+
+    private static ScheduleServiceUnavailableException.UnavailableOrigin unavailableOrigin(
+            StatusRuntimeException failure) {
+        try {
+            if (failure.getStatus().getCode() != io.grpc.Status.Code.UNAVAILABLE) {
+                return ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN;
+            }
+            boolean tls = false, dns = false, connect = false, io = false;
+            var seen =
+                    java.util.Collections.newSetFromMap(
+                            new java.util.IdentityHashMap<Throwable, Boolean>());
+            Throwable cause = failure;
+            for (int depth = 0;
+                    cause != null && depth < 12 && seen.add(cause);
+                    depth++, cause = cause.getCause()) {
+                tls |=
+                        cause instanceof javax.net.ssl.SSLException
+                                || cause instanceof java.security.cert.CertificateException;
+                dns |=
+                        cause instanceof java.net.UnknownHostException
+                                || cause instanceof java.nio.channels.UnresolvedAddressException;
+                connect |= cause instanceof java.net.ConnectException;
+                io |= cause instanceof java.io.IOException;
+            }
+            if (tls) return ScheduleServiceUnavailableException.UnavailableOrigin.TLS;
+            if (dns) return ScheduleServiceUnavailableException.UnavailableOrigin.DNS;
+            if (connect) return ScheduleServiceUnavailableException.UnavailableOrigin.CONNECT;
+            if (io) return ScheduleServiceUnavailableException.UnavailableOrigin.TRANSPORT_IO;
+            // Exact UNAVAILABLE constants in grpc-core 1.82.4, not arbitrary server text.
+            String description = failure.getStatus().getDescription();
+            if ("Channel shutdown invoked".equals(description)
+                    || "Channel shutdownNow invoked".equals(description)
+                    || "Subchannel shutdown invoked".equals(description)) {
+                return ScheduleServiceUnavailableException.UnavailableOrigin.CHANNEL_SHUTDOWN;
+            }
+            if ("Server shutdownNow invoked".equals(description)) {
+                return ScheduleServiceUnavailableException.UnavailableOrigin.SERVER_UNAVAILABLE;
+            }
+        } catch (RuntimeException uninspectable) {
+            // Diagnostic inspection must never replace the original RPC availability mapping.
+        }
+        return ScheduleServiceUnavailableException.UnavailableOrigin.UNKNOWN;
     }
 
     /** Request detail must validate physical scope before a terminal dependency fallback. */

@@ -3746,7 +3746,7 @@ jobs:
                   'replayLastRead', 'replayFailureLog', 'archiveReadinessLastRead',
               }
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] != 'semester-reconciliation.v7' or value['phase'] != 'SETUP'
+                      or value['schema'] not in ('semester-reconciliation.v7', 'semester-reconciliation.v8') or value['phase'] != 'SETUP'
                       or type(value['configuredListenerAttempts']) is not int
                       or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -4300,7 +4300,7 @@ jobs:
                   source = Path('services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java')
                   info = source.lstat()
                   if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
-                          or hashlib.sha256(source.read_bytes()).hexdigest() != 'e60c0297fb3e32dcb6ef73b46e32cfbceb4a1cb63c4238868978f88b9ed05a8b'):
+                          or hashlib.sha256(source.read_bytes()).hexdigest() != 'ec925dca9e0b5eee56912655a02d770b4b140c0a44ad8330358d2a34f9411474'):
                       raise ValueError('Initial membership diagnostic source changed')
               elif config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
                   verify_homework_sources()
@@ -5357,17 +5357,17 @@ jobs:
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
                                  'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
                                  'firstRestartFailure', 'mainCloseLastRead'}
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'}:
                   keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
               if (type(value) is dict and value.get('schema') == 'semester-reconciliation.v5'
                       and 'setupQuiescenceLastRead' in value):
                   keys.add('setupQuiescenceLastRead')
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v6', 'semester-reconciliation.v7'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'}:
                   keys |= {'setupQuiescenceLastRead', 'replayLastRead', 'replayFailureLog'}
-              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v7':
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v7', 'semester-reconciliation.v8'}:
                   keys.add('archiveReadinessLastRead')
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7'}
+                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'}
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -5393,7 +5393,7 @@ jobs:
                       or type(last_read['status']) is not str
                       or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
                   raise ValueError('Invalid closed reconciliation main close read')
-              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7'}:
+              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'}:
                   services = value['firstHttp500OwnedServices']
                   if services is not None:
                       if type(services) is not dict or set(services) != {'ATTENDANCE', 'SCHEDULE'}:
@@ -5407,12 +5407,12 @@ jobs:
                               raise ValueError('Invalid closed reconciliation service state')
                   stranded = value['strandedLastRead']
                   stranded_flags = {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
-                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7'} else set())
+                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'} else set())
                   if stranded is not None and (
                           type(stranded) is not dict or set(stranded) != stranded_keys
                           or not all(type(stranded[key]) is bool for key in stranded_flags)):
                       raise ValueError('Invalid closed reconciliation stranded read')
-                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7'} and (
+                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'} and (
                           type(stranded['deadReadyClass']) is not str
                           or stranded['deadReadyClass'] not in {'ZERO', 'ONE', 'MANY', 'UNKNOWN'}
                           or stranded['deadReadyOne'] != (stranded['deadReadyClass'] == 'ONE')):
@@ -5434,7 +5434,7 @@ jobs:
                                      and 0 <= setup[key] <= 1_000_000) for key in setup_counts)
                           or not all(type(setup[key]) is bool for key in setup_bools)):
                       raise ValueError('Invalid closed reconciliation setup quiescence read')
-              if value['schema'] in {'semester-reconciliation.v6', 'semester-reconciliation.v7'}:
+              if value['schema'] in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8'}:
                   replay = value['replayLastRead']
                   replay_checks = (
                       'ledgerApplied', 'oneClaim', 'oneReceipt', 'receiptApplied',
@@ -5486,7 +5486,10 @@ jobs:
                               'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED'},
                           'cause': {'NONE', 'SEMANTIC_REJECTION', 'MONGO_TRANSIENT_TRANSACTION',
                               'MONGO_UNKNOWN_COMMIT', 'MONGO_WRITE_CONFLICT', 'MONGO_DUPLICATE_KEY',
-                              'MONGO_OTHER', 'TRANSACTION_ROLLBACK', 'OTHER'},
+                              'MONGO_OTHER', 'TRANSACTION_ROLLBACK', 'OTHER'} | ({
+                              'CONNECT', 'DNS', 'TLS', 'TRANSPORT_IO', 'CHANNEL_SHUTDOWN',
+                              'SERVER_UNAVAILABLE', 'UNKNOWN'}
+                              if value['schema'] == 'semester-reconciliation.v8' else set()),
                       }
                       schedule_fields = {'category': {'INVALID_ARGUMENT', 'SQL_PERMISSION',
                           'SQL_UNDEFINED_TABLE', 'SQL_UNDEFINED_COLUMN', 'SQL_CONSTRAINT',
@@ -5513,7 +5516,7 @@ jobs:
                                   raise ValueError('Invalid closed reconciliation replay log projection')
                           else:
                               raise ValueError('Invalid closed reconciliation replay log state')
-              if value['schema'] == 'semester-reconciliation.v7':
+              if value['schema'] in {'semester-reconciliation.v7', 'semester-reconciliation.v8'}:
                   readiness = value['archiveReadinessLastRead']
                   if readiness is not None:
                       flags = ('semesterMatches', 'priorStateActive', 'stateVersionMatches')

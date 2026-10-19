@@ -1595,8 +1595,12 @@ function completePasswordRecovery(): void {
   replacePasswordResetRouteWithLogin();
 }
 
+function isPasswordRecoveryView(): boolean {
+  return authView.value === 'password-recovery';
+}
+
 async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
-  if (authView.value === 'password-recovery') return;
+  if (isPasswordRecoveryView()) return;
   if (!auth.canAutoBootstrap()) {
     void push.invalidate();
     authView.value = 'login';
@@ -1708,7 +1712,7 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
       onlineGeneration !== null &&
       onlineGeneration === auth.currentGeneration() &&
       auth.canAutoBootstrap() &&
-      authView.value !== 'password-recovery' &&
+      !isPasswordRecoveryView() &&
       (typeof navigator === 'undefined' || navigator.onLine !== false)
     ) {
       queuedBootstrapAfterInvalidation = false;

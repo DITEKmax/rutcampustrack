@@ -276,6 +276,7 @@ function reconnectControl(
       canAutoBootstrap: () => state.automatic };
     const push = { invalidate: () => Promise.resolve() };
     ${queueDeclarations.join('\n')}
+    ${declaration('isPasswordRecoveryView').getText(script)}
     async function bootstrap(options = {}) {
       ${prelude}
       state.calls.push(options);

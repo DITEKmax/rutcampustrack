@@ -33,3 +33,6 @@ Noownerquestion. B013/B014/B015FROZEN; no production/mainmerge/deploy/secrets/re
 
 
 32b terminalcheckpoint: observer released; heavy0, no localDocker/DB/pulls/build. R2PWA targetedVitest ONEactual29PASS/CPU1/worker1/heap384MiB/deadline90s/3.482s assertions/log71B; missing timewrapper preflight launched no tests. Event119 purecontrols/TSparse/format only. All3source CacheAPPROVE/exactRootjoined; Native51 Java inputs unchanged, no repeat. Nextnormal8filepublish/fullCI; freshcapacity required before any newheavy lease. Foreign25/WIP/worktrees preserved.
+
+
+TS2367 addressedcheck on9aa:384MiB localvue-tsc exited134 heapOOM (notPASS). ONE actualsameproject/noEmit retry authorized with1024MiB heap/CPU1/same90s deadline after available10809872384B/TMP4422418432B/no otherheavy;86.333s/peakRSS1049904KiB<1.5GiB reserve/exit2. Appdiagnostics0/TS2367absent, but absentcached@sentry/vue11.8.0 and2privateoverlaylinks giveTS2307/7006: NOTfulltypecheckPASS, no stubs/downloads/furtherheapiterations.29actualsourceVitestPASS3.573s andCacheaddressedAPPROVE. No newJava/Docker; allR2processesfinished. FullordinaryCIusesdeclarednpmlock/npmci; current9aa notcancelled.

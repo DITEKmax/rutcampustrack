@@ -1,5 +1,6 @@
 """Private admission for /start and /credentials; generic RPC never supplies a password."""
 
+import asyncio
 from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
@@ -375,3 +376,207 @@ async def test_start_preserves_truthful_role_keyboard_when_pending_invalidation_
     # Recovery may skip only because /start has preserved the actually visible role keyboard.
     bot.send_message.assert_not_awaited()
     assert [button.text for row in visible.keyboard for button in row] == expected
+
+
+def _memory_keyboard_client():
+    versions = {}
+    registered = set()
+
+    async def sadd(key, user):
+        registered.add(user)
+
+    async def hset(key, user, version):
+        versions[user] = version
+
+    async def hdel(key, user):
+        versions.pop(user, None)
+
+    redis = SimpleNamespace(
+        sadd=AsyncMock(side_effect=sadd),
+        smembers=AsyncMock(side_effect=lambda key: registered.copy()),
+        hget=AsyncMock(side_effect=lambda key, user: versions.get(user)),
+        hset=AsyncMock(side_effect=hset),
+        hdel=AsyncMock(side_effect=hdel),
+    )
+    return KeyboardSyncClient(redis_client=redis)
+
+
+@pytest.mark.parametrize("outcome", ["rpc", "unknown", "send", "card_after_keyboard", "success"])
+async def test_start_and_startup_publish_one_coherent_keyboard_per_chat(outcome):
+    # Immediate in-memory Redis replies make the loop checkpoint causal: startup
+    # either finishes or waits for the same-chat publisher, without clock timing.
+    client = _memory_keyboard_client()
+    scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
+    signature = keyboard_signature(**scope.keyboard_options)
+    await client.register_user(12345)
+    await client.mark_user_synced(12345, signature)
+    delivered = []
+    profile_entered = asyncio.Event()
+    release_profile = asyncio.Event()
+
+    async def own_profile(user):
+        profile_entered.set()
+        await release_profile.wait()
+        if outcome == "rpc":
+            raise RuntimeError("profile unavailable")
+        return _profile(found=outcome != "unknown")
+
+    menu = SimpleNamespace(own_profile=AsyncMock(side_effect=own_profile), menu_scope=AsyncMock(return_value=scope))
+    role_send_failed = False
+
+    async def deliver(*args, **kwargs):
+        nonlocal role_send_failed
+        markup = kwargs.get("reply_markup")
+        if markup is None:
+            return
+        labels = [button.text for row in markup.keyboard for button in row]
+        delivered.append(labels)
+
+    async def start_deliver(*args, **kwargs):
+        nonlocal role_send_failed
+        markup = kwargs.get("reply_markup")
+        if outcome == "send" and markup is not None and len(markup.keyboard) > 3 and not role_send_failed:
+            role_send_failed = True
+            raise RuntimeError("role send unavailable")
+        await deliver(*args, **kwargs)
+
+    async def card(*args, **kwargs):
+        if outcome == "card_after_keyboard":
+            await deliver(**kwargs)
+            raise RuntimeError("card completion unavailable")
+        return False
+
+    message = _message()
+    message.answer.side_effect = start_deliver
+    cards = SimpleNamespace(deliver=AsyncMock(side_effect=card))
+    start = asyncio.create_task(cmd_start(message, None, None, client, cards, menu))
+    await profile_entered.wait()  # /start invalidated, then blocked in its RPC.
+    startup_menu = SimpleNamespace(menu_scope=AsyncMock(return_value=scope))
+    bot = SimpleNamespace(send_message=AsyncMock(side_effect=deliver))
+    startup = asyncio.create_task(
+        sync_registered_keyboards(
+            bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=startup_menu
+        )
+    )
+    checkpoint = asyncio.get_running_loop().create_future()
+    asyncio.get_running_loop().call_soon(checkpoint.set_result, None)
+    await checkpoint  # startup ran until completion or the held per-chat publication.
+    before_rpc_returned = list(delivered)
+    release_profile.set()
+    await asyncio.gather(start, startup)
+    expected = [button.text for row in main_keyboard(**scope.keyboard_options).keyboard for button in row]
+    stored = await client.get_user_keyboard_version(12345)
+    visible_at_completion = delivered[-1]
+    sends = len(delivered)
+    await sync_registered_keyboards(
+        bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=startup_menu
+    )
+    assert visible_at_completion == expected, (outcome, before_rpc_returned, delivered, stored)
+    assert stored == signature
+    assert len(delivered) == sends  # skip only when the actually visible keyboard matches.
+
+
+@pytest.mark.parametrize("cancelled", ["holder", "waiter"])
+async def test_keyboard_publication_cancellation_releases_chat_without_blocking_other_chats(cancelled):
+    client = _memory_keyboard_client()
+    scope = MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))
+    signature = keyboard_signature(**scope.keyboard_options)
+    entered = asyncio.Event()
+    release = asyncio.Event()
+    delivered = {}
+
+    async def own_profile(user):
+        if user == 12345:
+            entered.set()
+            await release.wait()
+            raise RuntimeError("profile unavailable")
+        return _profile()
+
+    async def send(user, **kwargs):
+        if kwargs.get("reply_markup") is not None:
+            delivered[user] = kwargs["reply_markup"]
+
+    async def bot_send(**kwargs):
+        await send(kwargs["chat_id"], **kwargs)
+
+    first = _message()
+
+    async def first_answer(*args, **kwargs):
+        await send(12345, **kwargs)
+
+    first.answer.side_effect = first_answer
+    menu = SimpleNamespace(own_profile=AsyncMock(side_effect=own_profile), menu_scope=AsyncMock(return_value=scope))
+    holder = asyncio.create_task(cmd_start(first, None, None, client, None, menu))
+    await entered.wait()
+    bot = SimpleNamespace(send_message=AsyncMock(side_effect=bot_send))
+    waiter = asyncio.create_task(
+        sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    )
+    checkpoint = asyncio.get_running_loop().create_future()
+    asyncio.get_running_loop().call_soon(checkpoint.set_result, None)
+    await checkpoint
+    assert not waiter.done()
+    other = _message(67890, chat_id=67890)
+
+    async def other_answer(*args, **kwargs):
+        await send(67890, **kwargs)
+
+    other.answer.side_effect = other_answer
+    await cmd_start(other, None, None, client, None, menu)
+    assert await client.get_user_keyboard_version(67890) == signature
+    assert 67890 in delivered and 12345 not in delivered
+    task = holder if cancelled == "holder" else waiter
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    release.set()
+    await (waiter if cancelled == "holder" else holder)
+    if cancelled == "waiter":
+        assert len([button for row in delivered[12345].keyboard for button in row]) == 4
+        assert await client.get_user_keyboard_version(12345) is None
+    await sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    expected = main_keyboard(**scope.keyboard_options)
+    assert delivered[12345] == expected and delivered[67890] == expected
+    assert await client.get_user_keyboard_version(12345) == signature
+    assert await client.get_user_keyboard_version(67890) == signature
+    assert not client._publication_locks  # completed/cancelled chats do not accumulate forever.
+
+
+async def test_start_waits_for_startup_delivery_and_receipt_before_its_fallback():
+    client = _memory_keyboard_client()
+    await client.register_user(12345)
+    scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
+    signature = keyboard_signature(**scope.keyboard_options)
+    entered = asyncio.Event()
+    release = asyncio.Event()
+    delivered = []
+
+    async def startup_send(**kwargs):
+        entered.set()
+        await release.wait()
+        delivered.append(kwargs["reply_markup"])
+
+    bot = SimpleNamespace(send_message=AsyncMock(side_effect=startup_send))
+    menu = SimpleNamespace(menu_scope=AsyncMock(return_value=scope))
+    startup = asyncio.create_task(
+        sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    )
+    await entered.wait()
+    message = _message()
+
+    async def answer(*args, **kwargs):
+        delivered.append(kwargs["reply_markup"])
+
+    message.answer.side_effect = answer
+    start_menu = SimpleNamespace(own_profile=AsyncMock(side_effect=RuntimeError("profile unavailable")))
+    start = asyncio.create_task(cmd_start(message, None, None, client, None, start_menu))
+    checkpoint = asyncio.get_running_loop().create_future()
+    asyncio.get_running_loop().call_soon(checkpoint.set_result, None)
+    await checkpoint
+    release.set()
+    await asyncio.gather(startup, start)
+    assert delivered == [main_keyboard(**scope.keyboard_options), main_keyboard()]
+    assert await client.get_user_keyboard_version(12345) is None
+    await sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    assert delivered[-1] == main_keyboard(**scope.keyboard_options)
+    assert await client.get_user_keyboard_version(12345) == signature

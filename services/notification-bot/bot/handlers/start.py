@@ -1,5 +1,6 @@
 import html
 import logging
+from contextlib import nullcontext
 
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -106,6 +107,11 @@ async def cmd_start(
     if not await _private_only(message):
         return
     telegram_id = private_sender(message)
+    async with keyboard_sync.publication(telegram_id) if keyboard_sync is not None else nullcontext():
+        await _publish_start(message, telegram_id, keyboard_sync, credential_cards, bot_menu_client)
+
+
+async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, bot_menu_client):
     keyboard_pending = keyboard_sync is None
     if keyboard_sync is not None:
         # Keep failures discoverable by the bounded startup recovery, including

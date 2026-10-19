@@ -170,13 +170,15 @@ WHERE subject_id=? AND (state<>'ARCHIVED' OR homework_id IS NOT NULL)
                     "UPDATE schedule_subject_deletion_participants SET"
                             + " state='DELETED',updated_at=NOW() WHERE operation_id=?",
                     UUID.fromString(command.getOperationId()));
-            events.publishEvent(
-                    new LessonDeletedEvent(
-                            this,
-                            command.getLessonsList().stream()
-                                    .map(SubjectDeletionLesson::getLessonId)
-                                    .toList(),
-                            command.getSemesterId()));
+            // No physical lessons means no downstream deletion effect to acknowledge.
+            if (command.getLessonsCount() > 0)
+                events.publishEvent(
+                        new LessonDeletedEvent(
+                                this,
+                                command.getLessonsList().stream()
+                                        .map(SubjectDeletionLesson::getLessonId)
+                                        .toList(),
+                                command.getSemesterId()));
         } else throw conflict();
         return receipt(
                 command,

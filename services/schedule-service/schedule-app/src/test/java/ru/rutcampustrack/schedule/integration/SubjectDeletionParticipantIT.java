@@ -30,6 +30,8 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
     @Autowired ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter recurring;
     @Autowired ru.rutcampustrack.schedule.recurring.RecurringScheduleItemLifecycleWriter lifecycle;
     @Autowired ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence archive;
+    @Autowired ru.rutcampustrack.schedule.event.SemesterArchiveEffectLedger effectLedger;
+    @Autowired ru.rutcampustrack.schedule.event.EventConsumer eventConsumer;
 
     @Autowired
     ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveBarrierService semesterArchive;
@@ -57,7 +59,7 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
         byte[] saved =
                 jdbcTemplate.queryForObject(
                         "SELECT command_manifest FROM schedule_subject_deletion_participants WHERE"
-                            + " operation_id=?",
+                                + " operation_id=?",
                         byte[].class,
                         UUID.fromString(c.getOperationId()));
         assertThat(SubjectDeletionCommand.parseFrom(saved)).isEqualTo(c);
@@ -117,6 +119,28 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
                     .isEqualTo(action == SubjectDeletionAction.COMMIT ? "DELETED" : "RELEASED");
         }
         assertThat(count("SELECT count(*) FROM lessons")).isEqualTo(2);
+        // The real BEFORE_COMMIT listener must have no deletion event/effect to persist for [].
+        assertThat(count("SELECT count(*) FROM schedule_outbox WHERE event_type='lesson.deleted'"))
+                .isZero();
+        assertThat(count("SELECT count(*) FROM schedule_semester_archive_effect_ledger")).isZero();
+        assertThat(effectLedger.firstUnprovenEffectReason(30)).isNull();
+        var archiveRequest = archiveRequest();
+        assertThat(semesterArchive.set(archiveRequest).getState())
+                .isEqualTo(
+                        ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState
+                                .SEMESTER_ARCHIVE_PARTICIPANT_READY);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT participant_state FROM schedule_semester_archive_barriers"
+                                        + " WHERE semester_id=30",
+                                String.class))
+                .isEqualTo("READY");
+        assertThatThrownBy(
+                        () ->
+                                jdbcTemplate.update(
+                                        "UPDATE lessons SET revision=revision+1 WHERE id=?",
+                                        lesson))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
     }
 
     @Test
@@ -482,6 +506,65 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
                                                 + " cap_until_exclusive=cap_until_exclusive+1 WHERE"
                                                 + " subject_id=20"))
                 .isInstanceOf(RuntimeException.class);
+        var effect =
+                jdbcTemplate.queryForMap(
+                        "SELECT event_id,encode(payload_hash,'hex') AS payload_hash FROM"
+                                + " schedule_semester_archive_effect_ledger WHERE"
+                                + " event_type='lesson.deleted' AND target='ATTENDANCE' AND"
+                                + " semester_id=30 AND state='PENDING'");
+        assertThat(count("SELECT count(*) FROM schedule_semester_archive_effect_ledger"))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT payload #>> '{payload,lesson_ids,0}' FROM schedule_outbox"
+                                        + " WHERE event_type='lesson.deleted' AND"
+                                        + " payload->>'event_id'=?",
+                                String.class,
+                                effect.get("event_id").toString()))
+                .isEqualTo(Long.toString(lesson));
+        var archiveRequest = archiveRequest();
+        assertThat(semesterArchive.set(archiveRequest).getState())
+                .isEqualTo(
+                        ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState
+                                .SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
+        UUID acknowledgementId = UUID.randomUUID();
+        var acknowledgement =
+                java.util.Map.<String, Object>of(
+                        "event_id", acknowledgementId.toString(),
+                        "event_type", "semester.archive.effect.ack",
+                        "event_version", 1,
+                        "source", "attendance-service",
+                        "occurred_at", java.time.Instant.now().toString(),
+                        "trace_id", UUID.randomUUID().toString(),
+                        "payload",
+                                java.util.Map.of(
+                                        "source_event_id",
+                                        effect.get("event_id").toString(),
+                                        "source_event_type",
+                                        "lesson.deleted",
+                                        "target",
+                                        "ATTENDANCE",
+                                        "semester_id",
+                                        30L,
+                                        "payload_hash",
+                                        effect.get("payload_hash"),
+                                        "result",
+                                        "APPLIED"));
+        eventConsumer.onEvent(acknowledgement);
+        eventConsumer.onEvent(acknowledgement);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT receipt_event_id FROM"
+                                        + " schedule_semester_archive_effect_ledger WHERE"
+                                        + " event_id=? AND state='APPLIED'",
+                                UUID.class,
+                                effect.get("event_id")))
+                .isEqualTo(acknowledgementId);
+        assertThat(effectLedger.firstUnprovenEffectReason(30)).isNull();
+        assertThat(semesterArchive.set(archiveRequest).getState())
+                .isEqualTo(
+                        ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState
+                                .SEMESTER_ARCHIVE_PARTICIPANT_READY);
     }
 
     @Test
@@ -541,6 +624,29 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
         }
         participant.apply(retry.toBuilder().setAction(SubjectDeletionAction.COMMIT).build());
         assertThat(count("SELECT count(*) FROM lessons WHERE subject_id=20")).isZero();
+    }
+
+    private ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest archiveRequest() {
+        UUID operation = UUID.randomUUID();
+        org.mockito.Mockito.when(academic.getSemesterArchiveAuthorityState(30L))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(30)
+                                .setStateVersion(7)
+                                .setTransition(
+                                        ru.rutcampustrack.academic.grpc.SemesterTransition
+                                                .ARCHIVING)
+                                .setTransitionOperationId(operation.toString())
+                                .setWriteBlocked(true)
+                                .build());
+        return ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest.newBuilder()
+                .setOperationId(operation.toString())
+                .setSemesterId(30)
+                .setStateVersion(7)
+                .setCommand(
+                        ru.rutcampustrack.schedule.grpc.SemesterArchiveBarrierCommand
+                                .SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE)
+                .build();
     }
 
     private SubjectDeletionCommand prepare() {

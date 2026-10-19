@@ -10,6 +10,7 @@ import {
 } from './mobile-dataset';
 import type { CurrentSession } from './pwa-auth';
 import { sanitizeTestErrors } from './artifact-privacy';
+import { retainNativePrimaryFailure } from './safe-reporter';
 import { syntheticInitData } from './telegram';
 
 // Exact accepted wire codes from HeadmanAssistantPermission. Keep the E2E
@@ -45,10 +46,28 @@ export async function selectRole(page: Page, label: string) {
 
 export async function reloadSession(page: Page): Promise<CurrentSession> {
   const response = http(page, '/api/auth/session', 'GET');
-  await page.reload();
-  const current = await response;
-  expect(current.status()).toBe(200);
-  return current.json();
+  let action: 'NAVIGATION' | 'WAIT_RESPONSE' | 'HTTP_STATUS' | 'JSON_DECODE' = 'NAVIGATION';
+  let httpStatus: number | null = null;
+  try {
+    await page.reload();
+    action = 'WAIT_RESPONSE';
+    const current = await response;
+    action = 'HTTP_STATUS';
+    const status = current.status();
+    if (Number.isInteger(status) && status >= 100 && status <= 599) httpStatus = status;
+    expect(current.status()).toBe(200);
+    action = 'JSON_DECODE';
+    return await current.json();
+  } catch (error) {
+    try {
+      retainNativePrimaryFailure(test.info().annotations, 'SESSION_RELOAD', action, error, {
+        httpStatus,
+      });
+    } catch {
+      // Diagnostic failures must not replace the original reload failure.
+    }
+    throw error;
+  }
 }
 
 export async function singleCapability(dataset: MobileDataset, permission: HelperCapability) {

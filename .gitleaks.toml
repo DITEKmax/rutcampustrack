@@ -253,7 +253,7 @@ git_reference_fields = [
 ]
 
 [rct_metadata.limits]
-files = 25
+files = 26
 objects = 1024
 source_bytes = 2147483648
 file_bytes = 33554432
@@ -268,6 +268,11 @@ required = {  }
 
 [[rct_metadata.files]]
 path = "docs/validation/cloud-20261011/CURRENT.md"
+kind = "prose"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/HANDOFF-20261017.md"
 kind = "prose"
 required = {  }
 

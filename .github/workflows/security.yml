@@ -198,7 +198,7 @@ jobs:
               note_fields = ['Auth', 'P01owner', 'activeCompileOwner', 'actual658', 'adaptation', 'agent', 'agents', 'baseCodecRef', 'choice', 'evidence', 'independentSourceReview', 'limits', 'nativePlan', 'next_writer', 'owner', 'privacy', 'qualification', 'scope', 'securityControls', 'shape', 'strictJson', 'writer']
               note_arrays = {"agents", "nativePlan", "independentSourceReview"}
               limits = policy["limits"]
-              if limits != {"files": 25, "objects": 1024, "source_bytes": 2147483648,
+              if limits != {"files": 26, "objects": 1024, "source_bytes": 2147483648,
                             "file_bytes": 33554432, "values_per_file": 8192,
                             "config_bytes": 2097152}:
                   raise ValueError
@@ -320,8 +320,8 @@ jobs:
 
               current_header_ancestry = {}
 
-              def current_header_slots(line):
-                  # Only the observed CURRENT header fields, never arbitrary prose hashes.
+              def current_header_slots(line, path="docs/validation/cloud-20261011/CURRENT.md"):
+                  # Only observed CURRENT/HANDOFF header fields, never arbitrary prose hashes.
                   patterns = [
                       ('Published/executable\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'HEAD'),)),
                       ('Published/remote/PR\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'HEAD'),)),
@@ -334,6 +334,12 @@ jobs:
                       ('Ветка\\ `codex/server\\-validation\\-20261011`,\\ \\[draft\\ PR2\\]\\(https://github\\.com/DITEKmax/rutcampustrack/pull/2\\)\\.\\ Starting\\ `([a-f0-9]{40})`;\\ published\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'), (2, 'HEAD'))),
                       ('Ветка\\ `codex/server\\-validation\\-20261011`,\\ \\[draft\\ PR2\\]\\(https://github\\.com/DITEKmax/rutcampustrack/pull/2\\)\\.\\ Starting\\ `([a-f0-9]{40})`;\\ опубликованный\\ HEAD\\ \\*\\*([a-f0-9]{40})(?![A-Za-z0-9])', ((1, 'STARTING'), (2, 'HEAD'))),
                   ]
+                  if path == 'docs/validation/cloud-20261011/HANDOFF-20261017.md':
+                      patterns = [
+                          ('\\-\\ Starting\\ SHA\\ расширенной\\ separate\\-DB\\ стадии:\\ `([a-f0-9]{40})`;\\ текущий\\ опубликованный\\ source\\ HEAD:\\ `([a-f0-9]{40})(?=`)', ((1, 'STARTING'), (2, 'HEAD'))),
+                      ]
+                  elif path != 'docs/validation/cloud-20261011/CURRENT.md':
+                      return []
                   result = []
                   for pattern, roles in patterns:
                       match = re.match(pattern, line)
@@ -363,6 +369,24 @@ jobs:
                       if not current_header_ancestry[pair]:
                           return ()
                   return slots
+
+              def verified_handoff_compares(line, public_commits):
+                  patterns = [
+                      '\\-\\ \\[Diff\\ этапа\\]\\(https://github\\.com/DITEKmax/rutcampustrack/compare/([a-f0-9]{40})\\.\\.\\.([a-f0-9]{40})\\);\\ \\[последние\\ четыре\\ source/test/workflow\\ файла\\]\\(https://github\\.com/DITEKmax/rutcampustrack/compare/([a-f0-9]{40})\\.\\.\\.([a-f0-9]{40})\\)\\.\\ Полный\\ inventory\\ доступен\\ через\\ `git\\ diff\\ \\-\\-name\\-status\\ 26cbe591\\.\\.d5d7d4c6`\\.',
+                      '\\-\\ \\[Diff\\ этапа\\]\\(https://github\\.com/DITEKmax/rutcampustrack/compare/([a-f0-9]{40})\\.\\.\\.([a-f0-9]{40})\\);\\ \\[последний\\ пакет\\ Advice/source\\-test\\ и\\ taskdocs\\]\\(https://github\\.com/DITEKmax/rutcampustrack/compare/([a-f0-9]{40})\\.\\.\\.([a-f0-9]{40})\\)\\.\\ Полный\\ inventory\\ доступен\\ через\\ `git\\ diff\\ \\-\\-name\\-status\\ 26cbe591\\.\\.d5d7d4c6`\\.',
+                  ]
+                  match = next((match for pattern in patterns
+                                if (match := re.fullmatch(pattern, line.rstrip('\r\n')))), None)
+                  if match is None:
+                      return ()
+                  result = []
+                  for left, right in ((1, 2), (3, 4)):
+                      slots = [('STARTING', match[left], *match.span(left)),
+                               ('HEAD', match[right], *match.span(right))]
+                      if not verified_current_headers(slots, public_commits):
+                          return ()
+                      result.extend(slots)
+                  return result
 
               def credential_operand(value, label):
                   for match in binding.finditer(value):
@@ -677,10 +701,14 @@ jobs:
                               document(line, offset, note_record=True)
                           elif (not fenced and not binding.search(line) and not assignment.search(line)
                                 ):
-                              if (spec['path'] == 'docs/validation/cloud-20261011/CURRENT.md'
+                              if (spec['path'] in {'docs/validation/cloud-20261011/CURRENT.md',
+                                          'docs/validation/cloud-20261011/HANDOFF-20261017.md'}
                                       and len(line.encode('utf-8')) <= 4096):
                                   current_headers.extend((role, token, offset + begin, offset + end)
-                                      for role, token, begin, end in current_header_slots(line))
+                                      for role, token, begin, end in current_header_slots(line, spec['path']))
+                                  if spec['path'] == 'docs/validation/cloud-20261011/HANDOFF-20261017.md':
+                                      for role, token, begin, end in verified_handoff_compares(line, public_commits):
+                                          add(token, offset + begin, offset + end)
                               for label in labels:
                                   begin = line.find(label)
                                   while begin >= 0:
@@ -688,7 +716,8 @@ jobs:
                                           add(label, offset + begin, offset + begin + len(label))
                                       begin = line.find(label, begin + len(label))
                           offset += len(line)
-                      if spec['path'] == 'docs/validation/cloud-20261011/CURRENT.md':
+                      if spec['path'] in {'docs/validation/cloud-20261011/CURRENT.md',
+                                          'docs/validation/cloud-20261011/HANDOFF-20261017.md'}:
                           for role, token, begin, end in verified_current_headers(current_headers, public_commits):
                               add(token, begin, end)
                   else:

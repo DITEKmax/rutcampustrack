@@ -23,6 +23,7 @@ const nativePrimaryPaths = {
   SEMESTER_PREVIEW: ['HTTP_GET'],
   ASYNC_REPORT: ['WAIT_DOWNLOAD'],
   BOT_ROLE_MENU: ['CHILD_EXIT'],
+  SESSION_RELOAD: ['NAVIGATION', 'WAIT_RESPONSE', 'HTTP_STATUS', 'JSON_DECODE'],
 } as const;
 const nativeErrorClasses = [
   'Error',
@@ -55,6 +56,16 @@ const nativeJobErrors = [
 const nativeTransportHints = [
   'TLS_CERTIFICATE', 'TLS_HANDSHAKE', 'ECONNRESET', 'ECONNREFUSED',
   'REQUEST_CONTEXT_DISPOSED', 'REQUEST_TIMEOUT', 'UNKNOWN',
+] as const;
+const nativeReloadTransportHints = [
+  'ABORTED',
+  'RESET',
+  'REFUSED',
+  'TIMEOUT',
+  'DNS',
+  'TLS',
+  'TARGET_CLOSED',
+  'UNKNOWN',
 ] as const;
 const nativeBotPhases = [
   'setup',
@@ -138,13 +149,25 @@ const nativeBotReadCauses = [
 type NativePrimaryPath = keyof typeof nativePrimaryPaths;
 interface NativePrimaryFailure {
   path: NativePrimaryPath;
-  action: 'DOCKER_INSPECT' | 'JSON_PARSE' | 'HTTP_GET' | 'WAIT_DOWNLOAD' | 'CHILD_EXIT';
+  action:
+    | 'DOCKER_INSPECT'
+    | 'JSON_PARSE'
+    | 'HTTP_GET'
+    | 'WAIT_DOWNLOAD'
+    | 'CHILD_EXIT'
+    | 'NAVIGATION'
+    | 'WAIT_RESPONSE'
+    | 'HTTP_STATUS'
+    | 'JSON_DECODE';
   errorClass: (typeof nativeErrorClasses)[number];
   code: (typeof nativeErrorCodes)[number];
   exitStatus: number | 'UNKNOWN';
   state?: (typeof nativeJobStates)[number];
   errorCode?: (typeof nativeJobErrors)[number];
-  transportHint?: (typeof nativeTransportHints)[number];
+  transportHint?:
+    | (typeof nativeTransportHints)[number]
+    | (typeof nativeReloadTransportHints)[number];
+  httpStatus?: number | null;
   phase?: (typeof nativeBotPhases)[number];
   checks?: number | 'UNKNOWN';
   headmanReadOutcome?: (typeof nativeBotReadOutcomes)[number];
@@ -232,6 +255,66 @@ export function retainNativePrimaryFailure(
     }
   }
   const transport = path === 'SEMESTER_PREVIEW' ? { transportHint } : {};
+  let reloadTransport: (typeof nativeReloadTransportHints)[number] = 'UNKNOWN';
+  if (path === 'SESSION_RELOAD') {
+    if (code === 'ABORT_ERR' || errorClass === 'AbortError') reloadTransport = 'ABORTED';
+    else if (code === 'ECONNRESET') reloadTransport = 'RESET';
+    else if (code === 'ECONNREFUSED') reloadTransport = 'REFUSED';
+    else if (code === 'ETIMEDOUT' || errorClass === 'TimeoutError') reloadTransport = 'TIMEOUT';
+    else if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') reloadTransport = 'DNS';
+    else if (errorClass === 'TargetClosedError') reloadTransport = 'TARGET_CLOSED';
+    else if (code === 'UNKNOWN' && (action === 'NAVIGATION' || action === 'WAIT_RESPONSE')) {
+      const raw = ownData(error, 'message');
+      if (typeof raw === 'string') {
+        const bounded = raw.slice(0, 513);
+        const newline = bounded.indexOf('\n');
+        const firstLine = (newline < 0 ? bounded : bounded.slice(0, newline)).replace(/\r$/, '');
+        const prefix = action === 'NAVIGATION' ? 'page.reload: ' : 'page.waitForResponse: ';
+        if (
+          (newline >= 0 || raw.length <= 512) &&
+          Buffer.byteLength(firstLine, 'utf8') <= 512 &&
+          !/[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(firstLine) &&
+          firstLine.startsWith(prefix)
+        ) {
+          const detail = firstLine.slice(prefix.length);
+          if (detail === 'Target page, context or browser has been closed')
+            reloadTransport = 'TARGET_CLOSED';
+          else if (/^Timeout [1-9][0-9]{0,8}ms exceeded\.$/.test(detail))
+            reloadTransport = 'TIMEOUT';
+          else if (action === 'NAVIGATION') {
+            const net =
+              /^net::(ERR_ABORTED|ERR_CONNECTION_RESET|ERR_CONNECTION_REFUSED|ERR_CONNECTION_TIMED_OUT|ERR_TIMED_OUT|ERR_NAME_NOT_RESOLVED|ERR_CERT_AUTHORITY_INVALID|ERR_CERT_DATE_INVALID|ERR_CERT_COMMON_NAME_INVALID|ERR_SSL_PROTOCOL_ERROR)(?=$|[; ])/.exec(
+                detail,
+              );
+            if (net?.[1] === 'ERR_ABORTED') reloadTransport = 'ABORTED';
+            else if (net?.[1] === 'ERR_CONNECTION_RESET') reloadTransport = 'RESET';
+            else if (net?.[1] === 'ERR_CONNECTION_REFUSED') reloadTransport = 'REFUSED';
+            else if (net?.[1] === 'ERR_CONNECTION_TIMED_OUT' || net?.[1] === 'ERR_TIMED_OUT')
+              reloadTransport = 'TIMEOUT';
+            else if (net?.[1] === 'ERR_NAME_NOT_RESOLVED') reloadTransport = 'DNS';
+            else if (net) reloadTransport = 'TLS';
+          }
+        }
+      }
+    }
+  }
+  const observedHttpStatus =
+    path === 'SESSION_RELOAD' ? ownData(jobStatus, 'httpStatus') : undefined;
+  const reloadStatus =
+    path === 'SESSION_RELOAD'
+      ? {
+          httpStatus:
+            action !== 'NAVIGATION' &&
+            action !== 'WAIT_RESPONSE' &&
+            typeof observedHttpStatus === 'number' &&
+            Number.isInteger(observedHttpStatus) &&
+            observedHttpStatus >= 100 &&
+            observedHttpStatus <= 599
+              ? observedHttpStatus
+              : null,
+          transportHint: reloadTransport,
+        }
+      : {};
   const checks = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'checks') : undefined;
   const headmanReadOutcome = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'headmanReadOutcome') : undefined;
   const readStage = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'readStage') : undefined;
@@ -255,7 +338,7 @@ export function retainNativePrimaryFailure(
       : {};
   annotations.push({
     type: nativePrimaryAnnotation,
-    description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport, ...botPhase }),
+    description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport, ...botPhase, ...reloadStatus }),
   });
 }
 
@@ -279,6 +362,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const state = ownData(value, 'state');
     const errorCode = ownData(value, 'errorCode');
     const transportHint = ownData(value, 'transportHint');
+    const httpStatus = ownData(value, 'httpStatus');
     const phase = ownData(value, 'phase');
     const checks = ownData(value, 'checks');
     const headmanReadOutcome = ownData(value, 'headmanReadOutcome');
@@ -290,6 +374,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
         : 'UNKNOWN';
     const fields = ['path', 'action', 'errorClass', 'code', 'exitStatus'];
     if (path === 'SEMESTER_PREVIEW') fields.push('transportHint');
+    if (path === 'SESSION_RELOAD') fields.push('transportHint', 'httpStatus');
     if (path === 'ASYNC_REPORT') fields.push('state');
     if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
     if (path === 'BOT_ROLE_MENU') fields.push('phase');
@@ -301,6 +386,10 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     if (
       keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
       (path === 'SEMESTER_PREVIEW' && !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
+      (path === 'SESSION_RELOAD' &&
+        (!nativeReloadTransportHints.some((candidate) => candidate === transportHint) ||
+          !(httpStatus === null || (typeof httpStatus === 'number' && Number.isInteger(httpStatus) && httpStatus >= 100 && httpStatus <= 599)) ||
+          ((ownData(value, 'action') === 'NAVIGATION' || ownData(value, 'action') === 'WAIT_RESPONSE') && httpStatus !== null))) ||
       (path === 'ASYNC_REPORT' && !nativeJobStates.some((candidate) => candidate === state)) ||
       (path === 'BOT_ROLE_MENU' && !nativeBotPhases.some((candidate) => candidate === phase)) ||
       (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined &&
@@ -319,7 +408,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const code = ownData(value, 'code');
     const exitStatus = ownData(value, 'exitStatus');
     if (
-      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW' && path !== 'ASYNC_REPORT' && path !== 'BOT_ROLE_MENU') ||
+      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW' && path !== 'ASYNC_REPORT' && path !== 'BOT_ROLE_MENU' && path !== 'SESSION_RELOAD') ||
       !nativePrimaryPaths[path].some((candidate) => candidate === action) ||
       !nativeErrorClasses.some((candidate) => candidate === errorClass) ||
       !nativeErrorCodes.some((candidate) => candidate === code) ||
@@ -333,6 +422,12 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       result.some((row) => row.path === path)
     )
       continue;
+    if (
+      path === 'SESSION_RELOAD' &&
+      description !==
+        JSON.stringify({ path, action, errorClass, code, exitStatus, httpStatus, transportHint })
+    )
+      continue;
     result.push({
       path,
       action,
@@ -341,6 +436,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       exitStatus,
       ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
       ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
+      ...(path === 'SESSION_RELOAD' ? { transportHint, httpStatus } : {}),
       ...(path === 'BOT_ROLE_MENU' ? {
         phase,
         ...(checks === undefined ? {} : { checks: boundedChecks }),

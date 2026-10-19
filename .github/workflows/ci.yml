@@ -1506,6 +1506,21 @@ jobs:
                   spring_failure = spring_case.find('failure')
                   assert spring_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
                   spring_message = spring_failure.get('message', '').removeprefix(spring_failure.get('type') + ': ')
+                  spring_observed_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(spring_completion['package'] + '.' + spring_completion['method'])
+                      + r'\(GroupPromotionCycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', spring_failure.text or '')
+                  spring_status = re.fullmatch(r'Status expected:<([1-5][0-9]{2})> but was:<([1-5][0-9]{2})>', spring_message)
+                  spring_kind = 'MOCKMVC_HTTP_STATUS' if spring_status is not None else 'OTHER'
+                  if spring_status is None and spring_observed_lines == ['1132']:
+                      spring_status = re.fullmatch(r'\s*expected:\s*([1-5][0-9]{2})\s+but was:\s*([1-5][0-9]{2})\s*', spring_message)
+                      if spring_status is not None:
+                          spring_kind = 'ASSERTJ_INTEGER_STATUS'
+                  proof['springCompletionRule'].update(
+                      observedRuleLines=[int(line) for line in spring_observed_lines] if len(spring_observed_lines) <= 16 else 'UNKNOWN',
+                      messageKind=spring_kind,
+                      expectedHttpStatus=int(spring_status.group(1)) if spring_status is not None else 'UNKNOWN',
+                      actualHttpStatus=int(spring_status.group(2)) if spring_status is not None else 'UNKNOWN')
                   assert re.fullmatch(r'Status expected:<409> but was:<200>', spring_message)
                   spring_named_lines = re.findall(
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
@@ -1739,7 +1754,7 @@ jobs:
           group = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupService.java'
           listener = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupCacheInvalidationListener.java'
           test = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupCacheCommitIT.java'
-          fixed_sha = {group: 'f494fce724d60e908a77fd409b5ace23a4fdc96f7b6ddf7a1559604e03642f59',
+          fixed_sha = {group: '4180abd3722e477add66ac7884742ce80b6cb0c17605b8553efc3d1202e8bc1f',
                        listener: '793de84ed45cb798c13ff72a4e49ada7f6d3a9000bbcc2495a315bf89feb1ef4'}
           package = 'ru.rutcampustrack.academic.group.GroupCacheCommitIT'
           commit = 'concurrentReadBeforeOuterCommitCannotLeaveAnOldCachedGroupAfterCommit'
@@ -1776,15 +1791,21 @@ jobs:
                   assert hashlib.sha256(data).hexdigest() == expected
                   assert data == subprocess.check_output(['git','show','HEAD:'+path.as_posix()])
                   original[path] = data
-              assert hashlib.sha256(test.read_bytes()).hexdigest() == '2cedf03d4da81ea330f05a72b9d5f77011b0c4250692d71ea81c07c178c83d1c'
+              assert hashlib.sha256(test.read_bytes()).hexdigest() == 'eebae375221a9e45c7b77e38ddd4e6b5b24cc45e275f9542bc31dc547478a999'
               assert test.read_bytes() == subprocess.check_output(['git','show','HEAD:'+test.as_posix()])
-              assert test.read_text().splitlines()[86].strip() == '.isEqualTo("УИТ-311");'
-              previous = '753173688d633ca07991f4dd73bdcd2698f45d96'
-              with (private/'fetch.private.log').open('wb') as log:
-                  subprocess.run(['git','fetch','--quiet','--no-tags','--depth=1','origin',previous],
-                                 stdout=log,stderr=subprocess.STDOUT,timeout=60,check=True)
-              old_group = subprocess.check_output(['git','show',previous+':'+group.as_posix()])
-              assert hashlib.sha256(old_group).hexdigest() == 'd277bccc120a16aabae16a994f15e7170ac5e500ed15c581407559bc213df2d5'
+              assert test.read_text().splitlines()[85].strip() == '.isEqualTo("УИТ-311");'
+              group_anchor = (b'    public Group updateGroup(Long id, UpdateGroupRequest request) {\n'
+                              b'        return availability().updateGroup(id, request);\n'
+                              b'    }\n')
+              group_changed = (b'    @org.springframework.cache.annotation.Caching(\n'
+                               b'            evict = {\n'
+                               b'                @org.springframework.cache.annotation.CacheEvict(value = "groups", key = "#id"),\n'
+                               b'                @org.springframework.cache.annotation.CacheEvict(value = "group_members", key = "#id")\n'
+                               b'            })\n' + group_anchor)
+              assert original[group].count(group_anchor) == 1
+              old_group = original[group].replace(group_anchor, group_changed, 1)
+              assert hashlib.sha256(old_group).hexdigest() == '39d1ea847cf9e07b66adbcdb9aae3db57a1a01e33207a1a5f2d04f30b0558f4f'
+              assert old_group.replace(group_changed, group_anchor, 1) == original[group]
               anchor = (b'        Long groupId = ((GroupUpdatedEvent.Payload) event.getPayload()).groupId();\n'
                         b'        evict(caches.getCache("groups"), groupId);\n'
                         b'        evict(caches.getCache("group_members"), groupId);\n')
@@ -1805,7 +1826,7 @@ jobs:
               assert failure.get('type') in {'org.opentest4j.AssertionFailedError','java.lang.AssertionError'}
               message = failure.get('message','').removeprefix(failure.get('type')+': ')
               assert re.fullmatch(r'\s*\[group read after outer commit returns the committed name\]\s*expected:\s*"УИТ-311"\s+but was:\s*"ИВТ-211"\s*', message)
-              frame = package+'.'+commit+'(GroupCacheCommitIT.java:87)'
+              frame = package+'.'+commit+'(GroupCacheCommitIT.java:86)'
               assert len(re.findall(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'+re.escape(frame)+r'[ \t]*$',failure.text or '')) == 1
               proof['red'] = {'state':'EXPECTED_COMMITTED_DB_NEW_CACHED_OLD_ASSERTION','tests':1,'failures':1,'errors':0,'skipped':0}
           except BaseException as error:

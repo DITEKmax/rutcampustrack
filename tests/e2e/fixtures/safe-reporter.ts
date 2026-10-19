@@ -78,6 +78,7 @@ interface NativePrimaryFailure {
   errorCode?: (typeof nativeJobErrors)[number];
   transportHint?: (typeof nativeTransportHints)[number];
   phase?: (typeof nativeBotPhases)[number];
+  checks?: number | 'UNKNOWN';
 }
 
 /** First facts only; no raw messages, commands, output, paths or object-supplied class names. */
@@ -160,9 +161,17 @@ export function retainNativePrimaryFailure(
     }
   }
   const transport = path === 'SEMESTER_PREVIEW' ? { transportHint } : {};
-  const botPhase = path === 'BOT_ROLE_MENU'
-    ? { phase: nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN' }
-    : {};
+  const checks = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'checks') : undefined;
+  const botPhase =
+    path === 'BOT_ROLE_MENU'
+      ? {
+          phase: nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN',
+          checks:
+            typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
+              ? checks
+              : 'UNKNOWN',
+        }
+      : {};
   annotations.push({
     type: nativePrimaryAnnotation,
     description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport, ...botPhase }),
@@ -190,11 +199,17 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const errorCode = ownData(value, 'errorCode');
     const transportHint = ownData(value, 'transportHint');
     const phase = ownData(value, 'phase');
+    const checks = ownData(value, 'checks');
+    const boundedChecks =
+      typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
+        ? checks
+        : 'UNKNOWN';
     const fields = ['path', 'action', 'errorClass', 'code', 'exitStatus'];
     if (path === 'SEMESTER_PREVIEW') fields.push('transportHint');
     if (path === 'ASYNC_REPORT') fields.push('state');
     if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
     if (path === 'BOT_ROLE_MENU') fields.push('phase');
+    if (path === 'BOT_ROLE_MENU' && checks !== undefined) fields.push('checks');
     const keys = Object.keys(value);
     if (
       keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
@@ -233,7 +248,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       exitStatus,
       ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
       ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
-      ...(path === 'BOT_ROLE_MENU' ? { phase } : {}),
+      ...(path === 'BOT_ROLE_MENU' ? { phase, ...(checks === undefined ? {} : { checks: boundedChecks }) } : {}),
     } as NativePrimaryFailure);
   }
   return result;
@@ -373,6 +388,10 @@ const datasetHttpOperations = {
   DATASET_SUBJECT_READ_HTTP: {
     method: 'GET',
     path: /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}$/,
+  },
+  DATASET_SUBJECT_DELETE_PREVIEW_HTTP: {
+    method: 'GET',
+    path: /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}\/deletion-preview$/,
   },
   DATASET_LESSON_CREATE_HTTP: { method: 'POST', path: /^\/api\/schedule\/one-off-lessons$/ },
   DATASET_LESSON_CANCEL_HTTP: {

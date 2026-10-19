@@ -612,7 +612,16 @@ async def own_homework_main():
             else:
                 check(False)
             await denied({**values, "expected_roles_version": values["expected_roles_version"] + 1})
-            await denied({**values, "expected_telegram_binding_version": 0})
+            try:
+                await generic._stub.GetOwnBotHomeworksForWeek(
+                    pb.BotOwnHomeworksForWeekRequest(**{**values, "expected_telegram_binding_version": 0}),
+                    metadata=(*generic._metadata, ("x-service-token", token)),
+                    timeout=3,
+                )
+            except grpc.aio.AioRpcError as error:
+                check(error.code() == grpc.StatusCode.INVALID_ARGUMENT)
+            else:
+                check(False)
             await denied(
                 {**values, "expected_telegram_binding_version": values["expected_telegram_binding_version"] + 1}
             )

@@ -92,13 +92,101 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0 # full history for gitleaks protect
+          fetch-depth: 0 # complete event history, without the PR commits API's first-page limit
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2 — MED-09 SHA-pin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # GITLEAKS_LICENSE для org-level scans (не требуется для public repo).
+        id: gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e results.sarif
+          log_opts="$(python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          def refuse():
+              raise SystemExit("Gitleaks source admission failed")
+
+          def git(*args):
+              result = subprocess.run(["git", *args], capture_output=True, text=True)
+              if result.returncode:
+                  refuse()
+              return result.stdout.strip()
+
+          def ref(value):
+              if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{40}", value) is None:
+                  refuse()
+              if git("rev-parse", "--verify", value + "^{commit}") != value:
+                  refuse()
+              return value
+
+          def ancestor(before, after):
+              git("merge-base", "--is-ancestor", before, after)
+
+          if git("rev-parse", "--is-shallow-repository") != "false":
+              refuse()
+          current = ref(os.environ["GITHUB_SHA"])
+          if git("rev-parse", "HEAD") != current:
+              refuse()
+          event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+          event_name = os.environ["GITHUB_EVENT_NAME"]
+          revision = current
+          if event_name == "pull_request":
+              base = ref(event["pull_request"]["base"]["sha"])
+              head = ref(event["pull_request"]["head"]["sha"])
+              ancestor(base, current)
+              ancestor(head, current)
+              if base != current:
+                  revision = base + ".." + current
+          elif event_name == "push":
+              if ref(event["after"]) != current:
+                  refuse()
+              before = event["before"]
+              if before != "0" * 40:
+                  before = ref(before)
+                  ancestor(before, current)
+                  if before != current:
+                      revision = before + ".." + current
+          elif event_name not in ("schedule", "workflow_dispatch"):
+              refuse()
+          if git("rev-list", "--max-count=1", revision) != current:
+              refuse()
+          # Walk every parent; first-parent applies only to how merge diffs are shown.
+          print("--full-history --diff-merges=first-parent " + revision)
+          PY
+          )"
+          test "$(uname -m)" = x86_64
+          tool_dir="$(mktemp -d "$RUNNER_TEMP/gitleaks-8.24.3.XXXXXX")"
+          curl --fail --silent --show-error --location \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
+            --output "$tool_dir/archive.tar.gz"
+          printf '%s  %s\n' \
+            9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c \
+            "$tool_dir/archive.tar.gz" | sha256sum --check --status
+          tar -xzf "$tool_dir/archive.tar.gz" -C "$tool_dir" gitleaks
+          scan_status=0
+          "$tool_dir/gitleaks" detect --source . --redact=100 --exit-code=2 \
+            --report-format=sarif --report-path=results.sarif \
+            --gitleaks-ignore-path=.gitleaksignore --log-opts="$log_opts" || scan_status=$?
+          if [[ "$scan_status" -eq 0 || "$scan_status" -eq 2 ]]; then
+            if [[ -s results.sarif ]]; then
+              echo 'has_report=true' >> "$GITHUB_OUTPUT"
+            elif [[ "$scan_status" -eq 0 ]]; then
+              exit 1
+            fi
+          fi
+          exit "$scan_status"
+
+      - name: Retain redacted Gitleaks SARIF
+        if: ${{ always() && steps.gitleaks.outputs.has_report == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gitleaks-results.sarif
+          path: results.sarif
+          if-no-files-found: error
 
   trivy-images:
     name: Trivy (built images)

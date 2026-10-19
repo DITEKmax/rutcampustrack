@@ -135,7 +135,50 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
     const column = Number(frame[3]);
     if (sourceLine > sourceLines.length || column > sourceLines[sourceLine - 1].length + 1)
       return fallback;
-    return { file: info.file, line: sourceLine, column };
+    const location = { file: info.file, line: sourceLine, column };
+    if (
+      info.file === publicSpecs[12] &&
+      info.line === 111 &&
+      sourceLine === 430 &&
+      sourceLines[420]?.trim() === 'const openEditor = async (assigned: boolean) => {' &&
+      sourceLines[429]?.trim() === '.click();'
+    ) {
+      if (lines.some((reportedLine) => /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(reportedLine)))
+        return location;
+      let caller: typeof location | undefined;
+      for (const callerLine of lines.slice(lines.indexOf(line) + 1)) {
+        if (!callerLine.startsWith('    at ')) {
+          if (callerLine !== '') return location;
+          continue;
+        }
+        if (callerLine.length > 1024 || /[\x00-\x1f\x7f-\x9f\u2028\u2029]/.test(callerLine))
+          return location;
+        const callerFrame =
+          /^    at (?:[^()\r\n]{1,128} )?\(([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})\)$/.exec(
+            callerLine,
+          ) ?? /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})$/.exec(callerLine);
+        if (!callerFrame) return location;
+        if (callerFrame[1] !== info.file) continue;
+        const callerSourceLine = Number(callerFrame[2]);
+        const callerColumn = Number(callerFrame[3]);
+        const expectedCaller =
+          callerSourceLine === 452
+            ? 'await openEditor(false);'
+            : callerSourceLine === 470 || callerSourceLine === 488
+              ? 'await openEditor(true);'
+              : null;
+        if (
+          caller ||
+          expectedCaller === null ||
+          sourceLines[callerSourceLine - 1]?.trim() !== expectedCaller ||
+          callerColumn > sourceLines[callerSourceLine - 1].length + 1
+        )
+          return location;
+        caller = { file: info.file, line: callerSourceLine, column: callerColumn };
+      }
+      return caller ?? location;
+    }
+    return location;
   }
   return fallback;
 }

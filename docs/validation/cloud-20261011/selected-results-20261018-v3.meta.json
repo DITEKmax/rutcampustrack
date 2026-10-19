@@ -12,9 +12,9 @@
   },
   "mandatoryRows": 39,
   "mandatoryWeight": 196,
-  "closed": 31,
-  "closedWeight": 154,
-  "percent": 78.57,
+  "closed": 33,
+  "closedWeight": 170,
+  "percent": 86.73,
   "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
   "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
   "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking.",
@@ -29,11 +29,11 @@
   "delta": "OwnerQ033/D038 adds ONLYU14.7 weight8 operatorfirstadmin trustroot+2DBrecovery. 38+1=39;188+8=196; no parent-childdoublecredit. Weightfixedbeforeimplementation afterboundedsource design; v1/v2 preserved.",
   "byCheckpoint": {
     "КТ2": {
-      "closed": 12,
+      "closed": 13,
       "total": 14,
-      "weight": 58,
+      "weight": 66,
       "denominator": 71,
-      "percent": 81.69
+      "percent": 92.96
     },
     "КТ3": {
       "closed": 6,
@@ -43,11 +43,11 @@
       "percent": 70.27
     },
     "КТ4": {
-      "closed": 13,
+      "closed": 14,
       "total": 15,
-      "weight": 70,
+      "weight": 78,
       "denominator": 83,
-      "percent": 84.34
+      "percent": 93.98
     },
     "КТ5": {
       "closed": 0,
@@ -57,5 +57,5 @@
       "percent": 0.0
     }
   },
-  "latestAccepted": "U14.3 actual8c5 Auth207/store33 + Academic named6Headman inclCAS/currentauthority/replacement and11History+2Archive PASS; independentwhole/effectiveRECONCILE addressedAPPROVE. Canonical12156207894/23e5a9de +12156407708/9a213c05. ExecutablePR95661 tree04d976a6 equals8c5. U25 and other8rows remainopen; no wholeGoalPASS."
+  "latestAccepted": "U14.7 Q033 actuale5c CLI1PASS12158825618/ff648942 plus exactsame-source4corePASS12158670472/25089ef9 includingrealfirstlogin/change/restart/unknownresult/concurrency/currentDBdeny. U14.4 registry6PASS retained. Current33/39,170/196; U25redgates remainopen, not readiness orproductionexecution."
 }

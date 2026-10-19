@@ -334,6 +334,7 @@ const cleanupRetrying = ref(false);
 let cleanupUiGeneration = 0;
 let stopAuthInvalidation = (): void => undefined;
 let queuedBootstrapAfterInvalidation = false;
+let pendingOnlineGeneration: number | null = null;
 
 const moscowDayClock = createMoscowDayClock();
 const cachedToday = useOfflineTodayFallback(
@@ -1701,7 +1702,20 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
     sessionReady.value = true;
   } finally {
     bootstrapping.value = false;
-    if (queuedBootstrapAfterInvalidation) {
+    const onlineGeneration = pendingOnlineGeneration;
+    pendingOnlineGeneration = null;
+    if (
+      onlineGeneration !== null &&
+      onlineGeneration === auth.currentGeneration() &&
+      auth.canAutoBootstrap() &&
+      authView.value !== 'password-recovery' &&
+      (typeof navigator === 'undefined' || navigator.onLine !== false)
+    ) {
+      queuedBootstrapAfterInvalidation = false;
+      offline.value = true;
+      readOnly.value = true;
+      void bootstrap();
+    } else if (queuedBootstrapAfterInvalidation) {
       queuedBootstrapAfterInvalidation = false;
       void bootstrap({ refresh: false });
     }
@@ -2049,6 +2063,7 @@ function onOwnerError(error: unknown): void {
 }
 
 function goOffline(): void {
+  pendingOnlineGeneration = null;
   offline.value = true;
   readOnly.value = true;
 }
@@ -2059,6 +2074,11 @@ function goOnline(): void {
   // schedule have passed the generation gate.
   offline.value = true;
   readOnly.value = true;
+  if (bootstrapping.value) {
+    pendingOnlineGeneration = auth.currentGeneration();
+    return;
+  }
+  pendingOnlineGeneration = null;
   void bootstrap();
 }
 
@@ -2180,10 +2200,10 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-        !studentViewVisible &&
-        !headmanViewVisible &&
-        !teacherViewVisible &&
-        !adminHomeViewVisible
+      !studentViewVisible &&
+      !headmanViewVisible &&
+      !teacherViewVisible &&
+      !adminHomeViewVisible
     "
     floating
     :count="notificationUnread.count"

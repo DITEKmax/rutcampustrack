@@ -3378,6 +3378,18 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     }
     return addresses;
   };
+  const networkMembership = (value: unknown): [string, string][] | null => {
+    const addresses = networkAddresses(value);
+    if (addresses === null) return null;
+    const membership: [string, string][] = [];
+    for (const [name] of addresses) {
+      const row = Object.getOwnPropertyDescriptor(value, name)?.value;
+      const id: unknown = Object.getOwnPropertyDescriptor(row, 'NetworkID')?.value;
+      if (typeof id !== 'string' || id.length !== 64 || !/^[0-9a-f]{64}$/.test(id)) return null;
+      membership.push([name, id]);
+    }
+    return membership;
+  };
   const captureHttp500OwnedServices = (error: unknown) => {
     if (cleaning || diagnostic.firstHttp500OwnedServices !== null) return;
     let message: unknown;
@@ -3664,11 +3676,18 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       const initialAddresses = networkAddresses(before.networks);
       const currentAddresses = networkAddresses(current.networks);
       const pinnedAddresses = networkAddresses(pins[service].networks);
+      const initialMembership = networkMembership(before.networks);
+      const currentMembership = networkMembership(current.networks);
+      const pinnedMembership = networkMembership(pins[service].networks);
       requireValue(
         initialAddresses !== null &&
           currentAddresses !== null &&
           pinnedAddresses !== null &&
-          JSON.stringify(initialAddresses) === JSON.stringify(pinnedAddresses) &&
+          initialMembership !== null &&
+          currentMembership !== null &&
+          pinnedMembership !== null &&
+          JSON.stringify(initialMembership) === JSON.stringify(pinnedMembership) &&
+          JSON.stringify(initialMembership) === JSON.stringify(currentMembership) &&
           JSON.stringify(initialAddresses) === JSON.stringify(currentAddresses),
         'Owned Attendance network addresses changed',
       );

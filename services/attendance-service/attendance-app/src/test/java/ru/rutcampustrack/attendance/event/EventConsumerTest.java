@@ -189,20 +189,80 @@ class EventConsumerTest {
             MDC.put("requestId", "previous-request");
             MDC.put("originTraceId", "previous-origin");
             MDC.put("traceId", "framework-trace");
-            var failures =
+            var failures = new java.util.LinkedHashMap<RuntimeException, String>();
+            failures.put(
+                    new ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException(
+                            privateError),
+                    "ACADEMIC_UNAVAILABLE");
+            failures.put(new IllegalStateException(privateError), "OTHER");
+            failures.put(new IllegalArgumentException(privateError), "INVALID_ARGUMENT");
+            failures.put(
+                    new IllegalStateException("Academic Service unavailable: UNAVAILABLE"),
+                    "OTHER");
+            failures.put(
+                    new ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException(
+                            null),
+                    "ACADEMIC_UNAVAILABLE");
+            for (var status : io.grpc.Status.Code.values()) {
+                String category =
+                        switch (status) {
+                            case UNAVAILABLE -> "ACADEMIC_RPC_UNAVAILABLE";
+                            case DEADLINE_EXCEEDED -> "ACADEMIC_RPC_DEADLINE";
+                            case UNAUTHENTICATED -> "ACADEMIC_RPC_AUTHENTICATION";
+                            case PERMISSION_DENIED -> "ACADEMIC_RPC_PERMISSION";
+                            default -> "ACADEMIC_RPC_OTHER";
+                        };
+                failures.put(
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + status, status),
+                        category);
+            }
+            var guards =
                     Map.of(
-                            new ru.rutcampustrack.attendance.exception
-                                    .AcademicServiceUnavailableException(privateError),
-                            "ACADEMIC_UNAVAILABLE",
-                            new IllegalStateException(privateError),
-                            "OTHER");
+                            "Attendance semester authority has no directed service identity",
+                            "ACADEMIC_DIRECTED_IDENTITY",
+                            "Mismatched semester state",
+                            "ACADEMIC_SEMESTER_ECHO",
+                            "Initial membership semester is unavailable for admitted effects",
+                            "ACADEMIC_SEMESTER_ADMISSION",
+                            "Academic returned a missing or mismatched historical roster echo",
+                            "ACADEMIC_ROSTER_ECHO",
+                            "Academic returned duplicate or invalid historical student identity",
+                            "ACADEMIC_ROSTER_IDENTITY");
+            for (var guard : guards.entrySet()) {
+                failures.put(
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException(guard.getKey()),
+                        guard.getValue());
+                failures.put(
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException(guard.getKey() + privateError),
+                        "ACADEMIC_UNAVAILABLE");
+            }
+            for (String message :
+                    java.util.List.of(
+                            "Academic Service unavailable: UNAVAILABLE " + privateError,
+                            privateError + "Academic Service unavailable: UNAVAILABLE",
+                            "Academic Service unavailable: UNAVAILABLE\n" + privateError,
+                            "Academic Service unavailable: UNAVAILABLE ",
+                            "academic Service unavailable: UNAVAILABLE",
+                            "Academic Service unavailable:\tUNAVAILABLE")) {
+                failures.put(
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException(
+                                message, io.grpc.Status.Code.UNAVAILABLE),
+                        "ACADEMIC_UNAVAILABLE");
+            }
             for (var entry : failures.entrySet()) {
+                int previousRecords = appender.list.size();
                 RuntimeException failure = entry.getKey();
                 doThrow(failure).when(initial).handle(envelope);
                 assertSame(
                         failure,
                         assertThrows(
                                 RuntimeException.class, () -> eventConsumer.onEvent(envelope)));
+                assertEquals(previousRecords + 1, appender.list.size());
                 var record = appender.list.getLast();
                 assertEquals(
                         "event consumption failure family=INITIAL_MEMBERSHIP category="
@@ -227,10 +287,10 @@ class EventConsumerTest {
                 assertEquals("previous-origin", MDC.get("originTraceId"));
                 assertEquals("framework-trace", MDC.get("traceId"));
             }
-            assertEquals(2, appender.list.size());
+            assertEquals(failures.size(), appender.list.size());
             org.mockito.Mockito.doNothing().when(initial).handle(envelope);
             assertDoesNotThrow(() -> eventConsumer.onEvent(envelope));
-            assertEquals(2, appender.list.size());
+            assertEquals(failures.size(), appender.list.size());
             assertEquals("previous-event", MDC.get("eventId"));
             assertEquals("previous-request", MDC.get("requestId"));
             assertEquals("previous-origin", MDC.get("originTraceId"));

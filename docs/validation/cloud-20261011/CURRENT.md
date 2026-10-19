@@ -1,32 +1,32 @@
 # CURRENT — Auth/Academic, пользовательские операции и наблюдаемость
 
 Persisted Goal Q031/D037 **IN_PROGRESS**, без дедлайна: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md), [TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md), [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md).
-Ветка `codex/server-validation-20261011`, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2). Starting `26cbe5912f6683a81780a831609dbddbc26feba4`; опубликованный HEAD **7dff3ecd7a4ebc41724cad1a6c47a48f1c144567**. PR body/HEAD проверены, app attachment SUCCESS; main не merged. **Готов связный checkpoint: 7 source/test/workflow файлов + 4 task docs; штатные hooks/normal push следующие.** Чужие 25 untracked сохранены.
+Ветка `codex/server-validation-20261011`, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2). Starting `26cbe5912f6683a81780a831609dbddbc26feba4`; опубликованный HEAD **57054c6e8092c7d6d2b69f3e6a66c7006a5fd2d0**. Нормальный checkpoint11файлов/7source4docs опубликован, hooks PASS без drift; remote/PR HEAD проверены, draft/open, main не merged. App attachment SUCCESS; повторный idempotent attach не вернул ответ, не повторяется. Чужие25untracked сохранены.
 
-[Матрица v3 FROZEN](selected-results-20261018-v3.csv) / [веса](selected-results-20261018-v3.meta.json): **36/39, вес 183/196 = 93.37% принятого плана**, 34 DONE_CHANGED + 2 ALREADY_SATISFIED. Это не production readiness. Исторические v1 23/25, v2 24/38, TASK17 9/9 сохранены.
+[Матрица v3 FROZEN](selected-results-20261018-v3.csv) / [веса](selected-results-20261018-v3.meta.json): **38/39, вес191/196 =97.45% принятого плана**, 36 DONE_CHANGED +2 ALREADY_SATISFIED. Это не production readiness. Исторические v1 23/25, v2 24/38, TASK17 9/9 сохранены.
 
 | КТ | Закрыто / всего | Вес / всего | % плана |
 | --- | --- | --- | --- |
 | КТ2: границы/AAA/контракты/сохранность | 14/14 | 71/71 | 100 |
-| КТ3: бот/приложения | 7/9 | 29/37 | 78.38 |
+| КТ3: бот/приложения | 9/9 | 37/37 | 100 |
 | КТ4: цепочки/мониторинг/задания | 15/15 | 83/83 | 100 |
 | КТ5: итоговые gates/review/handoff | 0/1 | 0/5 | 0 |
 
 | Остаток | Доказано; конкретное действие |
 | --- | --- |
-| U20.1 | Exact menu/private checks2–31 PASS. Нужны реальные shared fresh binding48–53, revoke54–57, expired callback58 и final controls59–60 того же hosted сценария; предыдущий запуск остановился на headman37. |
-| U20.2 | Actual7d checks37/BFF_ATTENDANCE_RESPONSE/TIME: подтверждённый product defect — допустимый ISO offset timestamp без нулевых секунд отвергается Instant.parse. Исправление4файлов6154e0e3 интегрировано/review APPROVE/Native45 PASS. Нужны настоящие roster/statistics/unmarked/direct-render/no-current checks38–47 на новой revision. |
-| U25 | На7d Coverage/OpenAPI и оба ordinaryAcademic gates SUCCESS; Security FAIL4 public-metadata context gaps исправлены workflow-only9d941297/review APPROVE/original18RED сохранены. D9 SETUP/deadReady2/ownAPPLIEDtrue/globalpending; consumer hint UNKNOWN. Restore seed/pending PASS, затем fresh-restore RESTORE_SCRIPT/GUARD RuntimeError1; дочерняя причина потеряна. Diagnostic2 patch06995fc4 review APPROVE добавляет только закрытые reason-коды в те же failure paths. Нужны actual причины/устранение и финальные совместимые gates. Guards/CASE_EXIT/oracles сохраняются. |
+| U25 | На570 Coverage/Security/OpenAPI SUCCESS, ordinary Academic и весь push client SUCCESS, включая2DOCX/бот/bootstrap/cleanup. Push CI39212562754 FAILURE: D9 SETUP/DLQ_READY, deadReady1/own4APPLIED/globalpending; INITIAL_MEMBERSHIP ACADEMIC_UNAVAILABLE1 ещё не связан с конкретным pending/message. Fresh-restore RESTORE_SCRIPT/GUARD/OS_ERROR exit1. Нужны исправления подтверждённых причин и конечные совместимые gates/review/handoff. |
 
-## Принято сейчас, владельцы и следующий шаг
+## Текущая работа
 
-**U20.3 принято отдельно от headman:** actual7d teacher checks32–36 подтверждают свои пары/directtext/empty; Native45 current teacher deny/revoke/dependency и сохранённые Python157 подтверждают остальные границы. Cache evidence-applicability APPROVE. Source/runtime lineage различается в матрице; shared binding не объявлен PASS и остаётся U20.1.
+**Restore:** Report sole writer scripts/recovery.py +CI. Reviewed patchf81d3a94 exact joined Root: stdin только2single DO; остальные -c/multi-statement/CREATE-DROP семантики сохранены. PureLinux /tmp/rct-restore-argv-rca-20261019/argv-control.safe.json: корректные258kSQL аргументы дают E2BIG, stdin сохраняет полные байты; Cache APPROVE. Реальный source bug устранён, но actual570errno/размер каталога UNKNOWN. ActualPGrestore остаётся обязательным ordinaryCI.
 
-Native45 canonical `/tmp/rct-s19-integration-compile/current45/current45.safe.json`: 4 compile + 2 test EXECUTED, 2 fresh XML /16PASS, 96.95s/RSS1.113GB/output112.42MB. Source guards/PythonTS стабильны, новые PID reaped, lease RELEASED. Native44 и ранее принятый evidence сохранены. Это не hosted headman PASS.
+**INITIAL_MEMBERSHIP:** retry уже есть:3attempts+1confirmed30sredrive. Категория объединяет transport/auth/semantic guards, конкретная причина не доказана. Event2Java132158dc +CIincrementa6fdfbdd exactRootjoined, Cache APPROVE: initial-only конечные categorycodes в том же WARN/existingcategoryCounts; allowlist/sourcepin согласованы. Retry/business/ACK/oracles неизменны; startup-race не установлен.
 
-Текущие normal runs7d: push CI39207941744 FAILURE; PR CI39207949788 заканчивает полезные client/CLI шаги; Coverage39207949770 SUCCESS; Security39207949746 FAILURE; OpenAPI39207949769 SUCCESS. Safe primaries: `.agent/evidence/cloud-20261011/current-wip/ci-7d-primary/` (bot12167660342, D912167502037, restore12167328316, closed hints117914756422). Raw log остаётся только private tool-store, в Git/файлы не скопирован.
+**CI570:** Coverage39212571332, Security39212571290, OpenAPI39212571343 SUCCESS. Push39212562754 и PR39212571286 terminal FAILURE; оба ordinaryAcademic/fullclient/CLI SUCCESS. PR lifecycle117929047304 BOOT_ENV: renderer bootJar/официальный Gradle8.12 download SocketTimeout, D9/restore SKIPPED. Один штатный job-rerun дал403 run already running без эффекта; после terminal не повторять автоматически: сначала текущие исправления, старый job лишь при реально недостающем evidence. Timeout/oracles не меняются.
 
-Root — sole Git/docs/matrix интегратор. Все три пакета приняты независимым review; авторы/Native writer released, доступны для адресных findings. CI observer следит только за последними незавершёнными шагами PR CI. Local heavy runtime отсутствует; Docker ниже резерва4GiB, без cleanup/reset/prune. Следующее: штатные hooks и один normal push11файлов, затем новые actual bot/D9/restore/Security данные; текущий CI не отменять.
+**Принятое не повторять:** U20.1/U20.2/U20.3 actual570fullbot PASS12.976s/0errors, artifact12169205427/safeSHAa16a8b14: actualTLS/qualified/completephase/allcontrols, headman/table/stats/unmarked/no-current/rebind/revoke/stale callback/finalattendanceunchanged. Настоящий Telegram DEFERRED_LOCAL. Текущая source verification: /tmp/rct-s19-integration-compile/current46/current46.safe.json SHA51816139. Native44/45 и прежнее evidence сохранены по неизменённым границам.
 
-История один раз в [attempts](attempts.ndjson); [resources/owners](resources.md), [protocol](BOUNDARY-PROTOCOL-20261018.md), [decisions](decisions.md), [questions](questions.md). Вопросов владельцу нет. Q033 bootstrap принят по actuale5c evidence, актуальный CLI на7d PASS; production-команда не выполнялась. Историческая причина WORD crash UNKNOWN.
-**B013/B014/B015 FROZEN.** OWNER_MANUAL/DEFERRED_LOCAL: настоящий Telegram/push/install/Safari, alertbot, offhostprobe, ownerstand, deploy/backup/VPS/multiworker — не PASS. Обязательные env-blockers не исключать. Resume: `.agent/evidence/cloud-20261011/current-wip/latest-checkpoint.safe.json`.
+Root sole Git/taskdocs/matrix интегратор; Report restore/CI, Event INITIAL, Cache независимый reviewer, observer только meaningful570 metadata. Native46 PASS: compileJava/compileTestJava/test EXECUTED,17/0fail/errors/skips,88.16s/RSS1.138GB/output103.77MB; sourceeq/newPIDsreaped/leaseRELEASED. Heavy runtime отсутствует; Docker ниже4GiB резерва, без cleanup/reset/prune. Следующее: normal hooks и один8file normal commit/push/CI; actualPGrestore и INITIALcause ещё не приняты.
+
+История один раз в [attempts](attempts.ndjson); [resources/owners](resources.md), [protocol](BOUNDARY-PROTOCOL-20261018.md), [decisions](decisions.md), [questions](questions.md). Safe primaries .agent/evidence/cloud-20261011/current-wip/ci-570-primary/; raw logs только private tool-store, не в файлах/Git. Вопросов владельцу нет. Q033 bootstrap actualCLI570 PASS; production-команда не выполнялась. Историческая причина WORD crash UNKNOWN.
+**B013/B014/B015 FROZEN.** OWNER_MANUAL/DEFERRED_LOCAL: настоящий Telegram/push/install/Safari, alertbot/offhostprobe/ownerstand/deploy/backup/VPS/multiworker — не PASS. Обязательные env-blockers не исключать. Resume: .agent/evidence/cloud-20261011/current-wip/latest-checkpoint.safe.json.

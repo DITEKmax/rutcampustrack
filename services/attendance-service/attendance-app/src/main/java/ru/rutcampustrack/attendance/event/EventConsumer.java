@@ -87,7 +87,7 @@ public class EventConsumer extends AbstractEventConsumer {
                                 log.warn(
                                         "event consumption failure family=INITIAL_MEMBERSHIP"
                                                 + " category={}",
-                                        lessonClosedFailure(failure));
+                                        initialMembershipFailure(failure));
                             } finally {
                                 throw failure;
                             }
@@ -269,6 +269,64 @@ public class EventConsumer extends AbstractEventConsumer {
         DUPLICATE_KEY,
         EFFECT_REJECTED,
         OTHER
+    }
+
+    private enum InitialMembershipFailure {
+        ACADEMIC_RPC_UNAVAILABLE,
+        ACADEMIC_RPC_DEADLINE,
+        ACADEMIC_RPC_AUTHENTICATION,
+        ACADEMIC_RPC_PERMISSION,
+        ACADEMIC_RPC_OTHER,
+        ACADEMIC_DIRECTED_IDENTITY,
+        ACADEMIC_SEMESTER_ECHO,
+        ACADEMIC_SEMESTER_ADMISSION,
+        ACADEMIC_ROSTER_ECHO,
+        ACADEMIC_ROSTER_IDENTITY
+    }
+
+    private static Enum<?> initialMembershipFailure(RuntimeException failure) {
+        if (!(failure
+                instanceof
+                ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException)) {
+            return lessonClosedFailure(failure);
+        }
+        String message = failure.getMessage();
+        if (message == null) return LessonClosedFailure.ACADEMIC_UNAVAILABLE;
+        // Exact source-owned forms only. Never emit the message or infer from arbitrary text.
+        return switch (message) {
+            case "Academic Service unavailable: UNAVAILABLE" ->
+                    InitialMembershipFailure.ACADEMIC_RPC_UNAVAILABLE;
+            case "Academic Service unavailable: DEADLINE_EXCEEDED" ->
+                    InitialMembershipFailure.ACADEMIC_RPC_DEADLINE;
+            case "Academic Service unavailable: UNAUTHENTICATED" ->
+                    InitialMembershipFailure.ACADEMIC_RPC_AUTHENTICATION;
+            case "Academic Service unavailable: PERMISSION_DENIED" ->
+                    InitialMembershipFailure.ACADEMIC_RPC_PERMISSION;
+            case "Academic Service unavailable: OK",
+                    "Academic Service unavailable: CANCELLED",
+                    "Academic Service unavailable: UNKNOWN",
+                    "Academic Service unavailable: INVALID_ARGUMENT",
+                    "Academic Service unavailable: NOT_FOUND",
+                    "Academic Service unavailable: ALREADY_EXISTS",
+                    "Academic Service unavailable: RESOURCE_EXHAUSTED",
+                    "Academic Service unavailable: FAILED_PRECONDITION",
+                    "Academic Service unavailable: ABORTED",
+                    "Academic Service unavailable: OUT_OF_RANGE",
+                    "Academic Service unavailable: UNIMPLEMENTED",
+                    "Academic Service unavailable: INTERNAL",
+                    "Academic Service unavailable: DATA_LOSS" ->
+                    InitialMembershipFailure.ACADEMIC_RPC_OTHER;
+            case "Attendance semester authority has no directed service identity" ->
+                    InitialMembershipFailure.ACADEMIC_DIRECTED_IDENTITY;
+            case "Mismatched semester state" -> InitialMembershipFailure.ACADEMIC_SEMESTER_ECHO;
+            case "Initial membership semester is unavailable for admitted effects" ->
+                    InitialMembershipFailure.ACADEMIC_SEMESTER_ADMISSION;
+            case "Academic returned a missing or mismatched historical roster echo" ->
+                    InitialMembershipFailure.ACADEMIC_ROSTER_ECHO;
+            case "Academic returned duplicate or invalid historical student identity" ->
+                    InitialMembershipFailure.ACADEMIC_ROSTER_IDENTITY;
+            default -> LessonClosedFailure.ACADEMIC_UNAVAILABLE;
+        };
     }
 
     private static LessonClosedFailure lessonClosedFailure(RuntimeException failure) {

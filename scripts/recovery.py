@@ -6,6 +6,7 @@ There is deliberately no production restore, overwrite, retention or automatic c
 """
 
 import argparse
+import errno
 import hashlib
 import json
 import os
@@ -110,12 +111,14 @@ def pg_command(container, password, *args, stream=False):
     return ["docker", "exec", *(["-i"] if stream else []), "-e", "PGPASSWORD=" + password, container, *args]
 
 
-def pg_query(container, password, db, sql, *, user="rct_user"):
+def pg_query(container, password, db, sql, *, user="rct_user", stream_sql=False):
     return (
         run(
             pg_command(
-                container, password, "psql", "-X", "-U", user, "-d", db, "-v", "ON_ERROR_STOP=1", "-At", "-c", sql
-            )
+                container, password, "psql", "-X", "-U", user, "-d", db, "-v", "ON_ERROR_STOP=1", "-At",
+                *([] if stream_sql else ["-c", sql]), stream=stream_sql,
+            ),
+            input_data=sql.encode("utf-8") if stream_sql else None,
         )
         .decode()
         .strip()
@@ -667,7 +670,7 @@ BEGIN
   END IF;
 END;
 $rct_recovery_defaults$;
-""", user=user)
+""", user=user, stream_sql=True)
     for label, container, db, key, user in pg_targets(args):
         name = label + ".dump"
         with (args.bundle / name).open("rb") as source:
@@ -720,7 +723,7 @@ BEGIN
   END LOOP;
 END;
 $rct_recovery_owner_acl$;
-""", user=user)
+""", user=user, stream_sql=True)
     for db, name in (("attendance_db", "attendance.archive"), ("notification_db", "notification.archive")):
         with (args.bundle / name).open("rb") as source:
             run(
@@ -838,7 +841,15 @@ def main():
             if isinstance(error, RecoveryError):
                 guard_reason = guard_reasons.get(str(error), "UNKNOWN")
             elif isinstance(error, OSError):
-                guard_reason = "OS_ERROR"
+                os_reasons = {
+                    errno.E2BIG: "OS_ARGUMENT_TOO_LARGE", errno.ENOSPC: "OS_NO_SPACE",
+                    errno.ENOENT: "OS_NOT_FOUND", errno.EACCES: "OS_PERMISSION",
+                    errno.EPERM: "OS_PERMISSION", errno.ENOMEM: "OS_MEMORY",
+                    errno.EMFILE: "OS_FILE_LIMIT", errno.ENFILE: "OS_FILE_LIMIT",
+                    errno.EPIPE: "OS_PIPE",
+                }
+                guard_reason = (os_reasons.get(error.errno, "OS_ERROR")
+                                if type(error.errno) is int else "OS_ERROR")
             elif isinstance(error, json.JSONDecodeError):
                 guard_reason = "JSON_PARSE"
             elif isinstance(error, KeyError):

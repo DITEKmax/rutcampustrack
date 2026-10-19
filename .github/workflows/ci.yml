@@ -3709,6 +3709,16 @@ jobs:
               'ACADEMIC_UNAVAILABLE', 'SCHEDULE_UNAVAILABLE', 'RESOURCE_NOT_FOUND',
               'INVALID_ARGUMENT', 'TRANSACTION_ROLLBACK', 'MONGO_TRANSACTION',
               'DUPLICATE_KEY', 'EFFECT_REJECTED', 'OTHER',
+              'ACADEMIC_RPC_UNAVAILABLE',
+              'ACADEMIC_RPC_DEADLINE',
+              'ACADEMIC_RPC_AUTHENTICATION',
+              'ACADEMIC_RPC_PERMISSION',
+              'ACADEMIC_RPC_OTHER',
+              'ACADEMIC_DIRECTED_IDENTITY',
+              'ACADEMIC_SEMESTER_ECHO',
+              'ACADEMIC_SEMESTER_ADMISSION',
+              'ACADEMIC_ROSTER_ECHO',
+              'ACADEMIC_ROSTER_IDENTITY',
           }
 
           INITIAL_MEMBERSHIP_STARTUP_BANNER = {
@@ -4289,7 +4299,7 @@ jobs:
                   source = Path('services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java')
                   info = source.lstat()
                   if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
-                          or hashlib.sha256(source.read_bytes()).hexdigest() != 'ae695f1550b0f7f4aef4717ce29039235d85b494f51a3216fe4abbf366367757'):
+                          or hashlib.sha256(source.read_bytes()).hexdigest() != '4f5bcdb53f55f596d848bc2704ef914e37eb08e4a76166984f8ff6e4ddd252ce'):
                       raise ValueError('Initial membership diagnostic source changed')
               elif config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
                   verify_homework_sources()
@@ -5532,6 +5542,13 @@ jobs:
                                      if line.startswith(b'RECOVERY_GUARD_REASON')]
                           allowed_reasons = {
                               b'OS_ERROR',
+                              b'OS_ARGUMENT_TOO_LARGE',
+                              b'OS_NO_SPACE',
+                              b'OS_NOT_FOUND',
+                              b'OS_PERMISSION',
+                              b'OS_MEMORY',
+                              b'OS_FILE_LIMIT',
+                              b'OS_PIPE',
                               b'JSON_PARSE',
                               b'KEY_ERROR',
                               b'TAR_ERROR',

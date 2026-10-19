@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -274,8 +276,17 @@ class AssignmentTeacherEligibilityIT extends AbstractAssignmentAuthorityIT {
         var preparedPid = new AtomicInteger();
         var admissionPid = new AtomicInteger();
         var first = new AtomicBoolean(true);
+        // Register the stub on its Mockito target, without invoking MANDATORY advice.
+        // Runtime callers retain the injected transactional bean proxy.
+        AssignmentTeacherEligibility eligibilitySpy =
+                AopTestUtils.getUltimateTargetObject(eligibility);
+        assertThat(mockingDetails(eligibilitySpy).isSpy()).isTrue();
         doAnswer(
                         call -> {
+                            assertThat(
+                                            TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isTrue();
                             Object result = call.callRealMethod();
                             if (call.getArgument(0, Long.class) == fixture.teacher2Id()
                                     && first.getAndSet(false)) {
@@ -287,7 +298,7 @@ class AssignmentTeacherEligibilityIT extends AbstractAssignmentAuthorityIT {
                             }
                             return result;
                         })
-                .when(eligibility)
+                .when(eligibilitySpy)
                 .requireEligible(anyLong());
         doAnswer(
                         call -> {
@@ -391,8 +402,17 @@ class AssignmentTeacherEligibilityIT extends AbstractAssignmentAuthorityIT {
         var batchPid = new AtomicInteger();
         var preparedPid = new AtomicInteger();
         var first = new AtomicBoolean(true);
+        // Register the stub on its Mockito target, without invoking MANDATORY advice.
+        // Runtime callers retain the injected transactional bean proxy.
+        AssignmentTeacherEligibility eligibilitySpy =
+                AopTestUtils.getUltimateTargetObject(eligibility);
+        assertThat(mockingDetails(eligibilitySpy).isSpy()).isTrue();
         doAnswer(
                         call -> {
+                            assertThat(
+                                            TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isTrue();
                             Object result = call.callRealMethod();
                             long teacher = call.getArgument(0);
                             if ((teacher == fixture.teacher1Id() || teacher == fixture.teacher2Id())
@@ -405,7 +425,7 @@ class AssignmentTeacherEligibilityIT extends AbstractAssignmentAuthorityIT {
                             }
                             return result;
                         })
-                .when(eligibility)
+                .when(eligibilitySpy)
                 .requireEligible(anyLong());
         doAnswer(
                         call -> {

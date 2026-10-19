@@ -182,6 +182,72 @@ def closed_budget_observation(baseline, profile, disk_before, disk_after):
             "idle_cpu_delta_cores": difference(after["idle_cpu_cores"], before["idle_cpu_cores"])}
 
 
+def closed_sampler_error(error):
+    classes = {AssertionError, subprocess.CalledProcessError, subprocess.TimeoutExpired,
+               json.JSONDecodeError, OSError, FileNotFoundError, PermissionError,
+               ValueError, KeyError, StopIteration, TypeError}
+    reasons = {"Runtime 4GiB disk floor crossed": "DISK_FLOOR",
+               "Unknown Docker memory unit": "MEMORY_UNIT",
+               "Owned container missing": "OWNED_CONTAINER_MISSING"}
+    reason = error.args[0] if type(error) is AssertionError and len(error.args) == 1 and type(error.args[0]) is str else None
+    label = reasons.get(reason, "UNKNOWN")
+    if type(error) is subprocess.CalledProcessError:
+        label = error.output if type(error.output) is str and error.output in DIAGNOSTIC_REASONS else "UNKNOWN"
+    return {"failure_class": type(error).__name__ if type(error) in classes else "UNKNOWN",
+            "reason": label}
+
+
+def closed_outage_observation(error, measurements, sample_errors, outage, configured_limits, inspected_limits):
+    """One bounded carrier; only fixed labels and finite synthetic measurements leave memory."""
+    reasons = {"Actual report operation failed": "REPORT_OPERATION",
+               "Java process memory budget exceeded": "JAVA_MEMORY",
+               "Resource measurements incomplete": "RESOURCE_MEASUREMENTS",
+               "Required sidecar measurement phase incomplete": "PHASE_SAMPLES",
+               "Owned container missing": "OWNED_CONTAINER_MISSING",
+               "Sidecar memory budget exceeded": "SIDECAR_MEMORY"}
+    reason = error.args[0] if type(error) is AssertionError and len(error.args) == 1 and type(error.args[0]) is str else None
+
+    def mapping(value):
+        return value if type(value) is dict else {}
+
+    def number(value, count=False):
+        if type(value) is int or not count and type(value) is float and math.isfinite(value):
+            if 0 <= value <= (2**31 - 1 if count else 2**63 - 1):
+                return value
+        return "UNKNOWN"
+
+    sidecars = {}
+    for name in sorted(SERVICES):
+        values = mapping(mapping(measurements).get(name))
+        phases = mapping(values.get("phases"))
+        sidecars[name] = {
+            "present": name in mapping(measurements),
+            "phase_samples": {phase: number(mapping(phases.get(phase)).get("samples", 0), count=True)
+                              for phase in ("apps-idle", "profile-idle", "profile-operation")},
+            "peak_working_set_bytes": number(values.get("peak_working_set_bytes")),
+            "configured_memory_limit_bytes": number(mapping(configured_limits).get(name)),
+            "inspected_memory_limit_bytes": number(mapping(inspected_limits).get(name)),
+        }
+    operation = mapping(mapping(outage).get("operation"))
+    # The sampler can append once. Re-close its first entry rather than trust a stored dict.
+    sampler_error = {"failure_class": "UNKNOWN", "reason": "UNKNOWN"}
+    if type(sample_errors) is list and sample_errors:
+        first = mapping(sample_errors[0])
+        allowed_classes = {"AssertionError", "CalledProcessError", "TimeoutExpired", "JSONDecodeError",
+                           "OSError", "FileNotFoundError", "PermissionError", "ValueError",
+                           "KeyError", "StopIteration", "TypeError", "UNKNOWN"}
+        allowed_reasons = DIAGNOSTIC_REASONS | {"DISK_FLOOR", "MEMORY_UNIT", "OWNED_CONTAINER_MISSING", "UNKNOWN"}
+        for key, allowed in (("failure_class", allowed_classes), ("reason", allowed_reasons)):
+            value = first.get(key)
+            if type(value) is str and value in allowed:
+                sampler_error[key] = value
+    return {"failure_reason": reasons.get(reason, "UNKNOWN"), "sidecars": sidecars,
+            "sampler_error_present": bool(sample_errors) if type(sample_errors) is list else "UNKNOWN",
+            "sampler_error": sampler_error,
+            "outage_operation": {"operations": number(operation.get("operations"), count=True),
+                                 "peak_rss_bytes": number(operation.get("peak_rss_bytes"))}}
+
+
 def stage(name):
     global CURRENT_STAGE
     CURRENT_STAGE = name
@@ -348,6 +414,8 @@ def main():
         profile_sdk_hint = {}
         flamegraph_hint = {}
         budget_hint = {}
+        outage_probe = None
+        inspected_limits = {}
 
         def docker(*args, **kwargs):
             return run(compose + list(args), env=environment, **kwargs)
@@ -408,6 +476,7 @@ def main():
             return json.loads(next(line[len(marker):] for line in response.splitlines() if line.startswith(marker)))
 
         def probe(mode, address=None, dsn=None):
+            nonlocal outage_probe
             process_env = dict(environment)
             process_env.update({"RCT_PYROSCOPE_ADDRESS": address or "http://127.0.0.1:9/pyroscope", "RCT_JAVA_GLITCHTIP_DSN": dsn or ""})
             resultfile = work / (mode + ".json")
@@ -420,6 +489,8 @@ def main():
                 profile_sdk_hint.update(closed_profile_sdk(completed.stderr[:64 * 1024] +
                                         "\n" + completed.stdout[:64 * 1024]))
             result = json.loads(resultfile.read_text())
+            if mode == "outage":
+                outage_probe = result
             require(result["result"] == "PASS" and result["operation"]["operations"] > 0, "Actual report operation failed")
             require(0 < result["operation"]["peak_rss_bytes"] < 384 * MIB, "Java process memory budget exceeded")
             return result
@@ -451,7 +522,7 @@ def main():
                         bucket["samples"] += 1
                     stop_sampler.wait(1)
             except Exception as error:
-                sample_error.append(type(error).__name__)
+                sample_error.append(closed_sampler_error(error))
 
         def volumes():
             result = {}
@@ -628,6 +699,7 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                 for phase, minimum in {"apps-idle": 3, "profile-idle": 3, "profile-operation": 5}.items():
                     require(values.get("phases", {}).get(phase, {}).get("samples", 0) >= minimum, "Required sidecar measurement phase incomplete")
                 limit = int(run(["docker", "inspect", "--format", "{{.HostConfig.Memory}}", pid(name)]).stdout)
+                inspected_limits[name] = limit
                 require(values["peak_working_set_bytes"] <= limit, "Sidecar memory budget exceeded")
             receipt = {"result": "PASS", "source_sha": revision, "images": static["images"],
                        "glitchtip": {"issues": received["issues"], "events": received["event_count"], "stack_release_privacy": "PASS", "useful_stack_by_project": received["stack_ok_by_project"], "public_ingest_method_size_key_project_rate": "PASS", "effective_retention": effective, "restart": "PASS"},
@@ -637,6 +709,14 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                        "qualification": "Actual isolated GlitchTip/Java+Vue SDKs/CPU flamegraph/operator links. Synthetic Vue operations exercise the shared adapter under PWA/TMA prefixes; not a full authenticated business journey. Effective retention is checked; seven-day wall-clock expiry is not elapsed. 16GiB Cloud capacity is not a 32GiB VPS benchmark."}
         except BaseException as error:
             primary_failure = {**safe_failure(error), "stage": CURRENT_STAGE}
+            if CURRENT_STAGE == "telemetry-outage":
+                try:
+                    primary_failure["telemetry_outage_observed"] = closed_outage_observation(
+                        error, measurements, sample_error, outage_probe,
+                        {name: config["services"][name].get("mem_limit") for name in SERVICES}, inspected_limits)
+                except Exception:
+                    # Diagnostic failures must preserve the original failure and cleanup.
+                    primary_failure["telemetry_outage_observed"] = {"failure_reason": "UNKNOWN"}
             if profile_sdk_hint:
                 primary_failure["pyroscope_sdk_reported"] = profile_sdk_hint
             if flamegraph_hint:

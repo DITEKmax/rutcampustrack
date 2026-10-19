@@ -22,6 +22,8 @@ class RecoveryError(Exception):
     def __init__(self, message, hint="GUARD"):
         super().__init__(message)
         self.hint = hint
+        self.mongo_phase = "UNKNOWN"
+        self.mongo_code_class = "UNKNOWN"
 
 
 BUNDLE_FORMAT = 3  # Exact owners/ACL/default privileges are mandatory before any restore write.
@@ -35,6 +37,77 @@ FAILURE_HINTS = frozenset({
     "RESTORE_DIFF_ACCESS_ACL_COLUMN", "RESTORE_DIFF_ACCESS_ACL_FUNCTION",
     "RESTORE_DIFF_ACCESS_ACL_TYPE", "RESTORE_DIFF_ACCESS_ACL_DEFAULT",
 })
+MONGO_PHASES = frozenset({"EMPTY_PREFLIGHT", "FINAL_INVENTORY", "UNKNOWN"})
+MONGO_CODE_CLASSES = frozenset({
+    "AUTH_FAILED", "NOT_WRITABLE_PRIMARY", "NOT_PRIMARY_OR_SECONDARY", "TIMEOUT", "OTHER", "UNKNOWN",
+})
+
+
+def mongo_failure_details(stderr):
+    """Only unique, exact enum lines cross the existing 64KiB private boundary."""
+    result = {"mongoPhase": "UNKNOWN", "mongoCodeClass": "UNKNOWN"}
+    if type(stderr) is not bytes or len(stderr) > 65536:
+        return result
+    for field, prefix, allowed in (
+        ("mongoPhase", b"RECOVERY_MONGO_PHASE", MONGO_PHASES),
+        ("mongoCodeClass", b"RECOVERY_MONGO_CODE_CLASS", MONGO_CODE_CLASSES),
+    ):
+        lines = [line for line in stderr.split(b"\n") if line.startswith(prefix)]
+        if len(lines) == 1:
+            for value in allowed:
+                if lines[0] == prefix + b":" + value.encode("ascii"):
+                    result[field] = value
+    return result
+
+
+def native_mongo_failure_class(stderr):
+    details = mongo_failure_details(stderr)
+    if type(stderr) is not bytes or len(stderr) > 65536:
+        return "UNKNOWN"
+    if b"RECOVERY_MONGO_CODE_CLASS" in stderr:
+        return details["mongoCodeClass"]
+    # Authentication/server selection can fail before mongosh evaluates our JS.
+    # Consume only fixed driver class prefixes or the exact authentication error;
+    # never return diagnostic text, URI, addresses or credential material.
+    classes = set()
+    for line in stderr.split(b"\n"):
+        if re.fullmatch(rb"MongoServerError: Authentication failed\.?", line):
+            classes.add("AUTH_FAILED")
+        elif re.fullmatch(rb"(?:MongoServerSelectionError|MongoNetworkTimeoutError):[^\r\n]{0,4096}", line):
+            classes.add("TIMEOUT")
+        elif re.fullmatch(rb"(?:MongoServerError|MongoNetworkError):[^\r\n]{0,4096}", line):
+            classes.add("OTHER")
+    return next(iter(classes)) if len(classes) == 1 else "UNKNOWN"
+
+
+def mongo_failure_markers(error):
+    phase = getattr(error, "mongo_phase", "UNKNOWN")
+    code = getattr(error, "mongo_code_class", "UNKNOWN")
+    return (
+        "RECOVERY_MONGO_PHASE:" + (phase if type(phase) is str and phase in MONGO_PHASES else "UNKNOWN"),
+        "RECOVERY_MONGO_CODE_CLASS:" + (code if type(code) is str and code in MONGO_CODE_CLASSES else "UNKNOWN"),
+    )
+
+
+def mongo_restore_healthcheck(original):
+    """Fresh replica-set target: authenticate and satisfy the restore read consumer.
+
+    Keep every existing health deadline/limit. Collection reads assert readiness,
+    not emptiness: restore retains its own all-target freshness check before writes.
+    """
+    # The actual Bitnami entrypoint/environment owns rs.initiate, not this ping.
+    # Fail closed if that contract changes; never discard a bootstrap healthcheck.
+    require(original.get("test") == ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"],
+            "Unsupported Mongo restore healthcheck bootstrap")
+    return {**original, "test": [
+        "CMD", "mongosh", "--quiet", "--host", "127.0.0.1", "--port", "27017", "--eval",
+        "try { const admin = db.getSiblingDB('admin'); "
+        "const auth = admin.auth({user: process.env.MONGODB_ROOT_USER, pwd: process.env.MONGODB_ROOT_PASSWORD}); "
+        "if (!(auth === 1 || auth.ok === 1) || admin.runCommand({hello: 1}).isWritablePrimary !== true) quit(1); "
+        "for (const name of ['attendance_db', 'notification_db']) { "
+        "if (!Array.isArray(db.getSiblingDB(name).getCollectionInfos())) quit(1); } "
+        "quit(0); } catch (error) { quit(1); }",
+    ]}
 
 
 def require(condition, message):
@@ -58,7 +131,10 @@ def run(command, *, stdin=None, stdout=None, input_data=None):
                 if tool in command:
                     hint = "PG_SCHEMA" if tool == "pg_dump" and "--schema-only" in command else code
                     break
-        raise RecoveryError(f"{Path(command[0]).name} operation failed (exit {result.returncode})", hint)
+        error = RecoveryError(f"{Path(command[0]).name} operation failed (exit {result.returncode})", hint)
+        if hint == "MONGO_QUERY":
+            error.mongo_code_class = native_mongo_failure_class(result.stderr)
+        raise error
     return result.stdout
 
 
@@ -269,7 +345,7 @@ def canonical_reference_schema(container, password, db, schema, *, user):
 
 
 def compare_restored_inventory(args, secret, expected):
-    actual = inventory(args, secret)
+    actual = inventory(args, secret, mongo_phase="FINAL_INVENTORY")
     for label, container, db, key, user in pg_targets(args, secret):
         try:
             require(
@@ -360,8 +436,24 @@ def mongo_command(container, password, tool, args, stream=False):
     ]
 
 
-def mongo_query(container, password, js):
-    return json.loads(run(mongo_command(container, password, "mongosh", ["--quiet", "--eval", js])))
+def mongo_query(container, password, js, *, phase="UNKNOWN"):
+    # The driver error code is available inside eval; emit only a fixed class.
+    # Startup/authentication failures before eval stay within run's private parser.
+    wrapped = "try {\n" + js + "\n} catch (error) {\n" + """
+const classes = {18: 'AUTH_FAILED', 10107: 'NOT_WRITABLE_PRIMARY',
+  13436: 'NOT_PRIMARY_OR_SECONDARY', 50: 'TIMEOUT', 89: 'TIMEOUT', 262: 'TIMEOUT'};
+const code = typeof error.code === 'number' && Object.hasOwn(classes, error.code) ? classes[error.code] :
+  (['MongoServerSelectionError','MongoNetworkTimeoutError'].includes(error.name) ? 'TIMEOUT' : 'OTHER');
+console.error('RECOVERY_MONGO_CODE_CLASS:' + code);
+quit(1);
+}
+"""
+    try:
+        return json.loads(run(mongo_command(container, password, "mongosh", ["--quiet", "--eval", wrapped])))
+    except RecoveryError as error:
+        if error.hint == "MONGO_QUERY":
+            error.mongo_phase = phase if phase in MONGO_PHASES else "UNKNOWN"
+        raise
 
 
 def file_inventory(root):
@@ -385,7 +477,7 @@ def file_mode(args):
     return "database-only" if no_files else "files"
 
 
-def inventory(args, secret):
+def inventory(args, secret, *, mongo_phase="UNKNOWN"):
     result = {}
     for label, container, db, key, user in pg_targets(args, secret):
         password = secret[key]
@@ -458,6 +550,7 @@ def inventory(args, secret):
         }
         print(JSON.stringify(output));
     """,
+        phase=mongo_phase,
     )
     result["files"] = [] if file_mode(args) == "database-only" else file_inventory(args.files_dir)
     return result
@@ -623,6 +716,7 @@ def restore(args):
         args.mongo_container,
         secret["MONGO_ROOT_PASSWORD"],
         "print(JSON.stringify(['attendance_db','notification_db'].map(n=>db.getSiblingDB(n).getCollectionInfos().length)))",
+        phase="EMPTY_PREFLIGHT",
     )
     require(counts == [0, 0], "Mongo target is not fresh; restore refused")
     # pg_dump object ACLs are relative to built-in defaults, not target role defaults.
@@ -815,6 +909,9 @@ def main():
         # Unexpected diagnostics never include DB subprocess output/credentials.
         hint = getattr(error, "hint", "GUARD")
         print("RECOVERY_FAILURE_HINT:" + (hint if hint in FAILURE_HINTS else "GUARD"), file=sys.stderr)
+        if hint == "MONGO_QUERY":
+            for marker in mongo_failure_markers(error):
+                print(marker, file=sys.stderr)
         guard_reasons = {
             'Unsupported recovery admin identity': 'RECOVERY_ADMIN_IDENTITY',
             'Schema reference database already exists': 'SCHEMA_REFERENCE_EXISTS',

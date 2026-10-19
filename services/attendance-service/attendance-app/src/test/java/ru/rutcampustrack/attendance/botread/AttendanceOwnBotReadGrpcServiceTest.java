@@ -92,8 +92,13 @@ class AttendanceOwnBotReadGrpcServiceTest {
                                         .setMoved(moved)
                                         .build());
                 var result = read(true, 101);
-                assertThat(result.error).isNull();
-                assertThat(result.values.getFirst().getLesson().getMoved()).isEqualTo(moved);
+                if ("ERROR".equals(state)) {
+                    // Move provenance never overrides the current-lesson transfer fence.
+                    assertStatus(result, Status.Code.PERMISSION_DENIED);
+                } else {
+                    assertThat(result.error).isNull();
+                    assertThat(result.values.getFirst().getLesson().getMoved()).isEqualTo(moved);
+                }
             }
         }
     }
@@ -124,7 +129,8 @@ class AttendanceOwnBotReadGrpcServiceTest {
                         lesson().toBuilder().setDate("2026-10-17").build(),
                         lesson().toBuilder().setStatus("cancelled").build(),
                         lesson().toBuilder().setEndTime("00:15").build(),
-                        lesson().toBuilder().setTransferState("PENDING").build())) {
+                        lesson().toBuilder().setTransferState("PENDING").build(),
+                        lesson().toBuilder().setTransferState("ERROR").build())) {
             when(dependencies.lesson(101)).thenReturn(invalid);
             assertStatus(read(true, 101), Status.Code.PERMISSION_DENIED);
         }

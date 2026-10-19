@@ -2212,7 +2212,17 @@ test('FULL admin archives and restores the disposable CI semester through real p
       });
       if (await continueCheck.isVisible()) {
         await expect(statusCard).toHaveCount(1, { timeout: uiBudget() });
-        await continueCheck.click({ timeout: uiBudget() });
+        try {
+          await continueCheck.click({ timeout: uiBudget() });
+        } catch (error) {
+          if (
+            !(error instanceof playwrightErrors.TimeoutError) ||
+            (await continueCheck.count()) !== 0
+          )
+            throw error;
+          // The UI poll can remove this button after terminal() verified this exact
+          // operation. Accept that race only if the owned terminal UI below settles.
+        }
       }
       await expect(
         ownCard.getByRole('img', {

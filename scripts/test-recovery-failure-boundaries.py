@@ -7,12 +7,16 @@ Actual native dumps and application readback require a separate isolated lease.
 """
 
 import argparse
+import ast
 import copy
 import importlib.util
 import json
 from pathlib import Path
+import re
 import tarfile
 import tempfile
+import textwrap
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -86,6 +90,126 @@ class RecoveryFailureBoundaries(unittest.TestCase):
     def setUp(self):
         # An accidentally unmocked native command must fail before Docker/DB access.
         self.enterContext(patch.object(r.subprocess, "run", side_effect=AssertionError("Native command forbidden")))
+
+    def test_mongo_closed_details_are_unique_bounded_enums_without_private_material(self):
+        private = b"mongodb://synthetic-user:PRIVATE_VALUE@synthetic-host/private"
+        complete = (b"RECOVERY_MONGO_PHASE:EMPTY_PREFLIGHT\n"
+                    b"RECOVERY_MONGO_CODE_CLASS:AUTH_FAILED\n" + private)
+        expected = {"mongoPhase": "EMPTY_PREFLIGHT", "mongoCodeClass": "AUTH_FAILED"}
+        self.assertEqual(r.mongo_failure_details(complete), expected)
+        self.assertNotIn("PRIVATE_VALUE", json.dumps(r.mongo_failure_details(complete)))
+        for name, valid, invalid in (
+            ("mongoPhase", b"RECOVERY_MONGO_PHASE:EMPTY_PREFLIGHT", b"RECOVERY_MONGO_PHASE:" + private),
+            ("mongoCodeClass", b"RECOVERY_MONGO_CODE_CLASS:AUTH_FAILED", b"RECOVERY_MONGO_CODE_CLASS:" + private),
+        ):
+            for defect in (valid + b"\n" + valid, valid + b"\n" + invalid, invalid, valid + b"\r"):
+                with self.subTest(field=name, defect_length=len(defect)):
+                    self.assertEqual(r.mongo_failure_details(defect)[name], "UNKNOWN")
+        for invalid in (complete.decode(), complete + b"x" * 65536, None):
+            self.assertEqual(r.mongo_failure_details(invalid), {"mongoPhase": "UNKNOWN", "mongoCodeClass": "UNKNOWN"})
+        error = r.RecoveryError("safe", "MONGO_QUERY")
+        error.mongo_phase, error.mongo_code_class = ["PRIVATE_VALUE"], private
+        self.assertEqual(r.mongo_failure_markers(error),
+                         ("RECOVERY_MONGO_PHASE:UNKNOWN", "RECOVERY_MONGO_CODE_CLASS:UNKNOWN"))
+
+    def test_native_mongo_failures_emit_only_allowlisted_classes(self):
+        examples = {
+            b"MongoServerError: Authentication failed.\n": "AUTH_FAILED",
+            b"RECOVERY_MONGO_CODE_CLASS:NOT_WRITABLE_PRIMARY\n": "NOT_WRITABLE_PRIMARY",
+            b"RECOVERY_MONGO_CODE_CLASS:NOT_PRIMARY_OR_SECONDARY\n": "NOT_PRIMARY_OR_SECONDARY",
+            b"MongoServerSelectionError: mongodb://synthetic:PRIVATE_VALUE@local\n": "TIMEOUT",
+            b"MongoNetworkTimeoutError: PRIVATE_VALUE\n": "TIMEOUT",
+            b"MongoServerError: PRIVATE_VALUE\n": "OTHER",
+            b"unrecognized PRIVATE_VALUE\n": "UNKNOWN",
+            b"RECOVERY_MONGO_CODE_CLASS:AUTH_FAILED\nRECOVERY_MONGO_CODE_CLASS:OTHER\n": "UNKNOWN",
+            b"MongoServerError: Authentication failed.\n" + b"x" * 65536: "UNKNOWN",
+        }
+        for stderr, expected in examples.items():
+            with self.subTest(expected=expected, stderr_length=len(stderr)):
+                with patch.object(r.subprocess, "run", return_value=SimpleNamespace(returncode=1, stdout=b"", stderr=stderr)):
+                    with self.assertRaises(r.RecoveryError) as caught:
+                        r.run(["docker", "exec", "synthetic", "mongosh"])
+                self.assertEqual(caught.exception.hint, "MONGO_QUERY")
+                self.assertEqual(caught.exception.mongo_code_class, expected)
+                self.assertNotIn("PRIVATE_VALUE", str(caught.exception))
+
+    def test_actual_restore_and_final_inventory_attach_distinct_mongo_phases(self):
+        root = self.retained / "mongo-phase"
+        root.mkdir()
+        args = arguments(root)
+        args.bundle = make_bundle(root)
+        secret = {key: "SYNTHETIC-ONLY" for key in (
+            "POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
+            "POSTGRES_SCHEDULE_MIGRATION_PASSWORD", "MONGO_ROOT_PASSWORD",
+        )}
+        for phase in ("EMPTY_PREFLIGHT", "FINAL_INVENTORY"):
+            error = r.RecoveryError("safe native failure", "MONGO_QUERY")
+            error.mongo_code_class = "NOT_WRITABLE_PRIMARY"
+            with (patch.object(r, "credentials", return_value=secret),
+                  patch.object(r, "check_targets"), patch.object(r, "pg_query", return_value="0"),
+                  patch.object(r, "run", side_effect=error)):
+                with self.assertRaises(r.RecoveryError) as caught:
+                    if phase == "EMPTY_PREFLIGHT":
+                        r.restore(args)
+                    else:
+                        with patch.object(r, "pg_targets", return_value=()):
+                            r.compare_restored_inventory(args, secret, {})
+            self.assertEqual(caught.exception.mongo_phase, phase)
+            self.assertEqual(r.mongo_failure_details(("\n".join(r.mongo_failure_markers(caught.exception)) + "\n").encode()),
+                             {"mongoPhase": phase, "mongoCodeClass": "NOT_WRITABLE_PRIMARY"})
+
+    def test_existing_ci_consumer_keeps_old_fields_and_rejects_ambiguous_or_oversize_details(self):
+        workflow = (HERE.parent / ".github/workflows/ci.yml").read_text()
+        body = textwrap.dedent(workflow.split("<<'PY_RECOVERY'\n", 1)[1].split("          PY_RECOVERY", 1)[0])
+        tree = ast.parse(body)
+        consumer = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "retain_backup_failure")
+        initial = {"action": "RESTORE_SCRIPT", "hint": "UNKNOWN", "guardReason": "UNKNOWN",
+                   "errorClass": "UNKNOWN", "exitStatus": "UNKNOWN", "mongoPhase": "UNKNOWN", "mongoCodeClass": "UNKNOWN"}
+        for malformed in (False, True, "oversize"):
+            state = {"stage": "fresh-restore", "backup_failure": dict(initial), "re": re, "recovery": r}
+            exec(compile(ast.Module(body=[consumer], type_ignores=[]), "existing-ci-consumer", "exec"), state)
+            stderr = (b"RECOVERY_FAILURE_HINT:MONGO_QUERY\nRECOVERY_MONGO_PHASE:FINAL_INVENTORY\n"
+                      b"RECOVERY_MONGO_CODE_CLASS:TIMEOUT\n")
+            if malformed is True:
+                stderr += b"RECOVERY_MONGO_PHASE:PRIVATE_VALUE\nRECOVERY_MONGO_CODE_CLASS:OTHER\n"
+            elif malformed == "oversize":
+                stderr += b"x" * 65536
+            state["retain_backup_failure"](RuntimeError("PRIVATE_VALUE"), exit_status=1, stderr=stderr)
+            result = state["backup_failure"]
+            self.assertEqual(set(result), set(initial))
+            self.assertEqual({key: result[key] for key in ("action", "guardReason", "errorClass", "exitStatus")},
+                             {"action": "RESTORE_SCRIPT", "guardReason": "UNKNOWN", "errorClass": "RuntimeError", "exitStatus": 1})
+            self.assertEqual(result["mongoPhase"], "FINAL_INVENTORY" if malformed is False else "UNKNOWN")
+            self.assertEqual(result["mongoCodeClass"], "TIMEOUT" if malformed is False else "UNKNOWN")
+            self.assertNotIn("PRIVATE_VALUE", json.dumps(result))
+
+    def test_fresh_mongo_health_contract_preserves_bootstrap_and_every_deadline(self):
+        original = {"test": ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"],
+                    "interval": "10s", "timeout": "5s", "retries": 15, "start_period": "60s"}
+        before = copy.deepcopy(original)
+        health = r.mongo_restore_healthcheck(original)
+        self.assertEqual(original, before)
+        self.assertEqual({key: value for key, value in health.items() if key != "test"},
+                         {key: value for key, value in original.items() if key != "test"})
+        self.assertEqual(health["test"][:8], ["CMD", "mongosh", "--quiet", "--host", "127.0.0.1", "--port", "27017", "--eval"])
+        js = health["test"][8]
+        for predicate in ("admin.auth(", "MONGODB_ROOT_USER", "MONGODB_ROOT_PASSWORD", "auth === 1 || auth.ok === 1",
+                          "isWritablePrimary !== true", "['attendance_db', 'notification_db']", "getCollectionInfos()"):
+            self.assertIn(predicate, js)
+        self.assertNotIn("rs.initiate", js)
+        with self.assertRaises(r.RecoveryError):
+            r.mongo_restore_healthcheck({**original, "test": ["CMD-SHELL", "rs.initiate()"]})
+        workflow = (HERE.parent / ".github/workflows/ci.yml").read_text()
+        body = textwrap.dedent(workflow.split("<<'PY_RECOVERY'\n", 1)[1].split("          PY_RECOVERY", 1)[0])
+        tree = ast.parse(body)
+        branch = next(node for node in ast.walk(tree) if isinstance(node, ast.If)
+                      and ast.unparse(node.test) == "service == 'mongo-attendance'")
+        target = {"services": {"mongo-attendance": {"environment": {"replica-bootstrap": "unchanged"}, "image": "pinned"}}}
+        state = {"service": "mongo-attendance", "target": target, "original": {"healthcheck": original}, "recovery": r}
+        # Execute only the actual target configuration branch, never the CI runner.
+        exec(compile(ast.Module(body=[branch], type_ignores=[]), "existing-ci-mongo-health-contract", "exec"), state)
+        self.assertEqual(target["services"]["mongo-attendance"],
+                         {"environment": {"replica-bootstrap": "unchanged"}, "image": "pinned", "healthcheck": health})
 
     def test_production_credentials_require_schedule_migrator_and_separate_cluster_admin(self):
         root = self.retained / "production-credentials"

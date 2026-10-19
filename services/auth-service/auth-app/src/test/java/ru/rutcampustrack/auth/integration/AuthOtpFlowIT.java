@@ -1405,7 +1405,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                 UUID operation = AuthDatabaseFixture.fence(jdbc, actor);
                                 jdbc.update(
                                         "UPDATE admin_access_profiles SET mode='LIMITED',"
-                                            + " permissions=ARRAY['USER_CREDENTIALS_MANAGE'],"
+                                            + " permissions=ARRAY['USERS_VIEW','USER_CREDENTIALS_MANAGE'],"
                                             + " version=version+1 WHERE user_id=?",
                                         actor);
                                 AuthDatabaseFixture.unfence(jdbc, operation, actor);

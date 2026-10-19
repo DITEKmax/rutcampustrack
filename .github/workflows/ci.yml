@@ -686,7 +686,7 @@ jobs:
                   method = 'ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin'
                   test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java'
                   auth_test = test_source.read_bytes()
-                  assert hashlib.sha256(auth_test).hexdigest() == '7041bc3894e14022e097e03f8ef28cba6394dad7bdd23ca486043ec4dc13e6fb'
+                  assert hashlib.sha256(auth_test).hexdigest() == '6f5c733dddff35a851ac1096772e76a1b1eaf9af8a8b2051e6861a878f0eda39'
                   auth_oracle = b'        assertThat(delivered == null).isTrue();\n'
                   assert auth_test.count(auth_oracle) == 1
                   rule_line = auth_test[:auth_test.index(auth_oracle)].count(b'\n') + 1
@@ -700,9 +700,9 @@ jobs:
                           [['                                && !hasActiveAdminGrant(requestedUser.getId())\n', ''], ['        if (user == null || hasActiveAdminGrant(userId)) {', '        if (user == null) {']],
                           'b7ccc366b56e39b67da06da839022e86d3c8989acf4284330d44357f38ebc72e'),
                       app / 'src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java': (
-                          'a77e52f0443860af62ca3f20fa1e18148e1f0ee59d90119f8674ea7a61b716b3',
-                          [['                            if (hasActiveAdminGrant(userId)) return PasswordResetTicketIssue.DENIED;\n', ''], ['        if (user == null || !user.admitted() || hasActiveAdminGrant(userId)) {', '        if (user == null || !user.admitted()) {']],
-                          '48c72cca544da11cdc6ea6cd30a0fff12940d0704f3c0bdce513bafecdceaa17'),
+                          'f608f44d1f235322b55cb756b9216e8762b563193be2b42240ba2641f99ba352',
+                          [['                            if (hasActiveAdminGrant(userId) != administrative) {', '                            if (!hasActiveAdminGrant(userId) && administrative) {'], ['                        && !ticket.storedHash().startsWith(ADMINISTRATIVE_RESET_PREFIX))) {', '                        && !ticket.storedHash().startsWith(ADMINISTRATIVE_RESET_PREFIX) && false)) {']],
+                          'b66b986ce00dac7f3a6020853489100f56f0342bc511a1e89fff7430c19281a2'),
                   }
                   replacements = {}
                   for path, (current_sha, edits, negative_sha) in paths.items():
@@ -717,6 +717,8 @@ jobs:
                       if path.name == 'JdbcSessionAuthority.java':
                           assert b'FROM auth_identities' in negative
                           assert negative.count(b'!user.admitted()') == source.count(b'!user.admitted()')
+                          # Omit only the public ADMIN denial; preserve trusted administrative origin.
+                          assert negative.count(b'ADMINISTRATIVE_RESET_PREFIX') == source.count(b'ADMINISTRATIVE_RESET_PREFIX')
                       replacements[path] = negative
                   proof.update(counterexample='OMITTED_ACTIVE_ADMIN_PASSWORD_RESET_GUARDS',
                                ruleFrame=package + '.' + method + '(AuthOtpFlowIT.java:' + str(rule_line) + ')',
@@ -1552,7 +1554,7 @@ jobs:
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(admin_rights['source'])]) == b''
                   proof['adminRightsRule']['sourceRestoredExact'] = True
               if service == 'auth-service' and current:
-                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '7041bc3894e14022e097e03f8ef28cba6394dad7bdd23ca486043ec4dc13e6fb'
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '6f5c733dddff35a851ac1096772e76a1b1eaf9af8a8b2051e6861a878f0eda39'
                   assert hashlib.sha256(auth_repository.read_bytes()).hexdigest() == '3675feea065000f78a74774f34e1e83c1445851414bc09fded1257fc4bf54f11'
                   proof['sourceRestoredExact'] = True
               if service == 'notification-service' and current:
@@ -1893,7 +1895,7 @@ jobs:
               'auth-service': ('ru.rutcampustrack.auth.integration.AuthOtpFlowIT',
                                'ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin',
                                'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java',
-                               '7041bc3894e14022e097e03f8ef28cba6394dad7bdd23ca486043ec4dc13e6fb'),
+                               '6f5c733dddff35a851ac1096772e76a1b1eaf9af8a8b2051e6861a878f0eda39'),
               'academic-service': ('ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                    'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                    'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java',
@@ -5938,7 +5940,8 @@ jobs:
           application_failure = {'action': 'UNKNOWN', 'reason': 'UNKNOWN',
                                  'errorClass': 'UNKNOWN', 'errno': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
           backup_failure = {'action': 'UNKNOWN', 'hint': 'UNKNOWN', 'guardReason': 'UNKNOWN',
-                            'errorClass': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
+                            'errorClass': 'UNKNOWN', 'exitStatus': 'UNKNOWN',
+                            'mongoPhase': 'UNKNOWN', 'mongoCodeClass': 'UNKNOWN'}
 
           def retain_backup_failure(error=None, *, exit_status=None, stderr=None):
               if stage not in {'backup', 'fresh-restore'}:
@@ -5972,6 +5975,8 @@ jobs:
                              b'RESTORE_DIFF_TABLES'}
                   if len(hints) == 1 and hints[0] in allowed:
                       backup_failure['hint'] = hints[0].decode('ascii')
+                      if hints[0] == b'MONGO_QUERY':
+                          backup_failure.update(recovery.mongo_failure_details(stderr))
                       if hints[0] == b'GUARD':
                           reasons = [line for line in stderr.split(b'\n')
                                      if line.startswith(b'RECOVERY_GUARD_REASON')]
@@ -6460,6 +6465,8 @@ jobs:
                       target['services'][service]['volumes'] = mounts
                   if service == 'postgres-academic':
                       target['services'][service]['secrets'] = original['secrets']
+                  if service == 'mongo-attendance':
+                      target['services'][service]['healthcheck'] = recovery.mongo_restore_healthcheck(original['healthcheck'])
                   target['services'][service].update(
                       labels={'io.rutcampustrack.recovery': 'disposable'},
                       networks={'private_net': {'aliases': [service]}})
@@ -6556,12 +6563,9 @@ jobs:
               api('attachment')
               print('PASS real application recovery: fresh inventory, historical attachment and exact transfer replay')
           except Exception as error:
-              if stage == 'fresh-restore':
+              if stage in {'backup', 'fresh-restore'}:
                   retain_backup_failure(error)
-                  print(json.dumps({'stage': 'RESTORE', **backup_failure}, sort_keys=True))
-              if stage == 'backup':
-                  retain_backup_failure(error)
-                  receipt = {'stage': 'BACKUP', **backup_failure}
+                  receipt = {'stage': 'RESTORE' if stage == 'fresh-restore' else 'BACKUP', **backup_failure}
                   try:
                       fd = os.open(work / 'artifacts' / 'admit' / 'backup-failure.safe.json',
                                    os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)

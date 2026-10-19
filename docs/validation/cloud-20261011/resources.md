@@ -36,3 +36,12 @@ Noownerquestion. B013/B014/B015FROZEN; no production/mainmerge/deploy/secrets/re
 
 
 TS2367 addressedcheck on9aa:384MiB localvue-tsc exited134 heapOOM (notPASS). ONE actualsameproject/noEmit retry authorized with1024MiB heap/CPU1/same90s deadline after available10809872384B/TMP4422418432B/no otherheavy;86.333s/peakRSS1049904KiB<1.5GiB reserve/exit2. Appdiagnostics0/TS2367absent, but absentcached@sentry/vue11.8.0 and2privateoverlaylinks giveTS2307/7006: NOTfulltypecheckPASS, no stubs/downloads/furtherheapiterations.29actualsourceVitestPASS3.573s andCacheaddressedAPPROVE. No newJava/Docker; allR2processesfinished. FullordinaryCIusesdeclarednpmlock/npmci; current9aa notcancelled.
+
+
+U25Mark500 diagnostic scope on35078: two fresh sparse detachedWTs (oldfrozenWTuntouched): Event /tmp/rct-s19-mark500-producer-350 solemobile-dataset.ts,5materializedfiles337421B; Report /tmp/rct-s19-mark500-consumer-350 soleCI+closedcontract,6files798793B. TMPbefore4422254592B/after4421087232B/inodes2130844; runtimeNONE/heavy0. OnlypureTS/Python/YAML/sourcecontrols, no newNative/server/Docker/DB/network/install. RootsoleGit/taskdocs, sourceRootclean; one independentcoherent2file review afterstable. HTTP/caller/oracles/gates/caps/B013/14/15 unchanged.
+
+- 2026-10-19 current Mark500 coherentjoin/D9RCA preflight: MemTotal18932219904B/MemAvailable12781936640B; workspaceavailable4178702336B/inodes1252413; TMPavailable4419829760B/inodes2130797. Heavy0, noDocker/DB/pulls/cleanup. This is an observed snapshot, not a lease for future runtime; workspace/TMP reserves remain enforced.
+
+- One-shot ownerauthorizedAstra/high readonlyRCA completed; actualmetadataUNKNOWN, nofiles/runtimes/children/defaultchanges, nofurtherusewithoutnewownerGO. CurrentEvent+Report ordinarySol6.1/high retain35078 isolatedWTs: D9TS vsJava+CIcontract, no sharedwrites. NativeleaseNONE; onlylightcontrols untilstableJavaandfreshcapacity.
+
+- NativechangedJava preparation ENV_BLOCKED: freshTMP4418719744B <floor4294967296+fullcap134217728=4429185024B (short10465280B); workspace4178694144B passes. Nooverlay/Gradle/heavy/cleanup. LocalnewJava compile/testNOT_RUN; existingNative51 unchangedproofretained. Noreserveweakening; ordinaryCIchecks newsource.

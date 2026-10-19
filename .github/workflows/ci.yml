@@ -3597,6 +3597,10 @@ jobs:
                             'attendance-service', 'ATTENDANCE_LESSON_REPORT',
                             'ru.rutcampustrack.attendance.report.ReportController.getLessonAttendance',
                             'ReportController.java'),
+              'HOSTED_BOT_MARK500': ('RCT_REMAINING5_RUN', 'rct-u20-bot-',
+                          ('artifacts',), 'mobile-real-server.spec.ts', 'DATASET_ATTENDANCE_MARK_HTTP',
+                          'attendance-service', 'ATTENDANCE_MARK',
+                          'ru.rutcampustrack.attendance.marking.MarkingController.mark', 'MarkingController.java'),
               'MARK500': ('RCT_SEMESTER_LIFECYCLE_RUN', 'rct-semester-lifecycle-',
                           ('artifacts',), 'semester-lifecycle.spec.ts', 'DATASET_ATTENDANCE_MARK_HTTP',
                           'attendance-service', 'ATTENDANCE_MARK',
@@ -3745,10 +3749,10 @@ jobs:
                   'firstHttp500OwnedServices', 'strandedLastRead', 'setupQuiescenceLastRead',
                   'replayLastRead', 'replayFailureLog', 'archiveReadinessLastRead',
               }
-              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v9':
+              if type(value) is dict and value.get('schema') in ('semester-reconciliation.v9', 'semester-reconciliation.v10'):
                   keys |= {'readinessFailureLog', 'recoveryHealthLastRead'}
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in ('semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9') or value['phase'] != 'SETUP'
+                      or value['schema'] not in ('semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10') or value['phase'] != 'SETUP'
                       or type(value['configuredListenerAttempts']) is not int
                       or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -3762,7 +3766,7 @@ jobs:
                       or any(value[key] is not None for key in (
                           'firstRestartFailure', 'mainCloseLastRead', 'firstHttp500OwnedServices',
                           'strandedLastRead', 'replayLastRead', 'replayFailureLog', 'archiveReadinessLastRead'))
-                      or (value['schema'] == 'semester-reconciliation.v9' and any(value[key] is not None
+                      or (value['schema'] in ('semester-reconciliation.v9', 'semester-reconciliation.v10') and any(value[key] is not None
                           for key in ('readinessFailureLog', 'recoveryHealthLastRead')))):
                   return False
               read = value['setupQuiescenceLastRead']
@@ -3819,7 +3823,211 @@ jobs:
               return (initial_membership_output(counts) if sum(counts.values())
                       else initial_membership_output(unknown_reason='NO_MATCHING_WARN'))
 
+
+          # This receiver is disjoint from the legacy semester MARK diagnostic.
+          def is_hosted_mark(config):
+              return config == STAGES['HOSTED_BOT_MARK500']
+
+          HOSTED_FRAME_SOURCES = {
+              'ATTENDANCE_MARKING_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingController',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingController.java',
+                  '39a2bcc652d780afb4797bf6fa36db20c7cbb9f711690843f49763a1a6f4b3bf', 117),
+              'ATTENDANCE_MARKING_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingService',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingService.java',
+                  '5e256121dc4c6129bfefe0cf16165a092a48cb387f0d8e8fa755fbd349504683', 841),
+              'ATTENDANCE_PAIR_WRITE_COORDINATOR': ('attendance-service', 'ru.rutcampustrack.attendance.student.PairWriteCoordinator',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/PairWriteCoordinator.java',
+                  '451b92e49c1b6d15959fa99fa3734035cad967fd7fc84920d87170cb31ae539a', 191),
+              'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
+                  'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 625),
+              'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
+                  '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 271),
+          }
+          HOSTED_MARK_SOURCES = {
+              'tests/e2e/specs/mobile-real-server.spec.ts':
+                  '907ee923580b1e355e558b939da6c27f27ccaa94370681f8ea55de411cd6709e',
+              'tests/e2e/fixtures/mobile-dataset.ts': 'db4db9bfff0d114cf9083cc4a199703b8efcfcbfc6d314454100cf6a146d208e',
+          }
+          # Driver 5.5.2 / Spring Data MongoDB 4.5.13; no suffix or package wildcard.
+          HOSTED_CLASSES = {
+              **CLASSES,
+              **{ 'org.springframework.transaction.' + name: 'MONGO_TRANSACTION' for name in (
+                  'TransactionSystemException', 'CannotCreateTransactionException')},
+              **{ 'org.springframework.data.mongodb.' + name: 'MONGO_TRANSACTION' for name in (
+                  'MongoTransactionException', 'ClientSessionException', 'TransientClientSessionException',
+                  'UncategorizedMongoDbException', 'InvalidMongoDbApiUsageException', 'TransientMongoDbException')},
+              'org.springframework.dao.DuplicateKeyException': 'DUPLICATE_KEY',
+              'org.springframework.dao.DataAccessResourceFailureException': 'DATA_ACCESS_RESOURCE',
+              'org.springframework.dao.InvalidDataAccessApiUsageException': 'INVALID_DATA_ACCESS',
+              **{ 'com.mongodb.' + name: 'MONGO' for name in (
+                  'MongoCommandException', 'MongoWriteException', 'MongoWriteConcernException', 'MongoException',
+                  'MongoTimeoutException', 'MongoOperationTimeoutException', 'MongoExecutionTimeoutException',
+                  'MongoSocketOpenException', 'MongoSocketReadException', 'MongoSocketWriteException',
+                  'MongoSocketReadTimeoutException', 'MongoSocketClosedException', 'MongoSocketException',
+                  'MongoSecurityException', 'MongoNotPrimaryException', 'MongoNodeIsRecoveringException',
+                  'MongoServerUnavailableException', 'MongoConfigurationException')},
+          }
+
+          def exception_classes(config):
+              return HOSTED_CLASSES if is_hosted_mark(config) else CLASSES
+
+          def verify_hosted_mark_sources():
+              if (os.environ.get('RCT_E2E_BOT_ROLE_MENU') != 'true'
+                      or os.environ.get('RCT_E2E_REMAINING5') != 'true'
+                      or Path(os.environ['GITHUB_WORKSPACE']) != Path.cwd()):
+                  raise ValueError('Hosted MARK diagnostic unavailable')
+              for source, digest in HOSTED_MARK_SOURCES.items():
+                  path = Path(source)
+                  info = path.lstat()
+                  if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 1048576
+                          or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+                      raise ValueError('Hosted MARK diagnostic source changed')
+
+          def is_hosted_mark_row(row):
+              if type(row) is not dict:
+                  return False
+              locations = row.get('errorLocations')
+              return (type(row.get('durationMs')) is int and 0 <= row['durationMs'] <= 360000
+                      and type(locations) is list and 1 <= len(locations) <= 8
+                      and all(type(item) is dict and set(item) == {'file', 'line'}
+                              and item == {'file': 'mobile-real-server.spec.ts', 'line': 5915}
+                              for item in locations)
+                      and row.get('diagnostics') == [
+                          {'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}])
+
+          def load_hosted_mark_witness(config):
+              # mtime stays private and binds the original failure, even if this alias runs later.
+              path = Path(os.environ[config[0]]) / 'mark-http500.request-id'
+              before = path.lstat()
+              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                  info = os.fstat(stream.fileno())
+                  if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600
+                          or info.st_uid != os.getuid() or not 0 < info.st_size <= 64
+                          or (info.st_dev, info.st_ino) != (before.st_dev, before.st_ino)
+                          or not 0 < info.st_mtime_ns <= time.time_ns()):
+                      raise ValueError('Invalid private hosted MARK witness')
+                  raw = stream.read(65)
+                  after = os.fstat(stream.fileno())
+                  if (len(raw) != info.st_size
+                          or (info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+                              != (after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
+                      raise ValueError('Private hosted MARK witness changed')
+              value = raw.decode('ascii').removesuffix('\n')
+              if not canonical_request_id(value):
+                  raise ValueError('Missing canonical hosted MARK witness')
+              def seconds(nanos):
+                  whole, fraction = divmod(nanos, 1000000000)
+                  return str(whole) + '.' + str(fraction).zfill(9)
+              return value, (seconds(info.st_mtime_ns - 180000000000), seconds(info.st_mtime_ns))
+
+          def mongo_unknown(state='UNKNOWN'):
+              return {'state': state, 'code': 'UNKNOWN', 'serverLabels': None, 'site': 'UNKNOWN'}
+
+          def mongo_site(stack):
+              # A stack location is not a transaction outcome. Framework methods are exact names.
+              matches = re.findall(r'(?m)^[ \t]*at org\.springframework\.data\.mongodb\.'
+                                   r'MongoTransactionManager\.(doBegin|doCommit|doRollback)'
+                                   r'\(MongoTransactionManager\.java:[1-9][0-9]{0,5}\)[ \t]*$', stack)
+              sites = {'doBegin': 'BEGIN', 'doCommit': 'COMMIT', 'doRollback': 'ROLLBACK'}
+              observed = {sites[match] for match in matches}
+              if len(observed) == 1:
+                  return next(iter(observed))
+              if observed:
+                  return 'UNKNOWN'
+              for symbol in ('ATTENDANCE_MARKING_SERVICE', 'ATTENDANCE_PAIR_WRITE_COORDINATOR'):
+                  _, clazz, source, _, bound = HOSTED_FRAME_SOURCES[symbol]
+                  pattern = (r'(?m)^[ \t]*at ' + re.escape(clazz)
+                             + r'\.[A-Za-z_$<>][A-Za-z0-9_$<>]*\('
+                             + re.escape(Path(source).name) + r':([1-9][0-9]{0,5})\)[ \t]*$')
+                  if any(int(match[1]) <= bound for match in re.finditer(pattern, stack)):
+                      return 'BODY'
+              return 'UNKNOWN'
+
+          def mongo_command(stack):
+              # Parse only the driver's own complete header. Errmsg is never searched for codes/labels.
+              lines = re.findall(r'(?m)^[ \t]*(?:Caused by: )?com\.mongodb\.MongoCommandException(?::[^\r\n]*|$)', stack)
+              if len(lines) != 1:
+                  return mongo_unknown('AMBIGUOUS' if len(lines) > 1 else 'UNKNOWN')
+              header = re.match(r"[ \t]*(?:Caused by: )?com\.mongodb\.MongoCommandException: "
+                                r"Command failed with error ((?:0|[1-9][0-9]{0,9}))(?: \(([A-Za-z][A-Za-z0-9]{0,63})\))?: '", lines[0])
+              if header is None:
+                  return mongo_unknown()
+              message, separator, raw = lines[0][header.end():].rpartition('. The full response is ')
+              _, server_separator, server = message.rpartition("' on server ")
+              if (not separator or not server_separator or not 0 < len(server) <= 1024
+                      or not raw.startswith('{') or not raw.endswith('}') or len(raw.encode()) > 65536):
+                  return mongo_unknown()
+              try:
+                  response = decode(raw)
+              except (ValueError, UnicodeError, RecursionError):
+                  return mongo_unknown()
+              if (type(response) is not dict or type(response.get('code')) is not int
+                      or response['code'] != int(header[1]) or not 0 <= response['code'] <= 2147483647
+                      or ('codeName' in response and (type(response['codeName']) is not str
+                          or re.fullmatch('[A-Za-z][A-Za-z0-9]{0,63}', response['codeName']) is None))
+                      or (header[2] is not None and response.get('codeName') != header[2])):
+                  return mongo_unknown()
+              pending, visited = [(response, 0)], 0
+              while pending:
+                  item, depth = pending.pop()
+                  visited += 1
+                  if depth > 8 or visited > 256:
+                      return mongo_unknown()
+                  if type(item) is dict:
+                      pending.extend((value, depth + 1) for value in item.values())
+                  elif type(item) is list:
+                      pending.extend((value, depth + 1) for value in item)
+              codes = {112: ('WriteConflict', 'WRITE_CONFLICT'), 11000: ('DuplicateKey', 'DUPLICATE_KEY'),
+                       251: ('NoSuchTransaction', 'NO_SUCH_TRANSACTION'), 13: ('Unauthorized', 'UNAUTHORIZED'),
+                       18: ('AuthenticationFailed', 'AUTHENTICATION_FAILED')}
+              named = codes.get(response['code'])
+              if named and response.get('codeName') != named[0]:
+                  return mongo_unknown()
+              labels = response.get('errorLabels', [])
+              allowed = {'TransientTransactionError': 'TRANSIENT_TRANSACTION_ERROR',
+                         'UnknownTransactionCommitResult': 'UNKNOWN_TRANSACTION_COMMIT_RESULT'}
+              if (type(labels) is not list or len(labels) > 2 or any(type(label) is not str or label not in allowed for label in labels)
+                      or len(set(labels)) != len(labels)):
+                  return mongo_unknown()
+              return {'state': 'REPORTED', 'code': named[1] if named else 'OTHER',
+                      'serverLabels': sorted(allowed[label] for label in labels), 'site': mongo_site(stack)}
+
+          def hosted_mongo(payloads, config, selected, request_id):
+              if (selected['state'] == 'AMBIGUOUS'
+                      or selected['reportedOrigin'] not in ORIGINS.values()):
+                  return mongo_unknown('AMBIGUOUS' if selected['state'] == 'AMBIGUOUS' else 'UNKNOWN')
+              service = next(service for service, origin in ORIGINS.items() if origin == selected['reportedOrigin'])
+              payload = payloads[service]
+              if len(payload) > LIMIT or len(payload.splitlines()) >= 200:
+                  return mongo_unknown()
+              stacks = []
+              for line in payload.splitlines():
+                  if len(line) > 131072:
+                      return mongo_unknown()
+                  try:
+                      record = decode(line)
+                  except (ValueError, UnicodeError, RecursionError):
+                      return mongo_unknown()
+                  if type(record) is not dict:
+                      return mongo_unknown()
+                  logger = GATEWAY_LOGGER if service == 'api-gateway' else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
+                  if (record.get('requestId') != request_id or record.get('logger') != logger
+                          or record.get('level') != 'ERROR'
+                          or (service == 'api-gateway' and record.get('service') != service)):
+                      continue
+                  stack = record.get('stack')
+                  if type(stack) is not str or not 0 < len(stack.encode()) <= 131072:
+                      return mongo_unknown()
+                  stacks.append(stack)
+              if len(stacks) != 1:
+                  return mongo_unknown('AMBIGUOUS' if len(stacks) > 1 else 'UNKNOWN')
+              return mongo_command(stacks[0])
+
           def frame_sources(config):
+              if is_hosted_mark(config):
+                  return HOSTED_FRAME_SOURCES
               if config[4] != 'DATASET_ATTENDANCE_MARK_HTTP':
                   return OWN_FRAME_SOURCES
               return {**OWN_FRAME_SOURCES, 'ATTENDANCE_MARKING_CONTROLLER': (
@@ -3980,6 +4188,8 @@ jobs:
               if config[4] == 'STUDENT_STATS_HTTP503':
                   return is_student_stats_failure(value)
               row = value['results'][0]
+              if is_hosted_mark(config) and not is_hosted_mark_row(row):
+                  return False
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
                       'errorCount', 'diagnostics', 'errorLocations'}
               return (type(row) is dict and set(row) == keys and row['file'] == config[3]
@@ -3991,8 +4201,10 @@ jobs:
                       and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
                               for item in row['diagnostics'])
                       and (config[4] != 'DATASET_ATTENDANCE_MARK_HTTP'
-                           or (row['line'] == 1592 and {'file': 'semester-lifecycle.spec.ts', 'line': 1818}
-                               in row['errorLocations']))
+                           or ((row['line'] == 5794 and {'file': 'mobile-real-server.spec.ts', 'line': 5915}
+                                in row['errorLocations']) if is_hosted_mark(config) else
+                               (row['line'] == 1592 and {'file': 'semester-lifecycle.spec.ts', 'line': 1818}
+                                in row['errorLocations'])))
                       and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
                           in row['diagnostics'])
 
@@ -4032,6 +4244,7 @@ jobs:
                       if distinct else output('ABSENT', stage))
 
           def classify(payload, config, captured_service=None, request_id=None):
+              known_classes = exception_classes(config)
               stage = config[6]
               if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP' and not canonical_request_id(request_id):
                   return output('UNAVAILABLE_PRIVATE_INPUT', stage)
@@ -4040,7 +4253,8 @@ jobs:
                   return output('UNAVAILABLE_SERVICE_OWNERSHIP', stage)
               gateway = captured_service == 'api-gateway'
               origin = ORIGINS[captured_service]
-              if len(payload) > LIMIT or len(payload.splitlines()) > 200:
+              if (len(payload) > LIMIT or len(payload.splitlines()) > 200
+                      or (is_hosted_mark(config) and len(payload.splitlines()) == 200)):
                   return output('UNAVAILABLE_LOG_FORMAT' if config[4] == 'STUDENT_STATS_HTTP503'
                                 else 'UNAVAILABLE_LOG_LIMIT', stage)
               if config[4] == 'STUDENT_STATS_HTTP503':
@@ -4104,10 +4318,10 @@ jobs:
                       if len(chain_kinds) > 16:
                           unusable = invalid_stack = True
                           continue
-                      chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
+                      chain = [known_classes.get(kind, 'UNKNOWN') for kind in chain_kinds]
                       # Retain the pre-existing exact-controller leaf-category meaning.
-                      category = CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN'
-                      class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
+                      category = known_classes.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN'
+                      class_chain = [kind if kind in known_classes else 'UNKNOWN' for kind in chain_kinds]
                       matches.append((category, chain, reported_own_frame(stack, config), class_chain))
                       continue
                   if suppressed:
@@ -4117,8 +4331,8 @@ jobs:
                           or not stack_frame.search(stack)):
                       unusable = invalid_stack = True
                       continue
-                  chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
-                  class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
+                  chain = [known_classes.get(kind, 'UNKNOWN') for kind in chain_kinds]
+                  class_chain = [kind if kind in known_classes else 'UNKNOWN' for kind in chain_kinds]
                   fallback.append((chain[-1], chain, reported_own_frame(stack, config, captured_service), class_chain))
               if matches:
                   if len(matches) != 1:
@@ -4167,6 +4381,7 @@ jobs:
               return domain
 
           def ambiguity_evidence(payloads, config, domain, gateway, request_id=None):
+              known_classes = exception_classes(config)
               # Unkeyed facts from the verified captured streams; never request causality.
               # Keep classify/combine unchanged so evidence cannot promote or veto their result.
               header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
@@ -4224,17 +4439,17 @@ jobs:
                               reasons.add('STACK_LIMIT')
                               continue
                           kinds = header.findall(stack)
-                          classes.update(kind for kind in kinds if kind in CLASSES)
-                          if any(kind not in CLASSES for kind in kinds):
+                          classes.update(kind for kind in kinds if kind in known_classes)
+                          if any(kind not in known_classes for kind in kinds):
                               reasons.add('UNMAPPED_EXCEPTION_CLASS')
                           own_frame = reported_own_frame(stack, config, service)
                           if own_frame is not None:
                               frames.add((own_frame['symbol'], own_frame['line']))
                           suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
                           suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
-                          classes.update(kind for kind in suppressed_types if kind in CLASSES)
+                          classes.update(kind for kind in suppressed_types if kind in known_classes)
                           assembly = 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
-                          if any(kind not in CLASSES and not (is_gateway and kind == assembly)
+                          if any(kind not in known_classes and not (is_gateway and kind == assembly)
                                  for kind in suppressed_types):
                               reasons.add('UNMAPPED_EXCEPTION_CLASS')
                           suppressed = (bool(suppressed_count) and (not is_gateway
@@ -4317,6 +4532,8 @@ jobs:
                           raise ValueError('Projection diagnostic source changed')
               else:
                   verify_http_sources(config)
+              if is_hosted_mark(config):
+                  verify_hosted_mark_sources()
               run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
               if not re.fullmatch(r'[1-9][0-9]{0,19}', run) or not re.fullmatch(r'[1-9][0-9]{0,5}', attempt):
                   raise ValueError('Invalid diagnostic binding')
@@ -4341,7 +4558,7 @@ jobs:
                       raise ValueError('Closed input changed')
               return decode(raw)
 
-          def collect(config, initial_membership=False):
+          def collect(config, initial_membership=False, mark_window=None):
               global result
               deadline, remaining_bytes = time.monotonic() + 15, LIMIT
               def remaining():
@@ -4403,7 +4620,13 @@ jobs:
                           raise ValueError('Owned service changed')
                   verify()
                   result = initial_membership_output() if initial_membership else output('UNAVAILABLE_LOG_CAPTURE', config[6])
-                  payload = call(['docker', 'logs', '--since', started_at if initial_membership else '180s', '--tail', '2000' if initial_membership else '200', cid], True)
+                  if is_hosted_mark(config):
+                      if initial_membership or mark_window is None:
+                          raise ValueError('Missing hosted MARK window')
+                      argv = ['docker', 'logs', '--since', mark_window[0], '--until', mark_window[1], '--tail', '200', cid]
+                  else:
+                      argv = ['docker', 'logs', '--since', started_at if initial_membership else '180s', '--tail', '2000' if initial_membership else '200', cid]
+                  payload = call(argv, True)
                   result = initial_membership_output() if initial_membership else output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
                   verify()
                   payloads[service] = payload
@@ -4428,11 +4651,15 @@ jobs:
                   result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
                   if is_target_failure(failure, config):
                       request_id = None
+                      mark_window = None
                       if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP':
                           result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
-                          request_id = load_mark_request_id(config)
+                          if is_hosted_mark(config):
+                              request_id, mark_window = load_hosted_mark_witness(config)
+                          else:
+                              request_id = load_mark_request_id(config)
                       result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
-                      payloads = collect(config)
+                      payloads = collect(config, mark_window=mark_window) if is_hosted_mark(config) else collect(config)
                       result = output('UNAVAILABLE_LOG_FORMAT', config[6])
                       if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
                           result = classify_homework(payloads, config)
@@ -4443,6 +4670,8 @@ jobs:
                           gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
                           result = combine(domain, gateway, config)
                           result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway, request_id=request_id)
+                          if is_hosted_mark(config):
+                              result['reportedMongo'] = hosted_mongo(payloads, config, result, request_id)
           except Exception as error:
               if 'initial_failure' in locals() and initial_failure:
                   reason = {
@@ -4458,9 +4687,22 @@ jobs:
                   elif isinstance(error, (UnicodeError, json.JSONDecodeError)):
                       reason = 'CAPTURE_FORMAT'
                   result = initial_membership_output(unknown_reason=reason)
+          if 'config' in locals() and is_hosted_mark(config):
+              result.setdefault('reportedMongo', mongo_unknown())
           print(json.dumps(result, sort_keys=True))
           PY_HTTP500_DIAGNOSTIC
 
+
+      - name: Record closed hosted HEADMAN Mark500 cause hints
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.hosted-bot-roles.outcome == 'failure' }}
+        timeout-minutes: 1
+        env:
+          RCT_HTTP500_DIAGNOSTIC_STAGE: HOSTED_BOT_MARK500
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_BOT_ROLE_MENU: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-u20-bot-${{ github.run_id }}-${{ github.run_attempt }}
+        run: *closed-http500-diagnostic
 
       - name: Upload safe remaining five outcomes
         if: always() && steps.remaining5.outcome != 'skipped'
@@ -5361,19 +5603,19 @@ jobs:
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
                                  'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
                                  'firstRestartFailure', 'mainCloseLastRead'}
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
                   keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
               if (type(value) is dict and value.get('schema') == 'semester-reconciliation.v5'
                       and 'setupQuiescenceLastRead' in value):
                   keys.add('setupQuiescenceLastRead')
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
                   keys |= {'setupQuiescenceLastRead', 'replayLastRead', 'replayFailureLog'}
-              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}:
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
                   keys.add('archiveReadinessLastRead')
-              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v9':
+              if type(value) is dict and value.get('schema') in ('semester-reconciliation.v9', 'semester-reconciliation.v10'):
                   keys |= {'readinessFailureLog', 'recoveryHealthLastRead'}
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}
+                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -5399,7 +5641,7 @@ jobs:
                       or type(last_read['status']) is not str
                       or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
                   raise ValueError('Invalid closed reconciliation main close read')
-              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}:
+              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
                   services = value['firstHttp500OwnedServices']
                   if services is not None:
                       if type(services) is not dict or set(services) != {'ATTENDANCE', 'SCHEDULE'}:
@@ -5413,12 +5655,12 @@ jobs:
                               raise ValueError('Invalid closed reconciliation service state')
                   stranded = value['strandedLastRead']
                   stranded_flags = {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
-                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'} else set())
+                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'} else set())
                   if stranded is not None and (
                           type(stranded) is not dict or set(stranded) != stranded_keys
                           or not all(type(stranded[key]) is bool for key in stranded_flags)):
                       raise ValueError('Invalid closed reconciliation stranded read')
-                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'} and (
+                  if stranded is not None and value['schema'] in {'semester-reconciliation.v5', 'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'} and (
                           type(stranded['deadReadyClass']) is not str
                           or stranded['deadReadyClass'] not in {'ZERO', 'ONE', 'MANY', 'UNKNOWN'}
                           or stranded['deadReadyOne'] != (stranded['deadReadyClass'] == 'ONE')):
@@ -5440,7 +5682,7 @@ jobs:
                                      and 0 <= setup[key] <= 1_000_000) for key in setup_counts)
                           or not all(type(setup[key]) is bool for key in setup_bools)):
                       raise ValueError('Invalid closed reconciliation setup quiescence read')
-              if value['schema'] in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}:
+              if value['schema'] in {'semester-reconciliation.v6', 'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
                   replay = value['replayLastRead']
                   replay_checks = (
                       'ledgerApplied', 'oneClaim', 'oneReceipt', 'receiptApplied',
@@ -5495,7 +5737,7 @@ jobs:
                               'MONGO_OTHER', 'TRANSACTION_ROLLBACK', 'OTHER'} | ({
                               'CONNECT', 'DNS', 'TLS', 'TRANSPORT_IO', 'CHANNEL_SHUTDOWN',
                               'SERVER_UNAVAILABLE', 'UNKNOWN'}
-                              if value['schema'] in {'semester-reconciliation.v8', 'semester-reconciliation.v9'} else set()),
+                              if value['schema'] in {'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'} else set()),
                       }
                       schedule_fields = {'category': {'INVALID_ARGUMENT', 'SQL_PERMISSION',
                           'SQL_UNDEFINED_TABLE', 'SQL_UNDEFINED_COLUMN', 'SQL_CONSTRAINT',
@@ -5522,7 +5764,7 @@ jobs:
                                   raise ValueError('Invalid closed reconciliation replay log projection')
                           else:
                               raise ValueError('Invalid closed reconciliation replay log state')
-              if value['schema'] in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9'}:
+              if value['schema'] in {'semester-reconciliation.v7', 'semester-reconciliation.v8', 'semester-reconciliation.v9', 'semester-reconciliation.v10'}:
                   readiness = value['archiveReadinessLastRead']
                   if readiness is not None:
                       flags = ('semesterMatches', 'priorStateActive', 'stateVersionMatches')
@@ -5543,7 +5785,7 @@ jobs:
                               or (status == 200 and not (all(readiness[key] is None for key in flags)
                                                         or all(type(readiness[key]) is bool for key in flags)))):
                           raise ValueError('Invalid closed reconciliation archive readiness status')
-              if value['schema'] == 'semester-reconciliation.v9':
+              if value['schema'] in ('semester-reconciliation.v9', 'semester-reconciliation.v10'):
                   health = value['recoveryHealthLastRead']
                   if health is not None and (
                           value['phase'] not in {'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
@@ -5566,7 +5808,7 @@ jobs:
                               or not 0 <= failure['matchedCount'] <= 200):
                           raise ValueError('Invalid closed reconciliation readiness failure shape')
                       # Fixed markers are interpreted only against these exact five owned sources.
-                      for name, digest in {'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java': 'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java': '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java': '86c4ff19cebb79624dc6b6abf39673a25f92d5fdb89ef7b8c11296fe2824bee3', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java': '9ea65fd830f3e43f41953acf8da5089702fb0fd067e83496e7976813f647b22f', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java': 'b62364adcf6a03522665740e5cb609cd8702a018091daad2a4f2e2c86080c32c'}.items():
+                      for name, digest in {**{'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java': 'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java': '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java': '86c4ff19cebb79624dc6b6abf39673a25f92d5fdb89ef7b8c11296fe2824bee3', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java': ('5b396cdff796e553832d349c5879a6ca443ee26585865d644ae801ab724a0742' if value['schema'] == 'semester-reconciliation.v10' else '9ea65fd830f3e43f41953acf8da5089702fb0fd067e83496e7976813f647b22f'), 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java': 'b62364adcf6a03522665740e5cb609cd8702a018091daad2a4f2e2c86080c32c'}, **({'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/SchedulePreviewFailureObservation.java': 'c133a0fbd3cead04d9c27470f479bf6f9a162d9fe65acaa851a201d29976dca2'} if value['schema'] == 'semester-reconciliation.v10' else {})}.items():
                           source = Path(name)
                           source_info = source.lstat()
                           if (not stat.S_ISREG(source_info.st_mode) or not 0 < source_info.st_size <= 262144
@@ -5582,6 +5824,27 @@ jobs:
                       elif failure['state'] == 'REPORTED':
                           last = failure['last']
                           sources = {'GATEWAY_ISSUER_CLIENT': {'REQUEST_BUILD', 'AUTH_HTTP', 'AUTH_RESPONSE', 'AUTH_TRANSPORT'}, 'GATEWAY_ISSUER_FILTER': {'FORWARDED_IDENTITY', 'EXPECTATIONS'}, 'ACADEMIC_CONTEXT': {'CURRENT_CONTEXT'}, 'SCHEDULE_CLIENT': {'SCHEDULE_PREVIEW'}, 'ACADEMIC_PREVIEW': {'ATTENDANCE_DIGEST', 'ATTENDANCE_PREVIEW', 'ECHO_FENCE', 'ACADEMIC_DIGEST', 'COUNTS', 'SCHEDULE_DIGEST'}}
+                          if value['schema'] == 'semester-reconciliation.v10':
+                              if (type(last) is not dict or set(last) != {
+                                      'source', 'stage', 'status', 'cause', 'scheduleTransport'}):
+                                  raise ValueError('Invalid closed reconciliation schedule transport shape')
+                              observed = last['scheduleTransport']
+                              caught_schedule = (last['source'] == 'SCHEDULE_CLIENT'
+                                  and last['stage'] == 'SCHEDULE_PREVIEW'
+                                  and not (last['status'] == 'NONE' and last['cause'] == 'INVALID_ARGUMENT'))
+                              if caught_schedule:
+                                  if (type(observed) is not dict or set(observed) != {
+                                          'channelBefore', 'channelAtFailure', 'connectKind', 'endpointRelation'}
+                                          or not all(type(item) is str for item in observed.values())
+                                          or any(observed[key] not in {
+                                              'READY', 'IDLE', 'CONNECTING', 'TRANSIENT_FAILURE', 'SHUTDOWN', 'UNKNOWN'}
+                                              for key in ('channelBefore', 'channelAtFailure'))
+                                          or observed['connectKind'] not in {'REFUSED', 'TIMEOUT', 'NO_ROUTE', 'OTHER', 'UNKNOWN'}
+                                          or observed['endpointRelation'] != 'UNKNOWN'):
+                                      raise ValueError('Invalid closed reconciliation schedule transport observation')
+                              elif observed is not None:
+                                  raise ValueError('Foreign closed reconciliation schedule transport observation')
+                              last = {key: last[key] for key in ('source', 'stage', 'status', 'cause')}
                           if (failure['unknownReason'] != 'NONE' or failure['matchedCount'] != 1
                                   or type(last) is not dict or set(last) != {'source', 'stage', 'status', 'cause'}
                                   or not all(type(last[key]) is str for key in last)

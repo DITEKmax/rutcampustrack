@@ -3003,11 +3003,26 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     'UNEXPECTED',
     'UNKNOWN',
   ] as const;
+  const readinessChannelStates = [
+    'READY',
+    'IDLE',
+    'CONNECTING',
+    'TRANSIENT_FAILURE',
+    'SHUTDOWN',
+    'UNKNOWN',
+  ] as const;
+  const readinessConnectKinds = ['REFUSED', 'TIMEOUT', 'NO_ROUTE', 'OTHER', 'UNKNOWN'] as const;
   type ReadinessWarn = {
     source: keyof typeof readinessSources;
     stage: string;
     status: string;
     cause: (typeof readinessCauses)[number];
+    scheduleTransport: {
+      channelBefore: (typeof readinessChannelStates)[number];
+      channelAtFailure: (typeof readinessChannelStates)[number];
+      connectKind: (typeof readinessConnectKinds)[number];
+      endpointRelation: 'UNKNOWN';
+    } | null;
   };
   type ReadinessLog = {
     state: 'REPORTED' | 'UNKNOWN';
@@ -3028,7 +3043,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     last: ReadinessWarn | null;
   };
   const diagnostic = {
-    schema: 'semester-reconciliation.v9',
+    schema: 'semester-reconciliation.v10',
     phase: 'SETUP',
     configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',
@@ -4107,7 +4122,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
           }
           if (row.requestId !== readinessRequest.id) continue;
           const match =
-            /^semester\.preview failure source=([A-Z_]+) stage=([A-Z_]+) status=([A-Z_0-9]+) cause=([A-Z_]+)$/.exec(
+            /^semester\.preview failure source=([A-Z_]+) stage=([A-Z_]+) status=([A-Z_0-9]+) cause=([A-Z_]+)(?: channelBefore=([A-Z_]+) channelAtFailure=([A-Z_]+) connectKind=([A-Z_]+) endpointRelation=(UNKNOWN))?$/.exec(
               row.msg,
             );
           if (
@@ -4136,11 +4151,43 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
             diagnostic.readinessFailureLog = unknown('TARGET_TEMPLATE');
             return;
           }
+          let scheduleTransport: ReadinessWarn['scheduleTransport'] = null;
+          if (owned[0] === 'SCHEDULE_CLIENT') {
+            const invalidArgument = status === 'NONE' && match[4] === 'INVALID_ARGUMENT';
+            if (
+              invalidArgument
+                ? match[5] !== undefined
+                : !(readinessChannelStates as readonly string[]).includes(match[5]) ||
+                  !(readinessChannelStates as readonly string[]).includes(match[6]) ||
+                  !(readinessConnectKinds as readonly string[]).includes(match[7]) ||
+                  match[8] !== 'UNKNOWN'
+            ) {
+              diagnostic.readinessFailureLog = unknown('TARGET_TEMPLATE');
+              return;
+            }
+            if (!invalidArgument) {
+              scheduleTransport = {
+                channelBefore: match[5] as (typeof readinessChannelStates)[number],
+                channelAtFailure: match[6] as (typeof readinessChannelStates)[number],
+                connectKind: match[7] as (typeof readinessConnectKinds)[number],
+                endpointRelation: 'UNKNOWN',
+              };
+            }
+          } else if (match[5] !== undefined) {
+            diagnostic.readinessFailureLog = unknown('TARGET_TEMPLATE');
+            return;
+          }
           if (++count > 200) {
             diagnostic.readinessFailureLog = unknown('MATCH_COUNT_LIMIT');
             return;
           }
-          last = { source: owned[0], stage, status, cause: match[4] as ReadinessWarn['cause'] };
+          last = {
+            source: owned[0],
+            stage,
+            status,
+            cause: match[4] as ReadinessWarn['cause'],
+            scheduleTransport,
+          };
         }
       }
       diagnostic.readinessFailureLog =

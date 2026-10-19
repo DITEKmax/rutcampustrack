@@ -5,6 +5,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 
+import net.devh.boot.grpc.client.channelfactory.GrpcChannelFactory;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,19 +67,22 @@ public class ScheduleGrpcClient {
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
 
     private final RequestContext requestContext;
+    private final GrpcChannelFactory channelFactory;
     private final String academicToScheduleToken;
 
     /** Source-compatible constructor for focused unit tests. */
     public ScheduleGrpcClient(RequestContext requestContext) {
-        this(requestContext, "");
+        this(requestContext, "", null);
     }
 
     @Autowired
     public ScheduleGrpcClient(
             RequestContext requestContext,
             @Value("${grpc.service-identity.academic-to-schedule-token:}")
-                    String academicToScheduleToken) {
+                    String academicToScheduleToken,
+            GrpcChannelFactory channelFactory) {
         this.requestContext = requestContext;
+        this.channelFactory = channelFactory;
         this.academicToScheduleToken =
                 academicToScheduleToken == null ? "" : academicToScheduleToken.trim();
     }
@@ -363,11 +367,11 @@ public class ScheduleGrpcClient {
                     case SEAL_ARCHIVE ->
                             throw new IllegalArgumentException(
                                     "SEAL_ARCHIVE is a local Academic/Attendance command, not a"
-                                        + " Schedule RPC");
+                                            + " Schedule RPC");
                     case PREPARE_DELETE, SEAL_DELETE, RELEASE_DELETE, COMMIT_DELETE ->
                             throw new IllegalArgumentException(
                                     "Delete commands require the exact deletion participant"
-                                        + " digest");
+                                            + " digest");
                 };
         try {
             return directedStub()
@@ -388,9 +392,11 @@ public class ScheduleGrpcClient {
         if (semesterId <= 0) {
             previewLog.warn(
                     "semester.preview failure source=SCHEDULE_CLIENT stage=SCHEDULE_PREVIEW"
-                        + " status=NONE cause=INVALID_ARGUMENT");
+                            + " status=NONE cause=INVALID_ARGUMENT");
             throw new IllegalArgumentException("semesterId must be positive");
         }
+        SchedulePreviewFailureObservation.ChannelState channelBefore =
+                SchedulePreviewFailureObservation.channelState(channelFactory);
         try {
             return directedStub()
                     .withDeadlineAfter(3, TimeUnit.SECONDS)
@@ -401,9 +407,13 @@ public class ScheduleGrpcClient {
         } catch (StatusRuntimeException error) {
             previewLog.warn(
                     "semester.preview failure source=SCHEDULE_CLIENT stage=SCHEDULE_PREVIEW"
-                        + " status={} cause={}",
+                        + " status={} cause={} channelBefore={} channelAtFailure={} connectKind={}"
+                        + " endpointRelation=UNKNOWN",
                     error.getStatus().getCode().name(),
-                    previewCause(error, true));
+                    previewCause(error, true),
+                    channelBefore,
+                    SchedulePreviewFailureObservation.channelState(channelFactory),
+                    SchedulePreviewFailureObservation.connectKind(error));
             throw mapBindingError(
                     error, "получить предварительный расчёт расписания для удаления семестра");
         } catch (RuntimeException error) {
@@ -413,8 +423,12 @@ public class ScheduleGrpcClient {
                             : previewCause(error, false);
             previewLog.warn(
                     "semester.preview failure source=SCHEDULE_CLIENT stage=SCHEDULE_PREVIEW"
-                        + " status=NONE cause={}",
-                    cause);
+                        + " status=NONE cause={} channelBefore={} channelAtFailure={}"
+                        + " connectKind={} endpointRelation=UNKNOWN",
+                    cause,
+                    channelBefore,
+                    SchedulePreviewFailureObservation.channelState(channelFactory),
+                    SchedulePreviewFailureObservation.connectKind(error));
             throw error;
         }
     }
@@ -526,7 +540,7 @@ public class ScheduleGrpcClient {
         if (actorId == null || actorId <= 0 || internalToken == null || internalToken.isBlank()) {
             throw new ScheduleServiceUnavailableException(
                     "Нельзя вызвать binding API без подписанного аутентифицированного"
-                        + " пользователя");
+                            + " пользователя");
         }
         if (!DirectedServiceCredential.isCanonicalToken(academicToScheduleToken)) {
             throw new ScheduleServiceUnavailableException(

@@ -30,7 +30,12 @@ export interface SyntheticUser extends TestUser {
 }
 
 /** First failed ordinary MARK only: private correlation, never reporter/artifact data. */
-function retainMarkRequestId(response: APIResponse, method: string, path: string): void {
+function retainMarkRequestId(
+  response: APIResponse,
+  method: string,
+  path: string,
+  session?: CurrentSession,
+): void {
   try {
     if (
       response.status() !== 500 ||
@@ -41,6 +46,90 @@ function retainMarkRequestId(response: APIResponse, method: string, path: string
       process.env.RCT_E2E_SYNTHETIC_SEED !== 'true'
     )
       return;
+    if (process.env.RCT_E2E_BOT_ROLE_MENU === 'true') {
+      const info = base.info();
+      const workspace = process.env.GITHUB_WORKSPACE;
+      if (
+        resolve(info.file) ===
+          join(workspace ?? '', 'tests/e2e/specs/mobile-real-server.spec.ts') &&
+        info.title ===
+          'actual private bot menu roster and teacher Today use hosted current authority'
+      ) {
+        const temporary = process.env.RUNNER_TEMP;
+        const run = process.env.RCT_REMAINING5_RUN;
+        const clock = process.env.RCT_E2E_TEACHING_CLOCK_DIR;
+        const runId = process.env.GITHUB_RUN_ID ?? '';
+        const attempt = process.env.GITHUB_RUN_ATTEMPT ?? '';
+        if (
+          process.env.RCT_E2E_REMAINING5 !== 'true' ||
+          path.trim() !== path ||
+          process.env.CI !== 'true' ||
+          process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+          !workspace ||
+          !temporary ||
+          !run ||
+          !clock ||
+          !isAbsolute(workspace) ||
+          !isAbsolute(temporary) ||
+          resolve(__dirname, '../../..') !== workspace ||
+          !/^[1-9][0-9]{0,19}$/.test(runId) ||
+          runId.trim() !== runId ||
+          !/^[1-9][0-9]{0,5}$/.test(attempt) ||
+          attempt.trim() !== attempt ||
+          run !== join(temporary, `rct-u20-bot-${runId}-${attempt}`) ||
+          clock !== join(temporary, `rct-first3-clock-${runId}-${attempt}`) ||
+          info.line !== 5794 ||
+          info.project.name !== 'chromium' ||
+          info.project.outputDir !== join(run, 'artifacts') ||
+          Object.getOwnPropertyDescriptor(session ?? {}, 'activeRole')?.value !== 'HEADMAN'
+        )
+          return;
+        for (const directory of [run, join(run, 'artifacts'), clock]) {
+          const stat = lstatSync(directory);
+          if (
+            !stat.isDirectory() ||
+            stat.isSymbolicLink() ||
+            stat.uid !== process.getuid?.() ||
+            (stat.mode & 0o777) !== 0o700
+          )
+            return;
+        }
+        const marker = openSync(
+          join(clock, 'disposable-target'),
+          constants.O_RDONLY | constants.O_NOFOLLOW,
+        );
+        try {
+          const stat = fstatSync(marker);
+          if (
+            !stat.isFile() ||
+            stat.uid !== process.getuid?.() ||
+            (stat.mode & 0o777) !== 0o600 ||
+            stat.size > 64 ||
+            readFileSync(marker, 'utf8') !== 'RCT_E2E_DISPOSABLE\n'
+          )
+            return;
+        } finally {
+          closeSync(marker);
+        }
+        const requestId = response.headers()['x-request-id'];
+        const canonical =
+          typeof requestId === 'string' &&
+          requestId.length === 36 &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(requestId);
+        const file = openSync(
+          join(run, 'mark-http500.request-id'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW,
+          0o600,
+        );
+        try {
+          // Only the first failed hosted MARK may bind the existing private witness.
+          writeFileSync(file, canonical ? `${requestId}\n` : '\n');
+        } finally {
+          closeSync(file);
+        }
+        return;
+      }
+    }
     const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
     const temporary = process.env.RUNNER_TEMP;
     const workspace = process.env.GITHUB_WORKSPACE;
@@ -157,7 +246,7 @@ export class Actor {
       headers: { ...this.headers(), ...extraHeaders },
     });
     if (!statuses.includes(response.status())) {
-      retainMarkRequestId(response, method, path);
+      retainMarkRequestId(response, method, path, this.session);
       const failure = datasetHttpFailure(method, path, response.status());
       const subjectCreate = method === 'POST' && path === '/api/academic/subjects';
       const subjectDeletePreview =

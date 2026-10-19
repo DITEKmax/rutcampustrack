@@ -34,6 +34,7 @@ from bot.services.send_queue import TelegramSendQueue
 logging.disable(logging.CRITICAL)
 _phase = "setup"
 _checks = 0
+_headman_read_outcome = "UNKNOWN"
 _auth_boundary = {"actual_auth_tls": False, "old_academic_denied": False, "old_credential_denied": False}
 
 
@@ -657,7 +658,7 @@ async def own_homework_main():
 
 async def hosted_role_menu_main():
     """Read the existing CI services; only Node's owned fixture can change domain state."""
-    global _phase
+    global _phase, _headman_read_outcome
     from bot.grpc_client.bot_read_client import BotReadGrpcClient
     from bot.handlers.prefs import (
         CREDENTIALS_LABEL,
@@ -670,7 +671,7 @@ async def hosted_role_menu_main():
         TEACHER_TODAY_LABEL,
     )
     from bot.handlers.role_reads import LessonChoices, role_reads_router
-    from bot.services.bot_menu import BotReadDenied, resolve_menu_scope
+    from bot.services.bot_menu import BotReadDenied, BotReadUnavailable, resolve_menu_scope
 
     auth_token = Path(os.environ["NP01_AUTH_SERVICE_TOKEN_FILE"]).read_text().strip()
     read_token = Path(os.environ["NP01_READ_SERVICE_TOKEN_FILE"]).read_text().strip()
@@ -814,7 +815,24 @@ async def hosted_role_menu_main():
             headman = fixtures["headman"]
             old_scope = await resolve_menu_scope(menu, headman["chat"])
             check(old_scope is not None)
-            current = await menu.headman_current(headman["chat"], old_scope)
+            try:
+                current = await menu.headman_current(headman["chat"], old_scope)
+            except BotReadDenied:
+                _headman_read_outcome = "RPC_DENIED"
+                raise
+            except BotReadUnavailable:
+                _headman_read_outcome = "RPC_UNAVAILABLE"
+                raise
+            if current.state == "NO_CURRENT":
+                _headman_read_outcome = "RETURNED_NO_CURRENT"
+            elif current.state == "CHOOSE":
+                _headman_read_outcome = "RETURNED_CHOOSE"
+            elif current.state == "READY":
+                _headman_read_outcome = (
+                    "RETURNED_READY_CURRENT_LESSON"
+                    if current.lesson is not None and current.lesson.lesson_id == fixtures["lesson_id"]
+                    else "RETURNED_READY_WRONG_LESSON"
+                )
             check(current.state == "READY" and current.lesson.lesson_id == fixtures["lesson_id"])
             expected = sorted(
                 (row["uid"], row["display_name"], row["status"], row["record_present"]) for row in fixtures["roster"]
@@ -887,6 +905,7 @@ if __name__ == "__main__":
                     "failures": 1,
                     "checks": _checks,
                     "phase": _phase,
+                    **({"headmanReadOutcome": _headman_read_outcome} if sys.argv[1:] == ["--hosted-role-menu"] else {}),
                     "actual_auth_tls": False,
                     "old_academic_denied": False,
                     "old_credential_denied": False,

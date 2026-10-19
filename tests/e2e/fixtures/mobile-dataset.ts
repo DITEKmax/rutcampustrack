@@ -17,6 +17,7 @@ import { test as base, requirePrivateArtifacts } from './artifact-privacy';
 import {
   datasetHttpFailure,
   retainDatasetSubjectCreateProblem,
+  retainDatasetSubjectDeletePreviewProblem,
   retainFirstDatasetHttpFailure,
 } from './safe-reporter';
 
@@ -113,7 +114,7 @@ function retainMarkRequestId(response: APIResponse, method: string, path: string
 }
 
 /** Read the already captured response only; rejected/oversized metadata stays unknown. */
-async function readSubjectCreateProblem(response: APIResponse): Promise<unknown> {
+async function readSubjectProblem(response: APIResponse): Promise<unknown> {
   try {
     const headers = response.headers();
     const contentType = headers['content-type'];
@@ -158,11 +159,17 @@ export class Actor {
     if (!statuses.includes(response.status())) {
       retainMarkRequestId(response, method, path);
       const failure = datasetHttpFailure(method, path, response.status());
-      if (method === 'POST' && path === '/api/academic/subjects' && response.status() === 503) {
+      const subjectCreate = method === 'POST' && path === '/api/academic/subjects';
+      const subjectDeletePreview =
+        method === 'GET' &&
+        /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}\/deletion-preview$/.test(path);
+      if (response.status() === 503 && (subjectCreate || subjectDeletePreview)) {
         try {
           const annotations = base.info().annotations;
           retainFirstDatasetHttpFailure(annotations, failure);
-          retainDatasetSubjectCreateProblem(annotations, await readSubjectCreateProblem(response));
+          const problem = await readSubjectProblem(response);
+          if (subjectCreate) retainDatasetSubjectCreateProblem(annotations, problem);
+          else retainDatasetSubjectDeletePreviewProblem(annotations, problem);
         } catch {
           // Diagnostic refusal cannot replace the original rejected request.
         }

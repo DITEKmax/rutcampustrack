@@ -44,7 +44,8 @@ public class SubjectDeletionParticipants {
                 scheduleToken,
                 ServicePrincipal.SCHEDULE_SERVICE,
                 scheduleAuthority,
-                command);
+                command,
+                SubjectDeletionUnavailableException.Phase.SCHEDULE_PREVIEW);
     }
 
     public SubjectDeletionReceipt attendance(SubjectDeletionCommand command) {
@@ -53,7 +54,8 @@ public class SubjectDeletionParticipants {
                 attendanceToken,
                 new ServicePrincipal("attendance-service"),
                 attendanceAuthority,
-                command);
+                command,
+                SubjectDeletionUnavailableException.Phase.ATTENDANCE_PREVIEW);
     }
 
     private SubjectDeletionReceipt invoke(
@@ -61,12 +63,32 @@ public class SubjectDeletionParticipants {
             String token,
             ServicePrincipal target,
             String authority,
-            SubjectDeletionCommand command) {
+            SubjectDeletionCommand command,
+            SubjectDeletionUnavailableException.Phase phase) {
         var credential =
                 DirectedServiceCredential.tryCreate(
                                 ServicePrincipal.ACADEMIC_SERVICE, target, token)
-                        .orElseThrow(SubjectDeletionParticipants::unavailable);
-        if (authority == null || authority.isBlank()) throw unavailable();
+                        .orElseThrow(
+                                () ->
+                                        unavailable(
+                                                command,
+                                                phase,
+                                                SubjectDeletionUnavailableException.Reason
+                                                        .CREDENTIAL_CONFIGURATION,
+                                                SubjectDeletionUnavailableException.RpcStatus
+                                                        .NOT_APPLICABLE));
+        if (authority == null || authority.isBlank())
+            throw unavailable(
+                    command,
+                    phase,
+                    SubjectDeletionUnavailableException.Reason.AUTHORITY_CONFIGURATION,
+                    SubjectDeletionUnavailableException.RpcStatus.NOT_APPLICABLE);
+        if (stub == null && command.getAction() == SubjectDeletionAction.PREVIEW)
+            throw unavailable(
+                    command,
+                    phase,
+                    SubjectDeletionUnavailableException.Reason.UNEXPECTED,
+                    SubjectDeletionUnavailableException.RpcStatus.NOT_APPLICABLE);
         try {
             var response =
                     stub.withCallCredentials(
@@ -88,15 +110,34 @@ public class SubjectDeletionParticipants {
                             && !response.getParticipantDigest()
                                     .equals(command.getParticipantDigest())
                     || !response.getParticipantDigest().matches("[0-9a-f]{64}"))
-                throw unavailable();
+                throw unavailable(
+                        command,
+                        phase,
+                        SubjectDeletionUnavailableException.Reason.RECEIPT_MISMATCH,
+                        SubjectDeletionUnavailableException.RpcStatus.NOT_APPLICABLE);
             return response;
         } catch (io.grpc.StatusRuntimeException rejected) {
             if (rejected.getStatus().getCode() == io.grpc.Status.Code.FAILED_PRECONDITION
                     || rejected.getStatus().getCode() == io.grpc.Status.Code.ABORTED)
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT, "Состав данных предмета изменился");
-            throw unavailable();
+            throw unavailable(
+                    command,
+                    phase,
+                    SubjectDeletionUnavailableException.Reason.RPC_FAILURE,
+                    SubjectDeletionUnavailableException.RpcStatus.from(
+                            rejected.getStatus().getCode()));
         }
+    }
+
+    private static ResponseStatusException unavailable(
+            SubjectDeletionCommand command,
+            SubjectDeletionUnavailableException.Phase phase,
+            SubjectDeletionUnavailableException.Reason reason,
+            SubjectDeletionUnavailableException.RpcStatus rpcStatus) {
+        return command.getAction() == SubjectDeletionAction.PREVIEW
+                ? new SubjectDeletionUnavailableException(phase, reason, rpcStatus)
+                : unavailable();
     }
 
     private static ResponseStatusException unavailable() {

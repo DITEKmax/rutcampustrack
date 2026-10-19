@@ -418,20 +418,6 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       .fill(target.login);
     await users.getByRole('button', { name: 'Найти', exact: true }).click();
     await users.locator(`[data-user-id="${target.id}"]`).click();
-    const openEditor = async (assigned: boolean) => {
-      await users
-        .getByRole('button', { name: assigned ? 'Назад' : 'Редактировать данные', exact: true })
-        .click();
-      await users
-        .getByRole('button', {
-          name: assigned ? 'Настроить права администратора' : 'Назначить права администратора',
-          exact: true,
-        })
-        .click();
-      await expect(
-        users.getByRole('heading', { name: 'Права доступа', exact: true }),
-      ).toBeVisible();
-    };
     const confirm = async (grant: boolean, method: 'PUT' | 'DELETE', labels: string[]) => {
       const dialog = page.getByRole('dialog', {
         name: grant ? 'Применить права?' : 'Отозвать права?',
@@ -449,7 +435,14 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       expect(response.status()).toBe(method === 'PUT' ? 200 : 204);
       return response.request().postDataJSON();
     };
-    await openEditor(false);
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users
+      .getByRole('button', {
+        name: 'Назначить права администратора',
+        exact: true,
+      })
+      .click();
+    await expect(users.getByRole('heading', { name: 'Права доступа', exact: true })).toBeVisible();
     await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
     const view = users.getByRole('checkbox', { name: 'Просмотр пользователей', exact: true });
     const manage = users.getByRole('checkbox', { name: 'Управление пользователями', exact: true });
@@ -467,7 +460,14 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     expect([...assigned.permissions].sort()).toEqual(['USERS_MANAGE', 'USERS_VIEW']);
     expect(assigned.version).toBeGreaterThan(before.version);
     await expect(users.getByText('Права администратора сохранены.', { exact: true })).toBeVisible();
-    await openEditor(true);
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await users
+      .getByRole('button', {
+        name: 'Настроить права администратора',
+        exact: true,
+      })
+      .click();
+    await expect(users.getByRole('heading', { name: 'Права доступа', exact: true })).toBeVisible();
     await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
     await expect(view).toBeChecked();
     await expect(manage).toBeChecked();
@@ -485,7 +485,14 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     expect(updated.permissions).toEqual(['USERS_VIEW']);
     expect(updated.version).toBeGreaterThan(assigned.version);
     await expect(users.getByText('Права администратора сохранены.', { exact: true })).toBeVisible();
-    await openEditor(true);
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await users
+      .getByRole('button', {
+        name: 'Настроить права администратора',
+        exact: true,
+      })
+      .click();
+    await expect(users.getByRole('heading', { name: 'Права доступа', exact: true })).toBeVisible();
     await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
     await expect(view).toBeChecked();
     await expect(manage).not.toBeChecked();

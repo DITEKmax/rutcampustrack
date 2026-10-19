@@ -67,6 +67,15 @@ const nativeBotPhases = [
   'hosted_role_menu_complete',
   'UNKNOWN',
 ] as const;
+const nativeBotReadOutcomes = [
+  'RPC_DENIED',
+  'RPC_UNAVAILABLE',
+  'RETURNED_NO_CURRENT',
+  'RETURNED_CHOOSE',
+  'RETURNED_READY_WRONG_LESSON',
+  'RETURNED_READY_CURRENT_LESSON',
+  'UNKNOWN',
+] as const;
 type NativePrimaryPath = keyof typeof nativePrimaryPaths;
 interface NativePrimaryFailure {
   path: NativePrimaryPath;
@@ -79,6 +88,7 @@ interface NativePrimaryFailure {
   transportHint?: (typeof nativeTransportHints)[number];
   phase?: (typeof nativeBotPhases)[number];
   checks?: number | 'UNKNOWN';
+  headmanReadOutcome?: (typeof nativeBotReadOutcomes)[number];
 }
 
 /** First facts only; no raw messages, commands, output, paths or object-supplied class names. */
@@ -162,10 +172,14 @@ export function retainNativePrimaryFailure(
   }
   const transport = path === 'SEMESTER_PREVIEW' ? { transportHint } : {};
   const checks = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'checks') : undefined;
+  const headmanReadOutcome = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'headmanReadOutcome') : undefined;
   const botPhase =
     path === 'BOT_ROLE_MENU'
       ? {
           phase: nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN',
+          ...(headmanReadOutcome === undefined ? {} : {
+            headmanReadOutcome: nativeBotReadOutcomes.find((value) => value === headmanReadOutcome) ?? 'UNKNOWN',
+          }),
           checks:
             typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
               ? checks
@@ -200,6 +214,7 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const transportHint = ownData(value, 'transportHint');
     const phase = ownData(value, 'phase');
     const checks = ownData(value, 'checks');
+    const headmanReadOutcome = ownData(value, 'headmanReadOutcome');
     const boundedChecks =
       typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
         ? checks
@@ -210,12 +225,15 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
     if (path === 'BOT_ROLE_MENU') fields.push('phase');
     if (path === 'BOT_ROLE_MENU' && checks !== undefined) fields.push('checks');
+    if (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined) fields.push('headmanReadOutcome');
     const keys = Object.keys(value);
     if (
       keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
       (path === 'SEMESTER_PREVIEW' && !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
       (path === 'ASYNC_REPORT' && !nativeJobStates.some((candidate) => candidate === state)) ||
       (path === 'BOT_ROLE_MENU' && !nativeBotPhases.some((candidate) => candidate === phase)) ||
+      (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined &&
+        !nativeBotReadOutcomes.some((candidate) => candidate === headmanReadOutcome)) ||
       (path === 'ASYNC_REPORT' &&
         state === 'error' &&
         !nativeJobErrors.some((candidate) => candidate === errorCode))
@@ -248,7 +266,11 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       exitStatus,
       ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
       ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
-      ...(path === 'BOT_ROLE_MENU' ? { phase, ...(checks === undefined ? {} : { checks: boundedChecks }) } : {}),
+      ...(path === 'BOT_ROLE_MENU' ? {
+        phase,
+        ...(checks === undefined ? {} : { checks: boundedChecks }),
+        ...(headmanReadOutcome === undefined ? {} : { headmanReadOutcome }),
+      } : {}),
     } as NativePrimaryFailure);
   }
   return result;
@@ -418,6 +440,51 @@ const subjectCreateProblemStages = {
   SUBJECT_CREATE_PROBLEM_UNKNOWN: 'SUBJECT_CREATE_PROBLEM',
 } as const;
 
+const subjectDeletePreviewProblemStages = {
+  SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED: 'SUBJECT_DELETE_PREVIEW_PROBLEM',
+  SUBJECT_DELETE_PREVIEW_PROBLEM_IDENTITY_PUBLICATION_PENDING: 'SUBJECT_DELETE_PREVIEW_PROBLEM',
+  SUBJECT_DELETE_PREVIEW_PROBLEM_GATEWAY_DEPENDENCY_UNAVAILABLE: 'SUBJECT_DELETE_PREVIEW_PROBLEM',
+  SUBJECT_DELETE_PREVIEW_PROBLEM_ABOUT_BLANK: 'SUBJECT_DELETE_PREVIEW_PROBLEM',
+  SUBJECT_DELETE_PREVIEW_PROBLEM_OTHER: 'SUBJECT_DELETE_PREVIEW_PROBLEM',
+  SUBJECT_DELETE_PREVIEW_PROBLEM_UNKNOWN: 'SUBJECT_DELETE_PREVIEW_PROBLEM',
+} as const;
+
+const subjectDeletePreviewPhases = [
+  'LOCAL_TARGET',
+  'LOCAL_SNAPSHOT',
+  'SCHEDULE_PREVIEW',
+  'ATTENDANCE_PREVIEW',
+] as const;
+const subjectDeletePreviewRpcFailures = [
+  'CANCELLED',
+  'UNKNOWN',
+  'INVALID_ARGUMENT',
+  'DEADLINE_EXCEEDED',
+  'NOT_FOUND',
+  'ALREADY_EXISTS',
+  'PERMISSION_DENIED',
+  'RESOURCE_EXHAUSTED',
+  'OUT_OF_RANGE',
+  'UNIMPLEMENTED',
+  'INTERNAL',
+  'UNAVAILABLE',
+  'DATA_LOSS',
+  'UNAUTHENTICATED',
+] as const;
+interface SubjectDeletePreviewMetadata {
+  phase: (typeof subjectDeletePreviewPhases)[number];
+  reason:
+    | 'IDENTITY_READ_FENCE'
+    | 'LOCAL_STORAGE'
+    | 'CREDENTIAL_CONFIGURATION'
+    | 'AUTHORITY_CONFIGURATION'
+    | 'RPC_FAILURE'
+    | 'RECEIPT_MISMATCH'
+    | 'UNEXPECTED';
+  rpcStatus: 'NOT_APPLICABLE' | (typeof subjectDeletePreviewRpcFailures)[number];
+}
+const subjectDeletePreviewMetadataPrefix = 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED:503:';
+
 const headmanCleanupStages = {
   HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ: 'HEADMAN_CLEANUP',
   HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY: 'HEADMAN_CLEANUP',
@@ -493,6 +560,7 @@ const failureStages = {
   INVALID_TIME_VALUE: 'UNKNOWN',
   ...datasetHttpStages,
   ...subjectCreateProblemStages,
+  ...subjectDeletePreviewProblemStages,
   ...headmanCleanupStages,
   ...lifecycleCleanupStages,
   ...lifecycleTransportStages,
@@ -642,6 +710,7 @@ export interface SafeFailureDiagnostic {
   stage: (typeof failureStages)[FailureCause];
   cause: FailureCause | ReportedFailureHint;
   httpStatus: FailureHttpStatus | CleanupHttpStatus;
+  subjectPreview?: SubjectDeletePreviewMetadata;
 }
 const knownFailureMessages: Record<string, FailureCause> = {
   'Real-mobile requires the dedicated safe reporter, no debug/extra reporter and snapshot capture disabled':
@@ -663,8 +732,16 @@ const knownFailureMessages: Record<string, FailureCause> = {
 function failureDiagnostic(
   cause: FailureCause = 'UNKNOWN',
   httpStatus: FailureHttpStatus | CleanupHttpStatus = 0,
+  subjectPreview?: SubjectDeletePreviewMetadata,
 ): SafeFailureDiagnostic {
-  return { stage: failureStages[cause], cause, httpStatus };
+  const diagnostic: SafeFailureDiagnostic = { stage: failureStages[cause], cause, httpStatus };
+  if (cause === 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED' && httpStatus === 503 && subjectPreview)
+    diagnostic.subjectPreview = {
+      phase: subjectPreview.phase,
+      reason: subjectPreview.reason,
+      rpcStatus: subjectPreview.rpcStatus,
+    };
+  return diagnostic;
 }
 function ownData(value: unknown, key: string): unknown {
   if (typeof value !== 'object' || value === null) return undefined;
@@ -798,6 +875,58 @@ export function safeFailureDiagnostics(
       const annotation = ownData(annotations, String(index));
       if (ownData(annotation, 'type') !== safeFailureAnnotation) continue;
       const description = ownData(annotation, 'description');
+      if (
+        typeof description === 'string' &&
+        description.startsWith('SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED:')
+      ) {
+        if (
+          description !== 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED:503' &&
+          !description.startsWith(subjectDeletePreviewMetadataPrefix)
+        )
+          continue;
+        let metadata: SubjectDeletePreviewMetadata | undefined;
+        if (
+          description.length <= 320 &&
+          description.startsWith(subjectDeletePreviewMetadataPrefix)
+        ) {
+          try {
+            metadata = closedSubjectDeletePreviewMetadata(
+              JSON.parse(description.slice(subjectDeletePreviewMetadataPrefix.length)),
+            );
+            if (
+              metadata &&
+              description !==
+                subjectDeletePreviewMetadataPrefix +
+                  JSON.stringify({
+                    code: 'SUBJECT_DELETION_UNAVAILABLE',
+                    ...metadata,
+                  })
+            )
+              metadata = undefined;
+          } catch {
+            metadata = undefined;
+          }
+        }
+        // The source emits the original exact HTTP marker before this optional reported tuple.
+        if (
+          !result.some(
+            (item) =>
+              item.cause === 'DATASET_SUBJECT_DELETE_PREVIEW_HTTP' && item.httpStatus === 503,
+          )
+        )
+          metadata = undefined;
+        if (!result.some((item) => item.stage === 'SUBJECT_DELETE_PREVIEW_PROBLEM'))
+          result.push(
+            failureDiagnostic(
+              metadata
+                ? 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED'
+                : 'SUBJECT_DELETE_PREVIEW_PROBLEM_UNKNOWN',
+              503,
+              metadata,
+            ),
+          );
+        continue;
+      }
       const match =
         typeof description === 'string' && description.length <= 96
           ? /^([A-Z_]+):(0|200|201|202|204|400|401|403|404|409|410|422|423|429|500|502|503|504|OTHER)$/.exec(
@@ -814,7 +943,10 @@ export function safeFailureDiagnostics(
         : reported && match[2] === '0'
           ? { stage: 'UNKNOWN', cause: match[1] as ReportedFailureHint, httpStatus: 0 }
           : failureDiagnostic();
-      if (diagnostic.stage === 'SUBJECT_CREATE_PROBLEM') {
+      if (
+        diagnostic.stage === 'SUBJECT_CREATE_PROBLEM' ||
+        diagnostic.stage === 'SUBJECT_DELETE_PREVIEW_PROBLEM'
+      ) {
         if (match?.[0] !== description || diagnostic.httpStatus !== 503) continue;
         if (!result.some((item) => item.stage === diagnostic.stage)) result.push(diagnostic);
         continue;
@@ -916,13 +1048,65 @@ function retainLifecycleDiagnostic(
   annotations: TestResult['annotations'],
   cause: FailureCause,
   status: SafeFailureDiagnostic['httpStatus'] = 0,
+  subjectPreview?: SubjectDeletePreviewMetadata,
 ): void {
   const previous = safeFailureDiagnostics(annotations);
   if (previous.some((item) => item.stage === failureStages[cause])) return;
   if (previous.filter((item) => !item.cause.startsWith('REPORTED_')).length >= 8) return;
   if (previous.length >= 8 && !discardReportedFailureHint(annotations)) return;
   if (annotations.length >= 32) return;
-  annotations.push({ type: safeFailureAnnotation, description: `${cause}:${status}` });
+  const description =
+    cause === 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED' && status === 503 && subjectPreview
+      ? subjectDeletePreviewMetadataPrefix +
+        JSON.stringify({
+          code: 'SUBJECT_DELETION_UNAVAILABLE',
+          ...subjectPreview,
+        })
+      : `${cause}:${status}`;
+  annotations.push({ type: safeFailureAnnotation, description });
+}
+
+/** Reconstruct only source-emitted enum tuples; never retain response objects or free text. */
+export function closedSubjectDeletePreviewMetadata(
+  value: unknown,
+): SubjectDeletePreviewMetadata | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return;
+  let keys: PropertyKey[];
+  try {
+    keys = Reflect.ownKeys(value);
+  } catch {
+    return;
+  }
+  if (
+    keys.length !== 4 ||
+    !['code', 'phase', 'reason', 'rpcStatus'].every((key) => keys.includes(key)) ||
+    ownData(value, 'code') !== 'SUBJECT_DELETION_UNAVAILABLE'
+  )
+    return;
+  const phase = ownData(value, 'phase'),
+    reason = ownData(value, 'reason'),
+    rpcStatus = ownData(value, 'rpcStatus');
+  if (!subjectDeletePreviewPhases.some((candidate) => candidate === phase)) return;
+  const local = phase === 'LOCAL_TARGET' || phase === 'LOCAL_SNAPSHOT';
+  const valid = local
+    ? (reason === 'IDENTITY_READ_FENCE' && rpcStatus === 'UNAVAILABLE') ||
+      (['LOCAL_STORAGE', 'UNEXPECTED'].some((candidate) => candidate === reason) &&
+        rpcStatus === 'NOT_APPLICABLE')
+    : ([
+        'CREDENTIAL_CONFIGURATION',
+        'AUTHORITY_CONFIGURATION',
+        'RECEIPT_MISMATCH',
+        'UNEXPECTED',
+      ].some((candidate) => candidate === reason) &&
+        rpcStatus === 'NOT_APPLICABLE') ||
+      (reason === 'RPC_FAILURE' &&
+        subjectDeletePreviewRpcFailures.some((candidate) => candidate === rpcStatus));
+  if (!valid) return;
+  return {
+    phase: phase as SubjectDeletePreviewMetadata['phase'],
+    reason: reason as SubjectDeletePreviewMetadata['reason'],
+    rpcStatus: rpcStatus as SubjectDeletePreviewMetadata['rpcStatus'],
+  };
 }
 
 /** Untrusted response metadata only: no body, identifiers or free text leave this projection. */
@@ -953,6 +1137,46 @@ export function retainDatasetSubjectCreateProblem(
   value: unknown,
 ): void {
   retainLifecycleDiagnostic(annotations, closedSubjectCreateProblem(value), 503);
+}
+
+/** An about:blank body identifies no failing service, phase or exception. */
+export function closedSubjectDeletePreviewProblem(
+  value: unknown,
+): keyof typeof subjectDeletePreviewProblemStages {
+  if (ownData(value, 'status') !== 503) return 'SUBJECT_DELETE_PREVIEW_PROBLEM_UNKNOWN';
+  const extras = ownData(value, 'extras');
+  if (
+    ownData(extras, 'code') === 'SUBJECT_DELETION_UNAVAILABLE' ||
+    ['phase', 'reason', 'rpcStatus'].some((key) => ownData(extras, key) !== undefined)
+  )
+    return closedSubjectDeletePreviewMetadata(extras)
+      ? 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED'
+      : 'SUBJECT_DELETE_PREVIEW_PROBLEM_UNKNOWN';
+  const common = closedSubjectCreateProblem(value);
+  if (common === 'SUBJECT_CREATE_PROBLEM_IDENTITY_PUBLICATION_PENDING')
+    return 'SUBJECT_DELETE_PREVIEW_PROBLEM_IDENTITY_PUBLICATION_PENDING';
+  if (common === 'SUBJECT_CREATE_PROBLEM_GATEWAY_DEPENDENCY_UNAVAILABLE')
+    return 'SUBJECT_DELETE_PREVIEW_PROBLEM_GATEWAY_DEPENDENCY_UNAVAILABLE';
+  if (ownData(value, 'type') === 'about:blank') return 'SUBJECT_DELETE_PREVIEW_PROBLEM_ABOUT_BLANK';
+  return common === 'SUBJECT_CREATE_PROBLEM_UNKNOWN'
+    ? 'SUBJECT_DELETE_PREVIEW_PROBLEM_UNKNOWN'
+    : 'SUBJECT_DELETE_PREVIEW_PROBLEM_OTHER';
+}
+
+/** First rejected exact preview GET only; preserve the separate original HTTP failure. */
+export function retainDatasetSubjectDeletePreviewProblem(
+  annotations: TestResult['annotations'],
+  value: unknown,
+): void {
+  const cause = closedSubjectDeletePreviewProblem(value);
+  retainLifecycleDiagnostic(
+    annotations,
+    cause,
+    503,
+    cause === 'SUBJECT_DELETE_PREVIEW_PROBLEM_TYPED'
+      ? closedSubjectDeletePreviewMetadata(ownData(value, 'extras'))
+      : undefined,
+  );
 }
 /** Retain the original preview transport, before the caller rethrows the identical error. */
 export function retainSemesterPreviewTransport(

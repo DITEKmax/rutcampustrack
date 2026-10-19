@@ -2003,7 +2003,7 @@ jobs:
           backfill_targets = {
               'academic-service': ('ru.rutcampustrack.academic.integration.HistoricalMembershipIT',
                   'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java',
-                  'a4dd36e2f09f22d11eb59c42501a4c54069e3902eb4f71b42fad45a30ae13025', (
+                  'a21d696976943f010de931a87e2aed756adf86bd12c90a307f02877bc59f3af2', (
                       'initialEnrollmentAndEquivalentRoleAddAtomicallyAdmitPrivateBackfill',
                       'refusedOutboxAndPostFenceEnrollmentRollbackUserHistoryWorkAndOutbox',
                       'onlyExactBackfillAcknowledgementDrainsArchiveAndRetainsReplayIdentity',
@@ -5330,7 +5330,7 @@ jobs:
                             'errorClass': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
 
           def retain_backup_failure(error=None, *, exit_status=None, stderr=None):
-              if stage != 'backup':
+              if stage not in {'backup', 'fresh-restore'}:
                   return
               if error is not None:
                   name = type(error).__name__
@@ -5341,10 +5341,24 @@ jobs:
               if type(exit_status) is int and -255 <= exit_status <= 255:
                   backup_failure['exitStatus'] = exit_status
               if isinstance(stderr, bytes) and len(stderr) <= 65536:
-                  hints = re.findall(rb'(?m)^RECOVERY_FAILURE_HINT:([A-Z_]+)$', stderr)
+                  hints = re.findall(rb'(?m)^RECOVERY_FAILURE_HINT:([A-Z_]{1,64})$', stderr)
                   allowed = {b'GUARD', b'INPUT_CREDENTIAL', b'PG_QUERY', b'PG_SCHEMA', b'PG_DUMP',
                              b'PG_RESTORE', b'MONGO_QUERY', b'MONGO_DUMP', b'MONGO_RESTORE',
-                             b'INSPECT', b'OTHER_TOOL'}
+                             b'INSPECT', b'OTHER_TOOL',
+                             b'RESTORE_DIFF_ACCESS_ACL',
+                             b'RESTORE_DIFF_ACCESS_ACL_COLUMN',
+                             b'RESTORE_DIFF_ACCESS_ACL_DATABASE',
+                             b'RESTORE_DIFF_ACCESS_ACL_DEFAULT',
+                             b'RESTORE_DIFF_ACCESS_ACL_FUNCTION',
+                             b'RESTORE_DIFF_ACCESS_ACL_RELATION',
+                             b'RESTORE_DIFF_ACCESS_ACL_SCHEMA',
+                             b'RESTORE_DIFF_ACCESS_ACL_TYPE',
+                             b'RESTORE_DIFF_ACCESS_OBJECT_SET',
+                             b'RESTORE_DIFF_ACCESS_ORDER',
+                             b'RESTORE_DIFF_ACCESS_OWNER',
+                             b'RESTORE_DIFF_OTHER_SHAPE',
+                             b'RESTORE_DIFF_SEQUENCES',
+                             b'RESTORE_DIFF_TABLES'}
                   if len(hints) == 1 and hints[0] in allowed:
                       backup_failure['hint'] = hints[0].decode('ascii')
 
@@ -5814,15 +5828,21 @@ jobs:
                     '--history-before', str(work / 'history-before.json'), '--history-pointer', pending['historyPointer'],
                     '--history-lesson-id', str(pending['historyLessonId']), '--quiesced', '--output', str(baseline)])
               stage = 'fresh-restore'
+              backup_failure['action'] = 'SOURCE_DATABASE_STOP'
               call([*compose, 'stop', '--timeout', '15', *db_services, 'redis'])
               for service in db_services:
+                  backup_failure['action'] = 'SOURCE_DATABASE_INSPECT'
                   if inspect(ids[service])['State']['Running']:
                       raise RuntimeError('Source database did not stop')
+                  backup_failure['action'] = 'SOURCE_ENDPOINT_DISCONNECT'
                   call(['docker', 'network', 'disconnect', network, ids[service]])
               # New target containers have no application/Flyway startup or source database mounts.
+              backup_failure['action'] = 'TARGET_DATABASE_START'
               call([*target_compose, 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '150'])
+              backup_failure['action'] = 'TARGET_DATABASE_IDENTIFY'
               target_ids = {name: call([*target_compose, 'ps', '-q', name]).decode().strip() for name in db_services}
               for name, cid in target_ids.items():
+                  backup_failure['action'] = 'TARGET_DATABASE_INSPECT'
                   restored_info = json.loads(call(['docker', 'inspect', cid]))[0]
                   labels = restored_info['Config']['Labels']
                   if (labels.get('com.docker.compose.project') != project
@@ -5831,6 +5851,7 @@ jobs:
                       raise RuntimeError('Fresh target identity mismatch')
               target_args = ['--env-file', str(recovery_env), '--academic-container', target_ids['postgres-academic'],
                              '--schedule-container', target_ids['postgres-schedule'], '--mongo-container', target_ids['mongo-attendance']]
+              backup_failure['action'] = 'RESTORE_SCRIPT'
               call(['python3', 'scripts/recovery.py', 'restore', *target_args,
                     '--no-files', '--bundle', str(bundle), '--target-project', project])
               stage = 'application'
@@ -5870,6 +5891,9 @@ jobs:
               api('attachment')
               print('PASS real application recovery: fresh inventory, historical attachment and exact transfer replay')
           except Exception as error:
+              if stage == 'fresh-restore':
+                  retain_backup_failure(error)
+                  print(json.dumps({'stage': 'RESTORE', **backup_failure}, sort_keys=True))
               if stage == 'backup':
                   retain_backup_failure(error)
                   receipt = {'stage': 'BACKUP', **backup_failure}

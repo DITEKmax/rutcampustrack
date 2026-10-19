@@ -319,6 +319,50 @@ class SubjectDeletionHttpIT {
     }
 
     @Test
+    void previewUnavailableReturnsOnlyClosedParticipantDiagnosticWithoutAcceptingDeletion()
+            throws Exception {
+        for (var phase :
+                List.of(
+                        SubjectDeletionUnavailableException.Phase.SCHEDULE_PREVIEW,
+                        SubjectDeletionUnavailableException.Phase.ATTENDANCE_PREVIEW)) {
+            doAnswer(call -> receipt(call.getArgument(0), true)).when(participants).schedule(any());
+            doAnswer(call -> receipt(call.getArgument(0), false))
+                    .when(participants)
+                    .attendance(any());
+            var failure =
+                    new SubjectDeletionUnavailableException(
+                            phase,
+                            SubjectDeletionUnavailableException.Reason.RPC_FAILURE,
+                            SubjectDeletionUnavailableException.RpcStatus.UNAVAILABLE);
+            if (phase == SubjectDeletionUnavailableException.Phase.SCHEDULE_PREVIEW)
+                doThrow(failure).when(participants).schedule(any());
+            else doThrow(failure).when(participants).attendance(any());
+            clearInvocations(participants);
+            var problem = body(signed(get(path() + "/deletion-preview")), 503);
+            assertThat(problem.path("instance").asText()).isEqualTo("about:blank");
+            assertThat(problem.path("extras").size()).isEqualTo(4);
+            assertThat(problem.path("extras").path("code").asText())
+                    .isEqualTo("SUBJECT_DELETION_UNAVAILABLE");
+            assertThat(problem.path("extras").path("phase").asText()).isEqualTo(phase.name());
+            assertThat(problem.path("extras").path("reason").asText()).isEqualTo("RPC_FAILURE");
+            assertThat(problem.path("extras").path("rpcStatus").asText()).isEqualTo("UNAVAILABLE");
+            assertThat(problem.toString())
+                    .doesNotContain(path(), "Same label", "Synthetic", "cause", "stack");
+            assertThat(count("SELECT count(*) FROM subject_deletion_operations")).isZero();
+            assertThat(count("SELECT count(*) FROM subject_deletion_admission_receipts")).isZero();
+            assertThat(count("SELECT count(*) FROM subjects WHERE id=?", subject)).isEqualTo(1);
+            verify(participants, times(1))
+                    .schedule(argThat(c -> c.getAction() == SubjectDeletionAction.PREVIEW));
+            verify(participants, never())
+                    .schedule(argThat(c -> c.getAction() != SubjectDeletionAction.PREVIEW));
+            verify(participants, never())
+                    .attendance(argThat(c -> c.getAction() != SubjectDeletionAction.PREVIEW));
+            verify(auth, never()).challenge(any(), any());
+            verify(auth, never()).verify(any(), any());
+        }
+    }
+
+    @Test
     void malformedConfirmationIsNoStore400WithoutSecretEchoOrAcceptedOperation() throws Exception {
         String marker = "synthetic-private-proof-" + UUID.randomUUID();
         var response =

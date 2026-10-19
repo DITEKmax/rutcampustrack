@@ -52,19 +52,239 @@ class SubjectDeletionParticipantsTest {
                         new CapturingChannel("schedule-service", SecurityLevel.NONE, false),
                         new CapturingChannel(
                                 "foreign-service", SecurityLevel.PRIVACY_AND_INTEGRITY, false))) {
-            var client = client(channel, true);
-            assertThatThrownBy(() -> client.schedule(command()))
-                    .isInstanceOf(ResponseStatusException.class);
+            for (var action :
+                    List.of(SubjectDeletionAction.PREVIEW, SubjectDeletionAction.PREPARE)) {
+                var client = client(channel, true);
+                assertThatThrownBy(
+                                () ->
+                                        client.schedule(
+                                                command().toBuilder().setAction(action).build()))
+                        .isInstanceOfSatisfying(
+                                ResponseStatusException.class,
+                                failure -> {
+                                    assertThat(failure.getStatusCode().value()).isEqualTo(503);
+                                    if (action == SubjectDeletionAction.PREVIEW) {
+                                        assertThat(failure)
+                                                .isInstanceOf(
+                                                        SubjectDeletionUnavailableException.class);
+                                        var diagnostic =
+                                                (SubjectDeletionUnavailableException) failure;
+                                        assertThat(diagnostic.phase())
+                                                .isEqualTo(
+                                                        SubjectDeletionUnavailableException.Phase
+                                                                .SCHEDULE_PREVIEW);
+                                        assertThat(diagnostic.failureReason())
+                                                .isEqualTo(
+                                                        SubjectDeletionUnavailableException.Reason
+                                                                .RPC_FAILURE);
+                                        assertThat(diagnostic.rpcStatus())
+                                                .isEqualTo(
+                                                        channel.security == SecurityLevel.NONE
+                                                                ? SubjectDeletionUnavailableException
+                                                                        .RpcStatus.UNAUTHENTICATED
+                                                                : SubjectDeletionUnavailableException
+                                                                        .RpcStatus
+                                                                        .PERMISSION_DENIED);
+                                        assertThat(diagnostic.getCause()).isNull();
+                                    } else
+                                        assertThat(failure)
+                                                .isExactlyInstanceOf(ResponseStatusException.class);
+                                });
+            }
             assertThat(channel.released).isFalse();
         }
     }
 
     @Test
     void mismatchedReceiptCannotBecomeAConfirmedParticipant() {
-        var channel =
-                new CapturingChannel("schedule-service", SecurityLevel.PRIVACY_AND_INTEGRITY, true);
-        assertThatThrownBy(() -> client(channel, true).schedule(command()))
-                .isInstanceOf(ResponseStatusException.class);
+        for (boolean schedule : new boolean[] {true, false}) {
+            for (var action :
+                    List.of(SubjectDeletionAction.PREVIEW, SubjectDeletionAction.PREPARE)) {
+                var channel =
+                        new CapturingChannel(
+                                schedule ? "schedule-service" : "attendance-service",
+                                SecurityLevel.PRIVACY_AND_INTEGRITY,
+                                true);
+                var client = client(channel, schedule);
+                var command = command().toBuilder().setAction(action).build();
+                assertThatThrownBy(
+                                () -> {
+                                    if (schedule) client.schedule(command);
+                                    else client.attendance(command);
+                                })
+                        .isInstanceOfSatisfying(
+                                ResponseStatusException.class,
+                                failure -> {
+                                    assertThat(failure.getStatusCode().value()).isEqualTo(503);
+                                    if (action == SubjectDeletionAction.PREVIEW) {
+                                        var diagnostic =
+                                                (SubjectDeletionUnavailableException) failure;
+                                        assertThat(diagnostic.phase())
+                                                .isEqualTo(
+                                                        schedule
+                                                                ? SubjectDeletionUnavailableException
+                                                                        .Phase.SCHEDULE_PREVIEW
+                                                                : SubjectDeletionUnavailableException
+                                                                        .Phase.ATTENDANCE_PREVIEW);
+                                        assertThat(diagnostic.failureReason())
+                                                .isEqualTo(
+                                                        SubjectDeletionUnavailableException.Reason
+                                                                .RECEIPT_MISMATCH);
+                                        assertThat(diagnostic.rpcStatus())
+                                                .isEqualTo(
+                                                        SubjectDeletionUnavailableException
+                                                                .RpcStatus.NOT_APPLICABLE);
+                                        assertThat(diagnostic.getCause()).isNull();
+                                    } else
+                                        assertThat(failure)
+                                                .isExactlyInstanceOf(ResponseStatusException.class);
+                                });
+            }
+        }
+    }
+
+    @Test
+    void previewRpcDiagnosticsKeepClosedStatusWithoutChangingConflictOrMutationFailures() {
+        for (boolean schedule : new boolean[] {true, false}) {
+            for (var status :
+                    List.of(
+                            Status.UNAVAILABLE,
+                            Status.DEADLINE_EXCEEDED,
+                            Status.FAILED_PRECONDITION,
+                            Status.ABORTED)) {
+                for (var action :
+                        List.of(SubjectDeletionAction.PREVIEW, SubjectDeletionAction.PREPARE)) {
+                    var channel =
+                            new CapturingChannel(
+                                    schedule ? "schedule-service" : "attendance-service",
+                                    SecurityLevel.PRIVACY_AND_INTEGRITY,
+                                    false);
+                    channel.failure = status.withDescription("synthetic-private-rpc-payload");
+                    var client = client(channel, schedule);
+                    var command = command().toBuilder().setAction(action).build();
+                    assertThatThrownBy(
+                                    () -> {
+                                        if (schedule) client.schedule(command);
+                                        else client.attendance(command);
+                                    })
+                            .isInstanceOfSatisfying(
+                                    ResponseStatusException.class,
+                                    failure -> {
+                                        boolean conflict =
+                                                status == Status.FAILED_PRECONDITION
+                                                        || status == Status.ABORTED;
+                                        assertThat(failure.getStatusCode().value())
+                                                .isEqualTo(conflict ? 409 : 503);
+                                        assertThat(failure.getMessage())
+                                                .doesNotContain("synthetic-private-rpc-payload");
+                                        assertThat(failure.getCause()).isNull();
+                                        if (!conflict && action == SubjectDeletionAction.PREVIEW) {
+                                            var diagnostic =
+                                                    (SubjectDeletionUnavailableException) failure;
+                                            assertThat(diagnostic.phase())
+                                                    .isEqualTo(
+                                                            schedule
+                                                                    ? SubjectDeletionUnavailableException
+                                                                            .Phase.SCHEDULE_PREVIEW
+                                                                    : SubjectDeletionUnavailableException
+                                                                            .Phase
+                                                                            .ATTENDANCE_PREVIEW);
+                                            assertThat(diagnostic.failureReason())
+                                                    .isEqualTo(
+                                                            SubjectDeletionUnavailableException
+                                                                    .Reason.RPC_FAILURE);
+                                            assertThat(diagnostic.rpcStatus())
+                                                    .isEqualTo(
+                                                            SubjectDeletionUnavailableException
+                                                                    .RpcStatus.from(
+                                                                    status.getCode()));
+                                        } else
+                                            assertThat(failure)
+                                                    .isExactlyInstanceOf(
+                                                            ResponseStatusException.class);
+                                    });
+                }
+            }
+        }
+    }
+
+    @Test
+    void localPreviewDiagnosticsDiscardPrivateCausesAndPreserveOriginalRejections() {
+        var phase = SubjectDeletionUnavailableException.Phase.LOCAL_TARGET;
+        var privateSql =
+                new org.springframework.dao.DataAccessResourceFailureException(
+                        "synthetic-private-sql",
+                        new IllegalStateException("synthetic-private-cause"));
+        var storage =
+                (SubjectDeletionUnavailableException)
+                        SubjectDeletionUnavailableException.local(phase, privateSql);
+        assertThat(storage.phase()).isEqualTo(phase);
+        assertThat(storage.failureReason())
+                .isEqualTo(SubjectDeletionUnavailableException.Reason.LOCAL_STORAGE);
+        assertThat(storage.rpcStatus())
+                .isEqualTo(SubjectDeletionUnavailableException.RpcStatus.NOT_APPLICABLE);
+        assertThat(storage.getCause()).isNull();
+        assertThat(storage.getMessage()).doesNotContain("synthetic-private");
+        var fence =
+                (SubjectDeletionUnavailableException)
+                        SubjectDeletionUnavailableException.local(
+                                SubjectDeletionUnavailableException.Phase.LOCAL_SNAPSHOT,
+                                Status.UNAVAILABLE
+                                        .withDescription("synthetic-private-fence")
+                                        .asRuntimeException());
+        assertThat(fence.failureReason())
+                .isEqualTo(SubjectDeletionUnavailableException.Reason.IDENTITY_READ_FENCE);
+        assertThat(fence.rpcStatus())
+                .isEqualTo(SubjectDeletionUnavailableException.RpcStatus.UNAVAILABLE);
+        assertThat(fence.getCause()).isNull();
+        assertThat(fence.getMessage()).doesNotContain("synthetic-private");
+        for (var rejection :
+                List.of(
+                        new ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN),
+                        new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT),
+                        new org.springframework.web.ErrorResponseException(
+                                org.springframework.http.HttpStatus.BAD_REQUEST),
+                        new ru.rutcampustrack.academic.exception.AccessDeniedException("private"),
+                        new ru.rutcampustrack.academic.exception.ConflictException("private"),
+                        new org.springframework.dao.DataIntegrityViolationException("private"),
+                        Status.INVALID_ARGUMENT.asRuntimeException()))
+            assertThat(SubjectDeletionUnavailableException.local(phase, rejection))
+                    .isSameAs(rejection);
+    }
+
+    @Test
+    void previewConfigurationIsFiniteWithoutReleasingToken() {
+        for (boolean missingCredential : new boolean[] {true, false}) {
+            var client =
+                    new SubjectDeletionParticipants(
+                            missingCredential ? "" : TOKEN,
+                            TOKEN,
+                            missingCredential ? "schedule-service" : "",
+                            "attendance-service");
+            assertThatThrownBy(
+                            () ->
+                                    client.schedule(
+                                            command().toBuilder()
+                                                    .setAction(SubjectDeletionAction.PREVIEW)
+                                                    .build()))
+                    .isInstanceOfSatisfying(
+                            SubjectDeletionUnavailableException.class,
+                            failure -> {
+                                assertThat(failure.failureReason())
+                                        .isEqualTo(
+                                                missingCredential
+                                                        ? SubjectDeletionUnavailableException.Reason
+                                                                .CREDENTIAL_CONFIGURATION
+                                                        : SubjectDeletionUnavailableException.Reason
+                                                                .AUTHORITY_CONFIGURATION);
+                                assertThat(failure.rpcStatus())
+                                        .isEqualTo(
+                                                SubjectDeletionUnavailableException.RpcStatus
+                                                        .NOT_APPLICABLE);
+                                assertThat(failure.getCause()).isNull();
+                                assertThat(failure.getMessage()).doesNotContain(TOKEN);
+                            });
+        }
     }
 
     private static final Clock CLOCK =
@@ -515,6 +735,7 @@ class SubjectDeletionParticipantsTest {
         final SecurityLevel security;
         final boolean mismatch;
         boolean released, deadlineBounded;
+        Status failure;
 
         CapturingChannel(String authority, SecurityLevel security, boolean mismatch) {
             this.authority = authority;
@@ -588,6 +809,10 @@ class SubjectDeletionParticipantsTest {
                                                                             DirectedServiceCredential
                                                                                     .TOKEN_METADATA_KEY)))
                                                     .isTrue();
+                                            if (failure != null) {
+                                                listener.onClose(failure, new Metadata());
+                                                return;
+                                            }
                                             var c = (SubjectDeletionCommand) request;
                                             var r =
                                                     SubjectDeletionReceipt.newBuilder()

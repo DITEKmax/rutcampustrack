@@ -4,7 +4,7 @@ Goal Q031/D037 **IN_PROGRESS**, без дедлайна: [GO](TASK-ADDENDUM-SPLI
 [TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md), [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md).
 Ветка codex/server-validation-20261011; [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2).
 Starting26cbe5912f6683a81780a831609dbddbc26feba4; опубликованная candidate-база
-**d3bf1e005ec466cabc804bf71dddb290feca5ad1**. Ordinary CI/PR/Coverage39189867926/74151/74206 продолжаются; main/merge/deploy нет.
+**77811f7476e628973d27fc13238183796e711f7c**. CurrentCI39191321026/PR39191326789 красные; Coverage39191326877/OpenAPI39191326785 SUCCESS; Security39191326806 FAIL; main/merge/deploy нет.
 
 ## Конечный план
 
@@ -22,12 +22,12 @@ Starting26cbe5912f6683a81780a831609dbddbc26feba4; опубликованная c
 
 | Остаток | Доказано / конкретное недостающее действие |
 | --- | --- |
-| U14.5 | Samearchive/DLQ/replay/dedup/restoration и semesterUI PASS; subject BEFOREcontrolMarks1 теперь PASS, затем previewGET5854 FAIL/HTTPUNKNOWN. Exact previewGET marker готов; проверить preview/delete/participants с прежними proof/grants. |
-| U14.6 | OpenAPI/current create-login/contracts и5auth-role-logout PASS; schedule56 теперь PASS. Admin helper430 и group ticket930/935 FAIL, причинаUNKNOWN; caller452/470/488 diagnostic готов. Доказать исходные2UI операции; alias Auth→Academic корректен. |
-| U20.1 | Private common/menu иTeacherToday/empty дошли доPASS; hosted headmanphase FAIL f2403a80. Existingchecks0..60 теперь сохраняются безопасно. Отдельный NativeBridge malformedbinding0 fixture исправлен к exactINVALID_ARGUMENT; actual rerun нужен. |
+| U14.5 | Samearchive/DLQ/replay/dedup/restoration и semesterUI PASS; subject BEFOREcontrolMarks1 PASS, затем previewGET5854 HTTP503. Серверная закрытая phase/reason/rpcStatus + существующий reporter готовы/compile40 PASS; actual причинаUNKNOWN. Проверить исходный preview/delete/participants с прежними proof/grants. |
+| U14.6 | 5auth/role/logout иOpenAPI PASS. SOURCE-PROVEN productGAP: groupreport academic_report forwarded toordinaryAuth+Attendance validators. R2aa scopedreport-data chain+finitebatching21files sourceREADY/independentreview; admin sameactions inline fordistinctframes. Actualexclusive timeoutcauseUNKNOWN. |
+| U20.1 | Private common/menu иTeacherToday/empty дошли доPASS; hosted headmanphase FAIL/currentchecks37; first read/READY+lesson ambiguity. Closedreadoutcome добавлен в прежний carrier. Отдельный NativeBridge malformedbinding0 fixture исправлен к exactINVALID_ARGUMENT; actual rerun нужен. |
 | U20.2 | Own currentlesson/roster/unmarked/statistics source согласован; тотже hostedFAIL, конкретное условие покаUNKNOWN. Пройти исходные headman/currentrights/none/revoke, зависит U20.1; новый API/дизайн не нужен. |
 | U20.3 | TeacherToday+empty PASS до headmanFAIL; поздние freshbinding/revoke/currentrights ещё не закончены. Пройти оставшуюся часть существующего hosted сценария после U20.1. |
-| U25 | Финальные compatibleCI/Coverage/Security/OpenAPI/review/handoff. Currente5c CI/PR/Coverage FAIL, OpenAPI/Apps/Monitoring/Auth SUCCESS; source-only исправления ниже требуют обычного CI. AppRecovery seed SUBJECT_CREATE_HTTP503 до backup/restore, причинаUNKNOWN; exact503 finite problem-category готов, без retry создания. |
+| U25 | Финальные compatibleCI/Coverage/Security/OpenAPI/review/handoff. 778 Coverage/OpenAPI/обаApps PASS; SecurityFAIL. d3bf seed+pending PASS, fresh-restore RuntimeError FAIL; closedstagehint готов в прежнем retainer. PRMonitoring POSTGRES_ACADEMIC exit2; finalTCPreadiness готов. Итоговые gates требуют актуальной revision. |
 
 ## Принятые текущие результаты / evidence
 
@@ -38,18 +38,18 @@ Academic12158670472/25089ef9 exactsource5d255d02 core4PASS: firstlogin/profile/p
 concurrency/existingadmin и runtimeDBboundarydenial. Q033 закрыт, production invocation не выполнялась.
 U14.3 current grants/CAS/history принят8c5; его evidence/review и остальные закрытые строки — в матрице.
 e5c exact restore12157058652/9f042ebf PASS:3PG/data/schema/sequence/owners/ACL/defaultprivileges/runtimegrants+deny/Mongo/files.
-Application recovery12158801161/0924ae35 seedFAIL987ms POSTsubjects503; checkpoint/pending/backup/restore ещё не начинались.
-Историческая причина WORD crash и8c5 fresh-restore stage остаются UNKNOWN; новые PASS их не объясняют.
+d3bf application seed12159894958/4351df83 иpending/6cb8a058 PASS; fresh-restore RuntimeError FAIL. Исторический WORD crash остаётся UNKNOWN.
 
 ## Следующий связный пакет / владельцы
 
-Current d3bf cache12160190170/d821bf38 PASS: exact immediate-eviction negative1FAIL, restored commit+rollback2PASS, source-restored true.
-Spring12159134953/f732a19a точно выявил previewAssertJ1132 expected409/actual200; execute409/domain guard сохранён. Exact descriptor correction joined/RootroutineAPPROVE.
-Apps PR12159234458/2a066ae9 RSS_DELTA FAIL71786496B>64MiB, pushApps PASS; heapcommit varies, exclusivecauseUNKNOWN. Onefile fixed192+PreTouch BOTH baseline/profile joined/independentAPPROVE; rawRSS64/absolute384/workload preserved, newactualUNKNOWN.
-Gitleaks redacted1789findings:1568 proven publicGitobjects; residual provenance active. Exacttypeallowlist работает; default bare40 fragmentwide rule не менялся. Все findings пока красные, coverage не сокращено.
-Root — soleGit/docs/matrix/PR; r9cf_event — bounded Security provenance; observer — current jobs. Two reviewed source corrections publish while existing usefulCI continues; heavy lease свободен.
-Native39 compilePASS52.90s/sourceexact остаётся применим к последнему Java изменению; новых Java изменений в пакете нет.
-LocalDocker/DB/pulls NOT_RUN: workspace ниже4GiB Dockerreserve/VFSsameFS; без cleanup/reset/prune, foreign25 сохранены.
+778 proof12160525964/2ef10638 andcache12160785135/cf9c25ef PASS: exactpreview1132/409→200 negative retained; restoredsource true; currentcommit+rollback2green.
+778 Apps push12160092313/8a4ef145 +PR12159944906/89c9b0ee PASS: fixed192heap; rawRSSdelta46170112/41201664B, CPU1.023/1.022, same64/384MiB gates, cleanupPASS. OldRSS71786496BFAIL retained.
+d3bf Academic12160442366/02c61395 actual521PASS/0FAIL/1normalCLI-SKIP; standaloneCLI actualPASS separately. CollectorFAIL exactstaleHistoricalMembershippin nowjoined; 4SOURCE_METHODPASS retained. CoverageSUCCESS.
+Root joined SubjectPREVIEW4main+2tests: independent addressedAPPROVE; Native40 compileJava+compileTestJava PASS67.04s/RSS867168256B/output102189504B; lease RELEASED. Exact optional503tuple reporter46270dfd privacy15groupsPASS; actual runtime ещё UNKNOWN.
+Ready publish: тотже preview503/Bot7closedreadoutcomes/admin3sameactionsinline; exactHistoricalMembershipa21d sourcepin; existingfresh-restore closedhints; Monitoring finalTCPready independentAPPROVE. Assertions/guards/cleanup сохранены.
+Security authorr9cf_event: small2file typednonsecret exactexceptions +immutableacceptedrecord guard, fullhistory/merge/default208 retained; no blanketignore. R2aa scopedreport21files sourceREADY independentreviewr9cf_report; a05 prepares Native41 no lease yet.
+
+Root soleGit/docs/matrix/PR; no ownerquestions. Lastresources workspace4208455680B/TMP4628328448B/cgroup~6.5of17.18GB; no localDocker (<4GiBreserve), no cleanup/reset/prune; foreign25 preserved.
 [Resources/owners](resources.md), [protocol](BOUNDARY-PROTOCOL-20261018.md), [decisions](decisions.md), [questions](questions.md).
 История один раз в [attempts](attempts.ndjson); exact checkpoint — ignored current-wip/latest-checkpoint.safe.json.
 Appattach/list не завершились: новый outcomeUNKNOWN, прежнийPR URL сохранён; повторов нет. Вопросов владельцу нет.

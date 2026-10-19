@@ -8,6 +8,7 @@ import ru.rutcampustrack.academic.contract.dto.subject.SubjectDeletionModels.*;
 import ru.rutcampustrack.subjectdeletion.grpc.*;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Service
 public class SubjectDeletionService {
@@ -31,7 +32,11 @@ public class SubjectDeletionService {
     }
 
     public Preview preview(long subject) {
-        return response(snapshot(data.target(subject)));
+        return response(
+                snapshot(
+                        previewRead(
+                                SubjectDeletionUnavailableException.Phase.LOCAL_TARGET,
+                                () -> data.target(subject))));
     }
 
     public Challenge challenge(long subject, ChallengeRequest request) {
@@ -122,7 +127,10 @@ public class SubjectDeletionService {
     }
 
     private SubjectDeletionSnapshot snapshot(SubjectDeletionAcademicData.Target target) {
-        var academic = data.snapshot(target);
+        var academic =
+                previewRead(
+                        SubjectDeletionUnavailableException.Phase.LOCAL_SNAPSHOT,
+                        () -> data.snapshot(target));
         UUID previewId = new UUID(0, 0);
         var base =
                 SubjectDeletionCommand.newBuilder()
@@ -160,6 +168,15 @@ public class SubjectDeletionService {
                                                         .build()
                                                         .toByteArray()));
         return new SubjectDeletionSnapshot(target, academic, schedule, attendance, digest);
+    }
+
+    private static <T> T previewRead(
+            SubjectDeletionUnavailableException.Phase phase, Supplier<T> read) {
+        try {
+            return read.get();
+        } catch (RuntimeException error) {
+            throw SubjectDeletionUnavailableException.local(phase, error);
+        }
     }
 
     private static Preview response(SubjectDeletionSnapshot snapshot) {

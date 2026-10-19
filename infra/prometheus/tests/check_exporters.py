@@ -394,14 +394,22 @@ def main():
                 _STATE["phase"] = "POSTGRES_" + name.upper()
                 pg = "postgres-academic" if name == "auth" else "postgres-" + name
                 bootstrap_cli = ["psql", "-U", "rct_bootstrap", "-d", db, "-v", "ON_ERROR_STOP=1"]
+                # The Unix-only init server exposes roles before initialization finishes.
+                # Require the final authenticated TCP server before one-shot SQL/ACL checks.
                 wait(
-                    lambda pg=pg, cli=bootstrap_cli, migrator=migrator: (
-                        execute(
-                            pg,
-                            cli + ["-Atc", "SELECT count(*) FROM pg_roles WHERE rolname='" + migrator + "'"],
-                            check=False,
-                        ).stdout.strip()
-                        == "1"
+                    lambda pg=pg, cli=bootstrap_cli, db=db, migrator=migrator: (
+                        (
+                            readiness := docker(
+                                "exec", "-T", "-e", "PGPASSWORD=synthetic-bootstrap-only",
+                                "-e", "PGCONNECT_TIMEOUT=2", pg, *cli,
+                                "-w", "-h", "127.0.0.1", "-p", "5432", "-Atc",
+                                "SELECT current_user='rct_bootstrap' AND current_database()='"
+                                + db + "' AND EXISTS(SELECT 1 FROM pg_roles WHERE rolname='"
+                                + migrator + "')",
+                                check=False,
+                            )
+                        ).returncode == 0
+                        and readiness.stdout.strip() == "t"
                     )
                 )
                 bootstrap = execute(

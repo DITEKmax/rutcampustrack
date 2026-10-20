@@ -6346,3 +6346,156 @@ test('actual private bot menu roster and teacher Today use hosted current author
     }
   }
 });
+
+for (const suspended of [false, true]) {
+  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, async ({
+    page,
+    dataset,
+  }) => {
+    const user = await dataset.user('TEACHER');
+    const rolePath = `/api/academic/users/${user.id}/roles/STUDENT`;
+    await dataset.admin.call('PUT', rolePath, {
+      status: 'ACTIVE',
+      groupId: dataset.group.id,
+      telegramId: user.telegramId,
+    });
+    await loginPwa(page, user);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    // Control only the transport failure/order. The mounted production owner,
+    // StudentApi 401 callback, App handlers, retry button and subsequent backend
+    // admission are real; no copied application control flow runs in this test.
+    await page.evaluate(() => {
+      const key = '__rctN2Recovery';
+      if (Object.prototype.hasOwnProperty.call(window, key)) throw new Error('N2 gate occupied');
+      const original = Object.getOwnPropertyDescriptor(window, 'fetch');
+      if (!original || typeof original.value !== 'function')
+        throw new Error('N2 fetch unavailable');
+      const native = original.value as typeof fetch;
+      let rejectRefresh: (() => void) | undefined;
+      const state = {
+        held: false,
+        rejected: false,
+        denyToday: true,
+        refreshCalls: 0,
+        roleCommands: 0,
+        reject: () => {
+          if (!rejectRefresh) throw new Error('N2 refresh not pending');
+          rejectRefresh();
+        },
+        restore: () => {
+          Object.defineProperty(window, 'fetch', original);
+          Reflect.deleteProperty(window, key);
+        },
+      };
+      Object.defineProperty(window, key, { configurable: true, value: state });
+      Object.defineProperty(window, 'fetch', {
+        ...original,
+        value: ((input: RequestInfo | URL, init?: RequestInit) => {
+          const url = new URL(input instanceof Request ? input.url : String(input), location.href);
+          const method = init?.method ?? (input instanceof Request ? input.method : 'GET');
+          if (
+            url.origin === location.origin &&
+            url.pathname === '/api/auth/session/active-role' &&
+            method === 'PUT'
+          )
+            state.roleCommands += 1;
+          if (
+            url.origin === location.origin &&
+            url.pathname === '/api/v1/student/today' &&
+            state.denyToday
+          )
+            return Promise.resolve(
+              new Response('{}', { status: 401, headers: { 'Content-Type': 'application/json' } }),
+            );
+          if (
+            url.origin === location.origin &&
+            url.pathname === '/api/auth/refresh' &&
+            method === 'POST'
+          ) {
+            state.refreshCalls += 1;
+            if (!state.held) {
+              state.held = true;
+              return new Promise<Response>((_resolve, reject) => {
+                rejectRefresh = () => {
+                  state.rejected = true;
+                  reject(new TypeError('Synthetic N2 transport failure'));
+                };
+              });
+            }
+          }
+          return native(input, init);
+        }) as typeof fetch,
+      });
+    });
+    try {
+      await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+      await expect
+        .poll(() => page.evaluate(() => Reflect.get(window, '__rctN2Recovery')?.held === true))
+        .toBe(true);
+      await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+      if (suspended)
+        await dataset.admin.call('PUT', rolePath, {
+          status: 'SUSPENDED',
+          groupId: dataset.group.id,
+          telegramId: user.telegramId,
+        });
+      await page.evaluate(() => {
+        // Synchronous dispatch ensures bootstrap joins the still-pending refresh
+        // before its NETWORK rejection; this is the N2 order, not the R2 order.
+        window.dispatchEvent(new Event('online'));
+        Reflect.get(window, '__rctN2Recovery').reject();
+      });
+      const reconnect = page.getByRole('button', { name: 'Перезагрузить', exact: true });
+      await expect(reconnect).toBeEnabled();
+      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+      const current = page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === '/api/auth/session' && item.request().method() === 'GET',
+      );
+      await page.evaluate(() => {
+        Reflect.get(window, '__rctN2Recovery').denyToday = false;
+      });
+      await reconnect.click();
+      const admission = await current;
+      expect(await admission.finished()).toBeNull();
+      if (suspended) {
+        // Bind the expected UI to the actual authoritative server outcome, not
+        // to a permissive "some closed view appeared" assertion.
+        expect([200, 401]).toContain(admission.status());
+        if (admission.status() === 200) {
+          const session = await admission.json();
+          expect(
+            session.activeRole === null &&
+              session.roles.some(
+                (role: { role: string; status: string; selectable: boolean }) =>
+                  role.role === 'STUDENT' && role.status === 'SUSPENDED' && !role.selectable,
+              ),
+          ).toBe(true);
+          await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Преподаватель/ })).toBeEnabled();
+        } else {
+          await expect(
+            page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+          ).toBeVisible();
+        }
+        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      } else {
+        expect(admission.status()).toBe(200);
+        await expect(page.getByText('Ты офлайн', { exact: true })).toHaveCount(0);
+        await expect(page.getByText('Только просмотр', { exact: true })).toHaveCount(0);
+        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+      }
+      const observation = await page.evaluate(() => {
+        const state = Reflect.get(window, '__rctN2Recovery');
+        return {
+          refreshCalls: state.refreshCalls,
+          roleCommands: state.roleCommands,
+          rejected: state.rejected,
+        };
+      });
+      expect(observation).toEqual({ refreshCalls: 1, roleCommands: 0, rejected: true });
+    } finally {
+      await page.evaluate(() => Reflect.get(window, '__rctN2Recovery')?.restore());
+    }
+  });
+}

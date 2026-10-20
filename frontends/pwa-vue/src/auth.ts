@@ -70,6 +70,8 @@ export interface PwaAuthOptions {
   /** Starts device notification cleanup with the old bearer before local auth disappears. */
   beforeClear?: () => void | Promise<void>
   fetcher?: typeof fetch
+  /** Current-session readmission must not rotate an uncertain refresh again. */
+  canRefresh?: (generation: number) => boolean
   /** Injected in tests; production uses a browser BroadcastChannel when available. */
   channel?: PwaAuthInvalidationChannel
   /** Injected in tests; production uses localStorage to survive reloads and coordinate tabs. */
@@ -207,6 +209,11 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
 
   async function refreshFor(generation: number): Promise<void> {
     assertCurrent(generation)
+    if (options.canRefresh?.(generation) === false) {
+      // This is a local admission policy, not evidence of a server denial.
+      // Keep the retained owner closed; never manufacture a 401/logout here.
+      throw new Error('Не удалось проверить доступ. Повтори подключение или войди снова.')
+    }
     if (refreshInFlight?.generation === generation) return refreshInFlight.promise
 
     const promise = client
@@ -273,10 +280,28 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     return { ...token, generation: nextGeneration }
   }
 
-  async function getSessionFor(generation: number): Promise<ProfileSnapshot> {
+  async function getSessionFor(
+    generation: number,
+    options: { revalidate?: boolean } = {},
+  ): Promise<ProfileSnapshot> {
     assertCurrent(generation)
+    const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
+    const token = accessToken.value
     const snapshot = await client.getSnapshot()
     assertCurrent(generation)
+    if (
+      options.revalidate &&
+      expectedProfile &&
+      authAuthorityIdentity(expectedProfile) !== authAuthorityIdentity(snapshot)
+    ) {
+      // A read-only recheck has the same authority boundary as refresh, but
+      // never rotates the cookie. Reconcile the validated existing bearer.
+      const nextGeneration = clear()
+      accessToken.value = token
+      rememberProfile(snapshot, nextGeneration)
+      notifyInvalidation('authority-changed')
+      throw new StaleSessionGenerationError()
+    }
     rememberProfile(snapshot, generation)
     return snapshot
   }

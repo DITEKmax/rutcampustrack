@@ -3653,7 +3653,7 @@ jobs:
           printf 'RCT_REMAINING5_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
-          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$'
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot|N2 retained Student shell recovers through current-only retry \(active\)|N2 retained Student shell recovers through current-only retry \(suspended\))$'
 
       - name: Record closed Homework503 dependency hints after remaining5 failure
         if: ${{ matrix.group == 'client' && !cancelled() && steps.remaining5.outcome == 'failure' }}
@@ -3937,7 +3937,7 @@ jobs:
           }
           HOSTED_MARK_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '327b8516ee0ef5468aef66a901503f28c7a46daf2068fbb8f366f0276ab49d52',
+                  'b8228975a2297571fa8409f5b6c2692fece81fe8107ec020c3c7e38cde8b6fa5',
               'tests/e2e/fixtures/mobile-dataset.ts': 'c03b4d873d5a83489e6ef033dee6448e8edd5da0911c63bbe0ab0864d6318b23',
           }
           ORDINARY_MARK_FRAME_SOURCES = {
@@ -4220,7 +4220,7 @@ jobs:
 
           D002_RECONNECT_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '327b8516ee0ef5468aef66a901503f28c7a46daf2068fbb8f366f0276ab49d52',
+                  'b8228975a2297571fa8409f5b6c2692fece81fe8107ec020c3c7e38cde8b6fa5',
               'tests/e2e/fixtures/safe-reporter.ts':
                   '034f780679e33158f0892b24b95d9505d3f7e383b623c78a64cd3ea5466924e7',
           }

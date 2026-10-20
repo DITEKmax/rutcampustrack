@@ -147,6 +147,7 @@ const props = withDefaults(
     onNotifications?: (() => void) | undefined;
     onLogout?: (() => void | Promise<void>) | undefined;
     onRecover?: (() => void | Promise<void>) | undefined;
+    onRetryConnection?: (() => void | Promise<void>) | undefined;
   }>(),
   {
     readOnly: false,
@@ -175,6 +176,7 @@ const props = withDefaults(
     onNotifications: undefined,
     onLogout: undefined,
     onRecover: undefined,
+    onRetryConnection: undefined,
   },
 );
 
@@ -460,6 +462,14 @@ const stopReadFreshness = queryClient.getQueryCache().subscribe((event) => {
   if (key === JSON.stringify(homeworkQueryKey(scope.value, homework.range.value)))
     homeworkNeedsFreshRead.value = false;
 });
+
+function retryToday(): void {
+  if (offline.value && props.onRetryConnection) {
+    void props.onRetryConnection();
+    return;
+  }
+  void today.query.refetch();
+}
 
 const displayToday = computed(() =>
   offline.value
@@ -2182,7 +2192,7 @@ defineExpose({ openNotificationAction });
     @select-date="selectedDate = $event"
     @navigate="navigate"
     @role-switch="openHomeRoleSwitch"
-    @retry="() => today.query.refetch()"
+    @retry="retryToday"
     @retry-options="() => requests.loadOptions().catch(handleRequestsError)"
     @toggle-actions="toggleTodayActions"
     @open-request="openTodayRequest"

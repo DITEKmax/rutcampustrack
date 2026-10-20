@@ -37,7 +37,7 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
   default: {
     name: 'OwnerTestTodayScreen',
     props: ['today', 'offline', 'readOnly', 'acquiringLessonId', 'checkinError'],
-    emits: ['navigate', 'checkin', 'toggleActions', 'openRequest'],
+    emits: ['navigate', 'checkin', 'toggleActions', 'openRequest', 'retry'],
     setup(
       props: {
         today: StudentToday | null
@@ -50,6 +50,11 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
     ) {
       return () =>
         h('section', [
+          h(
+            'button',
+            { class: 'test-retry-connection', onClick: () => emit('retry') },
+            'Перезагрузить',
+          ),
           h('output', { class: 'test-today-data' }, JSON.stringify(props.today ?? null)),
           h('output', { class: 'test-today-readonly' }, String(props.readOnly)),
           h('output', { class: 'test-acquiring' }, props.acquiringLessonId ?? ''),
@@ -1837,4 +1842,83 @@ describe('StudentFeatureOwner statistics navigation', () => {
       expect(ownerTestOutput(root, 'test-statistics-subject')).toBe('overview')
     },
   )
+})
+
+describe('StudentFeatureOwner connection retry', () => {
+  it('routes the existing Today retry to shell readmission only while offline', async () => {
+    const reconnect = vi.fn()
+    const props = reactive({ offline: true, onRetryConnection: reconnect })
+    const root = mountOwnerTest({} as StudentApi, props)
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-retry-connection')
+    expect(reconnect).toHaveBeenCalledTimes(1)
+    props.offline = false
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-retry-connection')
+    expect(reconnect).toHaveBeenCalledTimes(1)
+  })
+})
+
+it('retains the mounted owner uncertain check-in through explicit connection retry', async () => {
+  const today: StudentToday = {
+    date: '2026-10-04',
+    timeZone: 'Europe/Moscow',
+    serverNow: '2026-10-04T08:00:00Z',
+    _links: {},
+    lessons: [
+      {
+        schedule: {
+          id: 'lesson-1',
+          date: '2026-10-04',
+          lessonNumber: 1,
+          startsAt: '10:40:00',
+          endsAt: '12:10:00',
+          status: 'ACTIVE',
+          subject: { id: 'subject-1', name: 'Предмет', type: 'LECTURE' },
+          room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' },
+        },
+        attendance: null,
+        request: null,
+        checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
+      },
+    ],
+  }
+  const acquire = vi.fn(async () => command)
+  const props = reactive({
+    offline: false,
+    readOnly: false,
+    todayFallback: today,
+    acquireCheckinCommand: acquire,
+    onRetryConnection: async () => {
+      props.offline = false
+      props.readOnly = false
+    },
+  })
+  checkinSubmit
+    .mockRejectedValueOnce(new TypeError('Synthetic lost acknowledgement'))
+    .mockResolvedValueOnce(ack)
+  const root = mountOwnerTest(
+    { getRequestOptions: async () => requestOptions() } as unknown as StudentApi,
+    props,
+  )
+  ownerQueryData.today!.value = today
+  await settleOwnerTestRender()
+  clickOwnerTestButton(root, 'test-checkin')
+  await vi.waitFor(() => expect(checkinSubmit).toHaveBeenCalledTimes(1))
+  await settleOwnerTestRender()
+  const first = checkinSubmit.mock.calls[0]![0]
+  expect(first.key).toEqual(expect.any(String))
+  props.offline = true
+  props.readOnly = true
+  await settleOwnerTestRender()
+  clickOwnerTestButton(root, 'test-checkin')
+  expect(checkinSubmit).toHaveBeenCalledTimes(1)
+  clickOwnerTestButton(root, 'test-retry-connection')
+  await settleOwnerTestRender()
+  // Readmission itself never replays the uncertain mutation.
+  expect(checkinSubmit).toHaveBeenCalledTimes(1)
+  clickOwnerTestButton(root, 'test-checkin')
+  await vi.waitFor(() => expect(checkinSubmit).toHaveBeenCalledTimes(2))
+  expect(checkinSubmit.mock.calls[1]![0]).toEqual(first)
+  expect(acquire).toHaveBeenCalledTimes(1)
 })

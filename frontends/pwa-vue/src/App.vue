@@ -137,7 +137,15 @@ const push = createPushController(
   ),
   requestFetcher,
 );
-const auth = usePwaAuth({ fetcher: requestFetcher, beforeClear: () => push.invalidate() });
+let currentOnlyGeneration: number | null = null;
+const auth = usePwaAuth({
+  fetcher: requestFetcher,
+  beforeClear: () => push.invalidate(),
+  // Disabled queries can still finish an already scheduled retry. A retained
+  // offline owner must not turn that background 401 into another rotation.
+  canRefresh: (generation) =>
+    generation !== currentOnlyGeneration && (!offline.value || bootstrapping.value),
+});
 const reportDownload = computed(() =>
   createBrowserReportDownloadPort(
     createGenerationBoundReportDownloadClient(
@@ -1172,14 +1180,18 @@ async function handleOnlineAuthDenial(
         : 'Сессия больше недоступна';
 }
 
-async function fetchAuthForCurrentGeneration(options: { refresh?: boolean } = {}): Promise<{
+async function fetchAuthForCurrentGeneration(
+  options: { refresh?: boolean; currentOnly?: boolean } = {},
+): Promise<{
   generation: number;
   profile: ProfileSnapshot;
 }> {
   const generation = auth.currentGeneration();
-  if (options.refresh !== false || auth.accessToken.value === null)
+  if (!options.currentOnly && (options.refresh !== false || auth.accessToken.value === null))
     await auth.refreshFor(generation);
-  const profile = await auth.getSessionFor(generation);
+  const profile = await auth.getSessionFor(generation, {
+    revalidate: options.currentOnly === true,
+  });
   if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError();
   return { generation, profile };
 }
@@ -1599,7 +1611,9 @@ function isPasswordRecoveryView(): boolean {
   return authView.value === 'password-recovery';
 }
 
-async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
+async function bootstrap(
+  options: { refresh?: boolean; currentOnly?: boolean } = {},
+): Promise<void> {
   if (isPasswordRecoveryView()) return;
   if (!auth.canAutoBootstrap()) {
     void push.invalidate();
@@ -1611,6 +1625,8 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
   }
   if (bootstrapping.value) return;
   bootstrapping.value = true;
+  currentOnlyGeneration = options.currentOnly ? auth.currentGeneration() : null;
+  let uncertainAuthRequest = false;
   try {
     const authCandidate = await fetchAuthForCurrentGeneration(options);
     authSnapshot.value = authCandidate.profile;
@@ -1655,6 +1671,7 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
     }
     sessionReady.value = true;
   } catch (error) {
+    uncertainAuthRequest = isOfflineBootstrapRecoveryError(error);
     if (error instanceof StaleSessionGenerationError) {
       return;
     }
@@ -1706,9 +1723,11 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
     sessionReady.value = true;
   } finally {
     bootstrapping.value = false;
+    currentOnlyGeneration = null;
     const onlineGeneration = pendingOnlineGeneration;
     pendingOnlineGeneration = null;
     if (
+      !uncertainAuthRequest &&
       onlineGeneration !== null &&
       onlineGeneration === auth.currentGeneration() &&
       auth.canAutoBootstrap() &&
@@ -1718,12 +1737,20 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
       queuedBootstrapAfterInvalidation = false;
       offline.value = true;
       readOnly.value = true;
-      void bootstrap();
+      void bootstrap(options.currentOnly ? { currentOnly: true } : {});
     } else if (queuedBootstrapAfterInvalidation) {
       queuedBootstrapAfterInvalidation = false;
-      void bootstrap({ refresh: false });
+      void bootstrap({ refresh: false, ...(options.currentOnly ? { currentOnly: true } : {}) });
     }
   }
+}
+
+async function retryConnection(): Promise<void> {
+  if (!offline.value || (typeof navigator !== 'undefined' && navigator.onLine === false)) return;
+  // The previous refresh may have rotated its cookie before the connection
+  // failed. Re-admit with the current bearer; all 401 fallbacks stay blocked
+  // throughout this admission, including a queued authority reconciliation.
+  await bootstrap({ currentOnly: true });
 }
 
 function retryBootstrap(): void {
@@ -2597,6 +2624,7 @@ onBeforeUnmount(() => {
     :unread-count="notificationUnread.count"
     :on-logout="logout"
     :on-recover="openPasswordRecovery"
+    :on-retry-connection="retryConnection"
     @homework-loaded="persistHomework"
     @owner-error="onOwnerError"
     @clear-notification-target="clearNotificationTargetIntent"

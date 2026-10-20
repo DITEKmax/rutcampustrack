@@ -6457,43 +6457,60 @@ for (const suspended of [false, true]) {
       });
       await reconnect.click();
       const admission = await current;
-      expect(await admission.finished()).toBeNull();
-      if (suspended) {
-        // Bind the expected UI to the actual authoritative server outcome, not
-        // to a permissive "some closed view appeared" assertion.
-        expect([200, 401]).toContain(admission.status());
-        if (admission.status() === 200) {
-          const session = await admission.json();
-          expect(
-            session.activeRole === null &&
-              session.roles.some(
-                (role: { role: string; status: string; selectable: boolean }) =>
-                  role.role === 'STUDENT' && role.status === 'SUSPENDED' && !role.selectable,
-              ),
-          ).toBe(true);
-          await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
-          await expect(page.getByRole('button', { name: /Преподаватель/ })).toBeEnabled();
+      try {
+        expect(await admission.finished()).toBeNull();
+        if (suspended) {
+          // Bind the expected UI to the actual authoritative server outcome, not
+          // to a permissive "some closed view appeared" assertion.
+          expect([200, 401, 409]).toContain(admission.status());
+          if (admission.status() === 200) {
+            const session = await admission.json();
+            expect(
+              session.activeRole === null &&
+                session.roles.some(
+                  (role: { role: string; status: string; selectable: boolean }) =>
+                    role.role === 'STUDENT' && role.status === 'SUSPENDED' && !role.selectable,
+                ),
+            ).toBe(true);
+            await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+            await expect(page.getByRole('button', { name: /Преподаватель/ })).toBeEnabled();
+          } else {
+            if (admission.status() === 409) {
+              // The authoritative snapshot clears the suspended active grant and
+              // increments session_version; the old bearer is SESSION_STATE_STALE.
+              const problem = await admission.json();
+              expect(problem?.extras?.code === 'SESSION_STATE_STALE').toBe(true);
+            }
+            await expect(
+              page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+            ).toBeVisible();
+          }
+          await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
         } else {
-          await expect(
-            page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
-          ).toBeVisible();
+          expect(admission.status()).toBe(200);
+          await expect(page.getByText('Ты офлайн', { exact: true })).toHaveCount(0);
+          await expect(page.getByText('Только просмотр', { exact: true })).toHaveCount(0);
+          await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
         }
-        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
-      } else {
-        expect(admission.status()).toBe(200);
-        await expect(page.getByText('Ты офлайн', { exact: true })).toHaveCount(0);
-        await expect(page.getByText('Только просмотр', { exact: true })).toHaveCount(0);
-        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+        const observation = await page.evaluate(() => {
+          const state = Reflect.get(window, '__rctN2Recovery');
+          return {
+            refreshCalls: state.refreshCalls,
+            roleCommands: state.roleCommands,
+            rejected: state.rejected,
+          };
+        });
+        expect(observation).toEqual({ refreshCalls: 1, roleCommands: 0, rejected: true });
+      } catch (error) {
+        retainNativePrimaryFailure(
+          test.info().annotations,
+          'SESSION_RELOAD',
+          'HTTP_STATUS',
+          error,
+          { httpStatus: admission.status() },
+        );
+        throw error;
       }
-      const observation = await page.evaluate(() => {
-        const state = Reflect.get(window, '__rctN2Recovery');
-        return {
-          refreshCalls: state.refreshCalls,
-          roleCommands: state.roleCommands,
-          rejected: state.rejected,
-        };
-      });
-      expect(observation).toEqual({ refreshCalls: 1, roleCommands: 0, rejected: true });
     } finally {
       await page.evaluate(() => Reflect.get(window, '__rctN2Recovery')?.restore());
     }

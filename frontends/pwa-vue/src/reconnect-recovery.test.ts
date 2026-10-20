@@ -136,6 +136,7 @@ async function setup() {
   let holdRefresh = false
   let denyStudent = false
   let currentStatus = 200
+  let currentProblemCode: string | undefined
   let currentNetwork = false
   let currentProfile = profile
   const calls: string[] = []
@@ -151,7 +152,10 @@ async function setup() {
         })
       }
       if (currentNetwork) throw new TypeError('Synthetic network boundary')
-      return response(currentProfile, currentStatus)
+      return response(
+        currentProblemCode ? { extras: { code: currentProblemCode } } : currentProfile,
+        currentStatus,
+      )
     }
     if (url === '/api/auth/refresh') {
       if (holdRefresh)
@@ -306,8 +310,9 @@ async function setup() {
     denyStudent: () => {
       denyStudent = true
     },
-    currentStatus: (status: number) => {
+    currentStatus: (status: number, code?: string) => {
       currentStatus = status
+      currentProblemCode = code
     },
     currentNetwork: () => {
       currentNetwork = true
@@ -398,6 +403,19 @@ describe('retained PWA owner recovery after a pre-online Student 401 refresh fai
     await c.control.recover()
     expect(c.state.authView!.value).toBe('login')
     expect(c.state.bootstrapError!.value).toContain('Войди снова')
+    await expect(c.ownerApi.getSession()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
+  })
+  it('uses explicit login on typed current 409 after suspension without another refresh', async () => {
+    const c = await setup()
+    await failedReconnect(c)
+    c.currentStatus(409, 'SESSION_STATE_STALE')
+    await c.control.recover()
+    expect(c.state.authView!.value).toBe('login')
+    expect(c.state.authSnapshot!.value).toBeNull()
+    expect(c.state.api!.value).toBeNull()
+    expect(c.state.readOnly!.value).toBe(true)
+    expect(c.auth.currentGeneration()).toBe(1)
     await expect(c.ownerApi.getSession()).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
   })

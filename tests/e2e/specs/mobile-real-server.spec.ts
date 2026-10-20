@@ -6360,6 +6360,11 @@ for (const suspended of [false, true]) {
       telegramId: user.telegramId,
     });
     await loginPwa(page, user);
+    // A return-to-Today refetch can join its initial pending read. Wait for
+    // actual Today data before installing the later 401/refresh transport gate.
+    await expect(
+      page.getByRole('heading', { name: /^(На сегодня пар нет|Пары на сегодня)$/ }),
+    ).toBeVisible();
     await page.getByRole('button', { name: 'Задания', exact: true }).click();
     // Control only the transport failure/order. The mounted production owner,
     // StudentApi 401 callback, App handlers, retry button and subsequent backend

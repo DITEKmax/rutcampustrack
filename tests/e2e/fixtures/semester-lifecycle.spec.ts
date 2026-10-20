@@ -2211,7 +2211,6 @@ test('FULL admin archives and restores the disposable CI semester through real p
         exact: true,
       });
       if (await continueCheck.isVisible()) {
-        await expect(statusCard).toHaveCount(1, { timeout: uiBudget() });
         try {
           await continueCheck.click({ timeout: uiBudget() });
         } catch (error) {
@@ -2224,6 +2223,9 @@ test('FULL admin archives and restores the disposable CI semester through real p
           // operation. Accept that race only if the owned terminal UI below settles.
         }
       }
+      // The status card is transient: automatic settlement may remove it after
+      // isVisible(). Completion still requires this exact owned semester card.
+      await expect(ownCard).toHaveCount(1, { timeout: uiBudget() });
       await expect(
         ownCard.getByRole('img', {
           name: action === 'ARCHIVE' ? 'Архивный' : 'Неактивный',

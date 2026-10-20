@@ -3410,6 +3410,7 @@ jobs:
           npm ci
           node check-admission-retry.mjs
           npx playwright install --with-deps chromium webkit
+          node fixtures/semester-lifecycle-ui.control.mjs
 
       - name: Validate the existing safe artifact privacy contract for client scenarios
         id: artifact-privacy-controls
@@ -3937,7 +3938,7 @@ jobs:
           }
           HOSTED_MARK_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  'd560eb24555519ba7b9b5d5cd205966bed9898cfd0e01ff4139f888d96fabb72',
+                  '47a94b8a3a1ea661ddca8aac7d0079acee4587d7a348f14a6c727766eb5659a1',
               'tests/e2e/fixtures/mobile-dataset.ts': 'c03b4d873d5a83489e6ef033dee6448e8edd5da0911c63bbe0ab0864d6318b23',
           }
           ORDINARY_MARK_FRAME_SOURCES = {
@@ -3962,7 +3963,7 @@ jobs:
           }
           ORDINARY_MARK_SOURCES = {
               'tests/e2e/fixtures/semester-lifecycle.spec.ts':
-                  '3ba586a96a27694d778a26ba236720348b3c94ba7363c86c5a6aec3acd9c73dd',
+                  'c20ce79fa84265c63229fd25654bb82a7fe9084c6e744cb66d2bcf5db2502486',
               'tests/e2e/fixtures/mobile-dataset.ts':
                   'c03b4d873d5a83489e6ef033dee6448e8edd5da0911c63bbe0ab0864d6318b23',
           }
@@ -4220,7 +4221,7 @@ jobs:
 
           D002_RECONNECT_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  'd560eb24555519ba7b9b5d5cd205966bed9898cfd0e01ff4139f888d96fabb72',
+                  '47a94b8a3a1ea661ddca8aac7d0079acee4587d7a348f14a6c727766eb5659a1',
               'tests/e2e/fixtures/safe-reporter.ts':
                   '034f780679e33158f0892b24b95d9505d3f7e383b623c78a64cd3ea5466924e7',
           }

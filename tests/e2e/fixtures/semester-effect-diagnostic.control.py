@@ -4,7 +4,10 @@ import ast
 import copy
 import importlib.util
 import json
+import os
+import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 source_path = Path(__file__).with_name("semester-effect-diagnostic.py")
 source = source_path.read_text()
@@ -19,6 +22,7 @@ names = {
     "_project",
     "_consumer_failure_hint",
     "_unique_candidate_trace",
+    "_effect_applicability",
 }
 selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
 assert {node.name for node in selected} == names
@@ -27,6 +31,116 @@ module_spec = importlib.util.spec_from_file_location("semester_effect_control_ta
 module = importlib.util.module_from_spec(module_spec)
 module_spec.loader.exec_module(module)
 scope = vars(module)
+
+barrier_reasons = (
+    "SCHEDULE_EFFECT_ACK_PENDING",
+    "SCHEDULE_LEGACY_EFFECT_UNPROVEN",
+    "SCHEDULE_EFFECT_SCOPE_UNPROVEN",
+)
+other_reasons = (
+    "NONE",
+    "SCHEDULE_TRANSFER_PENDING",
+    "SCHEDULE_PUBLICATION_PENDING",
+    "SCHEDULE_EDIT_PENDING",
+    "ACADEMIC_EDIT_PENDING",
+    "ACADEMIC_PUBLICATION_PENDING",
+    "ACADEMIC_ADMISSION_PENDING",
+    "ACADEMIC_TRANSFER_PENDING",
+    "ACADEMIC_INITIAL_MEMBERSHIP_ACK_PENDING",
+    "ACADEMIC_EFFECT_ACK_PENDING",
+    "SCHEDULE_CANCELLATION_ACK_PENDING",
+    "ARCHIVE_DRAIN_PENDING",
+    "ARCHIVE_SEAL_ACK_PENDING",
+    "RESTORE_RELEASE_PENDING",
+    "STALE_STATE_VERSION",
+    "ARCHIVE_TRANSITION_IN_PROGRESS",
+    "ARCHIVE_PREPARE_VERSION_MISMATCH",
+    "ATTENDANCE_EFFECT_REQUIRES_RECONCILIATION",
+    "ATTENDANCE_TRANSFER_REQUIRES_RECONCILIATION",
+    "RESTORE_REQUIRES_ARCHIVE_PREPARE",
+    "RESTORE_RELEASE_VERSION_MISMATCH",
+)
+
+
+def failure_receipt(reason):
+    return {"schema": "semester-lifecycle.v1", "primaryFailure": True, "primary": {"reasonCode": reason}}
+
+
+for reason in (*barrier_reasons, *other_reasons):
+    applicability = scope["_effect_applicability"](failure_receipt(reason))
+    assert applicability == {
+        "schema": "semester-effect.applicability.v1",
+        "applicability": "APPLICABLE" if reason in barrier_reasons else "NOT_APPLICABLE",
+        "reasonCode": reason,
+        "primaryFailure": True,
+    }
+for invalid in (
+    None,
+    [],
+    {},
+    dict(failure_receipt("NONE"), schema="foreign"),
+    dict(failure_receipt("NONE"), primaryFailure=False),
+    dict(failure_receipt("NONE"), primaryFailure=1),
+    dict(failure_receipt("NONE"), primary=[]),
+    *(failure_receipt(reason) for reason in (None, [], True, 1, "UNKNOWN", "PRIVATE_UNRECOGNIZED_REASON")),
+):
+    try:
+        scope["_effect_applicability"](invalid)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Invalid failure must not become NOT_APPLICABLE")
+
+
+def invoke_applicability(reason, *, raw=None, reader_failure=False):
+    # Real entrypoint/path/privacy checks, synthetic files only. Missing seed and
+    # a forbidden importer prove nonbarrier results precede every DB/process read.
+    with tempfile.TemporaryDirectory(prefix="rct-semester-applicability-control-") as folder:
+        base = Path(folder)
+        recovery = base / "rct-application-recovery-1-1"
+        output = base / "rct-semester-lifecycle-1-1"
+        for directory, marker in ((recovery, "RCT_APP_RECOVERY_DISPOSABLE"), (output, "RCT_SEMESTER_DISPOSABLE")):
+            directory.mkdir(mode=0o700)
+            path = directory / "disposable-target"
+            path.write_text(marker)
+            path.chmod(0o600)
+        lifecycle = output / "lifecycle.safe.json"
+        lifecycle.write_text(json.dumps(failure_receipt(reason)) if raw is None else raw)
+        lifecycle.chmod(0o600)
+        env = {
+            "GITHUB_WORKSPACE": str(base),
+            "RUNNER_TEMP": str(base),
+            "GITHUB_RUN_ID": "1",
+            "GITHUB_RUN_ATTEMPT": "1",
+            "RCT_APP_RECOVERY_PROJECT": "rct-recovery-1-1-dst",
+            "RCT_APP_RECOVERY_RUN": str(recovery),
+            "RCT_SEMESTER_LIFECYCLE_RUN": str(output),
+        }
+        if reader_failure:
+            lifecycle.unlink()
+        with patch.dict(os.environ, env), patch.object(
+            module.importlib.util, "spec_from_file_location", side_effect=AssertionError("DB/process import forbidden")
+        ):
+            try:
+                module.main()
+            except SystemExit as error:
+                assert str(error) == "Semester effect diagnostic unavailable"
+                assert not (output / "effect.safe.json").exists()
+                return None
+        result = output / "effect.safe.json"
+        assert result.stat().st_mode & 0o777 == 0o600 and result.stat().st_size <= 4096
+        assert json.loads(lifecycle.read_text())["primaryFailure"] is True
+        return json.loads(result.read_text())
+
+
+for reason in ("NONE", "ACADEMIC_EDIT_PENDING"):
+    assert invoke_applicability(reason)["applicability"] == "NOT_APPLICABLE"
+for reason in barrier_reasons:
+    assert invoke_applicability(reason) is None  # Required barrier reader/seed failure remains strict.
+for reason in ("UNKNOWN", "PRIVATE_UNRECOGNIZED_REASON"):
+    assert invoke_applicability(reason) is None
+assert invoke_applicability("NONE", raw="{") is None
+assert invoke_applicability("NONE", reader_failure=True) is None
 
 marker = "SYNTHETIC_PRIVATE_MARKER_NOT_FOR_OUTPUT"
 identity = "00000000-0000-4000-8000-000000000001"
@@ -289,7 +403,11 @@ print(
             "duplicate_source_copies_allowed_distinct_shared_trace_rejected": True,
             "preparation_and_transaction_reported_stages_distinct": True,
             "raw_log_identity_unknown_class_and_private_marker_not_emitted": True,
-            "qualification": "Actual pure projection functions only; no subprocess, DB, Docker, network, queue or real event recovery",
+            "known_nonbarrier_not_applicable_before_private_seed_or_process_reads": True,
+            "three_barrier_reasons_still_require_diagnostic_readers": True,
+            "unknown_malformed_and_reader_failure_remain_unavailable": True,
+            "original_primary_failure_retained": True,
+            "qualification": "Actual projection/applicability functions and owned-file entrypoint; no subprocess, DB, Docker, network, queue or real event recovery",
         }
     )
 )

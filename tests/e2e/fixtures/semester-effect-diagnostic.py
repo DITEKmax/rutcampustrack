@@ -16,6 +16,49 @@ def _closed(value, choices):
     return next((choice for choice in choices if type(value) is str and value == choice), "UNKNOWN")
 
 
+def _effect_applicability(progress):
+    if (
+        type(progress) is not dict
+        or progress.get("schema") != "semester-lifecycle.v1"
+        or progress.get("primaryFailure") is not True
+        or type(progress.get("primary")) is not dict
+    ):
+        raise ValueError("Invalid semester failure receipt")
+    reason = progress["primary"].get("reasonCode")
+    barrier = ("SCHEDULE_EFFECT_ACK_PENDING", "SCHEDULE_LEGACY_EFFECT_UNPROVEN", "SCHEDULE_EFFECT_SCOPE_UNPROVEN")
+    other = (
+        "NONE",
+        "SCHEDULE_TRANSFER_PENDING",
+        "SCHEDULE_PUBLICATION_PENDING",
+        "SCHEDULE_EDIT_PENDING",
+        "ACADEMIC_EDIT_PENDING",
+        "ACADEMIC_PUBLICATION_PENDING",
+        "ACADEMIC_ADMISSION_PENDING",
+        "ACADEMIC_TRANSFER_PENDING",
+        "ACADEMIC_INITIAL_MEMBERSHIP_ACK_PENDING",
+        "ACADEMIC_EFFECT_ACK_PENDING",
+        "SCHEDULE_CANCELLATION_ACK_PENDING",
+        "ARCHIVE_DRAIN_PENDING",
+        "ARCHIVE_SEAL_ACK_PENDING",
+        "RESTORE_RELEASE_PENDING",
+        "STALE_STATE_VERSION",
+        "ARCHIVE_TRANSITION_IN_PROGRESS",
+        "ARCHIVE_PREPARE_VERSION_MISMATCH",
+        "ATTENDANCE_EFFECT_REQUIRES_RECONCILIATION",
+        "ATTENDANCE_TRANSFER_REQUIRES_RECONCILIATION",
+        "RESTORE_REQUIRES_ARCHIVE_PREPARE",
+        "RESTORE_RELEASE_VERSION_MISMATCH",
+    )
+    if type(reason) is not str or reason not in (*barrier, *other):
+        raise ValueError("Unknown semester failure reason")
+    return {
+        "schema": "semester-effect.applicability.v1",
+        "applicability": "APPLICABLE" if reason in barrier else "NOT_APPLICABLE",
+        "reasonCode": reason,
+        "primaryFailure": True,
+    }
+
+
 def _canonical_uuid(value):
     if type(value) is not str or str(uuid.UUID(value)) != value:
         raise ValueError("Invalid private identity")
@@ -466,14 +509,21 @@ def main():
                 raise ValueError("Marker mismatch")
         guarded(output / "lifecycle.safe.json", 4096, 0o600)
         progress = json.loads((output / "lifecycle.safe.json").read_text())
-        barrier_reason = progress.get("primary", {}).get("reasonCode")
-        if (
-            progress.get("schema") != "semester-lifecycle.v1"
-            or progress.get("primaryFailure") is not True
-            or barrier_reason
-            not in ("SCHEDULE_EFFECT_ACK_PENDING", "SCHEDULE_LEGACY_EFFECT_UNPROVEN", "SCHEDULE_EFFECT_SCOPE_UNPROVEN")
-        ):
-            raise ValueError("Different semester failure")
+        applicability = _effect_applicability(progress)
+
+        def write_result(result):
+            encoded = json.dumps(result, separators=(",", ":")).encode()
+            if len(encoded) > 4096:
+                raise ValueError("Diagnostic projection bound")
+            guarded(output, 0, 0o700, True)
+            descriptor = os.open(output / "effect.safe.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(descriptor, "wb") as stream:
+                stream.write(encoded)
+
+        if applicability["applicability"] == "NOT_APPLICABLE":
+            write_result(applicability)
+            return
+        barrier_reason = applicability["reasonCode"]
         guarded(recovery / "seed.json", 65536, 0o600)
         seed = json.loads((recovery / "seed.json").read_text())
         match = re.fullmatch(r"/api/v1/student/attendance\?semesterId=([1-9][0-9]*)", seed.get("historyUrl", ""))
@@ -877,13 +927,7 @@ def main():
             consumer_logs,
             candidate_trace,
         )
-        encoded = json.dumps(result, separators=(",", ":")).encode()
-        if len(encoded) > 4096:
-            raise ValueError("Diagnostic projection bound")
-        guarded(output, 0, 0o700, True)
-        descriptor = os.open(output / "effect.safe.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-        with os.fdopen(descriptor, "wb") as stream:
-            stream.write(encoded)
+        write_result(result)
     except (
         OSError,
         ValueError,

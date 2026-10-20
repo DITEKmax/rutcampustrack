@@ -4,17 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
+
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * M08 Группа 4 / P2-8/4 — golden-tests для ISO week parity → WeekType маппинга.
@@ -57,7 +60,7 @@ class WeekParityGoldenTest {
     void mapsIsoWeekToExpectedWeekType(
             String name, LocalDate date, int expectedIsoWeek, WeekType expectedWeekType) {
         // First, verify the pre-computed isoWeek in fixture matches current JVM.
-        int actualIsoWeek = date.get(WeekFields.ISO.weekOfWeekBasedYear());
+        int actualIsoWeek = AcademicWeekPolicy.forDate(date).isoWeek();
         assertThat(actualIsoWeek)
                 .as(
                         "Fixture date=%s должен иметь ISO week=%d, но JVM посчитал %d",
@@ -65,7 +68,7 @@ class WeekParityGoldenTest {
                 .isEqualTo(expectedIsoWeek);
 
         // Second, apply the production convention and verify parity.
-        WeekType actualWeekType = (actualIsoWeek % 2 == 0) ? WeekType.ODD : WeekType.EVEN;
+        WeekType actualWeekType = AcademicWeekPolicy.weekType(date);
         assertThat(actualWeekType)
                 .as("ISO week %d должен маппиться на %s", actualIsoWeek, expectedWeekType)
                 .isEqualTo(expectedWeekType);

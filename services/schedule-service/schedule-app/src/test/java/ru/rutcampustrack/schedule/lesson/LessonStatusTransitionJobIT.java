@@ -3,20 +3,13 @@ package ru.rutcampustrack.schedule.lesson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -26,6 +19,15 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 /**
  * Integration tests for LessonStatusTransitionJob cron transitions.
@@ -150,7 +152,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     // =========================================================================
 
     @Test
-    void catchesUpMissedTransitionsOnRestart() {
+    void catchesUpMissedTransitionsOnRestart() throws Exception {
         // Canonical pair 1: 08:30–09:50, both deadlines passed at noon.
         ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
 
@@ -173,12 +175,30 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         assertThat(all).allMatch(l -> l.getStatus() == LessonStatus.CLOSED);
         assertThat(all).allMatch(l -> l.getClosedAt() != null);
 
-        // 3 lesson.started + 3 lesson.closed в outbox
         List<OutboxRecord> pending = outboxStorage.findPending(100);
-        assertThat(pending.stream().filter(r -> "lesson.started".equals(r.eventType())).count())
-                .isGreaterThanOrEqualTo(3);
-        assertThat(pending.stream().filter(r -> "lesson.closed".equals(r.eventType())).count())
-                .isGreaterThanOrEqualTo(3);
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String type : List.of("lesson.started", "lesson.closed")) {
+            var ids = new java.util.ArrayList<Long>();
+            for (var record : pending) {
+                if (type.equals(record.eventType())) {
+                    var event = mapper.readTree(record.payload());
+                    assertThat(event.path("event_id").asText()).isNotBlank();
+                    ids.add(event.path("payload").path("lesson_id").asLong());
+                }
+            }
+            assertThat(ids).containsExactlyInAnyOrder(l1.getId(), l2.getId(), l3.getId());
+        }
+        var before = pending.stream().map(OutboxRecord::payload).toList();
+        var rows =
+                jdbcTemplate.queryForList(
+                        "SELECT id,status,revision,closed_at FROM lessons ORDER BY id");
+        job.runTransitions();
+        assertThat(outboxStorage.findPending(100).stream().map(OutboxRecord::payload).toList())
+                .containsExactlyInAnyOrderElementsOf(before);
+        assertThat(
+                        jdbcTemplate.queryForList(
+                                "SELECT id,status,revision,closed_at FROM lessons ORDER BY id"))
+                .isEqualTo(rows);
     }
 
     // =========================================================================
@@ -254,25 +274,25 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = scheduleItemRepository.findById(scheduleItemId).orElseThrow();
         jdbcTemplate.update(
                 """
-                INSERT INTO schedule_assignment_fences
-                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
-                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive, created_at)
-                VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', DATE '2026-05-01', NOW())
-                ON CONFLICT (assignment_id) DO NOTHING
-                """,
+INSERT INTO schedule_assignment_fences
+    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive, created_at)
+VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', DATE '2026-05-01', NOW())
+ON CONFLICT (assignment_id) DO NOTHING
+""",
                 item.getGroupId(),
                 item.getSubjectId(),
                 item.getSemesterId());
         Long occurrenceId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO lesson_occurrences
-                    (schedule_item_id, occurrence_date, assignment_id, group_id,
-                     subject_id, semester_id, assigned_teacher_id, lesson_type,
-                     generation, revision, created_at)
-                VALUES (?, ?, 501, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
-                RETURNING id
-                """,
+                        INSERT INTO lesson_occurrences
+                            (schedule_item_id, occurrence_date, assignment_id, group_id,
+                             subject_id, semester_id, assigned_teacher_id, lesson_type,
+                             generation, revision, created_at)
+                        VALUES (?, ?, 501, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
+                        RETURNING id
+                        """,
                         Long.class,
                         scheduleItemId,
                         date,

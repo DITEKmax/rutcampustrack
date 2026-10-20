@@ -8,8 +8,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.protobuf.ByteString;
+
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.academic.grpc.SemesterTransition;
+import ru.rutcampustrack.schedule.exception.AccessDeniedException;
+import ru.rutcampustrack.schedule.homework.HomeworkBindingService;
+import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,20 +37,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
-import ru.rutcampustrack.academic.grpc.SemesterTransition;
-import ru.rutcampustrack.schedule.exception.AccessDeniedException;
-import ru.rutcampustrack.schedule.homework.HomeworkBindingService;
-import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
  * One real PostgreSQL protocol cycle for the V17 homework binding contract.
@@ -92,7 +96,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         archiveBarrierSemesterIds.forEach(
                 id ->
                         jdbcTemplate.update(
-                                "DELETE FROM schedule_semester_archive_barriers WHERE semester_id = ?",
+                                "DELETE FROM schedule_semester_archive_barriers WHERE semester_id ="
+                                        + " ?",
                                 id));
         // V17 deliberately retains binding and physical lesson history. A
         // DELETE is rejected by the database trigger, so archive the rows and
@@ -101,19 +106,19 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                 id ->
                         jdbcTemplate.update(
                                 """
-                UPDATE lesson_homework_bindings
-                   SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
-                 WHERE occurrence_id = ? AND state <> 'ARCHIVED'
-                """,
+UPDATE lesson_homework_bindings
+   SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
+ WHERE occurrence_id = ? AND state <> 'ARCHIVED'
+""",
                                 id));
         dateFixtureSemesters.forEach(
                 id ->
                         jdbcTemplate.update(
                                 """
-                UPDATE lesson_homework_bindings
-                   SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
-                 WHERE semester_id = ? AND state <> 'ARCHIVED'
-                """,
+UPDATE lesson_homework_bindings
+   SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
+ WHERE semester_id = ? AND state <> 'ARCHIVED'
+""",
                                 id));
         dateFixtureSemesters.clear();
         scheduleItemIds.forEach(
@@ -333,7 +338,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
 
                             String persistedState =
                                     jdbcTemplate.queryForObject(
-                                            "SELECT state FROM lesson_homework_bindings WHERE binding_id = ?",
+                                            "SELECT state FROM lesson_homework_bindings WHERE"
+                                                    + " binding_id = ?",
                                             String.class,
                                             pending.getBindingId());
                             assertThat(persistedState).isEqualTo("PENDING");
@@ -342,10 +348,10 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                             long archiveVersion = 90L;
                             jdbcTemplate.update(
                                     """
-                    INSERT INTO schedule_semester_archive_barriers
-                        (semester_id, operation_id, state_version, participant_state)
-                    VALUES (?, ?, ?, 'PENDING')
-                    """,
+INSERT INTO schedule_semester_archive_barriers
+    (semester_id, operation_id, state_version, participant_state)
+VALUES (?, ?, ?, 'PENDING')
+""",
                                     SEMESTER_ID,
                                     archiveOperation,
                                     archiveVersion);
@@ -390,7 +396,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                             assertThat(confirmReplay.getHomeworkId()).isEqualTo(990001L);
 
                             jdbcTemplate.update(
-                                    "DELETE FROM schedule_semester_archive_barriers WHERE semester_id = ?",
+                                    "DELETE FROM schedule_semester_archive_barriers WHERE"
+                                            + " semester_id = ?",
                                     SEMESTER_ID);
                             authority.set(
                                     SemesterStateResponse.newBuilder()
@@ -544,18 +551,18 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT state FROM lesson_homework_bindings WHERE binding_id = ?
-                """,
+                                SELECT state FROM lesson_homework_bindings WHERE binding_id = ?
+                                """,
                                 String.class,
                                 pending.getBindingId()))
                 .isEqualTo("ARCHIVED");
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM schedule_semester_archive_effect_ledger
-                 WHERE event_id = ? AND target = 'ACADEMIC'
-                   AND event_type = 'homework.binding.archived' AND semester_id = ? AND state = 'PENDING'
-                """,
+SELECT count(*) FROM schedule_semester_archive_effect_ledger
+ WHERE event_id = ? AND target = 'ACADEMIC'
+   AND event_type = 'homework.binding.archived' AND semester_id = ? AND state = 'PENDING'
+""",
                                 Long.class,
                                 UUID.fromString(first.getTerminalEventId()),
                                 semesterId))
@@ -563,10 +570,10 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM schedule_outbox
-                 WHERE event_type = 'homework.binding.archived'
-                   AND payload ->> 'event_id' = ?
-                """,
+                                SELECT count(*) FROM schedule_outbox
+                                 WHERE event_type = 'homework.binding.archived'
+                                   AND payload ->> 'event_id' = ?
+                                """,
                                 Long.class,
                                 first.getTerminalEventId()))
                 .isEqualTo(1L);
@@ -576,20 +583,20 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM schedule_semester_archive_effect_ledger
-                 WHERE event_id = ? AND target = 'ACADEMIC'
-                   AND event_type = 'homework.binding.archived'
-                """,
+                                SELECT count(*) FROM schedule_semester_archive_effect_ledger
+                                 WHERE event_id = ? AND target = 'ACADEMIC'
+                                   AND event_type = 'homework.binding.archived'
+                                """,
                                 Long.class,
                                 UUID.fromString(first.getTerminalEventId())))
                 .isEqualTo(1L);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM schedule_outbox
-                 WHERE event_type = 'homework.binding.archived'
-                   AND payload ->> 'event_id' = ?
-                """,
+                                SELECT count(*) FROM schedule_outbox
+                                 WHERE event_type = 'homework.binding.archived'
+                                   AND payload ->> 'event_id' = ?
+                                """,
                                 Long.class,
                                 first.getTerminalEventId()))
                 .isEqualTo(1L);
@@ -689,18 +696,18 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM lesson_homework_bindings
-                 WHERE request_key = ? AND state = 'ARCHIVED' AND homework_id IS NULL
-                """,
+SELECT count(*) FROM lesson_homework_bindings
+ WHERE request_key = ? AND state = 'ARCHIVED' AND homework_id IS NULL
+""",
                                 Long.class,
                                 bindingRequestKey))
                 .isEqualTo(1L);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT participant_state FROM schedule_semester_archive_barriers
-                 WHERE semester_id = ?
-                """,
+                                SELECT participant_state FROM schedule_semester_archive_barriers
+                                 WHERE semester_id = ?
+                                """,
                                 String.class,
                                 semesterId))
                 .isEqualTo("DELETED");
@@ -730,11 +737,11 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                         () ->
                                 jdbcTemplate.update(
                                         """
-                INSERT INTO schedule_items
-                    (assignment_id, group_id, subject_id, semester_id, day_of_week,
-                     lesson_number, start_time, end_time, week_type)
-                VALUES (?, ?, ?, ?, 4, 8, '14:00'::time, '15:00'::time, 'all')
-                """,
+INSERT INTO schedule_items
+    (assignment_id, group_id, subject_id, semester_id, day_of_week,
+     lesson_number, start_time, end_time, week_type)
+VALUES (?, ?, ?, ?, 4, 8, '14:00'::time, '15:00'::time, 'all')
+""",
                                         lateAssignmentId,
                                         AUTHORIZED_GROUP_ID,
                                         SUBJECT_ID,
@@ -862,7 +869,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                     .isEqualTo("lecture");
                             assertThat(
                                             jdbcTemplate.queryForObject(
-                                                    "SELECT accepted_binding->>'lessonType' FROM homework_placement_operations WHERE operation_id=?",
+                                                    "SELECT accepted_binding->>'lessonType' FROM"
+                                                            + " homework_placement_operations WHERE"
+                                                            + " operation_id=?",
                                                     String.class,
                                                     UUID.fromString(identity.getOperationId())))
                                     .isEqualTo("lecture");
@@ -972,7 +981,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                     .class);
                             assertThat(
                                             jdbcTemplate.queryForObject(
-                                                    "SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                                                    "SELECT count(*) FROM"
+                                                            + " lesson_transfer_operations WHERE"
+                                                            + " occurrence_id = ?",
                                                     Long.class,
                                                     target.occurrenceId()))
                                     .isZero();
@@ -1049,14 +1060,18 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                             assertThatThrownBy(
                                             () ->
                                                     jdbcTemplate.update(
-                                                            "UPDATE homework_placement_operations SET target_date = '2090-01-03' WHERE operation_id = ?",
+                                                            "UPDATE homework_placement_operations"
+                                                                + " SET target_date = '2090-01-03'"
+                                                                + " WHERE operation_id = ?",
                                                             UUID.fromString(
                                                                     admitted.getOperationId())))
                                     .isInstanceOf(DataAccessException.class);
                             assertThatThrownBy(
                                             () ->
                                                     jdbcTemplate.update(
-                                                            "UPDATE lesson_homework_bindings SET pending_edit_operation_id = NULL WHERE binding_id = ?",
+                                                            "UPDATE lesson_homework_bindings SET"
+                                                                    + " pending_edit_operation_id ="
+                                                                    + " NULL WHERE binding_id = ?",
                                                             active.getBindingId()))
                                     .isInstanceOf(DataAccessException.class);
                             placement.acknowledge(admitted);
@@ -1296,7 +1311,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                     .SEMESTER_ARCHIVE_PARTICIPANT_DELETED);
                             var row =
                                     jdbcTemplate.queryForMap(
-                                            "SELECT * FROM lesson_homework_bindings WHERE binding_id = ?",
+                                            "SELECT * FROM lesson_homework_bindings WHERE"
+                                                    + " binding_id = ?",
                                             active.getBindingId());
                             assertThat(row.get("state")).isEqualTo("ARCHIVED");
                             assertThat(row.get("homework_id")).isNull();
@@ -1341,7 +1357,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                             .setExpectedLessonRevision(1)
                                             .build();
                             jdbcTemplate.update(
-                                    "UPDATE lessons SET status = 'closed'::lesson_status WHERE id = ?",
+                                    "UPDATE lessons SET status = 'closed'::lesson_status WHERE id ="
+                                            + " ?",
                                     lesson.lessonId());
                             assertThatThrownBy(() -> placement.move(targetMove))
                                     .isInstanceOf(
@@ -1349,7 +1366,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                     .class);
                             assertThat(
                                             jdbcTemplate.queryForObject(
-                                                    "SELECT count(*) FROM homework_placement_operations WHERE binding_id = ?",
+                                                    "SELECT count(*) FROM"
+                                                            + " homework_placement_operations WHERE"
+                                                            + " binding_id = ?",
                                                     Long.class,
                                                     active.getBindingId()))
                                     .isZero();
@@ -1358,7 +1377,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                             assertThat(placement.get(active.getBindingId()).getBindingMode())
                                     .isEqualTo("DATE");
                             jdbcTemplate.update(
-                                    "UPDATE lessons SET status = 'planned'::lesson_status WHERE id = ?",
+                                    "UPDATE lessons SET status = 'planned'::lesson_status WHERE id"
+                                            + " = ?",
                                     lesson.lessonId());
                             var accepted =
                                     placement.move(
@@ -1385,7 +1405,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                     .class);
                             assertThat(
                                             jdbcTemplate.queryForObject(
-                                                    "SELECT count(*) FROM homework_placement_operations WHERE binding_id = ?",
+                                                    "SELECT count(*) FROM"
+                                                            + " homework_placement_operations WHERE"
+                                                            + " binding_id = ?",
                                                     Long.class,
                                                     active.getBindingId()))
                                     .isEqualTo(1);
@@ -1423,20 +1445,20 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                         SemesterStateResponse.newBuilder().setId(writable).setActive(true).build());
         jdbcTemplate.update(
                 """
-                INSERT INTO lesson_homework_bindings
-                    (binding_mode, group_id, subject_id, semester_id, placement_date, actor_id, request_key, payload_hash, state, revision)
-                SELECT 'DATE', ?, ?, ?, '2026-10-02'::date, ?, gen_random_uuid(), decode(repeat('11', 32), 'hex'), 'PENDING', 1
-                  FROM generate_series(1, 256)
-                """,
+INSERT INTO lesson_homework_bindings
+    (binding_mode, group_id, subject_id, semester_id, placement_date, actor_id, request_key, payload_hash, state, revision)
+SELECT 'DATE', ?, ?, ?, '2026-10-02'::date, ?, gen_random_uuid(), decode(repeat('11', 32), 'hex'), 'PENDING', 1
+  FROM generate_series(1, 256)
+""",
                 AUTHORIZED_GROUP_ID,
                 SUBJECT_ID,
                 blocked,
                 ACTOR_ID);
         jdbcTemplate.update(
                 """
-                INSERT INTO schedule_semester_archive_barriers(semester_id, operation_id, state_version, participant_state)
-                VALUES (?, ?, 97, 'READY')
-                """,
+INSERT INTO schedule_semester_archive_barriers(semester_id, operation_id, state_version, participant_state)
+VALUES (?, ?, 97, 'READY')
+""",
                 blocked,
                 UUID.randomUUID());
         archiveBarrierSemesterIds.add(blocked);
@@ -1447,13 +1469,15 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         assertThat(placement.archiveExpiredDates()).isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM lesson_homework_bindings WHERE semester_id = ? AND state = 'PENDING'",
+                                "SELECT count(*) FROM lesson_homework_bindings WHERE semester_id ="
+                                        + " ? AND state = 'PENDING'",
                                 Long.class,
                                 blocked))
                 .isEqualTo(256);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM lesson_homework_bindings WHERE semester_id = ? AND state = 'ARCHIVED'",
+                                "SELECT count(*) FROM lesson_homework_bindings WHERE semester_id ="
+                                        + " ? AND state = 'ARCHIVED'",
                                 Long.class,
                                 writable))
                 .isEqualTo(1);
@@ -1514,33 +1538,22 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                             .getAcceptedBinding());
                             placement.acknowledge(identity);
                         });
-        var highLocked = new java.util.concurrent.CountDownLatch(1);
-        var resumeReader = new java.util.concurrent.CountDownLatch(1);
-        var paused = new java.util.concurrent.atomic.AtomicBoolean();
-        JdbcTemplate readerJdbc =
-                new JdbcTemplate(jdbcTemplate.getDataSource()) {
-                    @Override
-                    public <T> List<T> query(
-                            String sql,
-                            org.springframework.jdbc.core.RowMapper<T> mapper,
-                            Object... args) {
-                        List<T> result = super.query(sql, mapper, args);
-                        if (sql.equals("SELECT id FROM schedule_items WHERE id = ? FOR UPDATE")
-                                && args[0].equals(highOrigin)
-                                && paused.compareAndSet(false, true)) {
-                            highLocked.countDown();
-                            try {
-                                if (!resumeReader.await(10, java.util.concurrent.TimeUnit.SECONDS))
-                                    throw new IllegalStateException("reader coordination timeout");
-                            } catch (InterruptedException interrupted) {
-                                Thread.currentThread().interrupt();
-                                throw new IllegalStateException(interrupted);
-                            }
-                        }
-                        return result;
-                    }
-                };
-        var reader = new HomeworkBindingService(readerJdbc, writeFence, placement);
+        var reader = new HomeworkBindingService(jdbcTemplate, writeFence, placement);
+        var holder = jdbcTemplate.getDataSource().getConnection();
+        holder.setAutoCommit(false);
+        int holderPid;
+        try (var statement = holder.prepareStatement("SELECT pg_backend_pid()")) {
+            try (var result = statement.executeQuery()) {
+                result.next();
+                holderPid = result.getInt(1);
+            }
+        }
+        try (var statement =
+                holder.prepareStatement("SELECT id FROM schedule_items WHERE id = ? FOR UPDATE")) {
+            statement.setLong(1, highOrigin);
+            statement.executeQuery().close();
+        }
+        var readerName = "homework-read-" + UUID.randomUUID();
         var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
         var tx = new org.springframework.transaction.support.TransactionTemplate(transactions);
         var writerName = "homework-move-" + UUID.randomUUID();
@@ -1555,18 +1568,30 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                             .call(
                                                     () ->
                                                             tx.execute(
-                                                                    status ->
-                                                                            reader.getBindings(
-                                                                                    HomeworkBindingsRequest
-                                                                                            .newBuilder()
-                                                                                            .addOccurrenceIds(
-                                                                                                    source
-                                                                                                            .occurrenceId())
-                                                                                            .addOccurrenceIds(
-                                                                                                    target
-                                                                                                            .occurrenceId())
-                                                                                            .build()))));
-            assertThat(highLocked.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+                                                                    status -> {
+                                                                        jdbcTemplate.queryForObject(
+                                                                                "SELECT"
+                                                                                    + " set_config('application_name',"
+                                                                                    + " ?, true)",
+                                                                                String.class,
+                                                                                readerName);
+                                                                        return reader.getBindings(
+                                                                                HomeworkBindingsRequest
+                                                                                        .newBuilder()
+                                                                                        .addOccurrenceIds(
+                                                                                                source
+                                                                                                        .occurrenceId())
+                                                                                        .addOccurrenceIds(
+                                                                                                target
+                                                                                                        .occurrenceId())
+                                                                                        .build());
+                                                                    })));
+            awaitBlockedBy(readerName, holderPid);
+            int readerPid =
+                    jdbcTemplate.queryForObject(
+                            "SELECT pid FROM pg_stat_activity WHERE application_name = ?",
+                            Integer.class,
+                            readerName);
             var write =
                     executor.submit(
                             () ->
@@ -1578,7 +1603,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                             tx.execute(
                                                                     status -> {
                                                                         jdbcTemplate.queryForObject(
-                                                                                "SELECT set_config('application_name', ?, true)",
+                                                                                "SELECT"
+                                                                                    + " set_config('application_name',"
+                                                                                    + " ?, true)",
                                                                                 String.class,
                                                                                 writerName);
                                                                         return placement.move(
@@ -1602,56 +1629,62 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                                                                                                 1)
                                                                                         .build());
                                                                     })));
-            boolean waiting = false;
-            long until = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
-            while (!waiting && System.nanoTime() < until) {
-                waiting =
-                        Boolean.TRUE.equals(
-                                jdbcTemplate.queryForObject(
-                                        "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name = ? AND wait_event_type = 'Lock')",
-                                        Boolean.class,
-                                        writerName));
-                if (!waiting) Thread.sleep(10);
-            }
-            assertThat(waiting).isTrue();
-            resumeReader.countDown();
+            awaitBlockedBy(writerName, readerPid);
+            holder.commit();
             assertThat(read.get(10, java.util.concurrent.TimeUnit.SECONDS)).hasSize(1);
             assertThat(write.get(10, java.util.concurrent.TimeUnit.SECONDS).getState())
                     .isEqualTo("APPLIED_AWAITING_ACK");
             placement.acknowledge(identity);
             assertThat(
                             jdbcTemplate.queryForObject(
-                                    "SELECT occurrence_id FROM lesson_homework_bindings WHERE binding_id = ?",
+                                    "SELECT occurrence_id FROM lesson_homework_bindings WHERE"
+                                            + " binding_id = ?",
                                     Long.class,
                                     linked.get().getBindingId()))
                     .isEqualTo(target.occurrenceId());
         } finally {
-            resumeReader.countDown();
+            holder.rollback();
+            holder.close();
             executor.shutdownNow();
         }
+    }
+
+    private void awaitBlockedBy(String application, int blockerPid) throws InterruptedException {
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
+        while (System.nanoTime() < deadline) {
+            if (Boolean.TRUE.equals(
+                    jdbcTemplate.queryForObject(
+                            "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name ="
+                                    + " ? AND ? = ANY(pg_blocking_pids(pid)))",
+                            Boolean.class,
+                            application,
+                            blockerPid))) return;
+            Thread.sleep(10);
+        }
+        throw new AssertionError("expected database lock dependency was not observed");
     }
 
     private Fixture cloneFixture(Fixture original) {
         Long occurrence =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO lesson_occurrences(schedule_item_id, occurrence_date, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
-                SELECT schedule_item_id, occurrence_date + 7, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type
-                  FROM lesson_occurrences WHERE id = ? RETURNING id
-                """,
+INSERT INTO lesson_occurrences(schedule_item_id, occurrence_date, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
+SELECT schedule_item_id, occurrence_date + 7, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type
+  FROM lesson_occurrences WHERE id = ? RETURNING id
+""",
                         Long.class,
                         original.occurrenceId());
         occurrenceIds.add(occurrence);
         Long lesson =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO lessons(schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
-                    assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
-                    generation, revision, date, status, is_geo_blocked)
-                SELECT schedule_item_id, ?, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
-                    lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot, 1, 1, date + 7, 'planned'::lesson_status, false
-                  FROM lessons WHERE id = ? RETURNING id
-                """,
+INSERT INTO lessons(schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
+    assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
+    generation, revision, date, status, is_geo_blocked)
+SELECT schedule_item_id, ?, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
+    lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot, 1, 1, date + 7, 'planned'::lesson_status, false
+  FROM lessons WHERE id = ? RETURNING id
+""",
                         Long.class,
                         occurrence,
                         original.lessonId());
@@ -1784,12 +1817,12 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         Long scheduleItemId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO schedule_items
-                    (assignment_id, group_id, subject_id, semester_id, day_of_week,
-                     lesson_number, start_time, end_time, week_type, room)
-                VALUES (?, ?, ?, ?, 4, ?, '08:30'::time, '09:50'::time, 'all', 'B-101')
-                RETURNING id
-                """,
+                        INSERT INTO schedule_items
+                            (assignment_id, group_id, subject_id, semester_id, day_of_week,
+                             lesson_number, start_time, end_time, week_type, room)
+                        VALUES (?, ?, ?, ?, 4, ?, '08:30'::time, '09:50'::time, 'all', 'B-101')
+                        RETURNING id
+                        """,
                         Long.class,
                         assignmentId,
                         groupId,
@@ -1801,12 +1834,12 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         Long occurrenceId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO lesson_occurrences
-                    (schedule_item_id, occurrence_date, assignment_id, group_id,
-                     subject_id, semester_id, assigned_teacher_id, lesson_type)
-                VALUES (?, ?, ?, ?, ?, ?, 884001, 'lecture')
-                RETURNING id
-                """,
+                        INSERT INTO lesson_occurrences
+                            (schedule_item_id, occurrence_date, assignment_id, group_id,
+                             subject_id, semester_id, assigned_teacher_id, lesson_type)
+                        VALUES (?, ?, ?, ?, ?, ?, 884001, 'lecture')
+                        RETURNING id
+                        """,
                         Long.class,
                         scheduleItemId,
                         date,
@@ -1819,16 +1852,16 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         Long lessonId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO lessons
-                    (schedule_item_id, occurrence_id, assignment_id, group_id, subject_id,
-                     semester_id, assigned_teacher_id, lesson_type, lesson_number,
-                     day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
-                     generation, revision, date, status, is_geo_blocked)
-                VALUES (?, ?, ?, ?, ?, ?, 884001, 'lecture', ?,
-                        4, '08:30'::time, '09:50'::time, 'B-101', 'all',
-                        1, 1, ?, 'planned'::lesson_status, false)
-                RETURNING id
-                """,
+                        INSERT INTO lessons
+                            (schedule_item_id, occurrence_id, assignment_id, group_id, subject_id,
+                             semester_id, assigned_teacher_id, lesson_type, lesson_number,
+                             day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
+                             generation, revision, date, status, is_geo_blocked)
+                        VALUES (?, ?, ?, ?, ?, ?, 884001, 'lecture', ?,
+                                4, '08:30'::time, '09:50'::time, 'B-101', 'all',
+                                1, 1, ?, 'planned'::lesson_status, false)
+                        RETURNING id
+                        """,
                         Long.class,
                         scheduleItemId,
                         occurrenceId,

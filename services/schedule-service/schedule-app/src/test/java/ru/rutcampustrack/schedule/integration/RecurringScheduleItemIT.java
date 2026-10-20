@@ -13,7 +13,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.grpc.stub.StreamObserver;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import ru.rutcampustrack.academic.grpc.AssignmentInfo;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.exception.RecurringProtocolConflictException;
+import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
+import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
+import ru.rutcampustrack.schedule.recurring.RecurringCreateResult;
+import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
+
 import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
@@ -31,36 +65,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.dao.DataAccessException;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-import ru.rutcampustrack.academic.grpc.AssignmentInfo;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
-import ru.rutcampustrack.academic.grpc.SemesterResponse;
-import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
-import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
-import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.exception.RecurringProtocolConflictException;
-import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
-import ru.rutcampustrack.schedule.grpc.LessonsResponse;
-import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl;
-import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
-import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
-import ru.rutcampustrack.schedule.recurring.RecurringCreateResult;
-import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 
 /**
  * Real PostgreSQL checks for the recurring source contract. Academic RPCs are mocked at the wrapper
@@ -170,9 +174,9 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM lessons
-                 WHERE day_of_week = 1 AND week_type_snapshot = 'all'
-                """,
+                                SELECT COUNT(*) FROM lessons
+                                 WHERE day_of_week = 1 AND week_type_snapshot = 'all'
+                                """,
                                 Long.class))
                 .isEqualTo(3L);
         assertThat(lessonRepository.findAll())
@@ -234,7 +238,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 java.security.MessageDigest.getInstance("SHA-256")
                         .digest(
                                 ("RECURRING_CREATE_V1|assignment=501|group=10|subject=20|semester=30|day=1|number=1"
-                                                + "|start=08:30:00.000000000|end=10:00:00.000000000|week=ALL|room=A-101")
+                                     + "|start=08:30:00.000000000|end=10:00:00.000000000|week=ALL|room=A-101")
                                         .getBytes(java.nio.charset.StandardCharsets.UTF_8));
         jdbcTemplate.update(
                 """
@@ -269,7 +273,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .andExpect(status().isBadRequest());
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT payload_hash FROM schedule_recurring_create_replay WHERE request_key = ?",
+                                "SELECT payload_hash FROM schedule_recurring_create_replay WHERE"
+                                        + " request_key = ?",
                                 byte[].class,
                                 legacyKey))
                 .containsExactly(oldHash);
@@ -386,13 +391,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 Long.class,
                                 assignmentId))
                 .isEqualTo(1L);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT room FROM schedule_items WHERE assignment_id = ? AND day_of_week = 2",
+                                "SELECT room FROM schedule_items WHERE assignment_id = ? AND"
+                                        + " day_of_week = 2",
                                 String.class,
                                 assignmentId))
                 .isEqualTo("V17-ROOM");
@@ -404,13 +411,13 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         long scheduleItemId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO schedule_items
-                    (assignment_id, group_id, subject_id, semester_id, day_of_week,
-                     lesson_number, start_time, end_time, week_type, room, is_active, created_at)
-                VALUES (?, ?, ?, ?, 2, 1, TIME '08:30', TIME '10:00',
-                        'all'::week_type, 'V17-ROOM', TRUE, NOW())
-                RETURNING id
-                """,
+INSERT INTO schedule_items
+    (assignment_id, group_id, subject_id, semester_id, day_of_week,
+     lesson_number, start_time, end_time, week_type, room, is_active, created_at)
+VALUES (?, ?, ?, ?, 2, 1, TIME '08:30', TIME '10:00',
+        'all'::week_type, 'V17-ROOM', TRUE, NOW())
+RETURNING id
+""",
                         Long.class,
                         assignmentId,
                         GROUP_ID,
@@ -425,19 +432,20 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         // dedicated migration test below.
         try {
             jdbcTemplate.execute(
-                    "ALTER TABLE lesson_occurrences DISABLE TRIGGER lesson_occurrences_fence_guard_trg");
+                    "ALTER TABLE lesson_occurrences DISABLE TRIGGER"
+                            + " lesson_occurrences_fence_guard_trg");
             jdbcTemplate.execute(
                     "ALTER TABLE lessons DISABLE TRIGGER lessons_physical_insert_fence_guard_trg");
             retainedIds[0] =
                     jdbcTemplate.queryForObject(
                             """
-                    INSERT INTO lesson_occurrences
-                        (schedule_item_id, occurrence_date, assignment_id, group_id,
-                         subject_id, semester_id, assigned_teacher_id, lesson_type,
-                         generation, revision, created_at)
-                    VALUES (?, DATE '2026-02-02', ?, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
-                    RETURNING id
-                    """,
+                            INSERT INTO lesson_occurrences
+                                (schedule_item_id, occurrence_date, assignment_id, group_id,
+                                 subject_id, semester_id, assigned_teacher_id, lesson_type,
+                                 generation, revision, created_at)
+                            VALUES (?, DATE '2026-02-02', ?, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
+                            RETURNING id
+                            """,
                             Long.class,
                             scheduleItemId,
                             assignmentId,
@@ -447,18 +455,18 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
             retainedIds[1] =
                     jdbcTemplate.queryForObject(
                             """
-                    INSERT INTO lessons
-                        (schedule_item_id, occurrence_id, assignment_id, group_id,
-                         subject_id, semester_id, assigned_teacher_id, lesson_type,
-                         lesson_number, day_of_week, start_time, end_time, room_snapshot,
-                         week_type_snapshot, generation, revision, date, status,
-                         is_geo_blocked, created_at, closed_at)
-                    VALUES (?, ?, ?, ?, ?, ?, 700, 'lecture', 1, 2,
-                            TIME '08:30', TIME '10:00', 'V17-ROOM', 'all', 1, 1,
-                            DATE '2026-02-02', 'cancelled'::lesson_status,
-                            FALSE, NOW(), NULL)
-                    RETURNING id
-                    """,
+                            INSERT INTO lessons
+                                (schedule_item_id, occurrence_id, assignment_id, group_id,
+                                 subject_id, semester_id, assigned_teacher_id, lesson_type,
+                                 lesson_number, day_of_week, start_time, end_time, room_snapshot,
+                                 week_type_snapshot, generation, revision, date, status,
+                                 is_geo_blocked, created_at, closed_at)
+                            VALUES (?, ?, ?, ?, ?, ?, 700, 'lecture', 1, 2,
+                                    TIME '08:30', TIME '10:00', 'V17-ROOM', 'all', 1, 1,
+                                    DATE '2026-02-02', 'cancelled'::lesson_status,
+                                    FALSE, NOW(), NULL)
+                            RETURNING id
+                            """,
                             Long.class,
                             scheduleItemId,
                             retainedIds[0],
@@ -474,7 +482,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
             jdbcTemplate.execute(
                     "ALTER TABLE lessons ENABLE TRIGGER lessons_physical_insert_fence_guard_trg");
             jdbcTemplate.execute(
-                    "ALTER TABLE lesson_occurrences ENABLE TRIGGER lesson_occurrences_fence_guard_trg");
+                    "ALTER TABLE lesson_occurrences ENABLE TRIGGER"
+                            + " lesson_occurrences_fence_guard_trg");
         }
 
         RecurringAssignmentAuthority authority =
@@ -507,7 +516,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(retainedIds[1]);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 Long.class,
                                 assignmentId))
                 .isEqualTo(1L);
@@ -515,10 +525,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         () ->
                                 jdbcTemplate.update(
                                         """
-                UPDATE schedule_assignment_fences
-                   SET cap_until_exclusive = DATE '2026-02-02'
-                 WHERE assignment_id = ?
-                """,
+                                        UPDATE schedule_assignment_fences
+                                           SET cap_until_exclusive = DATE '2026-02-02'
+                                         WHERE assignment_id = ?
+                                        """,
                                         assignmentId))
                 .isInstanceOf(DataAccessException.class);
     }
@@ -567,7 +577,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 Long.class,
                                 assignmentId))
                 .isZero();
@@ -634,7 +645,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(1L);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 Long.class,
                                 secondAssignmentId))
                 .isZero();
@@ -686,7 +698,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 LocalDate.class,
                                 ASSIGNMENT_ID))
                 .isEqualTo(ASSIGNMENT_END);
@@ -733,7 +746,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(second.generatedUntil()).isEqualTo(LocalDate.of(2026, 2, 10));
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 LocalDate.class,
                                 ASSIGNMENT_ID))
                 .isEqualTo(localCap);
@@ -906,7 +920,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                                         status -> {
                                                             insertBackendPid.set(
                                                                     jdbcTemplate.queryForObject(
-                                                                            "SELECT pg_backend_pid()",
+                                                                            "SELECT"
+                                                                                + " pg_backend_pid()",
                                                                             Integer.class));
                                                             insertOccurrence(
                                                                     seeded.scheduleItemId(),
@@ -924,19 +939,22 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT creation_cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT creation_cap_until_exclusive FROM"
+                                        + " schedule_assignment_fences WHERE assignment_id = ?",
                                 LocalDate.class,
                                 ASSIGNMENT_ID))
                 .isEqualTo(LocalDate.of(2026, 2, 10));
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 LocalDate.class,
                                 ASSIGNMENT_ID))
                 .isEqualTo(ASSIGNMENT_END);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
+                                "SELECT COUNT(*) FROM lesson_occurrences WHERE occurrence_date ="
+                                        + " DATE '2026-02-16'",
                                 Long.class))
                 .isZero();
     }
@@ -991,10 +1009,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                                                 capUpdateStarted.countDown();
                                                                 jdbcTemplate.update(
                                                                         """
-                                UPDATE schedule_assignment_fences
-                                   SET cap_until_exclusive = DATE '2026-02-10'
-                                 WHERE assignment_id = ?
-                                """,
+UPDATE schedule_assignment_fences
+   SET cap_until_exclusive = DATE '2026-02-10'
+ WHERE assignment_id = ?
+""",
                                                                         ASSIGNMENT_ID);
                                                             })));
 
@@ -1006,13 +1024,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 LocalDate.class,
                                 ASSIGNMENT_ID))
                 .isEqualTo(ASSIGNMENT_END);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
+                                "SELECT COUNT(*) FROM lesson_occurrences WHERE occurrence_date ="
+                                        + " DATE '2026-02-16'",
                                 Long.class))
                 .isEqualTo(1L);
     }
@@ -1064,13 +1084,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(1L);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT COUNT(*) FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 Long.class,
                                 secondAssignmentId))
                 .isEqualTo(0L);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_recurring_create_replay WHERE assignment_id = ?",
+                                "SELECT COUNT(*) FROM schedule_recurring_create_replay WHERE"
+                                        + " assignment_id = ?",
                                 Long.class,
                                 secondAssignmentId))
                 .isEqualTo(0L);
@@ -1104,10 +1126,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         () ->
                                 jdbcTemplate.update(
                                         """
-                UPDATE schedule_assignment_fences
-                   SET cap_until_exclusive = DATE '2026-02-16'
-                 WHERE assignment_id = ?
-                """,
+                                        UPDATE schedule_assignment_fences
+                                           SET cap_until_exclusive = DATE '2026-02-16'
+                                         WHERE assignment_id = ?
+                                        """,
                                         ASSIGNMENT_ID))
                 .isInstanceOf(DataAccessException.class);
 
@@ -1115,13 +1137,13 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         () ->
                                 jdbcTemplate.update(
                                         """
-                INSERT INTO lesson_occurrences
-                    (schedule_item_id, occurrence_date, assignment_id, group_id,
-                     subject_id, semester_id, assigned_teacher_id, lesson_type,
-                     generation, revision, created_at)
-                VALUES ((SELECT id FROM schedule_items LIMIT 1), DATE '2026-02-23',
-                        ?, ?, ?, ?, ?, 'lecture', 1, 1, NOW())
-                """,
+INSERT INTO lesson_occurrences
+    (schedule_item_id, occurrence_date, assignment_id, group_id,
+     subject_id, semester_id, assigned_teacher_id, lesson_type,
+     generation, revision, created_at)
+VALUES ((SELECT id FROM schedule_items LIMIT 1), DATE '2026-02-23',
+        ?, ?, ?, ?, ?, 'lecture', 1, 1, NOW())
+""",
                                         ASSIGNMENT_ID,
                                         GROUP_ID,
                                         SUBJECT_ID,
@@ -1131,7 +1153,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE"
+                                        + " assignment_id = ?",
                                 LocalDate.class,
                                 ASSIGNMENT_ID))
                 .isEqualTo(ASSIGNMENT_END);
@@ -1189,11 +1212,62 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isInstanceOf(DataAccessException.class);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM lesson_occurrences WHERE schedule_item_id = ? AND assignment_id = ?",
+                                "SELECT COUNT(*) FROM lesson_occurrences WHERE schedule_item_id = ?"
+                                        + " AND assignment_id = ?",
                                 Long.class,
                                 second.scheduleItemId(),
                                 ASSIGNMENT_ID))
                 .isZero();
+    }
+
+    @Test
+    void acceptedEnvelopeRejectsChangedSlotIdentityWithoutAnyLocalEffect() throws Exception {
+        long item = createLifecycleItem();
+        String revision =
+                preview(item, updateRequest("A-101", WeekType.ALL, null), false)
+                        .path("revision")
+                        .asText();
+        var tables =
+                List.of(
+                        "schedule_items",
+                        "lessons",
+                        "lesson_occurrences",
+                        "schedule_outbox",
+                        "schedule_recurring_create_replay",
+                        "schedule_recurring_lifecycle_replay");
+        var before = new java.util.LinkedHashMap<String, List<String>>();
+        for (String table : tables)
+            before.put(
+                    table,
+                    jdbcTemplate.queryForList(
+                            "SELECT to_jsonb(snapshot)::text FROM "
+                                    + table
+                                    + " snapshot ORDER BY 1",
+                            String.class));
+        var changed =
+                new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(
+                        SUBJECT_ID,
+                        (short) 2,
+                        (short) 1,
+                        LocalTime.of(8, 30),
+                        LocalTime.of(9, 50),
+                        WeekType.ALL,
+                        "A-101",
+                        revision);
+        mockMvc.perform(
+                        mutationHeaders(put("/schedule/items/{id}", item), UUID.randomUUID())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(changed)))
+                .andExpect(status().isConflict());
+        for (String table : tables)
+            assertThat(
+                            jdbcTemplate.queryForList(
+                                    "SELECT to_jsonb(snapshot)::text FROM "
+                                            + table
+                                            + " snapshot ORDER BY 1",
+                                    String.class))
+                    .as(table)
+                    .isEqualTo(before.get(table));
     }
 
     @Test
@@ -1231,7 +1305,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("transferred");
         long current =
                 jdbcTemplate.queryForObject(
-                        "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
+                        "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date ="
+                                + " DATE '2026-02-16'",
                         Long.class);
         assertThat(current).isNotEqualTo(future);
         assertThat(
@@ -1242,7 +1317,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("B-202");
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT current_lesson_id FROM lesson_homework_bindings WHERE homework_id = 901",
+                                "SELECT current_lesson_id FROM lesson_homework_bindings WHERE"
+                                        + " homework_id = 901",
                                 Long.class))
                 .isEqualTo(current);
         assertThat(
@@ -1251,7 +1327,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_outbox WHERE event_type = 'lesson.transfer.requested'",
+                                "SELECT COUNT(*) FROM schedule_outbox WHERE event_type ="
+                                        + " 'lesson.transfer.requested'",
                                 Long.class))
                 .isEqualTo(1);
         completeTransfer(first.path("transfers").get(0).path("operationId").asText());
@@ -1302,17 +1379,20 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 updateRequest("A-101", WeekType.EVEN, removal.get("revision").asText()));
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT state FROM lesson_homework_bindings WHERE homework_id = 902",
+                                "SELECT state FROM lesson_homework_bindings WHERE homework_id ="
+                                        + " 902",
                                 String.class))
                 .isEqualTo("ARCHIVED");
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_outbox WHERE event_type = 'homework.binding.archived'",
+                                "SELECT COUNT(*) FROM schedule_outbox WHERE event_type ="
+                                        + " 'homework.binding.archived'",
                                 Long.class))
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM lessons WHERE status IN ('planned','active','closed')",
+                                "SELECT COUNT(*) FROM lessons WHERE status IN"
+                                        + " ('planned','active','closed')",
                                 Long.class))
                 .isEqualTo(2);
         var cancellations =
@@ -1336,15 +1416,17 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                         .executeWithoutResult(
                                                 status -> {
                                                     jdbcTemplate.queryForObject(
-                                                            "SELECT set_config('rutcampustrack.template_restore_operation_id', ?, true)",
+                                                            "SELECT"
+                                                                + " set_config('rutcampustrack.template_restore_operation_id',"
+                                                                + " ?, true)",
                                                             String.class,
                                                             inventedAuthority.toString());
                                                     jdbcTemplate.update(
                                                             """
-                    INSERT INTO lesson_lifecycle_entries (occurrence_id, revision, action, lesson_id,
-                        target_lesson_id, generation, actor_id, occurred_at, template_operation_id)
-                    SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM lessons WHERE id = ?
-                    """,
+INSERT INTO lesson_lifecycle_entries (occurrence_id, revision, action, lesson_id,
+    target_lesson_id, generation, actor_id, occurred_at, template_operation_id)
+SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM lessons WHERE id = ?
+""",
                                                             ACTOR_ID,
                                                             inventedAuthority,
                                                             future);
@@ -1372,7 +1454,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("cancelled");
         long current =
                 jdbcTemplate.queryForObject(
-                        "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
+                        "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date ="
+                                + " DATE '2026-02-16'",
                         Long.class);
         assertThat(current).isNotEqualTo(future);
         // The retained cancelled row is history; only its real pointer successor is canonical.
@@ -1401,13 +1484,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(3);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT state FROM lesson_homework_bindings WHERE homework_id = 902",
+                                "SELECT state FROM lesson_homework_bindings WHERE homework_id ="
+                                        + " 902",
                                 String.class))
                 .isEqualTo("ARCHIVED");
         assertThatThrownBy(
                         () ->
                                 jdbcTemplate.update(
-                                        "UPDATE lesson_occurrences SET current_lesson_id = ? WHERE current_lesson_id = ?",
+                                        "UPDATE lesson_occurrences SET current_lesson_id = ? WHERE"
+                                                + " current_lesson_id = ?",
                                         future,
                                         current))
                 .isInstanceOf(DataAccessException.class);
@@ -1514,7 +1599,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM lessons WHERE date > DATE '2026-02-17' AND status = 'planned' AND room_snapshot = 'NEW-ROOM'",
+                                "SELECT COUNT(*) FROM lessons WHERE date > DATE '2026-02-17' AND"
+                                        + " status = 'planned' AND room_snapshot = 'NEW-ROOM'",
                                 Long.class))
                 .isEqualTo(2);
     }
@@ -1527,7 +1613,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         .get("revision")
                         .asText();
         jdbcTemplate.update(
-                "UPDATE lesson_occurrences SET revision = revision + 1 WHERE occurrence_date = DATE '2026-02-16'");
+                "UPDATE lesson_occurrences SET revision = revision + 1 WHERE occurrence_date = DATE"
+                        + " '2026-02-16'");
         mockMvc.perform(
                         mutationHeaders(put("/schedule/items/{id}", item), UUID.randomUUID())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -1694,7 +1781,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("transferred");
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT room_snapshot FROM lessons WHERE date = DATE '2026-02-09' AND status = 'planned'",
+                                "SELECT room_snapshot FROM lessons WHERE date = DATE '2026-02-09'"
+                                        + " AND status = 'planned'",
                                 String.class))
                 .isEqualTo("TODAY-ROOM");
         assertThat(
@@ -1789,7 +1877,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         }
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM schedule_recurring_lifecycle_replay WHERE action = 'REACTIVATE'",
+                                "SELECT COUNT(*) FROM schedule_recurring_lifecycle_replay WHERE"
+                                        + " action = 'REACTIVATE'",
                                 Long.class))
                 .isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class))
@@ -1875,7 +1964,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM lesson_lifecycle_entries WHERE action = 'CANCELLED'",
+                                "SELECT COUNT(*) FROM lesson_lifecycle_entries WHERE action ="
+                                        + " 'CANCELLED'",
                                 Long.class))
                 .isEqualTo(1);
     }
@@ -1901,7 +1991,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("cancelled");
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
+                                "SELECT current_lesson_id FROM lesson_occurrences WHERE"
+                                        + " occurrence_date = DATE '2026-02-16'",
                                 Long.class))
                 .isEqualTo(future);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class))
@@ -1965,7 +2056,9 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         .build());
         long clone =
                 jdbcTemplate.queryForObject(
-                        "SELECT target_schedule_item_id FROM schedule_assignment_replacement_templates WHERE source_schedule_item_id = ?",
+                        "SELECT target_schedule_item_id FROM"
+                                + " schedule_assignment_replacement_templates WHERE"
+                                + " source_schedule_item_id = ?",
                         Long.class,
                         sourceItem);
         var source =
@@ -2026,7 +2119,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(TEACHER_ID);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT assigned_teacher_id FROM lessons WHERE date = DATE '2026-02-16' AND status = 'planned'",
+                                "SELECT assigned_teacher_id FROM lessons WHERE date = DATE"
+                                        + " '2026-02-16' AND status = 'planned'",
                                 Long.class))
                 .isEqualTo(701L);
         assertThat(
@@ -2035,6 +2129,38 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                 Boolean.class,
                                 sourceItem))
                 .isFalse();
+        long current =
+                jdbcTemplate.queryForObject(
+                        "SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date ="
+                                + " DATE '2026-02-16'",
+                        Long.class);
+        var historical = publicLesson(history);
+        var moved = publicLesson(current);
+        assertThat(historical.getAssignedTeacherId()).isEqualTo(700L);
+        assertThat(historical.getAssignmentId()).isEqualTo(ASSIGNMENT_ID);
+        assertThat(historical.getGeneration()).isEqualTo(1L);
+        assertThat(historical.getCurrent()).isTrue();
+        var superseded = publicLesson(oldFuture);
+        assertThat(superseded.getAssignedTeacherId()).isEqualTo(700L);
+        assertThat(superseded.getCurrent()).isFalse();
+        assertThat(moved.getAssignedTeacherId()).isEqualTo(701L);
+        assertThat(moved.getAssignmentId()).isEqualTo(502L);
+        assertThat(moved.getCurrent()).isTrue();
+        assertThat(moved.getGeneration()).isGreaterThan(superseded.getGeneration());
+    }
+
+    private LessonResponse publicLesson(long id) {
+        @SuppressWarnings("unchecked")
+        StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
+        scheduleGrpcService.getLessonById(
+                ru.rutcampustrack.schedule.grpc.LessonByIdRequest.newBuilder()
+                        .setLessonId(id)
+                        .build(),
+                observer);
+        var captor = ArgumentCaptor.forClass(LessonResponse.class);
+        verify(observer).onNext(captor.capture());
+        verify(observer).onCompleted();
+        return captor.getValue();
     }
 
     private LocalDate configureRealDateFutureSemester() {
@@ -2090,10 +2216,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     private void insertBinding(long lesson, long homework) {
         jdbcTemplate.update(
                 """
-                INSERT INTO lesson_homework_bindings (occurrence_id, current_lesson_id, homework_id, actor_id,
-                    request_key, payload_hash, state, revision)
-                SELECT occurrence_id, id, ?, ?, ?, decode(repeat('00',32),'hex'), 'ACTIVE', 1 FROM lessons WHERE id = ?
-                """,
+INSERT INTO lesson_homework_bindings (occurrence_id, current_lesson_id, homework_id, actor_id,
+    request_key, payload_hash, state, revision)
+SELECT occurrence_id, id, ?, ?, ?, decode(repeat('00',32),'hex'), 'ACTIVE', 1 FROM lessons WHERE id = ?
+""",
                 homework,
                 ACTOR_ID,
                 UUID.randomUUID(),

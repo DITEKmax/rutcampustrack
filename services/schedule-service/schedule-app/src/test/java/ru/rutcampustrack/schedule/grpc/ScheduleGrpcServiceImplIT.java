@@ -1,28 +1,29 @@
 package ru.rutcampustrack.schedule.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 /**
  * Integration tests for ScheduleGrpcServiceImpl covering all 3 gRPC RPCs.
@@ -35,9 +36,15 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
  * channel). NOT @Transactional — uses @AfterEach cleanup to avoid preventing AFTER_COMMIT event
  * listeners.
  */
+@org.springframework.context.annotation.Import(TestGrpcTransport.Config.class)
+@org.springframework.test.context.TestPropertySource(
+        properties = {"grpc.server.port=0", "grpc.auth.secret=synthetic-test-grpc"})
 class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
 
     @Autowired ScheduleGrpcServiceImpl grpcService;
+    @Autowired ru.rutcampustrack.schedule.lesson.LessonTransferWriter transferWriter;
+    @MockitoBean java.time.Clock clock;
+    @Autowired TestGrpcTransport.Port grpcPort;
 
     @Autowired LessonRepository lessonRepository;
 
@@ -52,6 +59,13 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     @BeforeEach
     void resetFixtures() {
         resetScheduleData();
+        org.mockito.Mockito.when(clock.instant())
+                .thenReturn(java.time.Instant.parse("2026-04-01T06:00:00Z"));
+        org.mockito.Mockito.when(clock.getZone()).thenReturn(java.time.ZoneId.of("Europe/Moscow"));
+        org.mockito.Mockito.when(clock.withZone(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        invocation ->
+                                java.time.Clock.fixed(clock.instant(), invocation.getArgument(0)));
     }
 
     @AfterEach
@@ -91,7 +105,7 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void getActiveLesson_noActiveLessons_throwsResourceNotFoundException() {
+    void getActiveLesson_noActiveLessons_throwsResourceNotFoundException() throws Exception {
         // No lessons in DB — expect not-found exception (D-01)
         ActiveLessonRequest request =
                 ActiveLessonRequest.newBuilder()
@@ -99,11 +113,13 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
                         .setTimestamp("2026-04-04T09:00:00")
                         .build();
 
-        @SuppressWarnings("unchecked")
-        StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
-
-        assertThatThrownBy(() -> grpcService.getActiveLesson(request, observer))
-                .isInstanceOf(ResourceNotFoundException.class);
+        try (var transport = new TestGrpcTransport(grpcPort)) {
+            var failure =
+                    org.junit.jupiter.api.Assertions.assertThrows(
+                            io.grpc.StatusRuntimeException.class,
+                            () -> transport.stub.getActiveLesson(request));
+            assertThat(failure.getStatus().getCode()).isEqualTo(io.grpc.Status.Code.NOT_FOUND);
+        }
     }
 
     @Test
@@ -112,8 +128,9 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item1 = createScheduleItem(100L, 1L, (short) 1, "A101");
         ScheduleItem item2 = createScheduleItem(100L, 1L, (short) 2, "B202");
 
+        Lesson lesson2 = createLesson(item2.getId(), LocalDate.of(2026, 4, 4), LessonStatus.ACTIVE);
         Lesson lesson1 = createLesson(item1.getId(), LocalDate.of(2026, 4, 4), LessonStatus.ACTIVE);
-        createLesson(item2.getId(), LocalDate.of(2026, 4, 4), LessonStatus.ACTIVE);
+        assertThat(lesson1.getId()).isGreaterThan(lesson2.getId());
 
         ActiveLessonRequest request =
                 ActiveLessonRequest.newBuilder()
@@ -167,14 +184,16 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void getLessonById_nonExistentId_throwsResourceNotFoundException() {
+    void getLessonById_nonExistentId_throwsResourceNotFoundException() throws Exception {
         LessonByIdRequest request = LessonByIdRequest.newBuilder().setLessonId(999999L).build();
 
-        @SuppressWarnings("unchecked")
-        StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
-
-        assertThatThrownBy(() -> grpcService.getLessonById(request, observer))
-                .isInstanceOf(ResourceNotFoundException.class);
+        try (var transport = new TestGrpcTransport(grpcPort)) {
+            var failure =
+                    org.junit.jupiter.api.Assertions.assertThrows(
+                            io.grpc.StatusRuntimeException.class,
+                            () -> transport.stub.getLessonById(request));
+            assertThat(failure.getStatus().getCode()).isEqualTo(io.grpc.Status.Code.NOT_FOUND);
+        }
     }
 
     // =========================================================================
@@ -185,9 +204,41 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     void getLessonsByGroup_happyPath_returnsAllMatchingLessons() {
         ScheduleItem item = createScheduleItem(100L, 1L, (short) 1, "A101");
 
-        createLesson(item.getId(), LocalDate.of(2026, 4, 1), LessonStatus.CLOSED);
-        createLesson(item.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
-        createLesson(item.getId(), LocalDate.of(2026, 4, 15), LessonStatus.PLANNED);
+        Lesson first = createLesson(item.getId(), LocalDate.of(2026, 4, 1), LessonStatus.CLOSED);
+        Lesson middle = createLesson(item.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
+        Lesson last = createLesson(item.getId(), LocalDate.of(2026, 4, 30), LessonStatus.PLANNED);
+        createLesson(item.getId(), LocalDate.of(2026, 3, 31), LessonStatus.PLANNED);
+        createLesson(item.getId(), LocalDate.of(2026, 5, 1), LessonStatus.PLANNED);
+        Lesson cancelled =
+                createLesson(item.getId(), LocalDate.of(2026, 4, 9), LessonStatus.CANCELLED);
+        Lesson superseded =
+                createLesson(item.getId(), LocalDate.of(2026, 4, 16), LessonStatus.PLANNED);
+        org.mockito.Mockito.when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(1L)
+                                .build());
+        transferWriter.transfer(
+                superseded.getId(),
+                42L,
+                new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
+                        LocalDate.of(2026, 4, 17),
+                        1,
+                        null,
+                        null,
+                        "moved",
+                        "1",
+                        java.util.UUID.randomUUID()));
+        long current =
+                jdbcTemplate.queryForObject(
+                        "SELECT current_lesson_id FROM lesson_occurrences WHERE id=?",
+                        Long.class,
+                        superseded.getOccurrenceId());
+        assertThat(current).isNotEqualTo(superseded.getId());
+        var foreignGroup = createScheduleItem(101L, 1L, (short) 1, "foreign");
+        createLesson(foreignGroup.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
+        var foreignSemester = createScheduleItem(100L, 2L, (short) 2, "foreign");
+        createLesson(foreignSemester.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
 
         LessonsByGroupRequest request =
                 LessonsByGroupRequest.newBuilder()
@@ -206,11 +257,20 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         verify(observer).onCompleted();
 
         LessonsResponse response = captor.getValue();
-        assertThat(response.getLessonsList()).hasSize(3);
+        assertThat(response.getLessonsList())
+                .extracting(LessonResponse::getId)
+                .containsExactlyInAnyOrder(
+                        first.getId(), middle.getId(), last.getId(), cancelled.getId(), current);
+        assertThat(response.getLessonsList())
+                .extracting(LessonResponse::getStatus)
+                .containsExactlyInAnyOrder("closed", "active", "planned", "cancelled", "planned");
+        assertThat(response.getLessonsList())
+                .extracting(LessonResponse::getOccurrenceId)
+                .doesNotHaveDuplicates();
     }
 
     @Test
-    void getLessonsByGroup_dateFromAfterDateTo_throwsIllegalArgumentException() {
+    void getLessonsByGroup_dateFromAfterDateTo_throwsIllegalArgumentException() throws Exception {
         // D-04: dateFrom > dateTo must throw IllegalArgumentException
         LessonsByGroupRequest request =
                 LessonsByGroupRequest.newBuilder()
@@ -220,12 +280,14 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
                         .setDateTo("2026-04-01")
                         .build();
 
-        @SuppressWarnings("unchecked")
-        StreamObserver<LessonsResponse> observer = mock(StreamObserver.class);
-
-        assertThatThrownBy(() -> grpcService.getLessonsByGroup(request, observer))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("date_from must not be after date_to");
+        try (var transport = new TestGrpcTransport(grpcPort)) {
+            var failure =
+                    org.junit.jupiter.api.Assertions.assertThrows(
+                            io.grpc.StatusRuntimeException.class,
+                            () -> transport.stub.getLessonsByGroup(request));
+            assertThat(failure.getStatus().getCode())
+                    .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
+        }
     }
 
     @Test

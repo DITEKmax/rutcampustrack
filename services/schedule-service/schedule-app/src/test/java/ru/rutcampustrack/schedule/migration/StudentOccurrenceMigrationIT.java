@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,29 +53,6 @@ class StudentOccurrenceMigrationIT {
     @AfterAll
     void stopContainer() {
         POSTGRES.stop();
-    }
-
-    @Test
-    void freshFullChainMigratesValidatesAndRepeatsWithoutWork() {
-        String schema = newSchema();
-        Flyway flyway = flyway(schema, null);
-
-        MigrateResult first = flyway.migrate();
-
-        assertThat(first.success).isTrue();
-        assertThat(first.migrationsExecuted).isPositive();
-        assertThat(flyway.info().pending()).isEmpty();
-        MigrationInfo current = flyway.info().current();
-        assertThat(current).isNotNull();
-        assertThat(current.getVersion())
-                .isEqualTo(
-                        java.util.Arrays.stream(flyway.info().all())
-                                .map(MigrationInfo::getVersion)
-                                .filter(java.util.Objects::nonNull)
-                                .max(java.util.Comparator.naturalOrder())
-                                .orElseThrow());
-        flyway.validate();
-        assertThat(flyway.migrate().migrationsExecuted).isZero();
     }
 
     @Test

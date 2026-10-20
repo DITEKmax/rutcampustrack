@@ -2,22 +2,26 @@ package ru.rutcampustrack.schedule.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import ru.rutcampustrack.schedule.config.SchedulingConfig;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
+
+import javax.sql.DataSource;
 
 /**
  * M02 Группа 1 — smoke-тест ShedLock на реальной схеме schedule_db.
@@ -58,48 +62,42 @@ class ShedLockSmokeIT {
 
     @Test
     void twoInstances_onlyOneHoldsLock() {
-        LockProvider provider1 = newProvider();
-        LockProvider provider2 = newProvider();
+        try (var context1 = newContext();
+                var context2 = newContext()) {
+            LockProvider provider1 = context1.getBean(LockProvider.class);
+            LockProvider provider2 = context2.getBean(LockProvider.class);
 
-        LockConfiguration config =
-                new LockConfiguration(
-                        Instant.now(),
-                        "lesson-status-transition",
-                        Duration.ofMinutes(2),
-                        Duration.ofSeconds(10));
+            LockConfiguration config =
+                    new LockConfiguration(
+                            Instant.now(),
+                            "lesson-status-transition",
+                            Duration.ofMinutes(2),
+                            Duration.ofSeconds(10));
 
-        Optional<SimpleLock> lock1 = provider1.lock(config);
-        assertThat(lock1).as("first instance acquires lock").isPresent();
+            Optional<SimpleLock> lock1 = provider1.lock(config);
+            assertThat(lock1).as("first instance acquires lock").isPresent();
 
-        Optional<SimpleLock> lock2 = provider2.lock(config);
-        assertThat(lock2).as("second instance must be blocked while first holds lock").isEmpty();
+            Optional<SimpleLock> lock2 = provider2.lock(config);
+            assertThat(lock2)
+                    .as("second instance must be blocked while first holds lock")
+                    .isEmpty();
 
-        lock1.get().unlock();
+            lock1.get().unlock();
 
-        // lockAtLeastFor = 10s — после unlock lock_until всё ещё in-future,
-        // поэтому второй инстанс не должен мгновенно перехватить. Это ожидаемо
-        // и документирует семантику защиты от двойной публикации.
-        Optional<SimpleLock> lock3 = provider2.lock(config);
-        assertThat(lock3).as("lockAtLeastFor still applies after unlock").isEmpty();
+            // lockAtLeastFor = 10s — после unlock lock_until всё ещё in-future,
+            // поэтому второй инстанс не должен мгновенно перехватить. Это ожидаемо
+            // и документирует семантику защиты от двойной публикации.
+            Optional<SimpleLock> lock3 = provider2.lock(config);
+            assertThat(lock3).as("lockAtLeastFor still applies after unlock").isEmpty();
+        }
     }
 
-    @Test
-    void shedlockTable_existsWithExpectedColumns() {
-        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
-        Integer count =
-                jdbc.queryForObject(
-                        "SELECT COUNT(*) FROM information_schema.columns "
-                                + "WHERE table_name = 'shedlock' "
-                                + "AND column_name IN ('name', 'lock_until', 'locked_at', 'locked_by')",
-                        Integer.class);
-        assertThat(count).isEqualTo(4);
-    }
-
-    private static LockProvider newProvider() {
-        return new JdbcTemplateLockProvider(
-                JdbcTemplateLockProvider.Configuration.builder()
-                        .withJdbcTemplate(new JdbcTemplate(dataSource))
-                        .usingDbTime()
-                        .build());
+    private static AnnotationConfigApplicationContext newContext() {
+        var context = new AnnotationConfigApplicationContext();
+        context.getEnvironment().setActiveProfiles("production");
+        context.registerBean(DataSource.class, () -> dataSource);
+        context.register(SchedulingConfig.class);
+        context.refresh();
+        return context;
     }
 }

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.integration;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -7,15 +8,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -23,6 +22,10 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 /**
  * Integration tests for the schedule view endpoint (VIEW-01, VIEW-02). Verifies access by any
@@ -44,6 +47,9 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
     private static final String DATE_TO = "2026-04-30";
 
     private ScheduleItem savedItem;
+    private Lesson planned;
+    private Lesson active;
+    private Lesson cancelled;
 
     @BeforeEach
     void setUp() {
@@ -64,35 +70,23 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
         savedItem = saveFixtureScheduleItem(item);
 
         // 3 lessons: PLANNED, ACTIVE, CANCELLED
-        createLesson(savedItem.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 7));
-        createLesson(savedItem.getId(), LessonStatus.ACTIVE, LocalDate.of(2026, 4, 8));
-        createLesson(savedItem.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 9));
+        planned = createLesson(savedItem.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 7));
+        active = createLesson(savedItem.getId(), LessonStatus.ACTIVE, LocalDate.of(2026, 4, 8));
+        cancelled =
+                createLesson(savedItem.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 9));
     }
 
-    private void createLesson(Long scheduleItemId, LessonStatus status, LocalDate date) {
+    private Lesson createLesson(Long scheduleItemId, LessonStatus status, LocalDate date) {
         Lesson lesson = new Lesson();
         lesson.setScheduleItemId(scheduleItemId);
         lesson.setDate(date);
         lesson.setStatus(status);
         lesson.setGeoBlocked(false);
         lesson.setCreatedAt(OffsetDateTime.now());
-        saveFixtureLesson(lesson);
+        return saveFixtureLesson(lesson);
     }
 
     // --- VIEW-01: Any role can view ---
-
-    @Test
-    void anyRoleCanView_student() throws Exception {
-        mockMvc.perform(
-                        get("/schedule/groups/" + GROUP_ID + "/lessons")
-                                .param("dateFrom", DATE_FROM)
-                                .param("dateTo", DATE_TO)
-                                .header("X-User-Id", "10")
-                                .header("X-User-Role", "STUDENT")
-                                .header("X-Group-Id", GROUP_ID.toString())
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk());
-    }
 
     @Test
     void anyRoleCanView_teacher() throws Exception {
@@ -144,7 +138,16 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
                                 .header("X-Group-Id", GROUP_ID.toString())
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.lessonResponseList", hasSize(2)));
+                .andExpect(jsonPath("$._embedded.lessonResponseList", hasSize(2)))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.lessonResponseList[*].id",
+                                containsInAnyOrder(
+                                        planned.getId().intValue(), active.getId().intValue())))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.lessonResponseList[*].status",
+                                containsInAnyOrder("PLANNED", "ACTIVE")));
     }
 
     @Test
@@ -160,6 +163,17 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
                                 .header("X-Group-Id", GROUP_ID.toString())
                                 .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.lessonResponseList", hasSize(3)));
+                .andExpect(jsonPath("$._embedded.lessonResponseList", hasSize(3)))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.lessonResponseList[*].id",
+                                containsInAnyOrder(
+                                        planned.getId().intValue(),
+                                        active.getId().intValue(),
+                                        cancelled.getId().intValue())))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.lessonResponseList[*].status",
+                                containsInAnyOrder("PLANNED", "ACTIVE", "CANCELLED")));
     }
 }

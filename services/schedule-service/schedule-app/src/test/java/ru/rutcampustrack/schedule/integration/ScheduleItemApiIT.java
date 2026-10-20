@@ -11,10 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -35,6 +33,11 @@ import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Integration tests for ScheduleItem CRUD API (TMPL-01 through TMPL-05). Uses MockMvc
@@ -274,8 +277,8 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     @Test
     void listTemplates_returnsActiveOnly() throws Exception {
         // 2 active
-        saveActiveItem();
-        saveActiveItem();
+        ScheduleItem first = saveActiveItem();
+        ScheduleItem second = saveActiveItem();
         // 1 deactivated
         ScheduleItem inactive = saveActiveItem();
         inactive.setActive(false);
@@ -287,7 +290,16 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
                                         .param("groupId", GROUP_ID.toString())
                                         .param("semesterId", SEMESTER_ID.toString())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page.totalElements", is(2)));
+                .andExpect(jsonPath("$.page.totalElements", is(2)))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.scheduleItemResponseList[*].id",
+                                org.hamcrest.Matchers.containsInAnyOrder(
+                                        first.getId().intValue(), second.getId().intValue())))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.scheduleItemResponseList[*].active",
+                                org.hamcrest.Matchers.everyItem(is(true))));
     }
 
     // ---------- TMPL-05: gRPC validation ----------

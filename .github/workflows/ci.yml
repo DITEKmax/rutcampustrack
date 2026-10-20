@@ -3937,7 +3937,7 @@ jobs:
           }
           HOSTED_MARK_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '1a12ac0a60b1508c1e8795a68d390052942f448c424a046148e24f9753df1ca8',
+                  'd560eb24555519ba7b9b5d5cd205966bed9898cfd0e01ff4139f888d96fabb72',
               'tests/e2e/fixtures/mobile-dataset.ts': 'c03b4d873d5a83489e6ef033dee6448e8edd5da0911c63bbe0ab0864d6318b23',
           }
           ORDINARY_MARK_FRAME_SOURCES = {
@@ -4220,7 +4220,7 @@ jobs:
 
           D002_RECONNECT_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '1a12ac0a60b1508c1e8795a68d390052942f448c424a046148e24f9753df1ca8',
+                  'd560eb24555519ba7b9b5d5cd205966bed9898cfd0e01ff4139f888d96fabb72',
               'tests/e2e/fixtures/safe-reporter.ts':
                   '034f780679e33158f0892b24b95d9505d3f7e383b623c78a64cd3ea5466924e7',
           }

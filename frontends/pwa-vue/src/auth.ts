@@ -247,6 +247,10 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
         }
         accessToken.value = token.accessToken
       })
+      .catch((error: unknown) => {
+        assertCurrent(generation)
+        throw error
+      })
       .finally(() => {
         if (refreshInFlight?.promise === promise) refreshInFlight = null
       })
@@ -287,7 +291,11 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     assertCurrent(generation)
     const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
     const token = accessToken.value
-    const snapshot = await client.getSnapshot()
+    const snapshot = await client.getSnapshot().catch((error: unknown) => {
+      // A denied request from an old generation cannot close a newer owner.
+      assertCurrent(generation)
+      throw error
+    })
     assertCurrent(generation)
     if (
       options.revalidate &&

@@ -2,13 +2,13 @@
 
 Status: **SOURCE_READY; HOSTED_ACCEPTANCE_PENDING**. Designated external recheck remains PENDING. No merge/deploy.
 
-Source: [6585ca49](https://github.com/DITEKmax/rutcampustrack/commit/6585ca49f4ef4890797b77ed7e252865b57b4f3c). Baseline: [4c71f43d](https://github.com/DITEKmax/rutcampustrack/commit/4c71f43d3bb078c275656b2cba54b2d8b19610ed). Base/merge-base: [3908fad9](https://github.com/DITEKmax/rutcampustrack/commit/3908fad9624f97aec8891fc79338ceb6b0616bf3). Existing draft [PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), branch codex/server-validation-20261011. Exact final source/docs readback is recorded in the PR description and ignored checkpoint.
+Published intermediate source: [46df487d](https://github.com/DITEKmax/rutcampustrack/commit/46df487d3c778f7d286ca736988e9d8d2d0d7375). Final typed403 source is integrated, publication/gates PENDING. Baseline: [4c71f43d](https://github.com/DITEKmax/rutcampustrack/commit/4c71f43d3bb078c275656b2cba54b2d8b19610ed). Base/merge-base: [3908fad9](https://github.com/DITEKmax/rutcampustrack/commit/3908fad9624f97aec8891fc79338ceb6b0616bf3). Existing draft [PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), branch codex/server-validation-20261011. Exact final source/docs readback is recorded in the PR description and ignored checkpoint.
 
 ## User-visible correction
 
 When reconnect joins an older refresh that rejects with a network error, the retained Student shell offers a working **«Перезагрузить»** action. It reads current admission with the existing bearer, without a second refresh POST anywhere in that admission chain. Read-only remains until current identity, permissions and context are confirmed.
 
-Same-authority success and transient failures retain the owner/key and uncertain command/idempotency key. A real bearer401, typed409 SESSION_STATE_STALE or authority change follows the existing generation boundary and explicit re-entry/role selection. Old commands are neither replayed nor transferred into another identity. Bearer401 is not described as remote logout. Online events and successful Today data reads alone do not establish authority.
+Same-authority success and transient failures retain the owner/key and uncertain command/idempotency key. A real bearer401, typed409 SESSION_STATE_STALE, exact current-session gateway403 WRONG_ROLE or authority change follows the existing generation boundary and explicit re-entry/role selection. Old commands are neither replayed nor transferred into another identity. Bearer401 is not described as remote logout. Online events and successful Today data reads alone do not establish authority.
 
 The correction also closes the queued-online and delayed background401 paths which could otherwise send another refresh after the uncertain failure. Normal reconnect, successful busy-bootstrap reconciliation and R2 settlement-before-online remain covered. Shared TMA behavior is preserved through the optional owner callback; no new auth scheme or UI redesign.
 
@@ -26,7 +26,7 @@ The correction also closes the queued-online and delayed background401 paths whi
 | tests/e2e/playwright.real-mobile.config.ts                              | Include the two exact new titles in the existing selection                                   |
 | .github/workflows/ci.yml                                                | Same selection in existing CLI grep; update only two required source-digest pins             |
 
-No files deleted. Nine source/test/config files plus the task status/contract/matrix and this handoff comprise the correction package. Author manifest hashes were verified before and after byte-for-byte integration. The starting checkout was tracked-clean; all25 foreign untracked paths, worktrees, WIP, data and evidence remain preserved.
+No files deleted. Ten source/test/config files plus the task status/contract/matrix and this handoff comprise the correction package. Author manifest hashes were verified before and after byte-for-byte integration. The starting checkout was tracked-clean; all25 foreign untracked paths, worktrees, WIP, data and evidence remain preserved.
 
 ## Executed local proof
 
@@ -64,13 +64,13 @@ Combined Vitest and full local PWA typecheck exceeded the unchanged512MiB group 
 
 All listed runs are ordinary attempt1 on source6585; none was canceled or rerun.
 
-| Gate     | Run                                                                                | Result                         |
-| -------- | ---------------------------------------------------------------------------------- | ------------------------------ |
-| Push CI  | [39412699625](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412699625) | IN_PROGRESS_WITH_KNOWN_FAILURE |
-| PR CI    | [39412708921](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708921) | IN_PROGRESS_WITH_KNOWN_FAILURE |
-| Coverage | [39412708929](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708929) | SUCCESS                        |
-| Security | [39412708923](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708923) | SUCCESS                        |
-| OpenAPI  | [39412708933](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708933) | SUCCESS                        |
+| Gate     | Run                                                                                | Result  |
+| -------- | ---------------------------------------------------------------------------------- | ------- |
+| Push CI  | [39412699625](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412699625) | FAILURE |
+| PR CI    | [39412708921](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708921) | FAILURE |
+| Coverage | [39412708929](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708929) | SUCCESS |
+| Security | [39412708923](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708923) | SUCCESS |
+| OpenAPI  | [39412708933](https://github.com/DITEKmax/rutcampustrack/actions/runs/39412708933) | SUCCESS |
 
 Both push and PR Mobile Vue workspace typecheck and PWA/TMA builds have passed. Both active N2 cases passed; suspended cases failed at the new200/401-only assertion. The actual HTTP status was not retained and remains UNKNOWN. PR original D002 separately timed out after pre-online refresh rejection; its underlying network cause remains UNKNOWN. The two hosted cases use actual browser/owner/backend admission plus a controlled native-fetch rejection boundary. Their purpose is to verify active/suspended user outcomes, no extra refresh POST and no role mutation; they do not prove the historical network cause. SafeReporter serializes source locations rather than titles, so any case title derived from the source loop is labeled as derived.
 
@@ -89,3 +89,25 @@ The production contract can return409 with raw `extras.code=SESSION_STATE_STALE`
 Three-file correction: `mobile-real-server.spec.ts` accepts only that exact raw409 code with login/navigation0, retaining no extra POST refresh/no role mutation; unrelated409/403/503 remain failures. Existing numeric status diagnostics are attached on failure without payload. `reconnect-recovery.test.ts` adds the actual-App409-envelope case. `ci.yml` changes only two matching source-digest pins. Product bytes and original D002 are unchanged.
 
 Correction checks:12 production-flow tests PASS (4787ms,398624KiB), seven extracted-oracle positive/negative controls PASS, hosted/focused TypeScript PASS,20 source-bound diagnostic controls PASS. A wrong-source diagnostic invocation first produced19PASS/1ERROR and is retained as NOT_PASS; the corrected invocation reads the actual assigned source. The previous exact11-case baseline RED/GREEN remains evidence for its original bytes; no claim of expanded12-case baseline identity. Internal independent review APPROVE on all three manifest hashes; hosted proof for this delta PENDING. Original author safe summary and review handoff are retained in the ignored evidence directory. No source6585 failures are relabeled green.
+
+## Final typed403 product correction
+
+Source46df pushCI39418122297 / PRCI39418134955 both observe suspended recovery GET `/api/auth/session`403; active N2 and original D002 pass in both. Push primary artifact12262968383, digest `c2ddccfc2ac7fcecfd7097eb665fab6f53ac5782ea5ef0fcc2fca03c7ccef3db`; PR primary12262603323, digest `10ee92a2a641fc26e51aa85b3ec0b03d7239e7a4bb784729eb0cb204b7f5a140`. Strict ZIP/digest/CRC/JSON checks passed. The raw body/code of these failed responses is unavailable; it is not asserted to have been observed.
+
+The source-confirmed route is access bearer → Gateway internal admission → unselectable active grant → ROLE_NOT_SELECTABLE403 → top-level public WRONG_ROLE403 before forwarding the current-session query. The existing client read only nested extras, losing this typed denial. The final patch recognizes only current-session operation + HTTP403 + raw status403 + top-level WRONG_ROLE and derives a private marker. App uses that marker for existing explicit re-entry. Unknown/BFF403, wrong/missing/nested code and forged marker remain closed; no blanket403-to-logout mapping. Both current-session and refresh-candidate rejection paths assert the captured generation, preventing an old denial from resetting a newer authority.
+
+Final source delta against46df is six files: App.vue, auth-client.ts, auth.ts, reconnect-recovery.test.ts, the new hosted N2 branch and two existing workflow digest pins. Old D002 prefix and all prior positive/negative gates remain unchanged. Independent internal review found one provisional late-candidate race; author reproduced and fixed it before publication, then reviewer approved the final six hashes. Actual external recheck remains PENDING.
+
+| Final scoped proof                  | Result                                                                                              |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Exact final21-case baseline on46df  | 1 FAIL /20 PASS; exact typed403 remained Student;7316ms,423708KiB                                   |
+| Same final21 bytes on correction    | 21 PASS;13720ms,413224KiB                                                                           |
+| Incremental late-candidate denial   | RED reproduced newer generation reset, fixed GREEN included above                                   |
+| Existing auth-client/auth/bootstrap | 28 /46 /29 PASS                                                                                     |
+| Extracted hosted oracle             | 13 PASS; typed403/409/401 obligations and strict wrong/missing/nested/status/forged/unknown refusal |
+| Focused + hosted TypeScript         | PASS, peak413496KiB /407884KiB                                                                      |
+| Existing diagnostic controls        | 20 PASS                                                                                             |
+
+The first final-baseline sidecar run had2FAIL/19PASS because a copied auth-client and symlinked bootstrap-policy used different AuthRequestError classes. That extra failure is harness evidence, not a46df product regression. The corrected baseline copies immutable bootstrap-policy locally; exact source/module custody was independently checked. Both receipts remain. Full final commands/source hashes/15 attempts are in `403-finalsummary.safe.json`, SHA `fcd494f6a311de1882a5870057ca0441e1335bce87d6b566e1e7d836c28dfd48`, retained in ignored author-proof and original author directory. No raw private logs or bodies are published.
+
+Final correction ordinary hosted results are PENDING. Prior46df Security/OpenAPI and full PWA/TMA checks pass; these do not prove the newly changed client. No source6585/46df failure is hidden or counted as final acceptance.

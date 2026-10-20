@@ -893,6 +893,9 @@ function isConfirmedOnlineAuthDenial(error: unknown): boolean {
   if (authDenialStatus(error) === 401) return true;
   if (error instanceof AuthRequestError) {
     return (
+      (error.operation === 'current-session' &&
+        error.status === 403 &&
+        error.problem?.gatewayCurrentRoleDenied === true) ||
       error.code === 'INVALID_SESSION' ||
       error.code === 'SESSION_REVOKED' ||
       error.code === 'ACCOUNT_INVALIDATED' ||

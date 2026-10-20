@@ -6462,7 +6462,7 @@ for (const suspended of [false, true]) {
         if (suspended) {
           // Bind the expected UI to the actual authoritative server outcome, not
           // to a permissive "some closed view appeared" assertion.
-          expect([200, 401, 409]).toContain(admission.status());
+          expect([200, 401, 403, 409]).toContain(admission.status());
           if (admission.status() === 200) {
             const session = await admission.json();
             expect(
@@ -6475,6 +6475,12 @@ for (const suspended of [false, true]) {
             await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
             await expect(page.getByRole('button', { name: /Преподаватель/ })).toBeEnabled();
           } else {
+            if (admission.status() === 403) {
+              // Gateway admission rejects an unselectable selected grant before
+              // forwarding current-session to auth; this is its exact public code.
+              const problem = await admission.json();
+              expect(problem?.status === 403 && problem?.code === 'WRONG_ROLE').toBe(true);
+            }
             if (admission.status() === 409) {
               // The authoritative snapshot clears the suspended active grant and
               // increments session_version; the old bearer is SESSION_STATE_STALE.

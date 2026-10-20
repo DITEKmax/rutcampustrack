@@ -71,6 +71,8 @@ export type AuthProblem = {
   traceId?: string
   field?: string
   code?: string
+  /** Derived only from the gateway's exact current-session denial envelope. */
+  gatewayCurrentRoleDenied?: true
   fieldErrors?: readonly { field?: string; message?: string }[]
 }
 
@@ -449,18 +451,29 @@ async function sendRequest(
   }
 
   if (!response.ok) {
-    throw new AuthRequestError(operation, response.status, await readProblem(response), undefined)
+    throw new AuthRequestError(
+      operation,
+      response.status,
+      await readProblem(response, operation),
+      undefined,
+    )
   }
   return response
 }
 
-async function readProblem(response: Response): Promise<AuthProblem | null> {
+async function readProblem(response: Response, operation: string): Promise<AuthProblem | null> {
   try {
     const value = (await response.json()) as unknown
     if (!isRecord(value)) return null
     const extras = isRecord(value.extras) ? value.extras : null
     const code = extras && typeof extras.code === 'string' ? extras.code : undefined
     return {
+      ...(operation === 'current-session' &&
+      response.status === 403 &&
+      value.status === 403 &&
+      value.code === 'WRONG_ROLE'
+        ? { gatewayCurrentRoleDenied: true as const }
+        : {}),
       ...(typeof value.status === 'number' ? { status: value.status } : {}),
       ...(typeof value.type === 'string' ? { type: value.type } : {}),
       ...(typeof value.title === 'string' ? { title: value.title } : {}),

@@ -135,8 +135,10 @@ async function setup() {
   let rejectRefresh: ((reason: unknown) => void) | undefined
   let holdRefresh = false
   let denyStudent = false
+  let studentStatus = 200
   let currentStatus = 200
   let currentProblemCode: string | undefined
+  let currentProblemBody: unknown
   let currentNetwork = false
   let currentProfile = profile
   const calls: string[] = []
@@ -146,14 +148,15 @@ async function setup() {
     if (url === '/api/auth/session') {
       if (holdCurrent) {
         holdCurrent = false
-        const held = response(currentProfile, currentStatus)
+        const held = response(currentProblemBody ?? currentProfile, currentStatus)
         return new Promise<Response>((resolve) => {
           releaseCurrent = () => resolve(held)
         })
       }
       if (currentNetwork) throw new TypeError('Synthetic network boundary')
       return response(
-        currentProblemCode ? { extras: { code: currentProblemCode } } : currentProfile,
+        currentProblemBody ??
+          (currentProblemCode ? { extras: { code: currentProblemCode } } : currentProfile),
         currentStatus,
       )
     }
@@ -166,7 +169,8 @@ async function setup() {
       return response({ accessToken: 'synthetic-refreshed', expiresIn: 3600 })
     }
     if (url === '/api/v1/student/today') return response({}, 401)
-    if (url === '/api/v1/student/session') return response(session, denyStudent ? 401 : 200)
+    if (url === '/api/v1/student/session')
+      return response(session, denyStudent ? 401 : studentStatus)
     throw new Error(`Unexpected synthetic request ${url}`)
   }
   vi.stubGlobal('navigator', { onLine: true })
@@ -310,9 +314,16 @@ async function setup() {
     denyStudent: () => {
       denyStudent = true
     },
+    studentStatus: (status: number) => {
+      studentStatus = status
+    },
     currentStatus: (status: number, code?: string) => {
       currentStatus = status
       currentProblemCode = code
+    },
+    currentFailure: (status: number, problem: unknown) => {
+      currentStatus = status
+      currentProblemBody = problem
     },
     currentNetwork: () => {
       currentNetwork = true
@@ -417,6 +428,88 @@ describe('retained PWA owner recovery after a pre-online Student 401 refresh fai
     expect(c.state.readOnly!.value).toBe(true)
     expect(c.auth.currentGeneration()).toBe(1)
     await expect(c.ownerApi.getSession()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
+  })
+  it('uses explicit re-entry on exact gateway current 403 WRONG_ROLE without refresh or replay', async () => {
+    const c = await setup()
+    await failedReconnect(c)
+    c.currentFailure(403, { status: 403, code: 'WRONG_ROLE' })
+    await c.control.recover()
+    expect(c.state.authView!.value).toBe('login')
+    expect(c.state.authSnapshot!.value).toBeNull()
+    expect(c.state.api!.value).toBeNull()
+    expect(c.state.readOnly!.value).toBe(true)
+    expect(c.auth.currentGeneration()).toBe(1)
+    await expect(c.ownerApi.getSession()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
+  })
+  it.each([
+    {},
+    { status: 403, code: 'UNKNOWN' },
+    { status: 401, code: 'WRONG_ROLE' },
+    { code: 'WRONG_ROLE' },
+    { status: 403, extras: { code: 'WRONG_ROLE' } },
+  ])('retains the owner for an unconfirmed current 403 envelope %#', async (problem) => {
+    const c = await setup()
+    await failedReconnect(c)
+    const owner = c.state.api!.value
+    c.currentFailure(403, problem)
+    await c.control.recover()
+    expect(c.state.authView!.value).toBe('student')
+    expect(c.state.api!.value).toBe(owner)
+    expect(c.state.readOnly!.value).toBe(true)
+    expect(c.auth.currentGeneration()).toBe(0)
+    expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
+  })
+  it('retains the owner when current admission is followed by a Student context 403', async () => {
+    const c = await setup()
+    await failedReconnect(c)
+    const owner = c.state.api!.value
+    c.studentStatus(403)
+    await c.control.recover()
+    expect(c.state.authView!.value).toBe('student')
+    expect(c.state.api!.value).toBe(owner)
+    expect(c.state.readOnly!.value).toBe(true)
+    expect(c.auth.currentGeneration()).toBe(0)
+    expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
+  })
+  it('does not invalidate a newer authority when an old current 403 arrives late', async () => {
+    const c = await setup()
+    await failedReconnect(c)
+    c.currentFailure(403, { status: 403, code: 'WRONG_ROLE' })
+    c.holdCurrent()
+    const recovery = c.control.recover()
+    await settle(c.currentHeld)
+    const generation = c.auth.clear()
+    c.auth.accessToken.value = 'synthetic-new-authority'
+    const nextApi = c.auth.createApi()
+    c.state.api!.value = nextApi
+    c.releaseCurrent()
+    await recovery
+    expect(c.auth.currentGeneration()).toBe(generation)
+    expect(c.auth.accessToken.value).toBe('synthetic-new-authority')
+    expect(toRaw(c.state.api!.value)).toBe(nextApi)
+    expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
+  })
+  it('does not apply a late candidate-current 403 from an old refresh to a newer authority', async () => {
+    const c = await setup()
+    c.hold()
+    c.control.goOffline()
+    c.control.goOnline()
+    await settle(c.ready)
+    c.currentFailure(403, { status: 403, code: 'WRONG_ROLE' })
+    c.holdCurrent()
+    c.resolveRefresh()
+    await settle(c.currentHeld)
+    const generation = c.auth.clear()
+    c.auth.accessToken.value = 'synthetic-new-authority'
+    const nextApi = c.auth.createApi()
+    c.state.api!.value = nextApi
+    c.releaseCurrent()
+    await settle(() => !c.state.bootstrapping!.value)
+    expect(c.auth.currentGeneration()).toBe(generation)
+    expect(c.auth.accessToken.value).toBe('synthetic-new-authority')
+    expect(toRaw(c.state.api!.value)).toBe(nextApi)
     expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
   })
   it('does not blindly retry refresh when another online event queued during the uncertain refresh', async () => {

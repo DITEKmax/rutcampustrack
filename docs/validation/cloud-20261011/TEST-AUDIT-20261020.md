@@ -436,7 +436,7 @@
 
 **Где:** [services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java:79](https://github.com/DITEKmax/rutcampustrack/blob/47daac1bb3d48eb2a912689a66d95b938798c284/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java#L79) — метод: login_setsRefreshCookie_withStrictAttributes.
 
-**Сейчас:** POST /auth/login student/password: HTTP 200 и refresh-cookie HttpOnly,Secure,SameSite=Strict,Path=/api/auth,Max-Age=604800.
+**Сейчас:** POST /auth/login student/password: HTTP 200 и refresh-cookie HttpOnly,Secure,SameSite=Strict,Path=/api/auth; Max-Age=604800.
 
 **Проблема:** Полный дубль тех же входа, endpoint, cookie и пяти проверок; второй метод не добавляет отдельного состояния или риска.
 

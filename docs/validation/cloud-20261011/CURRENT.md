@@ -1,4 +1,6 @@
-# CURRENT — N2/diagnostics handoff and all-tests audit
+# CURRENT — реализация принятого аудита тестов
+
+**Активная команда владельца: IMPLEMENT_AUDIT.** Граница PROPOSALS_ONLY снята для 94 DELETE и 169 REWRITE. [Текущий пакет и ownership](TEST-AUDIT-IMPLEMENTATION-20261020.md), [матрица263 IDs](test-audit-implementation-20261020.csv). Нынешние исходники перепроверяются относительно baseline2eca01a3; прежние результаты ниже — исторические evidence, не APPROVE нового тестового diff. Deploy выключен; продуктовые изменения и скрытие падений не разрешены.
 
 Persisted Goal Q031/D037: **READY_FOR_INDEPENDENT_RECHECK; AUDIT_PROPOSALS_AWAIT_OWNER_DECISION**. No separate Goal API claim. [Contract](TASK-N2-LIFECYCLE-SOL-20261020.md), [handoff](HANDOFF-N2-RECOVERY-20261020.md), [findings matrix](fix-findings-F01-F09-20261019.csv), [two audit lists](TEST-AUDIT-20261020.md), [966-file read ledger](test-audit-read-ledger-20261020.csv). Root is sole Git/taskdoc integrator; designated external reviewer has not been contacted.
 

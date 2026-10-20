@@ -9,21 +9,9 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import com.networknt.schema.ValidationMessage;
+
 import io.micrometer.core.instrument.Counter;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.bson.types.Binary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +21,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
@@ -50,6 +37,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -90,6 +78,21 @@ import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocum
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
@@ -855,7 +858,8 @@ class StudentCheckinTransactionIT {
                                             "attendance.marked.json", record.payload());
                             assertThat(errors)
                                     .as(
-                                            "canonical attendance.marked payload must match event schema")
+                                            "canonical attendance.marked payload must match event"
+                                                + " schema")
                                     .isEmpty();
                         });
     }
@@ -1020,7 +1024,8 @@ class StudentCheckinTransactionIT {
                     }
                     assertThat(transientWriteConflict)
                             .as(
-                                    "Only labelled Mongo112 WriteConflict is an admissible transport loser: %s",
+                                    "Only labelled Mongo112 WriteConflict is an admissible"
+                                        + " transport loser: %s",
                                     error)
                             .isTrue();
                 }
@@ -1537,7 +1542,7 @@ class StudentCheckinTransactionIT {
 
     private static <T> T awaitTransactionOrWriteConflict(Future<T> future) throws Exception {
         try {
-            return future.get();
+            return future.get(20, java.util.concurrent.TimeUnit.SECONDS);
         } catch (java.util.concurrent.ExecutionException error) {
             if (!isLabelledWriteConflict(error)) throw error;
             return null;
@@ -1572,7 +1577,8 @@ class StudentCheckinTransactionIT {
     private static void runConcurrent(Callable<?> first, Callable<?> second, Code allowedDomainCode)
             throws Exception {
         CountDownLatch start = new CountDownLatch(1);
-        try (var pool = Executors.newFixedThreadPool(2)) {
+        var pool = Executors.newFixedThreadPool(2);
+        try {
             Future<?> firstFuture =
                     pool.submit(
                             () -> {
@@ -1586,23 +1592,36 @@ class StudentCheckinTransactionIT {
                                 return second.call();
                             });
             start.countDown();
-            for (Future<?> future : List.of(firstFuture, secondFuture)) {
+            List<Callable<?>> operations = List.of(first, second);
+            List<Future<?>> futures = List.of(firstFuture, secondFuture);
+            List<Integer> conflicts = new ArrayList<>();
+            for (int index = 0; index < futures.size(); index++) {
                 try {
-                    future.get();
+                    futures.get(index).get(20, java.util.concurrent.TimeUnit.SECONDS);
                 } catch (java.util.concurrent.ExecutionException error) {
                     if (error.getCause() instanceof StudentCheckinException domainError) {
                         assertThat(allowedDomainCode).isNotNull();
                         assertThat(domainError.code()).isEqualTo(allowedDomainCode);
-                        continue;
+                    } else {
+                        assertThat(isLabelledWriteConflict(error))
+                                .as("only labelled Mongo conflict 112 is retryable")
+                                .isTrue();
+                        conflicts.add(index);
                     }
-                    // A Mongo transient conflict is an admissible transport-level loser;
-                    // the committed winner must still leave a linearizable terminal state.
-                    assertThat(error.getCause())
-                            .isInstanceOfAny(
-                                    DataAccessException.class,
-                                    org.springframework.transaction.TransactionException.class);
                 }
             }
+            // Settle both original transactions before retrying the same command/key.
+            for (int index : conflicts) {
+                try {
+                    retryLabelledWriteConflict(operations.get(index));
+                } catch (StudentCheckinException domainError) {
+                    assertThat(allowedDomainCode).isNotNull();
+                    assertThat(domainError.code()).isEqualTo(allowedDomainCode);
+                }
+            }
+        } finally {
+            pool.shutdownNow();
+            assertThat(pool.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
         }
     }
 

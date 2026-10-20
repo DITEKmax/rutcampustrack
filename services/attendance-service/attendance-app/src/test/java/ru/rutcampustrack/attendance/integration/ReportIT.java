@@ -13,13 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +27,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -43,12 +38,25 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Integration tests for all 4 attendance report endpoints. Proves RPRT-01 (lesson attendance),
  * RPRT-02 (journal grid), RPRT-03 (student stats), RPRT-04 (student records), and authorization
  * rules.
  */
 class ReportIT extends AbstractAttendanceIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "reportit", 5);
+    }
 
     @Autowired private TestRestTemplate restTemplate;
 
@@ -492,37 +500,15 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void getStudentRecords_filteredBySubject() throws Exception {
-        insertAttendance(
-                LESSON_ID,
-                STUDENT_USER_ID,
-                SUBJECT_ID,
-                AttendanceStatus.PRESENT,
-                LocalDate.of(2026, 4, 1));
-        insertAttendance(
-                2L,
-                STUDENT_USER_ID,
-                SUBJECT_ID_2,
-                AttendanceStatus.ABSENT,
-                LocalDate.of(2026, 4, 2));
-
-        mockMvc.perform(
-                        get("/attendance/reports/student/records")
-                                .param("subjectId", SUBJECT_ID.toString())
-                                .header("X-User-Id", STUDENT_USER_ID.toString())
-                                .header("X-User-Role", "STUDENT")
-                                .header("X-Group-Id", GROUP_ID.toString())
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.attendanceRecordEntryList").isArray())
-                .andExpect(jsonPath("$._embedded.attendanceRecordEntryList.length()").value(1));
+        assertStudentRecords(true);
     }
-
-    // -------------------------------------------------------------------------
-    // Test 6 — RPRT-04: Student records — all subjects (no subjectId filter)
-    // -------------------------------------------------------------------------
 
     @Test
     void getStudentRecords_allSubjects() throws Exception {
+        assertStudentRecords(false);
+    }
+
+    private void assertStudentRecords(boolean filtered) throws Exception {
         insertAttendance(
                 LESSON_ID,
                 STUDENT_USER_ID,
@@ -535,16 +521,85 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 SUBJECT_ID_2,
                 AttendanceStatus.ABSENT,
                 LocalDate.of(2026, 4, 2));
-
-        mockMvc.perform(
-                        get("/attendance/reports/student/records")
-                                .header("X-User-Id", STUDENT_USER_ID.toString())
-                                .header("X-User-Role", "STUDENT")
-                                .header("X-Group-Id", GROUP_ID.toString())
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.attendanceRecordEntryList").isArray())
-                .andExpect(jsonPath("$._embedded.attendanceRecordEntryList.length()").value(2));
+        insertAttendance(
+                3L, 909090L, SUBJECT_ID, AttendanceStatus.EXCUSED, LocalDate.of(2026, 4, 3));
+        var historical =
+                AttendanceDocument.builder()
+                        .lessonId(4L)
+                        .userId(STUDENT_USER_ID)
+                        .groupId(GROUP_ID)
+                        .subjectId(SUBJECT_ID)
+                        .semesterId(909L)
+                        .lessonNumber(1)
+                        .lessonDate(LocalDate.of(2025, 4, 1))
+                        .status(AttendanceStatus.ABSENT)
+                        .source(AttendanceSource.HEADMAN)
+                        .build();
+        attendanceRepository.save(historical);
+        var before =
+                mongoTemplate.getCollection("attendances").find().into(new ArrayList<Document>());
+        var outboxBefore =
+                mongoTemplate
+                        .getCollection("attendance_outbox")
+                        .find()
+                        .into(new ArrayList<Document>());
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(
+                "X-Internal-Token",
+                internalJwtTestFactory.validToken(
+                        STUDENT_USER_ID,
+                        UUID.randomUUID(),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        GROUP_ID,
+                        false,
+                        false));
+        var response =
+                restTemplate.exchange(
+                        "/attendance/reports/student/records"
+                                + (filtered ? "?subjectId=" + SUBJECT_ID : ""),
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        JsonNode records =
+                objectMapper
+                        .readTree(response.getBody())
+                        .path("_embedded")
+                        .path("attendanceRecordEntryList");
+        List<String> actual = new ArrayList<>();
+        records.forEach(
+                row ->
+                        actual.add(
+                                row.path("lessonId").asLong()
+                                        + "/"
+                                        + row.path("subjectId").asLong()
+                                        + "/"
+                                        + row.path("lessonDate").asText()
+                                        + "/"
+                                        + row.path("status").asText()
+                                        + "/"
+                                        + row.path("source").asText()
+                                        + "/"
+                                        + row.path("symbol").asText()));
+        List<String> expected = new ArrayList<>();
+        expected.add("1/5/2026-04-01/present/student_geo/+");
+        if (!filtered) expected.add("2/6/2026-04-02/absent/student_geo/н");
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("attendances")
+                                .find()
+                                .into(new ArrayList<Document>()))
+                .containsExactlyInAnyOrderElementsOf(before);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("attendance_outbox")
+                                .find()
+                                .into(new ArrayList<Document>()))
+                .containsExactlyInAnyOrderElementsOf(outboxBefore);
     }
 
     @Test

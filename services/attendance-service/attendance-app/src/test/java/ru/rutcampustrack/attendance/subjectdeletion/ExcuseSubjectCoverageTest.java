@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.NoOpDbRefResolver;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
@@ -22,9 +21,9 @@ class ExcuseSubjectCoverageTest {
     private static final Instant NOW = Instant.parse("2026-10-15T10:00:00Z");
 
     @Test
-    void preservesOneDecisionOtherCoverageAndOriginalEvidenceOnMixedTicket() {
+    void preservesOneDecisionOtherCoverageAndOriginalEvidenceOnMixedTicket() throws Exception {
         var ticket = ticket();
-        var originalSnapshots = ticket.getLessonSnapshots();
+        Document original = mapped(ticket);
         var originalSelection = ticket.getDecisionSelection();
         assertThat(ExcuseSubjectCoverage.subtract(ticket, Set.of(11L), 101, "operation", 9, NOW))
                 .isTrue();
@@ -46,10 +45,9 @@ class ExcuseSubjectCoverageTest {
         assertThat(ticket.getDecisionSelection().getExcludedLessons())
                 .extracting(StudentLessonSnapshotDocument::getLessonId)
                 .containsExactly(12L);
-        assertThat(ReflectionTestUtils.getField(ticket, "lessonSnapshots"))
-                .isSameAs(originalSnapshots);
-        assertThat(ReflectionTestUtils.getField(ticket, "decisionSelection"))
-                .isSameAs(originalSelection);
+        var stored = mapped(ticket);
+        assertThat(stored.get("lesson_snapshots")).isEqualTo(original.get("lesson_snapshots"));
+        assertThat(stored.get("decision_selection")).isEqualTo(original.get("decision_selection"));
         assertThat(ticket.getSubjectCoverageAdjustments()).hasSize(1);
         assertThat(ticket.getSubjectCoverageAdjustments().getFirst().removedLessonIds())
                 .containsExactly(11L);
@@ -104,8 +102,8 @@ class ExcuseSubjectCoverageTest {
         var ticket = ticket();
         ExcuseSubjectCoverage.subtract(ticket, Set.of(11L), 101, "operation", 9, NOW);
         var conversions =
-                org.springframework.data.mongodb.core.convert.MongoCustomConversions.create(
-                        adapter -> {});
+                new ru.rutcampustrack.attendance.config.MongoConvertersConfig()
+                        .mongoCustomConversions();
         var context = new MongoMappingContext();
         context.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
         context.setInitialEntitySet(Set.of(ExcuseTicket.class));
@@ -122,8 +120,27 @@ class ExcuseSubjectCoverageTest {
         assertThat(loaded.getLessonSnapshots())
                 .extracting(StudentLessonSnapshotDocument::getLessonId)
                 .containsExactly(12L);
-        assertThat((List<?>) ReflectionTestUtils.getField(loaded, "lessonSnapshots")).hasSize(2);
+        assertThat(mapped(loaded).get("lesson_snapshots"))
+                .isEqualTo(mapped(ticket()).get("lesson_snapshots"));
+        assertThat(mapped(loaded).get("decision_selection"))
+                .isEqualTo(mapped(ticket()).get("decision_selection"));
         assertThat(loaded.getSubjectCoverageAdjustments()).hasSize(1);
+    }
+
+    private static Document mapped(ExcuseTicket ticket) throws Exception {
+        var conversions =
+                new ru.rutcampustrack.attendance.config.MongoConvertersConfig()
+                        .mongoCustomConversions();
+        var context = new MongoMappingContext();
+        context.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
+        context.setInitialEntitySet(Set.of(ExcuseTicket.class));
+        context.afterPropertiesSet();
+        var converter = new MappingMongoConverter(NoOpDbRefResolver.INSTANCE, context);
+        converter.setCustomConversions(conversions);
+        converter.afterPropertiesSet();
+        Document document = new Document();
+        converter.write(ticket, document);
+        return document;
     }
 
     private static ExcuseTicket ticket() {

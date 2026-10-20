@@ -14,23 +14,17 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.rpc.Status;
+
 import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
@@ -46,6 +40,16 @@ import ru.rutcampustrack.attendance.student.StudentCheckinReceiptRepository;
 import ru.rutcampustrack.attendance.student.StudentCheckinService;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 class AttendanceStudentGrpcServiceTest {
 
@@ -186,7 +190,7 @@ class AttendanceStudentGrpcServiceTest {
 
         Context.current()
                 .withValue(StudentGrpcIdentity.CLAIMS, readOnlyClaims)
-                .run(() -> service.checkin(StudentCheckinCommand.getDefaultInstance(), observer));
+                .run(() -> service.checkin(command, observer));
 
         Status status = StatusProto.fromThrowable(observer.error);
         assertThat(status.getCode()).isEqualTo(io.grpc.Status.Code.PERMISSION_DENIED.value());

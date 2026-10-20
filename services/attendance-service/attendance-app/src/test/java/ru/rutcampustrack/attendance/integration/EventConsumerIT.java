@@ -4,17 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,6 +14,7 @@ import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -36,16 +26,27 @@ import ru.rutcampustrack.attendance.event.SemesterArchiveEffectReceiptDocument;
 import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Integration tests for RabbitMQ event consumers. Publishes real messages to the fanout exchange
  * and verifies MongoDB state. Proves MARK-03, MARK-04, MARK-05 requirements.
  */
 class EventConsumerIT extends AbstractAttendanceIntegrationTest {
-
-    private static final String RABBIT_VHOST = "rct_requests_isolation_event_consumer";
-
-    static {
-        ensureRabbitVhost(RABBIT_VHOST);
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "eventconsumerit", 9);
     }
 
     @Autowired private RabbitTemplate rabbitTemplate;
@@ -54,60 +55,15 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired private AttendanceAttachmentService attendanceAttachmentService;
 
-    @org.springframework.test.context.DynamicPropertySource
-    static void overrideRabbitVhost(
-            org.springframework.test.context.DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.virtual-host", () -> RABBIT_VHOST);
-    }
-
     @BeforeEach
     void setUp() {
         assertThat(RABBITMQ.isRunning()).isTrue();
         assertThat(RABBITMQ.getContainerId()).isNotBlank();
-        System.out.printf(
-                "requests-isolation runtime rabbitContainer=%s rabbitPort=%s rabbitVhost=%s labels=%s%n",
-                RABBITMQ.getContainerId(),
-                RABBITMQ.getMappedPort(5672),
-                RABBIT_VHOST,
-                RABBITMQ.getLabels());
         amqpAdmin.purgeQueue("attendance-service.events", false);
         amqpAdmin.purgeQueue("attendance-service.events.dlq", false);
         mongoTemplate.remove(new Query(), AttendanceDocument.class);
         mongoTemplate.remove(new Query(), LessonCancellationMarker.class);
         Mockito.reset(scheduleGrpcClient, academicGrpcClient, semesterCacheService);
-    }
-
-    private static void ensureRabbitVhost(String vhost) {
-        try {
-            org.testcontainers.containers.Container.ExecResult result =
-                    RABBITMQ.execInContainer("rabbitmqctl", "add_vhost", vhost);
-            if (result.getExitCode() != 0 && !result.getStderr().contains("already exists")) {
-                throw new IllegalStateException(
-                        "Cannot create Rabbit vhost " + vhost + ": " + result.getStderr());
-            }
-            org.testcontainers.containers.Container.ExecResult permissions =
-                    RABBITMQ.execInContainer(
-                            "rabbitmqctl",
-                            "set_permissions",
-                            "-p",
-                            vhost,
-                            RABBITMQ.getAdminUsername(),
-                            ".*",
-                            ".*",
-                            ".*");
-            if (permissions.getExitCode() != 0) {
-                throw new IllegalStateException(
-                        "Cannot grant Rabbit vhost permissions for "
-                                + vhost
-                                + ": "
-                                + permissions.getStderr());
-            }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Cannot initialize Rabbit vhost " + vhost, ex);
-        } catch (java.io.IOException ex) {
-            throw new IllegalStateException("Cannot initialize Rabbit vhost " + vhost, ex);
-        }
     }
 
     // -------------------------------------------------------------------------
@@ -410,19 +366,35 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void lessonCancelled_noDocs_noError() {
-        publishEvent(
-                buildEnvelope(
-                        "lesson.cancelled",
-                        Map.of(
-                                "lesson_id", 999,
-                                "group_id", 10)));
+        var envelope = buildEnvelope("lesson.cancelled", Map.of("lesson_id", 999, "group_id", 10));
+        publishEvent(envelope);
+        awaitEffect(envelope, 1);
+        assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
+        assertThat(rabbitTemplate.receive("attendance-service.events.dlq")).isNull();
+    }
 
-        await().atMost(5, TimeUnit.SECONDS)
+    private void awaitEffect(Map<String, Object> envelope, int acknowledgements) {
+        String eventId = envelope.get("event_id").toString();
+        await().atMost(10, TimeUnit.SECONDS)
                 .untilAsserted(
                         () -> {
-                            List<AttendanceDocument> docs =
-                                    mongoTemplate.findAll(AttendanceDocument.class);
-                            assertThat(docs).isEmpty();
+                            assertThat(
+                                            mongoTemplate.findById(
+                                                    eventId + ":ATTENDANCE",
+                                                    SemesterArchiveEffectReceiptDocument.class))
+                                    .isNotNull()
+                                    .extracting(SemesterArchiveEffectReceiptDocument::getResult)
+                                    .isEqualTo("APPLIED");
+                            assertThat(
+                                            mongoTemplate.count(
+                                                    Query.query(
+                                                            Criteria.where("event_type")
+                                                                    .is(
+                                                                            "semester.archive.effect.ack")
+                                                                    .and("payload")
+                                                                    .regex(eventId)),
+                                                    "attendance_outbox"))
+                                    .isEqualTo(acknowledgements);
                         });
     }
 
@@ -485,48 +457,25 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void lessonCancelled_beforeClose_preventsRetrospectiveMaterialization() {
-        publishEvent(
-                buildEnvelope(
-                        "lesson.cancelled",
-                        Map.of(
-                                "lesson_id", 1001,
-                                "group_id", 10)));
-
-        await().atMost(5, TimeUnit.SECONDS)
-                .untilAsserted(
-                        () ->
-                                assertThat(
-                                                mongoTemplate.exists(
-                                                        Query.query(
-                                                                Criteria.where("lesson_id")
-                                                                        .is(1001L)),
-                                                        LessonCancellationMarker.class))
-                                        .isTrue());
-
+        var cancelled =
+                buildEnvelope("lesson.cancelled", Map.of("lesson_id", 1001, "group_id", 10));
+        publishEvent(cancelled);
+        awaitEffect(cancelled, 1);
         mockGrpcForLesson(1001L, 10L, 5L, "2026-04-01", 1, 100L, 101L);
-        publishEvent(
-                buildEnvelope(
-                        "lesson.closed",
-                        Map.of(
-                                "lesson_id", 1001,
-                                "group_id", 10)));
-
-        await().atMost(5, TimeUnit.SECONDS)
-                .untilAsserted(
-                        () -> {
-                            assertThat(
-                                            mongoTemplate.find(
-                                                    Query.query(
-                                                            Criteria.where("lesson_id").is(1001L)),
-                                                    AttendanceDocument.class))
-                                    .isEmpty();
-                            assertThat(
-                                            mongoTemplate.exists(
-                                                    Query.query(
-                                                            Criteria.where("lesson_id").is(1001L)),
-                                                    LessonCancellationMarker.class))
-                                    .isTrue();
-                        });
+        var close = buildEnvelope("lesson.closed", Map.of("lesson_id", 1001, "group_id", 10));
+        publishEvent(close);
+        awaitEffect(close, 1);
+        assertThat(
+                        mongoTemplate.find(
+                                Query.query(Criteria.where("lesson_id").is(1001L)),
+                                AttendanceDocument.class))
+                .isEmpty();
+        assertThat(
+                        mongoTemplate.exists(
+                                Query.query(Criteria.where("lesson_id").is(1001L)),
+                                LessonCancellationMarker.class))
+                .isTrue();
+        assertThat(rabbitTemplate.receive("attendance-service.events.dlq")).isNull();
     }
 
     @Test

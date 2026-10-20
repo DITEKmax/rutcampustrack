@@ -2,6 +2,15 @@ package ru.rutcampustrack.attendance.report;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
+
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Context;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metric;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Sources;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.StudentRow;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.TicketCounts;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,13 +20,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Context;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metric;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Sources;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.StudentRow;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.TicketCounts;
 
 class HeadmanStatsRendererTest {
     @Test
@@ -75,38 +77,112 @@ class HeadmanStatsRendererTest {
         String word = entry(docx, "word/document.xml");
         String sheet = entry(xlsx, "xl/worksheets/sheet1.xml");
         String html = new String(htmlBytes, StandardCharsets.UTF_8);
-        assertThat(word.split("<w:cantSplit/>", -1)).hasSize(rows.size() * 2 + 1);
+        var wordRows = ExportTableReader.wordRows(word);
+        var htmlRows = ExportTableReader.htmlRows(html);
+        var sheetRows = ExportTableReader.sheetRows(sheet);
+        var metricHeaders =
+                sheetRows.stream()
+                        .filter(cells -> cells.contains("+ процент"))
+                        .findFirst()
+                        .orElseThrow();
         for (StudentRow row : rows) {
-            String escaped =
-                    row.displayName()
-                            .replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace(">", "&gt;");
-            assertThat(word.split(java.util.regex.Pattern.quote(escaped), -1))
-                    .hasSize(3); // Both full tables.
-            assertThat(html.split(java.util.regex.Pattern.quote(escaped), -1)).hasSize(3);
-            assertThat(sheet.split(java.util.regex.Pattern.quote(escaped), -1)).hasSize(2);
+            var metrics =
+                    List.of(
+                            row.metrics().present(),
+                            row.metrics().presentOrExcused(),
+                            row.metrics().excused(),
+                            row.metrics().absent());
+            List<String> textMetrics =
+                    metrics.stream()
+                            .map(
+                                    metric ->
+                                            metric.denominator() == 0
+                                                    ? "— (0/0)"
+                                                    : metric.numerator()
+                                                            + " / "
+                                                            + metric.denominator()
+                                                            + " / "
+                                                            + String.format(
+                                                                    java.util.Locale.ROOT,
+                                                                    "%.1f%%",
+                                                                    metric.percent()))
+                            .toList();
+            for (var projected : List.of(wordRows, htmlRows)) {
+                assertThat(projected)
+                        .anySatisfy(
+                                cells -> {
+                                    assertThat(cells.getFirst()).isEqualTo(row.displayName());
+                                    assertThat(cells.subList(1, cells.size()))
+                                            .containsExactlyElementsOf(textMetrics);
+                                });
+                assertThat(projected)
+                        .anySatisfy(
+                                cells -> {
+                                    assertThat(cells.getFirst()).isEqualTo(row.displayName());
+                                    assertThat(cells.subList(1, cells.size()))
+                                            .containsExactly(
+                                                    Integer.toString(row.lateCheckin().submitted()),
+                                                    Integer.toString(row.lateCheckin().approved()),
+                                                    Integer.toString(row.lateCheckin().rejected()),
+                                                    "3",
+                                                    "2",
+                                                    "1",
+                                                    "4",
+                                                    "1",
+                                                    "1",
+                                                    "1");
+                                });
+            }
+            var values = ExportTableReader.sheetCells(sheet, row.displayName());
+            assertThat(values.getFirst().getAttribute("t")).isEqualTo("inlineStr");
+            List<String> labels = List.of("+", "+ и у", "у", "н");
+            for (int index = 0; index < labels.size(); index++) {
+                var metric = metrics.get(index);
+                for (String suffix : List.of(" количество", " знаменатель", " процент")) {
+                    var cell = values.get(metricHeaders.indexOf(labels.get(index) + suffix));
+                    if (suffix.equals(" процент") && metric.denominator() == 0) {
+                        assertThat(cell.getTextContent()).isEqualTo("—");
+                    } else {
+                        assertThat(cell.getAttribute("t")).isIn("n", "");
+                        double expected =
+                                suffix.equals(" количество")
+                                        ? metric.numerator()
+                                        : suffix.equals(" знаменатель")
+                                                ? metric.denominator()
+                                                : metric.percent() / 100.0;
+                        assertThat(Double.parseDouble(cell.getTextContent()))
+                                .isCloseTo(expected, org.assertj.core.data.Offset.offset(0.000001));
+                    }
+                }
+            }
         }
-        assertThat(word)
-                .contains(
-                        "Фильтры: ФИО: содержит «&lt;Синтетический&gt;»",
-                        sorts,
-                        "26.3%",
-                        "— (0/0)");
-        assertThat(html)
-                .contains("<dt>Фильтры</dt>", "&lt;Синтетический&gt;", sorts, "26.3%", "— (0/0)")
-                .doesNotContain("<Синтетический>");
-        assertThat(sheet)
-                .contains(
-                        "<dimension ref=\"A1:W139\"",
-                        "ySplit=\"19\"",
-                        "topLeftCell=\"A20\"",
-                        sorts,
-                        "<c r=\"B20\" t=\"n\"><v>7</v>",
-                        "<v>0.263</v>",
-                        "t=\"inlineStr\"",
-                        "=SUM(A1:A2)")
-                .doesNotContain("<f>");
+        assertThat(wordRows)
+                .anySatisfy(
+                        cells -> {
+                            assertThat(cells).contains(rows.getFirst().displayName());
+                            assertThat(cells).anyMatch(value -> value.contains("26.3%"));
+                        });
+        assertThat(htmlRows)
+                .anySatisfy(
+                        cells -> {
+                            assertThat(cells).contains(rows.getFirst().displayName());
+                            assertThat(cells).anyMatch(value -> value.contains("26.3%"));
+                        });
+        assertThat(word).contains("— (0/0)", sorts).doesNotContain("${");
+        assertThat(html).contains("— (0/0)", sorts).doesNotContain("<Синтетический>");
+        var worksheet = ExportTableReader.xml(sheet);
+        assertThat(worksheet.getElementsByTagNameNS("*", "f").getLength()).isZero();
+        var numeric = worksheet.getElementsByTagNameNS("*", "c");
+        boolean foundSuppliedPercent = false;
+        for (int index = 0; index < numeric.getLength(); index++) {
+            var cell = (org.w3c.dom.Element) numeric.item(index);
+            if (cell.getTextContent().equals("0.263")) {
+                assertThat(cell.getAttribute("t")).isIn("", "n");
+                assertThat(Double.parseDouble(cell.getTextContent())).isEqualTo(0.263);
+                foundSuppliedPercent = true;
+            }
+        }
+        assertThat(foundSuppliedPercent).isTrue();
         Path output = Path.of("build", "headman-stats-renderer");
         Files.createDirectories(output);
         Files.write(output.resolve("large-selected-stats.docx"), docx);

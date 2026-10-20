@@ -7,6 +7,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.Test;
+
+import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
+import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
+import ru.rutcampustrack.attendance.report.ReportService;
+import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
+import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -16,16 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
-import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
-import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
-import ru.rutcampustrack.attendance.report.ReportService;
-import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
-import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
 
 class TeacherStatsExportServiceTest {
     private static final long TEACHER_ID = 71L;
@@ -143,15 +146,57 @@ class TeacherStatsExportServiceTest {
                                     StandardCharsets.UTF_8);
                     assertThat(sheet)
                             .contains(
-                                    "xSplit=\"1\" ySplit=\"10\"",
-                                    "02.05.2026 10:00 UTC",
-                                    "t=\"n\"",
-                                    "—",
-                                    "Математика",
-                                    "УИТ-311")
+                                    "02.05.2026 10:00 UTC", "t=\"n\"", "—", "Математика", "УИТ-311")
                             .doesNotContain("\u000b");
                     if (scope == ReportService.TeacherStatsScope.GROUPS)
                         assertThat(sheet).contains("Пар учтено");
+                    var parsed =
+                            ru.rutcampustrack.attendance.report.ExportTableReader.sheetRows(sheet);
+                    var headings =
+                            parsed.stream()
+                                    .filter(row -> row.contains("«+» · числитель"))
+                                    .findFirst()
+                                    .orElseThrow();
+                    List<String> labels =
+                            scope == ReportService.TeacherStatsScope.GROUPS
+                                    ? List.of("УИТ-311")
+                                    : List.of("А&Б <Гаврилова>", "Яковлева");
+                    for (String label : labels) {
+                        var values =
+                                ru.rutcampustrack.attendance.report.ExportTableReader.sheetCells(
+                                        sheet, label);
+                        for (String metric : List.of("«+»", "«+ и у»", "«у»")) {
+                            int numerator =
+                                    metric.equals("«+»") ? 2 : metric.equals("«+ и у»") ? 3 : 1;
+                            for (String suffix :
+                                    List.of(" · числитель", " · знаменатель", " · %")) {
+                                var value = values.get(headings.indexOf(metric + suffix));
+                                assertThat(value.getAttribute("t")).isEqualTo("n");
+                                double expected =
+                                        suffix.equals(" · числитель")
+                                                ? numerator
+                                                : suffix.equals(" · знаменатель")
+                                                        ? 3
+                                                        : numerator / 3.0;
+                                assertThat(Double.parseDouble(value.getTextContent()))
+                                        .isCloseTo(
+                                                expected,
+                                                org.assertj.core.data.Offset.offset(0.000001));
+                            }
+                        }
+                        assertThat(values.get(headings.indexOf("«н» · %")).getTextContent())
+                                .isEqualTo("—");
+                    }
+                    assertThat(
+                                    parsed.stream()
+                                            .filter(
+                                                    row ->
+                                                            !row.isEmpty()
+                                                                    && labels.contains(
+                                                                            row.getFirst()))
+                                            .map(List::getFirst)
+                                            .toList())
+                            .containsExactlyElementsOf(labels);
                 }
             }
         }

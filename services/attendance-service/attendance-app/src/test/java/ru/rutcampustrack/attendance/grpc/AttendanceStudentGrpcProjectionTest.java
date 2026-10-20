@@ -12,14 +12,9 @@ import static org.mockito.Mockito.when;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import java.lang.reflect.Field;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
+
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.attendance.report.studentprojection.AttendanceMetricCalculator;
@@ -28,6 +23,14 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.lang.reflect.Field;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 class AttendanceStudentGrpcProjectionTest {
 
@@ -53,29 +56,8 @@ class AttendanceStudentGrpcProjectionTest {
         var history =
                 new StudentAttendanceProjectionService.HistorySegment(
                         "canonical:78", "EXCUSED", explanation);
-        var mapper =
-                AttendanceStudentGrpcServiceImpl.class.getDeclaredMethod(
-                        "toProto", StudentAttendanceProjectionService.HistorySegment.class);
-        mapper.setAccessible(true);
-        var result = (StudentAttendanceHistorySegment) mapper.invoke(null, history);
-        assertThat(result.getId()).isEqualTo("canonical:78");
-        assertThat(result.hasExplanation()).isTrue();
-        assertThat(result.getExplanation().getComment()).isEqualTo(explanation.comment());
-        assertThat(result.getExplanation().hasCancellationReason()).isFalse();
-        var legacy =
-                (StudentAttendanceHistorySegment)
-                        mapper.invoke(
-                                null,
-                                new StudentAttendanceProjectionService.HistorySegment(
-                                        "old", "EXCUSED"));
-        assertThat(legacy.hasExplanation()).isFalse();
-        var lesson = projection().days().getFirst().lessons().getFirst();
-        var dayMapper =
-                AttendanceStudentGrpcServiceImpl.class.getDeclaredMethod(
-                        "toProto",
-                        StudentAttendanceProjectionService.Lesson.class,
-                        java.util.Map.class);
-        dayMapper.setAccessible(true);
+        var base = projection();
+        var lesson = base.days().getFirst().lessons().getFirst();
         var cancelled =
                 new StudentAttendanceProjectionService.Lesson(
                         lesson.lessonId(),
@@ -92,9 +74,206 @@ class AttendanceStudentGrpcProjectionTest {
                         StudentAttendanceProjectionService.ScheduleState.CANCELLED,
                         null,
                         "Причина отмены");
-        var wire = (StudentAttendanceLesson) dayMapper.invoke(null, cancelled, java.util.Map.of());
-        assertThat(wire.getExplanation().getCancellationReason()).isEqualTo("Причина отмены");
-        assertThat(wire.getExplanation().hasComment()).isFalse();
+        var excusedMark =
+                new ru.rutcampustrack.attendance.shared.port.AttendanceRecord(
+                        79L,
+                        100L,
+                        10L,
+                        20L,
+                        DATE,
+                        2,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
+                        "Другое",
+                        "OTHER",
+                        explanation.comment(),
+                        null,
+                        null,
+                        null,
+                        null);
+        var excused =
+                new StudentAttendanceProjectionService.Lesson(
+                        79L,
+                        79L,
+                        10L,
+                        DATE,
+                        2,
+                        20L,
+                        lesson.subjectName(),
+                        lesson.lessonType(),
+                        lesson.startsAt(),
+                        lesson.endsAt(),
+                        lesson.room(),
+                        StudentAttendanceProjectionService.ScheduleState.CLOSED,
+                        excusedMark);
+        var subject = base.subjects().getFirst();
+        var projected =
+                new StudentAttendanceProjectionService.Projection(
+                        base.studentId(),
+                        base.semesterId(),
+                        base.dateFrom(),
+                        base.dateTo(),
+                        base.serverNow(),
+                        false,
+                        base.metrics(),
+                        List.of(
+                                new StudentAttendanceProjectionService.Day(
+                                        DATE,
+                                        "Пятница",
+                                        "9",
+                                        "CANCELLED",
+                                        List.of(cancelled, excused))),
+                        List.of(
+                                new StudentAttendanceProjectionService.Subject(
+                                        subject.subjectId(),
+                                        subject.name(),
+                                        subject.metrics(),
+                                        subject.availableTypes(),
+                                        subject.selectedTypes(),
+                                        subject.selectedAggregate(),
+                                        List.of(
+                                                new StudentAttendanceProjectionService.TypeCard(
+                                                        "LECTURE",
+                                                        base.metrics(),
+                                                        List.of(
+                                                                history,
+                                                                new StudentAttendanceProjectionService
+                                                                        .HistorySegment(
+                                                                        "old", "EXCUSED")))),
+                                        List.of())),
+                        base.graph(),
+                        new StudentAttendanceProjectionService.Rank(null, 7, false));
+        var projections = mock(StudentAttendanceProjectionService.class);
+        when(projections.project(CLAIMS, SEMESTER_ID, null, "days", List.of()))
+                .thenReturn(projected);
+        var handler =
+                new AttendanceStudentGrpcServiceImpl(
+                        null, null, null, null, null, null, projections);
+        var observed =
+                invoke(
+                        handler,
+                        StudentAttendanceProjectionRequest.newBuilder()
+                                .setSemesterId(SEMESTER_ID)
+                                .setRange("days")
+                                .build());
+        assertThat(observed.error).isNull();
+        assertThat(observed.completions).isEqualTo(1);
+        var wire =
+                StudentAttendanceProjectionResponse.parseFrom(
+                        observed.responses.getFirst().toByteArray());
+        var result = wire.getSubjects(0).getTypeCards(0).getHistory(0);
+        assertThat(result.getId()).isEqualTo("canonical:78");
+        assertThat(result.hasExplanation()).isTrue();
+        assertThat(result.getExplanation().hasComment()).isTrue();
+        assertThat(result.getExplanation().getComment()).isEqualTo(explanation.comment());
+        assertThat(result.getExplanation().hasCancellationReason()).isFalse();
+        assertThat(wire.getSubjects(0).getTypeCards(0).getHistory(1).hasExplanation()).isFalse();
+        assertThat(wire.getDays(0).getLessons(0).getExplanation().getCancellationReason())
+                .isEqualTo("Причина отмены");
+        assertThat(wire.getDays(0).getLessons(0).getExplanation().hasComment()).isFalse();
+        assertThat(wire.getDays(0).getLessons(1).getExplanation().hasComment()).isTrue();
+        assertThat(wire.getDays(0).getLessons(1).getExplanation().getComment())
+                .isEqualTo(explanation.comment());
+        assertThat(wire.getDays(0).getLessons(1).getExplanation().hasCancellationReason())
+                .isFalse();
+        assertThat(wire.getOwnRank().getParticipantCount()).isEqualTo(7);
+        assertThat(wire.getOwnRank().hasPosition()).isFalse();
+        assertThat(wire.getOwnRank().getAvailable()).isFalse();
+        assertThat(wire.toString())
+                .doesNotContain(
+                        "peer-id-9381",
+                        "peer-name-9381",
+                        "peer-reason-9381",
+                        "peer-attachment-9381");
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {true, false})
+    void ownRankWireStaysPrivateWhileExplicitRankingCanExposeCohort(boolean available)
+            throws Exception {
+        var base = projection();
+        String peer = "peer-name-9381 peer-reason-9381 peer-attachment-9381";
+        var service = mock(StudentAttendanceProjectionService.class);
+        var own =
+                new StudentAttendanceProjectionService.Projection(
+                        base.studentId(),
+                        base.semesterId(),
+                        base.dateFrom(),
+                        base.dateTo(),
+                        base.serverNow(),
+                        false,
+                        base.metrics(),
+                        base.days(),
+                        base.subjects(),
+                        base.graph(),
+                        new StudentAttendanceProjectionService.Rank(
+                                available ? 2 : null, 7, available));
+        when(service.project(CLAIMS, SEMESTER_ID, null, "days", List.of())).thenReturn(own);
+        when(service.ranking(CLAIMS, SEMESTER_ID, 1, 10))
+                .thenReturn(
+                        new StudentAttendanceProjectionService.RankingPage(
+                                true,
+                                1,
+                                10,
+                                7,
+                                2,
+                                List.of(
+                                        new StudentAttendanceProjectionService.RankingRow(
+                                                9381L,
+                                                peer,
+                                                1,
+                                                new java.math.BigDecimal("95"),
+                                                false))));
+        var handler =
+                new AttendanceStudentGrpcServiceImpl(null, null, null, null, null, null, service);
+        var ownObserver =
+                invoke(
+                        handler,
+                        StudentAttendanceProjectionRequest.newBuilder()
+                                .setSemesterId(SEMESTER_ID)
+                                .setRange("days")
+                                .build());
+        assertThat(ownObserver.error).isNull();
+        var wire =
+                StudentAttendanceProjectionResponse.parseFrom(
+                        ownObserver.responses.getFirst().toByteArray());
+        assertThat(wire.getOwnRank().getParticipantCount()).isEqualTo(7);
+        assertThat(wire.getOwnRank().getAvailable()).isEqualTo(available);
+        assertThat(wire.getOwnRank().hasPosition()).isEqualTo(available);
+        if (available) assertThat(wire.getOwnRank().getPosition()).isEqualTo(2);
+        assertThat(wire.toString())
+                .doesNotContain("9381", "peer-name", "peer-reason", "peer-attachment");
+        var rankingResponses = new ArrayList<StudentAttendanceRankingResponse>();
+        Context.current()
+                .withValue(StudentGrpcIdentity.CLAIMS, CLAIMS)
+                .run(
+                        () ->
+                                handler.getStudentAttendanceRanking(
+                                        StudentAttendanceRankingRequest.newBuilder()
+                                                .setSemesterId(SEMESTER_ID)
+                                                .setPage(1)
+                                                .setSize(10)
+                                                .build(),
+                                        new StreamObserver<>() {
+                                            @Override
+                                            public void onNext(
+                                                    StudentAttendanceRankingResponse value) {
+                                                rankingResponses.add(value);
+                                            }
+
+                                            @Override
+                                            public void onError(Throwable failure) {
+                                                throw new AssertionError(failure);
+                                            }
+
+                                            @Override
+                                            public void onCompleted() {}
+                                        }));
+        var ranking =
+                StudentAttendanceRankingResponse.parseFrom(
+                        rankingResponses.getFirst().toByteArray());
+        assertThat(ranking.getRows(0).getStudentId()).isEqualTo(9381L);
+        assertThat(ranking.getRows(0).getDisplayName()).isEqualTo(peer);
     }
 
     @Test

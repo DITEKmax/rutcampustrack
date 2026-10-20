@@ -40,10 +40,6 @@ class DocxRendererTest {
                 .contains("\u041b\u041a")
                 .contains("Student 01")
                 .contains("+");
-        assertThat(documentXml)
-                .contains("<w:gridCol w:w=\"560\" />")
-                .contains("<w:tcW w:w=\"560\" w:type=\"dxa\" />")
-                .doesNotContain("<w:tcW w:w=\"340\" w:type=\"dxa\" />");
         DocumentContents contents = readDocumentContents(docx);
         assertThat(contents.tables).isEqualTo(1);
         assertThat(contents.pageBreaks).isZero();

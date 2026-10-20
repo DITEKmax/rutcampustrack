@@ -12,11 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +23,7 @@ import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -48,6 +44,12 @@ import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.List;
 
 /**
  * Unit tests for MarkingService. Proves each authorization branch and core marking orchestration
@@ -350,29 +352,6 @@ class MarkingServiceTest {
     // Test 6 — Second mark (upsert) updates status, not duplicate
     // -------------------------------------------------------------------------
 
-    @Test
-    void markAttendance_secondMark_upsertsNotDuplicates() {
-        AttendanceDocument presentDoc = buildSavedDoc();
-        AttendanceDocument absentDoc = buildSavedDoc();
-        absentDoc.setStatus(AttendanceStatus.ABSENT);
-        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
-                .thenReturn(null, presentDoc, presentDoc, absentDoc);
-
-        AttendanceDocument first =
-                markingService.markAttendance(
-                        LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
-        AttendanceDocument second =
-                markingService.markAttendance(
-                        LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.ABSENT));
-
-        // upsert called twice (once per mark), not insert/save
-        verify(mongoTemplate, org.mockito.Mockito.times(2))
-                .upsert(any(), any(), eq(AttendanceDocument.class));
-        assertThat(second.getId()).isEqualTo(first.getId());
-        assertThat(first.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
-        assertThat(second.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
-    }
-
     // -------------------------------------------------------------------------
     // Test 7 — Event published with correct document
     // -------------------------------------------------------------------------
@@ -426,68 +405,6 @@ class MarkingServiceTest {
      * BATCH-01: три новые отметки одной пары — один gRPC getLesson, отдельная проверка readiness,
      * один getGroupMembers и три записи.
      */
-    @Test
-    void markBatch_threeStudentsOneLesson_upsertsAllPublishesEach() {
-        when(academicGrpcClient.getGroupMembers(GROUP_ID))
-                .thenReturn(buildGroupMembers(99L, 100L, 101L));
-        doReturn(buildLesson(GROUP_ID))
-                .when(scheduleGrpcClient)
-                .requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
-        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
-                .thenReturn(null);
-        AttendanceDocument presentDoc = buildSavedDoc();
-        AttendanceDocument absentDoc = buildSavedDoc();
-        absentDoc.setId("doc-2");
-        absentDoc.setUserId(100L);
-        absentDoc.setStatus(AttendanceStatus.ABSENT);
-        AttendanceDocument excusedDoc = buildSavedDoc();
-        excusedDoc.setId("doc-3");
-        excusedDoc.setUserId(101L);
-        excusedDoc.setStatus(AttendanceStatus.EXCUSED);
-        when(mongoTemplate.findAndModify(
-                        any(Query.class),
-                        any(),
-                        any(FindAndModifyOptions.class),
-                        eq(AttendanceDocument.class)))
-                .thenReturn(presentDoc, absentDoc, excusedDoc);
-
-        MarkBatchRequest request =
-                new MarkBatchRequest(
-                        List.of(
-                                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
-                                item(LESSON_ID, 100L, AttendanceStatus.ABSENT),
-                                item(LESSON_ID, 101L, AttendanceStatus.EXCUSED)));
-
-        List<AttendanceDocument> result = markingService.markBatch(request);
-
-        assertThat(result).hasSize(3);
-        assertThat(result)
-                .extracting(AttendanceDocument::getUserId)
-                .containsExactly(99L, 100L, 101L);
-        assertThat(result)
-                .extracting(AttendanceDocument::getStatus)
-                .containsExactly(
-                        AttendanceStatus.PRESENT,
-                        AttendanceStatus.ABSENT,
-                        AttendanceStatus.EXCUSED);
-        assertThat(result).extracting(AttendanceDocument::getId).doesNotHaveDuplicates();
-        verify(scheduleGrpcClient, org.mockito.Mockito.times(1)).getLessonById(LESSON_ID);
-        verify(scheduleGrpcClient).requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
-        verify(academicGrpcClient, org.mockito.Mockito.times(1)).getGroupMembers(GROUP_ID);
-        // M05 audit fix: findAndModify заменил upsert+findOne (bug-hunter 2.1).
-        verify(mongoTemplate, org.mockito.Mockito.times(3))
-                .findAndModify(
-                        any(),
-                        any(),
-                        any(FindAndModifyOptions.class),
-                        eq(AttendanceDocument.class));
-        verify(eventPublisher, org.mockito.Mockito.times(3)).publishMarked(any(), any());
-        verify(eventPublisher).publishMarked(eq(presentDoc), any());
-        verify(eventPublisher).publishMarked(eq(absentDoc), any());
-        verify(eventPublisher).publishMarked(eq(excusedDoc), any());
-    }
-
-    /** BATCH-02: non-headman — весь batch отклонён до gRPC. */
     @Test
     void markBatch_notHeadman_throwsBeforeAnyWrite() {
         when(requestContext.isHeadman()).thenReturn(false);

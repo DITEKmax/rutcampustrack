@@ -3,18 +3,20 @@ package ru.rutcampustrack.attendance.event;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * M13 G8 — IT для consumer-side dedup в attendance-app.
@@ -26,6 +28,11 @@ import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTes
  * refresh), поэтому IT надёжно проверяет именно guard, а не побочные delete'ы.
  */
 class EventIdempotentIT extends AbstractAttendanceIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "eventidempotentit", 7);
+    }
 
     @Autowired private RabbitTemplate rabbitTemplate;
 
@@ -65,25 +72,22 @@ class EventIdempotentIT extends AbstractAttendanceIntegrationTest {
         UUID eventId = UUID.randomUUID();
         Map<String, Object> envelope = envelope(eventId);
 
+        org.mockito.Mockito.clearInvocations(semesterCacheService);
         publish(envelope);
         publish(envelope);
-
-        // claim запись появляется один раз — даже если оба сообщения дошли,
-        // второй tryClaim ловит DuplicateKey и skip'ает.
+        publish(envelope);
+        UUID barrier = UUID.randomUUID();
+        publish(envelope(barrier));
         await().atMost(10, TimeUnit.SECONDS)
                 .untilAsserted(
                         () -> {
-                            assertThat(claimsForEvent(eventId)).isEqualTo(1L);
+                            assertThat(claimsForEvent(barrier)).isEqualTo(1L);
+                            org.mockito.Mockito.verify(
+                                            semesterCacheService, org.mockito.Mockito.times(2))
+                                    .refresh();
                         });
-
-        // Sanity: повторная публикация ещё раз — count остаётся 1.
-        publish(envelope);
-        await().pollDelay(2, TimeUnit.SECONDS)
-                .atMost(5, TimeUnit.SECONDS)
-                .untilAsserted(
-                        () -> {
-                            assertThat(claimsForEvent(eventId)).isEqualTo(1L);
-                        });
+        assertThat(claimsForEvent(eventId)).isEqualTo(1L);
+        assertThat(rabbitTemplate.receive("attendance-service.events.dlq")).isNull();
     }
 
     @Test

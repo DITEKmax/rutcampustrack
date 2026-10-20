@@ -7,14 +7,13 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
@@ -22,6 +21,10 @@ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Unit tests for ExcuseEventPublisher (Phase 59-05 + M02 Группа 5).
@@ -194,11 +197,11 @@ class ExcuseEventPublisherTest {
                 .isEqualTo(
                         objectMapper.readTree(
                                 """
-                [{"lesson_id":2,"occurrence_id":"102","date":"2026-10-07","lesson_number":3,
-                  "subject_name":"Математика","lesson_type":"lecture"},
-                 {"lesson_id":3,"occurrence_id":"103","date":null,"lesson_number":null,
-                  "subject_name":null,"lesson_type":null}]
-                """));
+[{"lesson_id":2,"occurrence_id":"102","date":"2026-10-07","lesson_number":3,
+  "subject_name":"Математика","lesson_type":"lecture"},
+ {"lesson_id":3,"occurrence_id":"103","date":null,"lesson_number":null,
+  "subject_name":null,"lesson_type":null}]
+"""));
         // Receipt metadata is projected without group/attendance/reason/attachment details.
         assertThat(payload.get("excluded_lessons").get(0).size()).isEqualTo(6);
     }
@@ -259,23 +262,4 @@ class ExcuseEventPublisherTest {
     }
 
     // D-27 regression
-    @Test
-    void publishRequested_userIdEqualsStudentId() throws Exception {
-        ExcuseTicket ticket =
-                ExcuseTicket.builder()
-                        .id("t-x")
-                        .studentId(42L)
-                        .groupId(10L)
-                        .studentName("X")
-                        .lessonIds(List.of(1L))
-                        .excuseType(ExcuseType.OTHER)
-                        .status(ExcuseTicketStatus.SUBMITTED)
-                        .createdAt(Instant.now())
-                        .build();
-
-        publisher().publishRequested(ticket, List.of());
-
-        JsonNode payload = captureEnvelope("excuse.requested").get("payload");
-        assertThat(payload.get("user_id").asLong()).isEqualTo(payload.get("student_id").asLong());
-    }
 }

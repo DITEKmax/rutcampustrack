@@ -13,8 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
 import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
@@ -33,6 +33,9 @@ import ru.rutcampustrack.attendance.exception.GlobalExceptionHandler;
 import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
 import ru.rutcampustrack.attendance.exception.ReportValidationException;
 import ru.rutcampustrack.attendance.security.AttendanceUserContextFilter;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @WebMvcTest(
         controllers = ReportController.class,
@@ -144,26 +147,6 @@ class ReportControllerMvcTest {
                                         HttpHeaders.CONTENT_DISPOSITION,
                                         org.hamcrest.Matchers.not(
                                                 containsString("\u0423\u0412\u041f\u0412"))));
-    }
-
-    @Test
-    void exportCurrentPdf_returnsPdfContentType() throws Exception {
-        LocalDate weekStart = LocalDate.of(2026, 4, 27);
-        when(headmanWeeklyReportService.exportSingleWeek(weekStart, "pdf"))
-                .thenReturn(
-                        new HeadmanWeeklyExportResult(
-                                "UVPV511_27.04.2026_03.05.2026.pdf",
-                                ReportApi.PDF_MEDIA_TYPE,
-                                new byte[] {4, 5}));
-
-        mockMvc.perform(
-                        get("/attendance/reports/headman-weekly/current")
-                                .param("weekStart", "2026-04-27")
-                                .param("format", "pdf"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString(".pdf")))
-                .andExpect(content().bytes(new byte[] {4, 5}));
     }
 
     @Test

@@ -40,7 +40,7 @@ class TeacherAttendanceDocxRendererTest {
     private final TeacherAttendanceDocxRenderer renderer = new TeacherAttendanceDocxRenderer();
 
     @Test
-    void subjectJournalKeepsEveryLessonAndStudentAcrossSixColumnSegments() throws Exception {
+    void subjectJournalKeepsEveryLessonAndStudentAcrossLogicalSegments() throws Exception {
         TeacherAttendanceExportModel model =
                 model(
                         ReportKind.SUBJECT_JOURNAL,
@@ -53,38 +53,46 @@ class TeacherAttendanceDocxRendererTest {
         var document = parse(xml);
         NodeList tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
 
-        assertThat(tables.getLength()).isEqualTo(3);
         assertThat(xml).doesNotContain("${", "50001", "50002");
-        assertThat(xml)
+        assertThat(visibleText(xml))
                 .contains(
                         "Журнал посещаемости по предмету",
                         "Физика и астрономия",
-                        "Лабораторная работа",
                         "Запланировано",
                         "Отменено",
-                        "Иванова Елизавета Александровна с очень длинной фамилией",
                         "25%");
-        assertThat(count(xml, "<w:tblHeader w:val=\"true\"/>")).isEqualTo(3);
-        assertThat(count(xml, "<w:br w:type=\"page\"/>")).isEqualTo(2);
-
-        Element firstMatrix = (Element) tables.item(0);
-        Element secondMatrix = (Element) tables.item(1);
-        assertThat(rows(firstMatrix)).hasSize(3);
-        assertThat(rows(secondMatrix)).hasSize(3);
-        assertThat(cells(rows(firstMatrix).get(0))).hasSize(8);
-        assertThat(cells(rows(secondMatrix).get(0))).hasSize(4);
-        assertThat(cellText(cells(rows(firstMatrix).get(2)).get(4))).isEmpty();
-        assertThat(cellText(cells(rows(firstMatrix).get(2)).get(5))).isEmpty();
-        assertThat(cellText(cells(rows(secondMatrix).get(1)).get(3))).isEmpty();
-
-        Element summary = (Element) tables.item(2);
-        List<Element> summaryRows = rows(summary);
-        assertThat(cells(summaryRows.get(0))).hasSize(10);
-        assertThat(cells(summaryRows.get(1))).hasSize(10);
-        assertThat(cellText(cells(summaryRows.get(2)).get(6))).isEqualTo("—");
-        assertThat(cellText(cells(summaryRows.get(2)).get(7))).isEqualTo("—");
-        assertThat(cellText(cells(summaryRows.get(2)).get(8))).isEqualTo("—");
-        assertThat(cellText(cells(summaryRows.get(2)).get(9))).isEqualTo("—");
+        assertMatrix(model, document);
+        var logicalRows = ru.rutcampustrack.attendance.report.ExportTableReader.wordRows(xml);
+        assertThat(logicalRows)
+                .anySatisfy(
+                        row ->
+                                assertThat(row)
+                                        .containsExactly(
+                                                model.rows().getFirst().displayName(),
+                                                "2",
+                                                "2",
+                                                "1",
+                                                "4",
+                                                "8",
+                                                "25%",
+                                                "50%",
+                                                "25%",
+                                                "12,5%"));
+        assertThat(logicalRows)
+                .anySatisfy(
+                        row ->
+                                assertThat(row)
+                                        .containsExactly(
+                                                model.rows().get(1).displayName(),
+                                                "0",
+                                                "0",
+                                                "0",
+                                                "0",
+                                                "0",
+                                                "—",
+                                                "—",
+                                                "—",
+                                                "—"));
     }
 
     @Test
@@ -98,40 +106,21 @@ class TeacherAttendanceDocxRendererTest {
         NodeList tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
         String visibleText = visibleText(xml);
 
-        assertThat(tables.getLength()).isEqualTo(7);
         assertThat(xml).doesNotContain("${", "91000", "91029");
         assertThat(visibleText)
                 .contains(
-                        "Математический анализ и прикладная статистика для инженерных направлений",
-                        "Александрова Мария Сергеевна, обучающаяся по индивидуальному учебному"
-                                + " плану",
-                        "Фёдорова Анастасия Михайловна");
-
-        for (int segmentIndex = 0; segmentIndex < 6; segmentIndex++) {
-            List<Element> matrixRows = rows((Element) tables.item(segmentIndex));
-            assertThat(matrixRows).hasSize(31);
-            assertThat(cells(matrixRows.get(0))).hasSize(8);
-            assertThat(cells(matrixRows.get(1))).hasSize(8);
-        }
-        Element firstMatrix = (Element) tables.item(0);
-        assertThat(cellText(cells(rows(firstMatrix).get(1)).get(2))).isEqualTo("·");
-
-        Element summary = (Element) tables.item(6);
-        List<Element> summaryRows = rows(summary);
-        assertThat(summaryRows).hasSize(31);
-        assertThat(cells(summaryRows.get(0))).hasSize(10);
-        assertThat(cells(summaryRows.get(30))).hasSize(10);
-        for (int studentIndex = 0; studentIndex < largeStudentNames().size(); studentIndex++) {
-            String studentName = largeStudentNames().get(studentIndex);
-            assertThat(occurrences(visibleText, studentName)).isEqualTo(7);
-            List<Element> summaryCells = cells(summaryRows.get(studentIndex + 1));
-            assertThat(
-                            summaryCells.subList(1, 10).stream()
-                                    .map(TeacherAttendanceDocxRendererTest::cellText))
-                    .containsExactly("18", "9", "9", "27", "36", "50%", "75%", "25%", "25%");
-        }
-        for (int lessonIndex = 0; lessonIndex < 36; lessonIndex++) {
-            assertThat(visibleText).contains(largeSemesterModelDate(lessonIndex));
+                        "Математический анализ и прикладная статистика для инженерных направлений");
+        assertMatrix(model, document);
+        for (String student : largeStudentNames()) {
+            assertThat(ru.rutcampustrack.attendance.report.ExportTableReader.wordRows(xml))
+                    .anySatisfy(
+                            row -> {
+                                assertThat(row.getFirst()).isEqualTo(student);
+                                assertThat(row.subList(1, row.size()))
+                                        .containsExactly(
+                                                "18", "9", "9", "27", "36", "50%", "75%", "25%",
+                                                "25%");
+                            });
         }
     }
 
@@ -155,10 +144,11 @@ class TeacherAttendanceDocxRendererTest {
 
         assertThat(visibleText)
                 .contains("Неделя: 07.09.2026–13.09.2026", "Неделя: 14.09.2026–20.09.2026");
-        assertThat(count(xml, "<w:br w:type=\"page\"/>")).isEqualTo(3);
+        assertThat(visibleText.indexOf("Неделя: 07.09.2026–13.09.2026"))
+                .isLessThan(visibleText.indexOf("Неделя: 14.09.2026–20.09.2026"));
         assertThat(visibleText).doesNotContain("${");
         assertThat(visibleText).doesNotContain("Итоги по студентам");
-        assertThat(parse(xml).getElementsByTagNameNS(WORD_NS, "tbl").getLength()).isEqualTo(4);
+        parse(xml);
     }
 
     @Test
@@ -172,6 +162,61 @@ class TeacherAttendanceDocxRendererTest {
         assertThatThrownBy(() -> renderer.render(List.of(subjectModel)))
                 .isInstanceOf(ReportValidationException.class)
                 .hasMessageContaining("WEEKLY_ATTENDANCE");
+    }
+
+    private static void assertMatrix(
+            TeacherAttendanceExportModel model, org.w3c.dom.Document document) {
+        var tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
+        java.util.Set<Long> observed = new java.util.HashSet<>();
+        for (int table = 0; table < tables.getLength(); table++) {
+            var matrixRows = rows((Element) tables.item(table));
+            if (matrixRows.isEmpty()) continue;
+            var headings =
+                    cells(matrixRows.getFirst()).stream()
+                            .map(TeacherAttendanceDocxRendererTest::cellText)
+                            .toList();
+            if (!headings.contains("№") || !headings.contains("Студент")) continue;
+            for (var column : model.columns()) {
+                String date =
+                        column.date()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.uuuu"));
+                int position = -1;
+                for (int index = 0; index < headings.size(); index++) {
+                    String heading = headings.get(index);
+                    if (heading.contains(date)
+                            && heading.contains(column.typeLabel())
+                            && heading.contains("№" + column.lessonNumber())) position = index;
+                }
+                if (position < 0) continue;
+                assertThat(observed.add(column.lessonId())).isTrue();
+                for (var expected : model.rows()) {
+                    var row =
+                            matrixRows.stream()
+                                    .skip(1)
+                                    .map(TeacherAttendanceDocxRendererTest::cells)
+                                    .filter(
+                                            value ->
+                                                    value.stream()
+                                                            .anyMatch(
+                                                                    cell ->
+                                                                            cellText(cell)
+                                                                                    .equals(
+                                                                                            expected
+                                                                                                    .displayName())))
+                                    .findFirst()
+                                    .orElseThrow();
+                    var mark = expected.cellsByLessonId().get(column.lessonId());
+                    String symbol =
+                            mark == null ? "" : mark.symbol().isBlank() ? "·" : mark.symbol();
+                    assertThat(cellText(row.get(position)))
+                            .as(expected.displayName() + "/" + column.lessonId())
+                            .isEqualTo(symbol);
+                }
+            }
+        }
+        assertThat(observed)
+                .containsExactlyInAnyOrderElementsOf(
+                        model.columns().stream().map(Column::lessonId).toList());
     }
 
     private static TeacherAttendanceExportModel model(

@@ -5,19 +5,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Test;
+
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse.Point;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse.TrendMetric;
+
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.imageio.ImageIO;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse.Point;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse.TrendMetric;
 
 class HeadmanStatsTrendRendererTest {
 
@@ -42,7 +45,7 @@ class HeadmanStatsTrendRendererTest {
     }
 
     @Test
-    void pngKeepsAllSemesterWeeksInBoundedTableAtFixedChartWidth() throws Exception {
+    void pngIsDecodableAndBoundedAndHtmlKeepsAllSemesterPeriods() throws Exception {
         var result = renderer.render(semesterTrend(), HeadmanStatsTrendFormat.PNG);
         byte[] bytes = result.content();
 
@@ -52,13 +55,37 @@ class HeadmanStatsTrendRendererTest {
                 new byte[] {(byte) 0x89, 'P', 'N', 'G'}, java.util.Arrays.copyOf(bytes, 4));
         var image = ImageIO.read(new ByteArrayInputStream(bytes));
         assertNotNull(image);
-        assertEquals(1080, image.getWidth());
-        assertEquals(1148, image.getHeight());
+        String html =
+                new String(
+                        renderer.render(semesterTrend(), HeadmanStatsTrendFormat.HTML).content(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+        var rows = ExportTableReader.htmlRows(html);
+        for (Point point : semesterTrend().points()) {
+            org.assertj.core.api.Assertions.assertThat(rows)
+                    .anySatisfy(
+                            cells -> {
+                                org.assertj.core.api.Assertions.assertThat(cells)
+                                        .containsExactly(
+                                                point.label(),
+                                                metricText(point.present()),
+                                                metricText(point.presentOrExcused()));
+                            });
+        }
         assertTrue(bytes.length <= 20 * 1024 * 1024);
 
         Path preview = Path.of("build", "headman-stats-trend-22-weeks.png");
         Files.createDirectories(preview.getParent());
         Files.write(preview, bytes);
+    }
+
+    private static String metricText(TrendMetric metric) {
+        if (metric.percent() == null) return "Нет данных (0/0)";
+        return String.format(
+                java.util.Locale.forLanguageTag("ru-RU"),
+                "%.1f%% (%d/%d)",
+                metric.percent(),
+                metric.numerator(),
+                metric.denominator());
     }
 
     private static HeadmanStatsTrendResponse trend() {

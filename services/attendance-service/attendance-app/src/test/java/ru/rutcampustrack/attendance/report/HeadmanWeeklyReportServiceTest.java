@@ -337,19 +337,15 @@ class HeadmanWeeklyReportServiceTest {
 
         String html = new String(renderer.renderHtml(List.of(model)), StandardCharsets.UTF_8);
         String sheet = zipText(renderer.renderXlsx(List.of(model)), "xl/worksheets/sheet1.xml");
-        String styles = zipText(renderer.renderXlsx(List.of(model)), "xl/styles.xml");
-
-        assertThat(html)
-                .contains("<th scope=\"row\">Alpha &lt;script&gt;</th>")
-                .contains("border-collapse:collapse")
-                .contains("overflow-x:auto");
-        assertThat(sheet)
-                .contains("xSplit=\"1\" ySplit=\"7\"")
-                .contains("width=\"34\"")
-                .contains("width=\"24\"")
-                .contains("Alpha &lt;script&gt;")
-                .contains("s=\"1\"");
-        assertThat(styles).contains("wrapText=\"1\"").contains("FFEAF1F7");
+        var htmlRows = ExportTableReader.htmlRows(html);
+        var sheetRows = ExportTableReader.sheetRows(sheet);
+        for (var rows : List.of(htmlRows, sheetRows)) {
+            assertThat(rows).anySatisfy(cells -> assertThat(cells).contains("Alpha <script>", "+"));
+            assertThat(rows.stream().filter(cells -> cells.contains("Alpha <script>")).toList())
+                    .hasSize(1);
+            assertThat(ExportTableReader.cell(rows, "Alpha <script>", "2026-04-27")).isEqualTo("+");
+        }
+        assertThat(html).doesNotContain("<script>");
     }
 
     @Test

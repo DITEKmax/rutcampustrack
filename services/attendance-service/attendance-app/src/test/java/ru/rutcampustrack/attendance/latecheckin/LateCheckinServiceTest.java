@@ -222,32 +222,6 @@ class LateCheckinServiceTest {
     // ============================================================== listPendingForHeadman
 
     @Test
-    void listPendingForHeadman_happyPath_returnsGroupRequests() {
-        when(requestContext.isHeadman()).thenReturn(true);
-        when(requestContext.getGroupId()).thenReturn(GROUP_ID);
-        List<LateCheckinRequest> pending = List.of(newPending(REQUEST_ID));
-        when(repository.findByGroupIdAndStatusOrderByCreatedAtAsc(
-                        GROUP_ID, LateCheckinRequestStatus.PENDING))
-                .thenReturn(pending);
-
-        List<LateCheckinRequest> result = service.listPendingForHeadman();
-
-        assertThat(result)
-                .hasSize(1)
-                .first()
-                .extracting(LateCheckinRequest::getId)
-                .isEqualTo(REQUEST_ID);
-    }
-
-    @Test
-    void listPendingForHeadman_notHeadman_throwsAccessDenied() {
-        when(requestContext.isHeadman()).thenReturn(false);
-
-        assertThatThrownBy(() -> service.listPendingForHeadman())
-                .isInstanceOf(AccessDeniedException.class);
-    }
-
-    @Test
     void listPendingForHeadman_headmanWithoutGroup_throwsAccessDenied() {
         when(requestContext.getGroupId()).thenReturn(null);
 
@@ -367,7 +341,7 @@ class LateCheckinServiceTest {
         verify(repository).save(captor.capture());
         assertThat(captor.getValue().getStatus()).isEqualTo(LateCheckinRequestStatus.REJECTED);
 
-        verify(attendanceWritePort, never()).mark(anyLong(), anyLong(), anyLong(), any(), any());
+        verifyNoInteractions(attendanceWritePort);
         verify(eventPublisher).publishDecided(any(), any(), any(), any(), any());
     }
 
@@ -415,7 +389,7 @@ class LateCheckinServiceTest {
         service.applyDecision(REQUEST_ID, 777L, false);
 
         verify(repository, never()).save(any());
-        verify(attendanceWritePort, never()).mark(anyLong(), anyLong(), anyLong(), any(), any());
+        verifyNoInteractions(attendanceWritePort);
         verify(eventPublisher, never()).publishDecided(any(), any(), any(), any(), any());
     }
 

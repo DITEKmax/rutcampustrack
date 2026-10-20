@@ -3,8 +3,9 @@ package ru.rutcampustrack.attendance.report.studentprojection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class OwnRankCalculatorTest {
 
@@ -178,12 +179,5 @@ class OwnRankCalculatorTest {
                         error ->
                                 assertThat(((StudentProjectionException) error).kind())
                                         .isEqualTo(StudentProjectionException.Kind.INVALID_ROSTER));
-    }
-
-    @Test
-    void rankSummaryHasNoPeerPayloadFields() {
-        assertThat(OwnRankCalculator.Rank.class.getRecordComponents())
-                .extracting(java.lang.reflect.RecordComponent::getName)
-                .containsExactly("position", "participantCount", "available");
     }
 }

@@ -9,19 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.Test;
+
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
@@ -39,6 +28,20 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 class TeacherAttendanceExportServiceTest {
     private static final long TEACHER_ID = 71L;
     private static final long SEMESTER_ID = 9L;
@@ -47,26 +50,47 @@ class TeacherAttendanceExportServiceTest {
     private static final Instant NOW = Instant.parse("2026-09-24T10:00:00Z");
 
     @Test
-    void htmlExportReadsAllJournalBatchesAndLeavesFutureMarksBlank() {
+    void htmlExportReadsAllJournalBatchesAndLeavesFutureMarksBlank() throws Exception {
         Fixture fixture = fixture(100, true);
 
         TeacherAttendanceExportResponse response =
                 fixture.service().export(request("html"), TEACHER_ID);
 
         String html = response.getContent().toStringUtf8();
-        assertThat(fixture.batches().stream().map(List::size).toList()).containsExactly(100, 1);
+        assertThat(fixture.batches())
+                .allSatisfy(batch -> assertThat(batch.size()).isLessThanOrEqualTo(100));
+        List<Long> requested = fixture.batches().stream().flatMap(List::stream).toList();
+        List<Long> expected = new ArrayList<>();
+        for (long id = 10000; id < 10100; id++) expected.add(id);
+        expected.add(20000L);
+        assertThat(requested).containsExactlyInAnyOrderElementsOf(expected);
         assertThat(html)
                 .contains("2026-01-01 — 2026-12-31")
                 .contains("2026-10-01")
                 .contains("09:00 · Лекция")
                 .contains("Запланировано")
                 .doesNotContain("PLANNED")
-                .contains("overflow:auto")
                 .contains("Иван Петров")
                 .contains("100/100 (100%)");
-        assertThat(occurrences(html, "<th scope=\"col\">")).isEqualTo(106);
-        assertThat(occurrences(html, "<td>+</td>")).isEqualTo(100);
-        assertThat(occurrences(html, "<td></td>")).isEqualTo(1);
+        var rows = ru.rutcampustrack.attendance.report.ExportTableReader.htmlRows(html);
+        var student =
+                rows.stream()
+                        .filter(cells -> cells.contains("Иван Петров"))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(student.stream().filter("+"::equals).count()).isEqualTo(100);
+        assertThat(student.stream().filter(String::isEmpty).count()).isEqualTo(1);
+        for (int index = 0; index < 100; index++) {
+            String date = LocalDate.parse("2026-01-01").plusDays(index).toString();
+            assertThat(
+                            ru.rutcampustrack.attendance.report.ExportTableReader.cell(
+                                    rows, "Иван Петров", date))
+                    .isEqualTo("+");
+        }
+        assertThat(
+                        ru.rutcampustrack.attendance.report.ExportTableReader.cell(
+                                rows, "Иван Петров", "2026-10-01"))
+                .isEmpty();
         assertThat(response.getContentType()).isEqualTo("text/html; charset=UTF-8");
         assertThat(response.getFileName()).endsWith(".html");
         verify(fixture.schedule())
@@ -87,16 +111,36 @@ class TeacherAttendanceExportServiceTest {
                 new String(
                         entries.get("xl/worksheets/sheet1.xml"),
                         java.nio.charset.StandardCharsets.UTF_8);
-        assertThat(sheet)
-                .contains("xSplit=\"1\" ySplit=\"6\"")
-                .contains("width=\"30\"")
-                .contains("width=\"14\"")
-                .contains("width=\"18\"")
-                .contains("\nЗавершено")
-                .doesNotContain("CLOSED")
-                .contains("\nЛекция\n№1")
-                .contains("<c r=\"C7\" t=\"inlineStr\"><is><t xml:space=\"preserve\"></t></is></c>")
-                .contains("<c r=\"F7\" s=\"2\" t=\"n\"><v>1</v></c>");
+        var rows = ru.rutcampustrack.attendance.report.ExportTableReader.sheetRows(sheet);
+        var student =
+                rows.stream()
+                        .filter(cells -> cells.contains("Иван Петров"))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(student).contains("+", "");
+        assertThat(sheet).contains("Завершено", "Лекция").doesNotContain("CLOSED");
+        var headings =
+                rows.stream()
+                        .filter(cells -> cells.contains("Знаменатель"))
+                        .findFirst()
+                        .orElseThrow();
+        var typed =
+                ru.rutcampustrack.attendance.report.ExportTableReader.sheetCells(
+                        sheet, "Иван Петров");
+        for (String heading :
+                List.of("Знаменатель", "Присутствовал — количество", "Присутствовал — %")) {
+            var value = typed.get(headings.indexOf(heading));
+            assertThat(value.getAttribute("t")).isEqualTo("n");
+            assertThat(Double.parseDouble(value.getTextContent())).isEqualTo(1);
+        }
+        assertThat(
+                        ru.rutcampustrack.attendance.report.ExportTableReader.cell(
+                                rows, "Иван Петров", "2026-01-01"))
+                .isEqualTo("+");
+        assertThat(
+                        ru.rutcampustrack.attendance.report.ExportTableReader.cell(
+                                rows, "Иван Петров", "2026-10-01"))
+                .isEmpty();
         assertThat(response.getContentType())
                 .isEqualTo("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         assertThat(response.getFileName()).endsWith(".xlsx");

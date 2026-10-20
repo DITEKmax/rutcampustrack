@@ -12,9 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -36,6 +35,10 @@ import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
+
 /**
  * Integration tests for manual attendance marking write path. Proves MARK-01, MARK-02, INFRA-06
  * requirements via full HTTP stack with real MongoDB.
@@ -45,6 +48,11 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
  * to verify event publication.
  */
 class MarkingIT extends AbstractAttendanceIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "markingit", 3);
+    }
 
     @Autowired private ObjectMapper objectMapper;
 
@@ -62,6 +70,9 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void setUp() {
         mongoTemplate.remove(new Query(), AttendanceDocument.class);
         requestAttachmentRepository.deleteAll();
+        mongoTemplate.getCollection("attendance_outbox").deleteMany(new org.bson.Document());
+        mongoTemplate.getCollection("lesson_actions").deleteMany(new org.bson.Document());
+        mongoTemplate.getCollection("student_checkin_pairs").deleteMany(new org.bson.Document());
         Mockito.reset(
                 scheduleGrpcClient, academicGrpcClient, semesterCacheService, geofenceService);
         when(scheduleGrpcClient.requireAttendanceMutationReady(
@@ -301,19 +312,190 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void mark_successfulMark_publishesAttendanceMarkedEvent() throws Exception {
         mockHappyPath();
 
-        mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT)).andExpect(status().isOk());
+        var response = socketMark(USER_ID, AttendanceStatus.PRESENT);
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        var stored = attendanceRepository.findByLessonIdAndUserId(LESSON_ID, USER_ID).orElseThrow();
+        assertThat(stored.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+        assertThat(stored.getSource()).isEqualTo(AttendanceSource.HEADMAN);
+        var intents = markedIntents();
+        assertThat(intents).hasSize(1);
+        for (var intent : intents)
+            assertThat(
+                            ru.rutcampustrack.attendance.events.EventSchemaValidator.validate(
+                                    "attendance.marked.json", intent.toString()))
+                    .isEmpty();
+        assertThat(intents)
+                .allSatisfy(
+                        envelope -> {
+                            assertThat(envelope.path("event_type").asText())
+                                    .isEqualTo("attendance.marked");
+                            assertThat(envelope.path("event_id").asText()).isNotBlank();
+                            assertThat(envelope.path("payload").path("lesson_id").asLong())
+                                    .isEqualTo(LESSON_ID);
+                            assertThat(envelope.path("payload").path("user_id").asLong())
+                                    .isEqualTo(USER_ID);
+                            assertThat(envelope.path("payload").path("group_id").asLong())
+                                    .isEqualTo(GROUP_ID);
+                            assertThat(envelope.path("payload").path("subject_id").asLong())
+                                    .isEqualTo(SUBJECT_ID);
+                            assertThat(envelope.path("payload").path("lesson_date").asText())
+                                    .isEqualTo("2026-04-01");
+                            assertThat(envelope.path("payload").path("status").asText())
+                                    .isEqualTo("present");
+                            assertThat(envelope.path("payload").path("marked_by").asText())
+                                    .isEqualTo("headman");
+                        });
+    }
 
-        // Verify AttendanceEventPublisher.publishMarked was called with a valid document.
-        // NOTIF unification: 2-arg form (subjectName может быть null если gRPC mock'а нет).
-        verify(attendanceEventPublisher)
-                .publishMarked(
-                        org.mockito.ArgumentMatchers.argThat(
-                                doc ->
-                                        doc.getLessonId().equals(LESSON_ID)
-                                                && doc.getUserId().equals(USER_ID)
-                                                && doc.getStatus() == AttendanceStatus.PRESENT
-                                                && doc.getSource() == AttendanceSource.HEADMAN),
-                        org.mockito.ArgumentMatchers.any());
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate socket;
+    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory tokens;
+    @MockitoSpyBean private ru.rutcampustrack.shared.outbox.OutboxStorage transactionalOutbox;
+
+    private org.springframework.http.HttpHeaders signedHeadman() {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(
+                "X-Internal-Token",
+                tokens.validToken(
+                        HEADMAN_USER_ID,
+                        java.util.UUID.randomUUID(),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        GROUP_ID,
+                        true,
+                        false));
+        return headers;
+    }
+
+    private org.springframework.http.ResponseEntity<String> socketMark(
+            long user, AttendanceStatus status) {
+        return socket.exchange(
+                "/attendance/lessons/" + LESSON_ID + "/students/" + user,
+                org.springframework.http.HttpMethod.PUT,
+                new org.springframework.http.HttpEntity<>(new MarkRequest(status), signedHeadman()),
+                String.class);
+    }
+
+    private List<com.fasterxml.jackson.databind.JsonNode> markedIntents() {
+        return mongoTemplate
+                .getCollection("attendance_outbox")
+                .find(new org.bson.Document("event_type", "attendance.marked"))
+                .into(new java.util.ArrayList<>())
+                .stream()
+                .map(
+                        row -> {
+                            try {
+                                return objectMapper.readTree(row.getString("payload"));
+                            } catch (Exception failure) {
+                                throw new AssertionError(failure);
+                            }
+                        })
+                .toList();
+    }
+
+    private ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest batch() {
+        return new ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest(
+                List.of(
+                        new ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem(
+                                LESSON_ID, 99L, AttendanceStatus.PRESENT),
+                        new ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem(
+                                LESSON_ID, 100L, AttendanceStatus.ABSENT),
+                        new ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem(
+                                LESSON_ID, 101L, AttendanceStatus.PRESENT)));
+    }
+
+    private void batchAuthority() {
+        mockHappyPath();
+        when(academicGrpcClient.getGroupMembers(GROUP_ID))
+                .thenReturn(buildGroupMembers(99L, 100L, 101L));
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), 1L))
+                .thenReturn(buildHistoricalGroupMembers(1L, 99L, 100L, 101L));
+    }
+
+    @Test
+    void batchHttpPersistsExactPairsStableIdsAndDurableIntents() {
+        batchAuthority();
+        var response =
+                socket.postForEntity(
+                        "/attendance/marks/batch",
+                        new org.springframework.http.HttpEntity<>(batch(), signedHeadman()),
+                        String.class);
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        var stored = attendanceRepository.findAll();
+        assertThat(stored)
+                .extracting(
+                        row -> row.getLessonId() + "/" + row.getUserId() + "/" + row.getStatus())
+                .containsExactlyInAnyOrder("42/99/PRESENT", "42/100/ABSENT", "42/101/PRESENT");
+        assertThat(markedIntents()).hasSize(3);
+        assertThat(markedIntents())
+                .extracting(row -> row.path("payload").path("user_id").asLong())
+                .containsExactlyInAnyOrder(99L, 100L, 101L);
+        assertThat(
+                        socket.postForEntity(
+                                        "/attendance/marks/batch",
+                                        new org.springframework.http.HttpEntity<>(
+                                                batch(), signedHeadman()),
+                                        String.class)
+                                .getStatusCode()
+                                .value())
+                .isEqualTo(200);
+        assertThat(attendanceRepository.findAll())
+                .extracting(AttendanceDocument::getId)
+                .containsExactlyInAnyOrderElementsOf(
+                        stored.stream().map(AttendanceDocument::getId).toList());
+        assertThat(markedIntents()).hasSize(3);
+    }
+
+    @Test
+    void batchHttpFailureAfterRealOutboxInsertRollsBackAndSameCommandRecovers() {
+        batchAuthority();
+        var inserted = new java.util.concurrent.atomic.AtomicInteger();
+        org.mockito.Mockito.doAnswer(
+                        call -> {
+                            call.callRealMethod();
+                            if ("attendance.marked".equals(call.getArgument(0))
+                                    && inserted.incrementAndGet() == 2)
+                                throw new IllegalStateException(
+                                        "owned failure after second actual event insert");
+                            return null;
+                        })
+                .when(transactionalOutbox)
+                .save(
+                        org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.anyString());
+        try {
+            var failed =
+                    socket.postForEntity(
+                            "/attendance/marks/batch",
+                            new org.springframework.http.HttpEntity<>(batch(), signedHeadman()),
+                            String.class);
+            assertThat(failed.getStatusCode().is5xxServerError()).isTrue();
+            assertThat(inserted.get()).isEqualTo(2);
+            for (String collection :
+                    List.of(
+                            "attendances",
+                            "attendance_outbox",
+                            "lesson_actions",
+                            "student_checkin_pairs"))
+                assertThat(mongoTemplate.getCollection(collection).countDocuments())
+                        .as(collection)
+                        .isZero();
+        } finally {
+            org.mockito.Mockito.reset(transactionalOutbox);
+        }
+        assertThat(
+                        socket.postForEntity(
+                                        "/attendance/marks/batch",
+                                        new org.springframework.http.HttpEntity<>(
+                                                batch(), signedHeadman()),
+                                        String.class)
+                                .getStatusCode()
+                                .value())
+                .isEqualTo(200);
+        assertThat(attendanceRepository.findAll()).hasSize(3);
+        assertThat(markedIntents()).hasSize(3);
     }
 
     // -------------------------------------------------------------------------

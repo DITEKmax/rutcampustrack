@@ -3,22 +3,24 @@ package ru.rutcampustrack.attendance.event;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Integration tests for {@code lesson.one_off.cancelled} event consumer (AC-08, D-22).
@@ -31,6 +33,11 @@ import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTes
  * {@code remove} returns 0 deletedCount on the second pass, without exception.
  */
 class OneOffLessonCancelledConsumerIT extends AbstractAttendanceIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "oneofflessoncancelledconsumerit", 8);
+    }
 
     @Autowired private RabbitTemplate rabbitTemplate;
 
@@ -120,23 +127,80 @@ class OneOffLessonCancelledConsumerIT extends AbstractAttendanceIntegrationTest 
         LocalDate date = LocalDate.of(2026, 5, 1);
         mongoTemplate.save(doc(1L, date, 2, 100L));
 
-        publish(envelope(1L, date, 2));
-        await().atMost(5, TimeUnit.SECONDS)
+        var foreign = mongoTemplate.save(doc(2L, date, 2, 200L));
+        var foreignBefore =
+                mongoTemplate
+                        .getCollection("attendances")
+                        .find(new org.bson.Document("user_id", 200L))
+                        .first();
+        var event = envelope(1L, date, 2);
+        publish(event);
+        awaitReceiptAndAcknowledgements(event, 1);
+        var receipt =
+                mongoTemplate
+                        .getCollection("semester_archive_effect_receipts")
+                        .find(new org.bson.Document("_id", event.get("event_id") + ":ATTENDANCE"))
+                        .first();
+        assertThat(mongoTemplate.findAll(AttendanceDocument.class)).hasSize(1);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("attendances")
+                                .find(new org.bson.Document("user_id", 200L))
+                                .first())
+                .isEqualTo(foreignBefore);
+        publish(event);
+        awaitReceiptAndAcknowledgements(event, 2);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("semester_archive_effect_receipts")
+                                .find(
+                                        new org.bson.Document(
+                                                "_id", event.get("event_id") + ":ATTENDANCE"))
+                                .first())
+                .isEqualTo(receipt);
+        assertThat(mongoTemplate.findAll(AttendanceDocument.class)).hasSize(1);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("attendances")
+                                .find(new org.bson.Document("user_id", 200L))
+                                .first())
+                .isEqualTo(foreignBefore);
+        assertThat(rabbitTemplate.receive("attendance-service.events.dlq")).isNull();
+    }
+
+    private void awaitReceiptAndAcknowledgements(Map<String, Object> event, int count) {
+        String id = event.get("event_id").toString();
+        await().atMost(10, TimeUnit.SECONDS)
                 .untilAsserted(
                         () -> {
-                            assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
-                        });
-
-        // Second delivery must not fail the listener (no exception, no DLQ)
-        publish(envelope(1L, date, 2));
-
-        // Give the consumer time to process — if it had failed, the retry/NACK logs would appear.
-        // We assert after a short wait by verifying the collection is still empty AND that we can
-        // save+delete again through the same pathway.
-        await().atMost(3, TimeUnit.SECONDS)
-                .untilAsserted(
-                        () -> {
-                            assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
+                            assertThat(
+                                            mongoTemplate
+                                                    .getCollection(
+                                                            "semester_archive_effect_receipts")
+                                                    .countDocuments(
+                                                            new org.bson.Document(
+                                                                    "_id", id + ":ATTENDANCE")))
+                                    .isEqualTo(1);
+                            assertThat(
+                                            mongoTemplate
+                                                    .getCollection(
+                                                            "semester_archive_effect_receipts")
+                                                    .find(
+                                                            new org.bson.Document(
+                                                                    "_id", id + ":ATTENDANCE"))
+                                                    .first()
+                                                    .getString("result"))
+                                    .isEqualTo("APPLIED");
+                            assertThat(
+                                            mongoTemplate.count(
+                                                    Query.query(
+                                                            Criteria.where("event_type")
+                                                                    .is(
+                                                                            "semester.archive.effect.ack")
+                                                                    .and("payload")
+                                                                    .regex(id)),
+                                                    "attendance_outbox"))
+                                    .isEqualTo(count);
                         });
     }
 

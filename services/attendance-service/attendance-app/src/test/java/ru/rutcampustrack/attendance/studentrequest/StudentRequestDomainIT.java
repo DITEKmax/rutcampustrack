@@ -11,38 +11,16 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
+
 import static ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcServiceTest.teacherContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import com.mongodb.client.model.Filters;
+
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
+
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
@@ -52,12 +30,8 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.index.Index;
-import org.springframework.data.mongodb.core.index.PartialIndexFilter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -68,6 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
@@ -137,6 +112,32 @@ import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
+
 /**
  * Domain-level Mongo replica-set checks for the frozen student request contract. The container and
  * database are task-owned and receive a unique name/database on every class run; this test never
@@ -150,6 +151,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
     StudentRequestService.class,
     HeadmanRequestService.class,
     MongoConvertersConfig.class,
+    ru.rutcampustrack.attendance.config.MongoConfig.class,
     StudentRequestDomainIT.TestConfig.class
 })
 class StudentRequestDomainIT {
@@ -187,11 +189,6 @@ class StudentRequestDomainIT {
 
     @TestConfiguration(proxyBeanMethods = false)
     static class TestConfig {
-        @Bean({"transactionManager", "mongoTransactionManager"})
-        MongoTransactionManager transactionManager(MongoDatabaseFactory factory) {
-            return new MongoTransactionManager(factory);
-        }
-
         @Bean
         FaultInjectingTransactionTemplate transactionTemplate(MongoTransactionManager manager) {
             return new FaultInjectingTransactionTemplate(manager);
@@ -364,6 +361,7 @@ class StudentRequestDomainIT {
         }
     }
 
+    @jakarta.annotation.Resource ru.rutcampustrack.attendance.config.MongoConfig mongoConfig;
     @jakarta.annotation.Resource StudentRequestService service;
     @jakarta.annotation.Resource HeadmanRequestService headmanRequestService;
     @jakarta.annotation.Resource MongoTemplate mongoTemplate;
@@ -393,7 +391,7 @@ class StudentRequestDomainIT {
     void setUp() {
         // The URI points at a unique task database, so this only clears this run's fixture.
         mongoTemplate.getDb().drop();
-        ensureIndexes();
+        mongoConfig.initIndexes();
 
         currentLessonIds.clear();
         lessonStatuses.clear();
@@ -3641,54 +3639,72 @@ class StudentRequestDomainIT {
         return false;
     }
 
-    private void ensureIndexes() {
-        mongoTemplate
-                .indexOps("attendances")
-                .ensureIndex(
-                        new Index()
-                                .on("lesson_id", Sort.Direction.ASC)
-                                .on("user_id", Sort.Direction.ASC)
-                                .unique()
-                                .named("uniq_lesson_user"));
-        mongoTemplate
-                .indexOps("late_checkin_requests")
-                .ensureIndex(
-                        new Index()
-                                .on("student_id", Sort.Direction.ASC)
-                                .on("lesson_id", Sort.Direction.ASC)
-                                .unique()
-                                .partial(
-                                        PartialIndexFilter.of(
-                                                Criteria.where("status")
-                                                        .is(
-                                                                LateCheckinRequestStatus.PENDING
-                                                                        .name())))
-                                .named("uniq_lcr_pending_student_lesson"));
-        mongoTemplate
-                .indexOps("student_request_receipts")
-                .ensureIndex(
-                        new Index()
-                                .on("student_id", Sort.Direction.ASC)
-                                .on("command_kind", Sort.Direction.ASC)
-                                .on("idempotency_key", Sort.Direction.ASC)
-                                .unique()
-                                .named("uniq_student_request_receipt"));
-        mongoTemplate
-                .indexOps("student_late_checkin_budgets")
-                .ensureIndex(
-                        new Index()
-                                .on("student_id", Sort.Direction.ASC)
-                                .on("semester_id", Sort.Direction.ASC)
-                                .unique()
-                                .named("uniq_student_late_budget"));
-        mongoTemplate
-                .indexOps("request_attachments")
-                .ensureIndex(
-                        new Index()
-                                .on("request_id", Sort.Direction.ASC)
-                                .on("owner_student_id", Sort.Direction.ASC)
-                                .on("position", Sort.Direction.ASC)
-                                .named("idx_request_attachment_owner_position"));
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {"2025-10-12T06:00:00Z", "2030-10-12T06:00:00Z"})
+    void actualRetentionCleanupUsesIndependentRealClockAndActualMongoPredicate(String teachingNow) {
+        Instant realNow = Instant.parse("2028-10-11T22:00:00Z");
+        clock.set(realNow);
+        var expired =
+                RequestAttachmentDocument.builder()
+                        .id("expired-clock")
+                        .requestId("100:44")
+                        .ownerStudentId(100L)
+                        .groupId(GROUP_ID)
+                        .semesterId(SEMESTER_ID)
+                        .state(AttachmentState.ACTIVE)
+                        .data(new Binary(new byte[] {1, 2, 3}))
+                        .expiresAt(realNow.minusSeconds(1))
+                        .build();
+        var retained =
+                RequestAttachmentDocument.builder()
+                        .id("retained-clock")
+                        .requestId("100:45")
+                        .ownerStudentId(100L)
+                        .groupId(GROUP_ID)
+                        .semesterId(SEMESTER_ID)
+                        .state(AttachmentState.ACTIVE)
+                        .data(new Binary(new byte[] {4, 5, 6}))
+                        .expiresAt(realNow.plusSeconds(1))
+                        .build();
+        attachmentRepository.saveAll(List.of(expired, retained));
+        var beforeRetained =
+                mongoTemplate
+                        .getCollection("request_attachments")
+                        .find(new Document("_id", "retained-clock"))
+                        .first();
+        var independent =
+                new StudentRequestService(
+                        excuseRepository,
+                        lateCheckinRepository,
+                        attendanceRepository,
+                        receiptRepository,
+                        budgetRepository,
+                        attachmentRepository,
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        semesterCacheService,
+                        pairWriteCoordinator,
+                        new ExcuseEventPublisher(outboxStorage, new ObjectMapper()),
+                        new LateCheckinEventPublisher(outboxStorage, new ObjectMapper()),
+                        mongoTemplate,
+                        transactionTemplate,
+                        clock,
+                        null,
+                        new ru.rutcampustrack.shared.web.time.EducationalTime(
+                                Clock.fixed(Instant.parse(teachingNow), ZoneOffset.UTC)));
+        assertThat(independent.expireAttachments()).isEqualTo(1);
+        var cleared = attachmentRepository.findById("expired-clock").orElseThrow();
+        assertThat(cleared.getState()).isEqualTo(AttachmentState.EXPIRED);
+        assertThat(cleared.getData()).isNull();
+        assertThat(cleared.getExpiredAt()).isEqualTo(realNow);
+        assertThat(
+                        mongoTemplate
+                                .getCollection("request_attachments")
+                                .find(new Document("_id", "retained-clock"))
+                                .first())
+                .isEqualTo(beforeRetained);
+        assertThat(mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments()).isZero();
     }
 
     private static Identity student(long userId) {

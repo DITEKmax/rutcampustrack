@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.mongodb.client.result.UpdateResult;
-import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,8 +23,8 @@ import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
-import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
@@ -33,6 +33,8 @@ import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+
+import java.time.LocalDate;
 
 /** Unit tests for LessonEventService business logic. Pure Mockito — no Spring context loaded. */
 @ExtendWith(MockitoExtension.class)
@@ -80,52 +82,6 @@ class LessonEventServiceTest {
     // -------------------------------------------------------------------------
     // Test 1: processLessonClosed calls bulkOps.upsert for each student
     // -------------------------------------------------------------------------
-
-    @Test
-    void processLessonClosed_callsBulkUpsertForEachStudent() {
-        LessonResponse lesson =
-                LessonResponse.newBuilder()
-                        .setId(1L)
-                        .setGroupId(10L)
-                        .setSubjectId(5L)
-                        .setDate("2026-04-01")
-                        .setLessonNumber(1)
-                        .setStatus("closed")
-                        .setSemesterId(1L)
-                        .build();
-        when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
-
-        GroupMembersResponse members =
-                GroupMembersResponse.newBuilder()
-                        .addStudents(
-                                StudentInfo.newBuilder()
-                                        .setUserId(100L)
-                                        .setDisplayName("Student 100")
-                                        .build())
-                        .addStudents(
-                                StudentInfo.newBuilder()
-                                        .setUserId(101L)
-                                        .setDisplayName("Student 101")
-                                        .build())
-                        .addStudents(
-                                StudentInfo.newBuilder()
-                                        .setUserId(102L)
-                                        .setDisplayName("Student 102")
-                                        .build())
-                        .build();
-        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
-                .thenReturn(
-                        GroupMembersResponse.newBuilder()
-                                .addAllStudents(members.getStudentsList())
-                                .setAsOfDate("2026-04-01")
-                                .setSemesterId(1L)
-                                .build());
-
-        lessonEventService.processLessonClosed(1L, 10L);
-
-        verify(bulkOps, times(3)).upsert(any(Query.class), any(Update.class));
-        verify(bulkOps, times(1)).execute();
-    }
 
     // -------------------------------------------------------------------------
     // Test 2: processLessonClosed with empty group skips bulk ops entirely

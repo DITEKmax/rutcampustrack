@@ -554,7 +554,7 @@ jobs:
                   method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
                   test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java'
                   source = test_source.read_bytes()
-                  assert hashlib.sha256(source).hexdigest() == '6db8d2a6f6bf6ee68d57f000295e64e1db3794b060500c37a3f1c735948486bf'
+                  assert hashlib.sha256(source).hexdigest() == '5c643c0bfe0c69fb9f7aecef42b445cc3ea927e32a134b6ae10ef64960fc0939'
                   archive = (b'        archive(target, request);\n'
                              b'        assertThat(\n'
                              b'                        jdbc.queryForObject(\n'
@@ -578,7 +578,7 @@ jobs:
                           .isEqualTo(1);
           '''
                   negative = source.replace(anchor, archive + update + oracle)
-                  assert hashlib.sha256(negative).hexdigest() == 'fce0bc358b97294cd24c72e3741c417da71ecd3d2f4ff3a704d486d09b37229f'
+                  assert hashlib.sha256(negative).hexdigest() == 'cc70eaabe6fc07262b9a9464c75c0c53deb1bcf4da84546baef464ac187cc74d'
                   assert negative.count(archive + update + oracle) == 1
                   rule_line = negative[:negative.index(archive + update + oracle)].count(b'\n') + len((archive + update + oracle).splitlines())
                   replacements = {test_source: negative}
@@ -586,7 +586,7 @@ jobs:
                                ruleFrame=package + '.' + method + '(UserArchiveLifecycleIT.java:' + str(rule_line) + ')')
                   identity_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java'
                   identity_current = identity_source.read_bytes()
-                  assert hashlib.sha256(identity_current).hexdigest() == 'ee838949ab03c847fcbbff78192e209a4da5066ad71fe28d9bc4037b67c5fefc'
+                  assert hashlib.sha256(identity_current).hexdigest() == '4cccd16f419fdb812114369fe6aaf52ad6c33f279a5772443dab5090e1b61893'
                   identity_oracle = (b'        assertThat(\n'
                                      b'                        studentIdentity.equals(\n'
                                      b'                                java.util.List.of(\n'
@@ -599,7 +599,7 @@ jobs:
                   identity_update = "        assertThat(\n                        jdbcTemplate.update(\n                                \"UPDATE academic_profiles SET first_name=first_name || '-rct-identity-red' WHERE id=?\",\n                                studentId))\n                .isEqualTo(1);\n".encode()
                   assert identity_current.count(identity_oracle) == 1
                   identity_negative = identity_current.replace(identity_oracle, identity_update + identity_oracle)
-                  assert hashlib.sha256(identity_negative).hexdigest() == '7320a591dd684999e382ef812cf6dbd8778049dc9a66ad642458901629f8ba38'
+                  assert hashlib.sha256(identity_negative).hexdigest() == '4c165afc0076d36800bf697b5f4bd5a4902c84cadf5d1e998d5e51a857bac2e9'
                   identity_line = (identity_negative[:identity_negative.index(identity_update + identity_oracle)].count(b'\n')
                                    + len((identity_update + identity_oracle).splitlines()))
                   identity_package = 'ru.rutcampustrack.academic.integration.RestApiIT'
@@ -615,11 +615,11 @@ jobs:
 
                   audit_source = app / 'src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java'
                   audit_test = audit_source.read_bytes()
-                  assert hashlib.sha256(audit_test).hexdigest() == '03df4515b701067f8a71624867338c6745c9da45ed420492f7d4723e81388204'
+                  assert hashlib.sha256(audit_test).hexdigest() == '3f344884511c3e764afe7529581605e84152123538d530d49c0a7011d7e77589'
                   audit_oracle = b'        assertThat(payload.path("actor").path("user_id").asLong()).isEqualTo(actor);\n'
                   assert audit_test.count(audit_oracle) == 1
                   audit_line = audit_test[:audit_test.index(audit_oracle)].count(b'\n') + 1
-                  assert audit_line == 1235
+                  assert audit_line == 1334
                   audit_production = app / 'src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java'
                   audit_current = audit_production.read_bytes()
                   assert hashlib.sha256(audit_current).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
@@ -729,7 +729,7 @@ jobs:
                   digest_test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
                   digest_current, digest_test = digest_source.read_bytes(), digest_test_source.read_bytes()
                   assert hashlib.sha256(digest_current).hexdigest() == 'ede653fea92fb03039727dd0223ae1d14e41f348c8e0e289d85cdf4355db7531'
-                  assert hashlib.sha256(digest_test).hexdigest() == '38dce1cf49a8d538f896325cdf08a258109cc06f3a3ff07b313fd2f07c389fe6'
+                  assert hashlib.sha256(digest_test).hexdigest() == '1f14a56d7cb038d5d79498efd3dd66d502cc6ffb493b9cc6d79b54bc4394b2b4'
                   assert digest_test == subprocess.check_output(['git', 'show', 'HEAD:' + digest_test_source.as_posix()])
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(digest_test_source)]) == b''
                   digest_anchor, digest_changed = b'|| !p.digest().equals(b.previewDigest())', b'|| false'
@@ -742,7 +742,7 @@ jobs:
                   digest_method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
                   assert digest_lines[40].strip() == 'void ' + digest_method + '() throws Exception {'
                   assert digest_lines[66].strip() == 'assertPrivate(call("verify", new VerifyRequest(token, changedDigest, id, code)), 409);'
-                  assert digest_lines[383].strip() == 'assertThat(response.getStatusCode().value()).isEqualTo(expected);'
+                  assert digest_lines[405].strip() == 'assertThat(response.getStatusCode().value()).isEqualTo(expected);'
                   subject_digest = {'package': digest_package, 'method': digest_method,
                                     'source': digest_test_source, 'production': digest_source}
                   replacements[digest_source] = digest_negative
@@ -753,7 +753,7 @@ jobs:
                       'productionSourceSha256': hashlib.sha256(digest_current).hexdigest(),
                       'counterexampleSourceSha256': hashlib.sha256(digest_negative).hexdigest(),
                       'ruleFrame': digest_package + '.' + digest_method + '(SubjectDeletionProofHttpIT.java:67)',
-                      'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:384)'}
+                      'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:406)'}
 
               elif service == 'notification-service':
                   package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
@@ -783,7 +783,7 @@ jobs:
                   proof['counterexample'] = 'OMITTED_BUDGET_INCREMENT'
                   student_source = test_source
                   student_test = student_source.read_bytes()
-                  assert hashlib.sha256(student_test).hexdigest() == '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f'
+                  assert hashlib.sha256(student_test).hexdigest() == '2effa3adc3466ea0db0386282e0a631fba5829eb29fa829ec38ea2814bf79671'
                   student_production = app / 'src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java'
                   student_current = student_production.read_bytes()
                   assert hashlib.sha256(student_current).hexdigest() == 'f93136610cbd2fc01f44534a2731529c7adbcb325e88cd775880973d05b79fa3'
@@ -798,12 +798,12 @@ jobs:
                   assert hashlib.sha256(student_negative).hexdigest() == 'f678bb87c3d27397297f5db6f2b40faeb11e0cb4b13ae9209028e26a0107f570'
                   assert student_negative.replace(student_changed, student_anchor) == student_current
                   student_lines = student_test.decode().splitlines()
-                  assert student_lines[451].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
-                  assert student_lines[589].strip() == 'assertThatThrownBy(() -> projection.project(claims, SEMESTER_ID, null, "weeks", List.of()))'
+                  assert student_lines[449].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
+                  assert student_lines[587].strip() == 'assertThatThrownBy(() -> projection.project(claims, SEMESTER_ID, null, "weeks", List.of()))'
                   scoped_read = {'package': package,
                                  'method': 'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                                  'source': student_source, 'production': student_production, 'file': 'StudentRequestDomainIT.java',
-                                 'proofKey': 'studentGroupRule', 'ruleLine': 590,
+                                 'proofKey': 'studentGroupRule', 'ruleLine': 588,
                                  'testSha': hashlib.sha256(student_test).hexdigest(),
                                  'productionSha': hashlib.sha256(student_current).hexdigest(),
                                  'negative': student_negative, 'counterexample': 'OMITTED_CURRENT_GROUP_CATALOGUE_MISMATCH'}
@@ -811,7 +811,7 @@ jobs:
               if service == 'attendance-service':
                   backfill_source = app / 'src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java'
                   backfill_test = backfill_source.read_bytes()
-                  assert hashlib.sha256(backfill_test).hexdigest() == 'dd786e8b1c04114712292ace449cbf0b618540e7f7c529c060d3774a981ee296'
+                  assert hashlib.sha256(backfill_test).hexdigest() == '4dd81beaa372273837efded6a6ebba4453116ee5a296864fadc1ee7129b48c98'
                   backfill_production = app / 'src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java'
                   backfill_current = backfill_production.read_bytes()
                   assert hashlib.sha256(backfill_current).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
@@ -819,10 +819,10 @@ jobs:
                       assert path.read_bytes() == subprocess.check_output(['git', 'show', 'HEAD:' + path.as_posix()])
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   backfill_lines = backfill_test.decode().splitlines()
-                  assert backfill_lines[735].strip() == 'void lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal()'
-                  assert backfill_lines[826].strip() == 'assertThat(inserted != null)'
-                  assert backfill_lines[827].strip() == '.as("late initial member must have a stored attendance record")'
-                  assert backfill_lines[828].strip() == '.isTrue();'
+                  assert backfill_lines[684].strip() == 'void lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal()'
+                  assert backfill_lines[775].strip() == 'assertThat(inserted != null)'
+                  assert backfill_lines[776].strip() == '.as("late initial member must have a stored attendance record")'
+                  assert backfill_lines[777].strip() == '.isTrue();'
                   backfill_anchor = b'                        lessons.applyInitialMembership(snapshot);'
                   backfill_changed = b'                        // Deliberate sensitivity fault: omit the admitted target effect.'
                   assert backfill_current.count(backfill_anchor) == 1
@@ -839,7 +839,7 @@ jobs:
                       'testSourceSha256': hashlib.sha256(backfill_test).hexdigest(),
                       'productionSourceSha256': hashlib.sha256(backfill_current).hexdigest(),
                       'counterexampleSourceSha256': hashlib.sha256(backfill_negative).hexdigest(),
-                      'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:829)'}
+                      'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:778)'}
 
               if service == 'academic-service':
                   spring_source = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
@@ -886,7 +886,7 @@ jobs:
                   # Captured teacher pairs moved to Academic; T008 grant policy is unchanged.
                   teacher_source = app / 'src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java'
                   teacher_test = teacher_source.read_bytes()
-                  assert hashlib.sha256(teacher_test).hexdigest() == '0244a1abb41dc76fb65f9e7cd1bc9a9d77da6ed7a557b9913065689b87eaf8c1'
+                  assert hashlib.sha256(teacher_test).hexdigest() == '30afcc02d68553512cd322724485e3bacf8d5d5df16c85610070946b5c3e1b63'
                   teacher_production = app / 'src/main/java/ru/rutcampustrack/academic/exportjobs/LocalReportAuthority.java'
                   teacher_current = teacher_production.read_bytes()
                   assert hashlib.sha256(teacher_current).hexdigest() == '2ed6ed5d37c319871a88469064595c65749d7404ac13fabd4a2c544bc90210de'
@@ -895,12 +895,12 @@ jobs:
                   teacher_negative = teacher_current.replace(teacher_anchor, b'', 1)
                   assert hashlib.sha256(teacher_negative).hexdigest() == '7b5466a6c9fb694cea5b0d6417f31f6cc7c7d0afdc43a88023e0fd9212fe9bdc'
                   teacher_lines = teacher_test.decode().splitlines()
-                  assert teacher_lines[486].strip() == 'void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {'
-                  assert teacher_lines[517].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
+                  assert teacher_lines[501].strip() == 'void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {'
+                  assert teacher_lines[546].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
                   scoped_read = {'package': 'ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                  'method': 'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                  'source': teacher_source, 'production': teacher_production, 'file': 'AcademicExportJobsIT.java',
-                                 'proofKey': 'teacherReadyRule', 'ruleLine': 518,
+                                 'proofKey': 'teacherReadyRule', 'ruleLine': 547,
                                  'testSha': hashlib.sha256(teacher_test).hexdigest(),
                                  'productionSha': hashlib.sha256(teacher_current).hexdigest(),
                                  'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
@@ -911,14 +911,14 @@ jobs:
                       'package': 'ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
                       'method': 'blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility',
                       'source': 'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',
-                      'testSha': '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f',
+                      'testSha': '2effa3adc3466ea0db0386282e0a631fba5829eb29fa829ec38ea2814bf79671',
                       'production': 'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java',
                       'productionSha': 'cbcdae11c677ab8f954eb138230186287df30586aea681bc86b892df05c1e1b3',
                       'anchor': '        if (lesson.blocked()) {\n            throw new ConflictException("Пара заблокирована");\n        }\n',
                       'changed': '',
                       'negativeSha': '48b1a29d234901c2fa1e12d2df2ce65e6ffedcd174a5cfd438dd10b0ab6121b4',
                       'counterexample': 'OMITTED_BLOCKED_LESSON_MANUAL_REQUEST_GUARD',
-                      'ruleLine': 3846,
+                      'ruleLine': 3862,
                       'ruleSource': '.isFalse();',
                       'messagePattern': '\\s*\\[blocked lesson denies manual request option\\]\\s*Expecting value to be false but was true\\s*',
                   },
@@ -941,17 +941,17 @@ jobs:
                       'package': 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT',
                       'method': 'loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin',
                       'source': 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java',
-                      'testSha': '38dce1cf49a8d538f896325cdf08a258109cc06f3a3ff07b313fd2f07c389fe6',
+                      'testSha': '1f14a56d7cb038d5d79498efd3dd66d502cc6ffb493b9cc6d79b54bc4394b2b4',
                       'production': 'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java',
                       'productionSha': 'ede653fea92fb03039727dd0223ae1d14e41f348c8e0e289d85cdf4355db7531',
                       'anchor': '        if (!MessageDigest.isEqual(\n                p.codeHash().getBytes(StandardCharsets.US_ASCII),\n                hash(request.challengeId() + ":" + request.code())\n                        .getBytes(StandardCharsets.US_ASCII))) {\n            // Consumed proof retries cannot exhaust or mutate the already accepted command.\n            if (p.receipt() == null)\n                jdbc.update(\n                        "UPDATE subject_deletion_proofs SET attempts=attempts+1 WHERE"\n                                + " challenge_hash=?",\n                        hash(request.challengeId()));\n            return new Verification(false, null);\n        }\n',
                       'changed': '',
                       'negativeSha': 'f1f83252a30aec751abde35f3ccb60c61804e88d67f762ade0106a19fa24a474',
                       'counterexample': 'OMITTED_CHALLENGE_SCOPED_SUBJECT_PROOF_CODE_GUARD',
-                      'ruleLine': 527,
+                      'ruleLine': 549,
                       'ruleSource': 'assertPrivate(denied, 409);',
                       'messagePattern': '\\s*expected:\\s*409\\s+but was:\\s*200\\s*',
-                      'helperLine': 384,
+                      'helperLine': 406,
                   },
                   'academic-service': {
                       'package': 'ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT',
@@ -1542,10 +1542,10 @@ jobs:
                   assert path.read_bytes() == content
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
               if additional is not None and current:
-                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == 'ee838949ab03c847fcbbff78192e209a4da5066ad71fe28d9bc4037b67c5fefc'
+                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '4cccd16f419fdb812114369fe6aaf52ad6c33f279a5772443dab5090e1b61893'
                   proof['additionalRule']['sourceRestoredExact'] = True
               if audit is not None and current:
-                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '03df4515b701067f8a71624867338c6745c9da45ed420492f7d4723e81388204'
+                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '3f344884511c3e764afe7529581605e84152123538d530d49c0a7011d7e77589'
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:
@@ -1560,7 +1560,7 @@ jobs:
               if service == 'notification-service' and current:
                   proof['sourceRestoredExact'] = True
               if service == 'academic-service' and current:
-                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '6db8d2a6f6bf6ee68d57f000295e64e1db3794b060500c37a3f1c735948486bf'
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '5c643c0bfe0c69fb9f7aecef42b445cc3ea927e32a134b6ae10ef64960fc0939'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(test_source)]) == b''
                   proof['sourceRestoredExact'] = True
               if scoped_read is not None and current:
@@ -1570,7 +1570,7 @@ jobs:
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   proof[scoped_read['proofKey']]['sourceRestoredExact'] = True
               if subject_digest is not None and current:
-                  assert hashlib.sha256(subject_digest['source'].read_bytes()).hexdigest() == '38dce1cf49a8d538f896325cdf08a258109cc06f3a3ff07b313fd2f07c389fe6'
+                  assert hashlib.sha256(subject_digest['source'].read_bytes()).hexdigest() == '1f14a56d7cb038d5d79498efd3dd66d502cc6ffb493b9cc6d79b54bc4394b2b4'
                   assert hashlib.sha256(subject_digest['production'].read_bytes()).hexdigest() == 'ede653fea92fb03039727dd0223ae1d14e41f348c8e0e289d85cdf4355db7531'
                   for path in (subject_digest['source'], subject_digest['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
@@ -1589,7 +1589,7 @@ jobs:
                   proof['acceptedBoundaryRule']['sourceRestoredExact'] = True
 
               if initial_membership is not None and current:
-                  assert hashlib.sha256(initial_membership['source'].read_bytes()).hexdigest() == 'dd786e8b1c04114712292ace449cbf0b618540e7f7c529c060d3774a981ee296'
+                  assert hashlib.sha256(initial_membership['source'].read_bytes()).hexdigest() == '4dd81beaa372273837efded6a6ebba4453116ee5a296864fadc1ee7129b48c98'
                   assert hashlib.sha256(initial_membership['production'].read_bytes()).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
                   for path in (initial_membership['source'], initial_membership['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
@@ -1899,11 +1899,11 @@ jobs:
               'academic-service': ('ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                    'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                    'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java',
-                                   '0244a1abb41dc76fb65f9e7cd1bc9a9d77da6ed7a557b9913065689b87eaf8c1'),
+                                   '30afcc02d68553512cd322724485e3bacf8d5d5df16c85610070946b5c3e1b63'),
               'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
                                      'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                                      'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',
-                                     '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f'),
+                                     '2effa3adc3466ea0db0386282e0a631fba5829eb29fa829ec38ea2814bf79671'),
           }
           service = sys.argv[1]
           if service not in targets and service != 'academic-service':
@@ -1946,7 +1946,7 @@ jobs:
                   package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
                   method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
                   source = 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
-                  digest = '38dce1cf49a8d538f896325cdf08a258109cc06f3a3ff07b313fd2f07c389fe6'
+                  digest = '1f14a56d7cb038d5d79498efd3dd66d502cc6ffb493b9cc6d79b54bc4394b2b4'
                   production = pathlib.Path('services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java')
                   assert hashlib.sha256(production.read_bytes()).hexdigest() == 'ede653fea92fb03039727dd0223ae1d14e41f348c8e0e289d85cdf4355db7531'
                   assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
@@ -1960,13 +1960,13 @@ jobs:
           print('PASS exact restored scoped-read method in the ordinary integration gate')
           boundary_targets = {
               'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT', 'blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility',
-                  'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java', '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f',
+                  'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java', '2effa3adc3466ea0db0386282e0a631fba5829eb29fa829ec38ea2814bf79671',
                   'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java', 'cbcdae11c677ab8f954eb138230186287df30586aea681bc86b892df05c1e1b3'),
               'schedule-service': ('ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT', 'concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict',
                   'services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java', '9b86eb52b1b5111ba7f4243289a70c61bd92d1e64a87c1599ea366cdb4615123',
                   'services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql', '8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc'),
               'auth-service': ('ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT', 'loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin',
-                  'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java', '38dce1cf49a8d538f896325cdf08a258109cc06f3a3ff07b313fd2f07c389fe6',
+                  'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java', '1f14a56d7cb038d5d79498efd3dd66d502cc6ffb493b9cc6d79b54bc4394b2b4',
                   'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java', 'ede653fea92fb03039727dd0223ae1d14e41f348c8e0e289d85cdf4355db7531'),
               'academic-service': ('ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT', 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
                   'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', '221e9cb87caa2325fd515a34e059f37be58019af7c86819d42a65bdb4cdda70f',
@@ -2012,7 +2012,7 @@ jobs:
                       'v61IsAdditiveAndRestoresPendingAndAppliedReplayIdentities')),
               'attendance-service': ('ru.rutcampustrack.attendance.integration.EventConsumerIT',
                   'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java',
-                  'dd786e8b1c04114712292ace449cbf0b618540e7f7c529c060d3774a981ee296', (
+                  '4dd81beaa372273837efded6a6ebba4453116ee5a296864fadc1ee7129b48c98', (
                       'lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal',
                       'initialMembershipForeignUnknownAndOutboxFailureNeverPartiallyApply',
                       'initialMembershipCannotResurrectSubjectOrSemesterTombstones')),
@@ -2381,12 +2381,12 @@ jobs:
           method = 'apiDocsMatchesSnapshot'
           app = pathlib.Path('services/auth-service/auth-app')
           test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java'
-          test_sha = '0cfe2d3ca279a3854e6a0acb3060f63929a218508429c60fee2788158877b574'
+          test_sha = '16090a1d73a07c056cde8855fe08d3586030d9bda77198cab78866623d8af52e'
           source = test_source.read_bytes()
           assert hashlib.sha256(source).hexdigest() == test_sha
           assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
           lines = source.decode().splitlines()
-          target = '                .isEqualTo(expected);'
+          target = '                .isEqualTo(semantic(mapper.readTree(expected)));'
           assert lines.count(target) == 1
           expected_line = lines.index(target) + 1
           report = pathlib.Path('build/ci-test-outcomes/auth-service/integrationTest/safe-outcomes.json')
@@ -2984,7 +2984,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # Lightweight verification tasks (не зависит от тестов).
+      # Configuration gates use existing parser/logging JVM dependencies, without services or databases.
       - name: Warm Gradle wrapper
         run: |
           for attempt in 1 2 3; do
@@ -2995,6 +2995,32 @@ jobs:
             sleep $((attempt * 10))
           done
           ./gradlew --version --no-daemon
+
+      - name: Verify bounded parser and infrastructure refusal controls
+        timeout-minutes: 3
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          umask 077
+          controls=(tests/harness/test_ci_test_outcomes.py
+                    tests/harness/test_gateway_smoke.py
+                    tests/harness/test_deploy_prerequisites.py
+                    tests/harness/test_served_web_panel.py
+                    scripts/test-recovery-failure-boundaries.py)
+          for control in "${controls[@]}"; do
+            log="$RUNNER_TEMP/$(basename "$control").private.log"
+            if python3 -B "$control" > "$log" 2>&1; then
+              printf 'PASS bounded control %s\n' "$control"
+            else
+              status=$?
+              printf 'FAIL bounded control %s (exit %d)\n' "$control" "$status"
+              exit "$status"
+            fi
+          done
+          for script in smoke-prod verify-gateway-e2e preflight-deploy verify-deploy; do
+            bash -n "scripts/$script.sh"
+          done
 
       - name: Run verification tasks
         run: ./gradlew verifyNoDebugInProd verifyLogbackJsonInAllServices --no-daemon
@@ -3412,6 +3438,8 @@ jobs:
           npx playwright install --with-deps chromium webkit
           node fixtures/semester-lifecycle-ui.control.mjs
           node fixtures/admin-activity-response.control.mjs
+          node fixtures/web-panel-route.control.mjs
+          node fixtures/registry-html-privacy.control.mjs
           python3 -B fixtures/lesson-transfer-diagnostic.control.py
 
       - name: Validate the existing safe artifact privacy contract for client scenarios
@@ -3940,7 +3968,7 @@ jobs:
           }
           HOSTED_MARK_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '47a94b8a3a1ea661ddca8aac7d0079acee4587d7a348f14a6c727766eb5659a1',
+                  'e5fd78781d9526b0951a2ea4273ebd5803ad2e3f8f5c3aafb89fa0e6f75b078b',
               'tests/e2e/fixtures/mobile-dataset.ts': '8af454783e532089fd21572caa29fb1026c80f724cfff251b6f227e3298e57d7',
           }
           ORDINARY_MARK_FRAME_SOURCES = {
@@ -3965,7 +3993,7 @@ jobs:
           }
           ORDINARY_MARK_SOURCES = {
               'tests/e2e/fixtures/semester-lifecycle.spec.ts':
-                  'c20ce79fa84265c63229fd25654bb82a7fe9084c6e744cb66d2bcf5db2502486',
+                  '413be7c4a2b1c44f5f8af0b8f018151d62624d726321c84304ebbaa251852570',
               'tests/e2e/fixtures/mobile-dataset.ts':
                   '8af454783e532089fd21572caa29fb1026c80f724cfff251b6f227e3298e57d7',
           }
@@ -4011,7 +4039,7 @@ jobs:
               return (type(row.get('durationMs')) is int and 0 <= row['durationMs'] <= 360000
                       and type(locations) is list and 1 <= len(locations) <= 8
                       and all(type(item) is dict and set(item) == {'file', 'line'}
-                              and item == {'file': 'mobile-real-server.spec.ts', 'line': 6069}
+                              and item == {'file': 'mobile-real-server.spec.ts', 'line': 6064}
                               for item in locations)
                       and row.get('diagnostics') == [
                           {'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}])
@@ -4223,7 +4251,7 @@ jobs:
 
           D002_RECONNECT_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '47a94b8a3a1ea661ddca8aac7d0079acee4587d7a348f14a6c727766eb5659a1',
+                  'e5fd78781d9526b0951a2ea4273ebd5803ad2e3f8f5c3aafb89fa0e6f75b078b',
               'tests/e2e/fixtures/safe-reporter.ts':
                   'a57a23cf37bb3fac21bfcf5619e9d8e8167a0c8cd7ce51bf597db1684d0d25c1',
           }
@@ -4277,7 +4305,7 @@ jobs:
                   if type(row) is dict and 'd002ReconnectObservation' in row:
                       if (set(row) != keys | {'d002ReconnectObservation'}
                               or row.get('file') != 'mobile-real-server.spec.ts'
-                              or type(row.get('line')) is not int or row['line'] != 3959
+                              or type(row.get('line')) is not int or row['line'] != 3958
                               or row.get('project') != 'chromium' or row.get('expectedStatus') != 'passed'
                               or row.get('status') != 'failed' or type(row.get('errorCount')) is not int
                               or row['errorCount'] <= 0
@@ -4390,9 +4418,9 @@ jobs:
                       and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
                               for item in row['diagnostics'])
                       and (config[4] != 'DATASET_ATTENDANCE_MARK_HTTP'
-                           or ((row['line'] == 5948 and {'file': 'mobile-real-server.spec.ts', 'line': 6069}
+                           or ((row['line'] == 5943 and {'file': 'mobile-real-server.spec.ts', 'line': 6064}
                                 in row['errorLocations']) if is_hosted_mark(config) else
-                               (row['line'] == 1657 and {'file': 'semester-lifecycle.spec.ts', 'line': 1883}
+                               (row['line'] == 1585 and {'file': 'semester-lifecycle.spec.ts', 'line': 1811}
                                 in row['errorLocations'])))
                       and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
                           in row['diagnostics'])
@@ -7224,6 +7252,15 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install PyYAML==6.0.3 aio-pika==9.5.3
+          # Reuse unchanged bot runtime pins for the existing isolated Rabbit cohort's prepared probe.
+          python -m pip install -r services/notification-bot/requirements.txt
+          if python -B tests/harness/test_prepared_probe_projection.py > "$RUNNER_TEMP/prepared-projection.private.log" 2>&1; then
+            printf '%s\n' 'PASS bounded prepared receipt projection'
+          else
+            status=$?
+            printf 'FAIL bounded prepared receipt projection (exit %d)\n' "$status"
+            exit "$status"
+          fi
           mkdir -p "$RUNNER_TEMP/rct-monitoring-tools" build/monitoring
           python - <<'PY'
           import hashlib, os, pathlib, tarfile, urllib.request

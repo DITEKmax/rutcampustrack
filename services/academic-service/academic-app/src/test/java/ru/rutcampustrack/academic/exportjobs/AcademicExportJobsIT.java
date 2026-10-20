@@ -302,14 +302,24 @@ class AcademicExportJobsIT
                         "reason",
                         "none");
         double before = counter.count();
-        jdbc.execute(
-                "CREATE FUNCTION reject_ready_export() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN"
-                    + " IF NEW.payload->'payload'->>'state'='ready' THEN RAISE EXCEPTION 'synthetic"
-                    + " outbox unavailable'; END IF; RETURN NEW; END $$");
-        jdbc.execute(
-                "CREATE TRIGGER reject_ready_export BEFORE INSERT ON academic_outbox FOR EACH ROW"
-                        + " EXECUTE FUNCTION reject_ready_export()");
+        assertThat(schema).matches("export_[0-9a-f]{32}");
+        var owner = identityFixture.fixtureOwnerAcademicJdbc();
+        String function = schema + ".reject_ready_export";
+        String outbox = schema + ".academic_outbox";
         try {
+            owner.execute(
+                    "CREATE FUNCTION "
+                            + function
+                            + "() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF"
+                            + " NEW.payload->'payload'->>'state'='ready' THEN RAISE EXCEPTION"
+                            + " 'synthetic outbox unavailable'; END IF; RETURN NEW; END $$");
+            owner.execute(
+                    "CREATE TRIGGER reject_ready_export BEFORE INSERT ON "
+                            + outbox
+                            + " FOR EACH ROW"
+                            + " EXECUTE FUNCTION "
+                            + function
+                            + "()");
             assertThatThrownBy(() -> complete(job))
                     .isInstanceOf(org.springframework.dao.DataAccessException.class);
             assertThat(jobs.load(job.id()).state()).isEqualTo("preparing");
@@ -322,8 +332,11 @@ class AcademicExportJobsIT
                     .isZero();
             assertThat(counter.count()).isEqualTo(before);
         } finally {
-            jdbc.execute("DROP TRIGGER reject_ready_export ON academic_outbox");
-            jdbc.execute("DROP FUNCTION reject_ready_export()");
+            try {
+                owner.execute("DROP TRIGGER IF EXISTS reject_ready_export ON " + outbox);
+            } finally {
+                owner.execute("DROP FUNCTION IF EXISTS " + function + "()");
+            }
         }
         complete(job);
         complete(job);
@@ -361,7 +374,7 @@ class AcademicExportJobsIT
         jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
         jdbc.update(
                 "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
-                    + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
+                        + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
         var roster =
                 new IssueReportDownloadTicketRequest(
                         ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
@@ -412,7 +425,7 @@ class AcademicExportJobsIT
         jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
         jdbc.update(
                 "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
-                    + " VALUES(101,'STUDENT','ACTIVE',501,NOW())");
+                        + " VALUES(101,'STUDENT','ACTIVE',501,NOW())");
         when(assistants.allows(helper, 501L, "VIEW_STATS")).thenReturn(true);
         var stats =
                 new IssueReportDownloadTicketRequest(
@@ -457,7 +470,7 @@ class AcademicExportJobsIT
         jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
         jdbc.update(
                 "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
-                    + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
+                        + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
         when(assistants.allows(headman, 501L, "VIEW_STATS")).thenReturn(true);
         var trend =
                 new IssueReportDownloadTicketRequest(
@@ -478,7 +491,7 @@ class AcademicExportJobsIT
         local.require(identity, false);
         jdbc.update(
                 "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
-                    + " VALUES(1,'Current',TRUE,current_date-1,current_date+1)");
+                        + " VALUES(1,'Current',TRUE,current_date-1,current_date+1)");
         assertThatThrownBy(() -> local.require(identity, false))
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
@@ -492,19 +505,19 @@ class AcademicExportJobsIT
                         101, actor.sessionId(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
         jdbc.update(
                 "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
-                    + " VALUES(101,'TEACHER','ACTIVE',NULL,NOW())");
+                        + " VALUES(101,'TEACHER','ACTIVE',NULL,NOW())");
         jdbc.update(
                 "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
-                    + " VALUES(1,'Current',TRUE,current_date-2,current_date+2)");
+                        + " VALUES(1,'Current',TRUE,current_date-2,current_date+2)");
         jdbc.update(
                 "INSERT INTO groups(id,name,is_active)"
-                    + " VALUES(501,'JOB-501',true),(502,'JOB-502',true)");
+                        + " VALUES(501,'JOB-501',true),(502,'JOB-502',true)");
         jdbc.update(
                 "INSERT INTO subjects(id,name,type,group_id,semester_id)"
-                    + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
+                        + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
         jdbc.update(
                 "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
-                    + " VALUES(601,'lecture'),(602,'lecture')");
+                        + " VALUES(601,'lecture'),(602,'lecture')");
         jdbc.update(
                 "INSERT INTO"
                     + " assignments(id,teacher_id,semester_id,group_id,subject_id,lesson_type,lifecycle_state,valid_from)"
@@ -576,7 +589,7 @@ class AcademicExportJobsIT
         jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
         jdbc.update(
                 "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
-                    + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
+                        + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
         var selector =
                 new IssueReportDownloadTicketRequest(
                         ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,

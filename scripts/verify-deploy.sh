@@ -40,6 +40,8 @@ hdr() { echo -e "\n${BOLD}=== $* ===${NC}"; }
 warn() { echo -e "${YELLOW}!${NC} $*"; }
 
 OVERALL_FAIL=0
+INCOMPLETE=()
+incomplete() { INCOMPLETE+=("$1"); warn "INCOMPLETE: $1"; }
 
 # Helper: HTTP status check (single value or list of acceptable values)
 expect_status() {
@@ -47,7 +49,7 @@ expect_status() {
     local expected="$2"  # comma-separated list, e.g. "200" or "200,301"
     local description="$3"
     local actual
-    actual=$(curl -ks -o /dev/null -w "%{http_code}" "$url" || echo "000")
+    actual=$(curl --connect-timeout 3 --max-time 10 -ks -o /dev/null -w "%{http_code}" "$url" || echo "000")
     case ",$expected," in
         *",$actual,"*)
             ok "$description ($actual)"
@@ -70,7 +72,7 @@ expect_status_retry() {
     local sleep_s="${5:-2}"
     local actual=""
     for i in $(seq 1 "$attempts"); do
-        actual=$(curl -ks -o /dev/null -w "%{http_code}" "$url" || echo "000")
+        actual=$(curl --connect-timeout 3 --max-time 10 -ks -o /dev/null -w "%{http_code}" "$url" || echo "000")
         case ",$expected," in
             *",$actual,"*)
                 ok "$description ($actual, after $i attempt(s))"
@@ -106,7 +108,7 @@ if command -v docker >/dev/null 2>&1; then
         OVERALL_FAIL=1
     fi
 else
-    warn "docker недоступен — пропускаем container health"
+    incomplete "container-health"
 fi
 
 # -----------------------------------------------------------------------------
@@ -135,14 +137,14 @@ if command -v docker >/dev/null 2>&1; then
         OVERALL_FAIL=1
     fi
 else
-    warn "docker недоступен — gateway health check skipped"
+    incomplete "gateway-health"
 fi
 
 # -----------------------------------------------------------------------------
 # 3. Security headers (M07 G4 + M13 G16)
 # -----------------------------------------------------------------------------
 hdr "3. Security headers (CSP, HSTS, X-Frame)"
-HEADERS=$(curl -ksI "$BASE_URL/login" | tr -d '\r')
+HEADERS=$(curl --connect-timeout 3 --max-time 10 -ksI "$BASE_URL/login" | tr -d '\r')
 
 if echo "$HEADERS" | grep -qi "^strict-transport-security:"; then
     ok "HSTS header present"
@@ -169,7 +171,7 @@ fi
 # 4. CSP report endpoint reachable (M13 G16)
 # -----------------------------------------------------------------------------
 hdr "4. CSP report endpoint (M13 G16)"
-CSP_STATUS=$(curl -ks -o /dev/null -w "%{http_code}" \
+CSP_STATUS=$(curl --connect-timeout 3 --max-time 10 -ks -o /dev/null -w "%{http_code}" \
     -X POST "$BASE_URL/api/csp-report" \
     -H "Content-Type: application/csp-report" \
     -d '{"csp-report":{"document-uri":"https://test","violated-directive":"script-src","blocked-uri":"https://evil"}}' \
@@ -193,7 +195,7 @@ expect_status "$BASE_URL/alertmanager/" "401" "/alertmanager без credentials"
 # -----------------------------------------------------------------------------
 hdr "6. Prometheus alert rules"
 if [ -n "${SWAGGER_USER:-}" ] && [ -n "${SWAGGER_PASS:-}" ]; then
-    RULES_COUNT=$(curl -ks -u "$SWAGGER_USER:$SWAGGER_PASS" \
+    RULES_COUNT=$(curl --connect-timeout 3 --max-time 10 -ks -u "$SWAGGER_USER:$SWAGGER_PASS" \
         "$BASE_URL/prometheus/api/v1/rules" \
         | grep -oE '"name":"[A-Z][a-zA-Z]+"' | sort -u | wc -l)
     if [ "$RULES_COUNT" -ge 18 ]; then
@@ -203,7 +205,7 @@ if [ -n "${SWAGGER_USER:-}" ] && [ -n "${SWAGGER_PASS:-}" ]; then
         OVERALL_FAIL=2
     fi
 else
-    warn "SWAGGER_USER/SWAGGER_PASS не выставлены — пропускаем rules count"
+    incomplete "loaded-prometheus-rules"
     warn "Запусти: SWAGGER_USER=foo SWAGGER_PASS=bar scripts/verify-deploy.sh"
 fi
 
@@ -211,7 +213,7 @@ fi
 # 7. WebSocket /api/ws/ Upgrade headers (M13 G18)
 # -----------------------------------------------------------------------------
 hdr "7. WebSocket headers (M13 G18)"
-WS_HEADERS=$(curl -ksI -H "Upgrade: websocket" -H "Connection: Upgrade" \
+WS_HEADERS=$(curl --connect-timeout 3 --max-time 10 -ksI -H "Upgrade: websocket" -H "Connection: Upgrade" \
     "$BASE_URL/api/ws/info" || echo "")
 if echo "$WS_HEADERS" | head -1 | grep -qE "200|101"; then
     ok "WebSocket endpoint reachable"
@@ -230,7 +232,7 @@ if command -v docker >/dev/null 2>&1; then
     MONGO_ROOT="${MONGO_INITDB_ROOT_USERNAME:-root}"
     MONGO_PWD="${MONGO_INITDB_ROOT_PASSWORD:-}"
     if [ -z "$MONGO_PWD" ]; then
-        warn "MONGO_INITDB_ROOT_PASSWORD не выставлен — TTL check skipped"
+        incomplete "mongo-ttl-index"
         warn "Запусти с экспортом из .env.prod: source .env.prod && scripts/verify-deploy.sh"
     else
         TTL_COUNT=$(docker exec rct-mongo-attendance mongosh \
@@ -246,17 +248,21 @@ if command -v docker >/dev/null 2>&1; then
         fi
     fi
 else
-    warn "docker недоступен — Mongo indexes check skipped"
+    incomplete "mongo-ttl-index"
 fi
 
 # -----------------------------------------------------------------------------
 # Final verdict
 # -----------------------------------------------------------------------------
 echo
+if [ "$OVERALL_FAIL" -eq 0 ] && [ "${#INCOMPLETE[@]}" -gt 0 ]; then
+    printf 'INCOMPLETE: %s\n' "${INCOMPLETE[@]}"
+    exit 6
+fi
 if [ $OVERALL_FAIL -eq 0 ]; then
     echo -e "${GREEN}${BOLD}✓ Post-deploy verification passed${NC}"
     echo "Дополнительно прогони:"
-    echo "  scripts/smoke-prod.sh $BASE_URL student student_test_pass  # app-level golden path"
+    echo "  scripts/smoke-prod.sh $BASE_URL < private-synthetic-input.json  # assigned app-level path"
     echo "  E2E_BASE_URL=$BASE_URL npm test --prefix tests/e2e         # full Playwright"
     exit 0
 else

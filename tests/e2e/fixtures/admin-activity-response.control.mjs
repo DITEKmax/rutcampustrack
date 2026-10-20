@@ -1,75 +1,39 @@
-/** Source-bound activity observer/oracle controls. No browser, server, network, or mounted DOM. */
+/** Shared activity observer/oracle controls. No browser, server, network, or mounted DOM. */
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { createRequire, stripTypeScriptTypes } from 'node:module';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect as primitiveExpect, errors as playwrightErrors } from '@playwright/test';
 
 const require = createRequire(import.meta.url);
-const { Response: ObservedResponse } = require(
-  join(dirname(require.resolve('playwright-core/package.json')), 'lib/client/network.js'),
+const { requireOrImport } = require(
+  join(dirname(require.resolve('playwright/package.json')), 'lib/transform/transform.js'),
 );
-const source = readFileSync(new URL('../specs/cloud-accepted-admin-grants.spec.ts', import.meta.url), 'utf8');
-const sha256 = (text) => createHash('sha256').update(text).digest('hex');
-function between(text, start, end) {
-  assert.equal(text.split(start).length, 2, 'Control source boundary must be unique');
-  const offset = text.indexOf(start) + start.length;
-  const stop = text.indexOf(end, offset);
-  assert.ok(stop > offset, 'Control source end must follow its start');
-  return text.slice(offset, stop);
+const { completedActivity, assertActivity } = await requireOrImport(
+  join(dirname(fileURLToPath(import.meta.url)), 'admin-activity.ts'),
+);
+// Counterfactual header observer retains the old failure mode independently of source spelling.
+const headerActivity = (page, period) => page.waitForResponse((response) => {
+  const url = new URL(response.url());
+  return url.pathname === '/api/academic/dashboard/activity' &&
+    url.searchParams.get('period') === period && url.searchParams.get('bucket') === 'day' &&
+    response.request().method() === 'GET';
+});
+function factory(observe) {
+  return (expect, page) => {
+    const first = observe(page, 'today');
+    return async () => {
+      await assertActivity(page, await first, 'today', expect);
+      for (const period of ['all_time', 'today']) {
+        const next = observe(page, period);
+        await page.getByRole('button', { name: period === 'today' ? 'Сегодня' : 'Всё время', exact: true }).click();
+        await assertActivity(page, await next, period, expect);
+      }
+    };
+  };
 }
-const initialStart = '    // ADMIN22: arm the genuine initial activity read before entering the dashboard.\n';
-const initialEnd = '    // End ADMIN22 initial read.\n';
-const oracleStart = '    const assertActivity = async ';
-const sequenceStart = "    await assertActivity(await activityReply, 'today');\n";
-const sequenceEnd = '    // End ADMIN22 activity witness.\n';
-const initial = between(source, initialStart, initialEnd);
-const oracle = oracleStart + between(source, oracleStart, sequenceStart);
-const sequence = sequenceStart + between(source, sequenceStart, sequenceEnd);
-assert.equal(sha256(oracle), '73b7efb17f8bd5c901cf788494ed815c900ed7200ab479311212d1a19c10dc36');
-
-// Only reverse the observer correction in memory. The full digest authenticates
-// these two fragments as the exact 08fd baseline, including the unchanged oracle.
-const baselineInitial = `    const activityReply = page.waitForResponse((response) => {
-      const url = new URL(response.url());
-      return (
-        url.pathname === '/api/academic/dashboard/activity' &&
-        url.searchParams.get('period') === 'today' &&
-        url.searchParams.get('bucket') === 'day' &&
-        response.request().method() === 'GET'
-      );
-    });
-`;
-const fixedNext = '      const next = completedActivity(period);\n';
-const baselineNext = `      const next = page.waitForResponse((response) => {
-        const url = new URL(response.url());
-        return (
-          url.pathname === '/api/academic/dashboard/activity' &&
-          url.searchParams.get('period') === period &&
-          url.searchParams.get('bucket') === 'day' &&
-          response.request().method() === 'GET'
-        );
-      });
-`;
-assert.equal(source.split(fixedNext).length, 2);
-const baseline = source.replace(initial, baselineInitial).replace(fixedNext, baselineNext);
-assert.equal(sha256(baseline), '102e6cf080f9c6d932e76d92e836b4c604bf0ca29c119ca46b023c82d1c2d642');
-function factory(text) {
-  const actualInitial = between(text, initialStart, initialEnd);
-  const actualOracle = oracleStart + between(text, oracleStart, sequenceStart);
-  const actualSequence = sequenceStart + between(text, sequenceStart, sequenceEnd);
-  const compiled = stripTypeScriptTypes(`function create(expect, page) {
-${actualInitial}
-${actualOracle}
-return async function check() {
-${actualSequence}
-};
-}`);
-  return new Function(`return ${compiled};`)();
-}
-const fixedFactory = factory(source);
-const baselineFactory = factory(baseline);
+const fixedFactory = factory(completedActivity);
+const baselineFactory = factory(headerActivity);
 const periods = ['today', 'all_time', 'today'];
 const metricCodes = ['positiveMarks', 'geoMarks', 'mapOpens', 'requests', 'homeworkPublications'];
 function payload(period) {
@@ -195,17 +159,17 @@ function controlPage(options) {
       method: () => 'GET',
       response: async () => reply,
     };
-    const reply = Object.create(ObservedResponse.prototype);
-    reply.controlId = request.controlId;
-    reply._initializer = { status: changes.status ?? 200, url: request.url() };
-    reply._request = request;
-    reply._channel = {
-      async body() {
+    const reply = {
+      controlId: request.controlId,
+      status: () => changes.status ?? 200,
+      url: request.url,
+      request: () => request,
+      async json() {
         if (changes.aborted) {
           observations.abortedBodyReads++;
           throw new Error('Controlled cancelled response body');
         }
-        return { binary: Buffer.from(changes.malformed ? '{' : JSON.stringify(changes.payload ?? payload(period))) };
+        return JSON.parse(changes.malformed ? '{' : JSON.stringify(changes.payload ?? payload(period)));
       },
     };
     return { request, reply };
@@ -282,7 +246,6 @@ assert.equal(unavailable.observations.abortedBodyReads, 0);
 console.log(JSON.stringify({
   state: 'PASS', baselineStable: 1, baselineRed, fixedGreen, negativeRejected,
   noCompletedReplacementRetainsOriginalDeadline: true,
-  exactBaselineSha256: sha256(baseline), activityOracleSha256: sha256(oracle),
-  sourceSha256: sha256(source), sourceBoundObserverAndOracle: true,
+  sharedObserverAndOracle: true,
   browserServerNetworkOrMountedDom: false, historicalCause: 'UNKNOWN',
 }));

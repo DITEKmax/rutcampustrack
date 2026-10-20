@@ -19,6 +19,76 @@ COLLECTOR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(COLLECTOR)
 MARKER = "RCT_SYNTHETIC_PROOF_DO_NOT_EMIT_731904"
 
+# Independent literal contract vectors; expected categories never come from the collector.
+EXPECTED_NOTIFICATION_FAILURE_CLASSES = {'INIT': ('java.lang.ExceptionInInitializerError', 'java.lang.IllegalStateException'),
+ 'NO_CLASS': ('java.lang.NoClassDefFoundError', 'java.lang.ClassNotFoundException'),
+ 'BEAN': ('org.springframework.beans.factory.BeanCreationException',
+          'org.springframework.beans.BeanInstantiationException'),
+ 'DEPENDENCY': ('org.springframework.beans.factory.UnsatisfiedDependencyException',),
+ 'CONTAINER': ('org.testcontainers.containers.ContainerLaunchException',
+               'org.testcontainers.containers.ContainerFetchException'),
+ 'MONGO': ('com.mongodb.MongoException',
+           'com.mongodb.MongoTimeoutException',
+           'com.mongodb.MongoSocketOpenException',
+           'com.mongodb.MongoSocketReadException',
+           'com.mongodb.MongoSecurityException',
+           'com.mongodb.MongoCommandException',
+           'com.mongodb.MongoConfigurationException'),
+ 'AMQP': ('org.springframework.amqp.AmqpException',
+          'org.springframework.amqp.AmqpIOException',
+          'org.springframework.amqp.AmqpConnectException',
+          'org.springframework.amqp.AmqpAuthenticationException',
+          'org.springframework.amqp.rabbit.listener.exception.FatalListenerStartupException',
+          'org.springframework.amqp.rabbit.support.ListenerExecutionFailedException',
+          'com.rabbitmq.client.AuthenticationFailureException',
+          'com.rabbitmq.client.PossibleAuthenticationFailureException',
+          'com.rabbitmq.client.ShutdownSignalException',
+          'com.rabbitmq.client.AlreadyClosedException'),
+ 'OOM': ('java.lang.OutOfMemoryError',),
+ 'ASSERTION': ('java.lang.AssertionError', 'org.opentest4j.AssertionFailedError')}
+EXPECTED_ATTENDANCE_FAILURE_CLASSES = {'GRADLE_SUITE': ('org.gradle.api.internal.tasks.testing.TestSuiteExecutionException',),
+ 'GRADLE_WORKER': ('org.gradle.process.internal.worker.WorkerProcessException',),
+ 'PROCESS_EXEC': ('org.gradle.process.internal.ExecException',),
+ 'ASSERTION': ('java.lang.AssertionError', 'org.opentest4j.AssertionFailedError'),
+ 'INITIALIZER': ('java.lang.ExceptionInInitializerError',),
+ 'ILLEGAL_STATE': ('java.lang.IllegalStateException',),
+ 'NO_CLASS': ('java.lang.NoClassDefFoundError', 'java.lang.ClassNotFoundException'),
+ 'CONTEXT': ('org.springframework.beans.factory.BeanCreationException',
+             'org.springframework.beans.BeanInstantiationException'),
+ 'DEPENDENCY': ('org.springframework.beans.factory.UnsatisfiedDependencyException',),
+ 'CONTAINER': ('org.testcontainers.containers.ContainerLaunchException',
+               'org.testcontainers.containers.ContainerFetchException'),
+ 'MONGO': ('com.mongodb.MongoException',
+           'com.mongodb.MongoTimeoutException',
+           'com.mongodb.MongoSocketOpenException',
+           'com.mongodb.MongoSocketReadException',
+           'com.mongodb.MongoSecurityException',
+           'com.mongodb.MongoCommandException',
+           'com.mongodb.MongoConfigurationException'),
+ 'AMQP': ('org.springframework.amqp.AmqpException',
+          'org.springframework.amqp.AmqpIOException',
+          'org.springframework.amqp.AmqpConnectException',
+          'org.springframework.amqp.AmqpAuthenticationException',
+          'org.springframework.amqp.rabbit.listener.exception.FatalListenerStartupException',
+          'org.springframework.amqp.rabbit.support.ListenerExecutionFailedException',
+          'com.rabbitmq.client.AuthenticationFailureException',
+          'com.rabbitmq.client.PossibleAuthenticationFailureException',
+          'com.rabbitmq.client.ShutdownSignalException',
+          'com.rabbitmq.client.AlreadyClosedException'),
+ 'IO': ('java.io.IOException',),
+ 'OOM': ('java.lang.OutOfMemoryError',)}
+EXPECTED_ACADEMIC_JDBC_SQL_STATES = {'53300': 'TOO_MANY_CONNECTIONS',
+ '28P01': 'AUTHENTICATION_FAILED',
+ '28000': 'AUTHORIZATION_FAILED',
+ '3D000': 'MISSING_DATABASE',
+ '42P01': 'MISSING_RELATION',
+ '42703': 'MISSING_COLUMN',
+ '08001': 'CONNECTION_FAILURE',
+ '08006': 'CONNECTION_FAILURE',
+ '57P01': 'SERVER_UNAVAILABLE',
+ '57P02': 'SERVER_UNAVAILABLE',
+ '57P03': 'SERVER_UNAVAILABLE'}
+
 
 class SafeOutcomesControl(unittest.TestCase):
     def setUp(self) -> None:
@@ -585,18 +655,19 @@ class SafeCases {
         self.assertNotIn(MARKER, json.dumps(value))
 
     def test_notification_all_categories_are_finite_and_capped_at_eight(self) -> None:
+        self.assertEqual(COLLECTOR.NOTIFICATION_FAILURE_CLASSES, EXPECTED_NOTIFICATION_FAILURE_CLASSES)
         case = COLLECTOR.ElementTree.Element("testcase")
         failure = COLLECTOR.ElementTree.SubElement(case, "failure", type="java.lang.AssertionError")
         failure.text = "\n".join(
-            "Caused by: " + classes[0] + ": " + MARKER for classes in COLLECTOR.NOTIFICATION_FAILURE_CLASSES.values()
+            "Caused by: " + classes[0] + ": " + MARKER for classes in EXPECTED_NOTIFICATION_FAILURE_CLASSES.values()
         )
         value = COLLECTOR.notification_failure_diagnostic(case)
         self.assertEqual(len(value["codes"]), 8)
         self.assertTrue(value["overflow"])
         self.assertEqual(value["codes"][0], "ASSERTION")
-        self.assertTrue(set(value["codes"]) <= set(COLLECTOR.NOTIFICATION_FAILURE_CLASSES) | {"OTHER"})
+        self.assertTrue(set(value["codes"]) <= set(EXPECTED_NOTIFICATION_FAILURE_CLASSES) | {"OTHER"})
         self.assertNotIn(MARKER, json.dumps(value))
-        for code, classes in COLLECTOR.NOTIFICATION_FAILURE_CLASSES.items():
+        for code, classes in EXPECTED_NOTIFICATION_FAILURE_CLASSES.items():
             for name in classes:
                 with self.subTest(category=code):
                     failure.set("type", name)
@@ -737,11 +808,12 @@ class SafeCases {
                 self.assertNotIn(MARKER, json.dumps(value))
 
     def test_attendance_all_codes_are_finite_exact_unique_and_private(self) -> None:
-        text = "\n".join("Caused by: " + names[0] + ": " + MARKER for names in COLLECTOR.ATTENDANCE_FAILURE_CLASSES.values())
+        self.assertEqual(COLLECTOR.ATTENDANCE_FAILURE_CLASSES, EXPECTED_ATTENDANCE_FAILURE_CLASSES)
+        text = "\n".join("Caused by: " + names[0] + ": " + MARKER for names in EXPECTED_ATTENDANCE_FAILURE_CLASSES.values())
         value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, text + "\n" + text))
-        self.assertEqual(value["codes"], ["OTHER"] + list(COLLECTOR.ATTENDANCE_FAILURE_CLASSES))
+        self.assertEqual(value["codes"], ["OTHER"] + list(EXPECTED_ATTENDANCE_FAILURE_CLASSES))
         self.assertEqual(len(value["codes"]), 15)
-        for code, names in COLLECTOR.ATTENDANCE_FAILURE_CLASSES.items():
+        for code, names in EXPECTED_ATTENDANCE_FAILURE_CLASSES.items():
             for name in names:
                 with self.subTest(code=code, name=name):
                     value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(name))
@@ -1040,7 +1112,8 @@ class SafeCases {
         self.assertNotIn(MARKER, json.dumps(report))
 
     def test_academic_jdbc_native_sql_states_emit_only_closed_codes_and_categories(self) -> None:
-        for state, category in COLLECTOR.ACADEMIC_JDBC_SQL_STATES.items():
+        self.assertEqual(COLLECTOR.ACADEMIC_JDBC_SQL_STATES, EXPECTED_ACADEMIC_JDBC_SQL_STATES)
+        for state, category in EXPECTED_ACADEMIC_JDBC_SQL_STATES.items():
             with self.subTest(state=state):
                 case = self.jdbc_case(
                     f"SQL State  : {state}\nCaused by: {COLLECTOR.ACADEMIC_JDBC_EXCEPTION}: {MARKER}\n{MARKER}"

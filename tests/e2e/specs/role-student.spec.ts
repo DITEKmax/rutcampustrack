@@ -1,7 +1,7 @@
+import { expectWebPanelRoute } from '../fixtures/web-panel-route';
 import { test, expect } from '@playwright/test';
 import { TEST_USERS } from '../fixtures/users';
 import { loginAs } from '../fixtures/auth';
-import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
 
 /**
  * M08 Группа 5 (P2-8/5) — role-student golden paths.
@@ -18,9 +18,7 @@ test.describe('Role: STUDENT', () => {
   test('can access student-only paths', async ({ page }) => {
     const paths = ['/student/schedule', '/student/stats', '/student/excuses'];
     for (const path of paths) {
-      await page.goto(path);
-      await expect(page).toHaveURL(new RegExp(path));
-      await assertNoA11yCriticalOrSerious(page);
+      await expectWebPanelRoute(page, path);
     }
   });
 

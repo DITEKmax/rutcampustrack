@@ -448,19 +448,9 @@ jobs:
             docker exec rct-nginx nginx -s reload
             sleep 2
 
-            # --- Smoke test: verify /login returns web-panel Angular HTML ---
-            # Phase 50 invariant: /login MUST be served by web-panel-nginx
-            # (Angular SPA, ~19KB) and NOT by mini-app/pwa/landing.
-            # If Content-Length is suspiciously small (<5000 bytes), the catch-all
-            # location / is misrouted — fail the deployment immediately.
-            echo "--- Smoke test: GET /login ---"
-            LOGIN_SIZE=$(curl -s -o /dev/null -w "%{size_download}" https://ruttrack.site/login)
-            echo "GET /login returned $LOGIN_SIZE bytes"
-            if [ "$LOGIN_SIZE" -lt 5000 ]; then
-              echo "FATAL: /login returned $LOGIN_SIZE bytes — expected web-panel Angular HTML (~19KB)"
-              echo "This usually means nginx routing is misconfigured or web-panel-nginx is unhealthy."
-              exit 1
-            fi
-            echo "✓ Smoke test passed: /login is served by web-panel"
+            # Exact HTTP/MIME and revision artifact identity, including its owned JS asset.
+            # This reads the existing container and nginx routes; it performs no deployment.
+            echo "--- Smoke test: GET /login and revision-bound asset ---"
+            python3 scripts/verify-served-web-panel.py https://ruttrack.site "$IMAGE_TAG"
 
             docker logout ghcr.io

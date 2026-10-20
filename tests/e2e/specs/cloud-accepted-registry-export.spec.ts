@@ -1,3 +1,4 @@
+import { registryTableBoundary, registryTableParserControls } from '../fixtures/registry-html-boundary';
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { isDeepStrictEqual } from 'node:util';
@@ -98,8 +99,9 @@ async function ordinaryRegistryExport(
   expect(await download.failure()).toBeNull();
   const content = (await registryBrowserDownloadBytes(download)).toString('utf8');
   expect(content.startsWith('<!doctype html>')).toBe(true);
-  const boundary = registryHtmlBoundary(
-    content,
+  expect(await registryTableParserControls(page), 'Semantic HTML oracle rejects malformed/extra/private fields').toBe(true);
+  const boundary = await registryHtmlBoundary(
+    page, content,
     mode === 'FULL',
     [
       target.displayName,
@@ -111,6 +113,7 @@ async function ordinaryRegistryExport(
       ...(mode === 'FULL' ? [String(target.telegramId)] : []),
     ],
     nonmatching,
+    [target.password, ...(mode === 'FULL' ? [] : [String(target.telegramId)])],
   );
   expect(boundary.tableShape).toBe(true);
   expect(boundary.columnsExact).toBe(true);
@@ -1567,57 +1570,19 @@ test('FULL admin applies group filters sorting and reset before downloading filt
   await showDraftSearch();
   await assertFiltered(await filterCourseAndSort());
 
+  registryRequire(await registryTableParserControls(page), 'GROUPS_HTML_PARSER_CONTROLS');
   // Same text-only RegistryTableRenderer boundary as the user HTML carrier, with group columns.
-  const groupHtmlBoundary = (content: string) => {
-    const decode = (value: string) =>
-      value.replace(
-        /&(amp|lt|gt|quot|apos);/g,
-        (entity) =>
-          ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" })[entity]!,
-      );
-    const cells = (row: string, tag: 'th' | 'td') => {
-      const pattern = new RegExp(`<${tag}>([^<]*)</${tag}>`, 'g');
-      const values = [...row.matchAll(pattern)].map((match) => decode(match[1]!));
-      return row.replace(pattern, '').trim() === '' ? values : null;
-    };
-    const tables = [...content.matchAll(/<table>([\s\S]*?)<\/table>/g)];
-    const sections = tables[0]?.[1]?.match(
-      /^<thead><tr>([\s\S]*?)<\/tr><\/thead><tbody>([\s\S]*?)<\/tbody>$/,
-    );
-    const body = sections?.[2] ?? '';
-    const pattern = /<tr>([\s\S]*?)<\/tr>/g;
-    const rows = [...body.matchAll(pattern)].map((match) => cells(match[1]!, 'td'));
+  const groupHtmlBoundary = async (content: string) => {
     const expected = [owned[1]!, owned[0]!].map((row) => [
-      row.name,
-      prefix,
-      row.numericCode,
-      '1',
-      '4',
-      '0',
-      '',
-      'Староста не назначен',
+      row.name, prefix, row.numericCode, '1', '4', '0', '', 'Староста не назначен',
     ]);
-    return (
-      content.startsWith('<!doctype html>') &&
-      (content.match(/<table\b/gi)?.length ?? 0) === 1 &&
-      tables.length === 1 &&
-      !!sections &&
-      body.replace(pattern, '').trim() === '' &&
-      JSON.stringify(cells(sections[1]!, 'th')) ===
-        JSON.stringify([
-          'Группа',
-          'Буквенный код',
-          'Цифровой код',
-          'Курс',
-          'Срок обучения, лет',
-          'Студентов',
-          'Староста',
-          'Почему черновик',
-        ]) &&
-      JSON.stringify(rows) === JSON.stringify(expected) &&
-      !decode(content).includes(owned[2]!.name) &&
-      !/парол|password|password-reset|Telegram ID|Логин/i.test(content)
-    );
+    const boundary = await registryTableBoundary(page, content, [
+      'Группа', 'Буквенный код', 'Цифровой код', 'Курс', 'Срок обучения, лет',
+      'Студентов', 'Староста', 'Почему черновик',
+    ], expected, [owned[2]!.name, 'Telegram ID', 'Логин',
+      dataset.student.login, dataset.student.password, dataset.headman.login, dataset.headman.password,
+      dataset.teacher.login, dataset.teacher.password]);
+    return boundary.tableShape && boundary.columnsExact && boundary.rowsExact && boundary.forbiddenAbsent;
   };
   let catalogue: Response | undefined,
     created: Response | undefined,
@@ -1792,7 +1757,7 @@ test('FULL admin applies group filters sorting and reset before downloading filt
       if (downloadTimer !== undefined) clearTimeout(downloadTimer);
     }
     const content = bytes.toString('utf8');
-    registryRequire(groupHtmlBoundary(content), 'GROUPS_CLIENT_HTML_EXACT_ROWS');
+    registryRequire(await groupHtmlBoundary(content), 'GROUPS_CLIENT_HTML_EXACT_ROWS');
     await expect(
       page.getByRole('status').filter({ hasText: 'Файл готов. Скачивание передано браузеру.' }),
     ).toBeVisible({ timeout: budget() });

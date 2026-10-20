@@ -313,10 +313,23 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                 writes = []
                 queries = []
                 inspections = []
+                mongo_queries = []
 
                 def pg_count(container, password, db, sql, *, user):
+                    self.assertCountEqual(
+                        inspections, [args.academic_container, args.schedule_container, args.mongo_container]
+                    )
                     queries.append(db)
                     return "1" if db == failed_target + "_db" else "0"
+
+                def mongo_count(container, password, script, *, phase):
+                    self.assertCountEqual(
+                        inspections, [args.academic_container, args.schedule_container, args.mongo_container]
+                    )
+                    self.assertEqual(container, args.mongo_container)
+                    self.assertEqual(phase, "EMPTY_PREFLIGHT")
+                    mongo_queries.append("EMPTY_PREFLIGHT")
+                    return [0, 1] if failed_target == "notification-mongo" else [0, 0]
 
                 def native_write(command, **kwargs):
                     if command[:2] == ["docker", "inspect"]:
@@ -350,9 +363,7 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                 with (
                     patch.object(r, "credentials", return_value=secret),
                     patch.object(r, "pg_query", side_effect=pg_count),
-                    patch.object(
-                        r, "mongo_query", return_value=([0, 1] if failed_target == "notification-mongo" else [0, 0])
-                    ),
+                    patch.object(r, "mongo_query", side_effect=mongo_count),
                     patch.object(r, "run", side_effect=native_write),
                     patch.object(r, "compare_restored_inventory"),
                 ):
@@ -361,15 +372,25 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                 self.assertEqual(writes, [])
                 self.assertEqual({path.name: r.digest(path) for path in args.bundle.iterdir()}, bundle_before)
                 self.assertFalse((root / "never-read-fixture.env").exists())
+                self.assertEqual(len(queries), len(set(queries)))
+                self.assertTrue(set(queries) <= {"academic_db", "auth_db", "schedule_db"})
+                self.assertLessEqual(len(mongo_queries), 1)
                 if failed_target == "label":
                     self.assertEqual(queries, [])
-                    self.assertEqual(inspections, [args.academic_container, args.schedule_container])
+                    self.assertEqual(mongo_queries, [])
+                    self.assertEqual(inspections.count(args.schedule_container), 1)
+                    self.assertEqual(len(inspections), len(set(inspections)))
+                    self.assertTrue(set(inspections) <= {
+                        args.academic_container, args.schedule_container, args.mongo_container,
+                    })
                 else:
-                    self.assertEqual(queries, ["academic_db", "auth_db"] if failed_target == "auth"
-                                     else ["academic_db", "auth_db", "schedule_db"])
-                    self.assertEqual(
+                    self.assertCountEqual(
                         inspections, [args.academic_container, args.schedule_container, args.mongo_container]
                     )
+                    if failed_target in ("auth", "schedule"):
+                        self.assertEqual(queries.count(failed_target + "_db"), 1)
+                    else:
+                        self.assertEqual(mongo_queries, ["EMPTY_PREFLIGHT"])
 
     def test_auth_omission_or_unsupported_manifest_refused_before_target_access(self):
         for defect in ("auth-artifact", "auth-inventory", "unsupported-format", "foreign-project"):

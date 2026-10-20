@@ -1,3 +1,4 @@
+import { registryTableBoundary } from './registry-html-boundary';
 import { createHmac, randomUUID } from 'node:crypto';
 import type { Frame, Page, Request, Response } from '@playwright/test';
 import {
@@ -243,67 +244,18 @@ export async function deniedMark(dataset: MobileDataset, token: string): Promise
 }
 
 /** Closed registry table boundary; exported identities stay in memory, results are booleans. */
-export function registryHtmlBoundary(
-  content: string,
-  full: boolean,
-  expectedRow: readonly string[],
+export async function registryHtmlBoundary(
+  page: Page, content: string, full: boolean, expectedRow: readonly string[],
   nonmatching: { login: string; displayName: string },
+  sensitiveValues: readonly string[],
 ) {
-  // RegistryTableRenderer.html emits one text-only table with escaped cell values.
-  // Read that table itself: matching names elsewhere in the document proves no row/filter rule.
-  const decode = (value: string) =>
-    value.replace(/&(amp|lt|gt|quot|apos);/g, (entity) => {
-      const entities: Record<string, string> = {
-        '&amp;': '&',
-        '&lt;': '<',
-        '&gt;': '>',
-        '&quot;': '"',
-        '&apos;': "'",
-      };
-      return entities[entity];
-    });
-  const cells = (row: string, tag: 'th' | 'td'): string[] | null => {
-    const pattern = new RegExp(`<${tag}>([^<]*)</${tag}>`, 'g');
-    const values = [...row.matchAll(pattern)].map((match) => decode(match[1]));
-    return row.replace(pattern, '').trim() === '' ? values : null;
-  };
-  const tables = [...content.matchAll(/<table>([\s\S]*?)<\/table>/g)];
-  const tableOpenings = content.match(/<table\b/gi)?.length ?? 0;
-  const sections = tables[0]?.[1].match(
-    /^<thead><tr>([\s\S]*?)<\/tr><\/thead><tbody>([\s\S]*?)<\/tbody>$/,
-  );
-  const headers = sections ? cells(sections[1], 'th') : null;
-  const body = sections?.[2] ?? '';
-  const rowPattern = /<tr>([\s\S]*?)<\/tr>/g;
-  const rows = [...body.matchAll(rowPattern)].map((match) => cells(match[1], 'td'));
-  const columns = [
-    'ФИО',
-    'Логин',
-    'Роли и статусы',
-    'Группа',
-    'Табельный номер',
-    'Привязка Telegram',
+  const boundary = await registryTableBoundary(page, content, [
+    'ФИО', 'Логин', 'Роли и статусы', 'Группа', 'Табельный номер', 'Привязка Telegram',
     ...(full ? ['Telegram ID'] : []),
-  ];
-  return {
-    tableShape:
-      tableOpenings === 1 &&
-      tables.length === 1 &&
-      !!sections &&
-      body.replace(rowPattern, '').trim() === '' &&
-      rows.every((row) => row !== null),
-    columnsExact:
-      headers?.length === columns.length &&
-      headers.every((value, index) => value === columns[index]),
-    oneRow: rows.length === 1,
-    valuesExact:
-      expectedRow.length === columns.length &&
-      rows[0]?.length === columns.length &&
-      rows[0].every((value, index) => value === expectedRow[index]),
-    knownNonmatchAbsent:
-      !decode(content).includes(nonmatching.login) &&
-      !decode(content).includes(nonmatching.displayName),
-  };
+  ], [expectedRow], [nonmatching.login, nonmatching.displayName, ...sensitiveValues]);
+  return { tableShape: boundary.tableShape, columnsExact: boundary.columnsExact,
+    oneRow: boundary.oneRow, valuesExact: boundary.rowsExact,
+    knownNonmatchAbsent: boundary.forbiddenAbsent };
 }
 
 /** Only the public CI placeholder from fixtures/telegram.ts; never an environment secret. */

@@ -216,35 +216,7 @@ subprojects {
 tasks.register("verifyNoDebugInProd") {
     group = "verification"
     description = "QA1/NEW-57 — fails build if DEBUG level set for ru.rutcampustrack in application.yml or application-prod.yml"
-
-    val configFiles = fileTree(rootDir) {
-        include("services/**/src/main/resources/application.yml")
-        include("services/**/src/main/resources/application-prod.yml")
-        exclude("**/build/**")
-    }
-    inputs.files(configFiles)
-
-    doLast {
-        val violations = mutableListOf<String>()
-        val pattern = Regex("""ru\.rutcampustrack[^:]*:\s*DEBUG""")
-        configFiles.forEach { file ->
-            file.useLines { lines ->
-                lines.forEachIndexed { idx, line ->
-                    val trimmed = line.substringBefore('#').trim()
-                    if (pattern.containsMatchIn(trimmed)) {
-                        violations += "${file.relativeTo(rootDir).invariantSeparatorsPath}:${idx + 1}: $line"
-                    }
-                }
-            }
-        }
-        if (violations.isNotEmpty()) {
-            throw GradleException(
-                "QA1 violation — DEBUG level for ru.rutcampustrack must NOT appear in default or prod configs.\n" +
-                "Use application-dev.yml for DEBUG. Violations:\n  " +
-                violations.joinToString("\n  ")
-            )
-        }
-    }
+    dependsOn(":services:shared:shared-logback:verifyProductionLoggingLevels")
 }
 
 tasks.named("check") {
@@ -257,37 +229,7 @@ tasks.named("check") {
 tasks.register("verifyLogbackJsonInAllServices") {
     group = "verification"
     description = "QA7/NEW-68 — fails build if any *-app or auth/api-gateway resources lacks logback-spring.xml with shared/logback-base.xml include"
-
-    val expectedServices = listOf(
-        "services/api-gateway/src/main/resources",
-        "services/auth-service/auth-app/src/main/resources",
-        "services/academic-service/academic-app/src/main/resources",
-        "services/schedule-service/schedule-app/src/main/resources",
-        "services/attendance-service/attendance-app/src/main/resources",
-        "services/mobile-bff/mobile-bff-app/src/main/resources",
-        "services/notification-service/notification-app/src/main/resources",
-    )
-    val expectedInclude = "shared/logback-base.xml"
-
-    inputs.files(expectedServices.map { rootDir.resolve("$it/logback-spring.xml") })
-
-    doLast {
-        val missing = mutableListOf<String>()
-        expectedServices.forEach { dir ->
-            val configFile = rootDir.resolve("$dir/logback-spring.xml")
-            if (!configFile.exists()) {
-                missing += "$dir/logback-spring.xml — file missing"
-            } else if (!configFile.readText().contains(expectedInclude)) {
-                missing += "$dir/logback-spring.xml — does not include $expectedInclude"
-            }
-        }
-        if (missing.isNotEmpty()) {
-            throw GradleException(
-                "QA7 violation — каждый Spring-сервис обязан подключать shared/logback-base.xml.\n" +
-                "Missing/broken:\n  " + missing.joinToString("\n  ")
-            )
-        }
-    }
+    dependsOn(":services:shared:shared-logback:verifyServiceLogback")
 }
 
 tasks.named("check") {

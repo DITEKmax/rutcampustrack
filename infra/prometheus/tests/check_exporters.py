@@ -165,6 +165,81 @@ async def rabbit_metrics_contract(docker):
         }
 
 
+def prepared_transaction_contract(docker):
+    """Reuse only this fixture's synthetic Rabbit cohort; no Redis/provider process."""
+    import resource
+
+    vhost = "audit.prepared." + uuid.uuid4().hex
+    address = docker("port", "rabbitmq", "5672", seconds=10).stdout.strip()
+    host, port = address.rsplit(":", 1)
+    assert host == "127.0.0.1" and port.isdigit() and 0 < int(port) <= 65535
+    docker("exec", "-T", "rabbitmq", "rabbitmqctl", "add_vhost", vhost, seconds=10)
+    try:
+        docker("exec", "-T", "rabbitmq", "rabbitmqctl", "set_permissions", "-p", vhost,
+               "synthetic-monitor", ".*", ".*", ".*", seconds=10)
+        environment = {"PATH": os.environ.get("PATH", os.defpath), "LANG": "C.UTF-8"}
+        environment.update(
+            SCHEDULE_BOT_AUDIT_RABBIT_URL="amqp://synthetic-monitor:synthetic-rabbit-only@" + address + "/" + vhost,
+            OTEL_SDK_DISABLED="true",
+            PYTHONPATH=str(ROOT / "services/notification-bot"),
+            PYTHONDONTWRITEBYTECODE="1",
+        )
+
+        def bounded_child():
+            os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+            resource.setrlimit(resource.RLIMIT_FSIZE, (4 * 1024**2, 4 * 1024**2))
+
+        with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
+            completed = subprocess.run(
+                [sys.executable, "-B", "-m", "tests.prepared_broker_probe"],
+                cwd=ROOT / "services/notification-bot", env=environment,
+                stdout=output, stderr=errors, timeout=120, preexec_fn=bounded_child,
+            )
+            assert completed.returncode == 0, "Prepared transaction native probe failed"
+            output.seek(0)
+            raw = output.read(4097)
+        assert len(raw) <= 4096, "Prepared transaction receipt exceeds closed budget"
+
+        def unique_pairs(items):
+            result = {}
+            for key, value in items:
+                if key in result:
+                    raise ValueError("Duplicate prepared receipt field")
+                result[key] = value
+            return result
+
+        receipt = json.loads(raw, object_pairs_hook=unique_pairs)
+        assert type(receipt) is dict and set(receipt) == {"prepared_transaction_probe"}
+        rows = receipt["prepared_transaction_probe"]
+        phases = ("publish", "ack", "commit_before", "commit_after")
+        assert type(rows) is list and len(rows) == len(phases)
+        projection = []
+        for boundary, row in zip(phases, rows, strict=True):
+            assert type(row) is dict and set(row) == {
+                "boundary", "durable_outcomes", "projection_after_loss",
+                "completion_before_replay", "replay_provider_deliveries",
+            }
+            assert row["boundary"] == boundary
+            assert type(row["durable_outcomes"]) is int and row["durable_outcomes"] == 1
+            assert type(row["replay_provider_deliveries"]) is int and row["replay_provider_deliveries"] == 1
+            assert type(row["projection_after_loss"]) is bool and row["projection_after_loss"] == (boundary == "commit_after")
+            assert row["completion_before_replay"] is False
+            projection.append({"boundary": boundary, "durable_outcomes": 1,
+                               "projection_after_loss": boundary == "commit_after",
+                               "completion_before_replay": False, "replay_provider_deliveries": 1})
+    finally:
+        primary = sys.exc_info()[0]
+        try:
+            cleanup = docker("exec", "-T", "rabbitmq", "rabbitmqctl", "delete_vhost", vhost,
+                             check=False, seconds=10)
+            assert cleanup.returncode == 0, "Owned prepared probe vhost cleanup failed"
+        except Exception:
+            if primary is None:
+                raise
+            # The first probe failure remains primary; fixture teardown still removes its whole owned cohort.
+    return {"phases": projection, "owned_vhost_removed": True, "broker_only": True}
+
+
 def main():
     assert os.environ.get("RCT_MONITORING_RUNTIME") == "isolated-ci", "dedicated CI runtime required"
     assert shutil.disk_usage("/tmp").free >= 4 * 1024**3, "4GiB disk floor required"
@@ -361,8 +436,9 @@ def main():
         compose.write_text(yaml.safe_dump(config, sort_keys=False))
         prefix = ["docker", "compose", "--project-name", project, "-f", str(compose)]
 
-        def docker(*args, check=True, input=None):
-            return subprocess.run(prefix + list(args), input=input, text=True, capture_output=True, check=check)
+        def docker(*args, check=True, input=None, seconds=None):
+            return subprocess.run(prefix + list(args), input=input, text=True, capture_output=True,
+                                  check=check, timeout=seconds)
 
         def execute(service, args, input=None, check=True):
             return docker("exec", "-T", service, *args, input=input, check=check)
@@ -833,6 +909,8 @@ def main():
             docker("up", "-d", "rabbitmq", "rabbit-prometheus")
             _STATE["phase"] = "RABBIT_PLUGIN_METRICS"
             rabbit_result = asyncio.run(rabbit_metrics_contract(docker))
+            _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_BOUNDARIES"
+            prepared_result = prepared_transaction_contract(docker)
             result = {
                 "result": "PASS",
                 "source_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
@@ -848,6 +926,7 @@ def main():
                 ],
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "actual_rabbit_plugin": rabbit_result,
+                "prepared_transaction": prepared_result,
                 "redis_capacity_isolation": redis_isolation,
                 "mongo_monitor": _STATE["mongo_monitor"],
                 "redis_probe": _STATE["redis_probe"],

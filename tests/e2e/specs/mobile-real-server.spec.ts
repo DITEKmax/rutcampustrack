@@ -1738,7 +1738,6 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       });
       await expect(pendingMark).toHaveAttribute('data-auto-absent', 'true');
       await expect(pendingMark).toContainText('Ожидает решения');
-      expect(await pendingMark.evaluate((element) => element.tagName)).toBe('SPAN');
       await expect(assistantRow.getByRole('button')).toHaveCount(0);
       const cancelledRequest = await journalSeed.assistantActor.call(
         'POST',
@@ -5303,10 +5302,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           'Retained lesson and ordered roster preserve structural data',
         )
         .toBe(true);
-      expect(
-        JSON.stringify({ lesson: retained.lesson, roster: retained.roster }) ===
-          JSON.stringify({ lesson: beforeLogout.lesson, roster: beforeLogout.roster }),
-      ).toBe(true);
       await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
       await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
     } finally {

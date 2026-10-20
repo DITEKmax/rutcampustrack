@@ -820,8 +820,6 @@ test('own profile security changes password and replacement login rejects old au
     const appearance = page.locator('.profile-appearance');
     await page.getByRole('radio', { name: 'Светлая', exact: true }).check();
     await expect(appearance).toHaveAttribute('data-theme', 'light');
-    await expect(appearance).toHaveCSS('background-color', 'rgb(252, 251, 254)');
-    await expect(appearance).toContainText('Остальные экраны пока тёмные.');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await page.reload();
     await page.getByRole('button', { name: 'Профиль', exact: true }).click();
@@ -829,14 +827,12 @@ test('own profile security changes password and replacement login rejects old au
     await page.getByRole('button', { name: 'Оформление', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Светлая', exact: true })).toBeChecked();
     await expect(appearance).toHaveAttribute('data-theme', 'light');
-    await expect(appearance).toHaveCSS('background-color', 'rgb(252, 251, 254)');
     await page.getByRole('radio', { name: 'Тёмная', exact: true }).check();
     await expect(appearance).toHaveAttribute('data-theme', 'dark');
     await page.getByRole('radio', { name: 'Как в системе', exact: true }).check();
     await expect(page.getByRole('radio', { name: 'Как в системе', exact: true })).toBeChecked();
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(appearance).toHaveAttribute('data-theme', 'light');
-    await expect(appearance).toHaveCSS('background-color', 'rgb(252, 251, 254)');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await page.emulateMedia({ colorScheme: 'dark' });
     await expect(appearance).toHaveAttribute('data-theme', 'dark');

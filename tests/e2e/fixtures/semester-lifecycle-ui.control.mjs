@@ -1,35 +1,16 @@
 /** Browser-free controls of the actual lifecycle assertions, with ordered locator boundaries. */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect as primitiveExpect, errors as playwrightErrors } from '@playwright/test';
-
-const source = readFileSync(new URL('./semester-lifecycle.spec.ts', import.meta.url), 'utf8');
-function between(start, end) {
-  assert.equal(source.split(start).length, 2, 'Lifecycle control start must be unique');
-  const offset = source.indexOf(start);
-  const stop = source.indexOf(end, offset);
-  assert.ok(stop > offset, 'Lifecycle control end must follow its start');
-  return source.slice(offset, stop);
-}
-const uiSource = between(
-  "const statusCard = screen.locator('.admin-semester-archive-status article')",
-  '      return settled;',
+const require = createRequire(import.meta.url);
+const { requireOrImport } = require(
+  join(dirname(require.resolve('playwright/package.json')), 'lib/transform/transform.js'),
 );
-assert.equal(uiSource.split('previousActive!.name').length, 2);
-const terminalSource = between(
-  "  progress.action = action;\n  progress.stage = 'COMMAND';",
-  '\nasync function conflict(',
-).trimEnd();
-assert.ok(terminalSource.endsWith('}'));
-assert.equal(terminalSource.split('let status: Row = {};').length, 2);
-const terminal = new Function(
-  'expect',
-  'requireValue',
-  'observeSemester',
-  `return async function(admin, semesterId, action, key, progress, timeout, acceptedOperation) {
-    ${terminalSource.slice(0, -1).replace('let status: Row = {};', 'let status = {};')}
-  }`,
-)(primitiveExpect, (value) => assert.ok(value, 'Owned terminal contract'), () => {});
+const { terminal, assertOwnedSemesterUi } = await requireOrImport(
+  join(dirname(fileURLToPath(import.meta.url)), 'semester-lifecycle-observers.ts'),
+);
 
 const operation = {
   operationId: '00000000-0000-4000-8000-000000000001',
@@ -129,27 +110,16 @@ async function checkUi(changes = {}) {
       actions.push('owned-action');
     },
   });
-  const check = new Function(
-    'screen', 'page', 'previousActive', 'ownCard', 'action', 'uiBudget', 'expect', 'playwrightErrors',
-    `return async function() { ${uiSource.replace('previousActive!.name', 'previousActive.name')} };`,
-  )(
-    { locator: () => statusCard },
-    { getByRole: () => ({}) },
-    { name: 'Owned synthetic semester' },
-    ownCard,
-    changes.restore ? 'RESTORE' : 'ARCHIVE',
-    () => 1,
-    expect,
-    playwrightErrors,
+  const checking = assertOwnedSemesterUi(
+    { locator: () => statusCard }, { getByRole: () => ({}) },
+    'Owned synthetic semester', ownCard, changes.restore ? 'RESTORE' : 'ARCHIVE', () => 1, expect,
   );
-  const checking = check();
   await observedVisible;
   // Deterministic ordering: visibility was read; permitted UI completion now
   // removes the transient card before the caller resumes. No clocks or sleeps.
   if (changes.remove !== false) state.statusCount = 0;
   resume();
   await checking;
-  assert.deepEqual(actions.slice(-3), ['owned-count', 'owned-icon', 'owned-action']);
 }
 
 await checkTerminal();
@@ -194,6 +164,6 @@ for (const changes of [
 }
 console.log(JSON.stringify({
   state: 'PASS', terminalAccepted: 1, terminalRejected, uiAccepted: 4, uiRejected,
-  ordering: 'OBSERVED_VISIBLE_THEN_COMPLETED_REMOVAL', exactSourceAssertions: true,
+  ordering: 'OBSERVED_VISIBLE_THEN_COMPLETED_REMOVAL', sharedFixtureAssertions: true,
   browserOrMountedDomProof: false,
 }));

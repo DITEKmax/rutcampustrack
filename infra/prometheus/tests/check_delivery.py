@@ -200,22 +200,33 @@ def main():
                 "severity": "critical",
             }
             ends = (datetime.now(UTC) + timedelta(minutes=1)).isoformat()
+            unrelated = dict(labels, service="synthetic-unrelated", instance="synthetic-unrelated:1",
+                             alertname="HealthCheckDown", job="blackbox-readiness")
             request(
                 f"http://127.0.0.1:{am_port}/api/v2/alerts",
                 [
                     {"labels": dict(labels, alertname="ServiceDown"), "endsAt": ends},
                     {"labels": dict(labels, alertname="HealthCheckDown", job="blackbox-readiness"), "endsAt": ends},
+                    {"labels": unrelated, "endsAt": ends},
                 ],
             )
             wait(
                 lambda: any(
-                    a["labels"].get("alertname") == "HealthCheckDown" and a["status"].get("inhibitedBy")
+                    a["labels"] == dict(labels, alertname="HealthCheckDown", job="blackbox-readiness")
+                    and a["status"].get("inhibitedBy")
                     for a in request(f"http://127.0.0.1:{am_port}/api/v2/alerts")
                 ),
                 10,
             )
+            wait(
+                lambda: any(
+                    a["labels"] == unrelated and a["status"] == "firing"
+                    for delivery in state["deliveries"] for a in delivery["alerts"]
+                ),
+                10,
+            )
             assert not any(
-                a["labels"].get("alertname") == "HealthCheckDown"
+                a["labels"] == dict(labels, alertname="HealthCheckDown", job="blackbox-readiness")
                 for delivery in state["deliveries"]
                 for a in delivery["alerts"]
             )
@@ -234,6 +245,7 @@ def main():
                             "unchanged firing deduplicated",
                             "same alert resolved after recovery",
                             "same service readiness inhibited across jobs",
+                            "different service readiness delivered with exact synthetic labels",
                         ],
                         "deliveries": len(state["deliveries"]),
                         "peak_native_rss_bytes": peak_rss,

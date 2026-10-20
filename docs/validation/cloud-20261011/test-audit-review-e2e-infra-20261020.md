@@ -1,6 +1,6 @@
 # Independent E2E / EF / INFRA review
 
-Final source decision after correction and final CI identity/routing rechecks: **APPROVE** for the frozen 43-path manifest `99bfd6f2a6eb62eb0435376a4748605c5d5c17aecba65166de4b828c7d66a29f`. All three source-confirmed P2 findings are resolved and the final CI delta is approved; runtime acceptance is not implied. This covers the original 41-path review plus the focused correction scope, not the entire PR.
+Final source decision after all narrowed rechecks, including the HTTP500 fixture/producer correction: **APPROVE** for the frozen 45-path manifest `f511757bdbcab2ecc52e550e238fe5353dc16bf2d2b97c06f268934420c3c74d`. All three source-confirmed P2 findings are resolved and the final CI delta is approved; runtime acceptance is not implied. This covers the original 41-path review plus the focused correction scope, not the entire PR.
 
 Reviewer task: `/root/review_e2e_infra`; requested Sol6.1/high; actual runtime model/effort metadata UNKNOWN. No children. No product/test/config edits, test execution, builds, browser, DB, CI, Docker/native runtime, deployment, network mutation, or other-chat communication. This report is the only written artifact.
 
@@ -94,3 +94,23 @@ Additional minimal TB-R08 root wiring: no source finding in the reviewed consume
 Author-provided browser-free controls and prepared-JDK configuration-gate PASS results were read as evidence; this reviewer ran none. They do not establish actual browser/DB/HTTP/native Alertmanager/nginx/deployment behavior. Legacy-owned dedicated config preserves original five project-case pairs by source, strict private reporter admission and artifacts off; no skip/xfail/retry/timeout/threshold relaxation found. Full old3+new7 privacy gates and collector fail-closed production sources were not changed by this inventory.
 
 The three findings have been independently rechecked and resolved. The final narrow ci.yml source-pin/selected-line routing delta has now been independently reviewed and approved above. E2E-R001 positive legacy condition remains BLOCKED_CONDITIONAL_SCOPE unless owner scope changes; safe410 source behavior must not be relabeled as positive upload/approval proof. No acceptance, integration, runtime, or deployment claim follows from this review.
+
+## Published preflight correction — HTTP500 identity fixtures and producer gate
+
+Decision: **APPROVE** for the exact three-file correction against published `857841889860f3e943c8a02119f05ca270a06395`. The published CI's existing pure preflight exposed stale positive fixture coordinates, and the hosted private witness producer retained its former title-line gate. This correction binds both to the already approved current test source; no product/runtime behavior is changed.
+
+Final 45-path manifest SHA256 before/after: `f511757bdbcab2ecc52e550e238fe5353dc16bf2d2b97c06f268934420c3c74d`; all declared hashes match. Current correction hashes:
+
+| File | SHA256 |
+| --- | --- |
+| `.github/workflows/ci.yml` | `1722a8e229ffe54dce4c3dedd330a999f6c41b6dc8dbcba526adfe86da286835` |
+| `tests/e2e/fixtures/http500-diagnostic-contract.py` | `f3b526a04b44a320c5d4bd08768a5e514b27326a4e0f5f7b3815e550f442f77b` |
+| `tests/e2e/fixtures/mobile-dataset.ts` | `66d4b793d92c0d6df61e9c3578945e976fa853c4c7d772e53038d4e9560b059c` |
+
+Personally read the entire three-file patch and surrounding admission/control source, then independently compared actual published Git bytes with frozen current bytes. The dataset change is exactly one `info.line !== 5948` to `5943` literal replacement. CI changes exactly the two existing dataset source-hash literals from `8af45478...` to the actual new dataset hash; both source gates remain mandatory. No other producer/receiver logic changes.
+
+The control still has exactly the same20 test methods and definition names. Static Python AST comparison identifies only the six expected changed definitions: `current_receipt`, `homework_receipt`, `test_homework_legacy_and_exact_d002_extension_admission`, `test_d002_schema_source_bindings_fail_before_runtime`, `test_signature_negative_controls`, and `test_hosted_admission_remains_disjoint`. Their changes rebind positive fixtures/source assertions and add explicit stale-coordinate negatives. All other parser, privacy, correlation, schema, bounds and source-binding definitions are AST-identical.
+
+Direct current source reads confirm ordinary title/call1585/1811, D002 title3958, and hosted title/call5943/6064. The fixture retains explicit rejection of retired ordinary1657/1883, D0023959/3959 and hosted5948/6069, including disjoint ordinary-versus-hosted admission. The producer still requires the exact hosted title/file, HEADMAN session, Chromium project/output directory, disposable loopback flags, exact run/clock directory identities, numeric run/attempt bounds, owned non-symlink modes, actual500 PUT attendance-mark path, and first-only private canonical request UUID witness. Existing title/actor/context/path/request gates, response handling, privacy, source AST integrity, correlation and receiver UNKNOWN qualification are unchanged.
+
+Author evidence read: the existing pure control reports20cases/4failures/0errors before and20cases/0failures/0errors after; no runtime main/network/container calls are claimed. This reviewer did not execute the control, CI scripts, browser, native processes, databases, product operations, or any prior rejected experiment. Source-only byte/hash/AST comparison and report writing were the only actions. Earlier approved43-path core and final Java/E2E routing review remain applicable outside these exact corrections. No blocking finding remains; E2E-R001 unsupported positive legacy condition retains its prior qualification.

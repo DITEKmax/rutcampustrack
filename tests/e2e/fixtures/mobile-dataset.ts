@@ -78,7 +78,7 @@ function retainMarkRequestId(
           attempt.trim() !== attempt ||
           run !== join(temporary, `rct-u20-bot-${runId}-${attempt}`) ||
           clock !== join(temporary, `rct-first3-clock-${runId}-${attempt}`) ||
-          info.line !== 5794 ||
+          info.line !== 5948 ||
           info.project.name !== 'chromium' ||
           info.project.outputDir !== join(run, 'artifacts') ||
           Object.getOwnPropertyDescriptor(session ?? {}, 'activeRole')?.value !== 'HEADMAN'

@@ -3199,6 +3199,11 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Validate ordinary MARK diagnostic sources and privacy before runtime startup
+        if: ${{ matrix.group == 'lifecycle' }}
+        timeout-minutes: 1
+        run: python3 -B tests/e2e/fixtures/http500-diagnostic-contract.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24.14.0'
@@ -3834,6 +3839,9 @@ jobs:
           def is_hosted_mark(config):
               return config == STAGES['HOSTED_BOT_MARK500']
 
+          def is_ordinary_mark(config):
+              return config == STAGES['MARK500']
+
           HOSTED_FRAME_SOURCES = {
               'ATTENDANCE_MARKING_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingController',
                   'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingController.java',
@@ -3853,8 +3861,34 @@ jobs:
           }
           HOSTED_MARK_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
-                  '907ee923580b1e355e558b939da6c27f27ccaa94370681f8ea55de411cd6709e',
-              'tests/e2e/fixtures/mobile-dataset.ts': 'db4db9bfff0d114cf9083cc4a199703b8efcfcbfc6d314454100cf6a146d208e',
+                  '327b8516ee0ef5468aef66a901503f28c7a46daf2068fbb8f366f0276ab49d52',
+              'tests/e2e/fixtures/mobile-dataset.ts': 'c03b4d873d5a83489e6ef033dee6448e8edd5da0911c63bbe0ab0864d6318b23',
+          }
+          ORDINARY_MARK_FRAME_SOURCES = {
+              'ATTENDANCE_MARKING_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingController',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingController.java',
+                  '39a2bcc652d780afb4797bf6fa36db20c7cbb9f711690843f49763a1a6f4b3bf', 117),
+              'ATTENDANCE_MARKING_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingService',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingService.java',
+                  '5e256121dc4c6129bfefe0cf16165a092a48cb387f0d8e8fa755fbd349504683', 841),
+              'ATTENDANCE_PAIR_WRITE_COORDINATOR': ('attendance-service', 'ru.rutcampustrack.attendance.student.PairWriteCoordinator',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/PairWriteCoordinator.java',
+                  '451b92e49c1b6d15959fa99fa3734035cad967fd7fc84920d87170cb31ae539a', 191),
+              'ATTENDANCE_SEMESTER_ARCHIVE_FENCE': ('attendance-service', 'ru.rutcampustrack.attendance.event.SemesterArchiveFence',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/SemesterArchiveFence.java',
+                  '4f7383059e63fd80cfdfb4f567142aba50e2736f4a105fe70aac933b0bdab1da', 119),
+              'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
+                  'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 625),
+              'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
+                  '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 271),
+          }
+          ORDINARY_MARK_SOURCES = {
+              'tests/e2e/fixtures/semester-lifecycle.spec.ts':
+                  '3ba586a96a27694d778a26ba236720348b3c94ba7363c86c5a6aec3acd9c73dd',
+              'tests/e2e/fixtures/mobile-dataset.ts':
+                  'c03b4d873d5a83489e6ef033dee6448e8edd5da0911c63bbe0ab0864d6318b23',
           }
           # Driver 5.5.2 / Spring Data MongoDB 4.5.13; no suffix or package wildcard.
           HOSTED_CLASSES = {
@@ -3877,7 +3911,7 @@ jobs:
           }
 
           def exception_classes(config):
-              return HOSTED_CLASSES if is_hosted_mark(config) else CLASSES
+              return HOSTED_CLASSES if is_hosted_mark(config) or is_ordinary_mark(config) else CLASSES
 
           def verify_hosted_mark_sources():
               if (os.environ.get('RCT_E2E_BOT_ROLE_MENU') != 'true'
@@ -3898,7 +3932,7 @@ jobs:
               return (type(row.get('durationMs')) is int and 0 <= row['durationMs'] <= 360000
                       and type(locations) is list and 1 <= len(locations) <= 8
                       and all(type(item) is dict and set(item) == {'file', 'line'}
-                              and item == {'file': 'mobile-real-server.spec.ts', 'line': 5915}
+                              and item == {'file': 'mobile-real-server.spec.ts', 'line': 6069}
                               for item in locations)
                       and row.get('diagnostics') == [
                           {'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}])
@@ -4034,6 +4068,8 @@ jobs:
           def frame_sources(config):
               if is_hosted_mark(config):
                   return HOSTED_FRAME_SOURCES
+              if is_ordinary_mark(config):
+                  return ORDINARY_MARK_FRAME_SOURCES
               if config[4] != 'DATASET_ATTENDANCE_MARK_HTTP':
                   return OWN_FRAME_SOURCES
               return {**OWN_FRAME_SOURCES, 'ATTENDANCE_MARKING_CONTROLLER': (
@@ -4052,6 +4088,13 @@ jobs:
                   raw = path.read_bytes()
                   if hashlib.sha256(raw).hexdigest() != digest or len(raw.splitlines()) != lines:
                       raise ValueError('Reported frame source changed')
+              if is_ordinary_mark(config):
+                  for source, digest in ORDINARY_MARK_SOURCES.items():
+                      path = Path(source)
+                      info = path.lstat()
+                      if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 1048576
+                              or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+                          raise ValueError('Ordinary MARK diagnostic source changed')
 
           def reported_own_frame(stack, config, captured_service=None):
               matches = []
@@ -4207,9 +4250,9 @@ jobs:
                       and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
                               for item in row['diagnostics'])
                       and (config[4] != 'DATASET_ATTENDANCE_MARK_HTTP'
-                           or ((row['line'] == 5794 and {'file': 'mobile-real-server.spec.ts', 'line': 5915}
+                           or ((row['line'] == 5948 and {'file': 'mobile-real-server.spec.ts', 'line': 6069}
                                 in row['errorLocations']) if is_hosted_mark(config) else
-                               (row['line'] == 1592 and {'file': 'semester-lifecycle.spec.ts', 'line': 1818}
+                               (row['line'] == 1657 and {'file': 'semester-lifecycle.spec.ts', 'line': 1883}
                                 in row['errorLocations'])))
                       and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
                           in row['diagnostics'])
@@ -4514,6 +4557,100 @@ jobs:
                   raise ValueError('Missing canonical MARK witness')
               return value
 
+          def closed_ordinary_mark_result(value):
+              # Artifact data is a second allowlist boundary; no request/log text is accepted.
+              keys = {'schema', 'state', 'exceptionCategory', 'sourceStage', 'reportedExceptionChain',
+                      'reportedOwnFrame', 'reportedOrigin', 'reportedExceptionClassChain',
+                      'reportedAmbiguityEvidence', 'reportedMongo'}
+              states = {'UNAVAILABLE_PRIVATE_INPUT', 'UNAVAILABLE_TARGET_SIGNATURE',
+                        'UNAVAILABLE_SERVICE_OWNERSHIP', 'UNAVAILABLE_LOG_CAPTURE',
+                        'UNAVAILABLE_LOG_FORMAT', 'UNAVAILABLE_LOG_LIMIT',
+                        'UNAVAILABLE_EXCEPTION_STACK', 'UNAVAILABLE_NO_ERROR_RECORD', 'AMBIGUOUS',
+                        'UNIQUE', 'REPORTED_PARTIAL_LOG_FORMAT', 'REPORTED_NO_CONTROLLER',
+                        'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER', 'REPORTED_GATEWAY',
+                        'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT'}
+              def sequence(items, allowed, bound):
+                  return (type(items) is list and len(items) <= bound
+                          and all(type(item) is str and item in allowed for item in items))
+              def frame(item):
+                  return (type(item) is dict and set(item) == {'symbol', 'line'}
+                          and type(item['symbol']) is str and item['symbol'] in ORDINARY_MARK_FRAME_SOURCES
+                          and type(item['line']) is int
+                          and 0 < item['line'] <= ORDINARY_MARK_FRAME_SOURCES[item['symbol']][4])
+              if (type(value) is not dict or set(value) != keys
+                      or value['schema'] != 'attendance-mark-http500.v1'
+                      or value['state'] not in states or value['sourceStage'] != 'ATTENDANCE_MARK'
+                      or value['exceptionCategory'] not in set(HOSTED_CLASSES.values()) | {'UNKNOWN'}
+                      or value['reportedOrigin'] not in {'ATTENDANCE_MVC', 'GATEWAY_WEBFLUX', 'UNKNOWN'}
+                      or not sequence(value['reportedExceptionChain'], set(HOSTED_CLASSES.values()) | {'UNKNOWN'}, 16)
+                      or not sequence(value['reportedExceptionClassChain'], set(HOSTED_CLASSES) | {'UNKNOWN'}, 16)
+                      or (value['reportedOwnFrame'] is not None and not frame(value['reportedOwnFrame']))):
+                  return False
+              evidence = value['reportedAmbiguityEvidence']
+              if type(evidence) is not list or len(evidence) > 2:
+                  return False
+              for item in evidence:
+                  if (type(item) is not dict or set(item) != {'capturedOrigin', 'reasons', 'exceptionClasses', 'ownFrames'}
+                          or item['capturedOrigin'] not in {'ATTENDANCE_MVC', 'GATEWAY_WEBFLUX'}
+                          or not sequence(item['reasons'], AMBIGUITY_REASONS, len(AMBIGUITY_REASONS))
+                          or not sequence(item['exceptionClasses'], set(HOSTED_CLASSES), len(HOSTED_CLASSES))
+                          or type(item['ownFrames']) is not list or len(item['ownFrames']) > 16
+                          or not all(frame(own) for own in item['ownFrames'])):
+                      return False
+              mongo = value['reportedMongo']
+              return (type(mongo) is dict and set(mongo) == {'state', 'code', 'serverLabels', 'site'}
+                      and mongo['state'] in {'UNKNOWN', 'AMBIGUOUS', 'REPORTED'}
+                      and mongo['code'] in {'UNKNOWN', 'OTHER', 'WRITE_CONFLICT', 'DUPLICATE_KEY',
+                                           'NO_SUCH_TRANSACTION', 'UNAUTHORIZED', 'AUTHENTICATION_FAILED'}
+                      and mongo['site'] in {'UNKNOWN', 'BEGIN', 'BODY', 'COMMIT', 'ROLLBACK'}
+                      and (mongo['serverLabels'] is None or sequence(mongo['serverLabels'],
+                           {'TRANSIENT_TRANSACTION_ERROR', 'UNKNOWN_TRANSACTION_COMMIT_RESULT'}, 2)))
+
+          def finalize_ordinary_mark_result(value):
+              value = dict(value, schema='attendance-mark-http500.v1')
+              value.setdefault('reportedMongo', mongo_unknown())
+              state = None
+              if not closed_ordinary_mark_result(value):
+                  state = 'UNAVAILABLE_LOG_FORMAT'
+              elif len((json.dumps(value, sort_keys=True) + '\n').encode()) > 4096:
+                  state = 'UNAVAILABLE_LOG_LIMIT'
+              if state is not None:
+                  value = dict(output(state, 'ATTENDANCE_MARK'), schema='attendance-mark-http500.v1',
+                               reportedMongo=mongo_unknown())
+              return value
+
+          def persist_ordinary_mark_result(config, value):
+              if not is_ordinary_mark(config) or not closed_ordinary_mark_result(value):
+                  raise ValueError('Ordinary MARK result is not closed')
+              if (os.environ.get('GITHUB_ACTIONS') != 'true'
+                      or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+                      or os.environ.get('RCT_E2E_SYNTHETIC_SEED') != 'true'):
+                  raise ValueError('Disposable diagnostic unavailable')
+              run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
+              if not re.fullmatch('[1-9][0-9]{0,19}', run) or not re.fullmatch('[1-9][0-9]{0,5}', attempt):
+                  raise ValueError('Invalid diagnostic binding')
+              temporary, work = Path(os.environ['RUNNER_TEMP']), Path(os.environ[config[0]])
+              if not temporary.is_absolute() or work != temporary / (config[1] + run + '-' + attempt):
+                  raise ValueError('Invalid diagnostic directory')
+              for directory in (work, work / 'artifacts'):
+                  info = directory.lstat()
+                  if (not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700
+                          or info.st_uid != os.getuid()):
+                      raise ValueError('Invalid private directory')
+              with os.fdopen(os.open(work / 'disposable-target', os.O_RDONLY | os.O_NOFOLLOW), 'rb') as marker:
+                  info = os.fstat(marker.fileno())
+                  if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600
+                          or info.st_uid != os.getuid() or info.st_size > 64
+                          or marker.read(65) != b'RCT_SEMESTER_DISPOSABLE\n'):
+                      raise ValueError('Invalid disposable marker')
+              payload = (json.dumps(value, sort_keys=True) + '\n').encode()
+              if len(payload) > 4096:
+                  raise ValueError('Closed MARK result exceeds bound')
+              descriptor = os.open(work / 'mark-http500.safe.json',
+                                   os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+              with os.fdopen(descriptor, 'wb') as target:
+                  target.write(payload)
+
           def load_failure(config, initial_membership=False):
               if (os.environ.get('GITHUB_ACTIONS') != 'true'
                       or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
@@ -4676,7 +4813,7 @@ jobs:
                           gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
                           result = combine(domain, gateway, config)
                           result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway, request_id=request_id)
-                          if is_hosted_mark(config):
+                          if is_hosted_mark(config) or is_ordinary_mark(config):
                               result['reportedMongo'] = hosted_mongo(payloads, config, result, request_id)
           except Exception as error:
               if 'initial_failure' in locals() and initial_failure:
@@ -4695,9 +4832,15 @@ jobs:
                   result = initial_membership_output(unknown_reason=reason)
           if 'config' in locals() and is_hosted_mark(config):
               result.setdefault('reportedMongo', mongo_unknown())
+          if 'config' in locals() and is_ordinary_mark(config):
+              result = finalize_ordinary_mark_result(result)
+              try:
+                  persist_ordinary_mark_result(config, result)
+              except Exception:
+                  # Diagnostic refusal cannot replace the original failed operation.
+                  pass
           print(json.dumps(result, sort_keys=True))
           PY_HTTP500_DIAGNOSTIC
-
 
       - name: Record closed hosted HEADMAN Mark500 cause hints
         if: ${{ matrix.group == 'client' && !cancelled() && steps.hosted-bot-roles.outcome == 'failure' }}
@@ -6677,6 +6820,7 @@ jobs:
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/artifacts/safe-results.json
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/lifecycle.safe.json
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/effect.safe.json
+            ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/mark-http500.safe.json
           if-no-files-found: warn
           retention-days: 7
 

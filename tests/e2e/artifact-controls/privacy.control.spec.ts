@@ -1,6 +1,7 @@
 import { expect, test as unprotectedTest, type TestInfo, type WorkerInfo } from '@playwright/test';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { runInNewContext } from 'node:vm';
 import { mkdtempSync, promises as fsPromises, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import {
   test as privateTest,
@@ -9,7 +10,11 @@ import {
 } from '../fixtures/artifact-privacy';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 import { rosterEditBlockFacts, validateFacts } from '../fixtures/first3-observer';
-import {
+import SafeReporter, {
+  createD002ReconnectObserver,
+  d002ReconnectObservationAnnotation,
+  retainD002ReconnectObservation,
+  safeD002ReconnectObservation,
   classifySafeFailure,
   closedLifecycleTransportCode,
   retainSemesterPreviewTransport,
@@ -310,8 +315,16 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     expect(safeNativePrimaryFailures(nativeAnnotation(value))).toEqual([]);
   for (const [message, transportHint, code] of [
     ['apiRequestContext.get: self-signed certificate', 'TLS_CERTIFICATE', undefined],
-    ['apiRequestContext.get: Unsupported TLS certificate.\n' + marker, 'TLS_CERTIFICATE', undefined],
-    ['apiRequestContext.get: Client network socket disconnected before secure TLS connection was established', 'TLS_HANDSHAKE', undefined],
+    [
+      'apiRequestContext.get: Unsupported TLS certificate.\n' + marker,
+      'TLS_CERTIFICATE',
+      undefined,
+    ],
+    [
+      'apiRequestContext.get: Client network socket disconnected before secure TLS connection was established',
+      'TLS_HANDSHAKE',
+      undefined,
+    ],
     ['apiRequestContext.get: read ECONNRESET', 'ECONNRESET', undefined],
     ['apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:443', 'ECONNREFUSED', undefined],
     ['apiRequestContext.get: connect ECONNREFUSED ::1:443', 'ECONNREFUSED', undefined],
@@ -330,26 +343,39 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   ] as const) {
     const annotations: TestInfo['annotations'] = [];
     retainNativePrimaryFailure(annotations, 'SEMESTER_PREVIEW', 'HTTP_GET', {
-      message, ...(code ? { code } : {}), stack: marker, url: marker,
+      message,
+      ...(code ? { code } : {}),
+      stack: marker,
+      url: marker,
     });
-    expect(safeNativePrimaryFailures(annotations)).toEqual([{
-      ...nativeFacts[1], errorClass: 'UNKNOWN', code: code ?? 'UNKNOWN',
-      exitStatus: 'UNKNOWN', transportHint,
-    }]);
+    expect(safeNativePrimaryFailures(annotations)).toEqual([
+      {
+        ...nativeFacts[1],
+        errorClass: 'UNKNOWN',
+        code: code ?? 'UNKNOWN',
+        exitStatus: 'UNKNOWN',
+        transportHint,
+      },
+    ]);
     expect(JSON.stringify(annotations)).not.toContain(marker);
   }
   for (const state of ['queued', 'preparing', 'ready', 'error', marker]) {
     for (const errorCode of ['AUTHORITY_DENIED', 'GENERATION_FAILED', 'EXPORT_TOO_LARGE', marker]) {
       const annotations: TestInfo['annotations'] = [];
       retainNativePrimaryFailure(annotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', new Error(marker), {
-        state, errorCode, jobId: marker, downloadPath: `/api/report-download/${marker}`,
+        state,
+        errorCode,
+        jobId: marker,
+        downloadPath: `/api/report-download/${marker}`,
       });
-      expect(safeNativePrimaryFailures(annotations)).toEqual([{
-        ...nativeFacts[2],
-        errorClass: 'Error',
-        state: state === marker ? 'UNKNOWN' : state,
-        ...(state === 'error' ? { errorCode: errorCode === marker ? 'UNKNOWN' : errorCode } : {}),
-      }]);
+      expect(safeNativePrimaryFailures(annotations)).toEqual([
+        {
+          ...nativeFacts[2],
+          errorClass: 'Error',
+          state: state === marker ? 'UNKNOWN' : state,
+          ...(state === 'error' ? { errorCode: errorCode === marker ? 'UNKNOWN' : errorCode } : {}),
+        },
+      ]);
       expect(JSON.stringify(annotations)).not.toContain(marker);
     }
   }
@@ -1217,6 +1243,251 @@ test('revoked-array counterexample fails the actual permission assertion', async
 });
 
 test('only the canonical dedicated reporter passes before credential creation', async ({}, info) => {
+  // Two timeouts can share PREONLINE_NATIVE_CALL_UNKNOWN while native refresh differs.
+  const reconnectFacts = (phase: 'REJECTED' | 'PENDING') => ({
+    offlineSeen: true,
+    onlineSeen: true,
+    online: true,
+    observationUnknown: false,
+    native: {
+      preOnline: {
+        refresh: { phase: 'NOT_CALLED', multiple: false },
+        current: { phase: 'REJECTED', multiple: false },
+      },
+      postOnline: {
+        refresh: { phase, multiple: false },
+        current: { phase: 'NOT_CALLED', multiple: false },
+      },
+    },
+    pageHttp: {
+      refresh: { requested: true, responded: false, failed: phase === 'REJECTED' },
+      current: { requested: true, responded: false, failed: true },
+    },
+    priorPending: { refresh: false, current: false },
+    refreshHttpStatus: 'UNOBSERVED',
+  });
+  const projectionDir = mkdtempSync(join(tmpdir(), 'rct-reconnect-projection-'));
+  try {
+    const project = (
+      facts: unknown,
+      binding: { file?: string; title?: string; status?: string } = {},
+    ) => {
+      const reporter = new SafeReporter();
+      reporter.onBegin({ projects: [{ outputDir: projectionDir }] } as never);
+      const attachmentPath = join(projectionDir, 'context.json');
+      writeFileSync(attachmentPath, '{}');
+      reporter.onTestEnd(
+        {
+          title:
+            binding.title ??
+            'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account',
+          location: {
+            file: binding.file ?? resolve(__dirname, '../specs/mobile-real-server.spec.ts'),
+            line: 3957,
+          },
+          expectedStatus: 'passed',
+          parent: { project: () => ({ name: 'chromium' }) },
+        } as never,
+        {
+          status: binding.status ?? 'failed',
+          duration: 1,
+          errors: [{ location: { file: 'mobile-real-server.spec.ts', line: 4221 } }],
+          annotations: [
+            { type: d002ReconnectObservationAnnotation, description: JSON.stringify(facts) },
+          ],
+          attachments: [{ path: attachmentPath }],
+        } as never,
+      );
+      return JSON.parse(readFileSync(attachmentPath, 'utf8')).d002ReconnectObservation;
+    };
+    const rejected = project(reconnectFacts('REJECTED'));
+    const pending = project(reconnectFacts('PENDING'));
+    writeFileSync(
+      info.outputPath('d002-phase-projection-control.json'),
+      JSON.stringify({
+        rejectedRetained: rejected?.native.postOnline.refresh.phase === 'REJECTED',
+        pendingRetained: pending?.native.postOnline.refresh.phase === 'PENDING',
+        distinguished: JSON.stringify(rejected) !== JSON.stringify(pending),
+      }),
+    );
+    expect(rejected).toEqual(reconnectFacts('REJECTED'));
+    expect(pending).toEqual(reconnectFacts('PENDING'));
+    expect(
+      project(reconnectFacts('PENDING'), { file: '/unrelated/mobile-real-server.spec.ts' }),
+    ).toBeUndefined();
+    expect(project(reconnectFacts('PENDING'), { title: 'unrelated case' })).toBeUndefined();
+    expect(project(reconnectFacts('PENDING'), { status: 'passed' })).toBeUndefined();
+    const annotation = (value: unknown) => [
+      {
+        type: d002ReconnectObservationAnnotation,
+        description: JSON.stringify(value),
+      },
+    ];
+    const facts = reconnectFacts('PENDING');
+    expect(safeD002ReconnectObservation(annotation(facts))).toEqual(facts);
+    expect(
+      safeD002ReconnectObservation(annotation({ ...facts, observationUnknown: true })),
+    ).toEqual({ ...facts, observationUnknown: true });
+    for (const value of [
+      null,
+      [],
+      marker,
+      { ...facts, extra: marker },
+      { ...facts, online: marker },
+      { ...facts, refreshHttpStatus: marker },
+      { ...facts, native: { ...facts.native, extra: marker } },
+      {
+        ...facts,
+        native: {
+          ...facts.native,
+          postOnline: { ...facts.native.postOnline, refresh: { phase: marker, multiple: false } },
+        },
+      },
+      {
+        ...facts,
+        native: {
+          ...facts.native,
+          postOnline: {
+            ...facts.native.postOnline,
+            refresh: { phase: 'PENDING', multiple: marker },
+          },
+        },
+      },
+      {
+        ...facts,
+        pageHttp: { ...facts.pageHttp, refresh: { ...facts.pageHttp.refresh, extra: marker } },
+      },
+      { ...facts, priorPending: { refresh: marker, current: false } },
+    ]) {
+      expect(safeD002ReconnectObservation(annotation(value))).toBeUndefined();
+      expect(project(value)).toBeUndefined();
+    }
+    for (const description of ['{', marker.repeat(2049)])
+      expect(
+        safeD002ReconnectObservation([{ type: d002ReconnectObservationAnnotation, description }]),
+      ).toBeUndefined();
+    let getterCalls = 0;
+    const getter = { type: d002ReconnectObservationAnnotation };
+    Object.defineProperty(getter, 'description', {
+      get: () => {
+        getterCalls++;
+        throw new Error(marker);
+      },
+    });
+    expect(safeD002ReconnectObservation([getter])).toBeUndefined();
+    const poisoned = { ...facts };
+    Object.defineProperty(poisoned, 'online', {
+      get: () => {
+        getterCalls++;
+        throw new Error(marker);
+      },
+    });
+    const retained: TestInfo['annotations'] = [];
+    retainD002ReconnectObservation(retained, poisoned);
+    expect(retained).toEqual([]);
+    expect(getterCalls).toBe(0);
+    const capped = Array.from({ length: 32 }, () => ({ type: 'unrelated' }));
+    expect(safeD002ReconnectObservation([...capped, ...annotation(facts)])).toBeUndefined();
+    retainD002ReconnectObservation(capped, facts);
+    expect(capped.length).toBe(32);
+    retainD002ReconnectObservation(retained, facts);
+    retainD002ReconnectObservation(retained, reconnectFacts('REJECTED'));
+    expect(retained.length).toBe(1);
+    expect(JSON.stringify(retained)).not.toContain(marker);
+    expect(retained[0].description!.length).toBeLessThanOrEqual(2048);
+  } finally {
+    rmSync(projectionDir, { recursive: true, force: true });
+  }
+  // Execute the actual serialized browser callback without browser, network or timers.
+  const nativeRun = async (settleRefresh: boolean) => {
+    const listeners = new Map<string, () => void>();
+    const calls: {
+      receiver: unknown;
+      args: unknown[];
+      promise: Promise<Response>;
+      resolve: (response: Response) => void;
+      reject: (error: unknown) => void;
+    }[] = [];
+    const original = function (this: unknown, ...args: unknown[]) {
+      let resolve!: (response: Response) => void;
+      let reject!: (error: unknown) => void;
+      const promise = new Promise<Response>((ok, fail) => {
+        resolve = ok;
+        reject = fail;
+      });
+      calls.push({ receiver: this, args, promise, resolve, reject });
+      return promise;
+    };
+    const sandbox = {
+      fetch: original,
+      URL,
+      Request,
+      location: { href: 'https://example.invalid/app/', origin: 'https://example.invalid' },
+      navigator: { onLine: true },
+      addEventListener: (kind: string, listener: () => void, options: unknown) => {
+        expect(options).toEqual({ capture: true, passive: true });
+        listeners.set(kind, listener);
+      },
+      removeEventListener: (kind: string, listener: () => void, capture: boolean) => {
+        expect(listeners.get(kind)).toBe(listener);
+        expect(capture).toBe(true);
+        listeners.delete(kind);
+      },
+    };
+    const descriptor = Object.getOwnPropertyDescriptor(sandbox, 'fetch');
+    const observer = runInNewContext(`(${createD002ReconnectObserver.toString()})()`, sandbox);
+    const receiver = {};
+    const currentInit = { method: 'GET' };
+    const currentPromise = sandbox.fetch.call(receiver, '/api/auth/session', currentInit);
+    expect(currentPromise).toBe(calls[0].promise);
+    expect(calls[0].receiver).toBe(receiver);
+    expect(calls[0].args).toEqual(['/api/auth/session', currentInit]);
+    const rejectedError = new Error('public synthetic rejection');
+    calls[0].reject(rejectedError);
+    expect(await currentPromise.catch((error) => error)).toBe(rejectedError);
+    listeners.get('offline')!();
+    listeners.get('online')!();
+    const refreshPromise = sandbox.fetch('/api/auth/refresh', { method: 'POST' });
+    expect(refreshPromise).toBe(calls[1].promise);
+    if (settleRefresh) {
+      calls[1].reject(new Error('public synthetic rejection'));
+      await refreshPromise.catch(() => undefined);
+    }
+    const snapshot = observer.read();
+    expect(snapshot.current.beforeOnline).toBe(true);
+    expect(snapshot.refresh.beforeOnline).toBe(false);
+    expect(snapshot.current.multiple || snapshot.refresh.multiple).toBe(false);
+    expect(snapshot.native.preOnline.current.phase).toBe('REJECTED');
+    expect(snapshot.native.postOnline.refresh.phase).toBe(settleRefresh ? 'REJECTED' : 'PENDING');
+    // A later same-endpoint call is visible both in the old aggregate and the online epoch.
+    const again = sandbox.fetch('/api/auth/refresh', { method: 'POST' });
+    expect(again).toBe(calls[2].promise);
+    expect(observer.read().refresh.multiple).toBe(true);
+    expect(observer.read().native.postOnline.refresh.multiple).toBe(true);
+    const nextCurrent = sandbox.fetch('/api/auth/session');
+    expect(nextCurrent).toBe(calls[3].promise);
+    expect(observer.read().current.multiple).toBe(true);
+    expect(observer.read().native.postOnline.current.multiple).toBe(false);
+    const response = new Response('{}');
+    calls[3].resolve(response);
+    expect(await nextCurrent).toBe(response);
+    expect(observer.read().native.preOnline.current.phase).toBe('REJECTED');
+    expect(observer.read().native.postOnline.current.phase).toBe('FULFILLED');
+    expect(calls.length).toBe(4);
+    observer.restore();
+    expect(Object.getOwnPropertyDescriptor(sandbox, 'fetch')).toEqual(descriptor);
+    expect(listeners.size).toBe(0);
+    return snapshot.native;
+  };
+  expect(await nativeRun(true)).not.toEqual(await nativeRun(false));
+  const unavailable = {};
+  const unavailableObserver = runInNewContext(
+    `(${createD002ReconnectObserver.toString()})()`,
+    unavailable,
+  );
+  expect(unavailableObserver.read()).toBeNull();
+  unavailableObserver.restore();
+  expect(Object.prototype.hasOwnProperty.call(unavailable, 'fetch')).toBe(false);
   const baseline: WorkerInfo = {
     config: info.config,
     project: info.project,

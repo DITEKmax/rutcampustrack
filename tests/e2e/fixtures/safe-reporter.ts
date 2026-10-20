@@ -16,6 +16,128 @@ import {
   type OwnedContainerIdentityFailure,
 } from './owned-container-identity';
 
+/** Self-contained: Playwright serializes this exact function into the page. */
+export function createD002ReconnectObserver() {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+  if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
+    return { read: () => null, restore: () => {} };
+  const original = descriptor.value as typeof fetch;
+  type Phase = 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED';
+  const refresh = {
+    phase: 'NOT_CALLED' as Phase,
+    beforeOnline: false,
+    multiple: false,
+  };
+  const current = {
+    phase: 'NOT_CALLED' as Phase,
+    beforeOnline: false,
+    multiple: false,
+  };
+  const makeState = () => ({ phase: 'NOT_CALLED' as Phase, multiple: false });
+  const preOnline = { refresh: makeState(), current: makeState() };
+  const postOnline = { refresh: makeState(), current: makeState() };
+  let observationUnknown = false;
+  let offlineSeen = false;
+  let onlineSeen = false;
+  const offline = () => {
+    offlineSeen = true;
+  };
+  const online = () => {
+    onlineSeen = true;
+  };
+  const observed: typeof fetch = function (this: unknown, ...args) {
+    let first: typeof refresh | undefined;
+    let epochFirst: ReturnType<typeof makeState> | undefined;
+    try {
+      const [input, init] = args;
+      const request = input instanceof globalThis.Request ? input : null;
+      const method = (init?.method ?? request?.method ?? 'GET').toUpperCase();
+      const address =
+        typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+      if (typeof address === 'string') {
+        const url = new URL(address, location.href);
+        const state =
+          url.origin !== location.origin
+            ? undefined
+            : method === 'POST' && url.pathname === '/api/auth/refresh'
+              ? refresh
+              : method === 'GET' && url.pathname === '/api/auth/session'
+                ? current
+                : undefined;
+        if (state) {
+          const epoch = onlineSeen ? postOnline : preOnline;
+          const epochState = state === refresh ? epoch.refresh : epoch.current;
+          if (epochState.phase === 'NOT_CALLED') {
+            epochState.phase = 'PENDING';
+            epochFirst = epochState;
+          } else epochState.multiple = true;
+          if (state.phase === 'NOT_CALLED') {
+            state.phase = 'PENDING';
+            state.beforeOnline = !onlineSeen;
+            first = state;
+          } else state.multiple = true;
+        }
+      }
+    } catch {
+      observationUnknown = true;
+      // Observation never changes native arguments, promises, responses or errors.
+    }
+    let promise: ReturnType<typeof fetch>;
+    try {
+      promise = Reflect.apply(original, this, args);
+    } catch (error) {
+      if (first) first.phase = 'REJECTED';
+      if (epochFirst) epochFirst.phase = 'REJECTED';
+      throw error;
+    }
+    if (first || epochFirst) {
+      const states = [first, epochFirst];
+      try {
+        void promise
+          .then(
+            () => {
+              for (const state of states) if (state) state.phase = 'FULFILLED';
+            },
+            () => {
+              for (const state of states) if (state) state.phase = 'REJECTED';
+            },
+          )
+          .catch(() => {});
+      } catch {
+        observationUnknown = true;
+        // An observation failure must not replace the original promise.
+      }
+    }
+    return promise;
+  };
+  Object.defineProperty(globalThis, 'fetch', {
+    ...descriptor,
+    value: observed,
+  });
+  // Capture runs before the app's bubble listener can synchronously call fetch.
+  addEventListener('offline', offline, { capture: true, passive: true });
+  addEventListener('online', online, { capture: true, passive: true });
+  return {
+    read: () => ({
+      observationUnknown,
+      offlineSeen,
+      onlineSeen,
+      online: navigator.onLine,
+      refresh: { ...refresh },
+      current: { ...current },
+      native: {
+        preOnline: { refresh: { ...preOnline.refresh }, current: { ...preOnline.current } },
+        postOnline: { refresh: { ...postOnline.refresh }, current: { ...postOnline.current } },
+      },
+    }),
+    restore: () => {
+      removeEventListener('offline', offline, true);
+      removeEventListener('online', online, true);
+      Object.defineProperty(globalThis, 'fetch', descriptor);
+    },
+  };
+}
+
 export const safeFailureAnnotation = 'rct-safe-failure-v1';
 const nativePrimaryAnnotation = 'rct-native-primary-v1';
 const nativePrimaryPaths = {
@@ -51,11 +173,19 @@ const nativeErrorCodes = [
 ] as const;
 const nativeJobStates = ['queued', 'preparing', 'ready', 'error', 'UNKNOWN'] as const;
 const nativeJobErrors = [
-  'AUTHORITY_DENIED', 'GENERATION_FAILED', 'EXPORT_TOO_LARGE', 'UNKNOWN',
+  'AUTHORITY_DENIED',
+  'GENERATION_FAILED',
+  'EXPORT_TOO_LARGE',
+  'UNKNOWN',
 ] as const;
 const nativeTransportHints = [
-  'TLS_CERTIFICATE', 'TLS_HANDSHAKE', 'ECONNRESET', 'ECONNREFUSED',
-  'REQUEST_CONTEXT_DISPOSED', 'REQUEST_TIMEOUT', 'UNKNOWN',
+  'TLS_CERTIFICATE',
+  'TLS_HANDSHAKE',
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'REQUEST_CONTEXT_DISPOSED',
+  'REQUEST_TIMEOUT',
+  'UNKNOWN',
 ] as const;
 const nativeReloadTransportHints = [
   'ABORTED',
@@ -229,28 +359,46 @@ export function retainNativePrimaryFailure(
     const newline = bounded.indexOf('\n');
     const firstLine = (newline < 0 ? bounded : bounded.slice(0, newline)).replace(/\r$/, '');
     const prefix = 'apiRequestContext.get: ';
-    if ((newline >= 0 || message.length <= 512) &&
-        Buffer.byteLength(firstLine, 'utf8') <= 512 && firstLine.startsWith(prefix)) {
+    if (
+      (newline >= 0 || message.length <= 512) &&
+      Buffer.byteLength(firstLine, 'utf8') <= 512 &&
+      firstLine.startsWith(prefix)
+    ) {
       const detail = firstLine.slice(prefix.length);
-      if ([
-        'self-signed certificate', 'self-signed certificate in certificate chain',
-        'unable to verify the first certificate', 'unable to get local issuer certificate',
-        'certificate has expired', 'certificate is not yet valid', 'Unsupported TLS certificate.',
-      ].includes(detail)) transportHint = 'TLS_CERTIFICATE';
-      else if (detail === 'Client network socket disconnected before secure TLS connection was established')
+      if (
+        [
+          'self-signed certificate',
+          'self-signed certificate in certificate chain',
+          'unable to verify the first certificate',
+          'unable to get local issuer certificate',
+          'certificate has expired',
+          'certificate is not yet valid',
+          'Unsupported TLS certificate.',
+        ].includes(detail)
+      )
+        transportHint = 'TLS_CERTIFICATE';
+      else if (
+        detail === 'Client network socket disconnected before secure TLS connection was established'
+      )
         transportHint = 'TLS_HANDSHAKE';
       else if (['read ECONNRESET', 'write ECONNRESET', 'socket hang up'].includes(detail))
         transportHint = 'ECONNRESET';
       else if (detail === 'Request context disposed.') transportHint = 'REQUEST_CONTEXT_DISPOSED';
-      else if (/^Timeout [1-9][0-9]{0,8}ms exceeded\.$/.test(detail)) transportHint = 'REQUEST_TIMEOUT';
+      else if (/^Timeout [1-9][0-9]{0,8}ms exceeded\.$/.test(detail))
+        transportHint = 'REQUEST_TIMEOUT';
       else {
         const refused = /^connect ECONNREFUSED ([0-9a-fA-F:.]+):([0-9]{1,5})$/.exec(detail);
         if (refused && isIP(refused[1]) && Number(refused[2]) > 0 && Number(refused[2]) <= 65535)
           transportHint = 'ECONNREFUSED';
       }
-      const compatibleCodes = transportHint === 'TLS_HANDSHAKE' ? ['UNKNOWN', 'ECONNRESET']
-        : transportHint === 'ECONNRESET' || transportHint === 'ECONNREFUSED' ? ['UNKNOWN', transportHint]
-        : transportHint === 'REQUEST_TIMEOUT' ? ['UNKNOWN', 'ETIMEDOUT'] : ['UNKNOWN'];
+      const compatibleCodes =
+        transportHint === 'TLS_HANDSHAKE'
+          ? ['UNKNOWN', 'ECONNRESET']
+          : transportHint === 'ECONNRESET' || transportHint === 'ECONNREFUSED'
+            ? ['UNKNOWN', transportHint]
+            : transportHint === 'REQUEST_TIMEOUT'
+              ? ['UNKNOWN', 'ETIMEDOUT']
+              : ['UNKNOWN'];
       if (!compatibleCodes.includes(code)) transportHint = 'UNKNOWN';
     }
   }
@@ -316,20 +464,27 @@ export function retainNativePrimaryFailure(
         }
       : {};
   const checks = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'checks') : undefined;
-  const headmanReadOutcome = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'headmanReadOutcome') : undefined;
+  const headmanReadOutcome =
+    path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'headmanReadOutcome') : undefined;
   const readStage = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'readStage') : undefined;
   const readCause = path === 'BOT_ROLE_MENU' ? ownData(jobStatus, 'readCause') : undefined;
   const botPhase =
     path === 'BOT_ROLE_MENU'
       ? {
-          phase: nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN',
-          ...(headmanReadOutcome === undefined ? {} : {
-            headmanReadOutcome: nativeBotReadOutcomes.find((value) => value === headmanReadOutcome) ?? 'UNKNOWN',
-          }),
-          ...(readStage === undefined && readCause === undefined ? {} : {
-            readStage: nativeBotReadStages.find((value) => value === readStage) ?? 'UNKNOWN',
-            readCause: nativeBotReadCauses.find((value) => value === readCause) ?? 'UNKNOWN',
-          }),
+          phase:
+            nativeBotPhases.find((value) => value === ownData(jobStatus, 'phase')) ?? 'UNKNOWN',
+          ...(headmanReadOutcome === undefined
+            ? {}
+            : {
+                headmanReadOutcome:
+                  nativeBotReadOutcomes.find((value) => value === headmanReadOutcome) ?? 'UNKNOWN',
+              }),
+          ...(readStage === undefined && readCause === undefined
+            ? {}
+            : {
+                readStage: nativeBotReadStages.find((value) => value === readStage) ?? 'UNKNOWN',
+                readCause: nativeBotReadCauses.find((value) => value === readCause) ?? 'UNKNOWN',
+              }),
           checks:
             typeof checks === 'number' && Number.isInteger(checks) && checks >= 0 && checks <= 60
               ? checks
@@ -338,7 +493,17 @@ export function retainNativePrimaryFailure(
       : {};
   annotations.push({
     type: nativePrimaryAnnotation,
-    description: JSON.stringify({ path, action, errorClass, code, exitStatus, ...exportStatus, ...transport, ...botPhase, ...reloadStatus }),
+    description: JSON.stringify({
+      path,
+      action,
+      errorClass,
+      code,
+      exitStatus,
+      ...exportStatus,
+      ...transport,
+      ...botPhase,
+      ...reloadStatus,
+    }),
   });
 }
 
@@ -379,25 +544,39 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
     if (path === 'BOT_ROLE_MENU') fields.push('phase');
     if (path === 'BOT_ROLE_MENU' && checks !== undefined) fields.push('checks');
-    if (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined) fields.push('headmanReadOutcome');
+    if (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined)
+      fields.push('headmanReadOutcome');
     if (path === 'BOT_ROLE_MENU' && readStage !== undefined) fields.push('readStage');
     if (path === 'BOT_ROLE_MENU' && readCause !== undefined) fields.push('readCause');
     const keys = Object.keys(value);
     if (
-      keys.length !== fields.length || keys.some((key) => !fields.includes(key)) ||
-      (path === 'SEMESTER_PREVIEW' && !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
+      keys.length !== fields.length ||
+      keys.some((key) => !fields.includes(key)) ||
+      (path === 'SEMESTER_PREVIEW' &&
+        !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
       (path === 'SESSION_RELOAD' &&
         (!nativeReloadTransportHints.some((candidate) => candidate === transportHint) ||
-          !(httpStatus === null || (typeof httpStatus === 'number' && Number.isInteger(httpStatus) && httpStatus >= 100 && httpStatus <= 599)) ||
-          ((ownData(value, 'action') === 'NAVIGATION' || ownData(value, 'action') === 'WAIT_RESPONSE') && httpStatus !== null))) ||
+          !(
+            httpStatus === null ||
+            (typeof httpStatus === 'number' &&
+              Number.isInteger(httpStatus) &&
+              httpStatus >= 100 &&
+              httpStatus <= 599)
+          ) ||
+          ((ownData(value, 'action') === 'NAVIGATION' ||
+            ownData(value, 'action') === 'WAIT_RESPONSE') &&
+            httpStatus !== null))) ||
       (path === 'ASYNC_REPORT' && !nativeJobStates.some((candidate) => candidate === state)) ||
       (path === 'BOT_ROLE_MENU' && !nativeBotPhases.some((candidate) => candidate === phase)) ||
-      (path === 'BOT_ROLE_MENU' && headmanReadOutcome !== undefined &&
+      (path === 'BOT_ROLE_MENU' &&
+        headmanReadOutcome !== undefined &&
         !nativeBotReadOutcomes.some((candidate) => candidate === headmanReadOutcome)) ||
       (path === 'BOT_ROLE_MENU' &&
         ((readStage === undefined) !== (readCause === undefined) ||
-          (readStage !== undefined && !nativeBotReadStages.some((candidate) => candidate === readStage)) ||
-          (readCause !== undefined && !nativeBotReadCauses.some((candidate) => candidate === readCause)))) ||
+          (readStage !== undefined &&
+            !nativeBotReadStages.some((candidate) => candidate === readStage)) ||
+          (readCause !== undefined &&
+            !nativeBotReadCauses.some((candidate) => candidate === readCause)))) ||
       (path === 'ASYNC_REPORT' &&
         state === 'error' &&
         !nativeJobErrors.some((candidate) => candidate === errorCode))
@@ -408,7 +587,11 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const code = ownData(value, 'code');
     const exitStatus = ownData(value, 'exitStatus');
     if (
-      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW' && path !== 'ASYNC_REPORT' && path !== 'BOT_ROLE_MENU' && path !== 'SESSION_RELOAD') ||
+      (path !== 'SUBJECT_OTP' &&
+        path !== 'SEMESTER_PREVIEW' &&
+        path !== 'ASYNC_REPORT' &&
+        path !== 'BOT_ROLE_MENU' &&
+        path !== 'SESSION_RELOAD') ||
       !nativePrimaryPaths[path].some((candidate) => candidate === action) ||
       !nativeErrorClasses.some((candidate) => candidate === errorClass) ||
       !nativeErrorCodes.some((candidate) => candidate === code) ||
@@ -437,12 +620,14 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
       ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
       ...(path === 'SESSION_RELOAD' ? { transportHint, httpStatus } : {}),
-      ...(path === 'BOT_ROLE_MENU' ? {
-        phase,
-        ...(checks === undefined ? {} : { checks: boundedChecks }),
-        ...(headmanReadOutcome === undefined ? {} : { headmanReadOutcome }),
-        ...(readStage === undefined ? {} : { readStage, readCause }),
-      } : {}),
+      ...(path === 'BOT_ROLE_MENU'
+        ? {
+            phase,
+            ...(checks === undefined ? {} : { checks: boundedChecks }),
+            ...(headmanReadOutcome === undefined ? {} : { headmanReadOutcome }),
+            ...(readStage === undefined ? {} : { readStage, readCause }),
+          }
+        : {}),
     } as NativePrimaryFailure);
   }
   return result;
@@ -1435,6 +1620,139 @@ export function retainHeadmanCleanupFailure(
   annotations.push({ type: safeFailureAnnotation, description: `${cause}:${status}` });
 }
 
+export const d002ReconnectObservationAnnotation = 'rct-d002-reconnect-v1';
+const d002ReconnectTitle =
+  'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account';
+type D002NativeState = {
+  phase: 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED';
+  multiple: boolean;
+};
+type D002Endpoints<T> = { refresh: T; current: T };
+export interface D002ReconnectObservation {
+  offlineSeen: boolean;
+  onlineSeen: boolean;
+  online: boolean;
+  observationUnknown: boolean;
+  native: {
+    preOnline: D002Endpoints<D002NativeState>;
+    postOnline: D002Endpoints<D002NativeState>;
+  };
+  pageHttp: D002Endpoints<{ requested: boolean; responded: boolean; failed: boolean }>;
+  priorPending: D002Endpoints<boolean>;
+  refreshHttpStatus: 'UNOBSERVED' | 'OTHER' | 200 | 401 | 403 | 429 | 503;
+}
+
+/** Project own data only; no caller object, unknown key, payload or getter is serialized. */
+function closedD002ReconnectObservation(value: unknown): D002ReconnectObservation | undefined {
+  const exact = (record: unknown, keys: readonly string[]) => {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) return false;
+    try {
+      const actual = Object.getOwnPropertyNames(record);
+      return actual.length === keys.length && keys.every((key) => actual.includes(key));
+    } catch {
+      return false;
+    }
+  };
+  const flags = (record: unknown, keys: readonly string[]) =>
+    exact(record, keys) && keys.every((key) => typeof ownData(record, key) === 'boolean');
+  const endpoints = ['refresh', 'current'] as const;
+  const epochs = ['preOnline', 'postOnline'] as const;
+  const topFlags = ['offlineSeen', 'onlineSeen', 'online', 'observationUnknown'] as const;
+  if (!exact(value, [...topFlags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus']))
+    return;
+  if (topFlags.some((key) => typeof ownData(value, key) !== 'boolean')) return;
+  const native = ownData(value, 'native');
+  const pageHttp = ownData(value, 'pageHttp');
+  const priorPending = ownData(value, 'priorPending');
+  const refreshHttpStatus = ownData(value, 'refreshHttpStatus');
+  if (!exact(native, epochs) || !exact(pageHttp, endpoints) || !flags(priorPending, endpoints))
+    return;
+  for (const epoch of epochs) {
+    const states = ownData(native, epoch);
+    if (!exact(states, endpoints)) return;
+    for (const endpoint of endpoints) {
+      const state = ownData(states, endpoint);
+      if (
+        !exact(state, ['phase', 'multiple']) ||
+        !['NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'].includes(
+          ownData(state, 'phase') as string,
+        ) ||
+        typeof ownData(state, 'multiple') !== 'boolean'
+      )
+        return;
+    }
+  }
+  for (const endpoint of endpoints)
+    if (!flags(ownData(pageHttp, endpoint), ['requested', 'responded', 'failed'])) return;
+  if (!['UNOBSERVED', 'OTHER', 200, 401, 403, 429, 503].includes(refreshHttpStatus as never))
+    return;
+  const state = (epoch: (typeof epochs)[number], endpoint: (typeof endpoints)[number]) => {
+    const item = ownData(ownData(native, epoch), endpoint);
+    return {
+      phase: ownData(item, 'phase') as D002NativeState['phase'],
+      multiple: ownData(item, 'multiple') as boolean,
+    };
+  };
+  const http = (endpoint: (typeof endpoints)[number]) => {
+    const item = ownData(pageHttp, endpoint);
+    return {
+      requested: ownData(item, 'requested') as boolean,
+      responded: ownData(item, 'responded') as boolean,
+      failed: ownData(item, 'failed') as boolean,
+    };
+  };
+  return {
+    offlineSeen: ownData(value, 'offlineSeen') as boolean,
+    onlineSeen: ownData(value, 'onlineSeen') as boolean,
+    online: ownData(value, 'online') as boolean,
+    observationUnknown: ownData(value, 'observationUnknown') as boolean,
+    native: {
+      preOnline: { refresh: state('preOnline', 'refresh'), current: state('preOnline', 'current') },
+      postOnline: {
+        refresh: state('postOnline', 'refresh'),
+        current: state('postOnline', 'current'),
+      },
+    },
+    pageHttp: { refresh: http('refresh'), current: http('current') },
+    priorPending: {
+      refresh: ownData(priorPending, 'refresh') as boolean,
+      current: ownData(priorPending, 'current') as boolean,
+    },
+    refreshHttpStatus: refreshHttpStatus as D002ReconnectObservation['refreshHttpStatus'],
+  };
+}
+
+/** A bounded observation, not proof of endpoint ownership, HTTP status or product cause. */
+export function safeD002ReconnectObservation(
+  annotations: unknown,
+): D002ReconnectObservation | undefined {
+  if (!Array.isArray(annotations)) return;
+  for (let index = 0; index < Math.min(annotations.length, 32); index++) {
+    const annotation = ownData(annotations, String(index));
+    if (ownData(annotation, 'type') !== d002ReconnectObservationAnnotation) continue;
+    const description = ownData(annotation, 'description');
+    if (typeof description !== 'string' || description.length > 2048) continue;
+    try {
+      const closed = closedD002ReconnectObservation(JSON.parse(description));
+      if (closed) return closed;
+    } catch {
+      // Malformed untrusted annotations cannot enter the safe result.
+    }
+  }
+}
+
+export function retainD002ReconnectObservation(
+  annotations: TestResult['annotations'],
+  value: unknown,
+): void {
+  if (annotations.length >= 32 || safeD002ReconnectObservation(annotations)) return;
+  const closed = closedD002ReconnectObservation(value);
+  if (!closed) return;
+  const description = JSON.stringify(closed);
+  if (description.length > 2048) return;
+  annotations.push({ type: d002ReconnectObservationAnnotation, description });
+}
+
 interface SafeResult {
   file: string;
   line: number;
@@ -1448,6 +1766,7 @@ interface SafeResult {
   transferObservation?: TransferObservation;
   ownedContainerIdentityFailure?: OwnedContainerIdentityFailure;
   nativePrimaryFailures?: NativePrimaryFailure[];
+  d002ReconnectObservation?: D002ReconnectObservation;
 }
 
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
@@ -1495,6 +1814,16 @@ export default class SafeReporter implements Reporter {
     if (identityFailure) row.ownedContainerIdentityFailure = identityFailure;
     const nativePrimaryFailures = safeNativePrimaryFailures(result.annotations);
     if (nativePrimaryFailures.length) row.nativePrimaryFailures = nativePrimaryFailures;
+    if (
+      test.location.file === resolve(__dirname, '../specs/mobile-real-server.spec.ts') &&
+      test.title === d002ReconnectTitle &&
+      test.expectedStatus === 'passed' &&
+      result.status === 'failed' &&
+      result.errors.length > 0
+    ) {
+      const reconnect = safeD002ReconnectObservation(result.annotations);
+      if (reconnect) row.d002ReconnectObservation = reconnect;
+    }
     this.results.push(row);
     // Automatic error contexts are created during worker teardown, after afterEach.
     // Replace attached artifact contents with safe metadata as a second boundary.

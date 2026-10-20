@@ -17,6 +17,8 @@ import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
 import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
 import {
   datasetHttpFailure,
+  createD002ReconnectObserver,
+  retainD002ReconnectObservation,
   classifySafeFailure,
   retainHeadmanCleanupFailure,
   retainNativePrimaryFailure,
@@ -4061,111 +4063,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       };
       for (const request of pendingAuth.keys()) priorAuth.add(request);
       observingReconnect = true;
-      const reconnectObserver = await page.evaluateHandle(() => {
-        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
-        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
-          return { read: () => null, restore: () => {} };
-        const original = descriptor.value as typeof fetch;
-        type Phase = 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED';
-        const refresh = {
-          phase: 'NOT_CALLED' as Phase,
-          beforeOnline: false,
-          multiple: false,
-        };
-        const current = {
-          phase: 'NOT_CALLED' as Phase,
-          beforeOnline: false,
-          multiple: false,
-        };
-        let observationUnknown = false;
-        let offlineSeen = false;
-        let onlineSeen = false;
-        const offline = () => {
-          offlineSeen = true;
-        };
-        const online = () => {
-          onlineSeen = true;
-        };
-        const observed: typeof fetch = function (this: unknown, ...args) {
-          let first: typeof refresh | undefined;
-          try {
-            const [input, init] = args;
-            const request = input instanceof globalThis.Request ? input : null;
-            const method = (init?.method ?? request?.method ?? 'GET').toUpperCase();
-            const address =
-              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
-            if (typeof address === 'string') {
-              const url = new URL(address, location.href);
-              const state =
-                url.origin !== location.origin
-                  ? undefined
-                  : method === 'POST' && url.pathname === '/api/auth/refresh'
-                    ? refresh
-                    : method === 'GET' && url.pathname === '/api/auth/session'
-                      ? current
-                      : undefined;
-              if (state) {
-                if (state.phase === 'NOT_CALLED') {
-                  state.phase = 'PENDING';
-                  state.beforeOnline = !onlineSeen;
-                  first = state;
-                } else state.multiple = true;
-              }
-            }
-          } catch {
-            observationUnknown = true;
-            // Observation never changes native arguments, promises, responses or errors.
-          }
-          let promise: ReturnType<typeof fetch>;
-          try {
-            promise = Reflect.apply(original, this, args);
-          } catch (error) {
-            if (first) first.phase = 'REJECTED';
-            throw error;
-          }
-          if (first) {
-            const state = first;
-            try {
-              void promise
-                .then(
-                  () => {
-                    state.phase = 'FULFILLED';
-                  },
-                  () => {
-                    state.phase = 'REJECTED';
-                  },
-                )
-                .catch(() => {});
-            } catch {
-              observationUnknown = true;
-              // An observation failure must not replace the original promise.
-            }
-          }
-          return promise;
-        };
-        Object.defineProperty(globalThis, 'fetch', {
-          ...descriptor,
-          value: observed,
-        });
-        // Capture runs before the app's bubble listener can synchronously call fetch.
-        addEventListener('offline', offline, { capture: true, passive: true });
-        addEventListener('online', online, { capture: true, passive: true });
-        return {
-          read: () => ({
-            observationUnknown,
-            offlineSeen,
-            onlineSeen,
-            online: navigator.onLine,
-            refresh: { ...refresh },
-            current: { ...current },
-          }),
-          restore: () => {
-            removeEventListener('offline', offline, true);
-            removeEventListener('online', online, true);
-            Object.defineProperty(globalThis, 'fetch', descriptor);
-          },
-        };
-      });
+      const reconnectObserver = await page.evaluateHandle(createD002ReconnectObserver);
       page.on('request', countRole);
       try {
         await context.setOffline(true);
@@ -4195,10 +4093,30 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           response = await current;
         } catch (error) {
           if (currentTimedOut) {
-            if (refreshStatus === undefined) {
-              const observed = await reconnectObserver
-                .evaluate((value) => value.read())
-                .catch(() => null);
+            const timedOutRefreshStatus = refreshStatus;
+            const observed = await reconnectObserver
+              .evaluate((value) => value.read())
+              .catch(() => null);
+            if (observed !== null)
+              retainD002ReconnectObservation(test.info().annotations, {
+                offlineSeen: observed.offlineSeen,
+                onlineSeen: observed.onlineSeen,
+                online: observed.online,
+                observationUnknown: httpObservationUnknown || observed.observationUnknown,
+                native: observed.native,
+                pageHttp: authHttp,
+                priorPending: {
+                  refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),
+                  current: [...priorAuth].some((request) => pendingAuth.get(request) === 'current'),
+                },
+                refreshHttpStatus:
+                  timedOutRefreshStatus === undefined
+                    ? 'UNOBSERVED'
+                    : [200, 401, 403, 429, 503].includes(timedOutRefreshStatus)
+                      ? timedOutRefreshStatus
+                      : 'OTHER',
+              });
+            if (timedOutRefreshStatus === undefined) {
               if (observed === null)
                 expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
               else if (httpObservationUnknown || observed.observationUnknown)
@@ -4252,15 +4170,15 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
               else if (authHttp.refresh.requested)
                 expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
               else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
-            } else if (refreshStatus === 200)
+            } else if (timedOutRefreshStatus === 200)
               expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
-            else if (refreshStatus === 401)
+            else if (timedOutRefreshStatus === 401)
               expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
-            else if (refreshStatus === 403)
+            else if (timedOutRefreshStatus === 403)
               expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
-            else if (refreshStatus === 429)
+            else if (timedOutRefreshStatus === 429)
               expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
-            else if (refreshStatus === 503)
+            else if (timedOutRefreshStatus === 503)
               expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
             else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
           }
@@ -5923,7 +5841,11 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         const firstDownload = page.waitForEvent('download');
         void firstDownload.catch((error: unknown) => {
           retainNativePrimaryFailure(
-            info.annotations, 'ASYNC_REPORT', 'WAIT_DOWNLOAD', error, lastJobStatus,
+            info.annotations,
+            'ASYNC_REPORT',
+            'WAIT_DOWNLOAD',
+            error,
+            lastJobStatus,
           );
         });
         await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
@@ -6355,7 +6277,11 @@ test('actual private bot menu roster and teacher Today use hosted current author
     }
     if (exit !== 0)
       retainNativePrimaryFailure(
-        info.annotations, 'BOT_ROLE_MENU', 'CHILD_EXIT', { status: exit }, facts,
+        info.annotations,
+        'BOT_ROLE_MENU',
+        'CHILD_EXIT',
+        { status: exit },
+        facts,
       );
     expect(exit).toBe(0);
     expect(

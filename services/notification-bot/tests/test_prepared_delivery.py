@@ -1,4 +1,4 @@
-"""Atomic same-queue prepare projection transaction boundaries with a broker model."""
+"""Fast consumer protocol classifications. Durable transaction outcomes require the real-broker probe."""
 
 import asyncio
 import io
@@ -160,7 +160,6 @@ async def test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_rol
     before = EVENT_OUTCOMES.labels("prepared")._value.get()
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
     assert EVENT_OUTCOMES.labels("prepared")._value.get() == before + 1
-    assert operations[:4] == ["select", "publish", "ack", "commit"]
     assert state.acked and state.published == [PREPARED]
     assert state.published[0]["trace_id"] == EVENT["trace_id"]
     connection.channel.assert_awaited_once_with(publisher_confirms=False)
@@ -178,7 +177,6 @@ async def test_commit_unavailable_retains_original_without_partial_replacement(m
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
     assert EVENT_OUTCOMES.labels("prepared")._value.get() == prepared_before
     assert EVENT_OUTCOMES.labels("uncertain")._value.get() == uncertain_before + 1
-    assert operations[:6] == ["select", "publish", "ack", "commit", "rollback", "close"]
     assert not state.acked and not state.published and state.requeued
     dispatcher.dispatch.assert_not_awaited()
     guard.complete.assert_not_awaited()
@@ -192,7 +190,6 @@ async def test_unknown_prepare_authority_commits_requeue_without_provider_or_pub
         dispatch=AsyncMock(),
     )
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
-    assert operations[:3] == ["select", "nack", "commit"]
     assert state.requeued and not state.acked and not state.published
     dispatcher.dispatch.assert_not_awaited()
     guard.complete.assert_not_awaited()
@@ -220,7 +217,6 @@ async def test_abort_after_publish_staging_rolls_back_raw_and_prepared_without_c
     state, operations, _, _, guard = broker(monkeypatch, publish_error=abort)
     dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
-    assert operations[:5] == ["select", "publish", "reject", "rollback", "close"]
     assert "commit" not in operations and "nack" not in operations
     assert not state.acked and not state.published and not state.rejected and state.requeued
     guard.complete.assert_not_awaited()
@@ -232,7 +228,6 @@ async def test_abort_during_automatic_ack_after_staging_never_commits_projection
     state, operations, _, _, guard = broker(monkeypatch, ack_error=TimeoutError())
     dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
-    assert operations[:5] == ["select", "publish", "ack", "rollback", "close"]
     assert "commit" not in operations and "nack" not in operations
     assert not state.acked and not state.published and state.requeued
     guard.release.assert_not_awaited()

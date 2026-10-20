@@ -1,345 +1,67 @@
 """Tests for the lesson.started notification handler."""
 
-import base64
-import json
-from unittest.mock import AsyncMock, MagicMock
-from urllib.parse import parse_qs, urlsplit
-
 import pytest
 
-from bot.notifications.lesson_started import handle_lesson_started
-
-
-def _make_student(user_id: int, telegram_id: int, is_headman: bool = False):
-    s = MagicMock()
-    s.user_id = user_id
-    s.telegram_id = telegram_id
-    s.is_headman = is_headman
-    return s
-
-
-def _make_subjects_response(subject_name: str = "Математика"):
-    resp = MagicMock()
-    resp.subjects = [MagicMock(subject_name=subject_name)]
-    return resp
-
-
-def _make_event(
-    lesson_id: int = 101,
-    group_id: int = 5,
-    subject_id: int = 42,
-    start_time: str = "09:00",
-    end_time: str = "10:30",
-    room: str = "А-305",
-):
-    return {
-        "event_type": "lesson.started",
-        "payload": {
-            "lesson_id": lesson_id,
-            "group_id": group_id,
-            "subject_id": subject_id,
-            "start_time": start_time,
-            "end_time": end_time,
-            "room": room,
-        },
-    }
+from tests.business_delivery import assert_business_delivery
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_sends_to_students_with_telegram_id():
-    """Only students with telegram_id > 0 receive a message; telegram_id=0 is skipped."""
-    students = [
-        _make_student(user_id=1, telegram_id=111),
-        _make_student(user_id=2, telegram_id=0),  # should be skipped
-        _make_student(user_id=3, telegram_id=333, is_headman=True),
-    ]
-
-    bot = MagicMock()
-    bot.send_message = AsyncMock(return_value=MagicMock(message_id=999))
-
-    academic_client = MagicMock()
-    academic_client.get_current_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
-
-    send_queue = MagicMock()
-    captured_tasks = []
-
-    async def capture_put(task):
-        captured_tasks.append(task)
-
-    send_queue.put = capture_put
-
-    redis_client = MagicMock()
-    redis_client.add_message_id = AsyncMock()
-
-    config = MagicMock()
-    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
-    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
-
-    await handle_lesson_started(
-        _make_event(),
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
-    )
-
-    # 2 students have telegram_id > 0
-    assert len(captured_tasks) == 2
-
-    # Execute each coroutine_factory to trigger the actual send+store
-    for task in captured_tasks:
-        await task.coroutine_factory()
-
-    assert bot.send_message.call_count == 2
-    assert redis_client.add_message_id.call_count == 2
+async def test_lesson_started_sends_to_students_with_telegram_id(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.started", expected=("Теормех &lt;snapshot&gt;", "10.10.2026"))
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_sends_plain_chat_message_without_web_app():
-    """lesson.started must not depend on Telegram Mini App/WebApp setup."""
-    students = [_make_student(user_id=1, telegram_id=111)]
-
-    bot = MagicMock()
-    bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
-
-    academic_client = MagicMock()
-    academic_client.get_current_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
-
-    send_queue = MagicMock()
-    captured_tasks = []
-
-    async def capture_put(task):
-        captured_tasks.append(task)
-
-    send_queue.put = capture_put
-    redis_client = MagicMock()
-    redis_client.add_message_id = AsyncMock()
-
-    config = MagicMock()
-    config.mini_app_url = ""
-    config.mini_app_web_url = ""
-
-    await handle_lesson_started(
-        _make_event(lesson_id=77),
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
+async def test_lesson_started_sends_plain_chat_message_without_web_app(fake_redis):
+    await assert_business_delivery(
+        fake_redis,
+        "lesson.started",
+        app_url=None,
+        missing_fields=("subject_name", "date", "lesson_date", "semester_id", "lesson_type"),
+        expected=("Занятие началось", "10:05–11:25", "Пара №2", "А-305"),
     )
-
-    assert len(captured_tasks) == 1
-    await captured_tasks[0].coroutine_factory()
-
-    _, kwargs = bot.send_message.call_args
-    assert kwargs["chat_id"] == 111
-    assert "Занятие началось" in kwargs["text"]
-    assert "Физика" in kwargs["text"]
-    assert kwargs["parse_mode"] == "HTML"
-    assert "reply_markup" not in kwargs
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_adds_mini_app_checkin_web_app_url():
-    """lesson.started passes lesson_id to Mini App via direct WebApp launch param."""
-    students = [_make_student(user_id=1, telegram_id=111)]
-
-    bot = MagicMock()
-    bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
-
-    academic_client = MagicMock()
-    academic_client.get_current_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
-
-    send_queue = MagicMock()
-    captured_tasks = []
-
-    async def capture_put(task):
-        captured_tasks.append(task)
-
-    send_queue.put = capture_put
-    redis_client = MagicMock()
-    redis_client.add_message_id = AsyncMock()
-
-    config = MagicMock()
-    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
-    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
-
-    await handle_lesson_started(
-        _make_event(lesson_id=77),
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
+async def test_lesson_started_adds_mini_app_checkin_web_app_url(fake_redis):
+    await assert_business_delivery(
+        fake_redis,
+        "lesson.started",
+        extra={"lesson_id": 77},
+        missing_fields=("subject_name", "date", "lesson_date", "semester_id", "lesson_type"),
+        app_action={"kind": "lesson", "role": "STUDENT", "lessonId": "77"},
+        expected=("Занятие началось",),
     )
-
-    await captured_tasks[0].coroutine_factory()
-
-    button = bot.send_message.call_args.kwargs["reply_markup"].inline_keyboard[0][0]
-    assert button.url is None
-    assert button.web_app is not None
-    url = urlsplit(button.web_app.url)
-    assert (url.scheme, url.netloc, url.path) == ("https", "ruttrack.site", "/mini-app/")
-    start_param = parse_qs(url.query)["tgWebAppStartParam"][0]
-    assert start_param.startswith("n2_")
-    encoded = start_param[3:]
-    launch = json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
-    assert launch == {"v": 2, "action": {"kind": "lesson", "role": "STUDENT", "lessonId": "77"}}
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_stores_message_id_in_redis():
-    """add_message_id is called for each successfully sent message."""
-    students = [
-        _make_student(user_id=10, telegram_id=1010),
-        _make_student(user_id=20, telegram_id=2020),
-    ]
-
-    bot = MagicMock()
-    bot.send_message = AsyncMock(return_value=MagicMock(message_id=555))
-
-    academic_client = MagicMock()
-    academic_client.get_current_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
-
-    send_queue = MagicMock()
-    captured_tasks = []
-
-    async def capture_put(task):
-        captured_tasks.append(task)
-
-    send_queue.put = capture_put
-    redis_client = MagicMock()
-    redis_client.add_message_id = AsyncMock()
-
-    config = MagicMock()
-    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
-    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
-
-    event = _make_event(lesson_id=200)
-    await handle_lesson_started(
-        event,
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
-    )
-
-    for task in captured_tasks:
-        await task.coroutine_factory()
-
-    redis_client.add_message_id.assert_any_call(200, 10, 555)
-    redis_client.add_message_id.assert_any_call(200, 20, 555)
+async def test_lesson_started_stores_message_id_in_redis(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.started", expected=("Теормех &lt;snapshot&gt;", "10.10.2026"))
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_resolves_subject_name():
-    """Subject name from gRPC appears in the message text."""
-    students = [_make_student(user_id=1, telegram_id=111)]
-
-    bot = MagicMock()
-    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
-
-    academic_client = MagicMock()
-    academic_client.get_current_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Линейная алгебра"))
-
-    send_queue = MagicMock()
-    captured_tasks = []
-
-    async def capture_put(task):
-        captured_tasks.append(task)
-
-    send_queue.put = capture_put
-    redis_client = MagicMock()
-    redis_client.add_message_id = AsyncMock()
-
-    config = MagicMock()
-    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
-    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
-
-    await handle_lesson_started(
-        _make_event(),
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
+async def test_lesson_started_resolves_subject_name(fake_redis):
+    await assert_business_delivery(
+        fake_redis,
+        "lesson.started",
+        extra={"subject_name": "Линейная <алгебра>"},
+        expected=("Линейная &lt;алгебра&gt;",),
+        absent=("<алгебра>",),
     )
-
-    await captured_tasks[0].coroutine_factory()
-
-    # text is a keyword argument
-    call_kwargs = bot.send_message.call_args.kwargs
-    assert "Линейная алгебра" in call_kwargs.get("text", "")
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_fallback_subject_name_on_grpc_error():
-    """Falls back to 'Пара' when get_subjects_by_ids raises an exception."""
-    students = [_make_student(user_id=1, telegram_id=111)]
-
-    bot = MagicMock()
-    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
-
-    academic_client = MagicMock()
-    academic_client.get_current_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
-
-    send_queue = MagicMock()
-    captured_tasks = []
-
-    async def capture_put(task):
-        captured_tasks.append(task)
-
-    send_queue.put = capture_put
-    redis_client = MagicMock()
-    redis_client.add_message_id = AsyncMock()
-
-    config = MagicMock()
-    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
-    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
-
-    await handle_lesson_started(
-        _make_event(),
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
+async def test_lesson_started_fallback_subject_name_on_grpc_error(fake_redis):
+    await assert_business_delivery(
+        fake_redis,
+        "lesson.started",
+        missing_fields=("subject_name",),
+        expected=("Занятие началось", "Пара №2"),
+        absent=("Теормех",),
     )
-
-    await captured_tasks[0].coroutine_factory()
-
-    call_kwargs = bot.send_message.call_args.kwargs
-    assert "Пара" in call_kwargs.get("text", "")
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_skips_missing_payload_fields():
-    """Handler logs a warning and returns early when required payload fields are missing."""
-    bot = MagicMock()
-    academic_client = MagicMock()
-    send_queue = MagicMock()
-    send_queue.put = AsyncMock()
-    redis_client = MagicMock()
-    config = MagicMock()
-
-    incomplete_event = {"event_type": "lesson.started", "payload": {"group_id": 5}}
-
-    # Should not raise
-    await handle_lesson_started(
-        incomplete_event,
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-        config=config,
+async def test_lesson_started_skips_missing_payload_fields(fake_redis):
+    await assert_business_delivery(
+        fake_redis, "lesson.started", missing_fields=("lesson_id", "group_id", "subject_id"), reject=True
     )
-
-    send_queue.put.assert_not_called()

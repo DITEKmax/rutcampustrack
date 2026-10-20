@@ -14,6 +14,7 @@ from bot.grpc_client import attendance_pb2 as pb
 from bot.notifications.headman_alerts import request_audience
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 from bot.services.send_queue import SendTask, TelegramSendQueue
+from tests.business_delivery import assert_terminal_cards
 
 
 def recipient(factory, user=11, audience=None, hook=None):
@@ -367,85 +368,9 @@ async def test_archive_and_terminal_request_keep_lawful_current_audience():
         await queue.shutdown()
 
 
-async def test_tracked_reply_rechecks_authorization_after_edit():
-    from bot.consumers.event_dispatcher import EventDispatcher
-
-    member = SimpleNamespace(user_id=11, telegram_id=111, is_headman=True)
-    academic = SimpleNamespace(get_current_group_members=AsyncMock(return_value=[member]))
-    context = pb.ResolveRequestNotificationResponse(
-        group_id=7,
-        detail=pb.StudentRequestDetail(
-            summary=pb.StudentRequestSummary(
-                id="terminal-1", kind=pb.STUDENT_REQUEST_KIND_EXCUSE, status=pb.STUDENT_REQUEST_STATUS_APPROVED
-            )
-        ),
-    )
-    attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
-    tracker = SimpleNamespace(
-        get_all=AsyncMock(return_value=[{"user_id": 11, "chat_id": 111, "message_id": 2}]), delete_entry=AsyncMock()
-    )
-
-    async def edited(**kwargs):
-        member.is_headman = False
-
-    bot = SimpleNamespace(edit_message_reply_markup=AsyncMock(side_effect=edited), send_message=AsyncMock())
-    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
-    queue.start()
-    dispatcher = EventDispatcher(
-        bot,
-        academic,
-        queue,
-        None,
-        SimpleNamespace(admin_telegram_ids=""),
-        None,
-        request_tracker=tracker,
-        attendance_client=attendance,
-    )
-    try:
-        async with queue.staged() as batch:
-            await dispatcher._close_tracked_messages(
-                "excuse", "terminal-1", "Одобрено", {"event_type": "excuse.decided", "payload": {"status": "approved"}}
-            )
-        await batch.wait()
-        bot.edit_message_reply_markup.assert_awaited_once()
-        bot.send_message.assert_not_awaited()
-        tracker.delete_entry.assert_not_awaited()
-    finally:
-        await queue.shutdown()
+async def test_tracked_reply_rechecks_authorization_after_edit(fake_redis):
+    await assert_terminal_cards(fake_redis, revoke_after_first=True)
 
 
-async def test_warmed_roster_replay_materializes_current_binding_before_ack(monkeypatch):
-    from bot.notifications.homework import handle_homework
-
-    messages, _ = broker(monkeypatch)
-    event = {"event_id": "rebind-1", "event_type": "homework.updated", "payload": {"group_id": 7, "title": "Задание"}}
-    messages[0].body = json.dumps(event).encode()
-    old = SimpleNamespace(user_id=11, telegram_id=111, is_headman=False)
-    current = SimpleNamespace(user_id=11, telegram_id=222, is_headman=False)
-    academic = SimpleNamespace(
-        get_group_members=AsyncMock(return_value=[old]), get_current_group_members=AsyncMock(return_value=[current])
-    )
-    assert (await academic.get_group_members(7))[0].telegram_id == 111
-
-    async def enabled(telegram_id, category, *, user_id, notification_type):
-        return user_id == 11 and telegram_id == 222
-
-    bot = SimpleNamespace(send_message=AsyncMock())
-    queue = TelegramSendQueue(SimpleNamespace(is_enabled=enabled))
-    queue.start()
-    guard = lease()
-
-    async def dispatch(body):
-        async with queue.staged() as batch:
-            await handle_homework(body, bot, academic, queue)
-        return batch
-
-    try:
-        await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard), 2)
-        bot.send_message.assert_awaited_once()
-        assert bot.send_message.call_args.kwargs["chat_id"] == 222
-        assert messages[0].acked and not messages[0].dlq
-        guard.complete.assert_awaited_once()
-        assert academic.get_group_members.await_count == 1
-    finally:
-        await queue.shutdown()
+async def test_warmed_roster_replay_materializes_current_binding_before_ack(fake_redis):
+    await assert_terminal_cards(fake_redis, rebound=True)

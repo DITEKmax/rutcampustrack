@@ -36,8 +36,7 @@ def test_format_message_critical():
     )
     assert "ServiceDown" in msg
     assert "CRITICAL" in msg
-    assert "🔔" in msg
-    assert "🔴" in msg
+    assert "firing" in msg
     assert "auth-service down" in msg
     assert "scrape failed 1m" in msg
 
@@ -50,23 +49,55 @@ def test_format_message_resolved():
             "status": "resolved",
         }
     )
-    assert "✅" in msg
-    assert "🟡" in msg
+    assert "resolved" in msg
+    assert "OutboxLagHigh" in msg
     assert "WARNING" in msg
 
 
-def test_format_message_truncates_long_description():
-    msg = _format_message(
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", ["parsed_length", "complete_entities"])
+async def test_format_message_truncates_long_description(case):
+    # AlertController accepts String label/annotation values without length caps;
+    # AlertPayload.toMap passes these fields through to this trusted consumer.
+    bot = MagicMock(send_message=AsyncMock())
+    queue = MagicMock(put=AsyncMock())
+    await handle_alert_fired(
         {
-            "name": "Foo",
-            "severity": "warning",
-            "status": "firing",
-            "description": "x" * 5000,
-        }
+            "payload": {
+                "name": "ServiceDown" + "n" * (2000 if case == "parsed_length" else 1),
+                "severity": "warning",
+                "status": "firing",
+                "summary": "s" * (2000 if case == "parsed_length" else 1),
+                "description": "d" * 5000 if case == "parsed_length" else "x" + "&" * 5000,
+            }
+        },
+        bot=bot,
+        send_queue=queue,
+        admin_ids=[111],
     )
-    # 3500 char cap + suffix должен сработать
-    assert len(msg) < 5000
-    assert "[truncated]" in msg
+    await queue.put.await_args.args[0].coroutine_factory()
+    text = bot.send_message.await_args.kwargs["text"]
+    assert "WARNING" in text and "firing" in text and "ServiceDown" in text
+    assert "<&>" not in text
+    from html.parser import HTMLParser
+
+    class TelegramText(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.parts = []
+
+        def handle_data(self, data):
+            self.parts.append(data)
+
+    parsed = TelegramText()
+    parsed.feed(text)
+    # Telegram counts text after entity parsing, not raw HTML source characters.
+    assert len("".join(parsed.parts)) <= 4096
+    # Escaping must not leave a partial HTML entity at the truncation point.
+    import re
+
+    without_entities = re.sub(r"&(?:amp|lt|gt|quot|#x27);", "", text)
+    assert "&" not in without_entities
 
 
 def test_format_message_escapes_html():

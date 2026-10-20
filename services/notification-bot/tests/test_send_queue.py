@@ -93,37 +93,59 @@ async def test_queue_processes_in_order():
 # ---------------------------------------------------------------------------
 
 
-async def test_rate_limit_token_bucket():
-    """Submit 35 messages at once. Token bucket caps burst at 30; remaining 5 need refill.
-    All 35 must eventually be sent."""
-    with patch("asyncio.sleep", new_callable=AsyncMock):
-        queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
-        # Pre-fill bucket to maximum burst
-        queue._tokens = queue._MAX_TOKENS
+class ControlledTime:
+    def __init__(self, monkeypatch):
+        import bot.services.send_queue as module
 
-        factory = AsyncMock()
-        queue.start()
+        self.now = 0.0
+        self.pending = []
+        self.waiting = asyncio.Event()
+        proxy = SimpleNamespace(**vars(asyncio))
+        proxy.sleep = self.sleep
+        monkeypatch.setattr(module, "asyncio", proxy)
+        monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda: self.now))
 
-        await asyncio.gather(
-            *[
-                queue.put(
-                    SendTask(
-                        coroutine_factory=factory,
-                        user_id=10,
-                        chat_id=555,
-                        category="reminders",
-                        notification_type="LESSON_REMINDER",
-                    )
+    async def sleep(self, delay):
+        future = asyncio.get_running_loop().create_future()
+        self.pending.append((self.now + delay, future))
+        self.waiting.set()
+        await future
+
+    async def advance(self, seconds):
+        self.now += seconds
+        for deadline, future in self.pending:
+            if deadline <= self.now and not future.done():
+                future.set_result(None)
+        for _ in range(20):
+            await asyncio.sleep(0)
+
+
+async def test_rate_limit_token_bucket(monkeypatch):
+    clock = ControlledTime(monkeypatch)
+    attempts = []
+
+    async def sender():
+        attempts.append(clock.now)
+
+    queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
+    queue.start()
+    try:
+        async with queue.staged() as batch:
+            for _ in range(35):
+                await queue.put(
+                    SendTask(coroutine_factory=sender, user_id=10, chat_id=555, notification_type="LESSON_REMINDER")
                 )
-                for _ in range(35)
-            ]
-        )
-        await queue._queue.join()
-
-    assert queue._total_sent == 35
-    assert queue._MAX_TOKENS == 30
-
-    await queue.shutdown()
+        await asyncio.wait_for(clock.waiting.wait(), 1)
+        assert attempts == [0.0] * 30
+        await clock.advance(0.02)
+        assert attempts == [0.0] * 30
+        for _ in range(5):
+            await clock.advance(0.04)
+        await asyncio.wait_for(batch.wait(), 1)
+        assert len(attempts) == 35
+        assert all(t >= 1 / 30 for t in attempts[30:])
+    finally:
+        await queue.shutdown()
 
 
 # ---------------------------------------------------------------------------
@@ -131,36 +153,31 @@ async def test_rate_limit_token_bucket():
 # ---------------------------------------------------------------------------
 
 
-async def test_429_retry_after():
-    """Factory raises FakeRetryAfter on first call, succeeds on second.
-    Factory must be called exactly twice."""
-    call_count = 0
+async def test_429_retry_after(monkeypatch):
+    clock = ControlledTime(monkeypatch)
+    attempts = []
 
-    async def factory():
-        nonlocal call_count
-        call_count += 1
-        if call_count == 1:
-            raise FakeRetryAfter(retry_after=1)
+    async def sender():
+        attempts.append(clock.now)
+        if len(attempts) == 1:
+            raise FakeRetryAfter(retry_after=7)
 
-    with patch("asyncio.sleep", new_callable=AsyncMock):
-        queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
-        queue.start()
-        await queue.put(
-            SendTask(
-                coroutine_factory=factory,
-                user_id=10,
-                chat_id=555,
-                category="reminders",
-                notification_type="LESSON_REMINDER",
+    queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
+    queue.start()
+    try:
+        async with queue.staged() as batch:
+            await queue.put(
+                SendTask(coroutine_factory=sender, user_id=10, chat_id=555, notification_type="LESSON_REMINDER")
             )
-        )
-        await queue._queue.join()
-
-    assert call_count == 2
-    assert queue._total_sent == 1
-    assert queue._total_failed == 0
-
-    await queue.shutdown()
+        await asyncio.wait_for(clock.waiting.wait(), 1)
+        assert attempts == [0]
+        await clock.advance(6.99)
+        assert attempts == [0]
+        await clock.advance(0.01)
+        await asyncio.wait_for(batch.wait(), 1)
+        assert attempts == [0, 7]
+    finally:
+        await queue.shutdown()
 
 
 async def test_max_retries_skip():
@@ -200,34 +217,65 @@ async def test_max_retries_skip():
     await queue.shutdown()
 
 
-async def test_failed_send_logs_exception_summary(caplog):
-    """Permanent send failures must include exception details in logs."""
+async def test_failed_send_logs_exception_summary(monkeypatch):
+    """Observe the production JSON formatter, including privacy of embedded stdlib fields."""
+    import io
+    import json
     import logging
+    from uuid import uuid4
+
+    from bot.observability import setup_observability
+
+    marker = uuid4().hex
+    root = logging.getLogger()
+    previous_handlers, previous_level = root.handlers[:], root.level
+    monkeypatch.setenv("OTEL_SDK_DISABLED", "true")
+    setup_observability()
+    stream = io.StringIO()
+    root.handlers[0].setStream(stream)
+    clock = ControlledTime(monkeypatch)
 
     async def factory():
-        raise RuntimeError("permanent failure")
+        raise RuntimeError(f"token={marker} https://api.telegram.org/bot{marker}/sendMessage")
 
-    with patch("asyncio.sleep", new_callable=AsyncMock):
-        with caplog.at_level(logging.WARNING, logger="bot.services.send_queue"):
-            queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
-            queue.start()
+    queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
+    queue.start()
+    try:
+        async with queue.staged() as batch:
             await queue.put(
                 SendTask(
                     coroutine_factory=factory,
-                    user_id=10,
-                    chat_id=555,
+                    user_id=12345678,
+                    chat_id=87654321,
                     category="reminders",
                     notification_type="LESSON_REMINDER",
                 )
             )
-            await queue._queue.join()
+        # Advance only the queue's retry sleeper; other asyncio tasks retain real scheduling.
+        for _ in range(100):
+            await clock.advance(100)
+            if batch.futures and all(f.done() for f in batch.futures):
+                break
+        import pytest
 
-    assert "RuntimeError: permanent failure" in caplog.text
-    assert "user_id=10" in caplog.text
-    assert "chat_id=555" in caplog.text
-    assert "category=reminders" in caplog.text
+        from bot.services.send_queue import TelegramDeliveryFailed
 
-    await queue.shutdown()
+        with pytest.raises(TelegramDeliveryFailed):
+            await asyncio.wait_for(batch.wait(), 1)
+        registry = CollectorRegistry()
+        registry.register(SendQueueCollector(queue))
+        assert "notification_bot_send_tasks_exhausted_total 1.0" in generate_latest(registry).decode()
+        rendered = stream.getvalue()
+        logs = [json.loads(line) for line in rendered.splitlines()]
+        exhausted = [item for item in logs if item.get("exception_type") == "RuntimeError"]
+        assert exhausted
+        assert "reminders" in exhausted[-1]["msg"]
+        assert marker not in rendered
+        assert "12345678" not in rendered and "87654321" not in rendered
+    finally:
+        await queue.shutdown()
+        root.handlers = previous_handlers
+        root.setLevel(previous_level)
 
 
 # ---------------------------------------------------------------------------

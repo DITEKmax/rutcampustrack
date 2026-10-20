@@ -4,6 +4,8 @@ import fakeredis
 import pytest
 import pytest_asyncio
 
+from tests.otp_tasks import otp_tasks  # noqa: F401
+
 
 @pytest_asyncio.fixture
 async def fake_redis():

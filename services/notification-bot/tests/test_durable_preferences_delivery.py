@@ -14,6 +14,7 @@ from bot.services.notification_prefs import (
     _snapshot,
 )
 from bot.services.send_queue import SendTask, TelegramSendQueue
+from tests.business_delivery import BusinessDelivery, fact_event
 
 
 def task(factory, uid=11, chat=101):
@@ -111,48 +112,15 @@ def test_incomplete_or_wrong_identity_snapshot_defers(corruption):
         _snapshot(raw, 11, 101, "homework")
 
 
-async def test_headman_tracker_records_original_user_for_later_exact_binding():
-    from bot.grpc_client import attendance_pb2 as pb
-    from bot.notifications.headman_alerts import handle_headman_alert
-
-    result = pb.ResolveRequestNotificationResponse(
-        group_id=7,
-        student_id=11,
-        student_name="Студент",
-        detail=pb.StudentRequestDetail(
-            reason=pb.STUDENT_EXCUSE_REASON_ILLNESS,
-            summary=pb.StudentRequestSummary(
-                id="request-1",
-                kind=pb.STUDENT_REQUEST_KIND_EXCUSE,
-                status=pb.STUDENT_REQUEST_STATUS_PENDING,
-                lessons=[pb.StudentRequestLesson(id=5, lesson_number=2)],
-            ),
-        ),
-    )
-    academic = SimpleNamespace(
-        get_current_group_members=AsyncMock(
-            return_value=[SimpleNamespace(user_id=12, telegram_id=102, is_headman=True)]
-        )
-    )
-    attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=result))
-    bot = SimpleNamespace(send_message=AsyncMock(return_value=SimpleNamespace(message_id=20)))
-    tracker = SimpleNamespace(add=AsyncMock())
-    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
-    async with queue.staged():
-        await handle_headman_alert(
-            {"event_type": "excuse.requested", "payload": {"group_id": 7, "ticket_id": "request-1"}},
-            bot=bot,
-            academic_client=academic,
-            attendance_client=attendance,
-            send_queue=queue,
-            request_tracker=tracker,
-        )
-        bot.send_message.assert_not_awaited()
-    pending = queue._queue.get_nowait()[0]
-    assert (pending.user_id, pending.chat_id, pending.category) == (12, 102, "tickets")
-    sent = await pending.coroutine_factory()
-    await pending.on_sent(sent)
-    tracker.add.assert_awaited_once_with("excuse", "request-1", 102, 20, 12)
+async def test_headman_tracker_records_original_user_for_later_exact_binding(fake_redis):
+    h = BusinessDelivery(fake_redis)
+    h.roles = {2: ["HEADMAN"]}
+    h.queue.start()
+    try:
+        await h.dispatch(fact_event("excuse.requested"))
+        assert await h.tracker.get_all("excuse", "request-1") == [{"user_id": 2, "chat_id": 202, "message_id": 1001}]
+    finally:
+        await h.queue.shutdown()
 
 
 async def test_http_retry_reuses_absolute_command_body_and_callback_identity():

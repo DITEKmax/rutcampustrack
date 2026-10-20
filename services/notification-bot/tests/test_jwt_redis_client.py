@@ -64,27 +64,17 @@ async def test_save_overwrites(fake_redis):
 
 
 @pytest.mark.asyncio
-async def test_ttl_set(fake_redis):
-    """After save, the Redis key has a positive TTL."""
-    client = _make_client(fake_redis)
-    await client.save(333, "acc", "ref", 900)
-
-    key = f"{KEY_PREFIX}333"
-    ttl = await fake_redis.ttl(key)
-    assert ttl > 0
-
-
-@pytest.mark.asyncio
-async def test_ttl_uses_max_of_expires_in_and_default(fake_redis):
+@pytest.mark.parametrize("expires_in,expected_ttl", [(900, 604800), (700000, 700000), (0, 604800), (-1, 604800)])
+async def test_ttl_uses_max_of_expires_in_and_default(fake_redis, expires_in, expected_ttl):
     """When expires_in < default TTL, default TTL is used (to keep refresh token alive)."""
     client = _make_client(fake_redis)
     # expires_in=900 (access token) < ttl=604800 (refresh token) — should use 604800
-    await client.save(444, "acc", "ref", 900)
+    await client.save(444, "acc", "ref", expires_in)
 
     key = f"{KEY_PREFIX}444"
     ttl = await fake_redis.ttl(key)
     # TTL should be approximately 604800 (within 5 seconds of execution)
-    assert ttl > 604790
+    assert expected_ttl - 5 <= ttl <= expected_ttl
 
 
 @pytest.mark.asyncio

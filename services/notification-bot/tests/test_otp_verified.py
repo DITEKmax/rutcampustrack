@@ -118,28 +118,10 @@ async def test_malformed_cleanup_never_logs_private_payload(caplog):
 
 
 @pytest.mark.asyncio
-async def test_actual_tracker_keeps_new_challenge_login_and_reset_after_old_cleanup():
+async def test_actual_tracker_keeps_new_challenge_login_and_reset_after_old_cleanup(fake_redis):
     from bot.services.otp_message_tracker import OtpMessageTracker
 
-    stored = {}
-    cache = MagicMock()
-
-    async def save(key, value, ex):
-        stored[key] = value
-
-    cache.set = AsyncMock(side_effect=save)
-    pipe = MagicMock()
-    pipe.__aenter__ = AsyncMock(return_value=pipe)
-    pipe.__aexit__ = AsyncMock(return_value=False)
-    selected = []
-    pipe.get.side_effect = lambda key: selected.append(key)
-
-    async def consume():
-        return stored.pop(selected[-1], None), 1
-
-    pipe.execute = AsyncMock(side_effect=consume)
-    cache.pipeline.return_value = pipe
-    tracker = OtpMessageTracker(120, redis_client=cache)
+    tracker = OtpMessageTracker(120, redis_client=fake_redis)
     old, new = "S" * 32, "T" * 32
     for message, purpose in [
         (1, f"subject_delete:{old}"),
@@ -151,6 +133,7 @@ async def test_actual_tracker_keeps_new_challenge_login_and_reset_after_old_clea
     bot = _bot()
     event = {"payload": {"telegram_id": 42, "purpose": "subject_delete", "challenge_id": old}}
     await handle_otp_verified(event, bot=bot, tracker=tracker)
+    assert await tracker.pop(42, purpose=f"subject_delete:{old}") is None
     await handle_otp_verified(event, bot=bot, tracker=tracker)
     bot.delete_message.assert_awaited_once_with(chat_id=42, message_id=1)
     assert (await tracker.pop(42, purpose=f"subject_delete:{new}"))["bot_message_id"] == 2

@@ -78,8 +78,8 @@ async def test_redis_error_fails_closed(monkeypatch, guard):
 
 
 @pytest.mark.asyncio
-async def test_ttl_expires(fake_redis):
-    """После истечения TTL тот же event_id может быть claim'ен снова."""
+async def test_processing_lease_has_configured_ttl(fake_redis):
+    """Claim has a bounded processing lease; this does not simulate natural expiry."""
     short_ttl_guard = BotIdempotencyGuard(ttl_seconds=1, redis_client=fake_redis)
     event_id = "event-expiring"
     assert await short_ttl_guard.try_claim(event_id) is True

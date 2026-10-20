@@ -187,14 +187,43 @@ async def test_dual_roles_deliver_one_fact_and_success_receipt():
         await queue.shutdown()
 
 
+def mutable_authority(current_roles):
+    async def audience(request):
+        return pb.NotificationAudienceResponse(
+            request_id=request.request_id,
+            event_type=request.event_type,
+            recipients=[
+                pb.NotificationAudienceRecipient(user_id=uid, roles=roles) for uid, roles in current_roles.items()
+            ],
+        )
+
+    authority = academic([])
+    authority.resolve_notification_audience = AsyncMock(side_effect=audience)
+    return authority
+
+
+async def delivery_at_rate_wait(initial_roles):
+    roles = dict(initial_roles)
+    authority = mutable_authority(roles)
+    waiting, release = asyncio.Event(), asyncio.Event()
+
+    class RateWait:
+        async def wait(self):
+            waiting.set()
+            await release.wait()
+
+    queue, batch, bot, *rest = await deliver(event(), authority, held=RateWait())
+    await asyncio.wait_for(waiting.wait(), 2)
+    return roles, release, queue, batch, bot, authority
+
+
 @pytest.mark.parametrize("live", [{}, {1: ["TEACHER"], 2: ["HEADMAN"]}])
 async def test_revoked_helper_and_late_new_role_or_user_cannot_join(live):
-    held = asyncio.Event()
-    # Prepare -> initial admission -> queue admission -> held provider fresh boundary.
-    authority = academic([{1: ["STUDENT"]}, {1: ["STUDENT"]}, {1: ["STUDENT"]}, live])
-    queue, batch, bot, _, _, _ = await deliver(event(), authority, held=held)
+    roles, release, queue, batch, bot, authority = await delivery_at_rate_wait({1: ["STUDENT"]})
     try:
-        held.set()
+        roles.clear()
+        roles.update(live)
+        release.set()
         await asyncio.wait_for(batch.wait(), 2)
         bot.send_message.assert_not_awaited()
         authority.get_current_group_members.assert_not_awaited()
@@ -203,18 +232,10 @@ async def test_revoked_helper_and_late_new_role_or_user_cannot_join(live):
 
 
 async def test_privileged_role_loss_uses_remaining_saved_live_role_once():
-    held = asyncio.Event()
-    authority = academic(
-        [
-            {1: ["STUDENT", "TEACHER"]},
-            {1: ["STUDENT", "TEACHER"]},
-            {1: ["STUDENT", "TEACHER"]},
-            {1: ["TEACHER"]},
-        ]
-    )
-    queue, batch, bot, _, _, _ = await deliver(event(), authority, held=held)
+    roles, release, queue, batch, bot, _ = await delivery_at_rate_wait({1: ["STUDENT", "TEACHER"]})
     try:
-        held.set()
+        roles[1] = ["TEACHER"]
+        release.set()
         await asyncio.wait_for(batch.wait(), 2)
         bot.send_message.assert_awaited_once()
     finally:

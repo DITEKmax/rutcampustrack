@@ -11,7 +11,6 @@ from bot.handlers.prefs import (
     cb_toggle_category,
     cb_toggle_global,
     cmd_open_settings,
-    main_keyboard,
 )
 from bot.services.notification_prefs import CATEGORIES, NotificationPreferencesUnavailable
 
@@ -32,12 +31,6 @@ def callback(data):
     )
 
 
-def test_main_keyboard_contains_settings_and_login():
-    labels = [button.text for row in main_keyboard().keyboard for button in row]
-    assert "⚙️ Настройки уведомлений" in labels
-    assert "🔑 Получить код для входа" in labels
-
-
 @pytest.mark.parametrize(
     "handler,data,operation,fields",
     [
@@ -48,12 +41,31 @@ def test_main_keyboard_contains_settings_and_login():
     ],
 )
 async def test_callback_passes_stable_identity_and_uses_server_snapshot(handler, data, operation, fields):
-    client = SimpleNamespace(command=AsyncMock(return_value=snapshot()), get_snapshot=AsyncMock())
+    from datetime import datetime, timezone
+
+    returned = snapshot(global_enabled=operation != "TOGGLE_GLOBAL", homework=False)
+    if operation == "MUTE_FOR":
+        returned.muted_until = datetime(2030, 1, 2, tzinfo=timezone.utc)
+    client = SimpleNamespace(command=AsyncMock(return_value=returned), get_snapshot=AsyncMock())
     cb = callback(data)
     await handler(cb, client)
     client.command.assert_awaited_once_with(100, "callback-100", operation, **fields)
     client.get_snapshot.assert_not_awaited()
     cb.message.edit_text.assert_awaited_once()
+    text = cb.message.edit_text.await_args.args[0]
+    buttons = {
+        b.callback_data: b.text
+        for row in cb.message.edit_text.await_args.kwargs["reply_markup"].inline_keyboard
+        for b in row
+    }
+    assert ("глобально выключены" in text) == (not returned.global_enabled)
+    assert ("prefs:mute:clear" in buttons) == (returned.muted_until is not None)
+    assert ("Пауза: нет" in text) == (returned.muted_until is None)
+    if returned.global_enabled:
+        assert buttons["prefs:cat:homework"].startswith("⬜")
+        assert buttons["prefs:cat:reminders"].startswith("✅")
+    else:
+        assert not any(key.startswith("prefs:cat:") for key in buttons)
     cb.answer.assert_awaited_once()
 
 

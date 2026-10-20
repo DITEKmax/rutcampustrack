@@ -3411,6 +3411,8 @@ jobs:
           node check-admission-retry.mjs
           npx playwright install --with-deps chromium webkit
           node fixtures/semester-lifecycle-ui.control.mjs
+          node fixtures/admin-activity-response.control.mjs
+          python3 -B fixtures/lesson-transfer-diagnostic.control.py
 
       - name: Validate the existing safe artifact privacy contract for client scenarios
         id: artifact-privacy-controls
@@ -3766,7 +3768,7 @@ jobs:
                                'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
           STATS_SOURCES = {
               'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
-                  '91e2c4c4f47187f1105fb18b3ad7bb81809ec60354d35078db391ae27b4a784a',
+                  'ed653de5eb029100a1c8c1471bac0fd2f2ee6d4d536989d69b47cc24c8be7338',
               'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
                   'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
           }
@@ -4191,7 +4193,7 @@ jobs:
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
                       'errorCount', 'diagnostics', 'errorLocations'}
               expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                          ('mobile-schedule-lifecycle.spec.ts', 397), ('mobile-schedule-lifecycle.spec.ts', 1922)}
+                          ('mobile-schedule-lifecycle.spec.ts', 397), ('mobile-schedule-lifecycle.spec.ts', 1929)}
               seen, target = set(), None
               for row in value['results']:
                   if type(row) is not dict or set(row) != keys:
@@ -4217,7 +4219,7 @@ jobs:
                   if identity == ('mobile-schedule-lifecycle.spec.ts', 397):
                       target = row
               return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
-                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1450}])
+                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1457}])
 
           D002_RECONNECT_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
@@ -5749,6 +5751,7 @@ jobs:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
           RCT_LESSON_LIFECYCLE_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_TEACHING_CLOCK_DIR: ${{ runner.temp }}/rct-first3-clock-${{ github.run_id }}-${{ github.run_attempt }}
           RCT_E2E_REMAINING5: 'true'
           RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
@@ -5819,6 +5822,27 @@ jobs:
           PY_LESSON_CLOCK
           printf 'clockReady=true\n' >> "$GITHUB_OUTPUT"
           npx playwright test --config playwright.lesson-lifecycle.config.ts --project=chromium
+
+      - name: Read closed own transfer stage after lesson lifecycle
+        id: lesson-transfer-stage
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.lesson-lifecycle.outcome != 'skipped' && steps.lesson-lifecycle.outcome != '' }}
+        timeout-minutes: 1
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          CI: 'true'
+          RCT_LESSON_LIFECYCLE_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_TEACHING_CLOCK_DIR: ${{ runner.temp }}/rct-first3-clock-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python3 -B tests/e2e/fixtures/lesson-transfer-diagnostic.py --snapshot
+
+      - name: Upload closed own transfer stage
+        if: ${{ always() && steps.lesson-transfer-stage.outcome != 'skipped' && steps.lesson-transfer-stage.outcome != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lesson-transfer-stage-safe-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}/transfer-stage.safe.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Upload closed lesson lifecycle outcome
         if: always() && steps.lesson-lifecycle.outcome != 'skipped'

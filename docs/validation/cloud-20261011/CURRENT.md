@@ -1,46 +1,45 @@
-# CURRENT — PR2 N2 and lifecycle correction
+# CURRENT — PR2 N2 and lifecycle delivery
 
-Persisted Goal Q031/D037: **IN_PROGRESS_REVIEWED_HELPER_DIAGNOSTIC_PUBLICATION**. [Owner contract](TASK-N2-LIFECYCLE-SOL-20261020.md), [N2 contract](TASK-N2-RECOVERY-20261020.md), [handoff](HANDOFF-N2-RECOVERY-20261020.md), [finding matrix](fix-findings-F01-F09-20261019.csv).
+Persisted Goal Q031/D037: **IN_PROGRESS_REVIEWED_DELTA_FINAL_GATES_REQUIRED**. [Contract](TASK-N2-LIFECYCLE-SOL-20261020.md), [N2 contract](TASK-N2-RECOVERY-20261020.md), [handoff](HANDOFF-N2-RECOVERY-20261020.md), [matrix](fix-findings-F01-F09-20261019.csv). No Goal API claim.
 
-Branch `codex/server-validation-20261011`; existing [PR2](https://github.com/DITEKmax/rutcampustrack/pull/2) open/draft/unmerged. Base3908fad9; N2 baseline4c71f43d; published executable8afc0372; N2 productc2534aa2. New helper diagnostic source is reviewed and integrated locally, not published yet. Root alone owns Git/taskdocs/shared integration.
+Branch `codex/server-validation-20261011`; existing [PR2](https://github.com/DITEKmax/rutcampustrack/pull/2) open/draft/unmerged. Last published executable [08fd474d](https://github.com/DITEKmax/rutcampustrack/commit/08fd474d69434dac6576d75437eae901cb3909c0), tree768ad4a9; N2 productc2534aa2. Baseline4c71f43d, base3908fad9. The six-path correction below is integrated with byte custody; actual-staged checks, next source commit and ordinary gates remain required. No current CI is canceled or rerun.
 
-## Current acceptance
+## Confirmed results and exact gates
 
-Historical matrix v3 **39/39,196/196 FROZEN** is unchanged. **10/11 known external findings FIXED** on their accepted snapshots; N2 external PENDING. LC1/LC2 are required criteria, without invented weights or percentage credit.
+Historical v3 **39/39,196/196 FROZEN** is unchanged. **10/11 external findings FIXED**; N2 designated external PENDING. LC1/LC2 are required criteria, without extra weights or percentage credit. Current gate countercases do not add external findings or change the historical denominator.
 
-| Criterion                      | Author/runtime result                                                                                                                                  | External review             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
-| F01–F09 and N1                 | Prior ten FIXED preserved; no related product rewrite                                                                                                  | FIXED on previous snapshots |
-| N2 retained-shell recovery     | Exact regression RED/GREEN, typed403 and both late-generation fences; hosted active/suspended plus original D002 PASS on8afc push and PR               | PENDING                     |
-| LC1 transient status-card race | Controlled actual assertion block RED/GREEN, strict stable own-semester result; full main archive/restore and separate cleanup PASS on8afc push and PR | PENDING                     |
-| LC2 diagnostic applicability   | Bounded owned-entry controls PASS; actual failure-only branch not invoked on passing hosted lifecycles                                                 | PENDING                     |
+All08fd attempt1 runs are terminal:
 
-N2 uses current-only admission after uncertain refresh; no second blind POST. Read-only remains until current authority is confirmed. Same-authority retry preserves owner, pending command and idempotency key. Only confirmed401, exact typed409 SESSION_STATE_STALE, exact current-session403 WRONG_ROLE or an authority change follows the existing generation/re-entry boundary. Both late old-denial paths are fenced; arbitrary403/409/503 remain closed.
+| Gate     | Run                                                                                | Result                                                |
+| -------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Push CI  | [39443440137](https://github.com/DITEKmax/rutcampustrack/actions/runs/39443440137) | FAILURE: ROLE37 and LESSON60; aggregate consequential |
+| PR CI    | [39443454504](https://github.com/DITEKmax/rutcampustrack/actions/runs/39443454504) | SUCCESS25/25 jobs                                     |
+| Coverage | [39443454844](https://github.com/DITEKmax/rutcampustrack/actions/runs/39443454844) | SUCCESS                                               |
+| Security | [39443454503](https://github.com/DITEKmax/rutcampustrack/actions/runs/39443454503) | SUCCESS; built-image scan SKIPPED                     |
+| OpenAPI  | [39443454737](https://github.com/DITEKmax/rutcampustrack/actions/runs/39443454737) | SUCCESS                                               |
 
-## Exact published gates
+Both events prove originalD002/N2active+suspended10PASS, mainsemester RESTORE/all3RELEASED/primaryFailurefalse and separatecleanup/active restoration/clock+disposePASS, helper6PASS, worker3PASS, fullprivacy10PASS and fullPWA/TMAtypecheck/buildPASS. All4 actual checkout trees equal08fd. Terminal packet1116c31d retains18 strict safe receipts. PRSUCCESS does not replace pushFAIL.
 
-All8afc attempt1 runs are terminal. Four client/lifecycle checkout trees match source8afc. Full PWA/TMA typecheck/build, original D002, N2 active/suspended and main lifecycle/cleanup pass in both CI events.
+N2 retained Student «Перезагрузить» performs current-only admission without a blind second refresh POST. Read-only remains until current authority; same-authority retry preserves owner/uncertain command/key. Exact typed current-session403 WRONG_ROLE and both late rejection paths are generation-fenced. LC1 requires the stable exact own-semester final result after transient-card removal. LC2 closed known nonbarrier NOT_APPLICABLE and strict applicable/unknown cases have owned-entry controls; its failure-only hosted branch was not invoked on passing main cases. Previous10 FIXED remain applicable.
 
-| Gate     | Run                                                                                | Result                                                          |
-| -------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Push CI  | [39431201704](https://github.com/DITEKmax/rutcampustrack/actions/runs/39431201704) | FAILURE: helper MANAGE_EXCUSES case; aggregate is consequential |
-| PR CI    | [39431217703](https://github.com/DITEKmax/rutcampustrack/actions/runs/39431217703) | FAILURE: worker update; aggregate is consequential              |
-| Coverage | [39431217800](https://github.com/DITEKmax/rutcampustrack/actions/runs/39431217800) | SUCCESS                                                         |
-| Security | [39431217723](https://github.com/DITEKmax/rutcampustrack/actions/runs/39431217723) | SUCCESS; built-image scan SKIPPED                               |
-| OpenAPI  | [39431217705](https://github.com/DITEKmax/rutcampustrack/actions/runs/39431217705) | SUCCESS                                                         |
+## Reviewed six-path correction
 
-## Current bounded correction
+**ROLE37:** historical first failure is response.json after required status200; exact failing invocation/body/transport cause remains UNKNOWN. Controlled actual production client/screen invalidation and installed Playwright response prove that an allowed replacement can abort the first header-selected body while publishing valid UI. Three completed matching-request waiters preserve the complete original activity oracle and default deadline. Exact08fd baselineRED3→fixedGREEN3;13negative controls and scoped strict types PASS. Independent ROLE review320e1ea3 APPROVE. No product/auth/rights/abort-policy change or extra request.
 
-Helper: the first failure is inside deniedMark after successful request decision/readback. The old safe artifact lost the inner phase, HTTP status and comparison facts. Its exact business cause remains UNKNOWN; PR counterpart6/6PASS does not resolve it. Finite actual-module controls prove information loss and distinguish conflicting comparison outcomes, without proving a historical writer race. No business authorization/status fix is justified.
+**LESSON60:** one-off lecture transfer insidecase397: POST202/PENDING;6 own GETs; last200/PARSED/PENDING with matched operation/source/occurrence;10000ms timer. Exact state at deadline, participant receipt vector and cause remain UNKNOWN. PR counterpart4PASS. No product defect or increased deadline is justified. The added private carrier and static scoped READONLY Schedule/Academic stage reader provide only closed4096B facts, using existing synthetic principals, no new grant/elevation/Mongo/old check_targets/business mutation.
 
-Six reviewed source files now retain only closed phase/status/equality facts, including a boolean EXCUSED precondition. Original two GETs/one PUT, CAS, exact403 and both comparisons remain. Native Actor observation is defensive and adds no requests. Seven new meaningful controls join three unchanged controls; the consumer requires exactly10 PASS. Full local privacy launcher remains NOT_RUN/NOFIT; selected7, scoped strict TypeScript and source bindings/privacy egress PASS. Internal review caught provisional R1 validation/re-read substitution before publication; each of five fields is now captured once. Corrected frozen manifest28298a5e and independent internal review3f484cc8 are approved, integrated byte-for-byte. Safe-results egress leak was not established.
+The lesson snapshot is AFTER_LESSON_STEP_AND_CASE_CLEANUP/PER_DB_ONLY; cleanupUNKNOWN/MongoNOT_QUERIED. Immutable operation/receipt binding survives legitimate target cancellation/headman replacement; missing rows or SENT never prove deadline state/APPLIED. Existing Schedule E2E bootstrap/superuser is explicitly not a production ACL proof. Actual own successful durable PG qualification remains **NOT_RUN** until the next ordinary hosted run.
 
-Worker: native SKIP_WAITING send returned to the same candidate, which remained installed while the old complete document survived. Handler entry is unobserved; cause UNKNOWN. Exact module/spec analysis confirms that ignoring the skipWaiting Promise is allowed. No worker product change is justified by current evidence. Finite attempts and failed custom harness setup are preserved separately.
+Internal correction R1 fixed the new reader's erroneous clock-mode assumption: actual shared clock0755/marker0644, private run/artifacts0700/carrier+output0600. Existing stand/config unchanged. Actual producer filesystem baselineRED→corrected13controls PASS. Scoped lesson TS passed on9d6dc162; finaled653de5 follows9d→0f→ed by two whitespace-only changes with exact18586-token custody, without falsely claiming a final-source typecheck rerun.
+
+Combined final manifest067e2826 (pre-EOF0e0af530 preserved) covers modified ci.yml, admin-grants spec, schedule-lifecycle spec and three created controls/readers; no deletions. Static52 checks PASS, exact reverse CI reconstructs08fd, final pinsed653de5/1929/1457. Original business actions, assertions, deadlines/retries, MARK preflight and privacy grammar remain. Independent internal combined review8e7bf159 APPROVE is retained; exact EOF-only source/pin correction has narrow internal APPROVE2f7d70cc. Designated external PENDING is separate.
 
 ## Ownership and next step
 
-Requested `gpt-6.1-sol/ultra/forknone`; actual runtime metadata UNKNOWN. Sole helper author `/root/helper_mark_diagnosis` in `/tmp/rct-helper-mark-sol-20261020`; independent read-only `/root/helper_diag_review` approved final hashes. Other source writers are complete/frozen. Root integrates only owned files; observer will read the next ordinary five runs. External designated reviewer is separate and not contacted.
+Requested `gpt-6.1-sol/ultra/forknone`; actual runtime metadata UNKNOWN; global config unchanged. Root sole Git/taskdocs/integrator. `/root/role37_causal_probe` owns frozen ROLE spec/control and sole shared CI; `/root/lesson60_causal_probe` owns frozen lesson carrier/reader/control; isolated08fd worktrees remain intact. Independent `/root/helper_diag_review` is read-only. External reviewer is separate and not contacted.
 
-Next: actual staged precommit, scoped commit and normal push of the reviewed diagnostic correction after the already-terminal8afc runs; then compatible ordinary gates and exact source/docs handoff. No blind rerun/cancel. READY_FOR_INDEPENDENT_RECHECK is not yet claimed; no merge/deploy.
+The first actual-staged precommit failed only the EOF hook, which removed one final LF from the lesson fixture. Staged index/other source/foreign25 stayed unchanged; receipt562fb626 retained. The sole authors froze the exact whitespace-only correction and updated its one SHA consumer without repeating unchanged runtime proof.
 
-Historical network causes, PUT500, activity mismatch, gateway429 and the missing46df DOM count remain UNKNOWN where unproven. Frozen B013/B014/B015 and rejected Mongo/Chromium equivalents remain untouched. CPU1/group RSS512MiB and workspace/tmp reserves unchanged; no local full stack, production, real secrets/data/provider/manual acceptance. Foreign25, WIP/worktrees/data/evidence preserved; no cache cleanup performed. PR attachment last attempt NOT_CONFIRMED; PR identity/readback retained.
+Next: actual-staged precommit on exact owned files, normal same-branch publication, five ordinary attempt1 gates and strict primaries, including actual positive own lesson PG snapshot. Then exact source/docs inventory, limitations and READY_FOR_INDEPENDENT_RECHECK. That status is not claimed before sufficient verification. No merge/deploy.
+
+Historical network causes, SETUP PUT500, activity mismatch, gateway429,46df DOM count,8afc helper/worker and08fd role/lesson triggers remain UNKNOWN where unproven. FROZEN B013/B014/B015/rejected Mongo/Chromium equivalents untouched. CPU1/RSS512MiB/output8MiB/workspace+tmp reserves unchanged; no local heavy runtime. Foreign25/WIP/worktrees/data/evidence preserved; cache cleanup0. No production/secrets/real data/provider/manual acceptance. PR attachment previously NOT_CONFIRMED after bounded waits; PR identity retained. Owner questions:none.

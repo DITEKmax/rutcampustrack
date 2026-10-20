@@ -1283,7 +1283,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
         };
         page.on('response', observeTransfer);
         let transferResponse: Response;
-        let transferReceipt: TransferReceipt;
+        let transferReceipt!: TransferReceipt;
         let terminalTransfer: TransferReceipt;
         try {
           const transferred = http(page, `/api/schedule/lessons/${sourceId}/transfer`, 'POST');
@@ -1336,6 +1336,13 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
           info.annotations.push({
             type: transferObservationAnnotation,
             description: JSON.stringify(transferObservation),
+          });
+          retainOwnTransferInput(info, transferObservation, transferReceipt, {
+            sourceLessonId: String(sourceId),
+            occurrenceId: String(afterRoom!.occurrenceId),
+            actorId: String(dataset.headman.id),
+            groupId: String(dataset.group.id),
+            semesterId: String(dataset.semester.id),
           });
         }
         expect(
@@ -2215,3 +2222,59 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
     ).status(),
   ).toBe(304);
 });
+
+/** Private correlation after the existing timer; never changes its result or writes artifacts. */
+function retainOwnTransferInput(
+  info: TestInfo,
+  observation: TransferObservation,
+  receipt: Record<string, unknown> | undefined,
+  own: Record<string, string>,
+): void {
+  try {
+    const workspace = process.env.GITHUB_WORKSPACE;
+    const run = process.env.RCT_LESSON_LIFECYCLE_RUN;
+    if (
+      !workspace ||
+      !run ||
+      info.file !== `${workspace}/tests/e2e/specs/mobile-schedule-lifecycle.spec.ts` ||
+      info.title !==
+        'HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile' ||
+      info.project.name !== 'chromium' ||
+      info.project.outputDir !== `${run}/artifacts` ||
+      ![200, 202].includes(Number(observation.postHttpStatus)) ||
+      !['RETURNED', 'TIMEOUT'].includes(observation.observationOutcome) ||
+      !receipt ||
+      receipt.sourceLessonId !== own.sourceLessonId ||
+      receipt.occurrenceId !== own.occurrenceId ||
+      !(
+        (observation.postHttpStatus === 200 && receipt.state === 'COMPLETED') ||
+        (observation.postHttpStatus === 202 && receipt.state === 'PENDING')
+      )
+    )
+      return;
+    // The reader validates hosted run/stand/file guards again; stdout/stderr stay private.
+    spawnSync(
+      'python3',
+      ['-B', `${workspace}/tests/e2e/fixtures/lesson-transfer-diagnostic.py`, '--retain-private'],
+      {
+        input: JSON.stringify({
+          schema: 'lesson-transfer-input.v1',
+          operationId: receipt.operationId,
+          sourceLessonId: own.sourceLessonId,
+          targetLessonId: receipt.targetLessonId,
+          occurrenceId: own.occurrenceId,
+          groupId: own.groupId,
+          semesterId: own.semesterId,
+          actorId: own.actorId,
+          observationOutcome: observation.observationOutcome,
+        }),
+        timeout: 5000,
+        killSignal: 'SIGKILL',
+        maxBuffer: 4096,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      },
+    );
+  } catch {
+    // A missing private witness cannot replace the original browser/assertion outcome.
+  }
+}

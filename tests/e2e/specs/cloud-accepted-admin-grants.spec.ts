@@ -239,15 +239,24 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
   try {
     const statsLoaded = http(page, '/api/academic/dashboard/stats', 'GET');
     // ADMIN22: arm the genuine initial activity read before entering the dashboard.
-    const activityReply = page.waitForResponse((response) => {
-      const url = new URL(response.url());
-      return (
-        url.pathname === '/api/academic/dashboard/activity' &&
-        url.searchParams.get('period') === 'today' &&
-        url.searchParams.get('bucket') === 'day' &&
-        response.request().method() === 'GET'
-      );
-    });
+    // Realtime connect can supersede headers; the witness needs a completed read.
+    const completedActivity = (period: 'today' | 'all_time'): Promise<Response> =>
+      page
+        .waitForEvent('requestfinished', (request) => {
+          const url = new URL(request.url());
+          return (
+            url.pathname === '/api/academic/dashboard/activity' &&
+            url.searchParams.get('period') === period &&
+            url.searchParams.get('bucket') === 'day' &&
+            request.method() === 'GET'
+          );
+        })
+        .then(async (request) => {
+          const response = await request.response();
+          expect(response).not.toBeNull();
+          return response!;
+        });
+    const activityReply = completedActivity('today');
     // End ADMIN22 initial read.
     const selected = await selectRole(page, 'Администратор');
     expect(selected.session.activeRole).toBe('ADMIN');
@@ -391,15 +400,7 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     };
     await assertActivity(await activityReply, 'today');
     for (const period of ['all_time', 'today'] as const) {
-      const next = page.waitForResponse((response) => {
-        const url = new URL(response.url());
-        return (
-          url.pathname === '/api/academic/dashboard/activity' &&
-          url.searchParams.get('period') === period &&
-          url.searchParams.get('bucket') === 'day' &&
-          response.request().method() === 'GET'
-        );
-      });
+      const next = completedActivity(period);
       await page
         .getByRole('button', { name: period === 'today' ? 'Сегодня' : 'Всё время', exact: true })
         .click();

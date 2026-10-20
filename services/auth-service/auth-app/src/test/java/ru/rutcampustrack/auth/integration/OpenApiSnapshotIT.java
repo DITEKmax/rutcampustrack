@@ -6,15 +6,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.ResponseEntity;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.ResponseEntity;
 
 /**
  * M12 G5 (extends M11 G3): OpenAPI ↔ runtime conformance check для auth-service.
@@ -55,32 +57,40 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
 
         assertThat(SNAPSHOT_PATH)
                 .as(
-                        "Snapshot file missing — run with -Popenapi.snapshot.update=true to create %s",
+                        "Snapshot file missing — run with -Popenapi.snapshot.update=true to create"
+                            + " %s",
                         SNAPSHOT_PATH)
                 .exists();
 
         String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
-        assertThat(actual)
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(semantic(mapper.readTree(actual)))
                 .as(
-                        "OpenAPI spec drifted from committed snapshot. "
-                                + "To regenerate: ./gradlew :services:auth-service:auth-app:integrationTest "
-                                + "--tests OpenApiSnapshotIT -Popenapi.snapshot.update=true")
-                .isEqualTo(expected);
+                        "OpenAPI spec drifted from committed snapshot. To regenerate: ./gradlew"
+                            + " :services:auth-service:auth-app:integrationTest --tests"
+                            + " OpenApiSnapshotIT -Popenapi.snapshot.update=true")
+                .isEqualTo(semantic(mapper.readTree(expected)));
     }
 
     private String fetchAndNormalize() throws IOException {
         ResponseEntity<String> response = restTemplate.getForEntity("/api-docs", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = (ObjectNode) mapper.readTree(response.getBody());
+        assertThat(root.path("openapi").asText()).startsWith("3.");
+        assertThat(root.path("paths").isObject()).isTrue();
+        assertThat(root.path("paths").isEmpty()).isFalse();
+        assertThat(root.path("components").path("schemas").isObject()).isTrue();
         root.path("paths")
                 .fieldNames()
                 .forEachRemaining(
                         path ->
                                 assertThat(path)
                                         .as(
-                                                "Internal routes must stay outside the public OpenAPI contract")
+                                                "Internal routes must stay outside the public"
+                                                    + " OpenAPI contract")
                                         .doesNotStartWith("/internal/"));
         // springdoc включает `servers: [{url: http://localhost:<random>}]` — волатильно,
         // RANDOM_PORT меняется каждый запуск. Снимаем из snapshot.
@@ -91,5 +101,27 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
                         .with(SerializationFeature.INDENT_OUTPUT)
                         .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         return writer.writeValueAsString(root) + "\n";
+    }
+
+    private static com.fasterxml.jackson.databind.JsonNode semantic(
+            com.fasterxml.jackson.databind.JsonNode node) {
+        if (node.isObject()) {
+            ObjectNode copy = ((ObjectNode) node).deepCopy();
+            // Only documentation metadata is ignored; all schema and security keywords remain.
+            for (String metadata : java.util.List.of("summary", "description")) {
+                if (copy.path(metadata).isTextual()) copy.remove(metadata);
+            }
+            if (copy.path("externalDocs").has("url")) copy.remove("externalDocs");
+            copy.fields()
+                    .forEachRemaining(
+                            entry -> copy.set(entry.getKey(), semantic(entry.getValue())));
+            return copy;
+        }
+        if (node.isArray()) {
+            var copy = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+            node.forEach(value -> copy.add(semantic(value)));
+            return copy;
+        }
+        return node;
     }
 }

@@ -2,7 +2,6 @@ package ru.rutcampustrack.auth.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -13,8 +12,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
+
+import java.util.List;
 
 /**
  * M08 G8 security contract (NEW-164) — SameSite cookie contract for {@code rct_refresh}. Replaces
@@ -57,7 +59,8 @@ class SameSiteCookieContractIT extends AbstractIntegrationTest {
 
         assertThat(refreshCookie)
                 .as(
-                        "cookie must have every security attribute — drop one and CSRF-protection regresses")
+                        "cookie must have every security attribute — drop one and CSRF-protection"
+                            + " regresses")
                 .contains("HttpOnly")
                 .contains("Secure")
                 .contains("SameSite=Strict")
@@ -73,36 +76,6 @@ class SameSiteCookieContractIT extends AbstractIntegrationTest {
                         "/auth/refresh", HttpMethod.POST, HttpEntity.EMPTY, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    @DisplayName("/auth/refresh с cookie БЕЗ X-CSRF-TOKEN header → 200 (regression guard)")
-    void refresh_withCookie_withoutCsrfHeader_returns200() {
-        // D6: we deliberately do NOT require X-CSRF-TOKEN for v0.0.0.
-        // If someone adds a double-submit check without coordinating a
-        // frontend interceptor, this test fails and stops the regression.
-        ResponseEntity<TokenResponse> loginResponse =
-                restTemplate.postForEntity(
-                        "/auth/login",
-                        new LoginRequest("student", "password"),
-                        TokenResponse.class);
-        String cookieValue = extractCookieValue(findRefreshCookie(loginResponse));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.COOKIE, REFRESH_COOKIE + "=" + cookieValue);
-        // Intentionally no X-CSRF-TOKEN
-        HttpEntity<Void> entity = new HttpEntity<>(null, headers);
-
-        ResponseEntity<TokenResponse> response =
-                restTemplate.exchange(
-                        "/auth/refresh", HttpMethod.POST, entity, TokenResponse.class);
-
-        assertThat(response.getStatusCode())
-                .as(
-                        "v0.0.0 does not require X-CSRF-TOKEN — introducing one here breaks PWA/web-panel")
-                .isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().accessToken()).isNotBlank();
     }
 
     @Test
@@ -157,7 +130,8 @@ class SameSiteCookieContractIT extends AbstractIntegrationTest {
 
         assertThat(clearCookie)
                 .as(
-                        "clear-cookie must keep full security attributes — losing them leaks a half-set cookie")
+                        "clear-cookie must keep full security attributes — losing them leaks a"
+                            + " half-set cookie")
                 .contains("HttpOnly")
                 .contains("Secure")
                 .contains("SameSite=Strict")

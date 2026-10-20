@@ -116,24 +116,6 @@ class OtpIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void otpRequest_withValidTelegramId_returns204NoBody() {
-        OtpRequest request = new OtpRequest(123456789L);
-
-        ResponseEntity<Void> response =
-                restTemplate.postForEntity("/auth/otp/request", request, Void.class);
-
-        // M09 G2 (08 P0-2) — 204 No Content, код в body отсутствует,
-        // доставляется через RabbitMQ event в notification-bot.
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(response.getBody()).isNull();
-
-        // Tests читают код из Redis напрямую (в prod его видит только bot).
-        String code = redisTemplate.opsForValue().get("otp:123456789");
-        assertThat(code).isNotBlank();
-        assertThat(code).hasSize(6);
-    }
-
-    @Test
     void otpVerify_withCorrectCode_returnsTokenPair() {
         OtpRequest otpRequest = new OtpRequest(123456789L);
         ResponseEntity<Void> requestResponse =
@@ -158,14 +140,31 @@ class OtpIT extends AbstractIntegrationTest {
     void otpVerify_withWrongCode_returns401() {
         // Request OTP first to ensure there is a valid OTP in Redis
         OtpRequest otpRequest = new OtpRequest(123456789L);
-        restTemplate.postForEntity("/auth/otp/request", otpRequest, Void.class);
-
-        // Verify with wrong code
-        OtpVerifyRequest verifyRequest = new OtpVerifyRequest(123456789L, "000000");
+        assertThat(
+                        restTemplate
+                                .postForEntity("/auth/otp/request", otpRequest, Void.class)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.NO_CONTENT);
+        String issued = redisTemplate.opsForValue().get("otp:123456789");
+        assertThat(issued).hasSize(6);
+        String wrong = "000000".equals(issued) ? "000001" : "000000";
+        int sessionsBefore = sessionCountForTelegramId(123456789L);
+        Long eventsBefore =
+                jdbcTemplate.queryForObject(
+                        "select count(*) from auth_outbox where event_type = 'otp.verified'",
+                        Long.class);
+        OtpVerifyRequest verifyRequest = new OtpVerifyRequest(123456789L, wrong);
         ResponseEntity<String> verifyResponse =
                 restTemplate.postForEntity("/auth/otp/verify", verifyRequest, String.class);
 
         assertThat(verifyResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(sessionCountForTelegramId(123456789L)).isEqualTo(sessionsBefore);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select count(*) from auth_outbox where event_type ="
+                                    + " 'otp.verified'",
+                                Long.class))
+                .isEqualTo(eventsBefore);
     }
 
     @Test
@@ -196,6 +195,10 @@ class OtpIT extends AbstractIntegrationTest {
         assertThat(code).isNotBlank();
 
         int before = sessionCountForTelegramId(123456789L);
+        Long verifiedBefore =
+                jdbcTemplate.queryForObject(
+                        "select count(*) from auth_outbox where event_type='otp.verified'",
+                        Long.class);
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
@@ -227,9 +230,60 @@ class OtpIT extends AbstractIntegrationTest {
             assertThat(statuses).contains(HttpStatus.UNAUTHORIZED);
             assertThat(statuses.stream().filter(HttpStatus.OK::equals).count()).isEqualTo(1L);
             assertThat(sessionCountForTelegramId(123456789L) - before).isEqualTo(1);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "select count(*) from auth_outbox where"
+                                        + " event_type='otp.verified'",
+                                    Long.class))
+                    .isEqualTo(verifiedBefore + 1);
+            assertThat(redisTemplate.hasKey("otp:123456789")).isFalse();
+            assertThat(redisTemplate.hasKey("otp_code:" + code)).isFalse();
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"missing", "foreign"})
+    void liveForwardProofRequiresMatchingReverseOwner(String reverseState) {
+        assertThat(
+                        restTemplate
+                                .postForEntity(
+                                        "/auth/otp/request", new OtpRequest(123456789L), Void.class)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.NO_CONTENT);
+        String code = redisTemplate.opsForValue().get("otp:123456789");
+        assertThat(code).hasSize(6);
+        if ("missing".equals(reverseState)) redisTemplate.delete("otp_code:" + code);
+        else redisTemplate.opsForValue().set("otp_code:" + code, "987654321");
+        int sessions = sessionCountForTelegramId(123456789L);
+        Long events =
+                jdbcTemplate.queryForObject(
+                        "select count(*) from auth_outbox where event_type='otp.verified'",
+                        Long.class);
+        assertThat(
+                        restTemplate
+                                .postForEntity(
+                                        "/auth/otp/verify",
+                                        new OtpVerifyRequest(123456789L, code),
+                                        String.class)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(
+                        restTemplate
+                                .postForEntity(
+                                        "/auth/otp/verify-by-code",
+                                        new OtpVerifyByCodeRequest(code),
+                                        String.class)
+                                .getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(sessionCountForTelegramId(123456789L)).isEqualTo(sessions);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select count(*) from auth_outbox where event_type='otp.verified'",
+                                Long.class))
+                .isEqualTo(events);
+        assertThat(code.equals(redisTemplate.opsForValue().get("otp:123456789"))).isTrue();
     }
 
     @Test

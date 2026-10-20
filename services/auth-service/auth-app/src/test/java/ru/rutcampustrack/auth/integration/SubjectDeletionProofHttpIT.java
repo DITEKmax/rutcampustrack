@@ -135,7 +135,7 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
                 case "CREDENTIAL" ->
                         jdbc.update(
                                 "UPDATE auth_identities SET"
-                                    + " password_changed=true,initial_password=NULL WHERE id=?",
+                                        + " password_changed=true,initial_password=NULL WHERE id=?",
                                 f.user());
                 case "BINDING" -> {
                     long reserved =
@@ -151,7 +151,7 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
                 case "ROLE" ->
                         jdbc.update(
                                 "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND"
-                                    + " role='headman'",
+                                        + " role='headman'",
                                 f.user());
                 case "SESSION" ->
                         jdbc.update(
@@ -243,12 +243,34 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
                                         + " consumed_at IS NOT NULL",
                                 f.user()))
                 .isZero();
+        var roleOnly = fixture();
+        String roleToken = token(roleOnly);
+        var roleBinding = binding(roleOnly);
+        var roleChallenge =
+                call(
+                        "challenge",
+                        new ChallengeRequest(roleToken, roleOnly.password(), roleBinding));
+        assertPrivate(roleChallenge, 200);
+        String roleId = json.readTree(roleChallenge.getBody()).path("challengeId").asText();
+        String roleCode = ownCode(roleOnly.telegram(), roleId);
+        long sessionRows =
+                count("SELECT count(*) FROM auth_sessions WHERE user_id=?", roleOnly.user());
+        // Fresh actor/proof: Telegram binding has not been changed for this independent denial.
         jdbc.update(
                 "UPDATE user_role_grants SET status='suspended',updated_at=CURRENT_TIMESTAMP WHERE"
-                        + " user_id=? AND role='headman'",
-                f.user());
-        int denied = call("verify", new VerifyRequest(token, b, id, code)).getStatusCode().value();
-        assertThat(denied == 401 || denied == 403 || denied == 409).isTrue();
+                    + " user_id=? AND role='headman'",
+                roleOnly.user());
+        assertPrivate(
+                call("verify", new VerifyRequest(roleToken, roleBinding, roleId, roleCode)), 409);
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM subject_deletion_proofs WHERE actor_id=? AND"
+                                    + " (receipt_id IS NOT NULL OR consumed_at IS NOT NULL)",
+                                roleOnly.user()))
+                .isZero();
+        assertThat(count("SELECT count(*) FROM auth_sessions WHERE user_id=?", roleOnly.user()))
+                .isEqualTo(sessionRows);
+        assertThat(ownEvents(roleOnly.telegram(), "otp.verified")).isZero();
         assertThat(ownEvents(f.telegram(), "otp.verified")).isZero();
     }
 

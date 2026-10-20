@@ -1,20 +1,9 @@
 package ru.rutcampustrack.notification.ws;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Type;
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,10 +23,21 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
+
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 import ru.rutcampustrack.notification.config.WsTicketClient;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
+
+import java.lang.reflect.Type;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * M08 G9 (P1-9) — full WebSocket lifecycle integration test for notification-web.
@@ -162,61 +162,104 @@ class StompIntegrationIT extends ContainerTestBase {
                         }
                     });
 
-            // Дожидаемся подписки, иначе convertAndSend может уйти до subscription
-            // (SubscribeAck приходит асинхронно, но Spring send fallback'ом буферизует
-            // только ЕСЛИ broker это умеет — in-memory broker не буферизует).
-            TimeUnit.MILLISECONDS.sleep(300);
-
             Map<String, Object> wsMessage =
                     Map.of(
                             "type",
                             "lesson.started",
                             "payload",
                             Map.of("lesson_id", 1, "group_id", groupId));
-            messagingTemplate.convertAndSend("/topic/group/" + groupId, wsMessage);
-
-            Map<String, Object> msg = received.poll(5, TimeUnit.SECONDS);
-            assertThat(msg).as("client должен получить message с /topic/group/42").isNotNull();
-            assertThat(msg.get("type")).isEqualTo("lesson.started");
-            assertThat(msg).containsKey("payload");
+            org.awaitility.Awaitility.await()
+                    .atMost(java.time.Duration.ofSeconds(5))
+                    .untilAsserted(
+                            () -> {
+                                messagingTemplate.convertAndSend(
+                                        "/topic/group/" + groupId, wsMessage);
+                                Map<String, Object> msg = received.poll();
+                                assertThat(msg)
+                                        .as(
+                                                "observable own-group subscription readiness and"
+                                                    + " delivery")
+                                        .isEqualTo(wsMessage);
+                            });
         } finally {
             if (session.isConnected()) session.disconnect();
         }
     }
 
-    @Test
-    @DisplayName("handshake без ticket → connection fails")
-    void missingTicketRejectsHandshake() {
-        String url = "ws://localhost:" + port + "/ws/websocket";
-
-        // Пустая подписка — ожидаем ExecutionException с 401/Handshake failure.
-        assertThatThrownBy(
-                        () ->
-                                stompClient
-                                        .connectAsync(
-                                                url,
-                                                new WebSocketHttpHeaders(),
-                                                new StompSessionHandlerAdapter() {})
-                                        .get(5, TimeUnit.SECONDS))
-                .isInstanceOfAny(ExecutionException.class, TimeoutException.class);
+    @org.junit.jupiter.api.AfterEach
+    void closeClient() {
+        if (stompClient != null) stompClient.stop();
     }
 
     @Test
-    @DisplayName("handshake с невалидным ticket → connection fails")
-    void invalidTicketRejectsHandshake() {
-        String unknownTicket = UUID.randomUUID().toString();
-        when(ticketClient.consume(unknownTicket)).thenReturn(Optional.empty());
+    @DisplayName("handshake без ticket → HTTP Upgrade 401")
+    void missingTicketRejectsHandshake() throws Exception {
+        assertValidUpgradeControl();
+        assertDeniedUpgrade("ws://localhost:" + port + "/ws/websocket");
+    }
 
-        String url = "ws://localhost:" + port + "/ws/websocket?ticket=" + unknownTicket;
+    @Test
+    @DisplayName("handshake с невалидным ticket → HTTP Upgrade 401")
+    void invalidTicketRejectsHandshake() throws Exception {
+        assertValidUpgradeControl();
+        String unknown = UUID.randomUUID().toString();
+        when(ticketClient.consume(unknown)).thenReturn(Optional.empty());
+        assertDeniedUpgrade("ws://localhost:" + port + "/ws/websocket?ticket=" + unknown);
+    }
 
-        assertThatThrownBy(
-                        () ->
-                                stompClient
-                                        .connectAsync(
-                                                url,
-                                                new WebSocketHttpHeaders(),
-                                                new StompSessionHandlerAdapter() {})
-                                        .get(5, TimeUnit.SECONDS))
-                .isInstanceOfAny(ExecutionException.class, TimeoutException.class);
+    private void assertValidUpgradeControl() throws Exception {
+        when(ticketClient.admit(any(WsSessionAdmissionRequest.class))).thenReturn(true);
+        String ticket = UUID.randomUUID().toString();
+        when(ticketClient.consume(ticket))
+                .thenReturn(
+                        Optional.of(
+                                new ConsumeWsTicketResponse(
+                                        100L,
+                                        UUID.randomUUID().toString(),
+                                        1,
+                                        1,
+                                        "STUDENT",
+                                        "ACTIVE",
+                                        42L,
+                                        false,
+                                        false,
+                                        Instant.now())));
+        try (var http = java.net.http.HttpClient.newHttpClient()) {
+            var socket =
+                    http.newWebSocketBuilder()
+                            .buildAsync(
+                                    java.net.URI.create(
+                                            "ws://localhost:"
+                                                    + port
+                                                    + "/ws/websocket?ticket="
+                                                    + ticket),
+                                    new java.net.http.WebSocket.Listener() {})
+                            .get(5, TimeUnit.SECONDS);
+            socket.abort();
+        }
+    }
+
+    private void assertDeniedUpgrade(String url) throws Exception {
+        try (var http = java.net.http.HttpClient.newHttpClient()) {
+            // A timeout is a test failure; only an observed HTTP 401 proves auth denial.
+            try {
+                var socket =
+                        http.newWebSocketBuilder()
+                                .buildAsync(
+                                        java.net.URI.create(url),
+                                        new java.net.http.WebSocket.Listener() {})
+                                .get(5, TimeUnit.SECONDS);
+                socket.abort();
+                throw new AssertionError("Unauthorized WebSocket upgrade succeeded");
+            } catch (ExecutionException error) {
+                assertThat(error.getCause())
+                        .isInstanceOf(java.net.http.WebSocketHandshakeException.class);
+                assertThat(
+                                ((java.net.http.WebSocketHandshakeException) error.getCause())
+                                        .getResponse()
+                                        .statusCode())
+                        .isEqualTo(401);
+            }
+        }
     }
 }

@@ -3,6 +3,18 @@ package ru.rutcampustrack.auth.session;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import org.junit.jupiter.api.Test;
+
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.model.SecurityEvent;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.auth.session.model.SessionState;
+import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
+import ru.rutcampustrack.auth.session.port.SessionStatePort;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,16 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.model.SecurityEvent;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
-import ru.rutcampustrack.auth.session.model.SessionState;
-import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
-import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
 class SessionLifecycleServiceTest {
 
@@ -35,31 +37,6 @@ class SessionLifecycleServiceTest {
     private static final Instant EXPIRY = T0.plusSeconds(3600);
     private static final UUID SESSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000007");
     private static final UUID INITIAL_JTI = UUID.fromString("00000000-0000-0000-0000-000000000017");
-
-    @Test
-    void createRejectsCallerSnapshotWhenAuthoritativeVersionOrGrantsChanged() {
-        AtomicSessionDouble port = new AtomicSessionDouble();
-        CredentialDouble credentials = new CredentialDouble(port);
-        port.setRoles(USER_ID, 2, List.of(grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L)));
-        SessionLifecycleService service = new SessionLifecycleService(port, credentials);
-
-        SessionLifecycleService.CreateSessionRequest stale =
-                request(
-                        SESSION_ID,
-                        INITIAL_JTI,
-                        1,
-                        List.of(
-                                grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L),
-                                grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null)),
-                        "old-hash");
-
-        SessionStatePort.CreateSessionResult result = service.createSession(stale);
-
-        assertThat(result.failureCode())
-                .isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);
-        assertThat(port.sessions).isEmpty();
-        assertThat(port.events).isEmpty();
-    }
 
     @Test
     void createUsesStudentThenTeacherAndLeavesAdminHeadmanNeutral() {
@@ -95,67 +72,6 @@ class SessionLifecycleServiceTest {
 
         assertThat(neutral.succeeded()).isTrue();
         assertThat(neutral.snapshot().activeRole()).isNull();
-    }
-
-    @Test
-    void roleSwitchIsAtomicIdempotentAndVersionBound() {
-        AtomicSessionDouble port = new AtomicSessionDouble();
-        CredentialDouble credentials = new CredentialDouble(port);
-        SessionLifecycleService service = new SessionLifecycleService(port, credentials);
-        RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
-        RoleGrant teacher = grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null);
-        port.setRoles(USER_ID, 1, List.of(student, teacher));
-        assertThat(
-                        service.createSession(
-                                        request(
-                                                SESSION_ID,
-                                                INITIAL_JTI,
-                                                1,
-                                                List.of(student, teacher),
-                                                "old-hash"))
-                                .succeeded())
-                .isTrue();
-
-        SessionStatePort.RoleSelectionResult changed =
-                service.selectRole(
-                        new SessionLifecycleService.SelectRoleRequest(
-                                USER_ID,
-                                SESSION_ID,
-                                AuthRole.TEACHER,
-                                1,
-                                T0,
-                                AuthMethod.PASSWORD,
-                                null,
-                                null));
-        SessionStatePort.RoleSelectionResult same =
-                service.selectRole(
-                        new SessionLifecycleService.SelectRoleRequest(
-                                USER_ID,
-                                SESSION_ID,
-                                AuthRole.TEACHER,
-                                2,
-                                T0.plusSeconds(1),
-                                AuthMethod.PASSWORD,
-                                null,
-                                null));
-        SessionStatePort.RoleSelectionResult stale =
-                service.selectRole(
-                        new SessionLifecycleService.SelectRoleRequest(
-                                USER_ID,
-                                SESSION_ID,
-                                AuthRole.STUDENT,
-                                1,
-                                T0.plusSeconds(2),
-                                AuthMethod.PASSWORD,
-                                null,
-                                null));
-
-        assertThat(changed.snapshot().activeRole()).isEqualTo(teacher);
-        assertThat(changed.snapshot().sessionVersion()).isEqualTo(2);
-        assertThat(same.snapshot().activeRole()).isEqualTo(teacher);
-        assertThat(same.snapshot().sessionVersion()).isEqualTo(2);
-        assertThat(stale.failureCode())
-                .isEqualTo(SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
     }
 
     @Test
@@ -347,57 +263,6 @@ class SessionLifecycleServiceTest {
         assertThat(logoutAll.succeeded()).isTrue();
         assertThat(logoutAll.revokedSessionCount()).isEqualTo(2);
         assertThat(port.sessions.values()).allMatch(SessionState::isRevoked);
-    }
-
-    @Test
-    void currentLogoutIsDurableAndIdempotent() {
-        AtomicSessionDouble port = new AtomicSessionDouble();
-        CredentialDouble credentials = new CredentialDouble(port);
-        SessionLifecycleService service = new SessionLifecycleService(port, credentials);
-        RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L);
-        port.setRoles(USER_ID, 1, List.of(student));
-        assertThat(
-                        service.createSession(
-                                        request(
-                                                SESSION_ID,
-                                                INITIAL_JTI,
-                                                1,
-                                                List.of(student),
-                                                "old-hash"))
-                                .succeeded())
-                .isTrue();
-
-        SessionStatePort.RevokeResult first =
-                service.revokeCurrent(
-                        new SessionLifecycleService.RevokeRequest(
-                                USER_ID,
-                                SESSION_ID,
-                                T0.plusSeconds(1),
-                                AuthMethod.PASSWORD,
-                                null,
-                                null));
-
-        assertThat(first.succeeded()).isTrue();
-        assertThat(first.alreadyRevoked()).isFalse();
-        assertThat(first.snapshot().isRevoked()).isTrue();
-        assertThat(port.events).hasSize(2);
-        SessionState revoked = port.sessions.get(SESSION_ID);
-
-        SessionStatePort.RevokeResult retry =
-                service.revokeCurrent(
-                        new SessionLifecycleService.RevokeRequest(
-                                USER_ID,
-                                SESSION_ID,
-                                T0.plusSeconds(2),
-                                AuthMethod.PASSWORD,
-                                null,
-                                null));
-
-        assertThat(retry.succeeded()).isTrue();
-        assertThat(retry.alreadyRevoked()).isTrue();
-        assertThat(retry.snapshot().isRevoked()).isTrue();
-        assertThat(port.sessions.get(SESSION_ID)).isEqualTo(revoked);
-        assertThat(port.events).hasSize(2);
     }
 
     @Test

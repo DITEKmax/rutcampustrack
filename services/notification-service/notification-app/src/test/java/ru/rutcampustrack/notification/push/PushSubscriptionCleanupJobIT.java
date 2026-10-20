@@ -2,10 +2,6 @@ package ru.rutcampustrack.notification.push;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Path;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +9,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
+
+import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 /**
  * M05 G7 (NEW-148) — проверяет что {@link PushSubscriptionCleanupJob} удаляет подписки с {@code
@@ -108,15 +110,17 @@ class PushSubscriptionCleanupJobIT extends ContainerTestBase {
 
     @Test
     void cleanup_onExactBoundary_treats90daysAsEligible() {
-        // Строго < cutoff — значит 90 дней РОВНО попадает, т.к. minus(90d).
-        // Реальный cutoff = NOW - 90d. Записи с last_seen == cutoff остаются
-        // (< не включает равенство). Запись с last_seen < cutoff — удаляется.
-        repository.save(
-                sub("boundary", NOW.minusSeconds(86400L * 90).minusSeconds(1))); // за 1с до cutoff
+        Instant cutoff = NOW.minusSeconds(86400L * 90);
+        repository.save(sub("before", cutoff.minusSeconds(1)));
+        repository.save(sub("exact", cutoff));
+        repository.save(sub("after", cutoff.plusSeconds(1)));
+        repository.save(sub("future", NOW.plusSeconds(1)));
 
         job.cleanupStalePushSubs();
 
-        assertThat(repository.findAll()).isEmpty();
+        assertThat(repository.findAll())
+                .extracting(PushSubscriptionDocument::getEndpoint)
+                .containsExactlyInAnyOrder("exact", "after", "future");
     }
 
     @Test

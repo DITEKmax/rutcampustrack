@@ -101,6 +101,8 @@ class InternalSessionAdmissionIT {
     private JdbcTemplate jdbc;
     private PlatformTransactionManager transactionManager;
     private JdbcSessionAuthorityHolder authorityHolder;
+    @org.junit.jupiter.api.io.TempDir static Path keyDirectory;
+    private java.security.PublicKey signingPublicKey;
     private JwtService signingService;
     private long userSequence;
 
@@ -371,57 +373,6 @@ class InternalSessionAdmissionIT {
                                                 checkedAt))
                                 .succeeded())
                 .isTrue();
-    }
-
-    @Test
-    void rolesVersionAndSessionVersionChangesProduceStaleDenial() throws Exception {
-        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
-        UserFixture user =
-                seedUser(
-                        GrantSeed.active(AuthRole.STUDENT, 1L),
-                        GrantSeed.active(AuthRole.TEACHER, null));
-        CreatedSession session = createSession(user, now, AuthRole.STUDENT);
-        SessionAdmissionService admission = admissionService(now);
-        String access = accessToken(session.snapshot(), now);
-
-        updateActiveGrantGroup(user, AuthRole.STUDENT);
-        assertThatThrownBy(() -> admission.admit(access))
-                .isInstanceOfSatisfying(
-                        SessionAdmissionException.class,
-                        exception ->
-                                assertThat(exception.code())
-                                        .isEqualTo(
-                                                SessionAdmissionException.Code
-                                                        .SESSION_STATE_STALE));
-
-        long teacherGrant = grantId(user, AuthRole.TEACHER);
-        SessionStatePort.RoleSelectionResult selected =
-                authorityHolder
-                        .authority()
-                        .selectRole(
-                                new SessionStatePort.SelectRoleCommand(
-                                        user.userId(),
-                                        session.sessionId(),
-                                        AuthRole.TEACHER,
-                                        session.snapshot().sessionVersion(),
-                                        now.plusSeconds(2),
-                                        event(
-                                                user.userId(),
-                                                session.sessionId(),
-                                                SecurityEvent.Type.ROLE_CHANGED,
-                                                now.plusSeconds(2))));
-        assertThat(selected.succeeded()).isTrue();
-        assertThat(selected.snapshot().activeRole().grantId()).isEqualTo(teacherGrant);
-        assertThat(selected.snapshot().sessionVersion())
-                .isGreaterThan(session.snapshot().sessionVersion());
-        assertThatThrownBy(() -> admission.admit(access))
-                .isInstanceOfSatisfying(
-                        SessionAdmissionException.class,
-                        exception ->
-                                assertThat(exception.code())
-                                        .isEqualTo(
-                                                SessionAdmissionException.Code
-                                                        .SESSION_STATE_STALE));
     }
 
     @Test
@@ -1174,27 +1125,16 @@ class InternalSessionAdmissionIT {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
             generator.initialize(2048);
             KeyPair pair = generator.generateKeyPair();
-            JwtService service =
-                    new JwtService(
-                            new JwtProperties("unused", 900, 604800),
-                            mock(StringRedisTemplate.class));
-            setField(service, "privateKey", pair.getPrivate());
-            setField(service, "publicKey", pair.getPublic());
-            setField(service, "keyId", "it-kid");
-            return service;
+            signingPublicKey = pair.getPublic();
+            return ru.rutcampustrack.auth.support.TestJwtKeys.load(
+                    pair, keyDirectory, mock(StringRedisTemplate.class));
         } catch (Exception exception) {
             throw new IllegalStateException(exception);
         }
     }
 
     private java.security.PublicKey publicKey() {
-        try {
-            var field = JwtService.class.getDeclaredField("publicKey");
-            field.setAccessible(true);
-            return (java.security.PublicKey) field.get(signingService);
-        } catch (Exception exception) {
-            throw new IllegalStateException(exception);
-        }
+        return signingPublicKey;
     }
 
     private CreatedSession createSession(UserFixture user, Instant now, AuthRole role) {

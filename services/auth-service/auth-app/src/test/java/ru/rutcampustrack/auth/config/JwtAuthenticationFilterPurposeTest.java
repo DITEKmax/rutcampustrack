@@ -5,16 +5,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Jwts;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import java.lang.reflect.Field;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +22,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
 import ru.rutcampustrack.auth.service.JwtService;
@@ -36,12 +33,21 @@ import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
 class JwtAuthenticationFilterPurposeTest {
 
     private static final long USER_ID = 424242L;
     private static final long GROUP_ID = 987L;
     private static final String ISSUER = "rutcampustrack-auth";
     private static final String AUDIENCE = "rutcampustrack";
+
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path keyDirectory;
 
     private JwtService jwtService;
     private JwtAuthenticationFilter filter;
@@ -51,15 +57,10 @@ class JwtAuthenticationFilterPurposeTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        JwtProperties properties = mock(JwtProperties.class);
-        when(properties.accessTokenExpiration()).thenReturn(900L);
-        when(properties.refreshTokenExpiration()).thenReturn(3600L);
-
         keyPair = generateKeyPair();
-        jwtService = new JwtService(properties, mock(StringRedisTemplate.class));
-        setField(jwtService, "privateKey", keyPair.getPrivate());
-        setField(jwtService, "publicKey", keyPair.getPublic());
-        setField(jwtService, "keyId", "test-kid");
+        jwtService =
+                ru.rutcampustrack.auth.support.TestJwtKeys.load(
+                        keyPair, keyDirectory, mock(StringRedisTemplate.class));
         objectMapper = new ObjectMapper().findAndRegisterModules();
         filter =
                 new JwtAuthenticationFilter(
@@ -118,18 +119,34 @@ class JwtAuthenticationFilterPurposeTest {
 
     @Test
     void internalTokenAndMalformedAccessClaimsAreRejected() throws Exception {
-        String internal = signedInternalToken();
-        runWithBearer(internal);
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-
-        runWithBearer(signedAccessToken(null, String.valueOf(USER_ID), "STUDENT"));
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-
-        runWithBearer(signedAccessToken("access", "not-a-number", "STUDENT"));
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-
-        runWithBearer(signedAccessToken("access", String.valueOf(USER_ID), "UNKNOWN"));
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        runWithBearer(signedAccessToken("access", String.valueOf(USER_ID), "STUDENT"));
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        for (String malformed :
+                List.of(
+                        signedInternalToken(),
+                        signedAccessToken(null, String.valueOf(USER_ID), "STUDENT"),
+                        signedAccessToken("access", "not-a-number", "STUDENT"),
+                        signedAccessToken("access", String.valueOf(USER_ID), "UNKNOWN"))) {
+            SecurityContextHolder.getContext()
+                    .setAuthentication(new UsernamePasswordAuthenticationToken("stale", null));
+            MockHttpServletRequest request =
+                    new MockHttpServletRequest("GET", "/auth/account-history");
+            request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + malformed);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            java.util.concurrent.atomic.AtomicBoolean called =
+                    new java.util.concurrent.atomic.AtomicBoolean();
+            filter.doFilter(request, response, (req, res) -> called.set(true));
+            assertThat(response.getStatus()).isEqualTo(401);
+            assertThat(
+                            objectMapper
+                                    .readTree(response.getContentAsString())
+                                    .path("extras")
+                                    .path("code")
+                                    .asText())
+                    .isEqualTo("INVALID_SESSION");
+            assertThat(called.get()).isFalse();
+            assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        }
     }
 
     @Test
@@ -376,8 +393,23 @@ class JwtAuthenticationFilterPurposeTest {
                         .audience()
                         .add(AUDIENCE)
                         .and()
-                        .issuedAt(new Date())
-                        .expiration(new Date(System.currentTimeMillis() + 60_000L));
+                        .issuedAt(
+                                Date.from(
+                                        Instant.now()
+                                                .truncatedTo(
+                                                        java.time.temporal.ChronoUnit.SECONDS)))
+                        .expiration(
+                                Date.from(
+                                        Instant.now()
+                                                .truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
+                                                .plusSeconds(60)))
+                        .claim("sid", "33333333-3333-4333-8333-333333333333")
+                        .claim("sv", "1")
+                        .claim("rv", "1")
+                        .claim("status", "ACTIVE")
+                        .claim("group_id", Long.toString(GROUP_ID))
+                        .claim("is_headman", false)
+                        .claim("readOnly", false);
         if (purpose != null) {
             builder.claim(JwtService.TOKEN_USE_CLAIM, purpose);
         }
@@ -413,11 +445,5 @@ class JwtAuthenticationFilterPurposeTest {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
         return generator.generateKeyPair();
-    }
-
-    private static void setField(Object target, String name, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(target, value);
     }
 }

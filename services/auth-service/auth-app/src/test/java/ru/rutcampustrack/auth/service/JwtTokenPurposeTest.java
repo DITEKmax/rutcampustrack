@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
@@ -24,7 +23,6 @@ import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -46,22 +44,18 @@ class JwtTokenPurposeTest {
     private static final String ISSUER = "rutcampustrack-auth";
     private static final String AUDIENCE = "rutcampustrack";
 
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path keyDirectory;
+
     private JwtService jwtService;
     private KeyPair keyPair;
     private User user;
 
     @BeforeEach
     void setUp() throws Exception {
-        JwtProperties properties = mock(JwtProperties.class);
-        when(properties.accessTokenExpiration()).thenReturn(900L);
-        when(properties.refreshTokenExpiration()).thenReturn(3600L);
-
         keyPair = generateKeyPair();
-        jwtService = new JwtService(properties, mock(StringRedisTemplate.class));
-        setField(jwtService, "privateKey", keyPair.getPrivate());
-        setField(jwtService, "publicKey", keyPair.getPublic());
-        setField(jwtService, "keyId", "test-kid");
-
+        jwtService =
+                ru.rutcampustrack.auth.support.TestJwtKeys.load(
+                        keyPair, keyDirectory, mock(StringRedisTemplate.class));
         user = mock(User.class);
         when(user.getId()).thenReturn(USER_ID);
     }
@@ -508,12 +502,6 @@ class JwtTokenPurposeTest {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
         return generator.generateKeyPair();
-    }
-
-    private static void setField(Object target, String name, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(target, value);
     }
 
     private static SessionSnapshot snapshot() {

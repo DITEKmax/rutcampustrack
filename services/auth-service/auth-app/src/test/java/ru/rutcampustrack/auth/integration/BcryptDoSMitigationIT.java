@@ -2,12 +2,6 @@ package ru.rutcampustrack.auth.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,24 +10,17 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
+
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.service.BcryptConcurrencyGuard;
 
-/**
- * M03b Группа 10 (KI-7): bcrypt DoS mitigation smoke test.
- *
- * <p>50 concurrent invalid-password requests. С guard'ом N=2 permits (override) — большинство
- * должно получить 429 fail-fast, а не ждать bcrypt completion. Без guard'а bcrypt бы отработал всем
- * 50 одновременно (CPU saturation).
- *
- * <p>Проверяем:
- *
- * <ul>
- *   <li>Ни один запрос не вешается — total time &lt; 10s (с guard'ом быстрый отказ).
- *   <li>Минимум один ответ 429 (concurrency-limit сработал).
- *   <li>Успешных 200 не должно быть (все invalid-password).
- * </ul>
- */
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/** Actual HTTP requests hold real BCrypt work at the guard boundary. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @org.springframework.test.context.ActiveProfiles("test")
 @org.springframework.context.annotation.Import(BcryptDoSMitigationIT.TestGuardConfig.class)
@@ -41,8 +28,16 @@ class BcryptDoSMitigationIT extends AbstractIntegrationTest {
 
     @Autowired private TestRestTemplate restTemplate;
 
+    @Autowired private HoldingEncoder encoder;
+
     @TestConfiguration
     static class TestGuardConfig {
+        @Bean
+        @Primary
+        HoldingEncoder holdingEncoder() {
+            return new HoldingEncoder();
+        }
+
         @Bean
         @Primary
         BcryptConcurrencyGuard narrowGuard() {
@@ -52,53 +47,73 @@ class BcryptDoSMitigationIT extends AbstractIntegrationTest {
 
     @Test
     void concurrentInvalidPassword_rejectsWithoutCpuBlowup() throws Exception {
-        int threads = 50;
-        ExecutorService executor = Executors.newFixedThreadPool(threads);
-        AtomicInteger status401 = new AtomicInteger();
-        AtomicInteger status429 = new AtomicInteger();
-        AtomicInteger statusOther = new AtomicInteger();
-
-        long started = System.nanoTime();
-        List<Future<?>> futures = new java.util.ArrayList<>();
-        for (int i = 0; i < threads; i++) {
-            final int idx = i;
-            futures.add(
-                    executor.submit(
-                            () -> {
-                                // Разные login'ы чтобы не упереться в LoginRateLimiter (5 failures
-                                // →
-                                // progressive block). `student` seeded в test data — existing user.
-                                // 50 invalid passwords с разных login'ов не триггерят rate-limit.
-                                String login = "student";
-                                try {
-                                    ResponseEntity<String> response =
-                                            restTemplate.postForEntity(
-                                                    "/auth/login",
-                                                    new LoginRequest(
-                                                            login, "wrong_password_" + idx),
-                                                    String.class);
-                                    int code = response.getStatusCode().value();
-                                    if (code == 401) status401.incrementAndGet();
-                                    else if (code == 429) status429.incrementAndGet();
-                                    else statusOther.incrementAndGet();
-                                } catch (Exception e) {
-                                    statusOther.incrementAndGet();
-                                }
-                            }));
+        encoder.reset();
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<ResponseEntity<String>> first = executor.submit(() -> wrongPassword("student"));
+            Future<ResponseEntity<String>> second = executor.submit(() -> wrongPassword("teacher"));
+            assertThat(encoder.entered.await(5, TimeUnit.SECONDS)).isTrue();
+            assertThat(wrongPassword("admin").getStatusCode().value()).isEqualTo(429);
+            assertThat(first.isDone()).isFalse();
+            assertThat(second.isDone()).isFalse();
+            encoder.release.countDown();
+            assertThat(first.get(10, TimeUnit.SECONDS).getStatusCode().value()).isEqualTo(401);
+            assertThat(second.get(10, TimeUnit.SECONDS).getStatusCode().value()).isEqualTo(401);
+            assertThat(encoder.maximum.get()).isEqualTo(2);
+            assertThat(wrongPassword("admin").getStatusCode().value()).isEqualTo(401);
+            assertThat(encoder.active.get()).isZero();
+            assertThat(encoder.calls.get()).isEqualTo(3);
+        } finally {
+            encoder.release.countDown();
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
         }
-        for (Future<?> f : futures) f.get(30, TimeUnit.SECONDS);
-        executor.shutdown();
-        long elapsedMs = (System.nanoTime() - started) / 1_000_000;
+    }
 
-        // С guard'ом N=2 — максимум 2 bcrypt invocations параллельно, остальные 429.
-        // Точные числа зависят от timing'а, но хотя бы несколько 429 должны быть
-        // среди 50 concurrent.
-        assertThat(status429.get())
-                .as("Хотя бы один запрос должен получить 429 (concurrency-limit сработал)")
-                .isGreaterThan(0);
-        assertThat(status401.get() + status429.get())
-                .as("Все 50 запросов должны завершиться 401 или 429 (никаких 5xx)")
-                .isEqualTo(50);
-        assertThat(elapsedMs).as("50 concurrent не должны висеть дольше 30s").isLessThan(30_000);
+    private ResponseEntity<String> wrongPassword(String login) {
+        return restTemplate.postForEntity(
+                "/auth/login", new LoginRequest(login, "synthetic-wrong-password"), String.class);
+    }
+
+    static final class HoldingEncoder
+            implements org.springframework.security.crypto.password.PasswordEncoder {
+        private final org.springframework.security.crypto.password.PasswordEncoder delegate =
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+        final AtomicInteger active = new AtomicInteger();
+        final AtomicInteger maximum = new AtomicInteger();
+        final AtomicInteger calls = new AtomicInteger();
+        volatile java.util.concurrent.CountDownLatch entered;
+        volatile java.util.concurrent.CountDownLatch release;
+
+        void reset() {
+            active.set(0);
+            maximum.set(0);
+            calls.set(0);
+            entered = new java.util.concurrent.CountDownLatch(2);
+            release = new java.util.concurrent.CountDownLatch(1);
+        }
+
+        @Override
+        public String encode(CharSequence raw) {
+            return delegate.encode(raw);
+        }
+
+        @Override
+        public boolean matches(CharSequence raw, String encoded) {
+            if (entered == null) return delegate.matches(raw, encoded);
+            calls.incrementAndGet();
+            maximum.accumulateAndGet(active.incrementAndGet(), Math::max);
+            entered.countDown();
+            try {
+                if (!release.await(10, TimeUnit.SECONDS))
+                    throw new AssertionError("BCrypt work was not released");
+                return delegate.matches(raw, encoded);
+            } catch (InterruptedException error) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(error);
+            } finally {
+                active.decrementAndGet();
+            }
+        }
     }
 }

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -18,12 +17,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.http.Cookie;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.CurrentSessionResponse;
@@ -60,6 +57,12 @@ import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 class AuthSessionControllerTest {
 
@@ -182,15 +185,12 @@ class AuthSessionControllerTest {
         when(authService.changePassword(principal, request))
                 .thenReturn(CredentialSessionTransactionPort.ChangePasswordResult.success(1));
 
-        controller.logoutAll(authentication);
-        controller.changePassword(request, authentication);
-
-        var order = inOrder(authService, wsTicketService);
-        order.verify(authService).logoutAll(principal);
-        order.verify(wsTicketService).invalidateAllFor(USER_ID);
-        order.verify(authService).changePassword(principal, request);
-        order.verify(wsTicketService).invalidateAllFor(USER_ID);
-        verify(wsTicketService, times(2)).invalidateAllFor(USER_ID);
+        // This unit proves response mapping; durable revocation despite failed cleanup is in
+        // SessionAuthFlowIT.
+        assertThat(controller.logoutAll(authentication).getStatusCode())
+                .isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(controller.changePassword(request, authentication).getStatusCode())
+                .isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test

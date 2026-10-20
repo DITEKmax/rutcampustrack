@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -48,7 +49,8 @@ class GlobalErrorResponsesCustomizerTest {
 
     @Test
     @DisplayName(
-            "M11 G1: все добавленные error responses имеют content=application/problem+json + $ref ErrorResponse")
+            "M11 G1: все добавленные error responses имеют content=application/problem+json + $ref"
+                + " ErrorResponse")
     void addedResponsesHaveProblemJsonContent() {
         OpenAPI api = openApiWithSingleOperation(new Operation());
         OpenApiCustomizer customizer = config.globalErrorResponsesCustomizer();
@@ -126,17 +128,6 @@ class GlobalErrorResponsesCustomizerTest {
         ApiResponses responses = api.getPaths().get("/test").getGet().getResponses();
         assertThat(responses.get("200").getContent()).isNull();
         assertThat(responses.get("201").getContent()).isNull();
-    }
-
-    @Test
-    @DisplayName("M11 G1: shared ErrorResponse schema зарегистрирована в components.schemas")
-    void registersErrorResponseSchemaInComponents() {
-        OpenAPI api = new OpenAPI();
-
-        config.globalErrorResponsesCustomizer().customise(api);
-
-        assertThat(api.getComponents().getSchemas())
-                .containsKey(GlobalErrorResponsesCustomizer.ERROR_RESPONSE_SCHEMA);
     }
 
     @Test

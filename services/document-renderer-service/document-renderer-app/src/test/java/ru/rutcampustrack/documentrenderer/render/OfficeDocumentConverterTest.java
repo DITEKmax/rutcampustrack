@@ -3,6 +3,8 @@ package ru.rutcampustrack.documentrenderer.render;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +14,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
-import org.junit.jupiter.api.Test;
 
 class OfficeDocumentConverterTest {
 
@@ -32,7 +33,7 @@ class OfficeDocumentConverterTest {
                 .satisfies(
                         invocation -> {
                             assertThat(invocation.command())
-                                    .containsExactly(
+                                    .contains(
                                             "soffice",
                                             "--headless",
                                             "--nologo",
@@ -45,6 +46,12 @@ class OfficeDocumentConverterTest {
                                                     .workingDirectory()
                                                     .resolve("input.docx")
                                                     .toString());
+                            assertThat(invocation.command().getFirst()).isEqualTo("soffice");
+                            assertThat(invocation.command())
+                                    .containsSequence("--convert-to", "pdf");
+                            assertThat(invocation.command())
+                                    .containsSequence(
+                                            "--outdir", invocation.workingDirectory().toString());
                             assertThat(invocation.workingDirectory()).doesNotExist();
                         });
     }

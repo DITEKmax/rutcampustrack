@@ -7,85 +7,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.rutcampustrack.notification.contract.enums.UserRole;
+
 import ru.rutcampustrack.notification.push.PushSubscriptionRepository;
-import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.notification.security.RequestContext;
-import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 
-/**
- * M01 Группа 8 acceptance: shared-web {@code GlobalExceptionHandler} подхватывается через component
- * scan и отдаёт RFC 9457 Problem Details на невалидный body / malformed JSON / method-not-allowed /
- * AccessDenied.
- *
- * <p>Расширяет {@link ContainerTestBase} — реальные Mongo/Rabbit через Testcontainers (P2-8/2),
- * spring-properties пробрасываются автоматически.
- */
-// M14 G9: legacy-headers-enabled=true override — после G1 (CRIT-01)
-// production default флипнут на false, и DualModeUserContextFilter в
-// strict mode отбрасывает запросы без Internal JWT с 401. Этот IT
-// использует MockMvc + ручную установку RequestContext через bean,
-// без реального gateway-issued JWT. Override включает legacy mode
-// чтобы handler-маппинг работал (validation/method-not-allowed/access-denied).
-// Аналогично SecurityIdorIT в M14 G1 — notification-service не имеет
-// общего application-test.yml override (как academic/schedule/attendance).
-@SpringBootTest(
-        properties = {
-            "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-            "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
-            "vapid.private-key=test-priv",
-            "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true"
-        })
-@AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class NotificationErrorHandlingIT extends ContainerTestBase {
-
-    @org.springframework.test.context.DynamicPropertySource
-    static void testKeyPath(org.springframework.test.context.DynamicPropertyRegistry registry) {
-        // JwtHandshakeInterceptor требует реальный файл публичного ключа — используем заглушку
-        // из src/test/resources. Путь через URI → правильный absolute-path на всех ОС.
-        try {
-            Path keyFile =
-                    Path.of(
-                            NotificationErrorHandlingIT.class
-                                    .getResource("/test-public.pem")
-                                    .toURI());
-            registry.add("notification.jwt.public-key-path", keyFile::toString);
-        } catch (java.net.URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Autowired private MockMvc mvc;
-
-    @MockitoBean private PushSubscriptionRepository repository;
-
-    @MockitoBean private WebPushDeliveryService delivery;
-
-    /**
-     * Mock PushService bean — иначе WebPushConfig попытается разобрать VAPID ключи (BouncyCastle
-     * ECCurve), а тестовые значения не валидны.
-     */
-    @MockitoBean private nl.martijndwars.webpush.PushService pushService;
-
-    @Autowired private RequestContext requestContext;
+/** MVC exception mapping boundary; signed authorization is covered in SecurityIdorIT. */
+class NotificationErrorHandlingIT {
+    private MockMvc mvc;
 
     @BeforeEach
     void setStudentRole() {
-        // @RequireRole(STUDENT) — нужен для subscribe/unsubscribe чтобы дойти до validation.
-        requestContext.setUserId(1L);
-        requestContext.setGroupId(2L);
-        requestContext.setRole(UserRole.STUDENT);
+        var context = org.mockito.Mockito.mock(RequestContext.class);
+        var push =
+                new ru.rutcampustrack.notification.push.PushController(
+                        org.mockito.Mockito.mock(PushSubscriptionRepository.class),
+                        context,
+                        "synthetic-vapid-key");
+        mvc =
+                org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
+                                push, new DeniedController())
+                        .setControllerAdvice(
+                                new ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler(),
+                                new NotificationExceptionHandler())
+                        .build();
+    }
+
+    @org.springframework.web.bind.annotation.RestController
+    static class DeniedController {
+        @org.springframework.web.bind.annotation.DeleteMapping("/synthetic-domain-denial")
+        void denied() {
+            throw new AccessDeniedException("Synthetic domain denial");
+        }
     }
 
     @Test
@@ -142,13 +98,7 @@ class NotificationErrorHandlingIT extends ContainerTestBase {
     @DisplayName(
             "AccessDenied (доменный) → 403 + problem+json (локальный handler notification-service)")
     void accessDeniedReturns403() throws Exception {
-        // Не-STUDENT роль вызовет RoleCheckAspect → наш AccessDeniedException.
-        requestContext.setRole(UserRole.TEACHER);
-
-        mvc.perform(
-                        delete("/push/subscribe")
-                                .contentType("application/json")
-                                .content("{\"endpoint\":\"https://push.example.com/x\"}"))
+        mvc.perform(delete("/synthetic-domain-denial"))
                 .andExpect(status().isForbidden())
                 .andExpect(
                         header().string("Content-Type", containsString("application/problem+json")))

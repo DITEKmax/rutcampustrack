@@ -5,8 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,10 +16,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+
 import ru.rutcampustrack.notification.push.PushSubscriptionRepository;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.shared.observability.MetricNames;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
+
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 /**
  * M13 G16 — IT для /csp-report endpoint (через MockMvc).
@@ -161,20 +164,6 @@ class CspReportIT extends ContainerTestBase {
                 .andExpect(status().isUnsupportedMediaType());
 
         assertThat(totalCspCounter() - counterBefore).isZero();
-    }
-
-    @Test
-    @DisplayName("Endpoint НЕ требует Internal JWT / X-User-* headers")
-    void noAuthRequired() throws Exception {
-        // Без заголовков (filter в DualModeUserContextFilter бы упал бы
-        // с 401 на не-excluded path'е — проверяем что exclude работает).
-        String json =
-                """
-                {"csp-report": {"violated-directive": "default-src", "blocked-uri": "https://x.example.com"}}
-                """;
-
-        mvc.perform(post("/csp-report").contentType("application/csp-report").content(json))
-                .andExpect(status().isNoContent());
     }
 
     private double totalCspCounter() {

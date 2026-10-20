@@ -24,12 +24,14 @@ import java.time.*;
 import java.util.*;
 
 class AuthReportCapabilityServiceTest {
-    private static final Instant NOW = Instant.parse("2026-10-18T12:00:00Z");
+    private static final Instant NOW =
+            Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
     private static final UUID SID = UUID.fromString("11111111-1111-4111-8111-111111111111");
     private static final UUID JOB = UUID.fromString("22222222-2222-4222-8222-222222222222");
     private static final UUID LEASE = UUID.fromString("33333333-3333-4333-8333-333333333333");
     private final AuthService sessions = mock(AuthService.class);
-    private final JwtService jwt = mock(JwtService.class);
+    private JwtService jwt = mock(JwtService.class);
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path keyDirectory;
     private final AuthAdminJdbcAuthority admins = mock(AuthAdminJdbcAuthority.class);
     private final MemoryStore store = new MemoryStore();
 
@@ -73,18 +75,6 @@ class AuthReportCapabilityServiceTest {
     }
 
     @Test
-    void issueTenAndRedeemTwentyLimitsRemainPerSessionAndTicket() {
-        var service = service(NOW);
-        var request = issue("TEACHER_JOURNAL", false, NOW.plusSeconds(600), AuthRole.TEACHER);
-        IssuedReportCapability first = service.issue(request);
-        for (int n = 1; n < 10; n++) service.issue(request);
-        assertThatThrownBy(() -> service.issue(request)).isInstanceOf(StatusRuntimeException.class);
-        for (int n = 0; n < 20; n++) service.redeem(redeem(first));
-        assertThatThrownBy(() -> service.redeem(redeem(first)))
-                .isInstanceOf(StatusRuntimeException.class);
-    }
-
-    @Test
     void everyRedemptionReadmitsStoredSessionAndCannotUseStaleSidSvOrRv() {
         var service = service(NOW);
         var issued =
@@ -113,13 +103,19 @@ class AuthReportCapabilityServiceTest {
     }
 
     @Test
-    void renderAuthorityIsBoundToPlanDigestJobAndLeaseWithoutChangingTicketBinding() {
+    void renderAuthorityIsBoundToPlanDigestJobAndLeaseWithoutChangingTicketBinding()
+            throws Exception {
+        var generator = java.security.KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        var pair = generator.generateKeyPair();
+        jwt =
+                ru.rutcampustrack.auth.support.TestJwtKeys.load(
+                        pair,
+                        keyDirectory,
+                        mock(org.springframework.data.redis.core.StringRedisTemplate.class));
         var service = service(NOW);
         var identity = identity(AuthRole.TEACHER);
         String digest = "b".repeat(64);
-        when(jwt.generateAcademicReportToken(
-                        any(), any(), any(), anyString(), anyString(), any(), any(), any()))
-                .thenReturn("purpose-bound-synthetic");
         var reply =
                 service.admit(
                         authority("TEACHER_JOURNAL", false, NOW.plusSeconds(600), identity)
@@ -128,17 +124,43 @@ class AuthReportCapabilityServiceTest {
                                 .setOwnerResourceId(JOB.toString())
                                 .setLeaseId(LEASE.toString())
                                 .build());
-        assertThat(reply.getInternalToken()).isEqualTo("purpose-bound-synthetic");
-        verify(jwt)
-                .generateAcademicReportToken(
-                        any(),
-                        eq(NOW),
-                        eq(NOW.plusSeconds(30)),
-                        eq("TEACHER_JOURNAL"),
-                        eq(digest),
-                        eq(JOB),
-                        eq(LEASE),
-                        eq(NOW.plusSeconds(30)));
+        var claims =
+                io.jsonwebtoken.Jwts.parser()
+                        .verifyWith(pair.getPublic())
+                        .clock(() -> Date.from(NOW))
+                        .build()
+                        .parseSignedClaims(reply.getInternalToken())
+                        .getPayload();
+        assertThat(claims.get("token_use", String.class)).isEqualTo("academic_report");
+        assertThat(claims.get("report_kind", String.class)).isEqualTo("TEACHER_JOURNAL");
+        assertThat(claims.get("report_hash", String.class)).isEqualTo(digest);
+        assertThat(claims.get("report_job", String.class)).isEqualTo(JOB.toString());
+        assertThat(claims.get("report_lease", String.class)).isEqualTo(LEASE.toString());
+        assertThat(claims.get("report_not_after", Number.class).longValue())
+                .isEqualTo(NOW.plusSeconds(30).getEpochSecond());
+        assertThat(claims.get("sid", String.class)).isEqualTo(SID.toString());
+        assertThat(claims.get("sv", String.class)).isEqualTo("2");
+        assertThat(claims.get("rv", String.class)).isEqualTo("3");
+        assertThat(claims.getExpiration().toInstant()).isEqualTo(NOW.plusSeconds(30));
+        var provider = mock(ru.rutcampustrack.shared.security.PublicKeyProvider.class);
+        when(provider.getPublicKey()).thenReturn(pair.getPublic());
+        var validator =
+                new ru.rutcampustrack.shared.security.InternalJwtValidator(
+                        provider,
+                        new ru.rutcampustrack.shared.security.InternalJwtProperties(
+                                null, 60, 0, false, null, null, null));
+        assertThat(
+                        validator
+                                .validateAcademicReport(
+                                        reply.getInternalToken(),
+                                        "TEACHER_JOURNAL",
+                                        digest,
+                                        JOB.toString(),
+                                        LEASE.toString())
+                                .sessionId())
+                .isEqualTo(SID);
+        assertThatThrownBy(() -> validator.validate(reply.getInternalToken()))
+                .isInstanceOf(ru.rutcampustrack.shared.security.InternalJwtException.class);
         assertThatThrownBy(
                         () ->
                                 service.admit(

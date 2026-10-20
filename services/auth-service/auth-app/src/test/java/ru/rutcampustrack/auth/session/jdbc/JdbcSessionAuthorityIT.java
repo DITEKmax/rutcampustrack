@@ -257,6 +257,8 @@ class JdbcSessionAuthorityIT {
         long originalSessionVersion = current.command().state().sessionVersion();
         CountDownLatch writerLockHeld = new CountDownLatch(1);
         CountDownLatch releaseWriter = new CountDownLatch(1);
+        var waiterPid = new java.util.concurrent.atomic.AtomicInteger();
+        var blockerPid = new java.util.concurrent.atomic.AtomicInteger();
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             Future<Integer> writer =
@@ -266,18 +268,23 @@ class JdbcSessionAuthorityIT {
                                             user.userId(),
                                             studentGrant,
                                             writerLockHeld,
-                                            releaseWriter));
+                                            releaseWriter,
+                                            blockerPid));
             assertThat(writerLockHeld.await(5, TimeUnit.SECONDS)).isTrue();
 
             Future<SessionStatePort.SnapshotResult> snapshot =
                     executor.submit(
                             () ->
-                                    authority.snapshot(
-                                            new SessionStatePort.SnapshotCommand(
-                                                    user.userId(),
-                                                    current.sessionId(),
-                                                    SESSION_TIME.plusSeconds(25))));
-            assertThat(awaitUserLockContention()).isTrue();
+                                    onOwnedConnection(
+                                            waiterPid,
+                                            () ->
+                                                    authority.snapshot(
+                                                            new SessionStatePort.SnapshotCommand(
+                                                                    user.userId(),
+                                                                    current.sessionId(),
+                                                                    SESSION_TIME.plusSeconds(
+                                                                            25)))));
+            assertThat(awaitUserLockContention(jdbc, waiterPid, blockerPid.get())).isTrue();
             releaseWriter.countDown();
 
             assertThat(writer.get(15, TimeUnit.SECONDS)).isEqualTo(1);
@@ -693,6 +700,8 @@ class JdbcSessionAuthorityIT {
         assertSessionLive(user, target);
         CountDownLatch held = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
+        var waiterPid = new java.util.concurrent.atomic.AtomicInteger();
+        var blockerPid = new java.util.concurrent.atomic.AtomicInteger();
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             Future<Integer> writer =
@@ -702,20 +711,26 @@ class JdbcSessionAuthorityIT {
                                             user.userId(),
                                             grantId(user, AuthRole.TEACHER),
                                             held,
-                                            release));
+                                            release,
+                                            blockerPid));
             assertThat(held.await(5, TimeUnit.SECONDS)).isTrue();
             Future<SessionStatePort.RevokeResult> revoke =
                     executor.submit(
                             () ->
-                                    authority.revokeSelected(
-                                            new SessionStatePort.RevokeSelectedCommand(
-                                                    user.userId(),
-                                                    actor.sessionId(),
-                                                    target.sessionId(),
-                                                    2,
-                                                    user.rolesVersion(),
-                                                    SESSION_TIME.plusSeconds(25))));
-            assertThat(awaitUserLockContention()).isTrue();
+                                    onOwnedConnection(
+                                            waiterPid,
+                                            () ->
+                                                    authority.revokeSelected(
+                                                            new SessionStatePort
+                                                                    .RevokeSelectedCommand(
+                                                                    user.userId(),
+                                                                    actor.sessionId(),
+                                                                    target.sessionId(),
+                                                                    2,
+                                                                    user.rolesVersion(),
+                                                                    SESSION_TIME.plusSeconds(
+                                                                            25)))));
+            assertThat(awaitUserLockContention(jdbc, waiterPid, blockerPid.get())).isTrue();
             release.countDown();
             assertThat(writer.get(15, TimeUnit.SECONDS)).isEqualTo(1);
             assertThat(revoke.get(15, TimeUnit.SECONDS).failureCode())
@@ -862,8 +877,8 @@ class JdbcSessionAuthorityIT {
                             UUID operation = AuthDatabaseFixture.fence(authorityJdbc, adminUserId);
                             authorityJdbc.update(
                                     "UPDATE admin_access_profiles SET"
-                                            + " permissions=ARRAY['DASHBOARD_VIEW'],version=version+1"
-                                            + " WHERE user_id=?",
+                                        + " permissions=ARRAY['DASHBOARD_VIEW'],version=version+1"
+                                        + " WHERE user_id=?",
                                     adminUserId);
                             AuthDatabaseFixture.unfence(authorityJdbc, operation, adminUserId);
                         });
@@ -1444,6 +1459,7 @@ class JdbcSessionAuthorityIT {
                         authority.issuePasswordResetTicket(
                                 user.userId(), resetHash(old), SESSION_TIME.plusSeconds(600)))
                 .isTrue();
+        var waiterPid = new java.util.concurrent.atomic.AtomicInteger();
         ExecutorService pool = Executors.newFixedThreadPool(2);
         try {
             var waiting =
@@ -1452,6 +1468,9 @@ class JdbcSessionAuthorityIT {
             new TransactionTemplate(transactionManager)
                     .executeWithoutResult(
                             status -> {
+                                int blockerPid =
+                                        authorityJdbc.queryForObject(
+                                                "SELECT pg_backend_pid()", Integer.class);
                                 authorityJdbc.queryForObject(
                                         "SELECT id FROM auth_identities WHERE id=? FOR UPDATE",
                                         Long.class,
@@ -1459,11 +1478,16 @@ class JdbcSessionAuthorityIT {
                                 waiting.set(
                                         pool.submit(
                                                 () ->
-                                                        authority.completePasswordReset(
-                                                                reset(
-                                                                        old,
-                                                                        SESSION_TIME.plusSeconds(
-                                                                                1)))));
+                                                        onOwnedConnection(
+                                                                waiterPid,
+                                                                () ->
+                                                                        authority
+                                                                                .completePasswordReset(
+                                                                                        reset(
+                                                                                                old,
+                                                                                                SESSION_TIME
+                                                                                                        .plusSeconds(
+                                                                                                                1))))));
                                 // An unbound autocommit observer must not mistake the holding
                                 // transaction for itself.
                                 try (var observerConnection = dataSource.getConnection()) {
@@ -1472,7 +1496,10 @@ class JdbcSessionAuthorityIT {
                                                     new org.springframework.jdbc.datasource
                                                             .SingleConnectionDataSource(
                                                             observerConnection, true));
-                                    assertThat(awaitUserLockContention(observer)).isTrue();
+                                    assertThat(
+                                                    awaitUserLockContention(
+                                                            observer, waiterPid, blockerPid))
+                                            .isTrue();
                                 } catch (InterruptedException interrupted) {
                                     Thread.currentThread().interrupt();
                                     throw new IllegalStateException(interrupted);
@@ -1751,10 +1778,14 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM aut
             long userId,
             long grantId,
             CountDownLatch writerLockHeld,
-            CountDownLatch releaseWriter) {
+            CountDownLatch releaseWriter,
+            java.util.concurrent.atomic.AtomicInteger blockerPid) {
         return new TransactionTemplate(transactionManager)
                 .execute(
                         status -> {
+                            blockerPid.set(
+                                    authorityJdbc.queryForObject(
+                                            "SELECT pg_backend_pid()", Integer.class));
                             authorityJdbc.queryForObject(
                                     "SELECT id FROM auth_identities WHERE id = ? FOR UPDATE",
                                     Long.class,
@@ -1784,34 +1815,35 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM aut
                         });
     }
 
-    private boolean awaitUserLockContention() throws InterruptedException {
-        return awaitUserLockContention(jdbc);
+    private <T> T onOwnedConnection(
+            java.util.concurrent.atomic.AtomicInteger waiterPid,
+            java.util.function.Supplier<T> operation) {
+        return new TransactionTemplate(transactionManager)
+                .execute(
+                        status -> {
+                            waiterPid.set(
+                                    authorityJdbc.queryForObject(
+                                            "SELECT pg_backend_pid()", Integer.class));
+                            return operation.get();
+                        });
     }
 
-    private boolean awaitUserLockContention(JdbcTemplate observer) throws InterruptedException {
+    private boolean awaitUserLockContention(
+            JdbcTemplate observer,
+            java.util.concurrent.atomic.AtomicInteger waiterPid,
+            int blockerPid)
+            throws InterruptedException {
+        assertThat(blockerPid).isPositive();
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (System.nanoTime() < deadline) {
-            Long blocked =
-                    observer.queryForObject(
-                            """
-                            SELECT count(*)
-                            FROM pg_stat_activity blocked
-                            WHERE blocked.pid <> pg_backend_pid()
-                              AND blocked.state = 'active'
-                              AND blocked.wait_event_type = 'Lock'
-                              AND blocked.query ~* 'from[[:space:]]+auth_identities'
-                              AND blocked.query ~* 'where[[:space:]]+id[[:space:]]*='
-                              AND blocked.query ~* 'for[[:space:]]+update'
-                              AND EXISTS (
-                                  SELECT 1
-                                  FROM unnest(pg_blocking_pids(blocked.pid)) AS blocker(pid)
-                                  WHERE blocker.pid <> pg_backend_pid()
-                              )
-                            """,
-                            Long.class);
-            if (blocked != null && blocked > 0) {
-                return true;
-            }
+            int ownWaiter = waiterPid.get();
+            if (ownWaiter > 0
+                    && Boolean.TRUE.equals(
+                            observer.queryForObject(
+                                    "SELECT ? = ANY(pg_blocking_pids(?))",
+                                    Boolean.class,
+                                    blockerPid,
+                                    ownWaiter))) return true;
             TimeUnit.MILLISECONDS.sleep(10);
         }
         return false;

@@ -8,18 +8,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+
 import io.jsonwebtoken.Jwts;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +28,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
 
 /**
  * M03a Группа 13 (14 P1-1): end-to-end contract-тест Gateway↔downstream Internal JWT pipeline.
@@ -181,7 +185,8 @@ class InternalJwtIssuerIT {
 
     @Test
     @DisplayName(
-            "Student check-in route reaches Mobile BFF with internal JWT and no legacy identity headers")
+            "Student check-in route reaches Mobile BFF with internal JWT and no legacy identity"
+                + " headers")
     void studentCheckinRoute_reachesMobileBffWithTrustedIdentityOnly() {
         WIREMOCK.resetRequests();
         String jwt =
@@ -221,21 +226,29 @@ class InternalJwtIssuerIT {
     @Test
     @DisplayName("Невалидная подпись внешнего JWT → 401, downstream НЕ вызывается")
     void invalidSignature_returns401_downstreamNotCalled() throws NoSuchAlgorithmException {
+        Date expiry = new Date(System.currentTimeMillis() + 60_000);
+        String trusted = signExternalJwt(42L, "STUDENT", "7", false, expiry);
+        client.get()
+                .uri("/api/attendance/reports/student/stats")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + trusted)
+                .exchange()
+                .expectStatus()
+                .isOk();
         WIREMOCK.resetRequests();
-        // Подписан другой парой ключей
         KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
         gen.initialize(2048);
         KeyPair rogue = gen.generateKeyPair();
+        // Re-sign the exact trusted payload; only the signature key differs.
+        var trustedClaims =
+                Jwts.parser()
+                        .verifyWith(externalKeyPair.getPublic())
+                        .build()
+                        .parseSignedClaims(trusted)
+                        .getPayload();
         String jwt =
                 Jwts.builder()
-                        .subject("42")
-                        .issuer("rutcampustrack-auth")
-                        .audience()
-                        .add("rutcampustrack")
-                        .and()
-                        .claim("role", "STUDENT")
-                        .expiration(new Date(System.currentTimeMillis() + 60_000))
-                        .signWith(rogue.getPrivate())
+                        .claims(trustedClaims)
+                        .signWith(rogue.getPrivate(), Jwts.SIG.RS256)
                         .compact();
 
         client.get()
@@ -245,7 +258,12 @@ class InternalJwtIssuerIT {
                 .expectStatus()
                 .isEqualTo(HttpStatus.UNAUTHORIZED)
                 .expectHeader()
-                .contentType(MediaType.APPLICATION_PROBLEM_JSON);
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .expectHeader()
+                .valueEquals(HttpHeaders.CACHE_CONTROL, "no-store")
+                .expectBody()
+                .jsonPath("$.code")
+                .isEqualTo("INVALID_SESSION");
 
         // Downstream /attendance/* НЕ вызывался
         WIREMOCK.verify(
@@ -314,7 +332,8 @@ class InternalJwtIssuerIT {
                                                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
                                         .withHeader(
                                                 HttpHeaders.CONTENT_DISPOSITION,
-                                                "attachment; filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
+                                                "attachment;"
+                                                    + " filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
                                         .withBody(docxBytes)));
         String jwt =
                 signExternalJwt(

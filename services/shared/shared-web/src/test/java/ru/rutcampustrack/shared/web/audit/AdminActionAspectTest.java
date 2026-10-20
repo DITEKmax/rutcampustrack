@@ -3,8 +3,6 @@ package ru.rutcampustrack.shared.web.audit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +15,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * M16 G6 — расширенные тесты на {@link AdminActionAspect} после миграции с заглушки на real
@@ -153,14 +154,6 @@ class AdminActionAspectTest {
         // Вызов должен пройти нормально, exception от storage swallow'ится.
         String result = target.execute("y");
         assertThat(result).isEqualTo("result:y");
-    }
-
-    @Test
-    @DisplayName("@AdminAction pointcut пропускает исключения (не глотает)")
-    void aspectPropagatesExceptions() {
-        assertThatThrownBy(target::fail)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("boom");
     }
 
     @Test

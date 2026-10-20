@@ -20,7 +20,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * M02 Группа 4 — unit-тесты {@link OutboxPublisherJob} с mock Storage и Sender. Проверяется только
@@ -33,7 +32,13 @@ class OutboxPublisherJobTest {
         OutboxStorage storage = mock(OutboxStorage.class);
         List<OutboxRecord> rows =
                 java.util.stream.LongStream.rangeClosed(1, 5)
-                        .mapToObj(id -> new OutboxRecord(id, "lesson.closed", "{}", Instant.now()))
+                        .mapToObj(
+                                id ->
+                                        new OutboxRecord(
+                                                id,
+                                                "lesson.closed",
+                                                "{\"event_id\":" + id + "}",
+                                                Instant.now()))
                         .toList();
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(rows);
         java.util.concurrent.atomic.AtomicLong elapsed =
@@ -43,7 +48,7 @@ class OutboxPublisherJobTest {
                 new OutboxPublisherJob(
                         storage,
                         (type, payload) -> {
-                            published.add(rows.get(published.size()).id());
+                            published.add(type + ":" + payload);
                             elapsed.addAndGet(java.util.concurrent.TimeUnit.SECONDS.toNanos(6));
                         },
                         null,
@@ -51,7 +56,9 @@ class OutboxPublisherJobTest {
 
         assertThat(job.publishBatch()).isEqualTo(2);
 
-        assertThat(published).containsExactly(1L, 2L);
+        assertThat(published)
+                .containsExactly(
+                        "lesson.closed:{\"event_id\":1}", "lesson.closed:{\"event_id\":2}");
         verify(storage).markSent(1L);
         verify(storage).markSent(2L);
         verify(storage, never()).markSent(3L);
@@ -193,22 +200,21 @@ class OutboxPublisherJobTest {
     @Test
     void sendOrder_matchesReadOrder() throws Exception {
         OutboxStorage storage = mock(OutboxStorage.class);
-        AtomicInteger callOrder = new AtomicInteger();
-        List<Integer> sendOrder = new ArrayList<>();
+        List<String> sendOrder = new ArrayList<>();
         OutboxEventSender sender =
                 (type, payload) -> {
-                    sendOrder.add(callOrder.incrementAndGet());
+                    sendOrder.add(type + ":" + payload);
                 };
         List<OutboxRecord> batch =
                 List.of(
-                        new OutboxRecord(10L, "a", "{}", Instant.now()),
-                        new OutboxRecord(20L, "b", "{}", Instant.now()),
-                        new OutboxRecord(30L, "c", "{}", Instant.now()));
+                        new OutboxRecord(10L, "a", "event-10", Instant.now()),
+                        new OutboxRecord(20L, "b", "event-20", Instant.now()),
+                        new OutboxRecord(30L, "c", "event-30", Instant.now()));
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(batch);
 
         new OutboxPublisherJob(storage, sender).publishBatch();
 
-        assertThat(sendOrder).containsExactly(1, 2, 3);
+        assertThat(sendOrder).containsExactly("a:event-10", "b:event-20", "c:event-30");
     }
 
     @Test

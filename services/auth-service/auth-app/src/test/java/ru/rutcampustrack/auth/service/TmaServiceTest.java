@@ -7,6 +7,18 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import ru.rutcampustrack.auth.config.TmaProperties;
+import ru.rutcampustrack.auth.dto.TmaAuthRequest;
+import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.entity.User;
+import ru.rutcampustrack.auth.exception.TmaValidationException;
+import ru.rutcampustrack.auth.repository.UserRepository;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -17,17 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import ru.rutcampustrack.auth.config.TmaProperties;
-import ru.rutcampustrack.auth.dto.TmaAuthRequest;
-import ru.rutcampustrack.auth.dto.TokenResponse;
-import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.exception.TmaValidationException;
-import ru.rutcampustrack.auth.repository.UserRepository;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
 
 class TmaServiceTest {
 
@@ -100,6 +104,36 @@ class TmaServiceTest {
                                 fixedService.authenticateWithInitData(
                                         new TmaAuthRequest(signed(Long.toString(now + 1)))))
                 .isInstanceOf(TmaValidationException.class);
+    }
+
+    @Test
+    void fixedTelegramSpecVectorAcceptsReservedCharactersAndRejectsBitFlip() {
+        // Independently calculated with Python stdlib hmac per Telegram WebAppData specification:
+        // HMAC-SHA256(key="WebAppData", data=synthetic bot token), then sorted decoded key=value
+        // lines.
+        // auth_date=1800000000\nquery_id=synthetic+query/=anchor\nuser={"id":123456789,"first_name":"A&B +/= Ю"}
+        String vector =
+                "hash=50f15f55f30f6e9c41ada7dafb38525b90a6e97315775daf3f785a0410619b0a&user=%7B%22id%22%3A123456789%2C%22first_name%22%3A%22A%26B+%2B%2F%3D+%D0%AE%22%7D&query_id=synthetic%2Bquery%2F%3Danchor&auth_date=1800000000";
+        TmaService fixed =
+                new TmaService(
+                        users,
+                        auth,
+                        mock(StringRedisTemplate.class),
+                        new TmaProperties(SYNTHETIC_BOT_TOKEN, 86400),
+                        new ObjectMapper(),
+                        Clock.fixed(Instant.ofEpochSecond(1800000000), ZoneOffset.UTC));
+        User linked = mock(User.class);
+        TokenResponse issued = new TokenResponse("synthetic-access", "synthetic-refresh", 900);
+        when(users.findByTelegramId(123456789L)).thenReturn(Optional.of(linked));
+        when(auth.issueSession(linked, AuthMethod.TMA, null, null, null)).thenReturn(issued);
+        assertThat(fixed.authenticateWithInitData(new TmaAuthRequest(vector))).isSameAs(issued);
+        org.mockito.Mockito.clearInvocations(users, auth);
+        assertThatThrownBy(
+                        () ->
+                                fixed.authenticateWithInitData(
+                                        new TmaAuthRequest(vector.replace("hash=5", "hash=4"))))
+                .isInstanceOf(TmaValidationException.class);
+        verifyNoInteractions(users, auth);
     }
 
     private static String signed(String authDate) throws Exception {

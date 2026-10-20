@@ -64,6 +64,203 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
 
     @Autowired private JwtService jwtService;
 
+    @Autowired private org.springframework.data.redis.core.StringRedisTemplate redis;
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {"logout", "logout-all", "change-password"})
+    void durableMutationSurvivesOwnedWsCleanupFailure(String operation) throws Exception {
+        String login = seedStudentUser();
+        LoginSession actor = loginUser(login);
+        LoginSession control = loginUser(seedStudentUser());
+        var claims = jwtService.parseAccessToken(actor.accessToken()).getPayload();
+        long user = Long.parseLong(claims.getSubject());
+        String sid = claims.get("sid", String.class);
+        var ticketHeaders = new HttpHeaders();
+        ticketHeaders.setBearerAuth(actor.accessToken());
+        var ticket =
+                restTemplate.postForEntity(
+                        "/auth/ws-ticket",
+                        new HttpEntity<>(ticketHeaders),
+                        ru.rutcampustrack.auth.dto.WsTicketResponse.class);
+        assertThat(ticket.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(ticket.getBody()).isNotNull();
+        String userSet = "ws_ticket_user:" + user;
+        redis.delete(userSet);
+        redis.opsForValue().set(userSet, "synthetic-wrong-type");
+        try {
+            String body =
+                    operation.equals("change-password")
+                            ? "{\"currentPassword\":\"password\",\"newPassword\":\"NewPassword1!\"}"
+                            : null;
+            var response = bearer(actor, "/auth/" + operation, HttpMethod.POST, body);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertThat(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE))
+                    .contains("Max-Age=0");
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT revoked_at IS NOT NULL FROM auth_sessions WHERE sid=?",
+                                    Boolean.class,
+                                    UUID.fromString(sid)))
+                    .isTrue();
+            String event =
+                    switch (operation) {
+                        case "logout" -> "CURRENT_LOGOUT";
+                        case "logout-all" -> "LOGOUT_ALL";
+                        default -> "PASSWORD_CHANGED";
+                    };
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT count(*) FROM account_security_events WHERE user_id=?"
+                                        + " AND event_type=?",
+                                    Long.class,
+                                    user,
+                                    event))
+                    .isEqualTo(1L);
+            if (operation.equals("change-password")) {
+                String hash =
+                        jdbc.queryForObject(
+                                "SELECT password_hash FROM auth_identities WHERE id=?",
+                                String.class,
+                                user);
+                assertThat(
+                                new org.springframework.security.crypto.bcrypt
+                                                .BCryptPasswordEncoder()
+                                        .matches("NewPassword1!", hash))
+                        .isTrue();
+                assertThat(loginUser(login, "NewPassword1!").accessToken()).isNotBlank();
+            }
+            assertThat(bearer(actor, "/auth/session", HttpMethod.GET, null).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(refresh(actor.refreshToken()).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(bearer(control, "/auth/session", HttpMethod.GET, null).getStatusCode())
+                    .isEqualTo(HttpStatus.OK);
+            assertThat(redis.hasKey("ws_ticket:" + ticket.getBody().ticket())).isTrue();
+            var identity =
+                    new ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest(
+                            user,
+                            sid,
+                            Long.parseLong(claims.get("sv", String.class)),
+                            Long.parseLong(claims.get("rv", String.class)),
+                            "STUDENT",
+                            "ACTIVE",
+                            Long.parseLong(claims.get("group_id", String.class)),
+                            false,
+                            false);
+            var internal = new HttpHeaders();
+            internal.set(
+                    ru.rutcampustrack.auth.security.InternalIssuerSecretFilter.HEADER,
+                    issuerProperties.getSecret());
+            var denied =
+                    restTemplate.postForEntity(
+                            "/internal/auth/admit-ws-session",
+                            new HttpEntity<>(identity, internal),
+                            Void.class);
+            assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(denied.getHeaders().getCacheControl()).isEqualTo("no-store");
+        } finally {
+            redis.delete(List.of(userSet, "ws_ticket:" + ticket.getBody().ticket()));
+            bearerOnlyLogout(control);
+        }
+    }
+
+    @Autowired private ru.rutcampustrack.auth.config.InternalIssuerProperties issuerProperties;
+
+    @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @Test
+    void rolesVersionAndSessionVersionChangesProduceStaleDenial() throws Exception {
+        LoginSession rvSession = loginUser(seedSelectableUser());
+        var rvClaims = jwtService.parseAccessToken(rvSession.accessToken()).getPayload();
+        long rvUser = Long.parseLong(rvClaims.getSubject());
+        UUID rvSid = UUID.fromString(rvClaims.get("sid", String.class));
+        assertAdmission(rvSession.accessToken(), 200, null);
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            UUID fence = AuthDatabaseFixture.fence(jdbc, rvUser);
+                            assertThat(
+                                            jdbc.update(
+                                                    "UPDATE user_role_grants SET"
+                                                        + " status='suspended',updated_at=CURRENT_TIMESTAMP"
+                                                        + " WHERE user_id=? AND role='teacher'",
+                                                    rvUser))
+                                    .isEqualTo(1);
+                            AuthDatabaseFixture.unfence(jdbc, fence, rvUser);
+                        });
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT session_version FROM auth_sessions WHERE sid=?",
+                                Long.class,
+                                rvSid))
+                .isEqualTo(Long.parseLong(rvClaims.get("sv", String.class)));
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT roles_version FROM auth_identities WHERE id=?",
+                                Long.class,
+                                rvUser))
+                .isGreaterThan(Long.parseLong(rvClaims.get("rv", String.class)));
+        assertAdmission(rvSession.accessToken(), 401, "SESSION_STATE_STALE");
+
+        LoginSession svSession = loginUser(seedSelectableUser());
+        var svClaims = jwtService.parseAccessToken(svSession.accessToken()).getPayload();
+        assertAdmission(svSession.accessToken(), 200, null);
+        var teacher =
+                bearer(
+                        svSession,
+                        "/auth/session/active-role",
+                        HttpMethod.PUT,
+                        "{\"role\":\"TEACHER\",\"expectedSessionVersion\":\"1\"}");
+        assertThat(teacher.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String teacherAccess =
+                objectMapper.readTree(teacher.getBody()).path("accessToken").asText();
+        var teacherSession = new LoginSession(teacherAccess, "", "", "");
+        var student =
+                bearer(
+                        teacherSession,
+                        "/auth/session/active-role",
+                        HttpMethod.PUT,
+                        "{\"role\":\"STUDENT\",\"expectedSessionVersion\":\"2\"}");
+        assertThat(student.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String currentAccess =
+                objectMapper.readTree(student.getBody()).path("accessToken").asText();
+        var current = jwtService.parseAccessToken(currentAccess).getPayload();
+        // Round-trip to the same selected identity isolates SV; RV and role/group claims stay
+        // current.
+        for (String field :
+                List.of("sub", "sid", "rv", "role", "status", "group_id", "is_headman", "readOnly"))
+            assertThat(current.get(field)).as(field).isEqualTo(svClaims.get(field));
+        assertThat(current.get("sv", String.class)).isEqualTo("3");
+        assertAdmission(currentAccess, 200, null);
+        assertAdmission(svSession.accessToken(), 401, "SESSION_STATE_STALE");
+    }
+
+    private void assertAdmission(String access, int status, String code) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(
+                ru.rutcampustrack.auth.security.InternalIssuerSecretFilter.HEADER,
+                issuerProperties.getSecret());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var response =
+                restTemplate.postForEntity(
+                        "/internal/auth/admit",
+                        new HttpEntity<>(
+                                new ru.rutcampustrack.auth.dto.AuthAdmissionRequest(access),
+                                headers),
+                        String.class);
+        assertThat(response.getStatusCode().value()).isEqualTo(status);
+        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        var body = objectMapper.readTree(response.getBody());
+        if (code == null) assertThat(body.path("internalToken").asText()).isNotBlank();
+        else {
+            assertThat(body.path("extras").path("code").asText()).isEqualTo(code);
+            assertThat(body.has("internalToken")).isFalse();
+        }
+    }
+
     @Test
     void bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword()
             throws Exception {

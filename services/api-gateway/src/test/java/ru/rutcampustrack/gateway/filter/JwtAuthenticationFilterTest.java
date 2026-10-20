@@ -8,7 +8,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Jwts;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+
+import reactor.core.publisher.Mono;
+
+import ru.rutcampustrack.gateway.config.PublicKeyConfig;
+
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -22,19 +40,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.mock.web.server.MockServerWebExchange;
-import reactor.core.publisher.Mono;
-import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 
 class JwtAuthenticationFilterTest {
 
@@ -449,38 +454,10 @@ class JwtAuthenticationFilterTest {
         assertUnauthorized(signedRawToken(claims));
     }
 
-    @Test
-    void invalidRole_returns401() {
-        Map<String, Object> claims = validAccessClaims();
-        claims.put("role", "OWNER");
-        assertUnauthorized(signedRawToken(claims));
-    }
-
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidAccessClaims")
     void signedInvalidAccessClaims_areRejected(String reason, Map<String, Object> claims) {
         assertUnauthorized(reason, signedRawToken(claims));
-    }
-
-    @ParameterizedTest(name = "{0} fractional fixture at millisecond {1}")
-    @MethodSource("numericDateFixtureBoundaries")
-    void fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary(
-            String field, long millis) throws Exception {
-        long second = Instant.now().getEpochSecond() + ("exp".equals(field) ? 60 : -5);
-        Map<String, Object> claims = validAccessClaims();
-        BigDecimal value =
-                fractionalNumericDate(Date.from(Instant.ofEpochMilli(second * 1_000L + millis)));
-        claims.put(field, value);
-        String token = signedRawToken(claims);
-        var payload =
-                new ObjectMapper().readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
-        var raw = payload.get(field);
-        boolean fractional = raw.decimalValue().remainder(BigDecimal.ONE).signum() != 0;
-        System.out.printf(
-                "NumericDate fixture field=%s millis=%d node=%s integral=%s fractional=%s%n",
-                field, millis, raw.getNodeType(), raw.isIntegralNumber(), fractional);
-        assertUnauthorized("controlled raw NumericDate boundary", token);
-        assertThat(fractional).as("fixture must have a nonzero fractional second").isTrue();
     }
 
     @ParameterizedTest(name = "legacy whole-second {0} fixture is valid")

@@ -135,26 +135,6 @@ class StudentSessionProjectionTest {
                         .setStatus("EXCUSED")
                         .setExplanation(explanation)
                         .build();
-        var mapper = StudentQueryService.class.getDeclaredMethod("history", history.getClass());
-        mapper.setAccessible(true);
-        var result =
-                (ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
-                                .StudentAttendanceHistorySegment)
-                        mapper.invoke(null, history);
-        assertThat(result.id()).isEqualTo("occurrence:78");
-        assertThat(result.explanation().comment()).isEqualTo(explanation.getComment());
-        assertThat(result.explanation().reasonText()).isEqualTo("Другое");
-        assertThat(result.explanation().cancellationReason()).isNull();
-        var json =
-                new com.fasterxml.jackson.databind.ObjectMapper()
-                        .findAndRegisterModules()
-                        .valueToTree(result);
-        assertThat(json.path("explanation").path("reasonCode").asText()).isEqualTo("OTHER");
-        var legacy =
-                (ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
-                                .StudentAttendanceHistorySegment)
-                        mapper.invoke(null, history.toBuilder().clearExplanation().build());
-        assertThat(legacy.explanation()).isNull();
         var lesson =
                 ru.rutcampustrack.attendance.grpc.StudentAttendanceLesson.newBuilder()
                         .setLessonId(77)
@@ -171,15 +151,85 @@ class StudentSessionProjectionTest {
                                         .newBuilder()
                                         .setCancellationReason("Причина отмены"))
                         .build();
-        var dayMapper = StudentQueryService.class.getDeclaredMethod("lesson", lesson.getClass());
-        dayMapper.setAccessible(true);
-        var day =
-                (ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
-                                .StudentAttendanceLesson)
-                        dayMapper.invoke(null, lesson);
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                STUDENT_ID,
+                                SESSION_ID,
+                                1L,
+                                1L,
+                                "STUDENT",
+                                "ACTIVE",
+                                GROUP_ID,
+                                false,
+                                false));
+        when(academic.activeSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("Осень")
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .build());
+        when(attendance.projection(SEMESTER_ID, null, "days", java.util.List.of()))
+                .thenReturn(
+                        ru.rutcampustrack.attendance.grpc.StudentAttendanceProjectionResponse
+                                .newBuilder()
+                                .setSemesterId(SEMESTER_ID)
+                                .setDateFrom("2026-09-01")
+                                .setDateTo("2026-12-31")
+                                .setServerNow(SERVER_NOW.toString())
+                                .addDays(
+                                        ru.rutcampustrack.attendance.grpc.StudentAttendanceDay
+                                                .newBuilder()
+                                                .setDate("2026-09-07")
+                                                .setWeekday("Пн")
+                                                .setDayNumber("7")
+                                                .setState("CURRENT")
+                                                .addLessons(lesson))
+                                .addSubjects(
+                                        ru.rutcampustrack.attendance.grpc.StudentAttendanceSubject
+                                                .newBuilder()
+                                                .setSubjectId(5)
+                                                .setName("Предмет")
+                                                .addTypeCards(
+                                                        ru.rutcampustrack.attendance.grpc
+                                                                .StudentAttendanceTypeCard
+                                                                .newBuilder()
+                                                                .setLessonType("LECTURE")
+                                                                .addHistory(history)
+                                                                .addHistory(
+                                                                        history.toBuilder()
+                                                                                .setId("legacy:79")
+                                                                                .clearExplanation())))
+                                .build());
+        var response = service.attendance(SEMESTER_ID);
+        var result = response.subjects().getFirst().typeCards().getFirst().history().getFirst();
+        assertThat(result.id()).isEqualTo("occurrence:78");
+        assertThat(result.explanation().comment()).isEqualTo(explanation.getComment());
+        assertThat(result.explanation().reasonText()).isEqualTo("Другое");
+        assertThat(result.explanation().cancellationReason()).isNull();
+        var legacy = response.subjects().getFirst().typeCards().getFirst().history().getLast();
+        assertThat(legacy.id()).isEqualTo("legacy:79");
+        assertThat(legacy.explanation()).isNull();
+        var day = response.days().getFirst().lessons().getFirst();
         assertThat(day.id()).isEqualTo("77");
         assertThat(day.explanation().cancellationReason()).isEqualTo("Причина отмены");
         assertThat(day.explanation().comment()).isNull();
+        var json =
+                new com.fasterxml.jackson.databind.ObjectMapper()
+                        .findAndRegisterModules()
+                        .valueToTree(response);
+        var historyJson = json.path("subjects").get(0).path("typeCards").get(0).path("history");
+        assertThat(historyJson.get(0).path("explanation").path("reasonCode").asText())
+                .isEqualTo("OTHER");
+        assertThat(historyJson.get(0).path("explanation").path("comment").asText())
+                .isEqualTo(explanation.getComment());
+        assertThat(historyJson.get(1).has("explanation")).isTrue();
+        assertThat(historyJson.get(1).path("explanation").isNull()).isTrue();
+        var dayExplanation = json.path("days").get(0).path("lessons").get(0).path("explanation");
+        assertThat(dayExplanation.has("comment")).isTrue();
+        assertThat(dayExplanation.path("comment").isNull()).isTrue();
     }
 
     @Test

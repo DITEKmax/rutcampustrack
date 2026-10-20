@@ -13,6 +13,9 @@ import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -25,8 +28,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.net.ssl.SSLSession;
-import org.junit.jupiter.api.Test;
 
 class ServiceIdentityServerInterceptorTest {
 
@@ -319,12 +322,21 @@ class ServiceIdentityServerInterceptorTest {
                 interceptor(
                         Map.of(PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
                         List.of(academicCredential));
-        ServerCall<Object, Object> call = call(PROTECTED_METHOD, tlsAttributes());
-        assertRejected(interceptor, call, headers("bad"), Status.Code.UNAUTHENTICATED);
-
         assertThat(academicCredential.toString()).doesNotContain(ACADEMIC_TOKEN);
-        Status status = captureClosedStatus(call);
-        assertThat(status.getDescription()).doesNotContain(ACADEMIC_TOKEN);
+        for (String submitted :
+                List.of(
+                        "synthetic-malformed-credential-marker-20261020!",
+                        "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")) {
+            ServerCall<Object, Object> call = call(PROTECTED_METHOD, tlsAttributes());
+            assertRejected(interceptor, call, headers(submitted), Status.Code.UNAUTHENTICATED);
+            Status status = captureClosedStatus(call);
+            assertThat(status.getDescription())
+                    .doesNotContain(submitted)
+                    .doesNotContain(ACADEMIC_TOKEN);
+            assertThat(status.asRuntimeException().toString())
+                    .doesNotContain(submitted)
+                    .doesNotContain(ACADEMIC_TOKEN);
+        }
     }
 
     private static ServiceIdentityServerInterceptor interceptor(

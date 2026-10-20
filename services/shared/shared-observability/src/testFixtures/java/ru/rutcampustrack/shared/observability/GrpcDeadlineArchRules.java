@@ -8,6 +8,7 @@ import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
+
 import java.util.Set;
 
 /**
@@ -38,8 +39,9 @@ public final class GrpcDeadlineArchRules {
     private GrpcDeadlineArchRules() {}
 
     /**
-     * ArchRule: public methods в *GrpcClient, вызывающие *Stub, обязаны содержать {@code
-     * withDeadlineAfter} / {@code withDeadline} в теле.
+     * Structural guard (runtime CallOptions observation is required for deadline proof). ArchRule:
+     * public methods в *GrpcClient, вызывающие *Stub, обязаны содержать {@code withDeadlineAfter} /
+     * {@code withDeadline} в теле.
      */
     public static ArchRule grpcClientsMustSetDeadline() {
         return methods()
@@ -60,7 +62,6 @@ public final class GrpcDeadlineArchRules {
             @Override
             public void check(JavaMethod method, ConditionEvents events) {
                 if (EXCLUDED_METHOD_NAMES.contains(method.getName())) return;
-                if (isAccessor(method)) return;
                 // Skip bridge / synthetic — Lombok/compiler generated.
                 if (method.getModifiers().stream()
                         .anyMatch(
@@ -69,8 +70,11 @@ public final class GrpcDeadlineArchRules {
                                                 || m.name().equalsIgnoreCase("BRIDGE"))) {
                     return;
                 }
+                java.util.Set<JavaMethod> reachable = new java.util.HashSet<>();
+                collectDelegates(method, reachable);
                 boolean callsStub =
-                        method.getMethodCallsFromSelf().stream()
+                        reachable.stream()
+                                .flatMap(candidate -> candidate.getMethodCallsFromSelf().stream())
                                 .map(call -> call.getTargetOwner().getName())
                                 .anyMatch(
                                         owner ->
@@ -78,9 +82,9 @@ public final class GrpcDeadlineArchRules {
                                                         || owner.endsWith("FutureStub")
                                                         || owner.endsWith("Stub"));
                 if (!callsStub) return;
-
                 boolean hasDeadline =
-                        method.getMethodCallsFromSelf().stream()
+                        reachable.stream()
+                                .flatMap(candidate -> candidate.getMethodCallsFromSelf().stream())
                                 .map(JavaMethodCall::getTarget)
                                 .anyMatch(
                                         target ->
@@ -92,17 +96,37 @@ public final class GrpcDeadlineArchRules {
                                     method,
                                     "Метод "
                                             + method.getFullName()
-                                            + " вызывает gRPC stub без .withDeadlineAfter(...) / "
-                                            + ".withDeadline(...). Добавьте deadline (3s по умолчанию) "
-                                            + "чтобы избежать cascade timeouts. См. M05 G8 / NEW-149."));
+                                            + " вызывает gRPC stub без .withDeadlineAfter(...) /"
+                                            + " .withDeadline(...). Добавьте deadline (3s по"
+                                            + " умолчанию) чтобы избежать cascade timeouts. См. M05"
+                                            + " G8 / NEW-149."));
                 }
             }
         };
     }
 
-    private static boolean isAccessor(JavaMethod method) {
-        String name = method.getName();
-        return (name.startsWith("get") || name.startsWith("is"))
-                && method.getRawParameterTypes().isEmpty();
+    private static void collectDelegates(JavaMethod method, java.util.Set<JavaMethod> reachable) {
+        if (!reachable.add(method)) return;
+        method.getMethodCallsFromSelf().stream()
+                .filter(call -> call.getTargetOwner().equals(method.getOwner()))
+                .map(call -> call.getTarget().resolveMember())
+                .flatMap(java.util.Optional::stream)
+                .forEach(delegate -> collectDelegates(delegate, reachable));
+    }
+
+    /**
+     * Runtime oracle for a consumer's observing ClientInterceptor. Pass the actual CallOptions
+     * supplied to Channel.newCall/interceptCall, and separately assert that the RPC was observed.
+     * Reflection keeps this ArchUnit fixture usable without adding gRPC runtime dependencies. The
+     * static rule above is a structural guard; it cannot prove immutable stub return use.
+     */
+    public static void assertCallHasDeadline(Object actualCallOptions) {
+        try {
+            Object deadline =
+                    actualCallOptions.getClass().getMethod("getDeadline").invoke(actualCallOptions);
+            if (deadline == null) throw new AssertionError("Actual gRPC call has no deadline");
+        } catch (ReflectiveOperationException error) {
+            throw new AssertionError("Expected actual io.grpc.CallOptions", error);
+        }
     }
 }

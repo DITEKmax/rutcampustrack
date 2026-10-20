@@ -1,6 +1,5 @@
 package ru.rutcampustrack.notification.history;
 
-import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,20 +12,15 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import static java.time.Duration.ofSeconds;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentMatchers;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +33,19 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
+
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /** Rabbit/Mongo proof of historical audience persistence and atomic event replay. */
 @SpringBootTest(
@@ -73,6 +76,10 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
     @Autowired private RabbitTemplate rabbitTemplate;
     @Autowired private RabbitAdmin rabbitAdmin;
     @Autowired private NotificationHistoryRepository repository;
+
+    @Autowired
+    private org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry
+            listenerRegistry;
 
     @MockitoSpyBean private MongoTemplate mongoTemplate;
     @MockitoBean private nl.martijndwars.webpush.PushService pushService;
@@ -237,30 +244,13 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         Instant readAt = Instant.parse("2026-04-25T01:00:00Z");
         assertThat(repository.markRead(recipient42.getId(), 42L, readAt)).isEqualTo(1L);
 
-        clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
-        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        clearInvocations(audienceClient);
+        assertReplayAcknowledged(envelope);
 
         await().pollDelay(ofSeconds(2))
                 .atMost(ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            verify(mongoTemplate, atLeastOnce())
-                                    .exists(
-                                            ArgumentMatchers.argThat(
-                                                    query -> {
-                                                        org.bson.Document queryDocument =
-                                                                query.getQueryObject();
-                                                        return eventId.equals(
-                                                                        queryDocument.getString(
-                                                                                "event_id"))
-                                                                && NotificationHistoryConsumer
-                                                                        .CONSUMER_ID
-                                                                        .equals(
-                                                                                queryDocument
-                                                                                        .getString(
-                                                                                                "consumer_id"));
-                                                    }),
-                                            eq(MongoIdempotencyStore.DEFAULT_COLLECTION));
                             assertThat(
                                             repository.findByEventIdAndUserIdIn(
                                                     eventId, List.of(42L, 43L)))
@@ -286,9 +276,6 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                                                     MongoIdempotencyStore.DEFAULT_COLLECTION))
                                     .isEqualTo(1L);
                         });
-        verify(idempotencyGuard, never())
-                .tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
-        verify(audienceClient, never()).resolve(any());
     }
 
     @Test
@@ -355,29 +342,12 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                                             });
                         });
 
-        clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
-        rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
+        clearInvocations(audienceClient);
+        assertReplayAcknowledged(envelope);
         await().pollDelay(ofSeconds(2))
                 .atMost(ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            verify(mongoTemplate, atLeastOnce())
-                                    .exists(
-                                            ArgumentMatchers.argThat(
-                                                    query -> {
-                                                        org.bson.Document queryDocument =
-                                                                query.getQueryObject();
-                                                        return eventId.equals(
-                                                                        queryDocument.getString(
-                                                                                "event_id"))
-                                                                && NotificationHistoryConsumer
-                                                                        .CONSUMER_ID
-                                                                        .equals(
-                                                                                queryDocument
-                                                                                        .getString(
-                                                                                                "consumer_id"));
-                                                    }),
-                                            eq(MongoIdempotencyStore.DEFAULT_COLLECTION));
                             assertThat(
                                             repository.findByEventIdAndUserIdIn(
                                                     eventId, List.of(42L, 43L)))
@@ -388,9 +358,6 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                                                     MongoIdempotencyStore.DEFAULT_COLLECTION))
                                     .isEqualTo(1L);
                         });
-        verify(idempotencyGuard, never())
-                .tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
-        verify(audienceClient, never()).resolve(any());
     }
 
     @Test
@@ -473,29 +440,12 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"), 44L, Set.of("STUDENT")))
                 .when(audienceClient)
                 .resolve(eq(envelope));
-        clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
-        rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
+        clearInvocations(audienceClient);
+        assertReplayAcknowledged(envelope);
         await().pollDelay(ofSeconds(2))
                 .atMost(ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            verify(mongoTemplate, atLeastOnce())
-                                    .exists(
-                                            ArgumentMatchers.argThat(
-                                                    query -> {
-                                                        org.bson.Document queryDocument =
-                                                                query.getQueryObject();
-                                                        return eventId.equals(
-                                                                        queryDocument.getString(
-                                                                                "event_id"))
-                                                                && NotificationHistoryConsumer
-                                                                        .CONSUMER_ID
-                                                                        .equals(
-                                                                                queryDocument
-                                                                                        .getString(
-                                                                                                "consumer_id"));
-                                                    }),
-                                            eq(MongoIdempotencyStore.DEFAULT_COLLECTION));
                             assertThat(repository.findAll())
                                     .hasSize(2)
                                     .extracting(NotificationHistoryDocument::getUserId)
@@ -513,9 +463,6 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                                                     MongoIdempotencyStore.DEFAULT_COLLECTION))
                                     .isEqualTo(1L);
                         });
-        verify(idempotencyGuard, never())
-                .tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
-        verify(audienceClient, never()).resolve(any());
     }
 
     @Test
@@ -555,5 +502,95 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                         "trace_id", "trace-it",
                         "source", "schedule-service",
                         "payload", payload));
+    }
+
+    /** Observe the owned delivery's successful production return and real AUTO ACK. */
+    private void assertReplayAcknowledged(Map<String, Object> envelope) {
+        var rowsBefore = repository.findAll();
+        var claimsBefore =
+                mongoTemplate.findAll(
+                        org.bson.Document.class, MongoIdempotencyStore.DEFAULT_COLLECTION);
+        var container =
+                listenerRegistry.getListenerContainers().stream()
+                        .filter(
+                                org.springframework.amqp.rabbit.listener
+                                                .SimpleMessageListenerContainer.class
+                                        ::isInstance)
+                        .map(
+                                org.springframework.amqp.rabbit.listener
+                                                .SimpleMessageListenerContainer.class
+                                        ::cast)
+                        .filter(
+                                item ->
+                                        java.util.Arrays.asList(item.getQueueNames())
+                                                .contains("notification-web.history"))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(container.getAcknowledgeMode())
+                .isEqualTo(org.springframework.amqp.core.AcknowledgeMode.AUTO);
+        container.stop();
+        var original =
+                (org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener)
+                        container.getMessageListener();
+        var originalAck = container.getMessageAckListener();
+        var targetTag = new java.util.concurrent.atomic.AtomicLong(-1);
+        var returned = new java.util.concurrent.atomic.AtomicBoolean();
+        var acknowledged = new java.util.concurrent.CountDownLatch(1);
+        var failure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        String eventId = envelope.get("event_id").toString();
+        try {
+            container.setMessageListener(
+                    (org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener)
+                            (message, channel) -> {
+                                boolean target =
+                                        eventId.equals(
+                                                new com.fasterxml.jackson.databind.ObjectMapper()
+                                                        .readTree(message.getBody())
+                                                        .path("event_id")
+                                                        .asText());
+                                original.onMessage(message, channel);
+                                if (target) {
+                                    targetTag.set(message.getMessageProperties().getDeliveryTag());
+                                    returned.set(true);
+                                }
+                            });
+            container.setMessageAckListener(
+                    (success, tag, cause) -> {
+                        if (originalAck != null) originalAck.onComplete(success, tag, cause);
+                        if (returned.get() && tag >= targetTag.get()) {
+                            if (!success)
+                                failure.set(
+                                        cause == null
+                                                ? new AssertionError("History replay ACK failed")
+                                                : cause);
+                            acknowledged.countDown();
+                        }
+                    });
+            container.start();
+            rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
+            assertThat(acknowledged.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                    .as("owned replay returned and was AUTO ACKed")
+                    .isTrue();
+            assertThat(failure.get()).isNull();
+            assertThat(returned.get()).isTrue();
+            assertThat(repository.findAll())
+                    .usingRecursiveFieldByFieldElementComparator()
+                    .containsExactlyInAnyOrderElementsOf(rowsBefore);
+            assertThat(
+                            mongoTemplate.findAll(
+                                    org.bson.Document.class,
+                                    MongoIdempotencyStore.DEFAULT_COLLECTION))
+                    .containsExactlyInAnyOrderElementsOf(claimsBefore);
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.history.dlq").getMessageCount())
+                    .isZero();
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError(error);
+        } finally {
+            container.stop();
+            container.setMessageListener(original);
+            container.setMessageAckListener(originalAck);
+            container.start();
+        }
     }
 }

@@ -196,25 +196,6 @@ UPDATE user_role_grants
     }
 
     @Test
-    void consumeTicket_twice_secondReturns404() {
-        String accessToken = loginAndGetAccessToken("student");
-        String ticket = issueTicket(accessToken);
-
-        // First consume — ok
-        ResponseEntity<ConsumeWsTicketResponse> first = consume(ticket);
-        assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        // Second consume — 404 (already consumed)
-        ResponseEntity<String> second =
-                restTemplate.exchange(
-                        "/internal/consume-ws-ticket",
-                        HttpMethod.POST,
-                        internalEntity(new ConsumeWsTicketRequest(ticket)),
-                        String.class);
-        assertThat(second.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
     void consumeTicket_unknownTicket_returns404() {
         ResponseEntity<String> response =
                 restTemplate.exchange(

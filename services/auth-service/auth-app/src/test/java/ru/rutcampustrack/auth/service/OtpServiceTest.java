@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -11,8 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.micrometer.core.instrument.Counter;
-import java.lang.reflect.Field;
-import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.script.RedisScript;
+
 import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
@@ -32,15 +33,17 @@ import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
+import java.lang.reflect.Field;
+import java.util.Optional;
+
 /**
  * M09 Группа 1 (01 P0-5) — unit-проверка что verifyOtp использует {@link
  * java.security.MessageDigest#isEqual(byte[], byte[])} для сравнения кодов (constant-time) вместо
  * {@link String#equals(Object)}.
  *
  * <p>Гарантия constant-time обеспечивается JDK-имплементацией MessageDigest.isEqual; unit-тест ниже
- * (a) статически валидирует исходник на отсутствие String.equals против request.code() и наличие
- * MessageDigest.isEqual; (b) проверяет что functional-поведение верно (корректный код →
- * success-путь, неверный → mismatch).
+ * (a) статически проверяет реальные call paths обоих verify методов к MessageDigest.isEqual; (b)
+ * проверяет что functional-поведение верно (корректный код → success-путь, неверный → mismatch).
  */
 class OtpServiceTest {
 
@@ -81,7 +84,8 @@ class OtpServiceTest {
 
     @Test
     @DisplayName(
-            "verifyOtp: корректный код того же размера — не падает в OtpExpiredException (mismatch-путь)")
+            "verifyOtp: корректный код того же размера — не падает в OtpExpiredException"
+                + " (mismatch-путь)")
     void verifyOtp_correctCode_doesNotThrowMismatch() {
         Long telegramId = 111L;
         User user = activeUser();
@@ -138,27 +142,43 @@ class OtpServiceTest {
 
     @Test
     @DisplayName(
-            "OtpService source: использует MessageDigest.isEqual вместо String.equals для request.code()")
+            "OtpService source: использует MessageDigest.isEqual вместо String.equals для"
+                + " request.code()")
     void verifyOtp_constantTimeCompare_sourceAssertion() throws Exception {
-        // Структурная проверка: сорс-код OtpService не содержит `storedCode.equals(request.code())`
-        // и содержит вызов MessageDigest.isEqual. Это предохраняет от регрессии —
-        // если кто-то переведёт compare обратно на String.equals, тест упадёт.
-        java.nio.file.Path src = locateSource();
-        String code = java.nio.file.Files.readString(src);
-
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("verifyOtp must not compare OTP via String.equals (timing side-channel)")
-                .doesNotContain("storedCode.equals(request.code())");
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("verifyOtp must use MessageDigest.isEqual for constant-time compare")
-                .contains("MessageDigest.isEqual");
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("both public OTP forms must use one atomic Redis proof consume")
-                .contains("DefaultRedisScript<Long>", "consumeProofScript", "CONSUME_PROOF_SCRIPT");
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("both public OTP forms must require the reverse proof")
-                .contains("if not reverse then\n                return 0")
-                .doesNotContain("elseif reverse and reverse ~= ARGV[2]");
+        var type =
+                new com.tngtech.archunit.core.importer.ClassFileImporter()
+                        .importClasses(OtpService.class)
+                        .get(OtpService.class);
+        for (String entry : java.util.List.of("verifyOtp", "verifyOtpByCode")) {
+            var reachable = new java.util.HashSet<com.tngtech.archunit.core.domain.JavaMethod>();
+            collectOtpCalls(
+                    type.getMethods().stream()
+                            .filter(method -> method.getName().equals(entry))
+                            .findFirst()
+                            .orElseThrow(),
+                    reachable);
+            var comparisons =
+                    reachable.stream()
+                            .flatMap(method -> method.getMethodCallsFromSelf().stream())
+                            .toList();
+            assertThat(comparisons)
+                    .as(entry + " reaches the approved JDK comparison on its actual call path")
+                    .anySatisfy(
+                            call -> {
+                                assertThat(call.getTargetOwner().getName())
+                                        .isEqualTo("java.security.MessageDigest");
+                                assertThat(call.getName()).isEqualTo("isEqual");
+                            });
+            assertThat(comparisons)
+                    .noneSatisfy(
+                            call -> {
+                                assertThat(call.getTargetOwner().getName())
+                                        .isEqualTo("java.lang.String");
+                                assertThat(call.getName()).isEqualTo("equals");
+                            });
+        }
+        // Structural call-path guard only: constant-time data flow still requires crypto review.
+        // Redis atomicity and both reverse-index requirements are proved by OtpIT, not source text.
     }
 
     @Test
@@ -336,5 +356,16 @@ class OtpServiceTest {
             throw new IllegalStateException(e);
         }
         return user;
+    }
+
+    private static void collectOtpCalls(
+            com.tngtech.archunit.core.domain.JavaMethod method,
+            java.util.Set<com.tngtech.archunit.core.domain.JavaMethod> reachable) {
+        if (!reachable.add(method)) return;
+        method.getMethodCallsFromSelf().stream()
+                .filter(call -> call.getTargetOwner().equals(method.getOwner()))
+                .map(call -> call.getTarget().resolveMember())
+                .flatMap(java.util.Optional::stream)
+                .forEach(delegate -> collectOtpCalls(delegate, reachable));
     }
 }

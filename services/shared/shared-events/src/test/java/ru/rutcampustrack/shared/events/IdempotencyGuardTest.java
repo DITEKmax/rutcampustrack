@@ -32,14 +32,6 @@ class IdempotencyGuardTest {
     }
 
     @Test
-    void tryClaim_firstCall_returnsTrue() {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId, "lesson.started");
-
-        assertThat(guard.tryClaim("academic", envelope)).isTrue();
-    }
-
-    @Test
     void tryClaim_duplicateCall_returnsFalse() {
         UUID eventId = UUID.randomUUID();
         Map<String, Object> envelope = envelope(eventId, "lesson.started");

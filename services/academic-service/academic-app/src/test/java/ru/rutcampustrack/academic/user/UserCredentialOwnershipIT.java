@@ -53,7 +53,7 @@ class UserCredentialOwnershipIT extends AbstractAcademicIntegrationTest {
                         .authJdbc()
                         .queryForMap(
                                 "SELECT password_hash,initial_password,password_changed FROM"
-                                    + " auth_identities WHERE id=?",
+                                        + " auth_identities WHERE id=?",
                                 id);
         assertThat(initial.equals(stored.get("initial_password"))).isTrue();
         assertThat(
@@ -65,9 +65,10 @@ class UserCredentialOwnershipIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbc.queryForList(
                                 "SELECT column_name FROM information_schema.columns WHERE"
-                                    + " table_schema=current_schema() AND"
-                                    + " table_name='academic_profiles'",
+                                        + " table_schema='public' AND"
+                                        + " table_name='academic_profiles'",
                                 String.class))
+                .contains("id", "last_name", "first_name")
                 .doesNotContain("password_hash", "initial_password", "password_changed");
         var local = users.findByIdIncludingArchived(id).orElseThrow();
         assertThat(local.getPasswordHash()).isNull();

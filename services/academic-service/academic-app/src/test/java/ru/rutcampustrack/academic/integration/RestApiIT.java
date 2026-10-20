@@ -734,25 +734,13 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     void testThresholdResolution_mostSpecificWins() throws Exception {
         long group = seedGroupId;
         long semester = identityFixture.canonical().semesterId();
-        long subject =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id,semester_id) VALUES('threshold"
-                                + " own','lecture',?,?) RETURNING id",
-                        Long.class,
-                        group,
-                        semester);
+        long subject = thresholdSubject("threshold own", group, semester);
         long otherGroup =
                 jdbcTemplate.queryForObject(
                         "INSERT INTO groups(name,is_active,created_at) VALUES('ПРГ-111',true,NOW())"
                                 + " RETURNING id",
                         Long.class);
-        long otherSubject =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id,semester_id) VALUES('threshold"
-                                + " other','lecture',?,?) RETURNING id",
-                        Long.class,
-                        otherGroup,
-                        semester);
+        long otherSubject = thresholdSubject("threshold other", otherGroup, semester);
         long global = threshold(null, null, 70);
         long groupThreshold = threshold(group, null, 80);
         long subjectThreshold = threshold(group, subject, 90);
@@ -766,6 +754,20 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         jdbcTemplate.update("DELETE FROM attendance_thresholds WHERE id=?", global);
         resolved(group, subject, "default", 0, null);
         resolved(otherGroup, otherSubject, "subject", 95, control);
+    }
+
+    private long thresholdSubject(String name, long group, long semester) {
+        // The deferred minimum-type constraint checks the same committed parent/child pair.
+        return jdbcTemplate.queryForObject(
+                "WITH subject AS (INSERT INTO subjects(name,type,group_id,semester_id)"
+                        + " VALUES(?,'lecture',?,?) RETURNING id), types AS"
+                        + " (INSERT INTO subject_lesson_types(subject_id,lesson_type) SELECT"
+                        + " id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id"
+                        + " FROM types",
+                Long.class,
+                name,
+                group,
+                semester);
     }
 
     private long threshold(Long group, Long subject, int percent) {

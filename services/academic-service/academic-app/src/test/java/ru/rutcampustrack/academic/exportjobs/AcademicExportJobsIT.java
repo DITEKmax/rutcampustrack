@@ -28,7 +28,6 @@ import java.util.concurrent.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AcademicExportJobsIT
         extends ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest {
-    @org.springframework.beans.factory.annotation.Autowired javax.sql.DataSource runtimeData;
     private String schema;
     private JdbcTemplate jdbc;
     private ExportJobRepository jobs;
@@ -60,11 +59,21 @@ class AcademicExportJobsIT
         owner.execute(
                 "REVOKE ALL ON " + schema + ".flyway_schema_history FROM rct_academic_runtime");
         owner.execute(
+                "REVOKE ALL ON "
+                        + schema
+                        + ".academic_initial_admin_bootstrap FROM rct_academic_runtime");
+        owner.execute(
                 "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA "
                         + schema
                         + " TO rct_academic_runtime");
         owner.execute(
                 "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA " + schema + " TO rct_academic_runtime");
+        owner.execute(
+                "REVOKE EXECUTE ON FUNCTION "
+                        + schema
+                        + ".guard_academic_initial_admin_operator() FROM rct_academic_runtime");
+        // Schema changes must stay on disposable connections, never the application's pool.
+        var runtimeData = identityFixture.academicJdbc().getDataSource();
         var ds =
                 new org.springframework.jdbc.datasource.AbstractDataSource() {
                     @Override

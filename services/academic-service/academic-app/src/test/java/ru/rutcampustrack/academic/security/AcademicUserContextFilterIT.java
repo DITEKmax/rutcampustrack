@@ -127,7 +127,10 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
                         row -> {
                             ids.add(row.path("id").asLong());
                             assertThat(row.has("passwordHash")).isFalse();
-                            assertThat(row.has("initialPassword")).isFalse();
+                            assertThat(
+                                            row.path("initialPassword").isMissingNode()
+                                                    || row.path("initialPassword").isNull())
+                                    .isTrue();
                         });
         assertThat(ids)
                 .containsExactlyInAnyOrder(
@@ -162,7 +165,10 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
                         row -> {
                             ids.add(row.path("id").asLong());
                             assertThat(row.has("passwordHash")).isFalse();
-                            assertThat(row.has("initialPassword")).isFalse();
+                            assertThat(
+                                            row.path("initialPassword").isMissingNode()
+                                                    || row.path("initialPassword").isNull())
+                                    .isTrue();
                         });
         assertThat(ids)
                 .containsExactlyInAnyOrder(

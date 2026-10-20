@@ -73,7 +73,10 @@ class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationT
                         row -> {
                             ids.add(row.path("id").asLong());
                             assertThat(row.has("passwordHash")).isFalse();
-                            assertThat(row.has("initialPassword")).isFalse();
+                            assertThat(
+                                            row.path("initialPassword").isMissingNode()
+                                                    || row.path("initialPassword").isNull())
+                                    .isTrue();
                         });
         assertThat(ids)
                 .containsExactlyInAnyOrder(

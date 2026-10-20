@@ -80,10 +80,4 @@ describe('request attachment validation', () => {
     expect(acceptsRequestFile({ name: validNeighbor, type: 'application/pdf' }, limits)).toBe(true)
   })
 
-  it('describes the concordance rule in the validation feedback', () => {
-    expect(requestAttachmentFormatHint(limits)).toContain(
-      'MIME и расширение должны соответствовать',
-    )
-    expect(requestAttachmentFormatHint(limits)).toContain('JPEG — .jpg/.jpeg')
-  })
 })

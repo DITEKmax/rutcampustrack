@@ -1,10 +1,12 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { MatDialog } from '@angular/material/dialog';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { SemestersPageComponent } from './semesters-page.component';
 import type { SemesterResponse, PagedResponse } from '../shared/types';
 
@@ -21,15 +23,18 @@ const MOCK_SEMESTERS: SemesterResponse[] = [
 ];
 
 describe('SemestersPageComponent', () => {
+  let fixture: ComponentFixture<SemestersPageComponent>;
   let component: SemestersPageComponent;
+  let dialog: MatDialog;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SemestersPageComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideNoopAnimations()],
     });
-    const fixture = TestBed.createComponent(SemestersPageComponent);
+    fixture = TestBed.createComponent(SemestersPageComponent);
+    dialog = TestBed.inject(MatDialog);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -38,9 +43,6 @@ describe('SemestersPageComponent', () => {
     httpMock.verify();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
 
   it('ngOnInit loads semesters', () => {
     component.ngOnInit();
@@ -55,13 +57,28 @@ describe('SemestersPageComponent', () => {
     expect(component.formatDate('2025-12-31')).toBe('31.12.2025');
   });
 
-  it('delete button should be disabled for active semesters', () => {
-    component.ngOnInit();
+  it('delete button should be disabled for active semesters', async () => {
+    fixture.detectChanges();
     httpMock.expectOne(req => req.url === '/api/academic/semesters').flush(mockSemestersResponse(MOCK_SEMESTERS));
+    fixture.detectChanges();
+    const activeDelete: HTMLButtonElement = fixture.nativeElement.querySelector('button[aria-label="Нельзя удалить активный семестр"]');
+    expect(activeDelete.disabled).toBe(true);
+    activeDelete.click();
+    component.deleteSemester(MOCK_SEMESTERS[0]);
+    expect(dialog.openDialogs).toHaveLength(0);
+    httpMock.expectNone(req => req.method === 'DELETE');
 
-    const activeSem = component.semesters().find(s => s.active);
-    expect(activeSem).toBeDefined();
-    // Active semester should not allow deletion
-    expect(activeSem!.active).toBe(true);
+    const inactiveDelete: HTMLButtonElement = fixture.nativeElement.querySelector('button[aria-label="Удалить"]');
+    expect(inactiveDelete.disabled).toBe(false);
+    inactiveDelete.click();
+    expect(dialog.openDialogs).toHaveLength(1);
+    // The actual dialog confirmation is exercised with typed inputs in its spec.
+    dialog.openDialogs[0].close('Осень 2025');
+    await fixture.whenStable();
+    const deletion = httpMock.expectOne('/api/academic/semesters/2');
+    expect(deletion.request.method).toBe('DELETE');
+    expect(deletion.request.body).toEqual({ confirmation: 'Осень 2025' });
+    deletion.flush(null);
+    httpMock.expectOne(req => req.url === '/api/academic/semesters').flush(mockSemestersResponse([MOCK_SEMESTERS[0]]));
   });
 });

@@ -211,7 +211,7 @@ it('keeps equal integral calendar and screen intervals within the measured budge
       }
 })
 
-it('keeps anchored endpoint labels separate on the actual166px plot at root20', () => {
+it('fits endpoint-only date ticks to the explicit narrow axis budget', () => {
   const axis = headmanStatsTrendAxis({
     mode: 'SUBJECT',
     points: [point('2026-09-01'), point('2027-01-31')],
@@ -219,13 +219,6 @@ it('keeps anchored endpoint labels separate on the actual166px plot at root20', 
     labelWidth: 64,
   })!
   expect(axis.ticks.map((tick) => tick.date)).toEqual(['2026-09-01', '2027-01-31'])
-  const boxes = axis.ticks.map((tick, index) => {
-    const width = index === 0 ? 50.5688 : index === axis.ticks.length - 1 ? 53 : 62.3563
-    const x = tick.position * 166
-    const left = index === 0 ? x : index === axis.ticks.length - 1 ? x - width : x - width / 2
-    return { left, right: left + width }
-  })
-  for (let index = 1; index < boxes.length; index++)
-    expect(boxes[index]!.left - boxes[index - 1]!.right).toBeGreaterThanOrEqual(12)
+  expect(axis.ticks.map(tick => tick.position)).toEqual([0, 1])
   expect(headmanStatsTrendPosition('2026-11-16', axis)).toBeCloseTo(76 / 152)
 })

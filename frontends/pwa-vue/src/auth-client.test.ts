@@ -368,10 +368,13 @@ describe('own-profile Telegram binding projection', () => {
       const client = createAuthClient({
         fetcher: vi.fn<typeof fetch>().mockResolvedValue(response(body)),
       })
-      await expect(client.getOwnTelegramId('42')).rejects.toMatchObject({
-        code: 'UNKNOWN',
-        details: undefined,
-        message: 'Сервер вернул некорректные данные собственного профиля',
+      const rejected = client.getOwnTelegramId('42')
+      await expect(rejected).rejects.toMatchObject({
+        code: 'UNKNOWN', details: undefined, message: expect.stringMatching(/\S/),
+      })
+      await rejected.catch(error => {
+        expect((error as Error).message).not.toContain(String(body.telegramId))
+        expect((error as Error).message).not.toContain(JSON.stringify(body))
       })
     },
   )
@@ -413,7 +416,14 @@ describe('D024 code-only OTP and incoming browser proof', () => {
       JSON.stringify({ ...raw, version: 2 }),
       JSON.stringify({ ...raw, issuerSecret: 'private' }),
     ]) {
-      expect(() => parseBrowserLoginProof(value)).toThrow('Данные входа в браузере некорректны')
+      try { parseBrowserLoginProof(value); throw new Error('accepted-invalid-proof') }
+      catch (error) {
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error).message).not.toContain('accepted-invalid-proof')
+        expect((error as Error).message).not.toContain(value)
+        expect((error as Error).message).not.toContain(raw.approvalToken)
+        expect((error as Error).message).not.toContain('private')
+      }
     }
   })
   it('binds preview/status to the same LOGIN challenge and keeps explicit decision separate', async () => {
@@ -449,8 +459,11 @@ describe('D024 code-only OTP and incoming browser proof', () => {
     expect(new Headers(fetcher.mock.calls[1]?.[1]?.headers).get('Authorization')).toBe(
       'Bearer mobile-memory-token',
     )
-    await expect(client.previewBrowserLogin(proof)).rejects.toThrow(
-      'Данные входа в браузере некорректны',
-    )
+    const rejected = client.previewBrowserLogin(proof)
+    await expect(rejected).rejects.toMatchObject({ message: expect.stringMatching(/\S/) })
+    await rejected.catch(error => {
+      expect((error as Error).message).not.toContain(proof.approvalToken)
+      expect((error as Error).message).not.toContain(proof.challengeId)
+    })
   })
 })

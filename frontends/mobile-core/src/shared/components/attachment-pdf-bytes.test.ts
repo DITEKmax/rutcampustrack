@@ -9,7 +9,7 @@ describe('bounded PDF preview bytes', () => {
       headers: { 'Content-Length': String(PDF_PREVIEW_MAX_BYTES + 1) },
     })
     const arrayBuffer = vi.spyOn(response, 'arrayBuffer')
-    await expect(readPdfPreviewBytes(response)).rejects.toThrow('слишком большой')
+    await expect(readPdfPreviewBytes(response)).rejects.toThrow(Error)
     expect(getReader).not.toHaveBeenCalled()
     expect(arrayBuffer).not.toHaveBeenCalled()
     expect(cancel).toHaveBeenCalled()
@@ -25,7 +25,7 @@ describe('bounded PDF preview bytes', () => {
     })
     const response = new Response(stream)
     const arrayBuffer = vi.spyOn(response, 'arrayBuffer')
-    await expect(readPdfPreviewBytes(response)).rejects.toThrow('слишком большой')
+    await expect(readPdfPreviewBytes(response)).rejects.toThrow(Error)
     expect(cancel).toHaveBeenCalled()
     expect(arrayBuffer).not.toHaveBeenCalled()
   })

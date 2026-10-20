@@ -25,6 +25,5 @@ describe('headman dock', () => {
       'headman-more',
       'profile',
     ])
-    expect(items.map(({ label }) => label)).toEqual(['Сегодня', 'Учёт', 'Заявки', 'Ещё', 'Профиль'])
   })
 })

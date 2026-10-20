@@ -71,10 +71,6 @@ describe('UsersPageComponent', () => {
     httpMock.expectOne(req => req.url === '/api/academic/users').flush(mockUsersResponse);
   }
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-    flushInitialRequests();
-  });
 
   it('ngOnInit triggers loadUsers and listGroups calls', () => {
     const groupsReq = httpMock.expectOne(req => req.url === '/api/academic/groups');

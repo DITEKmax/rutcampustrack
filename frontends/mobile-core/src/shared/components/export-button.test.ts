@@ -153,14 +153,19 @@ describe('export action state and scope', () => {
         format: 'docx',
       },
     })
-    expect(text(root)).toContain('Выгрузка в очереди')
+    expect(nodes(root).find(node => node.props['aria-busy'] !== undefined)?.props['aria-busy']).toBe(true)
+    expect(nodes(root).filter(node => node.props.role === 'status').some(node => text(node).trim().length > 0)).toBe(true)
+    expect(nodes(root).find(node => node.tag === 'progress')?.props.value).toBe(1)
     progress('preparing')
     await settle()
-    expect(text(root)).toContain('Файл готовится')
+    expect(nodes(root).find(node => node.tag === 'progress')?.props.value).toBe(2)
+    expect(nodes(root).filter(node => node.props.role === 'status').some(node => text(node).trim().length > 0)).toBe(true)
     progress('ready')
     finish('accepted')
     await settle()
-    expect(text(root)).toContain('Скачивание передано браузеру')
+    expect(nodes(root).find(node => node.props['aria-busy'] !== undefined)?.props['aria-busy']).toBe(false)
+    expect(nodes(root).some(node => node.tag === 'progress')).toBe(false)
+    expect(nodes(root).filter(node => node.props.role === 'status').some(node => text(node).trim().length > 0)).toBe(true)
     expect(download).toHaveBeenCalledTimes(1)
   })
 
@@ -185,7 +190,7 @@ describe('export action state and scope', () => {
     expect(current()).toBe(false)
     finish('accepted')
     await settle()
-    expect(text(root)).not.toContain('Telegram принял')
+    expect(nodes(root).filter(node => node.props.role === 'status' || node.tag === 'progress')).toHaveLength(0)
     expect(state.disabled).toBe(false)
   })
 
@@ -211,7 +216,7 @@ describe('export action state and scope', () => {
     expect(current()).toBe(false)
     finish('accepted')
     await settle()
-    expect(text(root)).not.toContain('Telegram принял')
+    expect(nodes(root).filter(node => node.props.role === 'status' || node.tag === 'progress')).toHaveLength(0)
     expect(nodes(root).find((node) => node.tag === 'button')?.props.disabled).toBe(true)
   })
 

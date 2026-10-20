@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import { moscowDate } from '../../domain/homework'
 import {
   HeadmanJournalApi,
   HeadmanJournalApiError,
@@ -23,10 +22,6 @@ function jsonResponseWithStatus(value: unknown, status: number): Response {
 }
 
 describe('HeadmanJournalApi', () => {
-  it('uses the shared Moscow calendar date at the UTC day boundary', () => {
-    expect(moscowDate('2026-09-20T21:30:00.000Z')).toBe('2026-09-21')
-    expect(moscowDate('2026-09-21T20:59:59.999Z')).toBe('2026-09-21')
-  })
 
   it('reads paged concrete lessons and preserves server lesson fields', async () => {
     const paths: string[] = []

@@ -299,19 +299,20 @@ describe('own-cohort ranking stays within the current query owner', () => {
     scope.value = { ...scope.value, userId: '1' }
     controller.openRanking()
     await vi.waitFor(() => expect(signal).toBeDefined())
+    const pending = client.getQueryCache().findAll().filter(query => query.state.fetchStatus === 'fetching')
+    expect(pending).toHaveLength(1)
+    const oldQuery = pending[0]!
+    const oldHash = oldQuery.queryHash
     scope.value = { ...scope.value, userId: '3', sessionId: 'new-session', resetGeneration: 1 }
+    expect(client.getQueryCache().get(oldHash)).toBeUndefined()
     expect(signal?.aborted).toBe(true)
     expect(controller.rankingVisible.value).toBe(false)
     old.resolve(reply(ranking()))
     await nextTick()
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(controller.rankingState.value.status).not.toBe('ready')
-    expect(
-      client
-        .getQueryCache()
-        .findAll()
-        .some((q) => q.queryKey[11] === 'ranking' && q.queryKey[2] === '1'),
-    ).toBe(false)
+    expect(client.getQueryCache().get(oldHash)).toBeUndefined()
+    expect(oldQuery.state.data).toBeUndefined()
   })
   it('clears on offline and refuses a mismatched self marker rather than showing peers', async () => {
     const { controller, scope, offline } = mount(async (input) =>

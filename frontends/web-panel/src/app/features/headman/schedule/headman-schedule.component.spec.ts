@@ -144,10 +144,6 @@ describe('HeadmanScheduleComponent', () => {
       expect.objectContaining({ data: expect.objectContaining({ weekTypes: WEEK_POLICY.weekTypes }) }));
   });
 
-  it('creates without errors (smoke test)', () => {
-    const { component } = setup();
-    expect(component).toBeTruthy();
-  });
 
   it('loadSchedule calls getGroupScheduleItems with (groupId, activeSemesterId) and populates matrix', () => {
     const { component, api } = setup();

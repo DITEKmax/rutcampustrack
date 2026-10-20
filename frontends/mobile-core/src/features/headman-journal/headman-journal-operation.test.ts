@@ -30,21 +30,32 @@ describe('journal destructive confirmation and late ACK ownership', () => {
     expect(journalScopeCurrent(scope, next)).toBe(false)
   })
   it('does not publish a late destructive ACK into the newly selected lesson', async () => {
-    let current: JournalMutationScope | null = { ...scope }
+    const original = journalFixture()
+    Object.assign(original.api, { getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }) })
     let finish!: () => void
-    const ack = new Promise<void>((resolve) => {
-      finish = resolve
-    })
-    let visibleMark = 'EXCUSED'
-    const run = async () => {
-      await ack
-      if (journalScopeCurrent(scope, current)) visibleMark = 'EMPTY'
-    }
-    const pending = run()
-    current = { ...scope, lessonId: 31, generation: 2 }
+    original.clear.mockImplementation(() => new Promise<void>(resolve => { finish = resolve }))
+    const next = journalFixture(false, 'ABSENT')
+    Object.assign(next.api, { getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }) })
+    const props = reactive({ api: markRaw(original.api), groupId: 4, initialDate: original.lesson.date })
+    const errors = vi.fn()
+    const root = mountJournalScreen(HeadmanJournalScreen, Object.assign(props, { onError: errors }))
+    await vi.waitFor(() => expect(journalButton(root, 'Изменить отметку: Синтетический студент')).toBeDefined())
+    journalClick(journalButton(root, 'Изменить отметку: Синтетический студент'))
+    await nextTick()
+    journalClick(journalButton(root, 'Был: Синтетический студент'))
+    expect(original.clear).toHaveBeenCalledWith(30, 7, { expectedStatus: 'PRESENT', expectedRevision: 'revision-a' })
+    props.api = markRaw(next.api)
+    await vi.waitFor(() => expect(journalButton(root, 'Не был: Синтетический студент. Открыть выбор отметки')).toBeDefined())
+    const readsBefore = vi.mocked(next.api.getLessonAttendance).mock.calls.length
     finish()
-    await pending
-    expect(visibleMark).toBe('EXCUSED')
+    await nextTick()
+    await Promise.resolve()
+    await nextTick()
+    expect(journalButton(root, 'Не был: Синтетический студент. Открыть выбор отметки')).toBeDefined()
+    expect(journalButton(root, 'Изменить отметку: Синтетический студент')?.props.disabled).not.toBe(true)
+    expect(vi.mocked(next.api.getLessonAttendance).mock.calls.length).toBe(readsBefore)
+    expect(next.clear).not.toHaveBeenCalled()
+    expect(errors).not.toHaveBeenCalled()
   })
 })
 

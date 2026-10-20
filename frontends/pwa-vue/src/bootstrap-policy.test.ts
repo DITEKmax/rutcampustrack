@@ -1,111 +1,110 @@
 import { readFileSync } from 'node:fs'
-import { parse } from '@vue/compiler-sfc'
-import ts from 'typescript'
-import { describe, expect, it } from 'vitest'
-import { ProfileRequestError } from '../../mobile-core/src/features/profile/profile-types'
+import { createRenderer, h, markRaw, nextTick, type App } from 'vue'
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ProfileRequestError, SemesterSnapshotStore } from '@rct/mobile-core'
 import { AuthProtocolError, AuthRequestError } from './auth-client'
 import { isOfflineBootstrapRecoveryError } from './bootstrap-policy'
+import AppComponent from './App.vue'
 
-function hasGuardedBootstrapRecovery(source: string): boolean {
-  const sfc = parse(source)
-  if (sfc.errors.length || !sfc.descriptor.scriptSetup) return false
-  const script = ts.createSourceFile(
-    'App.ts',
-    sfc.descriptor.scriptSetup.content,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  )
-  const bootstraps = script.statements.filter(
-    (node): node is ts.FunctionDeclaration =>
-      ts.isFunctionDeclaration(node) && node.name?.text === 'bootstrap',
-  )
-  const body = bootstraps[0]?.body
-  if (bootstraps.length !== 1 || !body) return false
-  const catches = body.statements
-    .filter(ts.isTryStatement)
-    .flatMap((node) => (node.catchClause ? [node.catchClause] : []))
-  if (catches.length !== 1) return false
-  const handler = catches[0]!
-  const error = handler.variableDeclaration?.name
-  if (!error || !ts.isIdentifier(error)) return false
-  const unwrap = (node: ts.Expression): ts.Expression =>
-    ts.isParenthesizedExpression(node) ? unwrap(node.expression) : node
-  const property = (node: ts.Expression, owner: string) => {
-    const value = unwrap(node)
-    return (
-      ts.isPropertyAccessExpression(value) &&
-      ts.isIdentifier(value.expression) &&
-      value.expression.text === owner &&
-      value.name.text === 'value'
-    )
+vi.mock('@rct/mobile-core', async importOriginal => {
+  const actual = await importOriginal<typeof import('@rct/mobile-core')>()
+  const { h } = await import('vue')
+  return { ...actual, StudentFeatureOwner: {
+    props: ['scope', 'offline', 'readOnly', 'onRetryConnection', 'onLogout', 'onRecover'],
+    setup(props: any) { return () => h('section', [
+      h('output', { 'data-owner': true }, JSON.stringify({ userId: props.scope?.userId, sessionId: props.scope?.sessionId, offline: props.offline, readOnly: props.readOnly })),
+      h('button', { onClick: props.onRetryConnection }, 'Retry connection'),
+      h('button', { onClick: props.onLogout }, 'Logout'),
+      h('button', { onClick: props.onRecover }, 'Recover password'),
+    ]) },
+  } }
+})
+vi.mock('./PwaUpdateGate.vue', () => ({ default: { render: () => null } }))
+vi.mock('./features/password-recovery/PasswordRecoveryScreen.vue', () => ({ default: { render: () => h('section', { 'data-recovery': true }) } }))
+vi.mock('./features/install/InstallOffer.vue', () => ({ default: { render: () => null } }))
+class Node extends EventTarget {
+  children: Node[] = []
+  parent: Node | null = null
+  props: Record<string, unknown> = {}
+  text = ''
+  value = ''
+  selected = false
+  selectedIndex = -1
+  constructor(readonly tag: string) {
+    super()
+    markRaw(this)
   }
-  const guard = (node: ts.Expression): boolean => {
-    const operands: ts.Expression[] = []
-    const flatten = (expression: ts.Expression) => {
-      const value = unwrap(expression)
-      if (
-        ts.isBinaryExpression(value) &&
-        value.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
-      ) {
-        flatten(value.left)
-        flatten(value.right)
-      } else operands.push(value)
-    }
-    flatten(node)
-    if (operands.length !== 3) return false
-    const [visible, role, policy] = operands
-    return (
-      !!visible &&
-      ts.isPrefixUnaryExpression(visible) &&
-      visible.operator === ts.SyntaxKind.ExclamationToken &&
-      property(visible.operand, 'featureVisible') &&
-      !!role &&
-      ts.isBinaryExpression(role) &&
-      role.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken &&
-      property(role.left, 'authView') &&
-      ts.isStringLiteral(role.right) &&
-      role.right.text === 'headman' &&
-      !!policy &&
-      ts.isCallExpression(policy) &&
-      ts.isIdentifier(policy.expression) &&
-      policy.expression.text === 'isOfflineBootstrapRecoveryError' &&
-      policy.arguments.length === 1 &&
-      ts.isIdentifier(policy.arguments[0]!) &&
-      policy.arguments[0]!.text === error.text
-    )
+  style: Record<string, string> = {}
+  focus(): void {}
+  contains(node: unknown): boolean { return nodes(this).includes(node as Node) }
+  getAttribute(key: string): string | null { return this.props[key] === undefined ? null : String(this.props[key]) }
+  setAttribute(key: string, value: string) { this.props[key] = value }
+  removeAttribute(key: string) { delete this.props[key] }
+  get tagName(): string {
+    return this.tag.toUpperCase()
   }
-  const calls: ts.CallExpression[] = []
-  const guarded: ts.IfStatement[] = []
-  const visit = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === 'loadOfflineSnapshot'
-    )
-      calls.push(node)
-    ts.forEachChild(node, visit)
+  get options(): Node[] {
+    return this.children.filter((node) => node.tag === 'option')
   }
-  visit(body)
-  const visitCatch = (node: ts.Node) => {
-    if (ts.isIfStatement(node) && guard(node.expression)) guarded.push(node)
-    ts.forEachChild(node, visitCatch)
+  getRootNode(): { activeElement: null } {
+    return { activeElement: null }
   }
-  visitCatch(handler.block)
-  if (calls.length !== 1 || guarded.length !== 1) return false
-  const call = calls[0]!
-  const branch = guarded[0]!.thenStatement
-  if (!ts.isBlock(branch) || call.arguments.length !== 0) return false
-  return branch.statements.some(
-    (node) =>
-      ts.isVariableStatement(node) &&
-      node.declarationList.declarations.some(
-        (declaration) =>
-          declaration.initializer &&
-          ts.isAwaitExpression(declaration.initializer) &&
-          declaration.initializer.expression === call,
-      ),
-  )
+}
+const renderer = createRenderer<Node, Node>({
+  createElement: (tag) => new Node(tag),
+  createText: (text) => Object.assign(new Node('#text'), { text }),
+  createComment: () => new Node('#comment'),
+  setText: (node, text) => {
+    node.text = text
+  },
+  setElementText: (node, text) => {
+    node.text = text
+    node.children = []
+  },
+  parentNode: (node) => node.parent,
+  nextSibling: (node) => node.parent?.children[node.parent.children.indexOf(node) + 1] ?? null,
+  patchProp: (node, key, _old, value) => {
+    node.props[key] = value
+    if (key === 'value') node.value = String(value ?? '')
+  },
+  insert: (node, parent, anchor = null) => {
+    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
+    const index = anchor ? parent.children.indexOf(anchor) : -1
+    parent.children.splice(index < 0 ? parent.children.length : index, 0, node)
+    node.parent = parent
+  },
+  querySelector: selector => selector === 'body' ? (document as unknown as { body: Node }).body : null,
+  insertStaticContent: (content, parent, anchor) => {
+    const node = Object.assign(new Node('#text'), { text: content }); node.parent = parent; parent.children.push(node); return [node, node]
+  },
+  remove: (node) => {
+    node.parent?.children.splice(node.parent.children.indexOf(node), 1)
+    node.parent = null
+  },
+})
+const apps: App[] = []
+afterEach(() => {
+  apps.splice(0).forEach((app) => app.unmount())
+  vi.unstubAllGlobals()
+})
+function nodes(root: Node): Node[] {
+  return [root, ...root.children.flatMap(nodes)]
+}
+function text(root: Node): string {
+  return root.text + root.children.map(text).join(' ')
+}
+async function settle(): Promise<void> {
+  for (let i = 0; i < 12; i++) {
+    await Promise.resolve()
+    await nextTick()
+  }
+}
+async function click(root: Node, label: string): Promise<void> {
+  const button = nodes(root).find((node) => node.tag === 'button' && text(node).trim() === label)
+  expect(button).toBeDefined()
+  ;(button!.props.onClick as () => void)()
+  await settle()
 }
 
 describe('PWA cold bootstrap recovery policy', () => {
@@ -167,251 +166,195 @@ describe('PWA cold bootstrap recovery policy', () => {
     expect(isOfflineBootstrapRecoveryError(new Error('malformed bootstrap response'))).toBe(false)
   })
 
-  it('keeps the sole bootstrap snapshot recovery call behind the narrow guard', () => {
-    const source = readFileSync(new URL('./App.vue', import.meta.url), 'utf8')
-    expect(hasGuardedBootstrapRecovery(source)).toBe(true)
-  })
-
-  it('accepts wrapped syntax while rejecting recovery that escapes or weakens the guard', () => {
-    const guard = `!featureVisible.value &&
-      authView.value !== 'headman' && isOfflineBootstrapRecoveryError(error)`
-    const recovery = 'const recovered = await loadOfflineSnapshot();'
-    const source = (body: string) => `<script setup lang="ts">
-      async function bootstrap() { try {} catch (error) { ${body} } }
-    </script>`
-    expect(hasGuardedBootstrapRecovery(source(`if (${guard}) { ${recovery} }`))).toBe(true)
-    for (const body of [
-      recovery,
-      `if (${guard}) {} ${recovery}`,
-      `if (${guard}) {} else { ${recovery} }`,
-      `if (${guard}) { ${recovery} ${recovery} }`,
-      `if (${guard.replace('&&', '||')}) { ${recovery} }`,
-      `if (${guard.replace("!== 'headman'", "=== 'headman'")}) { ${recovery} }`,
-      `if (${guard.replace('RecoveryError(error)', 'RecoveryError(other)')}) { ${recovery} }`,
-      `/* ${guard} */ if (true) { ${recovery} }`,
-    ])
-      expect(hasGuardedBootstrapRecovery(source(body))).toBe(false)
-  })
 })
 
-function deferredBootstrap() {
-  let resolve!: () => void
-  let reject!: (error: Error) => void
-  const promise = new Promise<void>((done, failed) => {
-    resolve = done
-    reject = failed
-  })
+const queryClients: QueryClient[] = []
+afterEach(() => { queryClients.splice(0).forEach(client => client.clear()); vi.restoreAllMocks() })
+function storage() {
+  const values = new Map<string, string>()
+  return { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key), clear: () => values.clear() }
+}
+const bff = JSON.parse(readFileSync(new URL('../../mobile-core/fixtures/session.json', import.meta.url), 'utf8'))
+const schedule = JSON.parse(readFileSync(new URL('../../mobile-core/fixtures/semester-schedule.json', import.meta.url), 'utf8'))
+const profile = () => ({ sessionId: bff.sessionId, userId: bff.user.id, displayName: bff.user.displayName,
+  groupLabel: bff.group.name, sessionVersion: bff.sessionVersion, rolesVersion: bff.rolesVersion,
+  activeRole: 'STUDENT', roles: [{ grantId: '17', role: 'STUDENT', status: 'ACTIVE', groupId: '17', contextLabel: 'Group', selectable: true, readOnly: false }],
+  readOnly: false, passwordPolicy: { minCodePoints: 12, maxUtf8Bytes: 72, requiresDecimalDigit: true, specialCategories: ['P', 'S'], normalization: 'NONE' } })
+function deferred() {
+  let resolve!: (response: Response) => void, reject!: (reason: unknown) => void
+  const promise = new Promise<Response>((done, fail) => { resolve = done; reject = fail })
   return { promise, resolve, reject }
 }
-
-function reconnectControl(
-  attempts: ReturnType<typeof deferredBootstrap>[],
-  retainOnlineDemand = true,
-) {
-  const source = readFileSync(new URL('./App.vue', import.meta.url), 'utf8')
-  const sfc = parse(source)
-  expect(sfc.errors).toEqual([])
-  const script = ts.createSourceFile(
-    'App.ts',
-    sfc.descriptor.scriptSetup!.content,
-    ts.ScriptTarget.Latest,
-    true,
-  )
-  const declaration = (name: string) => {
-    const matches = script.statements.filter(
-      (node): node is ts.FunctionDeclaration =>
-        ts.isFunctionDeclaration(node) && node.name?.text === name,
-    )
-    expect(matches).toHaveLength(1)
-    return matches[0]!
-  }
-  const bootstrap = declaration('bootstrap')
-  const statements = bootstrap.body!.statements
-  const guardedWork = statements.filter(ts.isTryStatement)
-  expect(guardedWork).toHaveLength(1)
-  expect(guardedWork[0]!.finallyBlock).toBeDefined()
-  const prelude = statements
-    .slice(0, statements.indexOf(guardedWork[0]!))
-    .map((node) => node.getText(script))
-    .join('\n')
-  const queueDeclarations = ['queuedBootstrapAfterInvalidation', 'pendingOnlineGeneration'].map(
-    (name) => {
-      const matches = script.statements.filter(
-        (node): node is ts.VariableStatement =>
-          ts.isVariableStatement(node) &&
-          node.declarationList.declarations.some(
-            (item) => ts.isIdentifier(item.name) && item.name.text === name,
-          ),
-      )
-      expect(matches).toHaveLength(1)
-      return matches[0]!.getText(script)
-    },
-  )
-  let online = declaration('goOnline').getText(script)
-  if (!retainOnlineDemand) {
-    // Red control: restore the old busy-bootstrap behavior without retaining its online demand.
-    online = online.replace(
-      /if \(bootstrapping\.value\) \{\s*pendingOnlineGeneration = auth\.currentGeneration\(\);\s*return;\s*\}/,
-      '',
-    )
-    expect(online).not.toContain('pendingOnlineGeneration = auth.currentGeneration()')
-  }
-  const state = {
-    generation: 1,
-    automatic: true,
-    authView: { value: 'student' },
-    bootstrapping: { value: false },
-    offline: { value: false },
-    readOnly: { value: false },
-    sessionReady: { value: true },
-    navigator: { onLine: true },
-    calls: [] as { refresh?: boolean }[],
-    attempts: [...attempts],
-  }
-  // Execute the actual App admission guards, handlers and entire finally block.
-  // Deferred work substitutes only the awaited HTTP/owner-building body, never queue logic.
-  const code = ts.transpileModule(
-    `const { authView, bootstrapping, offline, readOnly, sessionReady, navigator } = state;
-    const auth = { currentGeneration: () => state.generation,
-      canAutoBootstrap: () => state.automatic };
-    const push = { invalidate: () => Promise.resolve() };
-    let currentOnlyGeneration = null;
-    ${queueDeclarations.join('\n')}
-    ${declaration('isPasswordRecoveryView').getText(script)}
-    async function bootstrap(options = {}) {
-      ${prelude}
-      state.calls.push(options);
-      const attempt = state.attempts.shift();
-      if (!attempt) throw new Error('Unexpected extra bootstrap');
-      try {
-        await attempt.promise;
-        offline.value = false;
-        readOnly.value = false;
-      } catch {
-        offline.value = true;
-        readOnly.value = true;
-      } finally ${guardedWork[0]!.finallyBlock!.getText(script)}
+function mountApp(options: { initialRefresh?: ReturnType<typeof deferred>; initialProfile?: unknown } = {}) {
+  const channels: EventTarget[] = []
+  const browser = Object.assign(new EventTarget(), { location: { origin: 'https://synthetic.invalid', pathname: '/', search: '', hash: '', href: 'https://synthetic.invalid/' },
+    localStorage: storage(), sessionStorage: storage(), BroadcastChannel: class extends EventTarget { constructor() { super(); channels.push(this) }; postMessage() {}; close() {} }, innerHeight: 900, setInterval: globalThis.setInterval, clearInterval: globalThis.clearInterval, history: { replaceState() {} } })
+  const documentTarget = Object.assign(new EventTarget(), { documentElement: new Node('html'), body: new Node('body'), defaultView: null, visibilityState: 'visible', getElementById: () => null, querySelector: () => null })
+  vi.stubGlobal('window', browser)
+  vi.stubGlobal('document', documentTarget)
+  vi.stubGlobal('navigator', { onLine: true })
+  const requestLog: { url: string; method: string; authorization: string | null }[] = []
+  let refresh = options.initialRefresh
+  let nextCurrent: ReturnType<typeof deferred> | undefined
+  let currentProfile = options.initialProfile ?? profile()
+  let currentSession = bff
+  let onInvalidate: (() => void) | undefined
+  vi.spyOn(SemesterSnapshotStore.prototype, 'invalidatePendingWrites').mockImplementation(() => { const callback = onInvalidate; onInvalidate = undefined; callback?.() })
+  const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+    const url = new URL(String(input), browser.location.origin)
+    const method = init?.method ?? 'GET'
+    requestLog.push({ url: url.pathname, method, authorization: new Headers(init?.headers).get('Authorization') })
+    if (url.pathname === '/api/auth/refresh') {
+      if (refresh) { const pending = refresh; refresh = undefined; return pending.promise }
+      return Response.json({ accessToken: 'synthetic-access', expiresIn: 3600 })
     }
-    ${online}
-    ${declaration('goOffline').getText(script)}
-    return { bootstrap, goOnline, goOffline,
-      invalidate: () => { queuedBootstrapAfterInvalidation = true; } };`,
-    { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } },
-  ).outputText
-  const control = new Function('state', code)(state) as {
-    bootstrap: (options?: { refresh?: boolean }) => Promise<void>
-    goOnline: () => void
-    goOffline: () => void
-    invalidate: () => void
-  }
-  return { ...control, state }
+    if (url.pathname === '/api/auth/session') {
+      if (nextCurrent) { const pending = nextCurrent; nextCurrent = undefined; return pending.promise }
+      return Response.json(currentProfile)
+    }
+    if (url.pathname === '/api/auth/logout') return new Response(null, { status: 204 })
+    if (url.pathname === '/api/v1/student/session') return Response.json(currentSession)
+    if (url.pathname.includes('/schedule')) return Response.json(schedule)
+    if (url.pathname.includes('/permissions')) return Response.json([])
+    if (url.pathname.includes('unread')) return Response.json({ unreadCount: 0 })
+    return new Response(null, { status: 403 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  const snapshot = { ownerId: bff.user.id, scopeKey: JSON.stringify(['student-read-model-v1', bff.user.id, 'STUDENT', bff.group.id, bff.semester.id]),
+    scope: { userId: bff.user.id, activeRole: 'STUDENT', groupId: bff.group.id, semesterId: bff.semester.id }, schedule, etag: null, homework: null }
+  vi.spyOn(SemesterSnapshotStore.prototype, 'hasUnresolvedCleanup').mockReturnValue(false)
+  const readCurrent = vi.spyOn(SemesterSnapshotStore.prototype, 'readCurrent').mockResolvedValue(snapshot as any)
+  vi.spyOn(SemesterSnapshotStore.prototype, 'read').mockResolvedValue(null)
+  vi.spyOn(SemesterSnapshotStore.prototype, 'clearMismatchedCurrent').mockResolvedValue(null)
+  const cleanup = { previousOwnerId: null, ownerId: bff.user.id, retryRequired: false, failures: [] }
+  vi.spyOn(SemesterSnapshotStore.prototype, 'switchToDetailed').mockResolvedValue(cleanup as any)
+  vi.spyOn(SemesterSnapshotStore.prototype, 'clearDetailed').mockResolvedValue(cleanup as any)
+  vi.spyOn(SemesterSnapshotStore.prototype, 'write').mockResolvedValue(undefined)
+  const root = new Node('root')
+  const app = renderer.createApp(AppComponent, { installPrompt: { subscribe: () => () => {}, snapshot: () => ({ status: 'unavailable' }) } })
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  queryClients.push(client); app.use(VueQueryPlugin, { queryClient: client }); apps.push(app); app.mount(root)
+  return { root, app, browser, requestLog, readCurrent, invalidate: () => channels.forEach(channel => channel.dispatchEvent(new MessageEvent('message', { data: { type: 'rct-auth-invalidate-v1' } }))), deferCurrent: () => (nextCurrent = deferred()), setAuthority: (value: any) => { currentProfile = value; currentSession = { ...bff, sessionVersion: value.sessionVersion, rolesVersion: value.rolesVersion } }, onInvalidate: (callback: () => void) => { onInvalidate = callback } }
 }
-
-describe('PWA online demand during an older bootstrap', () => {
-  it('reproduces the lost-demand counterexample with the old busy guard', async () => {
-    const first = deferredBootstrap()
-    const control = reconnectControl([first], false)
-    const running = control.bootstrap()
-    control.goOffline()
-    control.goOnline()
-    first.reject(new Error('Earlier bootstrap failed'))
-    await running
-    expect(control.state.calls).toEqual([{}])
-    expect(control.state.readOnly.value).toBe(true)
+function owner(root: Node) {
+  const output = nodes(root).find(node => node.props['data-owner'])
+  return output ? JSON.parse(output.text) : null
+}
+async function admitted(view: ReturnType<typeof mountApp>) {
+  await vi.waitFor(() => expect(owner(view.root)).toMatchObject({ userId: bff.user.id, offline: false, readOnly: false }))
+}
+describe('actual PWA bootstrap and reconnect boundaries', () => {
+  it('admits a matching real Auth/BFF owner and keeps failed narrow recovery typed', async () => {
+    const view = mountApp()
+    await admitted(view)
+    expect(view.readCurrent).not.toHaveBeenCalled()
+    expect(view.requestLog).toEqual(expect.arrayContaining([
+      expect.objectContaining({ url: '/api/auth/refresh', method: 'POST' }),
+      expect.objectContaining({ url: '/api/auth/session', method: 'GET', authorization: 'Bearer synthetic-access' }),
+      expect.objectContaining({ url: '/api/v1/student/session', method: 'GET', authorization: 'Bearer synthetic-access' }),
+    ]))
   })
-
-  it.each(['resolve', 'reject'] as const)(
-    'rechecks once after the older bootstrap %s, retaining read-only authority until recheck',
-    async (settle) => {
-      const first = deferredBootstrap()
-      const replay = deferredBootstrap()
-      const control = reconnectControl([first, replay])
-      const running = control.bootstrap()
-      control.goOffline()
-      control.goOnline()
-      expect(control.state.calls).toEqual([{}])
-      if (settle === 'resolve') first.resolve()
-      else first.reject(new Error('Earlier bootstrap failed'))
-      await running
-      expect(control.state.calls).toEqual([{}, {}])
-      expect(control.state.offline.value).toBe(true)
-      expect(control.state.readOnly.value).toBe(true)
-      replay.resolve()
-      await Promise.resolve()
-      expect(control.state.calls).toHaveLength(2)
-      expect(control.state.bootstrapping.value).toBe(false)
+  it('recovers a cold network failure from the committed read-only snapshot', async () => {
+    const first = deferred(); const view = mountApp({ initialRefresh: first })
+    first.reject(new TypeError('synthetic connection lost'))
+    await vi.waitFor(() => expect(owner(view.root)).toMatchObject({ userId: bff.user.id, offline: true, readOnly: true }))
+    expect(view.readCurrent).toHaveBeenCalledTimes(1)
+  })
+  it.each([401, 403, 500])('refuses snapshot hydration on confirmed/protocol HTTP %i', async status => {
+    const first = deferred(); const view = mountApp({ initialRefresh: first })
+    first.resolve(Response.json({ status, title: 'synthetic failure' }, { status }))
+    await settle()
+    expect(view.readCurrent).not.toHaveBeenCalled()
+    expect(owner(view.root)).toBeNull()
+  })
+  it('keeps the admitted owner read-only until explicit current-only retry completes', async () => {
+    const view = mountApp(); await admitted(view)
+    view.browser.dispatchEvent(new Event('offline')); await settle()
+    const current = view.deferCurrent()
+    const refreshBefore = view.requestLog.filter(row => row.url === '/api/auth/refresh').length
+    await click(view.root, 'Retry connection')
+    expect(owner(view.root)).toMatchObject({ offline: true, readOnly: true })
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(refreshBefore)
+    current.resolve(Response.json(profile()))
+    await admitted(view)
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(refreshBefore)
+  })
+  it('coalesces overlapping online events while an earlier admission is pending', async () => {
+    const first = deferred(); const view = mountApp({ initialRefresh: first })
+    view.browser.dispatchEvent(new Event('offline'))
+    for (let count = 0; count < 3; count++) view.browser.dispatchEvent(new Event('online'))
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(1)
+    first.resolve(Response.json({ accessToken: 'synthetic-access', expiresIn: 3600 }))
+    await admitted(view)
+    await settle()
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(2)
+  })
+  it.each(['offline', 'unmount', 'browser-offline'] as const)('cancels queued demand after %s', async reason => {
+    const first = deferred(); const view = mountApp({ initialRefresh: first })
+    view.browser.dispatchEvent(new Event('online'))
+    if (reason === 'offline') view.browser.dispatchEvent(new Event('offline'))
+    else if (reason === 'unmount') view.app.unmount()
+    else Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+    first.resolve(Response.json({ accessToken: 'synthetic-access', expiresIn: 3600 }))
+    await settle()
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(1)
+    if (reason === 'unmount') expect(owner(view.root)).toBeNull()
+  })
+  it('does not reconnect automatically after an uncertain failed refresh', async () => {
+    const first = deferred(); const view = mountApp({ initialRefresh: first })
+    view.browser.dispatchEvent(new Event('online'))
+    first.reject(new TypeError('lost refresh response'))
+    await settle()
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(1)
+    expect(owner(view.root)).toMatchObject({ offline: true, readOnly: true })
+  })
+  it.each(['logout', 'new-generation', 'auto-bootstrap-disabled', 'password-recovery'] as const)(
+    'cancels queued demand and rejects late current data after %s', async reason => {
+      const view = mountApp(); await admitted(view)
+      const pending = view.deferCurrent()
+      view.browser.dispatchEvent(new Event('online'))
+      await settle()
+      const sentBefore = view.requestLog.filter(row => row.url === '/api/auth/refresh').length
+      view.browser.dispatchEvent(new Event('online'))
+      if (reason === 'new-generation') view.invalidate()
+      else if (reason === 'logout') {
+        await click(view.root, 'Logout')
+      } else if (reason === 'auto-bootstrap-disabled') {
+        view.browser.localStorage.setItem('rct-pwa-explicit-logout-v1', 'confirmed')
+      } else await click(view.root, 'Recover password')
+      pending.resolve(Response.json(profile()))
+      await settle()
+      expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(sentBefore)
+      if (reason !== 'auto-bootstrap-disabled') expect(owner(view.root)).toBeNull()
     },
   )
-
-  it('coalesces overlapping online events and never retries a failed replay by itself', async () => {
-    const first = deferredBootstrap()
-    const replay = deferredBootstrap()
-    const control = reconnectControl([first, replay])
-    const running = control.bootstrap()
-    control.goOnline()
-    control.goOnline()
-    control.goOnline()
-    first.resolve()
-    await running
-    expect(control.state.calls).toEqual([{}, {}])
-    replay.reject(new Error('Replay failed'))
-    await Promise.resolve()
-    expect(control.state.calls).toHaveLength(2)
-    expect(control.state.bootstrapping.value).toBe(false)
-    expect(control.state.readOnly.value).toBe(true)
-  })
-
-  it.each([
-    'offline',
-    'logout',
-    'new-generation',
-    'unmount',
-    'auto-bootstrap-disabled',
-    'password-recovery',
-    'browser-offline',
-  ] as const)('cancels pending online demand after %s', async (reason) => {
-    const first = deferredBootstrap()
-    const control = reconnectControl([first])
-    const running = control.bootstrap()
-    control.goOnline()
-    if (reason === 'offline') control.goOffline()
-    else if (reason === 'logout') {
-      control.state.automatic = false
-      control.state.generation += 1
-    } else if (reason === 'new-generation' || reason === 'unmount') control.state.generation += 1
-    else if (reason === 'auto-bootstrap-disabled') control.state.automatic = false
-    else if (reason === 'password-recovery') control.state.authView.value = 'password-recovery'
-    else control.state.navigator.onLine = false
-    first.reject(new Error('Earlier bootstrap failed'))
-    await running
-    expect(control.state.calls).toEqual([{}])
-  })
-
   it.each(['absent', 'stale', 'valid'] as const)(
-    'preserves authority reconciliation with %s online demand',
-    async (demand) => {
-      const first = deferredBootstrap()
-      const replay = deferredBootstrap()
-      const control = reconnectControl([first, replay])
-      const running = control.bootstrap()
-      if (demand !== 'absent') control.goOnline()
-      if (demand === 'stale') control.state.generation += 1
-      control.invalidate()
-      first.reject(new Error('Earlier authority operation settled'))
-      await running
-      expect(control.state.calls).toEqual([{}, demand === 'valid' ? {} : { refresh: false }])
-      replay.resolve()
-      await Promise.resolve()
-      expect(control.state.calls).toHaveLength(2)
+    'reconciles changed authority with %s online demand using real auth generation', async demand => {
+      const view = mountApp(); await admitted(view)
+      const pending = view.deferCurrent()
+      view.browser.dispatchEvent(new Event('online'))
+      await settle()
+      const refreshBefore = view.requestLog.filter(row => row.url === '/api/auth/refresh').length
+      const changed = { ...profile(), rolesVersion: '8' }
+      view.setAuthority(changed)
+      if (demand === 'stale') view.browser.dispatchEvent(new Event('online'))
+      if (demand === 'valid') view.onInvalidate(() => view.browser.dispatchEvent(new Event('online')))
+      pending.resolve(Response.json(changed))
+      await admitted(view)
+      await settle()
+      expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(refreshBefore + (demand === 'valid' ? 1 : 0))
+      expect(owner(view.root)).toMatchObject({ userId: bff.user.id, offline: false, readOnly: false })
     },
   )
-
-  it('does not create a reconnect request just because an ordinary bootstrap failed', async () => {
-    const first = deferredBootstrap()
-    const control = reconnectControl([first])
-    const running = control.bootstrap()
-    first.reject(new Error('Earlier bootstrap failed'))
-    await running
-    expect(control.state.calls).toEqual([{}])
+  it('makes lost online demand observable as a single admission without a queued event', async () => {
+    const first = deferred(); const view = mountApp({ initialRefresh: first })
+    view.browser.dispatchEvent(new Event('offline'))
+    // Negative control: withhold the online event from the public browser boundary.
+    // The ordinary successful bootstrap alone must not manufacture a queued recheck.
+    first.resolve(Response.json({ accessToken: 'synthetic-access', expiresIn: 3600 }))
+    await admitted(view)
+    await settle()
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(1)
   })
+
 })

@@ -22,9 +22,8 @@ const makeJwt = (payload: object): string => {
 };
 
 const ACCESS_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', exp: 9999999999 });
-const NEW_ACCESS_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', exp: 9999999999 });
+const NEW_ACCESS_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', exp: 9999999999, jti: 'renewed' });
 const REFRESH_TOKEN = 'refresh-token-abc';
-const NEW_REFRESH_TOKEN = 'new-refresh-token-xyz';
 
 describe('authInterceptor', () => {
   let httpClient: HttpClient;
@@ -136,14 +135,20 @@ describe('authInterceptor', () => {
 
     // Only one refresh call
     const refreshReq = httpMock.expectOne('/api/auth/refresh');
-    refreshReq.flush({ accessToken: NEW_ACCESS_TOKEN, refreshToken: NEW_REFRESH_TOKEN, expiresIn: 3600 });
+    expect(refreshReq.request.body).toBeNull();
+    expect(refreshReq.request.withCredentials).toBe(true);
+    refreshReq.flush({ accessToken: NEW_ACCESS_TOKEN, expiresIn: 3600 });
 
     // Both retried
     const retry1 = httpMock.expectOne('/api/users');
-    retry1.flush({ users: [] });
+    expect(retry1.request.headers.get('Authorization')).toBe(`Bearer ${NEW_ACCESS_TOKEN}`);
+    retry1.flush({ users: ['user-result'] });
     const retry2 = httpMock.expectOne('/api/groups');
-    retry2.flush({ groups: [] });
+    expect(retry2.request.headers.get('Authorization')).toBe(`Bearer ${NEW_ACCESS_TOKEN}`);
+    retry2.flush({ groups: ['group-result'] });
 
+    expect(authService.accessToken()).toBe(NEW_ACCESS_TOKEN);
+    expect(results).toEqual(expect.arrayContaining([{ users: ['user-result'] }, { groups: ['group-result'] }]));
     expect(results).toHaveLength(2);
   });
 

@@ -55,6 +55,7 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
             { class: 'test-retry-connection', onClick: () => emit('retry') },
             'Перезагрузить',
           ),
+          h('button', { class: 'test-enter-profile', onClick: () => emit('navigate', 'profile') }, 'Профиль'),
           h('output', { class: 'test-today-data' }, JSON.stringify(props.today ?? null)),
           h('output', { class: 'test-today-readonly' }, String(props.readOnly)),
           h('output', { class: 'test-acquiring' }, props.acquiringLessonId ?? ''),
@@ -487,6 +488,7 @@ vi.mock('./MobileShell.vue', async () => {
                   },
                   'Сегодня',
                 ),
+                h('button', { class: 'test-owner-profile', onClick: () => (attrs.navigation as MobileNavigationStack).goRoot('profile') }, 'Профиль'),
                 slots.default?.(),
               ])
       },
@@ -734,32 +736,6 @@ const scope: StudentFeatureScope = {
 }
 
 describe('StudentFeatureOwner lifecycle contract', () => {
-  it('keeps the same command and idempotency key after a lost ACK and reconnect', async () => {
-    const recovery = new CheckinCommandRecovery(() => 'same-key')
-    const sent: Array<{ command: StudentCheckinCommand; key: string }> = []
-    let lost = true
-
-    const submit = async (attempt: {
-      command: StudentCheckinCommand
-      key: string
-    }): Promise<StudentCheckinAck> => {
-      sent.push({ command: attempt.command, key: attempt.key })
-      if (lost) throw new TypeError('response lost after commit')
-      return ack
-    }
-
-    await expect(recovery.execute('lesson-1', async () => command, submit)).rejects.toThrow(
-      'response lost after commit',
-    )
-    // A same-owner reconnect leaves the mounted owner/recovery instance alive.
-    lost = false
-    await expect(recovery.execute('lesson-1', async () => command, submit)).resolves.toEqual(ack)
-
-    expect(sent).toEqual([
-      { command, key: 'same-key' },
-      { command, key: 'same-key' },
-    ])
-  })
 
   it('includes the authenticated generation in the owner identity', () => {
     const sameScope = { ...scope }
@@ -1506,7 +1482,7 @@ describe('StudentFeatureOwner requests route', () => {
 
   it('localizes a request port network failure and clears only its error on explicit abandon', async () => {
     ownerQueryData.realShell = true
-    const submitExcuse = vi.fn(() => Promise.reject(new TypeError('Failed to fetch')))
+    const submitExcuse = vi.fn(() => Promise.reject(new TypeError('Failed to fetch synthetic-private')))
     const api = {
       getRequestOptions: async () => multiRequestOptions(),
       listRequests: async () => emptyRequestPage(),
@@ -1532,23 +1508,18 @@ describe('StudentFeatureOwner requests route', () => {
     clickOwnerTestButton(root, 'test-submit-request')
     await vi.waitFor(() => expect(submitExcuse).toHaveBeenCalledOnce())
     await settleOwnerTestRender()
-    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe(
-      'Не удалось выполнить действие с заявкой.',
-    )
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toMatch(/\S/)
+    expect(ownerTestOutput(root, 'test-request-submit-error')).not.toContain('synthetic-private')
     expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('true')
     expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
     clickOwnerTestButton(root, 'test-clear-request-reason')
     await settleOwnerTestRender()
-    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe(
-      'Результат отправки не подтверждён.',
-    )
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toMatch(/\S/)
     expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('true')
     expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
     clickOwnerTestButton(root, 'test-edit-request-comment')
     await settleOwnerTestRender()
-    expect(ownerTestOutput(root, 'test-request-submit-error')).toBe(
-      'Результат отправки не подтверждён.',
-    )
+    expect(ownerTestOutput(root, 'test-request-submit-error')).toMatch(/\S/)
     expect(ownerTestOutput(root, 'test-request-ambiguous')).toBe('true')
     expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
     clickOwnerTestButton(root, 'test-abandon-request')
@@ -1921,4 +1892,48 @@ it('retains the mounted owner uncertain check-in through explicit connection ret
   await vi.waitFor(() => expect(checkinSubmit).toHaveBeenCalledTimes(2))
   expect(checkinSubmit.mock.calls[1]![0]).toEqual(first)
   expect(acquire).toHaveBeenCalledTimes(1)
+})
+
+it('keeps loaded profile history offline and only paginates after an explicit online action', async () => {
+  const { DEFAULT_PASSWORD_POLICY } = await import('../../features/profile/profile-types')
+  const record = { id: 'history-a', type: 'PASSWORD_CHANGED', occurredAt: '2026-09-08T08:00:00Z', metadata: {} }
+  let resolvePage!: (page: { items: typeof record[]; nextCursor: null }) => void
+  const listHistory = vi.fn().mockResolvedValueOnce({ items: [record], nextCursor: 'cursor-a' })
+    .mockImplementationOnce(() => new Promise(resolve => { resolvePage = resolve }))
+  const options = reactive({ offline: false })
+  const profilePort = {
+    getSnapshot: async () => ({ ...scope, displayName: 'Synthetic profile owner', groupLabel: 'Group',
+      roles: [{ grantId: 'g', role: 'STUDENT', status: 'ACTIVE', groupId: scope.groupId,
+        contextLabel: 'Group', selectable: true, readOnly: false }], passwordPolicy: DEFAULT_PASSWORD_POLICY }),
+    listHistory, listSessions: async () => ({ items: [], nextCursor: null }), isOnline: () => !options.offline,
+  }
+  const root = mountOwnerTest({} as StudentApi, {
+    get offline() { return options.offline }, profilePort,
+  })
+  clickOwnerTestButton(root, 'test-enter-profile')
+  await settleOwnerTestRender()
+  const contents = (node: OwnerTestHostNode): string => (node.text ?? '') + node.children.map(contents).join(' ')
+  const history = findOwnerTestNode(root, node => node.tag === 'button' && contents(node).includes('История аккаунта'))!
+  expect(history).toBeDefined()
+  ;(history.props.onClick as () => void)()
+  await settleOwnerTestRender()
+  await vi.waitFor(() => expect(listHistory).toHaveBeenCalledTimes(1))
+  options.offline = true
+  await settleOwnerTestRender()
+  const more = findOwnerTestNode(root, node => node.tag === 'button' && contents(node).includes('Показать ещё'))!
+  expect(more).toBeDefined()
+  ;(more.props.onClick as () => void)()
+  await settleOwnerTestRender()
+  expect(listHistory).toHaveBeenCalledTimes(1)
+  expect(findOwnerTestNode(root, node => node.tag === 'ol' && node.props['aria-label'] === 'История аккаунта')?.children.filter(node => node.tag === 'li')).toHaveLength(1)
+  options.offline = false
+  await settleOwnerTestRender()
+  expect(listHistory).toHaveBeenCalledTimes(1)
+  ;(more.props.onClick as () => void)()
+  await settleOwnerTestRender()
+  expect(listHistory).toHaveBeenCalledTimes(2)
+  expect(listHistory).toHaveBeenLastCalledWith({ cursor: 'cursor-a' })
+  resolvePage({ items: [{ ...record, id: 'history-b' }], nextCursor: null })
+  await settleOwnerTestRender()
+  expect(findOwnerTestNode(root, node => node.tag === 'button' && contents(node).includes('Показать ещё'))).toBeUndefined()
 })

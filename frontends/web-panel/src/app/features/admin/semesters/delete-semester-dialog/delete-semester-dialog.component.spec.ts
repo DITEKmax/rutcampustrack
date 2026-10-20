@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -18,6 +18,7 @@ const MOCK_SEMESTER: SemesterResponse = {
 };
 
 describe('DeleteSemesterDialogComponent', () => {
+  let fixture: ComponentFixture<DeleteSemesterDialogComponent>;
   let component: DeleteSemesterDialogComponent;
   let dialogRefSpy: { close: ReturnType<typeof vi.fn> };
 
@@ -33,29 +34,60 @@ describe('DeleteSemesterDialogComponent', () => {
         { provide: MatDialogRef, useValue: dialogRefSpy },
       ],
     });
-    const fixture = TestBed.createComponent(DeleteSemesterDialogComponent);
+    fixture = TestBed.createComponent(DeleteSemesterDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('confirm button disabled when input is empty', () => {
-    component.confirmInput = '';
-    expect(component.confirmInput.trim() !== MOCK_SEMESTER.name).toBe(true);
+  it('confirm button disabled when input is empty', async () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+    input.value = "";
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const button = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find(button => button.textContent?.includes('Удалить навсегда'))!;
+    expect(button.disabled).toBe(true);
+    button.click();
+    expect(dialogRefSpy.close).not.toHaveBeenCalled();
   });
 
-  it('confirm button disabled when input does not match semester name', () => {
-    component.confirmInput = 'Wrong Name';
-    expect(component.confirmInput.trim() !== MOCK_SEMESTER.name).toBe(true);
+  it('confirm button disabled when input does not match semester name', async () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+    input.value = "Wrong Name";
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const button = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find(button => button.textContent?.includes('Удалить навсегда'))!;
+    expect(button.disabled).toBe(true);
+    button.click();
+    expect(dialogRefSpy.close).not.toHaveBeenCalled();
   });
 
-  it('confirm button enabled when input exactly matches semester name', () => {
-    component.confirmInput = 'Весна 2026';
-    expect(component.confirmInput.trim() !== MOCK_SEMESTER.name).toBe(false);
+  it('confirm button enabled when input exactly matches semester name', async () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+    input.value = "Весна 2026";
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const button = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find(button => button.textContent?.includes('Удалить навсегда'))!;
+    expect(button.disabled).toBe(false);
+    button.click();
+    expect(dialogRefSpy.close).toHaveBeenCalledWith('Весна 2026');
   });
 
-  it('confirm() closes dialog with the confirmation string', () => {
-    component.confirmInput = '  Весна 2026  ';
-    component.confirm();
+  it('confirm() closes dialog with the confirmation string', async () => {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+    input.value = "  Весна 2026  ";
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const button = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find(button => button.textContent?.includes('Удалить навсегда'))!;
+    expect(button.disabled).toBe(false);
+    button.click();
     expect(dialogRefSpy.close).toHaveBeenCalledWith('Весна 2026');
   });
 });

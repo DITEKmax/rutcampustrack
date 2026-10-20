@@ -256,6 +256,66 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     ).toBeDisabled();
     await page.getByLabel('Комментарий', { exact: true }).fill(comment);
   };
+  const assertActualCommentLayout = async (comment: string) => {
+    const textarea = page.getByLabel('Комментарий', { exact: true });
+    const long = ('Синтетический восстановленный комментарий с переносом строк. '.repeat(12)).slice(0, 900);
+    const viewport = page.viewportSize();
+    const original = await page.evaluate(() => ({
+      fontSize: document.documentElement.style.fontSize,
+      fontFamily: document.documentElement.style.fontFamily,
+      overflowY: document.documentElement.style.overflowY,
+      bodyMinHeight: document.body.style.minHeight,
+    }));
+    const fits = async () => {
+      await expect.poll(() => textarea.evaluate((element) => {
+        if (!(element instanceof HTMLTextAreaElement)) return false;
+        const style = getComputedStyle(element);
+        const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+        return element.clientHeight > 0 && element.scrollHeight <= element.clientHeight + 1 &&
+          element.getBoundingClientRect().height + 1 >= element.scrollHeight + border;
+      }), { message: 'Actual request comment remains unclipped after layout settles' }).toBe(true);
+    };
+    try {
+      await textarea.fill(long);
+      await page.getByRole('button', { name: 'Изменить пары', exact: true }).click();
+      await page.getByRole('button', { name: 'Продолжить', exact: true }).click();
+      expect((await textarea.inputValue()) === long, 'Owned long draft survives form remount').toBe(true);
+      await fits();
+      const longHeight = await textarea.evaluate((element) => element.clientHeight);
+      if (viewport) await page.setViewportSize({ width: Math.max(280, viewport.width - 80), height: viewport.height });
+      await page.evaluate(async () => {
+        document.documentElement.style.overflowY = 'scroll';
+        document.body.style.minHeight = '150vh';
+        document.documentElement.style.fontSize = '125%';
+        document.documentElement.style.fontFamily = 'serif';
+        await document.fonts.ready;
+      });
+      await fits();
+      expect((await textarea.inputValue()) === long).toBe(true);
+      await textarea.focus();
+      await textarea.press('ControlOrMeta+End');
+      await textarea.press('End');
+      await textarea.press('Backspace');
+      expect((await textarea.inputValue()) === long.slice(0, -1), 'Keyboard editing retains restored ownership').toBe(true);
+      await textarea.press('ControlOrMeta+A');
+      await textarea.press('Backspace');
+      await textarea.pressSequentially('Коротко');
+      await fits();
+      expect((await textarea.inputValue()) === 'Коротко').toBe(true);
+      expect((await textarea.evaluate((element) => element.clientHeight)) < longHeight,
+        'Deleting long content allows the actual control to shrink').toBe(true);
+    } finally {
+      if (viewport) await page.setViewportSize(viewport);
+      await page.evaluate((original) => {
+        document.documentElement.style.fontSize = original.fontSize;
+        document.documentElement.style.fontFamily = original.fontFamily;
+        document.documentElement.style.overflowY = original.overflowY;
+        document.body.style.minHeight = original.bodyMinHeight;
+      }, original);
+      await textarea.fill(comment);
+    }
+    await expect(page.getByRole('button', { name: 'Отправить заявку', exact: true })).toBeEnabled();
+  };
   const submitOwnExcuse = async (comment: string): Promise<string> => {
     const [reply] = await Promise.all([
       page.waitForResponse(
@@ -290,6 +350,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
 
   const cancelledComment = 'Синтетическая причина для отменяемой заявки';
   await openExcuseForm(cancelledComment);
+  await assertActualCommentLayout(cancelledComment);
   await fileInput.setInputFiles({
     name: 'unsupported.txt',
     mimeType: 'text/plain',
@@ -362,29 +423,50 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     }
   }
   // End controlled transport failure; the original successful submission and its oracles follow.
-  const submitting = await excuseForm.evaluateHandle((form) => {
-    let seen = false;
-    const observer = new MutationObserver(() => {
-      if (
-        form.getAttribute('aria-busy') === 'true' &&
-        form.querySelector('button[type="submit"]')?.textContent?.trim() === 'Отправляем…'
-      )
-        seen = true;
-    });
-    observer.observe(form, { attributes: true, attributeFilter: ['aria-busy'] });
-    return { read: () => seen, stop: () => observer.disconnect() };
-  });
+  let releaseUpload!: () => void;
+  const deliveryGate = new Promise<void>((resolve) => { releaseUpload = resolve; });
+  let observedUpstream!: () => void;
+  const upstreamReady = new Promise<void>((resolve) => { observedUpstream = resolve; });
+  let uploadPosts = 0;
+  const holdOwnUpload = async (route: Route) => {
+    if (route.request().method() !== 'POST') return route.fallback();
+    uploadPosts++;
+    const response = await route.fetch(); // Genuine HTTP/DB upload, held only at the browser boundary.
+    try {
+      observedUpstream();
+      await deliveryGate;
+      await route.fulfill({ response });
+    } finally {
+      await response.dispose();
+    }
+  };
+  await page.route(uploadRoute, holdOwnUpload);
   let cancelledExcuseId: string;
+  let submission: Promise<string> | undefined;
   try {
-    cancelledExcuseId = await submitOwnExcuse(cancelledComment);
-    expect(await submitting.evaluate((value) => value.read())).toBe(true);
+    submission = submitOwnExcuse(cancelledComment);
+    // Attach a rejection observer immediately; the original submission failure stays primary.
+    void submission.catch(() => {});
+    await Promise.race([upstreamReady, submission]);
+    await expect(excuseForm).toHaveAttribute('aria-busy', 'true');
+    const pendingSubmit = excuseForm.locator('button[type="submit"]');
+    await expect(pendingSubmit).toBeDisabled();
+    await page.getByLabel('Комментарий', { exact: true }).press('Control+Enter');
+    await excuseForm.evaluate((form) => {
+      if (!(form instanceof HTMLFormElement)) throw new Error('Owned excuse form required');
+      form.requestSubmit();
+    });
+    await expect(excuseForm).toHaveAttribute('aria-busy', 'true');
+    expect(uploadPosts, 'Pending form cannot send a duplicate upload').toBe(1);
+    releaseUpload();
+    cancelledExcuseId = await submission;
+    expect(uploadPosts).toBe(1);
   } finally {
-    await submitting
-      .evaluate((value) => value.stop())
-      .catch(() => {
-        expect.soft(false, 'Request form submitting observer was not disconnected').toBe(true);
-      });
-    await submitting.dispose().catch(() => {});
+    releaseUpload();
+    if (submission) await submission.catch(() => {});
+    await page.unroute(uploadRoute, holdOwnUpload).catch(() => {
+      expect.soft(false, 'Owned pending upload route cleanup failed').toBe(true);
+    });
   }
   const cancelledCard = page
     .getByRole('article')

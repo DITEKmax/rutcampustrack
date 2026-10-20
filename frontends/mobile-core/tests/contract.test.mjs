@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
+import ts from 'typescript'
+import { fileURLToPath } from 'node:url'
 import {
   loadContract,
   validateAllFixtures,
@@ -48,42 +50,33 @@ test('geo discriminator rejects a payload from the other input shape', async () 
 
 test('homework timestamps stay required nullable in OpenAPI and generated TypeScript', async () => {
   const { root } = await loadContract()
-  const generated = await readFile(
-    new URL('../src/api/generated/mobile-bff.ts', import.meta.url),
-    'utf8',
-  )
-
+  const generatedPath = fileURLToPath(new URL('../src/api/generated/mobile-bff.ts', import.meta.url))
+  const program = ts.createProgram([generatedPath], { strictNullChecks: true, noEmit: true, skipLibCheck: true })
+  const checker = program.getTypeChecker()
+  const source = program.getSourceFile(generatedPath)
+  const declaration = source.statements.find(node => ts.isInterfaceDeclaration(node) && node.name.text === 'components')
+  const components = checker.getTypeAtLocation(declaration)
+  const schemasSymbol = components.getProperty('schemas')
+  const schemas = checker.getTypeOfSymbolAtLocation(schemasSymbol, declaration)
   for (const schemaName of ['StudentHomeworkItem', 'StudentHomeworkCompletion']) {
     const schema = root.components.schemas[schemaName]
-    assert.ok(schema, `Missing OpenAPI schema: ${schemaName}`)
-    assert.ok(schema.required.includes('completedAt'))
-    assert.deepEqual(schema.properties.completedAt, {
-      type: 'string',
-      format: 'date-time',
-      nullable: true,
-    })
-
-    const start = generated.indexOf(`${schemaName}: {`)
-    const end = generated.indexOf('\n        };', start)
-    assert.notEqual(start, -1, `Missing generated schema: ${schemaName}`)
-    assert.notEqual(end, -1, `Unterminated generated schema: ${schemaName}`)
-    assert.match(generated.slice(start, end), /completedAt: string \| null;/)
+    assert.ok(schema)
+    const fixture = schemaName === 'StudentHomeworkCompletion'
+      ? { id: '142', completed: true }
+      : JSON.parse(await readFile(new URL('../fixtures/homework-feed.json', import.meta.url), 'utf8')).items[0]
+    for (const completedAt of ['2026-09-07T09:30:00Z', null])
+      assert.equal(await validateFixture(schemaName, { ...fixture, completedAt }), null)
+    const missing = { ...fixture }
+    delete missing.completedAt
+    assert.match(await validateFixture(schemaName, missing), /completedAt: required/)
+    const symbol = schemas.getProperty(schemaName)
+    const model = checker.getTypeOfSymbolAtLocation(symbol, declaration)
+    const property = model.getProperty('completedAt')
+    assert.ok(property)
+    assert.equal(property.flags & ts.SymbolFlags.Optional, 0)
+    const type = checker.getTypeOfSymbolAtLocation(property, declaration)
+    assert.ok(type.isUnion())
+    assert.deepEqual(type.types.map(member => member.flags).sort((a, b) => a - b), [ts.TypeFlags.String, ts.TypeFlags.Null].sort((a, b) => a - b))
+    assert.equal(type.types.some(member => member.flags & ts.TypeFlags.Undefined), false)
   }
-
-  assert.equal(
-    await validateFixture('StudentHomeworkCompletion', {
-      id: '142',
-      completed: true,
-      completedAt: '2026-09-07T09:30:00Z',
-    }),
-    null,
-  )
-  assert.equal(
-    await validateFixture('StudentHomeworkCompletion', {
-      id: '848636',
-      completed: false,
-      completedAt: null,
-    }),
-    null,
-  )
 })

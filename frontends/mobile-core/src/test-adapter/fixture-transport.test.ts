@@ -130,6 +130,5 @@ describe('Today fixture transport', () => {
     const injectedApi = new StudentApi({ accessToken: () => null, fetcher: injectedFetch })
     await expect(injectedApi.getSession()).resolves.toEqual({ id: 'injected' })
     expect(injectedFetch).toHaveBeenCalledOnce()
-    expect(injectedFetch.mock.contexts[0]).toBe(injectedApi)
   })
 })

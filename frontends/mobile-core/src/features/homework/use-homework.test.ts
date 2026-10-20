@@ -336,11 +336,15 @@ describe('useHomework scope and completion boundaries', () => {
     })
     expect(state.retryCompletion('same-id')).toBeNull()
 
+    setCompletion.mockRejectedValueOnce(new Error('second command failed'))
+    await expect(state.submitCompletion('forgotten-id', false)).rejects.toThrow('second command failed')
     scope.value = scopeB
     await nextTick()
-
+    scope.value = scopeA
+    await nextTick()
+    expect(state.retryCompletion('forgotten-id')).toBeNull()
     expect(state.retryCompletion('same-id')).toBeNull()
-    expect(setCompletion).toHaveBeenCalledTimes(2)
+    expect(setCompletion).toHaveBeenCalledTimes(3)
   })
 
   it('rejects a same-tick retry after the saved command owner changes', async () => {

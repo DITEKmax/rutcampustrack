@@ -3,6 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { getByRole } from '@testing-library/dom';
+import userEvent from '@testing-library/user-event';
+import { SubjectChartComponent } from './subject-chart/subject-chart.component';
+import { OverallStatCardComponent } from './overall-stat-card/overall-stat-card.component';
 
 import { StatsPageComponent } from './stats-page.component';
 import { JournalApiService } from '../journal/journal-api.service';
@@ -26,6 +32,7 @@ describe('StatsPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [StatsPageComponent],
       providers: [
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: JournalApiService, useValue: mockApiService },
@@ -33,19 +40,7 @@ describe('StatsPageComponent', () => {
     }).compileComponents();
   });
 
-  it('creates the component', () => {
-    const fixture = TestBed.createComponent(StatsPageComponent);
-    const comp = fixture.componentInstance;
-    fixture.detectChanges();
-    expect(comp).toBeTruthy();
-  });
 
-  it('renders "Статистика посещаемости" heading', () => {
-    const fixture = TestBed.createComponent(StatsPageComponent);
-    fixture.detectChanges();
-    const heading = fixture.nativeElement.querySelector('h1');
-    expect(heading?.textContent?.trim()).toContain('Статистика посещаемости');
-  });
 
   it('shows mat-progress-bar when loading signal is true', () => {
     const fixture = TestBed.createComponent(StatsPageComponent);
@@ -91,14 +86,36 @@ describe('StatsPageComponent', () => {
     expect(comp.chartEntries()).toEqual([]);
   });
 
-  it('chartEntries computed returns entries from chartDataMap', () => {
+  it('renders selected group journal as summary and per-student chart inputs', async () => {
+    mockApiService.getMyAssignments.mockReturnValue(of([{ id: 1, groupId: 10, subjectId: 20, subjectName: 'Математика', teacherId: 1 }]));
+    mockApiService.getGroups.mockReturnValue(of([{ id: 10, name: 'Тестовая группа' }]));
+    mockApiService.getJournal.mockReturnValue(of({ groupId: 10, subjectId: 20, dates: ['2026-03-01', '2026-03-02'], students: [
+      { userId: 1, displayName: 'Иванов', records: [
+        { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
+        { date: '2026-03-02', lessonNumber: 1, status: 'absent', symbol: 'н' },
+      ] },
+      { userId: 2, displayName: 'Петров', records: [
+        { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
+        { date: '2026-03-02', lessonNumber: 1, status: 'excused', symbol: 'у' },
+      ] },
+    ] }));
     const fixture = TestBed.createComponent(StatsPageComponent);
-    const comp = fixture.componentInstance;
-    const map = new Map([['Математика', [{ name: 'Иванов', present: 3, excused: 0, absent: 1 }]]]);
-    comp.chartDataMap.set(map);
     fixture.detectChanges();
-    expect(comp.chartEntries()).toHaveLength(1);
-    expect(comp.chartEntries()[0].name).toBe('Математика');
+    const user = userEvent.setup();
+    await user.click(getByRole(fixture.nativeElement, 'combobox', { name: 'Группа' }));
+    fixture.detectChanges();
+    await user.click(getByRole(document.body, 'option', { name: 'Тестовая группа' }));
+    fixture.detectChanges();
+    expect(mockApiService.getJournal).toHaveBeenCalledWith(10, 20, expect.any(String), expect.any(String));
+    const summary = fixture.debugElement.query(By.directive(OverallStatCardComponent)).componentInstance as OverallStatCardComponent;
+    expect(summary.totalLessons).toBe(2);
+    expect(summary.attendanceRate).toBe(75);
+    const chart = fixture.debugElement.query(By.directive(SubjectChartComponent)).componentInstance as SubjectChartComponent;
+    expect(chart.subjectName).toBe('Математика');
+    expect(chart.chartData).toEqual([
+      { name: 'Иванов', present: 1, absent: 1, excused: 0 },
+      { name: 'Петров', present: 1, absent: 0, excused: 1 },
+    ]);
   });
 
   it('derives subjects from teacher assignments and loads the first subject when group changes', () => {

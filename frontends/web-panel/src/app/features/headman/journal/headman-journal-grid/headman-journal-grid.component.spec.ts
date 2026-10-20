@@ -65,7 +65,7 @@ describe('HeadmanJournalGridComponent', () => {
 
     fixture = TestBed.createComponent(HeadmanJournalGridComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('journalData', mockJournalData);
+    fixture.componentRef.setInput('journalData', { ...mockJournalData, students: [...mockJournalData.students].reverse() });
     fixture.detectChanges();
   });
 
@@ -73,6 +73,8 @@ describe('HeadmanJournalGridComponent', () => {
     expect(component.dataSource().length).toBe(2);
     expect(component.dataSource()[0].displayName).toBe('Иванов Иван');
     expect(component.dataSource()[1].displayName).toBe('Петров Пётр');
+    expect(component.getCell(10, `${date}_lesson1`)?.lessonId).toBe(42);
+    expect(component.getCell(11, `${date}_lesson1`)?.lessonId).toBe(43);
   });
 
   it('setStatus on a non-cancelled cell calls markAttendance', () => {
@@ -105,20 +107,15 @@ describe('HeadmanJournalGridComponent', () => {
     );
   });
 
-  it('setStatus is a no-op for cancelled cells', () => {
-    const cell = component.getCell(11, `${date}_lesson1`);
-    expect(cell).toBeTruthy();
-    expect(cell!.status).toBe('cancelled');
-
-    const row = mockJournalData.students[1];
-    component.setStatus(cell!, row, 'present');
-
-    // cancelled cells have no lessonId assumption; guard is by status, but our
-    // impl only blocks by missing lessonId. Use existing lessonId=43, status=cancelled:
-    // setStatus delegates to applyStatus which accepts the call. Our UI, however,
-    // renders cancelled cells as non-clickable <span>. So on the API surface we
-    // allow programmatic change. Make sure no error path is triggered:
-    expect(snackBarMock.open).not.toHaveBeenCalled();
+  it('cancelled cells expose no status action while active cells submit the selected status', () => {
+    const rows = Array.from(fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLElement>);
+    const cancelled = rows.find(row => row.textContent?.includes('Петров Пётр'))!;
+    expect(cancelled.querySelectorAll('button')).toHaveLength(0);
+    cancelled.querySelector<HTMLElement>('[aria-label^="Отменена"]')!.click();
+    expect(headmanApiMock.markAttendance).not.toHaveBeenCalled();
+    const active = rows.find(row => row.textContent?.includes('Иванов Иван'))!;
+    active.querySelector<HTMLButtonElement>('button[aria-label^="Присутствовал"]')!.click();
+    expect(headmanApiMock.markAttendance).toHaveBeenCalledWith(42, 10, 'present');
   });
 
   it('getPercent returns 0 when the only lesson is absent', () => {

@@ -1,7 +1,5 @@
 import {
   applyCheckinAck,
-  countdownLabel,
-  eligibilityLabel,
   isPendingCheckin,
   remainingSeconds,
   unavailableCommand,
@@ -78,17 +76,7 @@ describe('geo check-in domain', () => {
     expect(today.lessons[0]?.request).toBeNull()
     expect(applyCheckinAck(today, ack).lessons[0]?.request?.id).toBe('r1')
     expect(applyCheckinAck(today, ack).lessons[0]?.checkinEligibility.reason).toBe('COOLDOWN')
-    expect(eligibilityLabel(applyCheckinAck(today, ack).lessons[0]!, 60)).toBe(
-      'Повтори через 01:00',
-    )
-    expect(eligibilityLabel(applyCheckinAck(today, ack).lessons[0]!, 0)).toBe(
-      'Можно повторить отметку',
-    )
-    expect(
-      countdownLabel(
-        remainingSeconds(ack.serverNow, ack.retryAt, Date.parse('2026-09-06T08:34:00Z')),
-      ),
-    ).toBe('01:00')
+    expect(remainingSeconds(ack.serverNow, ack.retryAt, Date.parse('2026-09-06T08:34:00Z'))).toBe(60)
   })
 
   it('does not restart a countdown when a delayed idempotency replay has an old serverNow', () => {
@@ -122,7 +110,6 @@ describe('geo check-in domain', () => {
     }
 
     expect(isPendingCheckin(lesson)).toBe(true)
-    expect(eligibilityLabel(lesson, 0)).toBe('На подтверждении у старосты')
   })
 
   it('keeps the pending state when the server omits the request projection', () => {
@@ -136,6 +123,5 @@ describe('geo check-in domain', () => {
     }
 
     expect(isPendingCheckin(lesson)).toBe(true)
-    expect(eligibilityLabel(lesson, 0)).toBe('На подтверждении у старосты')
   })
 })

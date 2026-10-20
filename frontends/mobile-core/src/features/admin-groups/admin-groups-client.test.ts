@@ -11,57 +11,49 @@ function fixture() {
   })
   return createAdminGroupsFixture('active')
 }
+function sentinelPage(number = 0) {
+  const group = { alphabeticCode: null, numericCode: null, currentCourse: 3, programTypeDigit: 2,
+    studyMode: 'PART_TIME', educationLevel: 'BACHELOR', trainingDurationYears: 4, durationStatus: 'KNOWN',
+    status: 'ACTIVE', draftReason: null, studentCount: 8, headmanFio: null, createdAt: null }
+  return { items: [{ ...group, id: 92, name: 'Я-321' }, { ...group, id: 11, name: 'А-191' }],
+    number, size: 2, totalElements: 47, totalPages: 24, activeCount: 23, draftCount: 7, archivedCount: 17 }
+}
 describe('registry server filtering and ordering contract', () => {
-  it('uses the same nine programme mappings across filters, metadata and paginated results', async () => {
-    const client = fixture()
-    for (const program of adminGroupProgramTypes) {
-      const result = await client.listGroups({
-        status: 'ACTIVE',
-        studyMode: program.studyMode,
-        educationLevel: program.educationLevel,
-        size: 1,
-      })
-      expect(result.items[0]?.programTypeDigit).toBe(program.digit)
-      expect(result.totalElements).toBeGreaterThan(1)
-      const next = await client.listGroups({
-        status: 'ACTIVE',
-        studyMode: program.studyMode,
-        educationLevel: program.educationLevel,
-        size: 1,
-        page: 1,
-      })
-      expect(next.items[0]?.programTypeDigit).toBe(program.digit)
-      expect(next.items[0]?.id).not.toBe(result.items[0]?.id)
-      expect(next.totalElements).toBe(result.totalElements)
-      expect(next.activeCount).toBe(result.totalElements)
+  it('uses independent programme mappings and sends their filter values', async () => {
+    const expected = [
+      [1, 'FULL_TIME', 'BACHELOR'], [2, 'PART_TIME', 'BACHELOR'], [3, 'EXTRAMURAL', 'BACHELOR'],
+      [4, 'FULL_TIME', 'SPECIALIST'], [5, 'PART_TIME', 'SPECIALIST'], [6, 'EXTRAMURAL', 'SPECIALIST'],
+      [7, 'FULL_TIME', 'MASTER'], [8, 'PART_TIME', 'MASTER'], [9, 'EXTRAMURAL', 'MASTER'],
+    ] as const
+    expect(adminGroupProgramTypes.map(program => [program.digit, program.studyMode, program.educationLevel])).toEqual(expected)
+    const requests: URL[] = []
+    const client = new AdminGroupsClient({ accessToken: () => null, fetcher: async input => {
+      requests.push(new URL(String(input), 'https://synthetic.invalid'))
+      return Response.json(sentinelPage())
+    } })
+    for (const [, studyMode, educationLevel] of expected) {
+      const result = await client.listGroups({ status: 'DRAFT', course: 3, studyMode, educationLevel, size: 2 })
+      const params = requests.at(-1)!.searchParams
+      expect(Object.fromEntries(params)).toEqual({ status: 'DRAFT', course: '3', studyMode, educationLevel, page: '0', size: '2' })
+      expect(result.items.map(item => item.id)).toEqual([92, 11])
+      expect(result.totalElements).toBe(47)
     }
   })
-  it('orders the complete registry before slicing pages and combines course with real programme predicates', async () => {
-    const client = fixture()
-    const first = await client.listGroups({
-      status: 'ACTIVE',
-      sort: ['programType,desc', 'currentCourse,asc'],
-      size: 3,
-    })
-    const next = await client.listGroups({
-      status: 'ACTIVE',
-      sort: ['programType,desc', 'currentCourse,asc'],
-      size: 3,
-      page: 1,
-    })
-    expect(first.items.map((item) => item.programTypeDigit)).toEqual([9, 9, 8])
-    expect(next.items.map((item) => item.programTypeDigit)).toEqual([8, 7, 7])
-    expect(new Set([...first.items, ...next.items].map((item) => item.id)).size).toBe(6)
-    const filtered = await client.listGroups({
-      course: 3,
-      studyMode: 'EXTRAMURAL',
-      educationLevel: 'BACHELOR',
-      size: 20,
-    })
-    expect(
-      filtered.items.every((item) => item.currentCourse === 3 && item.programTypeDigit === 3),
-    ).toBe(true)
-    expect(filtered.activeCount).toBe(filtered.items.length)
+  it('sends ordered sort/page parameters and preserves independent server row order and counts', async () => {
+    const requests: URL[] = []
+    const client = new AdminGroupsClient({ accessToken: () => null, fetcher: async input => {
+      const url = new URL(String(input), 'https://synthetic.invalid')
+      requests.push(url)
+      return Response.json(sentinelPage(Number(url.searchParams.get('page'))))
+    } })
+    for (const page of [0, 1]) {
+      const result = await client.listGroups({ status: 'ACTIVE', sort: ['programType,desc', 'currentCourse,asc'], size: 2, page })
+      expect(requests.at(-1)!.searchParams.getAll('sort')).toEqual(['programType,desc', 'currentCourse,asc'])
+      expect(requests.at(-1)!.searchParams.get('page')).toBe(String(page))
+      expect(requests.at(-1)!.searchParams.get('size')).toBe('2')
+      expect(result).toMatchObject({ number: page, size: 2, totalElements: 47, totalPages: 24, activeCount: 23, draftCount: 7, archivedCount: 17 })
+      expect(result.items.map(item => [item.id, item.name])).toEqual([[92, 'Я-321'], [11, 'А-191']])
+    }
   })
   it('keeps unknown additive metadata unknown when reading an older accepted response', async () => {
     const original = await fixture().listGroups({ size: 1 })

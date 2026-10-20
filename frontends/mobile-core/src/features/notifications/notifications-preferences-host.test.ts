@@ -1,77 +1,90 @@
-import { readFileSync } from 'node:fs'
-import { compileScript, parse } from '@vue/compiler-sfc'
-import ts from 'typescript'
-import * as vue from 'vue'
+import { createRenderer, h, markRaw, nextTick, reactive, type App, type Component } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as models from './notifications-v2-models'
-import * as drafts from './notification-preferences-draft'
 import * as client from './notifications-client'
 import * as v2client from './notifications-v2-client'
-import * as session from '../../shared/session-owner'
-import * as mutations from './notifications-mutations'
+import NotificationsScreen from './NotificationsScreen.vue'
+import NotificationSettings from './NotificationSettings.vue'
+import NotificationColors from './NotificationColors.vue'
 import { NotificationsUnreadState } from './notifications-unread'
-import type {
-  NotificationCatalog,
-  NotificationPreferencesV2,
-  NotificationPreferencesV2Update,
-  NotificationsV2Api,
-} from './notifications-v2-models'
-
-type Host = {
-  catalog: vue.Ref<NotificationCatalog | null>
-  preferences: vue.Ref<NotificationPreferencesV2 | null>
-  draft: vue.Ref<NotificationPreferencesV2 | null>
-  conflict: vue.Ref<NotificationPreferencesV2 | null>
-  preferencesError: vue.Ref<string | null>
-  preferencesErrorTone: vue.Ref<string>
-  preferencesBlocked: vue.Ref<boolean>
-  preferencesBusy: vue.Ref<boolean>
-  loadPreferences(preserve?: boolean): Promise<void>
-  savePreferences(update: NotificationPreferencesV2Update): Promise<void>
-  reloadPreferences(): void
-  reapplyPreferences(): void
-}
-/** Run the actual SFC setup, with only lifecycle/DOM and unrelated child components disconnected.
- * This proves async state/PUT boundaries; it is deliberately not a browser/render acceptance. */
-const scopes: vue.EffectScope[] = []
-afterEach(() => {
-  for (const scope of scopes.splice(0)) scope.stop()
-})
-function setupSfc(name: string, props: Record<string, unknown>): Record<string, unknown> {
-  const filename = new URL(`./${name}.vue`, import.meta.url).pathname.replace(
-    /^\/(?=[A-Za-z]:)/,
-    '',
-  )
-  const { descriptor } = parse(readFileSync(filename, 'utf8'), { filename })
-  const script = compileScript(descriptor, { id: `ui32-${name}` })
-  const compiled = ts.transpileModule(script.content, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText
-  const imports: Record<string, unknown> = {
-    vue: { ...vue, onMounted: () => {}, onBeforeUnmount: () => {}, useId: () => 'synthetic-id' },
-    './notifications-v2-models': models,
-    './notification-preferences-draft': drafts,
-    './notifications-client': client,
-    './notifications-v2-client': v2client,
-    '../../shared/session-owner': session,
-    './notifications-mutations': mutations,
+import type { NotificationCatalog, NotificationPreferencesV2, NotificationsV2Api } from './notifications-v2-models'
+class Node extends EventTarget {
+  children: Node[] = []
+  parent: Node | null = null
+  props: Record<string, unknown> = {}
+  text = ''
+  value = ''
+  selected = false
+  selectedIndex = -1
+  constructor(readonly tag: string) {
+    super()
+    markRaw(this)
   }
-  const exports: {
-    default?: {
-      setup: (
-        props: Record<string, unknown>,
-        context: { expose: () => void; emit: () => void },
-      ) => unknown
-    }
-  } = {}
-  new Function('require', 'exports', compiled)((id: string) => imports[id] ?? {}, exports)
-  const scope = vue.effectScope()
-  const result = scope.run(() =>
-    exports.default!.setup(props, { expose: () => {}, emit: () => {} }),
-  )
-  scopes.push(scope)
-  return result as Record<string, unknown>
+  focus(): void {}
+  querySelector(): null { return null }
+  contains(node: unknown): boolean { return nodes(this).includes(node as Node) }
+  get tagName(): string {
+    return this.tag.toUpperCase()
+  }
+  get options(): Node[] {
+    return this.children.filter((node) => node.tag === 'option')
+  }
+  getRootNode(): { activeElement: null } {
+    return { activeElement: null }
+  }
 }
+const renderer = createRenderer<Node, Node>({
+  createElement: (tag) => new Node(tag),
+  createText: (text) => Object.assign(new Node('#text'), { text }),
+  createComment: () => new Node('#comment'),
+  setText: (node, text) => {
+    node.text = text
+  },
+  setElementText: (node, text) => {
+    node.text = text
+    node.children = []
+  },
+  parentNode: (node) => node.parent,
+  nextSibling: (node) => node.parent?.children[node.parent.children.indexOf(node) + 1] ?? null,
+  patchProp: (node, key, _old, value) => {
+    node.props[key] = value
+    if (key === 'value') node.value = String(value ?? '')
+  },
+  insert: (node, parent, anchor = null) => {
+    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
+    const index = anchor ? parent.children.indexOf(anchor) : -1
+    parent.children.splice(index < 0 ? parent.children.length : index, 0, node)
+    node.parent = parent
+  },
+  remove: (node) => {
+    node.parent?.children.splice(node.parent.children.indexOf(node), 1)
+    node.parent = null
+  },
+})
+const apps: App[] = []
+afterEach(() => {
+  apps.splice(0).forEach((app) => app.unmount())
+  vi.unstubAllGlobals()
+})
+function nodes(root: Node): Node[] {
+  return [root, ...root.children.flatMap(nodes)]
+}
+function text(root: Node): string {
+  return root.text + root.children.map(text).join(' ')
+}
+async function settle(): Promise<void> {
+  for (let i = 0; i < 12; i++) {
+    await Promise.resolve()
+    await nextTick()
+  }
+}
+async function click(root: Node, label: string): Promise<void> {
+  const button = nodes(root).find((node) => node.tag === 'button' && text(node).trim() === label)
+  expect(button).toBeDefined()
+  ;(button!.props.onClick as () => void)()
+  await settle()
+}
+
 function profile(
   ids: readonly string[] = models.notificationTypeIds,
   revision = 'p1',
@@ -97,209 +110,185 @@ function catalog(
     palette: models.notificationPaletteIds.map((id) => ({ id, label: id })),
   }
 }
-function host() {
+
+function mount(component: Component, props: Record<string, unknown>) {
+  vi.stubGlobal('document', { getElementById: () => null, activeElement: null, addEventListener() {}, removeEventListener() {} })
+  const root = new Node('root')
+  const app = renderer.createApp({ render: () => h(component, props) })
+  apps.push(app)
+  app.mount(root)
+  return { root, app }
+}
+function button(root: Node, label: string) {
+  return nodes(root).find(node => node.tag === 'button' && (node.props['aria-label'] === label || text(node).replace(/\s/g, '') === label.replace(/\s/g, '')))
+}
+async function activate(root: Node, label: string) {
+  const action = button(root, label)
+  expect(action).toBeDefined()
+  expect(action!.props.disabled).not.toBe(true)
+  ;(action!.props.onClick as () => void)()
+  await settle()
+}
+function host(ids: readonly models.NotificationTypeId[] = models.notificationTypeIds, initialMismatch = false) {
   const api = {
-    catalog: vi.fn<NotificationsV2Api['catalog']>(),
-    getPreferences: vi.fn<NotificationsV2Api['getPreferences']>(),
+    inbox: vi.fn(async () => ({ items: [], nextCursor: null })),
+    catalog: vi.fn<NotificationsV2Api['catalog']>().mockResolvedValue(catalog(ids)),
+    getPreferences: vi.fn<NotificationsV2Api['getPreferences']>().mockResolvedValue(profile(initialMismatch ? models.legacyNotificationTypeIds : ids)),
     updatePreferences: vi.fn<NotificationsV2Api['updatePreferences']>(),
   }
-  const props = vue.reactive({
-    api,
-    contextKey: 'HEADMAN|synthetic',
-    unreadOwner: new NotificationsUnreadState(),
-  })
-  const state = setupSfc('NotificationsScreen', props) as unknown as Host
-  return { state, api, props }
+  const props = reactive({ api: markRaw(api), contextKey: 'HEADMAN|synthetic', unreadOwner: markRaw(new NotificationsUnreadState()), realtimeRevision: 0 })
+  return { ...mount(NotificationsScreen, props), props, api }
 }
-const settled = async () => {
-  for (let i = 0; i < 8; i++) await Promise.resolve()
+async function colors(root: Node) {
+  await activate(root, 'Настройки уведомлений')
+  const firstDelivery = nodes(root).find(node => node.tag === 'input' && node.props.type === 'checkbox')
+  expect(firstDelivery?.props.checked).toBe(false)
+  await activate(root, 'Цвета уведомлений›')
 }
-
+async function chooseGrey(root: Node) {
+  const type = nodes(root).find(node => node.tag === 'button' && node.props['aria-expanded'] !== undefined && text(node).trim().startsWith('Сервер: LESSON_STARTED'))!
+  expect(type).toBeDefined()
+  ;(type.props.onClick as () => void)()
+  await settle()
+  const grey = nodes(root).find(node => node.tag === 'button' && text(node).trim() === 'grey')!
+  expect(grey).toBeDefined()
+  ;(grey.props.onClick as () => void)()
+  await settle()
+}
+function greySelected(root: Node) {
+  return nodes(root).some(node => node.tag === 'button' && node.props['aria-pressed'] === true && text(node).includes('grey'))
+}
+async function refresh(view: ReturnType<typeof host>) { view.props.realtimeRevision++; await settle() }
+function saveDisabled(root: Node) { return button(root, 'Сохранить цвета')?.props.disabled }
+function expectPrivateGone(root: Node) {
+  expect(text(root)).not.toContain('Сервер: LESSON_STARTED')
+  expect(nodes(root).filter(node => node.tag === 'input')).toHaveLength(0)
+}
 describe('host catalog/profile/CAS compatibility', () => {
   it('keeps old rendering pair plus dirty21 on incoming compatible32 until explicit reload', async () => {
-    const { state, api } = host()
-    const old = profile(models.legacyNotificationTypeIds)
-    const oldCatalog = catalog(models.legacyNotificationTypeIds)
-    api.catalog.mockResolvedValue(oldCatalog)
-    api.getPreferences.mockResolvedValue(old)
-    await state.loadPreferences()
-    state.draft.value = drafts.changeNotificationColor(state.draft.value!, 'LESSON_STARTED', 'grey')
-    const dirty = structuredClone(state.draft.value)
-    const current = profile(models.notificationTypeIds, 'p32')
-    api.catalog.mockResolvedValue(catalog())
-    api.getPreferences.mockResolvedValue(current)
-    await state.loadPreferences(true)
-    expect(state.catalog.value).toEqual(oldCatalog)
-    expect(state.preferences.value).toEqual(old)
-    expect(state.draft.value).toEqual(dirty)
-    expect(state.conflict.value).toEqual(current)
-    state.reapplyPreferences()
-    await settled()
-    expect(api.updatePreferences).not.toHaveBeenCalled()
-    expect(state.preferencesBlocked.value).toBe(true)
-    expect(state.preferencesError.value).toContain('Каталог')
-    state.reloadPreferences()
-    await settled()
-    expect(state.catalog.value?.types).toHaveLength(32)
-    expect(state.draft.value).toEqual(current)
-    expect(state.conflict.value).toBeNull()
-    expect(state.preferencesBlocked.value).toBe(false)
+    const view = host(models.legacyNotificationTypeIds)
+    await settle(); await colors(view.root); await chooseGrey(view.root)
+    view.api.catalog.mockResolvedValue(catalog())
+    view.api.getPreferences.mockResolvedValue(profile(models.notificationTypeIds, 'p32'))
+    await refresh(view)
+    expect(nodes(view.root).filter(node => node.props['aria-expanded'] !== undefined)).toHaveLength(21)
+    expect(greySelected(view.root)).toBe(true)
+    expect(saveDisabled(view.root)).toBe(true)
+    expect(button(view.root, 'Применить мой выбор')?.props.disabled).toBe(true)
+    expect(view.api.updatePreferences).not.toHaveBeenCalled()
+    await activate(view.root, 'Загрузить актуальные')
+    expect(nodes(view.root).filter(node => node.props['aria-expanded'] !== undefined)).toHaveLength(32)
+    expect(saveDisabled(view.root)).toBe(false)
   })
   it('retains confirmed state and dirty draft after mismatched catalog/prefs and blocks PUT', async () => {
-    const { state, api } = host()
-    api.catalog.mockResolvedValue(catalog(models.legacyNotificationTypeIds))
-    api.getPreferences.mockResolvedValue(profile(models.legacyNotificationTypeIds))
-    await state.loadPreferences()
-    state.draft.value = drafts.changeNotificationColor(state.draft.value!, 'LESSON_STARTED', 'grey')
-    const before = {
-      catalog: state.catalog.value,
-      confirmed: state.preferences.value,
-      draft: state.draft.value,
-    }
-    api.catalog.mockResolvedValue(catalog())
-    api.getPreferences.mockResolvedValue(profile(models.legacyNotificationTypeIds))
-    await state.loadPreferences(true)
-    expect(state.catalog.value).toBe(before.catalog)
-    expect(state.preferences.value).toBe(before.confirmed)
-    expect(state.draft.value).toBe(before.draft)
-    await state.savePreferences(drafts.notificationPreferencesUpdate(state.draft.value!, 'p1'))
-    expect(api.updatePreferences).not.toHaveBeenCalled()
-    expect(state.preferencesError.value).toContain('не совпадают')
+    const view = host(models.legacyNotificationTypeIds)
+    await settle(); await colors(view.root); await chooseGrey(view.root)
+    view.api.catalog.mockResolvedValue(catalog())
+    await refresh(view)
+    expect(greySelected(view.root)).toBe(true)
+    expect(saveDisabled(view.root)).toBe(true)
+    expect(view.api.updatePreferences).not.toHaveBeenCalled()
+    expect(nodes(view.root).some(node => node.props.role === 'alert' && text(node).trim().length > 0)).toBe(true)
   })
   it('rejects an initial mismatched pair without rendering a partial settings state', async () => {
-    const { state, api } = host()
-    api.catalog.mockResolvedValue(catalog())
-    api.getPreferences.mockResolvedValue(profile(models.legacyNotificationTypeIds))
-    await state.loadPreferences()
-    expect(state.catalog.value).toBeNull()
-    expect(state.preferences.value).toBeNull()
-    expect(state.draft.value).toBeNull()
-    expect(state.preferencesBlocked.value).toBe(true)
+    const view = host(models.notificationTypeIds, true)
+    await settle(); await activate(view.root, 'Настройки уведомлений')
+    expect(nodes(view.root).filter(node => node.tag === 'input')).toHaveLength(0)
+    expect(button(view.root, 'Сохранить настройки')).toBeUndefined()
+    expect(view.api.updatePreferences).not.toHaveBeenCalled()
   })
   it('makes no second PUT for a cross-set409 and retains old OFF/color/mute', async () => {
-    const { state, api } = host()
-    api.catalog.mockResolvedValue(catalog(models.legacyNotificationTypeIds))
-    api.getPreferences.mockResolvedValue(profile(models.legacyNotificationTypeIds))
-    await state.loadPreferences()
-    state.draft.value = drafts.changeNotificationColor(state.draft.value!, 'LESSON_STARTED', 'grey')
-    const before = structuredClone(state.draft.value)
-    api.updatePreferences.mockRejectedValue(
-      new v2client.NotificationsConflictError(profile(models.notificationTypeIds, 'p32')),
-    )
-    await state.savePreferences(drafts.notificationPreferencesUpdate(state.draft.value!, 'p1'))
-    state.reapplyPreferences()
-    await settled()
-    expect(api.updatePreferences).toHaveBeenCalledTimes(1)
-    expect(state.draft.value).toEqual(before)
-    expect(state.conflict.value?.revision).toBe('p32')
+    const view = host(models.legacyNotificationTypeIds)
+    await settle(); await colors(view.root); await chooseGrey(view.root)
+    view.api.updatePreferences.mockRejectedValue(new v2client.NotificationsConflictError(profile(models.notificationTypeIds, 'p32')))
+    await activate(view.root, 'Сохранить цвета')
+    expect(view.api.updatePreferences).toHaveBeenCalledTimes(1)
+    expect(view.api.updatePreferences.mock.calls[0]![0]).toMatchObject({ expectedRevision: 'p1', types: { LESSON_STARTED: { appPush: false, telegram: true, colorId: 'grey' } } })
+    expect(view.api.updatePreferences.mock.calls[0]![0]).not.toHaveProperty('mutedUntil')
+    expect(greySelected(view.root)).toBe(true)
+    expect(button(view.root, 'Применить мой выбор')?.props.disabled).toBe(true)
+    expect(saveDisabled(view.root)).toBe(true)
   })
   it.each([
     { ids: models.legacyNotificationTypeIds, name: 'legacy21' },
     { ids: models.notificationTypeIds, name: 'current32' },
   ])('allows one explicit $name same-set reapply and never unmutes', async ({ ids }) => {
-    const { state, api } = host()
-    api.catalog.mockResolvedValue(catalog(ids))
-    api.getPreferences.mockResolvedValue(profile(ids))
-    await state.loadPreferences()
-    state.draft.value = drafts.changeNotificationColor(state.draft.value!, 'LESSON_STARTED', 'grey')
-    api.updatePreferences
-      .mockRejectedValueOnce(new v2client.NotificationsConflictError(profile(ids, 'p2')))
-      .mockResolvedValueOnce({ ...state.draft.value, revision: 'p3' })
-    await state.savePreferences(drafts.notificationPreferencesUpdate(state.draft.value, 'p1'))
-    state.reapplyPreferences()
-    await settled()
-    expect(api.updatePreferences).toHaveBeenCalledTimes(2)
-    const sent = api.updatePreferences.mock.calls[1]![0]
+    const view = host(ids)
+    await settle(); await colors(view.root); await chooseGrey(view.root)
+    view.api.updatePreferences.mockRejectedValueOnce(new v2client.NotificationsConflictError(profile(ids, 'p2')))
+      .mockImplementationOnce(async update => ({ ...profile(ids, 'p3'), types: update.types }))
+    await activate(view.root, 'Сохранить цвета')
+    expect(view.api.updatePreferences).toHaveBeenCalledTimes(1)
+    expect(greySelected(view.root)).toBe(true)
+    await activate(view.root, 'Применить мой выбор')
+    expect(view.api.updatePreferences).toHaveBeenCalledTimes(2)
+    const sent = view.api.updatePreferences.mock.calls[1]![0]
     expect(sent.expectedRevision).toBe('p2')
-    expect(sent.types.LESSON_STARTED.colorId).toBe('grey')
+    expect(sent.types.LESSON_STARTED).toEqual({ appPush: false, telegram: true, colorId: 'grey' })
     expect(Object.keys(sent.types)).toHaveLength(ids.length)
     expect(sent).not.toHaveProperty('mutedUntil')
-    expect(state.conflict.value).toBeNull()
+    expect(button(view.root, 'Применить мой выбор')).toBeUndefined()
   })
   it('keeps dirty draft during a503 retry with no automatic PUT', async () => {
-    const { state, api } = host()
-    api.catalog.mockResolvedValue(catalog())
-    api.getPreferences.mockResolvedValue(profile())
-    await state.loadPreferences()
-    state.draft.value = drafts.changeNotificationColor(state.draft.value!, 'LESSON_STARTED', 'grey')
-    const before = structuredClone(state.draft.value)
-    api.getPreferences.mockRejectedValueOnce(
-      new client.NotificationsApiError('Временно недоступно', 503),
-    )
-    await state.loadPreferences(true)
-    expect(state.preferencesErrorTone.value).toBe('warning')
-    state.reloadPreferences()
-    await settled()
-    expect(state.draft.value).toEqual(before)
-    expect(api.updatePreferences).not.toHaveBeenCalled()
+    const view = host()
+    await settle(); await colors(view.root); await chooseGrey(view.root)
+    view.api.getPreferences.mockRejectedValueOnce(new client.NotificationsApiError('synthetic unavailable', 503))
+    await refresh(view)
+    expect(nodes(view.root).some(node => node.props['data-tone'] === 'warning')).toBe(true)
+    expect(greySelected(view.root)).toBe(true)
+    expect(view.api.updatePreferences).not.toHaveBeenCalled()
+    await activate(view.root, 'Повторить')
+    expect(greySelected(view.root)).toBe(true)
+    expect(view.api.updatePreferences).not.toHaveBeenCalled()
   })
   it('discards a late profile pair when context changes before resolution', async () => {
-    const { state, api, props } = host()
-    let resolve!: (profile: NotificationPreferencesV2) => void
-    api.catalog.mockResolvedValue(catalog())
-    api.getPreferences.mockReturnValue(
-      new Promise((accept) => {
-        resolve = accept
-      }),
-    )
-    const task = state.loadPreferences()
-    props.contextKey = 'STUDENT|other-synthetic'
-    await vue.nextTick()
+    const view = host()
+    await settle(); await colors(view.root)
+    let resolve!: (value: NotificationPreferencesV2) => void
+    view.api.getPreferences.mockReturnValueOnce(new Promise(done => { resolve = done }))
+    view.props.realtimeRevision++
+    await nextTick()
+    view.props.contextKey = 'STUDENT|other-synthetic'
+    await settle()
     resolve(profile())
-    await task
-    expect(state.preferences.value).toBeNull()
+    await settle()
+    expectPrivateGone(view.root)
+    view.app.unmount()
+    await settle()
+    expectPrivateGone(view.root)
   })
   it.each(['NotificationSettings', 'NotificationColors'])(
-    '%s refuses catalog/draft mismatch before accessing a missing entry',
-    (name) => {
-      const state = setupSfc(name, {
-        catalog: catalog(),
-        preferences: profile(),
-        draft: profile(models.legacyNotificationTypeIds),
-      })
-      expect((state.groups as vue.ComputedRef<unknown[]>).value).toEqual([])
-      expect((state.disabled as vue.ComputedRef<boolean>).value).toBe(true)
+    '%s refuses catalog/draft mismatch before accessing a missing entry', async name => {
+      const view = mount(name === 'NotificationSettings' ? NotificationSettings : NotificationColors,
+        { catalog: catalog(), preferences: profile(), draft: profile(models.legacyNotificationTypeIds) })
+      await settle()
+      expect(nodes(view.root).filter(node => node.tag === 'input')).toHaveLength(0)
+      expect(button(view.root, name === 'NotificationSettings' ? 'Сохранить настройки' : 'Сохранить цвета')?.props.disabled).toBe(true)
     },
   )
   it.each(['NotificationSettings', 'NotificationColors'])(
-    '%s presents server order/labels and actual32 OFF/colors',
-    (name) => {
+    '%s presents server order/labels and actual32 OFF/colors', async name => {
       const server = catalog([...models.notificationTypeIds].reverse())
-      const saved = profile()
-      const state = setupSfc(name, { catalog: server, preferences: saved, draft: null })
-      const groups = (
-        state.groups as vue.ComputedRef<
-          {
-            types: {
-              id: models.NotificationTypeId
-              label: string
-              preferences: models.NotificationTypePreferences
-            }[]
-          }[]
-        >
-      ).value
-      const rows = groups.flatMap((group) => group.types)
-      expect(rows.map((row) => row.id)).toEqual(server.types.map((type) => type.id))
-      expect(rows.map((row) => row.label)).toEqual(server.types.map((type) => type.label))
-      expect(rows.find((row) => row.id === 'ADMIN_ACCESS_CHANGED')?.preferences).toEqual({
-        appPush: false,
-        telegram: true,
-        colorId: 'red',
-      })
+      const view = mount(name === 'NotificationSettings' ? NotificationSettings : NotificationColors,
+        { catalog: server, preferences: profile(), draft: null })
+      await settle()
+      const visible = name === 'NotificationSettings'
+        ? nodes(view.root).filter(node => node.tag === 'tr' && node.props.class === 'notification-settings__row').map(node => text(node.children[0]!))
+        : nodes(view.root).filter(node => node.tag === 'button' && node.props['aria-expanded'] !== undefined).map(node => text(node))
+      expect(visible).toHaveLength(32)
+      server.types.forEach((type, index) => expect(visible[index]).toContain(type.label))
+      if (name === 'NotificationSettings') expect(nodes(view.root).filter(node => node.tag === 'input' && node.props.checked === false)).toHaveLength(32)
+      else expect(visible.every(label => label.includes('red'))).toBe(true)
     },
   )
   it.each(['NotificationSettings', 'NotificationColors'])(
-    '%s shows catalog-change state even if a prior same-set conflict remains',
-    (name) => {
-      const state = setupSfc(name, {
-        catalog: catalog(),
-        preferences: profile(),
-        draft: profile(),
-        conflict: profile(models.notificationTypeIds, 'p2'),
-        blocked: true,
-      })
-      expect((state.catalogChanged as vue.ComputedRef<boolean>).value).toBe(true)
-      expect((state.disabled as vue.ComputedRef<boolean>).value).toBe(true)
+    '%s shows catalog-change state even if a prior same-set conflict remains', async name => {
+      const view = mount(name === 'NotificationSettings' ? NotificationSettings : NotificationColors,
+        { catalog: catalog(), preferences: profile(), draft: profile(), conflict: profile(models.notificationTypeIds, 'p2'), blocked: true })
+      await settle()
+      expect(button(view.root, 'Применить мой выбор')?.props.disabled).toBe(true)
+      expect(button(view.root, 'Загрузить актуальные')?.props.disabled).not.toBe(true)
+      expect(button(view.root, name === 'NotificationSettings' ? 'Сохранить настройки' : 'Сохранить цвета')?.props.disabled).toBe(true)
     },
   )
 })

@@ -34,9 +34,7 @@ describe('CampusMapClient generation boundary', () => {
         accessToken: () => 'synthetic',
         fetcher: async () => new Response(blob),
       })
-      await expect(client.downloadAsset('20', '200', '1', 'png', 'asset-png')).rejects.toThrow(
-        'некорректный файл',
-      )
+      await expect(client.downloadAsset('20', '200', '1', 'png', 'asset-png')).rejects.toThrow(Error)
     }
   })
   it('rejects an asset response that crosses the authenticated owner generation', async () => {

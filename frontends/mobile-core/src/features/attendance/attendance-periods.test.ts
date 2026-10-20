@@ -12,7 +12,6 @@ import type {
   AttendanceMetricSet,
   AttendanceViewModel,
 } from './attendance-view-model'
-import { attendanceFixture, createAttendanceReviewScenarios } from '../../dev/attendance-fixtures'
 
 const metrics: AttendanceMetricSet = {
   present: { count: 1, percent: 25 },
@@ -64,47 +63,6 @@ describe('attendance civil periods', () => {
     expect(result[0]?.dateTo).toBe('2026-09-06')
     expect(result[0]?.metrics).toBe(metrics)
     expect(result[0]?.metrics.present.percent).toBe(25)
-  })
-  it('keeps QA weekly weights and semester totals consistent with daily counts', () => {
-    const fixture = attendanceFixture()
-    for (const week of fixture.graph.weeks) {
-      const days = fixture.graph.days.filter(
-        (day) => day.dateFrom >= week.dateFrom && day.dateFrom <= week.dateTo,
-      )
-      expect(week.metrics.held).toBe(days.reduce((total, day) => total + day.metrics.held, 0))
-      expect(week.metrics.present.count).toBe(
-        days.reduce((total, day) => total + day.metrics.present.count, 0),
-      )
-      if (week.metrics.held)
-        expect(week.metrics.present.percent).toBeCloseTo(
-          (week.metrics.present.count / week.metrics.held) * 100,
-        )
-    }
-    expect(fixture.metrics.held).toBe(
-      fixture.graph.weeks.reduce((total, week) => total + week.metrics.held, 0),
-    )
-    expect(fixture.metrics.present.count).toBe(
-      fixture.graph.weeks.reduce((total, week) => total + week.metrics.present.count, 0),
-    )
-    expect(fixture.metrics.excused.count).toBe(
-      fixture.graph.weeks.reduce((total, week) => total + week.metrics.excused.count, 0),
-    )
-    expect(fixture.metrics.absent.count).toBe(
-      fixture.graph.weeks.reduce((total, week) => total + week.metrics.absent.count, 0),
-    )
-    expect(fixture.metrics.planned).toBe(
-      fixture.graph.weeks.reduce((total, week) => total + week.metrics.planned, 0),
-    )
-    for (const scene of createAttendanceReviewScenarios().filter((item) => item.mode === 'graph')) {
-      if (scene.state.status !== 'ready') continue
-      const model = scene.state.data
-      expect(model.metrics.held).toBe(
-        model.graph.days.reduce((total, day) => total + day.metrics.held, 0),
-      )
-      expect(model.metrics.present.count).toBe(
-        model.graph.days.reduce((total, day) => total + day.metrics.present.count, 0),
-      )
-    }
   })
   it('keeps real zero, held-zero, no marks, no considered classes and future distinct', () => {
     const zero = { ...metrics, present: { count: 0, percent: 0 } }

@@ -4,7 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { HeadmanApiService } from './headman-api.service';
 
 describe('HeadmanApiService', () => {
@@ -25,6 +25,7 @@ describe('HeadmanApiService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    vi.useRealTimers();
   });
 
   describe('getGroupMembers', () => {
@@ -407,16 +408,16 @@ describe('HeadmanApiService', () => {
   });
 
   describe('getTodayLessons', () => {
-    it('calls GET /api/schedule/groups/{groupId}/lessons with today dateFrom and dateTo params', () => {
-      const today = new Date().toISOString().split('T')[0];
+    it.each([
+      ['2026-10-11T20:59:59Z', '2026-10-11'],
+      ['2026-10-11T21:05:00Z', '2026-10-12'],
+    ])('uses Moscow educational date at %s', (instant, expectedDate) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(instant));
       service.getTodayLessons(5).subscribe();
-
-      const req = httpMock.expectOne(
-        r =>
-          r.url === '/api/schedule/groups/5/lessons' &&
-          r.params.get('dateFrom') === today &&
-          r.params.get('dateTo') === today,
-      );
+      const req = httpMock.expectOne(r => r.url === '/api/schedule/groups/5/lessons');
+      expect(req.request.params.get('dateFrom')).toBe(expectedDate);
+      expect(req.request.params.get('dateTo')).toBe(expectedDate);
       expect(req.request.method).toBe('GET');
       req.flush({ _embedded: { lessonResponseList: [] } });
     });

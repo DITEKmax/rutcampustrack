@@ -28,12 +28,15 @@ describe('statistics filled calendar geometry', () => {
       point('opaque', '2026-09-01'),
       point('not-a-date', '2026-09-04'),
     ])
-    expect(result.cells[0]?.left).toBe(0)
-    expect(result.cells[1]?.right).toBe(284)
+    expect(result.cells[0]!.left).toBeLessThan(result.cells[0]!.center)
+    expect(result.cells[0]!.center).toBeLessThan(result.cells[1]!.center)
+    expect(result.cells[1]!.center).toBeLessThan(result.cells[1]!.right)
     for (const band of result.bands) {
       expect(band.paths).toHaveLength(1)
-      expect(band.paths[0]).toContain('35.50,')
-      expect(band.paths[0]).toContain('248.50,')
+      const coordinates = band.paths[0]!.match(/-?\d+(?:\.\d+)?/g)!.map(Number)
+      expect(coordinates.every(Number.isFinite)).toBe(true)
+      expect(Math.min(...coordinates.filter((_, index) => index % 2 === 0))).toBe(result.cells[0]!.left)
+      expect(Math.max(...coordinates.filter((_, index) => index % 2 === 0))).toBe(result.cells[1]!.right)
     }
   })
   it('breaks all stacked bands at unknown, nullable and future periods', () => {
@@ -63,9 +66,12 @@ describe('statistics filled calendar geometry', () => {
       },
     }
     const result = statisticsGeometry([supplied])
-    expect(result.bands[0]?.paths[0]).toContain('0.00,96.05')
-    expect(result.bands[1]?.paths[0]).toContain('0.00,72.00')
-    expect(result.bands[2]?.paths[0]).toContain('0.00,0.00')
+    const differentCounts = { ...supplied, metrics: { ...supplied.metrics,
+      held: 999999, planned: 1000000,
+      present: { count: 1, percent: 33.3 }, excused: { count: 2, percent: 16.7 },
+      absent: { count: 999996, percent: 50 }, presentOrExcused: { count: 3, percent: 50 },
+    } }
+    expect(statisticsGeometry([differentCounts]).bands).toEqual(result.bands)
   })
   it('uses the server combined boundary when individual thirds sum differently', () => {
     const thirds = {
@@ -78,7 +84,14 @@ describe('statistics filled calendar geometry', () => {
         presentOrExcused: { count: 2, percent: 66.67 },
       },
     }
-    expect(statisticsGeometry([thirds]).bands[1]?.paths[0]).toContain('0.00,48.00')
+    const original = statisticsGeometry([thirds])
+    const changed = statisticsGeometry([{ ...thirds, metrics: { ...thirds.metrics,
+      presentOrExcused: { count: 2, percent: 80 },
+    } }])
+    expect(changed.bands[0]).toEqual(original.bands[0])
+    expect(changed.presentPaths).toEqual(original.presentPaths)
+    expect(changed.bands[1]).not.toEqual(original.bands[1])
+    expect(changed.bands[2]).not.toEqual(original.bands[2])
   })
   it('keeps zero-held and invalid dates out of filled regions', () => {
     const zero = { ...point('zero', '2026-09-01'), metrics: { ...metrics, held: 0 } }
@@ -189,8 +202,9 @@ describe('same-bucket server group comparison', () => {
     }
     const geometry = statisticsGeometry([a, absent, c])
     expect(geometry.groupPaths).toHaveLength(2)
-    expect(geometry.groupPaths[0]).toContain('144.00')
-    expect(geometry.groupPaths[1]).toContain('36.00')
+    const y = (path: string) => Number(path.match(/^[ML] [^,]+,([\d.]+)/)![1])
+    expect(y(geometry.groupPaths[0]!)).toBeGreaterThan(y(geometry.groupPaths[1]!))
+    expect(statisticsGeometry([{ ...a, groupPresent: { numerator: 10000, denominator: 99999, percent: 0 } }, absent, c]).groupPaths).toEqual(geometry.groupPaths)
     expect(
       statisticsGeometry([{ ...a, groupPresent: { numerator: 0, denominator: 0, percent: null } }])
         .groupPaths,
@@ -214,7 +228,8 @@ it('keeps a known group line when the personal week is future and uncounted', ()
   }
   const geometry = statisticsGeometry([future], { range: 'weeks' })
   expect(geometry.presentPaths).toEqual([])
-  expect(geometry.groupPaths).toEqual(['M 0.00,108.00 L 142.00,108.00 L 284.00,108.00'])
+  expect(geometry.groupPaths).toHaveLength(1)
+  expect(geometry.groupPaths[0]!.match(/-?\d+(?:\.\d+)?/g)!.map(Number).every(Number.isFinite)).toBe(true)
   expect(future.state).toBe('FUTURE')
   expect(future.metrics.held).toBe(0)
   expect(future.groupPresent).toEqual({ numerator: 1, denominator: 4, percent: 25 })

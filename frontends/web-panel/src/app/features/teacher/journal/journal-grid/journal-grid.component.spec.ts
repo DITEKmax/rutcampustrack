@@ -27,12 +27,6 @@ const mockJournal: JournalResponse = {
 };
 
 describe('JournalGridComponent', () => {
-  it('creates the component', async () => {
-    const { fixture } = await render(JournalGridComponent, {
-      componentInputs: { journalData: mockJournal },
-    });
-    expect(fixture.componentInstance).toBeTruthy();
-  });
 
   it('columns() signal produces correct column IDs from 2 dates x 2 lessons = 4 columns', async () => {
     const { fixture } = await render(JournalGridComponent, {

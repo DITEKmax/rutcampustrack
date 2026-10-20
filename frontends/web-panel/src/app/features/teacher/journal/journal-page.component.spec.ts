@@ -99,10 +99,6 @@ describe('JournalPageComponent', () => {
     });
   });
 
-  it('creates the component', () => {
-    const fixture = TestBed.createComponent(JournalPageComponent);
-    expect(fixture.componentInstance).toBeTruthy();
-  });
 
   it('canApply() is false when group, subject, or dates are missing', () => {
     const fixture = TestBed.createComponent(JournalPageComponent);

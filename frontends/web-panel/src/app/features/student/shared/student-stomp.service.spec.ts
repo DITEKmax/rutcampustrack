@@ -108,9 +108,21 @@ describe('StudentStompService (adapter over NotificationCenter)', () => {
   });
 
   it('connect() с другим groupId переустанавливает подписку', () => {
+    const marked: unknown[] = [];
+    const any: StompEnvelope[] = [];
+    service.marked$.subscribe(payload => marked.push(payload));
+    service.onAnyEvent$.subscribe(event => any.push(event));
     service.connect(5);
     service.connect(6);
-    // Первая подписка отписана, вторая активна — Subject видит одного подписчика.
-    expect(eventsSubject.observed).toBe(true);
+    const event = { type: 'attendance.marked', payload: { lesson_id: 7, group_id: 6 } };
+    eventsSubject.next(event);
+    expect(marked).toEqual([event.payload]);
+    expect(any).toEqual([event]);
+    expect(badgeMock.increment).toHaveBeenCalledTimes(1);
+    service.disconnect();
+    eventsSubject.next(event);
+    expect(marked).toEqual([event.payload]);
+    expect(any).toEqual([event]);
+    expect(badgeMock.increment).toHaveBeenCalledTimes(1);
   });
 });

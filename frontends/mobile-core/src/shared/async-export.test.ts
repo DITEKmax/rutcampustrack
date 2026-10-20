@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ReportDownloadClient,
+  ReportDownloadResponseError,
   notifyExportJobHint,
   type ExportJobState,
   type ReportDownloadTicketRequest,
@@ -9,7 +10,7 @@ import { StaleSessionGenerationError } from './session-owner'
 import { createBrowserReportDownloadPort } from './report-download-browser'
 import { createGenerationBoundNotificationsRealtime } from '../features/notifications/notifications-realtime'
 import type { Client, IMessage, StompConfig } from '@stomp/stompjs'
-import { createTelegramReportDownloadPort } from '../../../tma-vue/src/report-download-adapter'
+import { TelegramReportDownloadHostError, createTelegramReportDownloadPort } from '../../../tma-vue/src/report-download-adapter'
 
 const id = '00000000-0000-4000-8000-000000000001'
 const request: ReportDownloadTicketRequest = {
@@ -368,7 +369,7 @@ describe('weekly export recovery', () => {
     })
     await expect(client.issueTicket(weekly)).rejects.toThrow('ticket response lost')
     await vi.advanceTimersByTimeAsync(60_001)
-    await expect(client.issueTicket(weekly)).rejects.toThrow('Срок хранения выгрузки истёк')
+    await expect(client.issueTicket(weekly)).rejects.toMatchObject({ status: 410 })
     expect(fetcher).toHaveBeenCalledTimes(2)
     expect(client.pendingRequests()).toEqual([])
   })
@@ -393,7 +394,7 @@ describe('weekly export recovery', () => {
       recoveryStorage,
     })
     const pending = client.issueTicket(weekly)
-    const failed = expect(pending).rejects.toThrow('некорректные данные')
+    const failed = expect(pending).rejects.toBeInstanceOf(ReportDownloadResponseError)
     await vi.advanceTimersByTimeAsync(15_000)
     await failed
     expect(client.pendingRequests()).toEqual([weekly])
@@ -475,7 +476,7 @@ describe('bounded Telegram handoff', () => {
       () => 'https://ruttrack.example',
     )
     const pending = port.download(request, () => true)
-    const failed = expect(pending).rejects.toThrow('Telegram не подтвердил скачивание')
+    const failed = expect(pending).rejects.toBeInstanceOf(TelegramReportDownloadHostError)
     await vi.advanceTimersByTimeAsync(60_000)
     await failed
     expect(markDelivered).not.toHaveBeenCalled()

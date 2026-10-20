@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { StudentHomework, StudentHomeworkItem } from '../api/types'
 import {
-  formatHomeworkDate,
   groupHomework,
   groupHomeworkPeriod,
   homeworkPeriodRange,
@@ -93,7 +92,6 @@ describe('homework feed domain', () => {
     })
     const groups = groupHomework(feed([completed, pending, completed]))
 
-    expect(groups.map((group) => group.label)).toEqual(['Выполнено сегодня', '2 сентября'])
     expect(groups[0]?.items.map((entry) => entry.id)).toEqual(['completed'])
     expect(groups[1]?.items.map((entry) => entry.id)).toEqual(['pending'])
   })
@@ -110,8 +108,6 @@ describe('homework feed domain', () => {
     expect(
       isCompletedToday(item({ completed: true, completedAt: null }), '2026-09-07T09:30:00Z'),
     ).toBe(false)
-    expect(formatHomeworkDate('2026-09-07', '2026-09-07T09:30:00Z')).toBe('Сегодня, 7 сентября')
-    expect(formatHomeworkDate('2026-09-08', '2026-09-07T09:30:00Z')).toBe('Завтра, 8 сентября')
   })
 
   it('bounds previous pages by the semester start', () => {

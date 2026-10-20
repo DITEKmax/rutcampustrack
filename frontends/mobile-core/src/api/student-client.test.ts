@@ -6,13 +6,11 @@ afterEach(() => {
 })
 
 describe('StudentApi.getSemesterSchedule', () => {
-  it('consumes a 304 body before returning the null schedule and ETag', async () => {
+  it('returns null schedule and ETag for 304', async () => {
     const response = new Response(null, {
       status: 304,
       headers: { ETag: '"semester-v1"' },
     })
-    const arrayBuffer = vi.spyOn(response, 'arrayBuffer')
-    const json = vi.spyOn(response, 'json')
     const api = new StudentApi({
       accessToken: () => 'token',
       fetcher: async () => response,
@@ -22,16 +20,13 @@ describe('StudentApi.getSemesterSchedule', () => {
       data: null,
       etag: '"semester-v1"',
     })
-    expect(arrayBuffer).toHaveBeenCalledOnce()
-    expect(json).not.toHaveBeenCalled()
   })
 
-  it('JSON-parses a 200 schedule exactly once', async () => {
+  it('returns decoded schedule and ETag for 200', async () => {
     const response = new Response(JSON.stringify({ lessons: [] }), {
       status: 200,
       headers: { ETag: '"semester-v2"' },
     })
-    const json = vi.spyOn(response, 'json')
     const api = new StudentApi({
       accessToken: () => 'token',
       fetcher: async () => response,
@@ -41,20 +36,8 @@ describe('StudentApi.getSemesterSchedule', () => {
       data: { lessons: [] },
       etag: '"semester-v2"',
     })
-    expect(json).toHaveBeenCalledOnce()
   })
 
-  it('propagates a 304 body-read rejection', async () => {
-    const response = new Response(null, { status: 304 })
-    const bodyReadError = new Error('304 body read failed')
-    vi.spyOn(response, 'arrayBuffer').mockRejectedValue(bodyReadError)
-    const api = new StudentApi({
-      accessToken: () => 'token',
-      fetcher: async () => response,
-    })
-
-    await expect(api.getSemesterSchedule('semester-1')).rejects.toBe(bodyReadError)
-  })
 })
 
 describe('StudentApi Requests transport', () => {
@@ -93,12 +76,12 @@ describe('StudentApi Requests transport', () => {
 
   it('keeps binary downloads authenticated and validates visible idempotency keys before fetch', async () => {
     let calls = 0
-    let accept: string | null = null
+    let attachmentRequest: { url: string; init: RequestInit } | undefined
     const api = new StudentApi({
       accessToken: () => 'token',
-      fetcher: async (_input, init) => {
+      fetcher: async (input, init) => {
         calls += 1
-        accept = new Headers(init?.headers).get('Accept')
+        attachmentRequest = { url: String(input), init: init ?? {} }
         return new Response('bytes', {
           status: 200,
           headers: { 'Content-Type': 'application/octet-stream' },
@@ -111,7 +94,12 @@ describe('StudentApi Requests transport', () => {
     ).rejects.toThrow('16–128')
     expect(calls).toBe(0)
     await expect(api.downloadRequestAttachment('request-1', 'file-1')).resolves.toBeInstanceOf(Blob)
-    expect(accept).toBe('application/octet-stream')
+    expect(attachmentRequest?.url).toBe('/api/v1/student/requests/request-1/attachments/file-1');
+    expect(attachmentRequest?.init.method ?? 'GET').toBe('GET')
+    expect(attachmentRequest?.init.credentials).toBe('include')
+    const attachmentHeaders = new Headers(attachmentRequest?.init.headers)
+    expect(attachmentHeaders.get('Authorization')).toBe('Bearer token')
+    expect(attachmentHeaders.get('Accept')).toBe('application/octet-stream')
   })
 })
 

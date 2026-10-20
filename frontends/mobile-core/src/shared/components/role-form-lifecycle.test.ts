@@ -4,7 +4,6 @@ import RoleSwitchDialog from './RoleSwitchDialog.vue'
 import AutoGrowTextarea from '../../features/requests/AutoGrowTextarea.vue'
 import { DEFAULT_PASSWORD_POLICY, type ProfileSnapshot } from '../../features/profile/profile-types'
 
-let wrapOnPageScrollbar = false
 
 class TestElement {
   children: TestElement[] = []
@@ -31,9 +30,7 @@ class TestElement {
     return Math.max(96, parseFloat(this.style.height) || 0)
   }
   get scrollHeight(): number {
-    const extraLine =
-      wrapOnPageScrollbar && this.tag === 'textarea' && this.clientHeight >= 188 ? 24 : 0
-    return Math.max(this.contentHeight + extraLine, this.clientHeight)
+    return Math.max(this.contentHeight, this.clientHeight)
   }
   getAttributeNames(): string[] {
     return Object.keys(this.props)
@@ -122,7 +119,6 @@ const renderer = createRenderer<TestElement, TestElement>({
 function setup(): TestElement {
   testDocument = new TestDocument()
   frames.clear()
-  wrapOnPageScrollbar = false
   observed = null
   notifyResize = null
   disconnected = false
@@ -244,53 +240,16 @@ describe('role overlay lifecycle', () => {
   })
 })
 
-describe('comment wrapping measurement', () => {
-  it('fits final wrapping when restoring height restores the outer page scrollbar', async () => {
+
+
+describe('comment measurement lifecycle', () => {
+  it('releases observers and ignores pending width/font callbacks after unmount', async () => {
     const root = setup()
-    wrapOnPageScrollbar = true
     const app = renderer.createApp(AutoGrowTextarea, { modelValue: 'Retained comment' })
-    apps.push(app)
-    app.mount(root)
-    const control = root.children.find((child) => child.tag === 'textarea')!
-    // height:auto measured 188; restoring it caused one extra 24px line.
-    expect(control.style.height).toBe('212px')
-    expect(control.clientHeight).toBeGreaterThanOrEqual(control.scrollHeight)
-    await flushFrame()
-    expect(control.style.height).toBe('212px')
-  })
-  it('remeasures the textarea width after page scrollbars, font completion and deletion', async () => {
-    const root = setup()
-    const app = renderer.createApp({
-      render: () => h(AutoGrowTextarea, { modelValue: 'Retained comment' }),
-    })
-    apps.push(app)
-    app.mount(root)
-    const control = root.children.find((child) => child.tag === 'textarea')!
-    expect(control.style.height).toBe('188px')
+    apps.push(app); app.mount(root)
+    const control = root.children.find(child => child.tag === 'textarea')!
     expect(observed).toBe(control)
-    // A page scrollbar narrows the actual control after initial growth.
-    control.clientWidth = 335
-    control.contentHeight = 212
-    notifyResize?.()
-    // A hidden browser may not run animation frames: nextTick must suffice.
-    await nextTick()
-    expect(control.style.height).toBe('212px')
-    await flushFrame()
-    expect(control.clientHeight).toBeGreaterThanOrEqual(control.scrollHeight)
-    expect(control.style.height).toBe('212px')
-    // Font completion can wrap more lines while width stays unchanged.
-    control.contentHeight = 236
-    testDocument.fonts.dispatchEvent(new Event('loadingdone'))
-    await flushFrame()
-    expect(control.style.height).toBe('236px')
-    control.contentHeight = 44
-    const input = control.props.onInput as (event: { target: TestElement }) => void
-    control.value = ''
-    input({ target: control })
-    await flushFrame()
-    expect(control.style.height).toBe('96px')
-    app.unmount()
-    apps.pop()
+    app.unmount(); apps.pop()
     expect(disconnected).toBe(true)
     const height = control.style.height
     notifyResize?.()

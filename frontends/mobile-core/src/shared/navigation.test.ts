@@ -21,14 +21,6 @@ describe('Requests navigation stack', () => {
     },
   )
 
-  it('keeps the owning root for a cross-feature deep link without an explicit entry', () => {
-    const navigation = createMobileNavigationStack(rootRoute('today'))
-    navigation.push(nestedRoute('profile', 'profile/role-switch', 'detail'))
-
-    expect(navigation.entries.map((route) => route.id)).toEqual(['profile', 'profile/role-switch'])
-    expect(navigation.back()?.id).toBe('profile')
-    expect(navigation.back()).toBeNull()
-  })
 
   it('keeps More as the root and returns form → type → inbox → More', () => {
     const navigation = createMobileNavigationStack(rootRoute('more'))

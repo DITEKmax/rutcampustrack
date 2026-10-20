@@ -415,7 +415,7 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     }
 
     @Test
-    void batchHttpPersistsExactPairsStableIdsAndDurableIntents() {
+    void batchHttpPersistsExactPairsStableIdsAndDurableIntents() throws Exception {
         batchAuthority();
         var response =
                 socket.postForEntity(
@@ -428,9 +428,39 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .extracting(
                         row -> row.getLessonId() + "/" + row.getUserId() + "/" + row.getStatus())
                 .containsExactlyInAnyOrder("42/99/PRESENT", "42/100/ABSENT", "42/101/PRESENT");
-        assertThat(markedIntents()).hasSize(3);
-        assertThat(markedIntents())
-                .extracting(row -> row.path("payload").path("user_id").asLong())
+        var intentsBeforeReplay = markedIntents();
+        assertThat(intentsBeforeReplay).hasSize(3);
+        for (var envelope : intentsBeforeReplay) {
+            assertThat(
+                            ru.rutcampustrack.attendance.events.EventSchemaValidator.validate(
+                                    "attendance.marked.json", envelope.toString()))
+                    .isEmpty();
+            java.util.UUID.fromString(envelope.path("event_id").asText());
+            var payload = envelope.path("payload");
+            var mark =
+                    stored.stream()
+                            .filter(row -> row.getUserId() == payload.path("user_id").asLong())
+                            .findFirst()
+                            .orElseThrow();
+            assertThat(envelope.path("event_type").asText()).isEqualTo("attendance.marked");
+            assertThat(payload.path("lesson_id").asLong()).isEqualTo(mark.getLessonId());
+            assertThat(payload.path("user_id").asLong()).isEqualTo(mark.getUserId());
+            assertThat(payload.path("status").asText())
+                    .isEqualTo(mark.getStatus().name().toLowerCase(java.util.Locale.ROOT));
+            assertThat(payload.path("marked_by").asText()).isEqualTo("headman");
+            assertThat(mark.getSource()).isEqualTo(AttendanceSource.HEADMAN);
+            assertThat(mark.getGroupId()).isEqualTo(GROUP_ID);
+            assertThat(mark.getSubjectId()).isEqualTo(SUBJECT_ID);
+            assertThat(mark.getSemesterId()).isEqualTo(1L);
+            assertThat(mark.getLessonNumber()).isEqualTo(1);
+            assertThat(mark.getLessonDate()).isEqualTo(LocalDate.of(2026, 4, 1));
+            assertThat(payload.path("group_id").asLong()).isEqualTo(GROUP_ID);
+            assertThat(payload.path("subject_id").asLong()).isEqualTo(SUBJECT_ID);
+            assertThat(payload.path("lesson_number").asInt()).isEqualTo(1);
+            assertThat(payload.path("lesson_date").asText()).isEqualTo("2026-04-01");
+        }
+        assertThat(intentsBeforeReplay)
+                .extracting(envelope -> envelope.path("payload").path("user_id").asLong())
                 .containsExactlyInAnyOrder(99L, 100L, 101L);
         assertThat(
                         socket.postForEntity(
@@ -445,7 +475,7 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .extracting(AttendanceDocument::getId)
                 .containsExactlyInAnyOrderElementsOf(
                         stored.stream().map(AttendanceDocument::getId).toList());
-        assertThat(markedIntents()).hasSize(3);
+        assertThat(markedIntents()).containsExactlyInAnyOrderElementsOf(intentsBeforeReplay);
     }
 
     @Test

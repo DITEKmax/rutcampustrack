@@ -215,6 +215,7 @@ class StudentCheckinTransactionIT {
         mongoTemplate.dropCollection("student_checkin_pairs");
         mongoTemplate.dropCollection("student_checkin_receipts");
         mongoTemplate.dropCollection("attendance_outbox");
+        mongoTemplate.dropCollection("lesson_actions");
         mongoTemplate.dropCollection("request_attachments");
         mongoTemplate.dropCollection("semester_archive_fences");
         mongoTemplate
@@ -859,7 +860,7 @@ class StudentCheckinTransactionIT {
                             assertThat(errors)
                                     .as(
                                             "canonical attendance.marked payload must match event"
-                                                + " schema")
+                                                    + " schema")
                                     .isEmpty();
                         });
     }
@@ -1025,7 +1026,7 @@ class StudentCheckinTransactionIT {
                     assertThat(transientWriteConflict)
                             .as(
                                     "Only labelled Mongo112 WriteConflict is an admissible"
-                                        + " transport loser: %s",
+                                            + " transport loser: %s",
                                     error)
                             .isTrue();
                 }
@@ -1110,24 +1111,30 @@ class StudentCheckinTransactionIT {
 
     @Test
     void concurrentGeoAndApproveConvergeWithoutMixedProvenance() throws Exception {
+        var durable = durableRaceServices();
         Ack pending =
-                service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
+                durable.checkins()
+                        .checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
         when(geofence.evaluate(55.75, 37.61))
                 .thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
-
-        runConcurrent(
+        Callable<Ack> geo =
                 () ->
-                        service.checkin(
-                                student,
-                                lesson(),
-                                "key-000000000002",
-                                new Coordinates(55.75, 37.61)),
+                        durable.checkins()
+                                .checkin(
+                                        student,
+                                        lesson(),
+                                        "key-000000000002",
+                                        new Coordinates(55.75, 37.61));
+        Callable<Boolean> approve =
                 () -> {
-                    lateCheckinService.applyDecision(pending.request().id(), 777L, true);
-                    return null;
-                });
-
+                    durable.decisions().applyDecision(pending.request().id(), 777L, true);
+                    return true;
+                };
+        var settled = runConcurrent(geo, approve);
+        Ack geoAck = (Ack) settled.first();
+        assertThat(settled.second()).isEqualTo(true);
+        assertThat(geoAck.outcome()).isEqualTo(Outcome.PRESENT);
         var request = lateCheckinRepository.findById(pending.request().id()).orElseThrow();
         var attendance = attendanceRepository.findByLessonIdAndUserId(1L, 100L).orElseThrow();
         assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
@@ -1139,6 +1146,36 @@ class StudentCheckinTransactionIT {
             assertThat(attendance.getSource()).isEqualTo(AttendanceSource.LATE_CHECKIN);
             assertThat(attendance.getMarkedBy()).isEqualTo(777L);
         }
+        assertThat(raceRows("lesson_actions")).isNotEmpty();
+        assertThat(raceRows("attendance_outbox")).isNotEmpty();
+        var geoReceipt =
+                durable.checkins()
+                        .replay(student, 1L, "key-000000000002", new Coordinates(55.75, 37.61));
+        if (geoReceipt == null) {
+            // Approval may win before geo needs a write: that successful read has no new receipt.
+            assertThat(geoAck.attendance().source()).isEqualTo(AttendanceSource.LATE_CHECKIN);
+        } else assertThat(geoReceipt).isEqualTo(geoAck);
+        var beforeReplay = durableRaceSnapshot();
+        assertThat(
+                        durable.checkins()
+                                .checkin(
+                                        student,
+                                        lesson(),
+                                        "key-000000000001",
+                                        new Unavailable("TIMEOUT")))
+                .isEqualTo(pending);
+        if (geoReceipt != null) assertThat(geo.call()).isEqualTo(geoAck);
+        else
+            assertThat(
+                            durable.checkins()
+                                    .replay(
+                                            student,
+                                            1L,
+                                            "key-000000000002",
+                                            new Coordinates(55.75, 37.61)))
+                    .isNull();
+        assertThat(approve.call()).isTrue();
+        assertThat(durableRaceSnapshot()).isEqualTo(beforeReplay);
     }
 
     @Test
@@ -1250,27 +1287,75 @@ class StudentCheckinTransactionIT {
                                 .addStudents(StudentInfo.newBuilder().setUserId(100L).build())
                                 .build());
 
-        runConcurrent(
-                () ->
-                        service.checkin(
-                                student,
-                                lesson(),
-                                "key-000000000001",
-                                new Coordinates(55.75, 37.61)),
-                () ->
-                        markingService.markAttendance(
-                                1L, 100L, new MarkRequest(AttendanceStatus.ABSENT)),
-                Code.MANUAL_ABSENCE_REQUIRES_APPEAL);
-
+        var durable = durableRaceServices();
+        Callable<GeoAttempt> geo =
+                () -> {
+                    try {
+                        return new GeoAttempt(
+                                durable.checkins()
+                                        .checkin(
+                                                student,
+                                                lesson(),
+                                                "key-000000000001",
+                                                new Coordinates(55.75, 37.61)),
+                                null);
+                    } catch (StudentCheckinException refusal) {
+                        assertThat(refusal.code()).isEqualTo(Code.MANUAL_ABSENCE_REQUIRES_APPEAL);
+                        return new GeoAttempt(null, refusal.code());
+                    }
+                };
+        var settled =
+                runConcurrent(
+                        geo,
+                        () ->
+                                durable.marking()
+                                        .markAttendance(
+                                                1L,
+                                                100L,
+                                                new MarkRequest(AttendanceStatus.ABSENT)));
+        var geoAttempt = (GeoAttempt) settled.first();
+        assertThat(settled.second()).isInstanceOf(AttendanceDocument.class);
         var attendance = attendanceRepository.findByLessonIdAndUserId(1L, 100L).orElseThrow();
-        if (attendance.getStatus() == AttendanceStatus.ABSENT) {
-            assertThat(attendance.getSource()).isEqualTo(AttendanceSource.HEADMAN);
-            assertThat(attendance.getMarkedBy()).isEqualTo(777L);
+        // Both valid serial orders settle at the manual absence; geo must never overwrite it.
+        assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+        assertThat(attendance.getSource()).isEqualTo(AttendanceSource.HEADMAN);
+        assertThat(attendance.getMarkedBy()).isEqualTo(777L);
+        var geoReceipt =
+                durable.checkins()
+                        .replay(student, 1L, "key-000000000001", new Coordinates(55.75, 37.61));
+        if (geoAttempt.ack() != null) {
+            assertThat(geoAttempt.refusal()).isNull();
+            assertThat(geoAttempt.ack().outcome()).isEqualTo(Outcome.PRESENT);
+            assertThat(geoAttempt.ack().attendance().source())
+                    .isEqualTo(AttendanceSource.STUDENT_GEO);
+            assertThat(geoReceipt).isEqualTo(geoAttempt.ack());
         } else {
-            assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
-            assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
-            assertThat(attendance.getMarkedBy()).isNull();
+            assertThat(geoAttempt.refusal()).isEqualTo(Code.MANUAL_ABSENCE_REQUIRES_APPEAL);
+            assertThat(geoReceipt).isNull();
         }
+        assertThat(raceRows("lesson_actions")).isNotEmpty();
+        assertThat(
+                        mongoTemplate
+                                .getCollection("attendance_outbox")
+                                .countDocuments(
+                                        new org.bson.Document("event_type", "attendance.marked")))
+                .isPositive();
+        var beforeReplay = durableRaceSnapshot();
+        if (geoReceipt != null) assertThat(geo.call().ack()).isEqualTo(geoAttempt.ack());
+        else
+            assertThat(
+                            durable.checkins()
+                                    .replay(
+                                            student,
+                                            1L,
+                                            "key-000000000001",
+                                            new Coordinates(55.75, 37.61)))
+                    .isNull();
+        assertThat(durableRaceSnapshot()).isEqualTo(beforeReplay);
+        var finalAttendance = attendanceRepository.findByLessonIdAndUserId(1L, 100L).orElseThrow();
+        assertThat(finalAttendance.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+        assertThat(finalAttendance.getSource()).isEqualTo(AttendanceSource.HEADMAN);
+        assertThat(finalAttendance.getMarkedBy()).isEqualTo(777L);
     }
 
     @Test
@@ -1505,6 +1590,108 @@ class StudentCheckinTransactionIT {
                 false);
     }
 
+    @jakarta.annotation.Resource
+    org.springframework.beans.factory.config.AutowireCapableBeanFactory beanFactory;
+
+    @jakarta.annotation.Resource ru.rutcampustrack.attendance.audit.LessonActionService raceActions;
+
+    @jakarta.annotation.Resource
+    ru.rutcampustrack.attendance.audit.RequestActionRecorder raceRequestActions;
+
+    @jakarta.annotation.Resource
+    ru.rutcampustrack.attendance.audit.RejectedAttendanceActionService raceRejectedActions;
+
+    @jakarta.annotation.Resource AttendanceAttachmentService raceAttachments;
+
+    private record DurableRaceServices(
+            StudentCheckinService checkins, LateCheckinService decisions, MarkingService marking) {}
+
+    private record GeoAttempt(Ack ack, Code refusal) {}
+
+    private record RaceOutcome(Object first, Object second) {}
+
+    private DurableRaceServices durableRaceServices() {
+        var outbox = new MongoOutboxStorage(mongoTemplate, "attendance_outbox");
+        var mapper = new ObjectMapper().findAndRegisterModules();
+        var marked = new AttendanceEventPublisher(outbox, mapper);
+        marked.setActions(raceActions);
+        var late = new LateCheckinEventPublisher(outbox, mapper);
+        late.setRequestActions(raceRequestActions);
+        var checkins =
+                new StudentCheckinService(
+                        attendanceRepository,
+                        pairRepository,
+                        receiptRepository,
+                        lateCheckinRepository,
+                        excuseRepository,
+                        pairWriteCoordinator,
+                        geofence,
+                        marked,
+                        late,
+                        metrics,
+                        transactionTemplate,
+                        clock);
+        checkins.setRequestActions(raceRequestActions);
+        checkins.setRejectedActions(raceRejectedActions);
+        var decisions =
+                new LateCheckinService(
+                        lateCheckinRepository,
+                        requestContext,
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        attendanceRepository,
+                        attendanceWritePort,
+                        late,
+                        metrics,
+                        clock,
+                        pairWriteCoordinator,
+                        semesterCacheService);
+        decisions.setRequestActions(raceRequestActions);
+        var marking =
+                new MarkingService(
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        mongoTemplate,
+                        marked,
+                        semesterCacheService,
+                        requestContext,
+                        pairWriteCoordinator,
+                        clock,
+                        new SyncTaskExecutor(),
+                        raceAttachments);
+        marking.setRejectedActions(raceRejectedActions);
+        // Existing Spring advisors read the production @Transactional annotations; no test
+        // transaction wraps a command.
+        var proxiedDecisions =
+                (LateCheckinService) beanFactory.initializeBean(decisions, "durableRaceDecisions");
+        var proxiedMarking =
+                (MarkingService) beanFactory.initializeBean(marking, "durableRaceMarking");
+        assertThat(org.springframework.aop.support.AopUtils.isAopProxy(proxiedDecisions)).isTrue();
+        assertThat(org.springframework.aop.support.AopUtils.isAopProxy(proxiedMarking)).isTrue();
+        return new DurableRaceServices(checkins, proxiedDecisions, proxiedMarking);
+    }
+
+    private List<org.bson.Document> raceRows(String collection) {
+        return mongoTemplate
+                .getCollection(collection)
+                .find()
+                .sort(new org.bson.Document("_id", 1))
+                .into(new ArrayList<>());
+    }
+
+    private java.util.Map<String, List<org.bson.Document>> durableRaceSnapshot() {
+        var snapshot = new java.util.LinkedHashMap<String, List<org.bson.Document>>();
+        for (String collection :
+                List.of(
+                        "attendances",
+                        "student_checkin_pairs",
+                        "student_checkin_receipts",
+                        "late_checkin_requests",
+                        "lesson_actions",
+                        "attendance_outbox")) snapshot.put(collection, raceRows(collection));
+        return snapshot;
+    }
+
     private StudentCheckinService serviceWith(MongoOutboxStorage outbox) {
         ObjectMapper mapper = new ObjectMapper();
         return new StudentCheckinService(
@@ -1570,11 +1757,7 @@ class StudentCheckinTransactionIT {
         return false;
     }
 
-    private static void runConcurrent(Callable<?> first, Callable<?> second) throws Exception {
-        runConcurrent(first, second, null);
-    }
-
-    private static void runConcurrent(Callable<?> first, Callable<?> second, Code allowedDomainCode)
+    private static RaceOutcome runConcurrent(Callable<?> first, Callable<?> second)
             throws Exception {
         CountDownLatch start = new CountDownLatch(1);
         var pool = Executors.newFixedThreadPool(2);
@@ -1594,31 +1777,23 @@ class StudentCheckinTransactionIT {
             start.countDown();
             List<Callable<?>> operations = List.of(first, second);
             List<Future<?>> futures = List.of(firstFuture, secondFuture);
+            Object[] outcomes = new Object[2];
             List<Integer> conflicts = new ArrayList<>();
             for (int index = 0; index < futures.size(); index++) {
                 try {
-                    futures.get(index).get(20, java.util.concurrent.TimeUnit.SECONDS);
+                    outcomes[index] =
+                            futures.get(index).get(20, java.util.concurrent.TimeUnit.SECONDS);
                 } catch (java.util.concurrent.ExecutionException error) {
-                    if (error.getCause() instanceof StudentCheckinException domainError) {
-                        assertThat(allowedDomainCode).isNotNull();
-                        assertThat(domainError.code()).isEqualTo(allowedDomainCode);
-                    } else {
-                        assertThat(isLabelledWriteConflict(error))
-                                .as("only labelled Mongo conflict 112 is retryable")
-                                .isTrue();
-                        conflicts.add(index);
-                    }
+                    assertThat(isLabelledWriteConflict(error))
+                            .as("only labelled Mongo conflict 112 is retryable")
+                            .isTrue();
+                    conflicts.add(index);
                 }
             }
-            // Settle both original transactions before retrying the same command/key.
-            for (int index : conflicts) {
-                try {
-                    retryLabelledWriteConflict(operations.get(index));
-                } catch (StudentCheckinException domainError) {
-                    assertThat(allowedDomainCode).isNotNull();
-                    assertThat(domainError.code()).isEqualTo(allowedDomainCode);
-                }
-            }
+            // Settle both original transactions before retrying the identical command/key.
+            for (int index : conflicts)
+                outcomes[index] = retryLabelledWriteConflict(operations.get(index));
+            return new RaceOutcome(outcomes[0], outcomes[1]);
         } finally {
             pool.shutdownNow();
             assertThat(pool.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();

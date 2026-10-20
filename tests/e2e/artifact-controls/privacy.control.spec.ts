@@ -9,6 +9,8 @@ import {
   sanitizeTestErrors,
 } from '../fixtures/artifact-privacy';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
+import { deniedMark } from '../fixtures/cloud-accepted-support';
+import { Actor, type MobileDataset } from '../fixtures/mobile-dataset';
 import { rosterEditBlockFacts, validateFacts } from '../fixtures/first3-observer';
 import SafeReporter, {
   createD002ReconnectObserver,
@@ -50,6 +52,499 @@ const { renderTitleForCall } = require(
   ),
 );
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
+
+test('helper mark diagnostic: closed facts reject private and inconsistent projections', async ({}, info) => {
+  const common = {
+    path: 'HELPER_MARK_DENIAL' as const,
+    errorClass: 'Error',
+    code: 'UNKNOWN',
+    exitStatus: 'UNKNOWN',
+  };
+  const phases = [
+    {
+      action: 'BEFORE_REPORT',
+      httpStatus: null,
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: null,
+    },
+    {
+      action: 'BEFORE_REPORT',
+      httpStatus: 200,
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: null,
+    },
+    {
+      action: 'BEFORE_ENTRY',
+      httpStatus: 200,
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: null,
+    },
+    {
+      action: 'MARK_REQUEST',
+      httpStatus: null,
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: false,
+    },
+    {
+      action: 'MARK_STATUS',
+      httpStatus: 403,
+      markHttpStatus: 403,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: true,
+    },
+    {
+      action: 'AFTER_REPORT',
+      httpStatus: null,
+      markHttpStatus: 403,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: false,
+    },
+    {
+      action: 'STATUS_EQUAL',
+      httpStatus: 200,
+      markHttpStatus: 403,
+      statusEqual: false,
+      revisionEqual: false,
+      excusedTransition: false,
+    },
+    {
+      action: 'STATUS_EQUAL',
+      httpStatus: 200,
+      markHttpStatus: 403,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: false,
+    },
+    {
+      action: 'REVISION_EQUAL',
+      httpStatus: 200,
+      markHttpStatus: 403,
+      statusEqual: true,
+      revisionEqual: false,
+      excusedTransition: true,
+    },
+  ] as const;
+  const annotation = (value: unknown) => [
+    {
+      type: 'rct-native-primary-v1',
+      description: JSON.stringify(value),
+    },
+  ];
+  for (const phase of phases) {
+    const annotations: TestInfo['annotations'] = [];
+    retainNativePrimaryFailure(annotations, 'HELPER_MARK_DENIAL', phase.action, new Error(marker), {
+      ...phase,
+      private: marker,
+    });
+    // Fixed own fields only: neither the marker nor the supplied extra key is retained.
+    const facts = {
+      ...common,
+      action: phase.action,
+      httpStatus: phase.httpStatus,
+      markHttpStatus: phase.markHttpStatus,
+      statusEqual: phase.statusEqual,
+      revisionEqual: phase.revisionEqual,
+      excusedTransition: phase.excusedTransition,
+    };
+    expect(safeNativePrimaryFailures(annotations)).toEqual([facts]);
+    expect(JSON.stringify(annotations).includes(marker)).toBe(false);
+    retainNativePrimaryFailure(
+      annotations,
+      'HELPER_MARK_DENIAL',
+      'BEFORE_REPORT',
+      new Error(marker),
+      phases[0],
+    );
+    expect(safeNativePrimaryFailures(annotations)).toEqual([facts]);
+    expect(annotations).toHaveLength(1);
+  }
+  const facts = { ...common, ...phases[6] };
+  // Preserve canonical producer field order for otherwise-valid hostile candidates.
+  const canonical = (patch: object) => ({
+    path: facts.path,
+    action: facts.action,
+    errorClass: facts.errorClass,
+    code: facts.code,
+    exitStatus: facts.exitStatus,
+    httpStatus: facts.httpStatus,
+    markHttpStatus: facts.markHttpStatus,
+    statusEqual: facts.statusEqual,
+    revisionEqual: facts.revisionEqual,
+    excusedTransition: facts.excusedTransition,
+    ...patch,
+  });
+  for (const value of [
+    null,
+    [],
+    marker,
+    canonical({ action: marker }),
+    canonical({ extra: marker }),
+    canonical({ path: marker }),
+    ...[0, 99, 600, -1, 200.5, '200', true, {}, []].map((httpStatus) => canonical({ httpStatus })),
+    ...[0, 99, 600, -1, 403.5, '403', true, {}, []].map((markHttpStatus) =>
+      canonical({ markHttpStatus }),
+    ),
+    ...[0, 1, 'false', {}, []].flatMap((value) => [
+      canonical({ statusEqual: value }),
+      canonical({ revisionEqual: value }),
+      canonical({ excusedTransition: value }),
+    ]),
+    canonical({ action: 'MARK_REQUEST' }),
+    canonical({ markHttpStatus: null }),
+    canonical({ statusEqual: true }),
+    canonical({ statusEqual: null }),
+    canonical({ revisionEqual: null }),
+    canonical({ excusedTransition: null }),
+    canonical({
+      action: 'BEFORE_ENTRY',
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: null,
+      httpStatus: null,
+    }),
+    canonical({ action: 'MARK_STATUS', httpStatus: 200, statusEqual: null, revisionEqual: null }),
+    canonical({ action: 'REVISION_EQUAL', statusEqual: true, revisionEqual: true }),
+  ])
+    expect(safeNativePrimaryFailures(annotation(value))).toEqual([]);
+  const missing = canonical({}) as Record<string, unknown>;
+  delete missing.excusedTransition;
+  expect(safeNativePrimaryFailures(annotation(missing))).toEqual([]);
+  expect(
+    safeNativePrimaryFailures([{ type: 'rct-native-primary-v1', description: marker.repeat(80) }]),
+  ).toEqual([]);
+  expect(safeNativePrimaryFailures([{ type: 'rct-native-primary-v1', description: '{' }])).toEqual(
+    [],
+  );
+  let getterReads = 0;
+  const hostile = Object.fromEntries(
+    ['httpStatus', 'markHttpStatus', 'statusEqual', 'revisionEqual', 'excusedTransition'].map(
+      (key) => [key, null],
+    ),
+  );
+  for (const key of Object.keys(hostile))
+    Object.defineProperty(hostile, key, {
+      get: () => {
+        getterReads++;
+        throw new Error(marker);
+      },
+    });
+  const hostileAnnotations: TestInfo['annotations'] = [];
+  retainNativePrimaryFailure(
+    hostileAnnotations,
+    'HELPER_MARK_DENIAL',
+    'BEFORE_REPORT',
+    new Error(marker),
+    hostile,
+  );
+  expect(getterReads).toBe(0);
+  expect(safeNativePrimaryFailures(hostileAnnotations)).toEqual([{ ...common, ...phases[0] }]);
+  const helperFields = [
+    'httpStatus',
+    'markHttpStatus',
+    'statusEqual',
+    'revisionEqual',
+    'excusedTransition',
+  ] as const;
+  for (const [field, phase] of [
+    ['httpStatus', phases[1]],
+    ['markHttpStatus', phases[4]],
+    ['statusEqual', phases[8]],
+    ['revisionEqual', phases[6]],
+    ['excusedTransition', phases[3]],
+  ] as const) {
+    const reads = Object.fromEntries(helperFields.map((key) => [key, 0]));
+    const changing = new Proxy(
+      {},
+      {
+        getOwnPropertyDescriptor: (_target, key) => {
+          if (!helperFields.includes(key as (typeof helperFields)[number])) return undefined;
+          const name = key as (typeof helperFields)[number];
+          const value = name === field && reads[name] > 0 ? marker : phase[name];
+          reads[name]++;
+          return { value, configurable: true };
+        },
+      },
+    );
+    const annotations: TestInfo['annotations'] = [];
+    retainNativePrimaryFailure(
+      annotations,
+      'HELPER_MARK_DENIAL',
+      phase.action,
+      new Error(marker),
+      changing,
+    );
+    expect(reads).toEqual(Object.fromEntries(helperFields.map((key) => [key, 1])));
+    expect(JSON.stringify(annotations).includes(marker)).toBe(false);
+    expect(safeNativePrimaryFailures(annotations)).toEqual([{ ...common, ...phase }]);
+  }
+  const capped = Array.from({ length: 32 }, () => ({ type: 'public-control', description: '' }));
+  retainNativePrimaryFailure(
+    capped,
+    'HELPER_MARK_DENIAL',
+    'BEFORE_REPORT',
+    new Error(marker),
+    phases[0],
+  );
+  expect(capped).toHaveLength(32);
+  info.annotations.push(...hostileAnnotations);
+});
+
+test('helper mark diagnostic: throwing observer preserves native attempts and original error', async () => {
+  let fetches = 0;
+  let statusReads = 0;
+  let jsonReads = 0;
+  const payload = {};
+  const original = new Error(marker);
+  const observations: (number | null)[] = [];
+  const actor = new Actor(
+    {
+      fetch: async () => {
+        if (++fetches === 2) throw original;
+        return {
+          status: () => {
+            statusReads++;
+            return 200;
+          },
+          json: async () => {
+            jsonReads++;
+            return payload;
+          },
+        };
+      },
+    } as unknown as Actor['request'],
+    marker,
+    {} as Actor['session'],
+  );
+  const observe = (status: number | null) => {
+    observations.push(status);
+    throw new Error(marker);
+  };
+  expect(
+    (await actor.call('GET', '/synthetic', undefined, undefined, undefined, observe)) === payload,
+  ).toBe(true);
+  let caught: unknown;
+  try {
+    await actor.call('GET', '/synthetic', undefined, undefined, undefined, observe);
+  } catch (error) {
+    caught = error;
+  }
+  expect(caught === original).toBe(true);
+  expect(observations).toEqual([null, 200, null]);
+  expect({ fetches, statusReads, jsonReads }).toEqual({ fetches: 2, statusReads: 1, jsonReads: 1 });
+});
+
+type HelperControlRow = { status: string | null; markRevision: string | null };
+function helperMarkControl(before: HelperControlRow, after: HelperControlRow, putError?: Error) {
+  let reports = 0;
+  let puts = 0;
+  let reportStatusReads = 0;
+  let putStatusReads = 0;
+  let casMatched = false;
+  const request = {
+    fetch: async () => {
+      const row = ++reports === 1 ? before : after;
+      return {
+        status: () => {
+          reportStatusReads++;
+          return 200;
+        },
+        json: async () => ({ entries: [{ userId: 2, ...row }] }),
+      };
+    },
+    put: async (
+      _path: string,
+      options: { data: { status: string; expectedStatus: string; expectedRevision: string } },
+    ) => {
+      puts++;
+      casMatched =
+        options.data.status === 'PRESENT' &&
+        options.data.expectedStatus ===
+          (before.status === null ? 'EMPTY' : before.status.toUpperCase()) &&
+        options.data.expectedRevision === (before.markRevision ?? 'EMPTY');
+      if (putError) throw putError;
+      return {
+        status: () => {
+          putStatusReads++;
+          return 403;
+        },
+      };
+    },
+  };
+  const actor = new Actor(request as unknown as Actor['request'], marker, {} as Actor['session']);
+  return {
+    dataset: {
+      request,
+      headmanActor: actor,
+      lesson: { physicalLessonId: 1 },
+      student: { id: 2 },
+    } as unknown as MobileDataset,
+    counts: () => ({ reports, puts, reportStatusReads, putStatusReads, casMatched }),
+  };
+}
+
+test('helper mark diagnostic: actual helper keeps denied 403 CAS and immutable readbacks', async ({}, info) => {
+  for (const row of [
+    { status: null, markRevision: null },
+    { status: 'present', markRevision: marker },
+  ]) {
+    const before = { ...row };
+    const after = { ...row };
+    const control = helperMarkControl(before, after);
+    await deniedMark(control.dataset, marker);
+    expect(control.counts()).toEqual({
+      reports: 2,
+      puts: 1,
+      reportStatusReads: 2,
+      putStatusReads: 1,
+      casMatched: true,
+    });
+    expect(
+      before.status === row.status &&
+        before.markRevision === row.markRevision &&
+        after.status === row.status &&
+        after.markRevision === row.markRevision,
+    ).toBe(true);
+  }
+  expect(
+    safeNativePrimaryFailures(info.annotations).some((row) => row.path === 'HELPER_MARK_DENIAL'),
+  ).toBe(false);
+});
+
+for (const [name, before, after, action, statusEqual, revisionEqual, excusedTransition] of [
+  [
+    'status changes after 403',
+    { status: null, markRevision: null },
+    { status: 'absent', markRevision: marker },
+    'STATUS_EQUAL',
+    false,
+    false,
+    false,
+  ],
+  [
+    'revision changes after 403',
+    { status: 'excused', markRevision: marker },
+    { status: 'excused', markRevision: `${marker}_next` },
+    'REVISION_EQUAL',
+    true,
+    false,
+    true,
+  ],
+] as const)
+  test(`helper mark diagnostic: actual helper distinguishes ${name}`, async ({}, info) => {
+    const control = helperMarkControl(before, after);
+    let caught: unknown;
+    try {
+      await deniedMark(control.dataset, marker);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught !== undefined).toBe(true);
+    expect(control.counts()).toEqual({
+      reports: 2,
+      puts: 1,
+      reportStatusReads: 2,
+      putStatusReads: 1,
+      casMatched: true,
+    });
+    expect(safeNativePrimaryFailures(info.annotations)).toEqual([
+      {
+        path: 'HELPER_MARK_DENIAL',
+        action,
+        errorClass: 'Error',
+        code: 'UNKNOWN',
+        exitStatus: 'UNKNOWN',
+        httpStatus: 200,
+        markHttpStatus: 403,
+        statusEqual,
+        revisionEqual,
+        excusedTransition,
+      },
+    ]);
+    expect(JSON.stringify(info.annotations).includes(marker)).toBe(false);
+  });
+
+test('helper mark diagnostic: actual transport rejection retains null and original error', async ({}, info) => {
+  const original = Object.assign(new Error(marker), { code: 'ECONNRESET' });
+  const control = helperMarkControl(
+    { status: null, markRevision: null },
+    { status: null, markRevision: null },
+    original,
+  );
+  let caught: unknown;
+  try {
+    await deniedMark(control.dataset, marker);
+  } catch (error) {
+    caught = error;
+  }
+  expect(caught === original).toBe(true);
+  expect(control.counts()).toEqual({
+    reports: 1,
+    puts: 1,
+    reportStatusReads: 1,
+    putStatusReads: 0,
+    casMatched: true,
+  });
+  expect(safeNativePrimaryFailures(info.annotations)).toEqual([
+    {
+      path: 'HELPER_MARK_DENIAL',
+      action: 'MARK_REQUEST',
+      errorClass: 'Error',
+      code: 'ECONNRESET',
+      exitStatus: 'UNKNOWN',
+      httpStatus: null,
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: false,
+    },
+  ]);
+});
+
+test('helper mark diagnostic: original entry validity check still rejects before PUT', async ({}, info) => {
+  const control = helperMarkControl(
+    { status: null, markRevision: marker },
+    { status: null, markRevision: null },
+  );
+  let caught: unknown;
+  try {
+    await deniedMark(control.dataset, marker);
+  } catch (error) {
+    caught = error;
+  }
+  expect(caught !== undefined).toBe(true);
+  expect(control.counts()).toEqual({
+    reports: 1,
+    puts: 0,
+    reportStatusReads: 1,
+    putStatusReads: 0,
+    casMatched: false,
+  });
+  expect(safeNativePrimaryFailures(info.annotations)).toEqual([
+    {
+      path: 'HELPER_MARK_DENIAL',
+      action: 'BEFORE_ENTRY',
+      errorClass: 'Error',
+      code: 'UNKNOWN',
+      exitStatus: 'UNKNOWN',
+      httpStatus: 200,
+      markHttpStatus: null,
+      statusEqual: null,
+      revisionEqual: null,
+      excusedTransition: null,
+    },
+  ]);
+});
 
 test('successful sensitive step metadata and worker output are not emitted', async ({}, info) => {
   const pin = {

@@ -146,6 +146,15 @@ const nativePrimaryPaths = {
   ASYNC_REPORT: ['WAIT_DOWNLOAD'],
   BOT_ROLE_MENU: ['CHILD_EXIT'],
   SESSION_RELOAD: ['NAVIGATION', 'WAIT_RESPONSE', 'HTTP_STATUS', 'JSON_DECODE'],
+  HELPER_MARK_DENIAL: [
+    'BEFORE_REPORT',
+    'BEFORE_ENTRY',
+    'MARK_REQUEST',
+    'MARK_STATUS',
+    'AFTER_REPORT',
+    'STATUS_EQUAL',
+    'REVISION_EQUAL',
+  ],
 } as const;
 const nativeErrorClasses = [
   'Error',
@@ -288,7 +297,14 @@ interface NativePrimaryFailure {
     | 'NAVIGATION'
     | 'WAIT_RESPONSE'
     | 'HTTP_STATUS'
-    | 'JSON_DECODE';
+    | 'JSON_DECODE'
+    | 'BEFORE_REPORT'
+    | 'BEFORE_ENTRY'
+    | 'MARK_REQUEST'
+    | 'MARK_STATUS'
+    | 'AFTER_REPORT'
+    | 'STATUS_EQUAL'
+    | 'REVISION_EQUAL';
   errorClass: (typeof nativeErrorClasses)[number];
   code: (typeof nativeErrorCodes)[number];
   exitStatus: number | 'UNKNOWN';
@@ -298,11 +314,55 @@ interface NativePrimaryFailure {
     | (typeof nativeTransportHints)[number]
     | (typeof nativeReloadTransportHints)[number];
   httpStatus?: number | null;
+  markHttpStatus?: number | null;
+  statusEqual?: boolean | null;
+  revisionEqual?: boolean | null;
+  excusedTransition?: boolean | null;
   phase?: (typeof nativeBotPhases)[number];
   checks?: number | 'UNKNOWN';
   headmanReadOutcome?: (typeof nativeBotReadOutcomes)[number];
   readStage?: (typeof nativeBotReadStages)[number];
   readCause?: (typeof nativeBotReadCauses)[number];
+}
+
+function nullableNativeHttpStatus(value: unknown): value is number | null {
+  return (
+    value === null ||
+    (typeof value === 'number' && Number.isInteger(value) && value >= 100 && value <= 599)
+  );
+}
+
+function nullableBoolean(value: unknown): value is boolean | null {
+  return value === null || typeof value === 'boolean';
+}
+
+/** Phase constraints keep an absent response distinct from a denied PUT and later readback. */
+function helperMarkPhaseMatches(
+  action: unknown,
+  httpStatus: unknown,
+  markHttpStatus: unknown,
+  statusEqual: unknown,
+  revisionEqual: unknown,
+  excusedTransition: unknown,
+): boolean {
+  const noEquality = statusEqual === null && revisionEqual === null;
+  if (action === 'BEFORE_REPORT' || action === 'BEFORE_ENTRY')
+    return (
+      markHttpStatus === null &&
+      noEquality &&
+      excusedTransition === null &&
+      (action === 'BEFORE_REPORT' || httpStatus === 200)
+    );
+  if (typeof excusedTransition !== 'boolean') return false;
+  if (action === 'MARK_REQUEST')
+    return httpStatus === null && markHttpStatus === null && noEquality;
+  if (action === 'MARK_STATUS') return httpStatus === markHttpStatus && noEquality;
+  if (markHttpStatus !== 403) return false;
+  if (action === 'AFTER_REPORT') return noEquality;
+  if (httpStatus !== 200) return false;
+  if (action === 'STATUS_EQUAL')
+    return noEquality || (statusEqual === false && typeof revisionEqual === 'boolean');
+  return action === 'REVISION_EQUAL' && statusEqual === true && revisionEqual === false;
 }
 
 /** First facts only; no raw messages, commands, output, paths or object-supplied class names. */
@@ -316,6 +376,42 @@ export function retainNativePrimaryFailure(
   if (
     annotations.length >= 32 ||
     safeNativePrimaryFailures(annotations).some((row) => row.path === path)
+  )
+    return;
+  let helperMarkStatus:
+    | {
+        httpStatus: number | null;
+        markHttpStatus: number | null;
+        statusEqual: boolean | null;
+        revisionEqual: boolean | null;
+        excusedTransition: boolean | null;
+      }
+    | undefined;
+  if (path === 'HELPER_MARK_DENIAL') {
+    // A descriptor Proxy can change on every read. Validate exactly the captured primitives.
+    const httpStatus = ownData(jobStatus, 'httpStatus');
+    const markHttpStatus = ownData(jobStatus, 'markHttpStatus');
+    const statusEqual = ownData(jobStatus, 'statusEqual');
+    const revisionEqual = ownData(jobStatus, 'revisionEqual');
+    const excusedTransition = ownData(jobStatus, 'excusedTransition');
+    helperMarkStatus = {
+      httpStatus: nullableNativeHttpStatus(httpStatus) ? httpStatus : null,
+      markHttpStatus: nullableNativeHttpStatus(markHttpStatus) ? markHttpStatus : null,
+      statusEqual: typeof statusEqual === 'boolean' ? statusEqual : null,
+      revisionEqual: typeof revisionEqual === 'boolean' ? revisionEqual : null,
+      excusedTransition: typeof excusedTransition === 'boolean' ? excusedTransition : null,
+    };
+  }
+  if (
+    helperMarkStatus &&
+    !helperMarkPhaseMatches(
+      action,
+      helperMarkStatus.httpStatus,
+      helperMarkStatus.markHttpStatus,
+      helperMarkStatus.statusEqual,
+      helperMarkStatus.revisionEqual,
+      helperMarkStatus.excusedTransition,
+    )
   )
     return;
   let errorClass: NativePrimaryFailure['errorClass'] = 'UNKNOWN';
@@ -503,6 +599,7 @@ export function retainNativePrimaryFailure(
       ...transport,
       ...botPhase,
       ...reloadStatus,
+      ...helperMarkStatus,
     }),
   });
 }
@@ -528,6 +625,10 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const errorCode = ownData(value, 'errorCode');
     const transportHint = ownData(value, 'transportHint');
     const httpStatus = ownData(value, 'httpStatus');
+    const markHttpStatus = ownData(value, 'markHttpStatus');
+    const statusEqual = ownData(value, 'statusEqual');
+    const revisionEqual = ownData(value, 'revisionEqual');
+    const excusedTransition = ownData(value, 'excusedTransition');
     const phase = ownData(value, 'phase');
     const checks = ownData(value, 'checks');
     const headmanReadOutcome = ownData(value, 'headmanReadOutcome');
@@ -540,6 +641,14 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     const fields = ['path', 'action', 'errorClass', 'code', 'exitStatus'];
     if (path === 'SEMESTER_PREVIEW') fields.push('transportHint');
     if (path === 'SESSION_RELOAD') fields.push('transportHint', 'httpStatus');
+    if (path === 'HELPER_MARK_DENIAL')
+      fields.push(
+        'httpStatus',
+        'markHttpStatus',
+        'statusEqual',
+        'revisionEqual',
+        'excusedTransition',
+      );
     if (path === 'ASYNC_REPORT') fields.push('state');
     if (path === 'ASYNC_REPORT' && state === 'error') fields.push('errorCode');
     if (path === 'BOT_ROLE_MENU') fields.push('phase');
@@ -552,6 +661,20 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
     if (
       keys.length !== fields.length ||
       keys.some((key) => !fields.includes(key)) ||
+      (path === 'HELPER_MARK_DENIAL' &&
+        (!nullableNativeHttpStatus(httpStatus) ||
+          !nullableNativeHttpStatus(markHttpStatus) ||
+          !nullableBoolean(statusEqual) ||
+          !nullableBoolean(revisionEqual) ||
+          !nullableBoolean(excusedTransition) ||
+          !helperMarkPhaseMatches(
+            ownData(value, 'action'),
+            httpStatus,
+            markHttpStatus,
+            statusEqual,
+            revisionEqual,
+            excusedTransition,
+          ))) ||
       (path === 'SEMESTER_PREVIEW' &&
         !nativeTransportHints.some((candidate) => candidate === transportHint)) ||
       (path === 'SESSION_RELOAD' &&
@@ -591,7 +714,8 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
         path !== 'SEMESTER_PREVIEW' &&
         path !== 'ASYNC_REPORT' &&
         path !== 'BOT_ROLE_MENU' &&
-        path !== 'SESSION_RELOAD') ||
+        path !== 'SESSION_RELOAD' &&
+        path !== 'HELPER_MARK_DENIAL') ||
       !nativePrimaryPaths[path].some((candidate) => candidate === action) ||
       !nativeErrorClasses.some((candidate) => candidate === errorClass) ||
       !nativeErrorCodes.some((candidate) => candidate === code) ||
@@ -611,6 +735,23 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
         JSON.stringify({ path, action, errorClass, code, exitStatus, httpStatus, transportHint })
     )
       continue;
+    if (
+      path === 'HELPER_MARK_DENIAL' &&
+      description !==
+        JSON.stringify({
+          path,
+          action,
+          errorClass,
+          code,
+          exitStatus,
+          httpStatus,
+          markHttpStatus,
+          statusEqual,
+          revisionEqual,
+          excusedTransition,
+        })
+    )
+      continue;
     result.push({
       path,
       action,
@@ -620,6 +761,9 @@ export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFa
       ...(path === 'ASYNC_REPORT' ? { state, ...(state === 'error' ? { errorCode } : {}) } : {}),
       ...(path === 'SEMESTER_PREVIEW' ? { transportHint } : {}),
       ...(path === 'SESSION_RELOAD' ? { transportHint, httpStatus } : {}),
+      ...(path === 'HELPER_MARK_DENIAL'
+        ? { httpStatus, markHttpStatus, statusEqual, revisionEqual, excusedTransition }
+        : {}),
       ...(path === 'BOT_ROLE_MENU'
         ? {
             phase,

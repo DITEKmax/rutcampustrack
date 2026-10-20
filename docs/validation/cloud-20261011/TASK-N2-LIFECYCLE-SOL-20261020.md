@@ -59,3 +59,17 @@ Assigned sole N2 fixture writer `/root/n2_sol_trigger_author` in `/tmp/rct-n2-so
 ## Integration checkpoint
 
 Both frozen deltas are independently internally approved and integrated byte-for-byte: LC review `567bcd3eae2590ba4c835574596f4a9f8d317c9e10246169dce623d37871fb20`; N2/combined review `5c41dabf981256eb423819327d6c8d14b22e9cdf14a79bf59cccc944704202ce`. Final combined inventory is six executable paths, one shared workflow. N2 production remains c253. Both c253 main lifecycle paths pass; current PR active N2 preparation failure is preserved. Actual-staged checks precede commit; publication waits for current runs to finish. External review PENDING.
+
+## Current gate counterfailures — bounded continuation
+
+N2 active/suspended and original D002 now PASS on both exact8afc push/PR. A separate push MANAGE_EXCUSES failure is localized to deniedMark call480, after successful decision/readback, with its inner assertion/HTTP lost; PR counterpart6/6PASS. Actual-module403 controls confirm comparison ambiguity but do not prove a historical writer race; pinned clock does not support the scheduler hypothesis.
+
+A separate PR production-worker update fails after SKIP_WAITING send with old document and candidate still installed; pushworker3/3PASS. This does not prove a missed load event or GitHub failure. MissingwaitUntil is not a justified fix under the standard. `/root/worker_update_diagnosis` is read-only, finite source/VM analysis; no browser/CDP/runtime or product changes.
+
+Necessary correction scope is the helper diagnostic loss: `/root/helper_mark_diagnosis` owns `/tmp/rct-helper-mark-sol-20261020` at8afc, deniedMark/native Actor status seam/closed SafeReporter/selected privacy controls/required source pins. No business/authz/assertion/retry/timeout change; no historical cause claim. Root integrates only reviewed hashes after meaningful bounded controls. Current CI is allowed to finish before any next publication. Frozen39/39 and eleven external findings are unchanged; these are current gate blockers, not new percentage credit or new selected product requirements.
+
+## Helper diagnostic correction after finite counterfailure analysis
+
+All five8afc gates are terminal; core N2 and main lifecycle pass in both events, while push helper and PR worker fail separately. Both historical causes remain UNKNOWN. The finite worker exact-module/spec analysis found no justified product correction. The confirmed helper diagnostic information loss is corrected within six owned files, without changing original operations, CAS, exact403, comparisons, permissions, retry or timeout.
+
+Seven new controls plus three unchanged controls require exact10. Scoped strict TypeScript, selected7 and consumer/source-pin/privacy-egress checks PASS under CPU1/RSS512MiB/reserve bounds; full local launcher remains NOT_RUN/NOFIT. Provisional internal R1 found validation followed by a second own-data read; author now captures the five primitives once and extends the first control for all five changing descriptors. The original probe showed annotation substitution, while the parser rejected it; safe-results egress leak is not established. Corrected frozen manifest28298a5e and scoped independent internal review3f484cc8 APPROVE are retained in ignored evidence. Root integrates only exact reviewed hashes. Actual-staged precommit and new-source ordinary gates remain required before final handoff. External review remains PENDING, old10 FIXED and frozen v3 denominator unchanged.

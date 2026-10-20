@@ -239,20 +239,32 @@ export class Actor {
     data?: unknown,
     statuses = [200],
     extraHeaders: Record<string, string> = {},
+    observeHttpStatus?: (status: number | null) => void,
   ): Promise<Model> {
+    try {
+      observeHttpStatus?.(null);
+    } catch {
+      // A previous observation cannot become this attempt's transport outcome.
+    }
     const response = await this.request.fetch(path, {
       method,
       data,
       headers: { ...this.headers(), ...extraHeaders },
     });
-    if (!statuses.includes(response.status())) {
+    const httpStatus = response.status();
+    try {
+      observeHttpStatus?.(httpStatus);
+    } catch {
+      // Optional diagnostics cannot replace the original response/decode outcome.
+    }
+    if (!statuses.includes(httpStatus)) {
       retainMarkRequestId(response, method, path, this.session);
-      const failure = datasetHttpFailure(method, path, response.status());
+      const failure = datasetHttpFailure(method, path, httpStatus);
       const subjectCreate = method === 'POST' && path === '/api/academic/subjects';
       const subjectDeletePreview =
         method === 'GET' &&
         /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}\/deletion-preview$/.test(path);
-      if (response.status() === 503 && (subjectCreate || subjectDeletePreview)) {
+      if (httpStatus === 503 && (subjectCreate || subjectDeletePreview)) {
         try {
           const annotations = base.info().annotations;
           retainFirstDatasetHttpFailure(annotations, failure);
@@ -265,7 +277,7 @@ export class Actor {
       }
       throw failure;
     }
-    return response.status() === 204 ? {} : response.json();
+    return httpStatus === 204 ? {} : response.json();
   }
 }
 

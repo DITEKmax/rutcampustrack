@@ -141,39 +141,105 @@ export async function oneOff(dataset: MobileDataset, date: string, lessonNumber:
 /** Negative mark checks compare the durable status/revision before and after. */
 export async function deniedMark(dataset: MobileDataset, token: string): Promise<void> {
   const reportPath = `/api/attendance/reports/lesson/${dataset.lesson.physicalLessonId}`;
-  const before = await dataset.headmanActor.call('GET', reportPath);
-  const entry = before.entries.find((row: { userId: number }) => row.userId === dataset.student.id);
-  const expectedStatus =
-    entry?.status === null
-      ? 'EMPTY'
-      : typeof entry?.status === 'string'
-        ? entry.status.toUpperCase()
-        : '';
-  const expectedRevision = entry?.markRevision ?? 'EMPTY';
-  expect(
-    (entry?.status === null && entry.markRevision === null) ||
-      (typeof entry?.status === 'string' &&
-        ['PRESENT', 'EXCUSED', 'ABSENT'].includes(expectedStatus) &&
-        typeof expectedRevision === 'string' &&
-        expectedRevision !== 'EMPTY' &&
-        /^[A-Za-z0-9_-]{1,128}$/.test(expectedRevision)),
-  ).toBe(true);
-  const response = await dataset.request.put(
-    `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.student.id}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      data: {
-        status: 'PRESENT',
-        expectedStatus,
-        expectedRevision,
+  let action:
+    | 'BEFORE_REPORT'
+    | 'BEFORE_ENTRY'
+    | 'MARK_REQUEST'
+    | 'MARK_STATUS'
+    | 'AFTER_REPORT'
+    | 'STATUS_EQUAL'
+    | 'REVISION_EQUAL' = 'BEFORE_REPORT';
+  let httpStatus: number | null = null;
+  let markHttpStatus: number | null = null;
+  let statusEqual: boolean | null = null;
+  let revisionEqual: boolean | null = null;
+  let excusedTransition: boolean | null = null;
+  const observeHttpStatus = (status: number | null): void => {
+    httpStatus =
+      typeof status === 'number' && Number.isInteger(status) && status >= 100 && status <= 599
+        ? status
+        : null;
+  };
+  try {
+    const before = await dataset.headmanActor.call(
+      'GET',
+      reportPath,
+      undefined,
+      undefined,
+      undefined,
+      observeHttpStatus,
+    );
+    action = 'BEFORE_ENTRY';
+    const entry = before.entries.find(
+      (row: { userId: number }) => row.userId === dataset.student.id,
+    );
+    const expectedStatus =
+      entry?.status === null
+        ? 'EMPTY'
+        : typeof entry?.status === 'string'
+          ? entry.status.toUpperCase()
+          : '';
+    const expectedRevision = entry?.markRevision ?? 'EMPTY';
+    expect(
+      (entry?.status === null && entry.markRevision === null) ||
+        (typeof entry?.status === 'string' &&
+          ['PRESENT', 'EXCUSED', 'ABSENT'].includes(expectedStatus) &&
+          typeof expectedRevision === 'string' &&
+          expectedRevision !== 'EMPTY' &&
+          /^[A-Za-z0-9_-]{1,128}$/.test(expectedRevision)),
+    ).toBe(true);
+    excusedTransition = expectedStatus === 'EXCUSED';
+    action = 'MARK_REQUEST';
+    httpStatus = null;
+    const response = await dataset.request.put(
+      `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.student.id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        data: {
+          status: 'PRESENT',
+          expectedStatus,
+          expectedRevision,
+        },
       },
-    },
-  );
-  expect(response.status()).toBe(403);
-  const after = await dataset.headmanActor.call('GET', reportPath);
-  const actual = after.entries.find((row: { userId: number }) => row.userId === dataset.student.id);
-  expect(actual.status).toBe(entry.status);
-  expect(actual.markRevision).toBe(entry.markRevision);
+    );
+    const observed = response.status();
+    observeHttpStatus(observed);
+    markHttpStatus = httpStatus;
+    action = 'MARK_STATUS';
+    expect(observed).toBe(403);
+    action = 'AFTER_REPORT';
+    httpStatus = null;
+    const after = await dataset.headmanActor.call(
+      'GET',
+      reportPath,
+      undefined,
+      undefined,
+      undefined,
+      observeHttpStatus,
+    );
+    const actual = after.entries.find(
+      (row: { userId: number }) => row.userId === dataset.student.id,
+    );
+    action = 'STATUS_EQUAL';
+    statusEqual = actual ? actual.status === entry.status : null;
+    revisionEqual = actual ? actual.markRevision === entry.markRevision : null;
+    expect(actual.status).toBe(entry.status);
+    action = 'REVISION_EQUAL';
+    expect(actual.markRevision).toBe(entry.markRevision);
+  } catch (error) {
+    try {
+      retainNativePrimaryFailure(test.info().annotations, 'HELPER_MARK_DENIAL', action, error, {
+        httpStatus,
+        markHttpStatus,
+        statusEqual,
+        revisionEqual,
+        excusedTransition,
+      });
+    } catch {
+      // Preserve the first original helper failure even when diagnostics are unavailable.
+    }
+    throw error;
+  }
 }
 
 /** Closed registry table boundary; exported identities stay in memory, results are booleans. */

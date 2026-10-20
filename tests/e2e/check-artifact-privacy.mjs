@@ -104,7 +104,7 @@ try {
     process.exitCode = 1
   } else {
     const successRetained =
-      normal.report?.results.filter((row) => row.status === 'passed').length === 3
+      normal.report?.results.filter((row) => row.status === 'passed').length === 10
     const titleControl = normal.artifactFiles
       .filter((path) => path.endsWith('control.json'))
       .some(

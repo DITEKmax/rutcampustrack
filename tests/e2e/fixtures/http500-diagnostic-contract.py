@@ -62,7 +62,8 @@ private = "SYNTHETIC_PRIVATE_MARKER_NOT_FOR_OUTPUT"
 
 
 def current_receipt():
-    # Same closed signature as artifact12233356110; no request identity or response data.
+    # Same closed shape as artifact12233356110, rebound to current source coordinates.
+    # Retired coordinates remain explicit negative controls; no identity or response data.
     return {
         "status": "failed",
         "runnerErrors": 0,
@@ -72,7 +73,7 @@ def current_receipt():
         "results": [
             {
                 "file": "semester-lifecycle.spec.ts",
-                "line": 1657,
+                "line": 1585,
                 "project": "chromium",
                 "status": "failed",
                 "expectedStatus": "passed",
@@ -83,7 +84,7 @@ def current_receipt():
                     {"stage": "UNKNOWN", "cause": "REPORTED_CLASS_ERROR", "httpStatus": 0},
                     {"stage": "UNKNOWN", "cause": "REPORTED_FRAME_DATASET_CALL", "httpStatus": 0},
                 ],
-                "errorLocations": [{"file": "semester-lifecycle.spec.ts", "line": 1883}],
+                "errorLocations": [{"file": "semester-lifecycle.spec.ts", "line": 1811}],
             }
         ],
     }
@@ -137,9 +138,9 @@ def homework_receipt(extension=False):
     )
     reconnect = copy.deepcopy(homework)
     reconnect.update(
-        line=3959,
+        line=3958,
         diagnostics=[{"stage": "UNKNOWN", "cause": "REPORTED_CLASS_ERROR", "httpStatus": 0}],
-        errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 3959}],
+        errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 3958}],
     )
     if extension:
         reconnect["d002ReconnectObservation"] = reconnect_observation()
@@ -240,7 +241,7 @@ class MarkDiagnosticContract(unittest.TestCase):
         self.assertTrue(namespace["is_target_failure"](homework_receipt(), homework_config))
         self.assertTrue(namespace["is_target_failure"](homework_receipt(extension=True), homework_config))
         for field, wrong in (
-            ("line", 3958),
+            ("line", 3959),
             ("file", "other.spec.ts"),
             ("project", "firefox"),
             ("status", "passed"),
@@ -251,6 +252,10 @@ class MarkDiagnosticContract(unittest.TestCase):
                 value = homework_receipt(extension=True)
                 value["results"][1][field] = wrong
                 self.assertFalse(namespace["is_target_failure"](value, homework_config))
+        stale = homework_receipt(extension=True)
+        stale["results"][1]["line"] = 3959
+        stale["results"][1]["errorLocations"][0]["line"] = 3959
+        self.assertFalse(namespace["is_target_failure"](stale, homework_config))
         for extra in ("unknownField", "nativePrimaryFailures"):
             for extension in (False, True):
                 value = homework_receipt(extension=extension)
@@ -341,7 +346,7 @@ class MarkDiagnosticContract(unittest.TestCase):
                 namespace["verify_d002_reconnect_sources"]()
         lines = hosted_spec.read_text().splitlines()
         self.assertIn(
-            "D002 reconnect rechecks changed grants and a late old feed cannot replace the new account", lines[3958]
+            "D002 reconnect rechecks changed grants and a late old feed cannot replace the new account", lines[3957]
         )
 
     def test_existing_privacy_suite_is_selected_only_after_client_install(self):
@@ -458,10 +463,15 @@ class MarkDiagnosticContract(unittest.TestCase):
                 value = current_receipt()
                 value["results"][0][field] = wrong
                 self.assertFalse(namespace["is_target_failure"](value, config))
-        for line in (1818, 1884):
+        for line in (1818, 1883, 1884):
             value = current_receipt()
             value["results"][0]["errorLocations"][0]["line"] = line
             self.assertFalse(namespace["is_target_failure"](value, config))
+        # The retired title/operation pair must remain refused after the accepted source move.
+        stale = current_receipt()
+        stale["results"][0]["line"] = 1657
+        stale["results"][0]["errorLocations"][0]["line"] = 1883
+        self.assertFalse(namespace["is_target_failure"](stale, config))
         value = current_receipt()
         value["results"][0]["diagnostics"][0]["httpStatus"] = 409
         self.assertFalse(namespace["is_target_failure"](value, config))
@@ -472,27 +482,32 @@ class MarkDiagnosticContract(unittest.TestCase):
         row = value["results"][0]
         row.update(
             file="mobile-real-server.spec.ts",
-            line=5948,
-            errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 6069}],
+            line=5943,
+            errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 6064}],
             diagnostics=[{"stage": "DATASET_HTTP", "cause": "DATASET_ATTENDANCE_MARK_HTTP", "httpStatus": 500}],
         )
         self.assertTrue(namespace["is_target_failure"](value, hosted_config))
         self.assertFalse(namespace["is_target_failure"](value, config))
         self.assertEqual(namespace["exception_classes"](hosted_config), namespace["HOSTED_CLASSES"])
-        for line in (1883, 5915, 6065, 6147):
+        for line in (1883, 5915, 6065, 6069, 6147):
             row["errorLocations"][0]["line"] = line
             self.assertFalse(namespace["is_target_failure"](value, hosted_config))
+        stale = copy.deepcopy(value)
+        stale["results"][0]["line"] = 5948
+        stale["results"][0]["errorLocations"][0]["line"] = 6069
+        self.assertFalse(namespace["is_target_failure"](stale, hosted_config))
         self.assertEqual(
             hashlib.sha256(hosted_spec.read_bytes()).hexdigest(),
             namespace["HOSTED_MARK_SOURCES"]["tests/e2e/specs/mobile-real-server.spec.ts"],
         )
         hosted_lines = hosted_spec.read_text().splitlines()
         self.assertIn(
-            "test('actual private bot menu roster and teacher Today use hosted current authority'", hosted_lines[5947]
+            "test('actual private bot menu roster and teacher Today use hosted current authority'", hosted_lines[5942]
         )
-        self.assertEqual(hosted_lines[6068].strip(), "await dataset.headmanActor.call(")
+        self.assertEqual(hosted_lines[6063].strip(), "await dataset.headmanActor.call(")
         witness = (fixture_root / "mobile-dataset.ts").read_text()
-        self.assertIn("info.line !== 5948 ||", witness)
+        self.assertIn("info.line !== 5943 ||", witness)
+        self.assertNotIn("info.line !== 5948 ||", witness)
         self.assertNotIn("info.line !== 5794 ||", witness)
         self.assertEqual(
             hashlib.sha256(witness.encode()).hexdigest(),

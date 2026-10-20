@@ -635,6 +635,196 @@ class SafeCases {
             {"state": "NO_SINGLE_FAILURE", "codes": [], "overflow": False},
         )
 
+    def attendance_fixture(self) -> str:
+        package = "ru.rutcampustrack.attendance.diagnostic"
+        source = self.root / COLLECTOR.MODULES["attendance-service"] / "src/test/java/AttendanceStartupIT.java"
+        source.parent.mkdir(parents=True)
+        source.write_text("package " + package + "; class AttendanceStartupIT {@Test void contextStarts() {}}")
+        subprocess.run(
+            ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
+        )
+        self.results = self.root / COLLECTOR.MODULES["attendance-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment["RCT_CI_JOB_ID"] = "java-coverage"
+        self.environment["RCT_CI_TEST_OUTCOME"] = "failure"
+        return package + ".AttendanceStartupIT"
+
+    def attendance_case(self, failure_type: str, text: str = MARKER, *, tag: str = "failure", message: str = MARKER):
+        case = COLLECTOR.ElementTree.Element("testcase", classname=MARKER, name=MARKER)
+        failure = COLLECTOR.ElementTree.SubElement(case, tag, type=failure_type, message=message)
+        failure.text = text
+        return case
+
+    def test_attendance_unknown_failure_diagnostic_preserves_identity_status_and_acceptance(self) -> None:
+        classname = self.attendance_fixture()
+        self.xml(
+            f'<testcase classname="{MARKER}" name="{MARKER}">'
+            f'<failure type="org.gradle.api.internal.tasks.testing.TestSuiteExecutionException" message="{MARKER}">'
+            f"Caused by: org.gradle.process.internal.worker.WorkerProcessException: {MARKER}\n"
+            f"Caused by: org.gradle.process.internal.ExecException: Process '{MARKER}' finished with non-zero exit value 137"
+            '</failure></testcase>'
+            f'<testcase classname="{MARKER}" name="{MARKER}"><error type="java.lang.AssertionError"/></testcase>'
+            f'<testcase classname="{classname}" name="contextStarts()"><failure type="java.lang.OutOfMemoryError"/></testcase>'
+            f'<testcase classname="{classname}" name="{MARKER}"><failure type="java.lang.OutOfMemoryError"/></testcase>'
+            f'<testcase classname="{MARKER}" name="{MARKER}"/>'
+            f'<testcase classname="{MARKER}" name="{MARKER}"><skipped/></testcase>'
+            f'<testcase classname="{MARKER}" name="{MARKER}" status="notrun"/>'
+            f'<testcase classname="{MARKER}" name="{MARKER}"><failure/><error/></testcase>',
+            tests=8,
+            failures=3,
+            errors=2,
+            skipped=1,
+        )
+        report = COLLECTOR.collect(self.root, "attendance-service", "integrationTest", self.environment)
+        cases = report["cases"]
+        self.assertEqual([c["status"] for c in cases], ["FAILED", "ERROR", "FAILED", "FAILED", "PASSED", "SKIPPED", "NOT_EXECUTED", "ERROR"])
+        self.assertEqual([c["identity"] for c in cases], ["ORDINAL_ONLY", "ORDINAL_ONLY", "SOURCE_METHOD"] + ["ORDINAL_ONLY"] * 5)
+        self.assertEqual(cases[2]["classname"], classname)
+        self.assertEqual(cases[2]["method"], "contextStarts")
+        self.assertEqual(cases[3]["classname"], classname)
+        self.assertIsNone(cases[3]["method"])
+        for index in (0, 1, 4, 5, 6, 7):
+            self.assertIsNone(cases[index]["classname"])
+            self.assertIsNone(cases[index]["method"])
+            self.assertNotIn("source", cases[index])
+        self.assertEqual(cases[0]["failureDiagnostic"], {
+            "kind": "ATTENDANCE_FAILURE_V1", "state": "CLOSED_CLASSES",
+            "codes": ["GRADLE_SUITE", "GRADLE_WORKER", "PROCESS_EXEC"], "overflow": False,
+            "processExit": {"state": "CLOSED_VALUE", "value": 137},
+        })
+        self.assertEqual(cases[1]["failureDiagnostic"]["codes"], ["ASSERTION"])
+        self.assertEqual(cases[7]["failureDiagnostic"]["state"], "NO_SINGLE_FAILURE")
+        self.assertTrue(all("failureDiagnostic" not in c for c in cases[2:7]))
+        self.assertEqual(report["summary"], {"PASSED": 1, "FAILED": 3, "ERROR": 2, "SKIPPED": 1, "NOT_EXECUTED": 1})
+        self.assertTrue(report["xml"][0]["suites"][0]["countsConsistent"])
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_attendance_diagnostic_scope_excludes_other_jobs_tasks_and_services(self) -> None:
+        self.attendance_fixture()
+        self.xml(f'<testcase classname="{MARKER}" name="{MARKER}"><failure type="java.lang.OutOfMemoryError"/></testcase>', tests=1, failures=1)
+        original = (self.results / "TEST-control.xml").read_bytes()
+        for job in ("java-integration-test", None):
+            environment = dict(self.environment)
+            if job is None:
+                environment.pop("RCT_CI_JOB_ID")
+            else:
+                environment["RCT_CI_JOB_ID"] = job
+            report = COLLECTOR.collect(self.root, "attendance-service", "integrationTest", environment)
+            self.assertNotIn("failureDiagnostic", report["cases"][0])
+        for service, task in (("attendance-service", "test"), ("api-gateway", "integrationTest")):
+            directory = self.root / COLLECTOR.MODULES[service] / "build/test-results" / task
+            directory.mkdir(parents=True, exist_ok=True)
+            (directory / "TEST-control.xml").write_bytes(original)
+            report = COLLECTOR.collect(self.root, service, task, self.environment)
+            self.assertNotIn("failureDiagnostic", report["cases"][0])
+            self.assertEqual(report["cases"][0]["status"], "FAILED")
+            self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+
+    def test_attendance_nested_closed_codes_do_not_make_wrapper_a_cause(self) -> None:
+        suite = "org.gradle.api.internal.tasks.testing.TestSuiteExecutionException"
+        for chain, expected in (
+            (("java.lang.AssertionError",), ["GRADLE_SUITE", "ASSERTION"]),
+            (("org.springframework.beans.factory.BeanCreationException", "org.springframework.beans.factory.UnsatisfiedDependencyException", "com.mongodb.MongoTimeoutException"), ["GRADLE_SUITE", "CONTEXT", "DEPENDENCY", "MONGO"]),
+            (("java.lang.IllegalStateException",), ["GRADLE_SUITE", "ILLEGAL_STATE"]),
+        ):
+            with self.subTest(codes=expected):
+                text = "\n".join("Caused by: " + name + ": " + MARKER for name in chain)
+                value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(suite, text))
+                self.assertEqual(value["codes"], expected)
+                self.assertEqual(set(value), {"kind", "state", "codes", "overflow", "processExit"})
+                self.assertEqual(value["processExit"], {"state": "ABSENT_OR_UNRECOGNIZED", "value": None})
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_attendance_all_codes_are_finite_exact_unique_and_private(self) -> None:
+        text = "\n".join("Caused by: " + names[0] + ": " + MARKER for names in COLLECTOR.ATTENDANCE_FAILURE_CLASSES.values())
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, text + "\n" + text))
+        self.assertEqual(value["codes"], ["OTHER"] + list(COLLECTOR.ATTENDANCE_FAILURE_CLASSES))
+        self.assertEqual(len(value["codes"]), 15)
+        for code, names in COLLECTOR.ATTENDANCE_FAILURE_CLASSES.items():
+            for name in names:
+                with self.subTest(code=code, name=name):
+                    value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(name))
+                    self.assertEqual(value["codes"], [code])
+                    self.assertNotIn(MARKER, json.dumps(value))
+        text = "\n".join([
+            "java.lang.OutOfMemoryError: " + MARKER,
+            "prefix Caused by: java.lang.OutOfMemoryError: " + MARKER,
+            "    at com.mongodb.MongoTimeoutException.fake(" + MARKER + ")",
+            "Caused by: com.mongodb.MongoTimeoutExceptionCounterfeit: " + MARKER,
+            " " * 33 + "Caused by: java.lang.OutOfMemoryError: " + MARKER,
+            "Caused by: " + " " * 8 + "java.lang.OutOfMemoryError: " + MARKER,
+            "Caused by: com.mongodb.MongoSecurityException: " + MARKER,
+        ])
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, text))
+        self.assertEqual(value["codes"], ["OTHER", "MONGO"])
+        self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_attendance_native_exit_is_bounded_private_and_never_infers_oom(self) -> None:
+        native = "org.gradle.process.internal.ExecException"
+        for exit_value in (1, 137, 143, 255):
+            message = f"Process '{MARKER}' finished with non-zero exit value {exit_value}"
+            for text, attribute, failure_type in (
+                (MARKER, message, native),
+                (native + ": " + message, MARKER, MARKER),
+                ("\tCaused by: " + native + ": " + message + "\r\n", MARKER, MARKER),
+            ):
+                with self.subTest(exit=exit_value, nested=text != MARKER):
+                    value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(failure_type, text, message=attribute))
+                    self.assertEqual(value["processExit"], {"state": "CLOSED_VALUE", "value": exit_value})
+                    self.assertNotIn("OOM", value["codes"])
+                    self.assertNotIn(MARKER, json.dumps(value))
+        first = f"Caused by: {native}: Process '{MARKER}' finished with non-zero exit value 137"
+        second = first.replace("137", "143")
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, first + "\n" + second))
+        self.assertEqual(value["processExit"], {"state": "AMBIGUOUS", "value": None})
+        repeated = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, first + "\n" + first))
+        self.assertEqual(repeated["processExit"], {"state": "CLOSED_VALUE", "value": 137})
+
+    def test_attendance_exit_lookalikes_invalid_values_and_partial_lines_stay_unknown(self) -> None:
+        native = "org.gradle.process.internal.ExecException"
+        message = f"Process '{MARKER}' finished with non-zero exit value 137"
+        invalid = [
+            message.replace("137", value) for value in ("0", "256", "999", "1000", "-1", "0137", "+137")
+        ] + ["prefix " + message, message + " extra", message.replace(MARKER, "x" * 513), message.replace(MARKER, "x'y"), message + "x" * 2049]
+        for bad in invalid:
+            with self.subTest(length=len(bad)):
+                for text, attribute in ((MARKER, bad), ("Caused by: " + native + ": " + bad, MARKER)):
+                    value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(native, text, message=attribute))
+                    self.assertEqual(value["processExit"], {"state": "ABSENT_OR_UNRECOGNIZED", "value": None})
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(native, message=message + "\n"))
+        self.assertEqual(value["processExit"], {"state": "ABSENT_OR_UNRECOGNIZED", "value": None})
+        for text in ("prefix Caused by: " + native + ": " + message, "Caused by: " + native + "Counterfeit: " + message):
+            value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, text, message=message))
+            self.assertEqual(value["processExit"], {"state": "ABSENT_OR_UNRECOGNIZED", "value": None})
+        prefix = "x\n" * ((COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS - 10) // 2)
+        text = prefix + "Caused by: " + native + ": " + message
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, text))
+        self.assertTrue(value["overflow"])
+        self.assertEqual(value["processExit"], {"state": "ABSENT_OR_UNRECOGNIZED", "value": None})
+
+    def test_attendance_cutoff_and_failure_node_ambiguity_remain_closed(self) -> None:
+        prefix = "x\n" * ((COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS - 10) // 2)
+        for text in (
+            prefix + "Caused by: java.lang.OutOfMemoryError: " + MARKER,
+            "x" * COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS + "\nCaused by: java.lang.OutOfMemoryError: " + MARKER,
+        ):
+            value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case("java.lang.AssertionError", text))
+            self.assertEqual(value["codes"], ["ASSERTION"])
+            self.assertTrue(value["overflow"])
+        text = "Caused by: java.lang.OutOfMemoryError: " + MARKER + "\n" + "x" * COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case("java.lang.AssertionError", text))
+        self.assertEqual(value["codes"], ["ASSERTION", "OOM"])
+        self.assertTrue(value["overflow"])
+        for tags in ((), ("failure", "failure"), ("error", "error"), ("failure", "error")):
+            case = COLLECTOR.ElementTree.Element("testcase")
+            for tag in tags:
+                COLLECTOR.ElementTree.SubElement(case, tag, type="java.lang.OutOfMemoryError")
+            self.assertEqual(COLLECTOR.attendance_failure_diagnostic(case), {
+                "kind": "ATTENDANCE_FAILURE_V1", "state": "NO_SINGLE_FAILURE", "codes": [], "overflow": False,
+                "processExit": {"state": "ABSENT_OR_UNRECOGNIZED", "value": None},
+            })
+
     def academic_fixture(self, source_path: str | None = None) -> str:
         source = self.root / (source_path or COLLECTOR.ACADEMIC_SCHEMA_SOURCE)
         source.parent.mkdir(parents=True)
@@ -1023,7 +1213,11 @@ class SafeCases {
                     f"BOOTSTRAP_CLI_RESULT_V1 invocation={invocation} guard={guard} "
                     f"expectedExit={expected} actualExit={actual}"
                 )
-                for message, first_line in ((marker, MARKER), (MARKER, "java.lang.AssertionError: " + marker)):
+                for message, first_line in (
+                    (marker, ""),
+                    ("", "java.lang.AssertionError: " + marker),
+                    (marker, "java.lang.AssertionError: " + marker),
+                ):
                     self.xml(
                         f'<testcase classname="{classname}" name="{method}()">'
                         f'<failure type="java.lang.AssertionError" message="{message}">{first_line}\n'
@@ -1044,6 +1238,8 @@ class SafeCases {
         marker = "BOOTSTRAP_CLI_RESULT_V1 invocation=FRESH guard=UNEXPECTED_EXIT expectedExit=0 actualExit=2"
         frame = f"at {classname}.runOperatorCli(InitialAdministratorBootstrapIT.java:8)"
         for message, first_line, owned_frame, name, failure_type in (
+            (marker, MARKER, frame, method, "java.lang.AssertionError"),
+            (MARKER, "java.lang.AssertionError: " + marker, frame, method, "java.lang.AssertionError"),
             (marker + MARKER, marker + MARKER, frame, method, "java.lang.AssertionError"),
             (marker.replace("FRESH", MARKER), MARKER, frame, method, "java.lang.AssertionError"),
             (marker.replace("actualExit=2", "actualExit=256"), MARKER, frame, method, "java.lang.AssertionError"),

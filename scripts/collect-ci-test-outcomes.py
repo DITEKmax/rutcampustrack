@@ -87,6 +87,37 @@ NOTIFICATION_CAUSE_HEADER = re.compile(
     r"(?m)^[ \t]{0,32}Caused by:[ \t]{1,8}([A-Za-z_$][A-Za-z0-9_.$]{0,255})(?=:|\r?$)"
 )
 NOTIFICATION_DIAGNOSTIC_CHARS = 65536
+# Gradle wrapper types/exit formatter are verified against public Gradle v8.12.0.
+# A suite wrapper can also wrap assertion/context failures; codes are not causes.
+ATTENDANCE_FAILURE_CLASSES = {
+    "GRADLE_SUITE": ("org.gradle.api.internal.tasks.testing.TestSuiteExecutionException",),
+    "GRADLE_WORKER": ("org.gradle.process.internal.worker.WorkerProcessException",),
+    "PROCESS_EXEC": ("org.gradle.process.internal.ExecException",),
+    "ASSERTION": NOTIFICATION_FAILURE_CLASSES["ASSERTION"],
+    "INITIALIZER": ("java.lang.ExceptionInInitializerError",),
+    "ILLEGAL_STATE": ("java.lang.IllegalStateException",),
+    "NO_CLASS": NOTIFICATION_FAILURE_CLASSES["NO_CLASS"],
+    "CONTEXT": NOTIFICATION_FAILURE_CLASSES["BEAN"],
+    "DEPENDENCY": NOTIFICATION_FAILURE_CLASSES["DEPENDENCY"],
+    "CONTAINER": NOTIFICATION_FAILURE_CLASSES["CONTAINER"],
+    "MONGO": NOTIFICATION_FAILURE_CLASSES["MONGO"],
+    "AMQP": NOTIFICATION_FAILURE_CLASSES["AMQP"],
+    "IO": ("java.io.IOException",),
+    "OOM": NOTIFICATION_FAILURE_CLASSES["OOM"],
+}
+ATTENDANCE_FAILURE_CODES = {name: code for code, names in ATTENDANCE_FAILURE_CLASSES.items() for name in names}
+ATTENDANCE_DIAGNOSTIC_CHARS = 65536
+ATTENDANCE_EXEC_TYPE = "org.gradle.process.internal.ExecException"
+ATTENDANCE_EXEC_MESSAGE = re.compile(
+    r"Process '[^'\r\n]{1,512}' finished with non-zero exit value ([1-9][0-9]{0,2})"
+)
+ATTENDANCE_EXEC_HEADER = re.compile(
+    r"(?m)^[ \t]{0,32}(?:Caused by:[ \t]{1,8})?"
+    + re.escape(ATTENDANCE_EXEC_TYPE)
+    + r": "
+    + ATTENDANCE_EXEC_MESSAGE.pattern
+    + r"\r?$"
+)
 ACADEMIC_SCHEMA_CLASS = "ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT"
 ACADEMIC_SCHEMA_METHOD = "currentCompletionUnionReturnsOldLessonOnceWithStoredTimestamp"
 ACADEMIC_SCHEMA_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java"
@@ -503,6 +534,46 @@ def notification_failure_diagnostic(case: ElementTree.Element) -> dict:
     return {"state": "CLOSED_CLASSES", "codes": codes, "overflow": overflow}
 
 
+def attendance_failure_diagnostic(case: ElementTree.Element) -> dict:
+    result = {
+        "kind": "ATTENDANCE_FAILURE_V1",
+        "state": "NO_SINGLE_FAILURE",
+        "codes": [],
+        "overflow": False,
+        "processExit": {"state": "ABSENT_OR_UNRECOGNIZED", "value": None},
+    }
+    failures = case.findall("failure") + case.findall("error")
+    if len(failures) != 1:
+        return result
+    failure = failures[0]
+    failure_type = failure.get("type", "")
+    if len(failure_type) > 256:
+        failure_type = ""
+    codes = [ATTENDANCE_FAILURE_CODES.get(failure_type, "OTHER")]
+    text = failure.text or ""
+    overflow = len(text) > ATTENDANCE_DIAGNOSTIC_CHARS
+    prefix = text[:ATTENDANCE_DIAGNOSTIC_CHARS]
+    if overflow:
+        prefix = prefix.rsplit("\n", 1)[0] if "\n" in prefix else ""
+    for match in NOTIFICATION_CAUSE_HEADER.finditer(prefix):
+        code = ATTENDANCE_FAILURE_CODES.get(match.group(1), "OTHER")
+        if code not in codes:
+            # The exact allowlist plus OTHER bounds this array to fifteen codes.
+            codes.append(code)
+    exits = {int(match.group(1)) for match in ATTENDANCE_EXEC_HEADER.finditer(prefix) if int(match.group(1)) <= 255}
+    message = failure.get("message", "")
+    if failure_type == ATTENDANCE_EXEC_TYPE and len(message) <= 2048:
+        match = ATTENDANCE_EXEC_MESSAGE.fullmatch(message)
+        if match and int(match.group(1)) <= 255:
+            exits.add(int(match.group(1)))
+    if len(exits) == 1:
+        result["processExit"] = {"state": "CLOSED_VALUE", "value": exits.pop()}
+    elif exits:
+        result["processExit"]["state"] = "AMBIGUOUS"
+    result.update(state="CLOSED_CLASSES", codes=codes, overflow=overflow)
+    return result
+
+
 def academic_schema_failure_diagnostic(case: ElementTree.Element) -> dict:
     result = {"state": "ABSENT_OR_UNRECOGNIZED", "table": "OTHER", "qualifier": "OTHER"}
     failures = case.findall("failure")
@@ -788,6 +859,16 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                 }
                 if known:
                     safe.update(source=known["source"], sourceSha256=known["sha256"])
+                if (
+                    service == "attendance-service"
+                    and task == "integrationTest"
+                    and environment.get("RCT_CI_JOB_ID") == "java-coverage"
+                    and status in {"FAILED", "ERROR"}
+                    and safe["identity"] == "ORDINAL_ONLY"
+                    and safe["classname"] is None
+                    and safe["method"] is None
+                ):
+                    safe["failureDiagnostic"] = attendance_failure_diagnostic(case)
                 if (
                     service == "schedule-service"
                     and task == "integrationTest"

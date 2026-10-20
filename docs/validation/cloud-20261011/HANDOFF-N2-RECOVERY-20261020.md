@@ -1,12 +1,12 @@
 # N2 and lifecycle correction handoff
 
-Status: **REVIEWED_ROLE_LESSON_DELTA_INTEGRATED; NEW_SOURCE_GATES_REQUIRED**. Designated external recheck PENDING. No merge/deploy. CURRENT is the compact active checkpoint; the historical sections below retain their original revision and limitations.
+Status: **PHASE_A_COVERAGE_DIAGNOSTIC_INTEGRATED_NOT_PUBLISHED; PHASE_B_NOT_STARTED**. Designated external recheck PENDING. No merge/deploy. CURRENT is the compact active checkpoint; the historical sections below retain their original revision and limitations.
 
-Last published executable08fd474d, tree768ad4a9; N2 productc2534aa2; baseline4c71f43d; base/merge-base3908fad9. Existing draft [PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), branch codex/server-validation-20261011. All08fd gates terminal: push39443440137 FAIL(ROLE37/LESSON60), PR39443454504 SUCCESS25/25, Coverage39443454844/Security39443454503/OpenAPI39443454737 SUCCESS. Built-image scan SKIPPED. Both events D002/N2active+suspended10PASS, helper6, worker3, privacy10, main semester+separatecleanup and fullPWA/TMA typecheck/build PASS. All4 actual checkout trees match08fd. Terminal1116c31d/18 strict safe receipts retained.
+Published executable94255f09b294b8801f2549b6af52dce24d746fe4, tree1f0c142d6113c0abda7694d39d185b6020aed07e; N2 productc2534aa2; baseline4c71f43d; base/merge-base3908fad9. Existing draft [PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), branch codex/server-validation-20261011. All08fd gates terminal: push39443440137 FAIL(ROLE37/LESSON60), PR39443454504 SUCCESS25/25, Coverage39443454844/Security39443454503/OpenAPI39443454737 SUCCESS. Built-image scan SKIPPED. Both events D002/N2active+suspended10PASS, helper6, worker3, privacy10, main semester+separatecleanup and fullPWA/TMA typecheck/build PASS. All4 actual checkout trees match08fd. Terminal1116c31d/18 strict safe receipts retained.
 
 Latest six-path delta against08fd: ROLE completed matching-request observation preserves every original activity assertion/default deadline; lesson private carrier and read-only stage diagnostic retain closed facts after case cleanup. No lesson product fix or historical cause claim. Three paths modified(ci.yml/admin-grants/schedule-lifecycle), three created(admin-activity-response.control.mjs/lesson-transfer-diagnostic.py/lesson-transfer-diagnostic.control.py), none deleted. Final combined manifest SHA067e28264cf38232396e8036d5a27a9a0d69c7b8bd16ecab696e1a7fe159e431; pre-EOF0e0af530 preserved. Full inventory and primary locations are recorded below and in the ignored exact source receipt.
 
-ROLE exact baselineRED3/fixedGREEN3/negative13 and scoped types PASS; source review320e1ea3 APPROVE. Lesson Python13groups and syntax PASS; actual clock producer disproved the initial reader's wrong mode assumption, corrected to shared0755/0644 versus private0700/0600. Actual reader PG qualification NOT_RUN. Lesson TS passed on9d6dc162; finaled653de5 exact9d→0f→ed whitespace/token-equivalent custody83a664d4, no final-byte rerun claimed. Combined52 static checks pass; final source hashes have independent internal APPROVE8e7bf159ceb4d0efd354af25963a7c239adbea9aacabd80fa090ff1f52193c25 and were integrated byte-for-byte. First actual-staged check562fb626 failed only an automatically removed trailing LF; index and other bytes remained unchanged. The same authors froze finaled653de5 and its single CI hash pin; narrow independent recheck2f7d70cc APPROVE is complete; actual-staged recheck precedes publication. New ordinary gates remain required, without cancellations or blind reruns.
+ROLE exact baselineRED3/fixedGREEN3/negative13 and scoped types PASS; source review320e1ea3 APPROVE. Lesson Python13groups and syntax PASS; actual clock producer disproved the initial reader's wrong mode assumption, corrected to shared0755/0644 versus private0700/0600. Actual reader PG qualification NOT_RUN. Lesson TS passed on9d6dc162; finaled653de5 exact9d→0f→ed whitespace/token-equivalent custody83a664d4, no final-byte rerun claimed. Combined52 static checks pass; final source hashes have independent internal APPROVE8e7bf159ceb4d0efd354af25963a7c239adbea9aacabd80fa090ff1f52193c25 and were integrated byte-for-byte. First actual-staged check562fb626 failed only an automatically removed trailing LF; index and other bytes remained unchanged. The same authors froze finaled653de5 and its single CI hash pin; narrow independent recheck2f7d70cc APPROVE is complete; actual-staged recheck2d79fc43 PASS/autofixes0 preceded normal publication. New ordinary gates remain required, without cancellations or blind reruns.
 
 Historical v3 remains39/39/196/196 FROZEN; external10/11 FIXED with N2 external PENDING. LC1/LC2 are required criteria, not extra findings/weights. Historical role/lesson causes UNKNOWN; current green PR does not override failed push. New source does not inherit external APPROVE. No reviewer contact, merge, deploy, production or account changes.
 
@@ -186,3 +186,66 @@ All requested N2/lifecycle core paths now pass in both ordinary events at08fd: D
 ROLE37: strict artifact12276226757 digest `a0329989f75d8b71a450017bc2be3c5d345ebcf30aba4f6b62e3d76e2ac20c6a` gives6PASS1FAIL, spec111/error331 response.json after requiredstatus200. Period/body/transport historyUNKNOWN. Actualsource onConnect→dashboard invalidation→abort-old-response plus exact installedPlaywright/AST observer controls confirm a permitted testfragility, not the actualhistoricaltrigger. Three requestfinished waiters preserve the entire original200/JSON/period/bucket/metrics/geo/delta/button oracle and defaultdeadline. Authorfrozenmanifest `729d1da31f485271db3427617d1763fa934501b8122281efe7c3f3d772b4e292`; internalindependentreview `320e1ea34c6b84a2e966673cfc9e4c3ceb29ecb2b45988356d91ae622800a7c2` APPROVE. ExactbaselineRED3/currentGREEN3/negativeRejected13 and strictscopedTS pass in63.810s/330784768B/CPU1; no browser/server/renderer/network. Source3 remains notintegrated/notpublished. PRcounterpart7PASS doesnotestablishcause.
 
 LESSON60: strict artifact12275523442 digest `5d30f5ba13255eefdcbf638ef5fbca259bc005330a4568d02df6e0996f27c98d` gives3PASS1FAIL; withincase397 the failing subphase transfers a complementary one-offlecture. POST202/PENDING,6ownGET,last200/PARSED/PENDING and allidentitybooleans true; timer1313 atoriginal10000ms. It doesnotprove allsix bodiesPENDING or exactstateattimer. DirectSchedule operationrow is authoritative; no observer/productdefect is proven. PRcounterpart4PASS lastGETCOMPLETED.22actualsourcehashes match08fd, rootcustodyf8380b35; sourcepacket466971ad. OldStudentstats diagnostic is NOT_APPLICABLE, not a transfercause. Minimalnew closedreadonly stageprobe is beingauthored inindependentWT under designreviewcf7e2370 conditions; actualPGqualification NOT_RUN. No productfix/deadline/retry/queue/Mongo change.
+
+## Published94255f exact inventory and next gates
+
+Normal push followed all five previous terminal runs. Current attempt1: pushCI39456760679, PRCI39456774515, Coverage39456774513, Security39456774542, OpenAPI39456774539. Initial states queued/started, not PASS. Actual own lesson PG stage qualification NOT_RUN until strict new hosted receipt; no blind full rerun/cancel or extra business operation. Final checks/external recheck remain separate. Root local taskdoc WIP records live state without pushing over active CI.
+
+Published exact N2/lifecycle inventory against4c:24 executable paths plus5 taskdocs, no deletion, shared workflow counted once. Inventory receipt SHA8ef72e337ded44ed8cc92331e379e180da172a7acca90d0ca2fa1a7e45e8fa1e. All source hashes map to94255f; earlier proofs retain their qualified checked bytes and whitespace-equivalence custody.
+
+| Status | Path                                                                      |
+| ------ | ------------------------------------------------------------------------- |
+| M      | `.github/workflows/ci.yml`                                                |
+| M      | `docs/validation/cloud-20261011/CURRENT.md`                               |
+| A      | `docs/validation/cloud-20261011/HANDOFF-N2-RECOVERY-20261020.md`          |
+| A      | `docs/validation/cloud-20261011/TASK-N2-LIFECYCLE-SOL-20261020.md`        |
+| A      | `docs/validation/cloud-20261011/TASK-N2-RECOVERY-20261020.md`             |
+| M      | `docs/validation/cloud-20261011/fix-findings-F01-F09-20261019.csv`        |
+| M      | `frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts` |
+| M      | `frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue`     |
+| M      | `frontends/pwa-vue/src/App.vue`                                           |
+| M      | `frontends/pwa-vue/src/auth-client.ts`                                    |
+| M      | `frontends/pwa-vue/src/auth.ts`                                           |
+| M      | `frontends/pwa-vue/src/bootstrap-policy.test.ts`                          |
+| A      | `frontends/pwa-vue/src/reconnect-recovery.test.ts`                        |
+| M      | `tests/e2e/artifact-controls/privacy.control.spec.ts`                     |
+| M      | `tests/e2e/check-artifact-privacy.mjs`                                    |
+| A      | `tests/e2e/fixtures/admin-activity-response.control.mjs`                  |
+| M      | `tests/e2e/fixtures/cloud-accepted-support.ts`                            |
+| A      | `tests/e2e/fixtures/lesson-transfer-diagnostic.control.py`                |
+| A      | `tests/e2e/fixtures/lesson-transfer-diagnostic.py`                        |
+| M      | `tests/e2e/fixtures/mobile-dataset.ts`                                    |
+| M      | `tests/e2e/fixtures/safe-reporter.ts`                                     |
+| M      | `tests/e2e/fixtures/semester-effect-diagnostic.control.py`                |
+| M      | `tests/e2e/fixtures/semester-effect-diagnostic.py`                        |
+| A      | `tests/e2e/fixtures/semester-lifecycle-ui.control.mjs`                    |
+| M      | `tests/e2e/fixtures/semester-lifecycle.spec.ts`                           |
+| M      | `tests/e2e/playwright.real-mobile.config.ts`                              |
+| M      | `tests/e2e/specs/cloud-accepted-admin-grants.spec.ts`                     |
+| M      | `tests/e2e/specs/mobile-real-server.spec.ts`                              |
+| M      | `tests/e2e/specs/mobile-schedule-lifecycle.spec.ts`                       |
+
+### Primary source locations on94255f
+
+- N2 normalization: `frontends/pwa-vue/src/auth-client.ts:471`; generation-bound recovery stays in `App.vue`, `auth.ts` and retained `StudentFeatureOwner.vue`.
+- ROLE completed request witness: `tests/e2e/specs/cloud-accepted-admin-grants.spec.ts:243`, armed before dashboard entry and both period changes; original full activity oracle retained.
+- Lesson private producer: `tests/e2e/specs/mobile-schedule-lifecycle.spec.ts:1340` and helper2227; original timer1313 unchanged. Stage reader guard85/projection312; existing workflow snapshot5827 and exact safe upload5842.
+- Existing semester stable-result control and barrier applicability remain in their previously reviewed files; no new product/archive-oracle changes in94255f.
+
+Actual ordinary source controls run from `tests/e2e`: `node fixtures/admin-activity-response.control.mjs` and `python3 -B fixtures/lesson-transfer-diagnostic.control.py`. Local checked results and proof boundaries are recorded above; these commands are not reported as additional executions. New hosted snapshot runs only in the existing guarded synthetic lane, without new mutation or principal. Strict observer binds the immutable94255f producer/reporter/workflow, never executes the DB producer main, and retains only closed projections/metadata. Snapshot artifact is `lesson-transfer-stage-safe-1`, exact `transfer-stage.safe.json`4096B cap. No private carrier/raw logs/DOM/signed URLs are exposed.
+
+### 94255f current gate qualification and tool-output limitation
+
+Current strict PR primaries: remaining5 artifact12281479248 digestf11ce22479b25a60625337f887c572d91c06d201826a07aa39b55ba8754cf4dc proves originalD002 and active/suspendedN2 total10PASS; worker12282037239 digest618f16c2b294487c34694e1c55e7a3e2c56c4542ab050a3b002df1dadb00c7ee proves3PASS. Both fullPWA/TMAbuild/types and full10privacy controls PASS, exact4checkouttrees equal94255f. Current Attendance Coverage failure remains separate:417unitPASS/251ITPASS1FAILED1SKIPPED, null namedidentity/unknown exception. No cause or method is reconstructed. Main lifecycle, actual own lesson stage and push N2 results remain pending at this checkpoint.
+
+A helper accidentally projected a transient download URL for the safe-only Coverage artifact in one tool output. No URL value was saved into task files/reports or reused; subsequent processing uses file references and selected primitive metadata. The closed incident fact is retained without the URL. No raw private XML/logs were fetched. Ordinary full10 privacy controls concern their tested producer/egress contract and do not retroactively cover this operator-output error.
+
+## Phase A reviewed Attendance diagnostic delta
+
+Parent/current published94255f. Exactly two source paths modified, no new/deleted files: scripts/collect-ci-test-outcomes.py SHA3b6d9196e018d4bbb048fe3c06c59b26d7d128931975132620ffb36fb43661d0; tests/harness/test_ci_test_outcomes.py SHA7a0e0b3aa0380bfb63ff07166dbf7a3b1600fa7268dbf9958e331d4341772707. Author manifestc8d3e81c, independent internal review1920f4cd APPROVE, root integration byte-exact. Source2 currently integrated/not published; actual-staged check precedes commit and publication waits for all currentfive runs terminal.
+
+Only fully-unidentified Attendance integration/java-coverage FAILED|ERROR receives optional closed exception-category/native-exit metadata. Exact source/status/identity/count/schemaVersion/NOT_ASSESSED and S1/security assertions unchanged. No raw class/message/path/method/stack values or ordinal→named mapping. Exact B015 identity/declaration loosening stays frozen. Public Gradle8.12 suite/worker wrappers and exit137 alone prove no infrastructure/OOM cause. Existing consumers stay fail closed.
+
+Whole selected collector harness55PASS/0fail/error/skip (attempt3,9f8582a1), four full original-report comparisons byte-identical after stripping only newdiagnostic (attempt2,1baa76b1). Collector3b6d stays unchanged throughv2. Original bootstrap positive input was invalid for the existing strict parser; input tuples corrected to empty/valid or agreeingheaders, all4positive+5negative assertions and12oldnegative tuples byte-identical, two original invalid pairs added to negatives. No parser/oracle weakening. Firstwhole55/7subFAIL and immutableoldcontrol1/6subFAIL remain preserved. Local semantic controls do not reveal the actual historical Coverage exception; currentcauseUNKNOWN.
+
+New owner ordering: complete Attendance/transfer bounded causal result first, then all-current-tests read-only inventory/deep review, two addressed lists delete/rewrite, important keep groups and honest unread/uncertainty counts. PhaseB not started. No mass test/gate/CI/product change authorized by audit. Old10FIXED/N2externalPENDING and historical39/39/196/196 remain separate. No merge/deploy.

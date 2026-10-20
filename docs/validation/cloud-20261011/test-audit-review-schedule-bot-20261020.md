@@ -122,3 +122,53 @@ R02 influence outside those 72 declarations: the two existing requested-summary 
 ## Limits and next acceptance boundary
 
 No Java/PG/gRPC/HTTP/Rabbit execution was performed by this reviewer. Author-reported syntax/format/ruff/focused bot outcomes are not independent runtime receipts. Root reports unchanged Java compile plus 48 pure tests PASS and 33 Python file lint/format PASS. The focused author run had 144 PASS / 18 FAIL; two identified fixture errors were corrected and those targeted methods passed. The final tiny request-action recheck had two existing-product FAIL cases and one PASS. This is not a newly executed aggregate all-green suite. The current 16 first-failing cases are classified above; no skip/xfail/product fix was used. Actual isolated Docker/PG/Rabbit execution remains separate acceptance evidence. The current native Rabbit route was inspected only, not invoked. The helper mirror remains another writer's inventory. No product-readiness percentage, full-PR approval, or acceptance of the existing product defects is implied. Frozen B013–B015 and rejected historical Mongo/Chromium work were not changed.
+
+
+## К4 — независимое review correction после опубликованных outcomes
+
+Review receipt SHA256: `29e973ecbec1fa505251dd34300a2f36f291225ad224a88783f89841a49168f5`.
+
+# Независимое review узкой Schedule correction
+
+**APPROVE SOURCE. Blocking findings: 0.** Одобрение относится только к трём замороженным test-файлам; runtime PASS, устранение всех шести CI failures и merge readiness не заявляются.
+
+Reviewer: отдельный от sole writer агент; requested GPT-6.1 Sol / high, actual runtime model/effort metadata UNKNOWN. Дочерних агентов нет. Review выполнено read-only; единственная запись — этот отчёт вне tracked tree. Tests, Gradle, CI, DB, broker и browser не запускались; commits/push не выполнялись.
+
+## Точные входы и custody
+
+- Published baseline: `/workspace/work/pr2-review/repo`, HEAD `a6c64389284b9daa9249f056ab443e8cc4f25dac`.
+- Frozen package: `/workspace/work/test-audit-implementation/schedule-bot-ci-correction/{correction.patch,correction-manifest.json,frozen/}`.
+- Patch SHA256: `af3c26602210122cade84a921a2332e833aa5f10bb305f16ceda37949f882af6`.
+- Прочитаны применимые root/services/tests AGENTS, RULES/CURRENT/workflow, актуальный `docs/validation/cloud-20261011/CURRENT.md`, accepted audit и SCH-R04/SCH-R08 proposal/implementation rows. Предшествующее whole-worktree WIP не включалось в новый correction diff.
+
+Независимая проверка байтов подтвердила для каждой из трёх записей manifest: published SHA совпадает с baseline; corrected SHA совпадает с frozen и writer-файлом; применение unified patch **в памяти** к baseline восстанавливает точные frozen bytes. Path set patch/manifest совпадает и содержит только эти три test-файла.
+
+| Файл относительно repo | Corrected SHA256 |
+| --- | --- |
+| `services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java` | `6680e73e6e962e849d84f3376b8b4760046e34876192888166ccbe9274ccc853` |
+| `services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java` | `ea1bed9c53d9e581663648acbbf461b5cae507400ce0cb7b60b316266258b6fc` |
+| `services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java` | `019b2591083e7b9e3ee4d181fa3083ae1cbfab2a4871917366f65d07d47739e6` |
+
+В patch нет product, migrations, global/protected config, dependency, policy или test-exclusion изменений. Дополнительный read-only scoped `git diff --name-only` writer worktree для Schedule main/resources, shared-security main, `.github`, `.codex`, `.agents` и AGENTS вернул пустой результат. B013–B015 и rejected Mongo/Chromium equivalents не затрагиваются.
+
+## Проверенные изменения и сохранённые гарантии
+
+**SCH-R04 — LessonPerformanceIT.java:208–209.** Единственный final delta: target `2026-01-11`, №1 → `2026-01-10`, №2. Исходная разовая пара остаётся субботой `2026-01-10`, №1 (`:173`, `:181`, `:191`). Промежуточный пятничный вариант не входит в frozen patch.
+
+Это корректный fixture для существующей production операции: `LessonTransferWriter.java:148–165` требует будущие planned source/target и учебный день Mon–Sat; фиксированный clock теста даёт 1 января. `:178–193` выбирает canonical times по №2 при null legacy times. `:210–218` запрещает одинаковые date+number, но допускает смену номера в тот же день и проверяет занятость target. Recurring seed использует только day 1–5 (`LessonPerformanceIT.java:85`), поэтому на субботу №2 recurring collision нет; единственная seeded разовая пара занимает №1. Assignment fence охватывает обе даты (`:167`).
+
+Durable transfer остаётся реальным вызовом production writer. `LessonTransferWriter.java:304–330` переводит source в transferred, меняет current pointer/generation и создаёт target; same-date перенос сохраняет две физические строки с разными номерами. Обе остаются в исходной неделе Jan5–Jan11. Query и oracle не менялись: 30 recurring + retained + current = 32, точные ID/page total/group/status/current flags (`LessonPerformanceIT.java:233–274`), ≤6 ORM statements (`:275–277`), один измеренный HTTP response <1000ms (`:278–280`). Repository production paging/count SQL допускает transferred history и текущие pointers (`LessonRepository.java:220–239`); fixture сохраняет нужные отличимые строки.
+
+**SCH-R08 — ScheduleUserContextFilterIT.java:196–197, :235; StrictModeIT.java:52.** Положительные signed/legacy/strict reads используют STUDENT группы10, соответствующий seeded own scope. Это устраняет постороннюю ADMIN-authority предпосылку: `RoleCheckAspect.java:41–44` для ADMIN на любом REST controller вызывает `AcademicAdminPermissionClient.requireFull`; клиент требует raw token и authoritative full permission (`AcademicAdminPermissionClient.java:19–32`), которого эти fixtures не подготавливают. Legacy ADMIN дополнительно не имеет raw internal token. Это source-доказательство ошибки fixture, а не утверждение о фактической первой причине hosted failures.
+
+STUDENT разрешён текущим group journal guard (`LessonService.java:248–256`, `:558`), а strict item listing использует own-group guard (`ScheduleItemService.java:88–95`, `:123`). Actual JWT/legacy filter продолжает переносить group/role и отдавать приоритет signed token (`ScheduleUserContextFilter.java:31–54`; shared `DualModeUserContextFilter.java:63–76`). Production authorization не менялась и не отключалась.
+
+Побайтно сохранены прежние assertions: dual-mode exact200 + одна own-group строка (`FilterIT.java:68–81`), invalid/expired/wrong-signature exact401 (`:85–142`), conflicting legacy ADMIN/group20 со signed STUDENT/group10 и foreign403 (`:201–218`), signed HEADMAN mutation200 с persisted actor/group и authoritative revocation403 + cancelled status (`:149–189`). Strict no-header/legacy exact401 и positive exact200/zero total остаются (`StrictModeIT.java:35–62`). Новых weaker status checks, skips, retries или обходов guard нет.
+
+## Проверки и пределы вывода
+
+Исходный safe uploaded receipt `ci-primary-uploaded/schedule-safe-outcomes.json` привязан к PR run39505618901 attempt1, PR head a6c64389, merge checkout06abc14f; summary208 PASSED/6 FAILED/0 ERROR/0 SKIPPED/0 NOT_EXECUTED. Он подтверждает identities/outcomes, но **фактическая первая failed stage, HTTP output/exception и причинность четырёх затронутых случаев UNKNOWN**. Raw XML/private logs/diagnostics не использовались для вывода о причинах.
+
+Два других failure-case остаются обычными failures: `ScheduleGrpcServiceImplIT.java:204::getLessonsByGroup_happyPath_returnsAllMatchingLessons` — причина UNKNOWN; `RecurringScheduleItemIT.java:2003::templateReturnAfterCommittedTeacherReplacementUsesExistingCloneAndEffectiveTeacher` — ранее отмеченная source hypothesis возможного product defect, runtime причина UNKNOWN. Их SHA остаются `9899acfd8df60ead4a8e64cafeb4613d3a91e55c104a00496b688e9d3fde068b` и `0ed3c89dac56df29505688ae35445a17a9d996ddafda438103c1a09d7fc7e746`; correction их не меняет.
+
+Manifest сообщает GJF AOSP3 PASS, Java21 syntax22 PASS и diff-check PASS. Final-byte compile по переданной root закрытой классификации автора: `/workspace/work/test-audit-implementation/schedule_bot-ci-correction-compile3.log`, exit 0, BUILD SUCCESSFUL за 9s, 23 tasks: 1 executed / 22 up-to-date. Reviewer повторно сверил hashes всех трёх final writer/frozen sources с corrected SHA manifest и patch SHA — совпадение 3/3. Это author compile evidence, не независимый запуск reviewer; raw Gradle log не читался. Прежний compile промежуточных bytes не используется как финальное подтверждение. Reviewer runtime NOT_RUN; native corrected integration/DB не выполнялись и не объявляются PASS. Root выполняет свою приёмку и последующую обычную проверку; source APPROVE не заменяет hosted acceptance.

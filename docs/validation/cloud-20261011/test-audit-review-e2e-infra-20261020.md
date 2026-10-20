@@ -114,3 +114,51 @@ The control still has exactly the same20 test methods and definition names. Stat
 Direct current source reads confirm ordinary title/call1585/1811, D002 title3958, and hosted title/call5943/6064. The fixture retains explicit rejection of retired ordinary1657/1883, D0023959/3959 and hosted5948/6069, including disjoint ordinary-versus-hosted admission. The producer still requires the exact hosted title/file, HEADMAN session, Chromium project/output directory, disposable loopback flags, exact run/clock directory identities, numeric run/attempt bounds, owned non-symlink modes, actual500 PUT attendance-mark path, and first-only private canonical request UUID witness. Existing title/actor/context/path/request gates, response handling, privacy, source AST integrity, correlation and receiver UNKNOWN qualification are unchanged.
 
 Author evidence read: the existing pure control reports20cases/4failures/0errors before and20cases/0failures/0errors after; no runtime main/network/container calls are claimed. This reviewer did not execute the control, CI scripts, browser, native processes, databases, product operations, or any prior rejected experiment. Source-only byte/hash/AST comparison and report writing were the only actions. Earlier approved43-path core and final Java/E2E routing review remain applicable outside these exact corrections. No blocking finding remains; E2E-R001 unsupported positive legacy condition retains its prior qualification.
+
+
+## К4 — независимое review точной CI provenance correction
+
+# Независимое review CI Academic source-provenance rebind — APPROVE
+
+**APPROVE SOURCE**, blocking findings **0**. Одобрены только восемь scalar bindings в `.github/workflows/ci.yml`, необходимые после уже одобренных пяти Academic fixture corrections. Runtime/CI acceptance **NOT_RUN**, причины исторических failures **UNKNOWN**. Это не review всего PR, inventory319 либо новый аудит 263 IDs.
+
+Reviewer независим от автора CI delta; дочерние агенты не создавались. Requested model/effort `gpt-6.1-sol/high`; фактические runtime model/effort **UNKNOWN**. Прочитаны root AGENTS, canonical RULES/CURRENT, workflow, актуальные validation CURRENT/TEST-AUDIT-IMPLEMENTATION и два fresh source reports `review-academic-http-correction.md`, `review-academic-exports-correction.md`. Текущий owner GO на DELETE94/REWRITE169 и узкий provenance rebind передан root из прямого user packet; исторический `.agent` CURRENT не принят за новое разрешение или новый STOP. Риск: сохранить привязку существующих negative/restore/ordinary-green проверок к точным текущим source bytes и assertion frames.
+
+## Проверенный снимок
+
+- Repo: `/workspace/work/pr2-review/repo`; исходный проверенный HEAD `f10d465f8c37a4d33530790e2f8b881e8f964ca7`. Во время завершения отчёта root продвинул HEAD до `f42bf461daed8e6688358deef9619414596b0c87`. Независимый final readback подтвердил: parent нового commit — исходный HEAD, единственный committed path — CI, committed CI bytes равны frozen after. Source выводы сохранены; reviewer commit не создавал.
+- Frozen inputs: `/workspace/work/test-audit-implementation/academic-ci-rebinding/{before-ci.yml,after-ci.yml,projection.safe.json}`.
+- Before CI SHA256 `1722a8e229ffe54dce4c3dedd330a999f6c41b6dc8dbcba526adfe86da286835` — совпал побайтно с CI исходного `f10d465f` через `git show`.
+- After CI SHA256 `499275b889c607bc84fad37c4f11665592f80daf2f40820115cabffb82d03321` — совпал побайтно с текущим рабочим CI.
+- Оба файла имеют 7397 строк. Независимое сравнение обнаружило ровно строки **589, 602, 889, 898, 899, 903, 1545, 1902**. Последовательное применение шести точных substitutions из projection с проверкой multiplicity восстанавливает весь after побайтно. Значения дополнительно независимо выведены из текущих source bytes, а не приняты только из projection.
+
+## Восемь bindings: 2 + 1 + 2 + 2 + 1
+
+| Назначение | Строки CI | Проверенное значение |
+| --- | --- | --- |
+| RestApiIT source admission и exact restore | 589, 1545 | `8ee9bb192b91e0803913bc16fb8486039678634603043e576bdd3eb6906566cb` вместо `4cccd16f419fdb812114369fe6aaf52ad6c33f279a5772443dab5090e1b61893` |
+| Существующий identity-negative SHA | 602 | `97fbfa97a70815f0283d9572ea278248467fc059d94444202417a203d780fd39` вместо `4c165afc0076d36800bf697b5f4bd5a4902c84cadf5d1e998d5e51a857bac2e9` |
+| AcademicExportJobsIT admission и ordinary-green source target | 889, 1902 | `b454db34df04d223ad893769ecc392e445b84e22eb5eb18816eb8ae78e944a7b` вместо `30afcc02d68553512cd322724485e3bacf8d5d5df16c85610070946b5c3e1b63` |
+| Teacher declaration/assertion zero-based indices | 898, 899 | `[501] → [510]`, `[546] → [555]`, фактические строки 511 и 556 |
+| Teacher proof ruleLine | 903 | `547 → 556` |
+
+`RestApiIT.java` и `AcademicExportJobsIT.java` независимо прочитаны из текущего repo; их SHA равны таблице, bytes равны HEAD и path status чист. Teacher declaration — `teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks`, строка 511. Строка 556 содержит `assertThatThrownBy(() -> local.require(captured, true))`; proof ruleLine указывает именно на этот denial oracle. Его method selector не менялся.
+
+Для identity сценария `duplicateIdentityResolvesToExistingAccountAndRoleFailuresLeaveCommittedStateUnchanged` статически разобран AST встроенного `PY_DOMAIN_RED`. Через `ast.literal_eval` прочитаны только заранее выбранные literal assignments; сам встроенный gate не исполнялся. Before/after AST узлов `identity_oracle`, `identity_update`, `teacher_anchor` совпали. Единственный identity anchor (SHA256 `b4edd9f463a027676b37a62e82d76dad4b0fc4601d354eb30943a8850388de1b`) и unchanged update bytes (SHA256 `8144ce9b18e6e5025886743c3cc155411d9a4d70b33aa34c2d9c2ff86d084c34`) дают в памяти negative `97fbfa97…`. Обратная замена восстанавливает исходные bytes. Расчёт существующей формулой даёт named rule frame `RestApiIT.java:382`. На диск negative не записывался.
+
+`LocalReportAuthority.java` равен HEAD и чист по path status. Его unchanged SHA256 `2ed6ed5d37c319871a88469064595c65749d7404ac13fabd4a2c544bc90210de`; unchanged unique anchor `if (ready && !current.containsAll(identity.teacherScope())) throw denied();` при существующем удалении только в памяти даёт прежний negative SHA256 `7b5466a6c9fb694cea5b0d6417f31f6cc7c7d0afdc43a88023e0fd9212fe9bdc`. Production bytes и mutation не меняются.
+
+## Сохранённые callers и ограничения
+
+Весь CI вне восьми substitutions побайтно прежний; SHA256 последовательности остальных строк, соединённых LF без конечного LF, `dd78332f387c087250d2dca4ff298c7d3b7b65a07d69bbb310932e857fbc52f1`. Поэтому rebind не меняет schemas, predicates, gates, deadlines, selectors или privacy policy. Адресно прочитаны необходимые unchanged callers:
+
+- Native gate сохраняет step timeout 8 минут и subprocess timeout 360 секунд, admission по HEAD/чистому status, exact method selectors, XML bounds 32 MiB, запрет DOCTYPE/ENTITY, точные suite/case names и counts 1 test / 1 failure / 0 errors / 0 skipped. Identity требует прежний label, true→false assertion и единственный точный named frame; teacher требует прежний missing-throwable message и единственный точный named frame.
+- `finally` сохраняет исходные bytes, проверяет equality и чистый status; RestApiIT restore теперь связан с теми же actual source bytes, что admission. Teacher source/production restoration использует прежние `testSha`/`productionSha` и status guards.
+- Следующий ordinary integration gate и safe collector получают прежние service/task, method/package и source paths. Ordinary-green требует `collection == RESULTS`, exact PR/checkout HEAD, run/attempt/job/service/task, successful test step, ровно один matching case, `SOURCE_METHOD`, exact source/hash и `PASSED`. Перепривязан только SHA teacher source. NO_RESULTS не превращён в PASS.
+- `scripts/collect-ci-test-outcomes.py` равен HEAD, SHA256 `3b6d9196e018d4bbb048fe3c06c59b26d7d128931975132620ffb36fb43661d0`; source registry/hash и NO_RESULTS/NOT_ASSESSED поведение неизменны. Существующие safe-output/private-log границы не изменены.
+
+Canonical `TEST-AUDIT-20261020.md` и read ledger побайтно равны HEAD (SHA256 соответственно `1fe9ac3821844bf9c105c4bcef1442c266dc21f2e2ff75e198c3365f989b6786`, `f1ec609fb283de80ac26da1b3eb7a3e50aa76b78a0f249c3aacd9faf0a8e75e3`). Их содержание и весь matrix/inventory заново не аудировались. Первоначально porcelain содержал **9 paths total: CI + 8 docs**; после root commit — только те же 8 docs. Эти чужие pending docs не изменялись reviewer и не входят в одобрение CI delta.
+
+Проверки: read-only `git show/status/rev-parse`, byte/line comparisons, SHA256 и AST parsing/literal processing двух embedded Python sections. Gradle, compile, tests, embedded native gate, новые counterexamples, DB/Mongo/browser/Chromium, CI dispatch/rerun/cancel, commit/push не выполнялись. Raw private XML/logs, PII, secrets и произвольные diagnostics не читались. Единственная запись reviewer — этот внешний отчёт.
+
+Frozen B013–B015, T008/protected rights, rejected Mongo PUT500/Chromium equivalents не переоткрывались. Это rebind уже существующего принятого routing, без нового эксперимента и без ослабления требований. Merge остаётся BLOCKED по фактическим красным gates и неразобранным failures; source approval не устанавливает runtime PASS и не снимает owner ограничения.

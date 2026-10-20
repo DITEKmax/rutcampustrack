@@ -82,3 +82,81 @@ Author reports cf3a… compileTestJava PASS and18 suites/104 tests/0failures/0er
 | AI-R09 | Actual HTTP top-level health.status and exact accepted management links; direct forbidden endpoint probes remain. |
 | AI-R10 | PG lock owner/PID relation + pg_blocking_pids replaces literal SQL equality; actual wait/release/revoke/history/old-session denial remain. |
 | AI-R11 | Actual HTTP rename + migrated PG durable outbox/Rabbit event pair correlated by actual IDs/group, canonical name/actor/envelope; same-name negative remains. |
+
+
+## К4 — независимое review Academic corrections
+
+Review receipt SHA256: `d21cd821476b5426f1ec71e4f7b7fc81fdf371206c36cb6d0d9d2ec7c8a2f563`.
+
+# Независимое review Academic HTTP corrections — APPROVE SOURCE
+
+Итог: **APPROVE SOURCE**, blocking findings **0**. Это заключение относится только к финальному frozen четырёхфайловому TEST-only delta. Runtime/compile/CI acceptance **NOT_RUN**; исторические failure stage/cause **UNKNOWN**.
+
+Reviewer независим от автора; requested model/effort `gpt-6.1-sol/high`, actual runtime metadata **UNKNOWN**. Прочитаны применимые root/services AGENTS, canonical RULES/CURRENT и workflow; текущий scoped owner GO передан root. Более старые proposal/packets не расширяют задание. Дочерние агенты не создавались.
+
+## Проверенный снимок
+
+- Root source: `/workspace/work/pr2-review/repo`, `bc30ea151c733803c118be79155b86cf49bd0a4d`.
+- Writer: `/workspace/work/test-audit-implementation/academic`, HEAD `2eca01a3ef4c65cc2ed1f1ccc6bb7c50eb211615` с ранее существовавшим WIP.
+- Frozen package: `/workspace/work/test-audit-implementation/academic-http-correction`.
+- `manifest.json` SHA256: `65e759d45b11ac143e44036d7e721ec517a110a2a44ef8712cada14841555c0c`.
+- `correction.patch` SHA256: `0e2321ec286d6aaa574ae96b9f8dceca668063b7175a469beea84f9fd1171410`.
+
+Каждый before SHA совпадает с root source, каждый after SHA — одновременно с frozen и writer. Patch независимо восстановлен из before/frozen и совпадает побайтно. Academic source root не отличается от опубликованного `a6c64389284b9daa9249f056ab443e8cc4f25dac`.
+
+| TEST-only файл относительно repo | Финальный SHA256 |
+| --- | --- |
+| `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java` | `8ee9bb192b91e0803913bc16fb8486039678634603043e576bdd3eb6906566cb` |
+| `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterIT.java` | `64ab08c7b82b6182adb048cf9d75ebb09ad6e6058f7b432ddc105d561cf71b6d` |
+| `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterStrictModeIT.java` | `c5383c7896e0b157a48d4808b8d14108176da352c43170841e03bb8c8bba2fe4` |
+| `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserCredentialOwnershipIT.java` | `460738a98d3719c40b76842eb24da8a8e40af8b3cd7d2cf825bfef826410101b` |
+
+## Source review
+
+1. **RestApiIT:737,743,759–770 — корректная fixture-транзакция.** Проверена текущая `db/academic-migration/V3__academic_domain_baseline.sql`, а не только историческая `db/migration`. Constraint triggers на строках 663 и 669 DEFERRABLE INITIALLY DEFERRED требуют минимум один `subject_lesson_types` у сохранённого subject. Новый data-modifying CTE записывает parent и lecture child одним SQL statement/commit. Аналогичный CTE уже существует в сохранённом homework сценарии этого класса. Все threshold resolution HTTP 200, level/value/sourceId, четыре уровня и повторная чужая group/subject control остаются побайтно прежними.
+
+2. **AcademicUserContextFilterIT:130–133,168–171; StrictModeIT:76–79 — semantic privacy.** Текущий `UserController.listUsers` вызывает `UserAssembler.toRegistryResponse`, который передаёт `includeInitialPassword=false` и создаёт null. `UserResponse` содержит nullable getter; текущий shared `JacksonConfig` не включает NON_NULL. В canonical `docs/openapi/academic.json` поле `EntityModelUserResponse.initialPassword` optional: required list отсутствует. Поэтому отсутствие поля и явный JSON null допустимы для privacy oracle; финальная проверка принимает только MissingNode/NullNode. Любой непустой или пустой string, number, boolean, array либо object отвергается. `passwordHash` по-прежнему обязан отсутствовать. Точные 200, totalElements=3, canonical IDs, conflicting legacy tuple и все существующие 401 negatives сохранены.
+
+3. **UserCredentialOwnershipIT:67–72 — невакуумный catalog oracle.** Fixture `configureDatabase:353` устанавливает runtime `search_path=pg_catalog,public`; production `infra/postgres/init-roles.sh:83` использует ту же политику. `current_schema()` поэтому указывает на pg_catalog, а canonical V1 создаёт `academic_profiles` в public. Явный public исправляет адрес проверяемой таблицы. Положительный witness `id,last_name,first_name` не допускает пустой результат metadata query. Отсутствие трёх credential columns, Auth initial/BCrypt/password_changed proof, отсутствие credential значений в Academic entity и passwordHash в response сохранены.
+
+4. **Реальная граница сохранена.** Base использует RANDOM_PORT; positive HTTP вызовы идут через TestRestTemplate. Существующая fixture мигрирует split Academic/Auth PG, использует отдельные runtime/migrator roles, real SessionLifecycleService create/selectRole и Auth gRPC AdmitSessionIdentity. ACL/schema ownership guards и legacy/strict property checks не изменены. Общие helpers не менялись.
+
+Замечание к промежуточному freeze `ce824005…` (exact JSON null вместо semantic absent-or-null) устранено автором. Независимо перечитаны все три финальных assertion и подтверждена их граница; прежний intermediate не одобрен как финальный.
+
+## Сохранность и границы доказательства
+
+- Baseline содержит 66 dirty paths: 65 предыдущих WIP и 1 чужой shared helper. Все 62 paths вне четырёх исправлений сохранили прежние SHA/удалённость; полный набор porcelain statuses совпал с baseline. Локальные тестовые методы не добавлялись и не удалялись. Production/workflows/dependencies/grants/common helpers не затронуты incremental delta.
+- Проверены `manifest.json`, `results.json`, before snapshot, final frozen source, exact patch и адресные production/contract/fixture sources. Не выполнялись тесты, Gradle, compile, DB, browser, CI, commit или push; продуктовый/тестовый код reviewer не правил. Единственная запись reviewer — этот внешний отчёт.
+- Safe projection SHA256 `298dfb6a9ae85b341e2055f100d32a30f5e5559aa41dc073f148c47ab24ac7c0` проверен. Он связан с run `39505605425` attempt 1, artifact `12305165990`, source `a6c64389284b9daa9249f056ab443e8cc4f25dac`, artifact digest `8c02348e5c3dc00c61929ba9a3532f72a766a096090924363dda0589c3414ffc`: 496 PASS, 44 FAIL, 1 SKIP; 44 failures имеют SOURCE_METHOD identity.
+- В рассматриваемом HTTP/domain scope 24 failure cases: только 5 source-affected приведёнными четырьмя файлами; 19 остаются обычными неразобранными failures. Safe projection не содержит failure stage/cause. Исправления обоснованы текущими источниками; принадлежность исторического падения конкретному assertion и последующий PASS не установлены.
+- Export scope, сохранённое root finding HomeworkMigrationIT, B013–15, rejected Mongo PUT500/Chromium equivalents и canonical 263-ID audit не переоткрывались и этим заключением не сертифицируются.
+
+Следующий шаг root: личная проверка источников/заключения и интеграция только перечисленного frozen delta; runtime acceptance отдельно по разрешённой стадии.
+
+Review receipt SHA256: `82979198e9abdd5ab3c808420075b9e675c6ebbdad6ccc1b634ccaefd0393d6e`.
+
+APPROVE — независимое source-only review frozen пакета `academic-exports-correction`. Blocking source findings не обнаружены. Это одобрение узкой правки fixture, а не runtime acceptance или подтверждение устранения CI-падений.
+
+Reviewer независим от автора. Запрошены GPT-6.1 Sol / high; фактические model/effort — UNKNOWN. База root и writer worktree: `bc30ea151c733803c118be79155b86cf49bd0a4d`; исходная опубликованная revision: `a6c64389284b9daa9249f056ab443e8cc4f25dac`. Прочитаны root/services/tests AGENTS, RULES, CURRENT, workflow и применимые AA-R03/AA-R11 из academic-packet. Текущий узкий read-only contract имеет приоритет над историческими состояниями CURRENT. Риск review: изоляция соединений, runtime privileges и сохранение реальных транзакций/конкуренции; product bytes защищены.
+
+Проверенная коррекция и сохранённые границы:
+
+- [AcademicExportJobsIT.java:76](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java:76): schema теперь устанавливается на соединениях существующего `identityFixture.academicJdbc().getDataSource()`. [AcademicIdentityIntegrationFixture.java:229](/workspace/work/pr2-review/repo/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicIdentityIntegrationFixture.java:229) создаёт этот datasource как `DriverManagerDataSource` с теми же Academic URL, runtime role и credential variable, которые fixture передаёт Spring в строках 471–473. Это не migrator и не смена authority. Roles создаются без superuser/create-role/create-db/replication/bypass-RLS; database/schema owner — отдельный migrator; runtime isolation проверяется в строке 1090. Disposable соединения исключают возврат изменённой schema в общий application pool.
+- Предыдущая pool-state ошибка подтверждается source: удалённое autowired поле питало wrapper, вызывающий `setSchema` без восстановления. В доступных application/fixture properties нет Hikari schema; frozen dependency proof показывает `PoolBase.resetConnectionState` с проверкой `schema != null` перед reset. SHA-256 локального HikariCP 6.3.3 JAR независимо совпал с proof: `709f378c05756280939ce50fc1b1f1a53bb8e1899dc1b249f21f12703640b48b`. Повторный `javap` недоступен в PATH; новых зависимостей не получал. Это устанавливает fixture isolation defect по исходникам, но не причину конкретного CI-падения.
+- [AcademicExportJobsIT.java:47](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java:47) сохраняет полный Flyway chain `classpath:db/academic-migration` в UUID schema под owner. Это текущая production location ([docker-compose.prod.yml:373](/workspace/work/pr2-review/repo/docker-compose.prod.yml:373)), также выбранная fixture override в строке 482; соседний legacy `db/migration` не принят за канон. Таблицы/constraints/trigger bodies не заменены ручными урезанными аналогами.
+- [AcademicExportJobsIT.java:61](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java:61) и строка 71 восстанавливают закрытость operator bootstrap table/function после существующих blanket grants. Это соответствует [V11__initial_admin_bootstrap.sql:29](/workspace/work/pr2-review/repo/services/academic-service/academic-app/src/main/resources/db/academic-migration/V11__initial_admin_bootstrap.sql:29): table закрыта PUBLIC/runtime, функция закрыта PUBLIC, а runtime не должен получать отдельный EXECUTE. Сохраняется revoke UUID-schema Flyway ledger; canonical afterMigrate callback для `public.flyway_schema_history` не подменяет этот дополнительный revoke. Не появилось owner DML вместо runtime DML или предоставления runtime CREATE/TRIGGER/ownership.
+- [AcademicExportJobsIT.java:94](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java:94): JdbcTemplate, LocalReportAuthority proxy и ExportJobRepository proxy сохраняют один wrapper datasource как Spring transaction resource key. Оба настоящих `DataSourceTransactionManager` и annotation advice остаются. `REQUIRES_NEW` LocalReportAuthority по-прежнему получает отдельную транзакцию/соединение с suspension внешней транзакции; замена на unpooled datasource этому не препятствует. Advisory transaction locks, FOR UPDATE/CAS, rollback artifact/audit/outbox и afterCommit metrics остаются в production repository.
+- Сценарий четырёх simultaneous claims в строке 210 сохраняет executor/latch и независимые реальные JDBC transactions: нет single-connection datasource или добавленной сериализации. Остались global-two lease oracle, bounded queues, retry/backoff, stale leases, actor/scope/hash/current authority, availability guards, rollback/audit/outbox/metrics, retention/cleanup и privacy. [AcademicExportJobsIT.java:121](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java:121) удаляет только UUID schema через owner после метода; fixture listener и existing lease в `AcademicIdentityIntegrationFixture.beforeTest/afterTest` сохраняются. Unpooled datasource не удерживает pool со schema, которую уже удалили.
+- [AdminRegistryExportsIT.java:324](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java:324) не изменён: real HTTP purpose/lease/FULL→LIMITED→revocation/privacy sequence сохранён. [ReportDownloadTicketBoundaryIT.java:17](/workspace/work/test-audit-implementation/academic_exports_correction/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/ReportDownloadTicketBoundaryIT.java:17) не изменён: 43-character anonymous ticket request, owner 404/problem/no-store/no-echo соответствуют текущим filter/controller/advice boundaries. Оснований исправлять их oracle по одному FAILED outcome не установлено.
+
+Независимая проверка точных bytes (Python read-only comparison, git show/diff/status; без компиляции или тестовых запусков):
+
+| Файл | Baseline SHA-256 | Frozen/worktree SHA-256 | @Test |
+| --- | --- | --- | --- |
+| AdminRegistryExportsIT.java | `f13b59a4c508ddb05c32ace38830c094ef7557a1b64a243fce084d5e12115454` | тот же | 6 |
+| AcademicExportJobsIT.java | `30afcc02d68553512cd322724485e3bacf8d5d5df16c85610070946b5c3e1b63` | `b454db34df04d223ad893769ecc392e445b84e22eb5eb18816eb8ae78e944a7b` | 17 |
+| ReportDownloadTicketBoundaryIT.java | `2c12b9a012313ff170096689cad21e68cda43404de4f4b458c9fa662da9b28f9` | тот же | 1 |
+
+Все baseline bytes совпали и с bc30, и с a6c64389 через `git show`; frozen bytes совпали с writer worktree. Для каждого файла независимо сравнён весь suffix от первого `@Test` до EOF: byte-identical, включая полные declarations/bodies всех 24 тестов и последующие helpers. Это независимо подтверждает заявленную сохранность методов без повторного запуска авторского Javac checker. Baseline/frozen inventories содержат ровно по три Java-файла. Полный `git diff --no-ext-diff --binary` worktree побайтно совпал с incremental.patch; SHA-256 `a06299fff798e91756d3348928773e0968266eb34613cf54befcc6299702c342`. Единственный modified tracked path — AcademicExportJobsIT.java, 10 insertions / 1 deletion. `git diff --check` PASS; прочих source/untracked изменений status не показал.
+
+Ограничения: Gradle, compileTestJava, tests, DB, browser и CI не запускались; commits/push/source writes не выполнялись. Создан только этот отчёт вне tracked tree. Hikari bytecode proof прочитан из frozen пакета; проверены версия/hash доступного JAR, но его disassembly повторно не построен. Сведения об uploaded Push `39505605425` attempt 1, artifact `12305165990`, ZIP SHA `8c02348e5c3dc00c61929ba9a3532f72a766a096090924363dda0589c3414ffc`, 496 PASS / 44 FAIL / 1 SKIP и 19 scoped SOURCE_METHOD failures — входной safe evidence contract; raw private XML/logs не открывались, ZIP заново не скачивался. Точные failure stages и runtime causes остаются UNKNOWN. Одобрение не означает, что устранены 17 AcademicExportJobsIT failures либо какие-либо из 19 scoped failures. Полный audit 94+169 не переоткрывался; frozen B013–15 и rejected Mongo/Chromium equivalents не изменялись и не запускались. Product behavior не корректировался; ослабления проверяемых product требований в diff нет.

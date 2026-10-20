@@ -90,3 +90,50 @@ The two corrected race cases construct the actual AttendanceEventPublisher and L
 **Finding 2 resolved.** Every durable batch envelope is schema-validated, carries a parseable event UUID, and is matched to its persisted user with exact lesson/status/headman source and canonical group/subject/date/lesson-number assertions. The exact user set includes the ABSENT user 100. After batch replay, full parsed envelopes must remain identical, preserving event identity and payload in addition to stable domain IDs. The existing failure after the second actual event insert and rollback/recovery scenario remains intact.
 
 No new substantive findings in this narrow recheck. **APPROVE for the corrected source.** The correction manifest reports scoped syntax/formatter checks as PASS and compile as queued; I did not run or independently assert those checks. Actual Mongo integration remains NOT_RUN locally and requires ordinary CI verification. This approval does not convert compilation or source inspection into runtime transaction/race acceptance.
+
+
+## К4 — независимое review correction после опубликованных outcomes
+
+Review receipt SHA256: `5343ed7ff08ec3f7193d4dae350b7c6c41604be7ffcac2e385c31e4f94920532`.
+
+# Attendance audit correction — независимое review
+
+Вердикт: **APPROVE** для точного TEST-only incremental patch. Blocking findings не обнаружены. Это source review, а не runtime acceptance и не утверждение об устранении пяти CI failures.
+
+Scope: одна строка `MarkingIT.java:364`, `"STUDENT"` → `"HEADMAN"` в `signedHeadman()`. Риск: корректность auth fixture; production authorization и транзакционные гарантии не изменены. Прочитаны применимые `AGENTS.md`, `services/AGENTS.md`, `.agent/orchestration-v2/RULES.md`, `CURRENT.md`, `docs/agent-workflow.md`. Текущий явный root packet/делегированный owner GO задаёт границы; исторические proposal/STOP не расширяют и не отменяют их. Запрошенные model/effort: Sol6.1/high; фактическое runtime metadata: UNKNOWN. Детей не создавал.
+
+## Механизм и контракт
+
+Пути ниже относительно `/workspace/work/test-audit-implementation/attendance/`.
+
+- `services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java:354`: helper передаёт роль и capability в `InternalJwtTestFactory.validToken`; `:364` теперь HEADMAN, `:367` остаётся true, `:366` положительная группа, `:365` ACTIVE, `:368` readOnly=false. Factory (`services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java:98`) подписывает role как передан, без исправления семантики.
+- `services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java:128` вызывает `requireSemanticIdentity`; `:206` требует `isHeadman == role.equals("HEADMAN")`. Поэтому исходная STUDENT/true fixture достоверно нарушала контракт; HEADMAN/true с данной положительной группой удовлетворяет этому правилу. Другие admission/signature/wire/time проверки остаются действующими.
+- `services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/DualModeUserContextFilter.java:66` валидирует токен до controller; `:70`–`:73` возвращает 401 при `InternalJwtException`. Это доказанный механизм исходного дефекта, но не установленный этап падения конкретного CI testcase.
+- `services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java:28` отображает валидный HEADMAN в service-domain STUDENT, сохраняя raw role и отдельный headman capability. `services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilter.java:33` переносит domain role, группу и capability в RequestContext.
+- `services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingController.java:41` и `:97` сохраняют `@RequireRole(STUDENT)`; `services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/security/RoleCheckAspect.java:30` сохраняет отказ для неподходящей роли. `services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingService.java:507` сохраняет совпадение группы, `:510`–`:513` — серверное подтверждение старосты через academic client. Исправление не обходит эти fences.
+- Сохранившийся аналог: `services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java:241`–`:250` использует HEADMAN/ACTIVE/positive group/true/false для настоящего socket запроса. Safe uploaded case `getLessonAttendance_unknownStoredStatusRefusesWithoutChangingKnownRows` имеет SOURCE_METHOD/PASSED с SHA `986ad8a69ea2b6531baeffda16d7a1ca858692feaf9f14e27efb7f1f286491b5`, совпадающим с исходником. `InternalJwtValidatorTest.java:151`–`:160` уже содержит явное принятие HEADMAN и mapping в STUDENT, `:377` — отказ STUDENT/true; эти тесты не запускались заново.
+
+## Независимая проверка bytes/custody
+
+Read-only Python/hash/git checks, без Gradle и запуска тестов:
+
+- Root фактически HEAD `5c827c7a20be915654aed56c93c4c8b8790feef3`; `git diff --name-only a6c64389284b9daa9249f056ab443e8cc4f25dac HEAD -- services/attendance-service services/auth-service services/shared/shared-security` пуст. Attendance/Auth в этих границах совпадают с опубликованной базой.
+- Writer HEAD `2eca01a3ef4c65cc2ed1f1ccc6bb7c50eb211615`. Все 40 pathname/status из before manifest совпали с текущим porcelain: 39 Attendance + 1 foreign WIP. Frozen copies совпали со всеми before hashes, включая отсутствующие/deleted paths. Единственный изменившийся hash после снимка — MarkingIT.
+- Все 39 Attendance before entries совпали с bytes опубликованного `a6c6438`. Полный published attendance tree против writer содержит ровно один изменённый путь MarkingIT и не содержит дополнительных существующих путей. Замена единственного точного literal фрагмента frozen MarkingIT воспроизводит текущий файл байт-в-байт.
+- MarkingIT before SHA256 `8b11e847b0e59ac6f0e3a924cec8bb5e2724b4ccf254778ca73981b56fdf411d`; after SHA256 `6ada994f9d47f1fce36bb366a0c3b36868fd738f09c0d2bf215416d7de6764e4`.
+- Все шесть production mechanism bindings из `attendance-audit-correction-source-bindings.json` независимо совпали между writer, manifest и published root. Foreign `GrpcDeadlineArchRules.java` SHA256 `63abe080a5ee9dedb2f3b3e44a3a5c2347a82c7dc504a1bdb70b0b4a7ded8b45` сохранён.
+- Вне correction существует baseline difference writer против published root в `services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java`; он не входит в correction inventory, не изменялся мной и не включается в одобрение/перенос данной правки. О нём root уведомлён.
+- Все status/authz/CAS и exact-envelope assertions, включая требуемые 100 envelopes в принятом Attendance audit inventory, сохранены по byte comparison всего Attendance tree. В MarkingIT отдельно прочитаны HTTP200 (`:316`, `:425`, `:473`), exact three pairs (`:430`), durable/schema-valid envelope identity (`:432`–`:464`), stable document/event replay (`:474`–`:478`), вызов реального outbox save до второго insert fault (`:487`–`:491`), 5xx и ровно два insert (`:504`–`:505`), нулевые side effects в четырёх коллекциях (`:506`–`:514`), повтор той же команды и восстановление (`:518`–`:528`). Их bytes не менялись. Legacy MockMvc STUDENT headers также сохранены.
+- Оба safe input JSON совпали с before hashes. `git diff --check` writer завершился exit0.
+
+## Пределы доказательства
+
+Safe uploaded projection: run `39505618901`, attempt `1`, PR head `a6c64389284b9daa9249f056ab443e8cc4f25dac`, checkout `06abc14fd0d67e3de0a7ee8b932e8deec5b05324`; 252 PASSED, 5 FAILED, 1 SKIPPED, acceptance NOT_ASSESSED. Я сверил только supplied safe JSON и исходники; provenance uploaded artifact/digest принят по root custody packet, новый remote download не выполнялся.
+
+Три failures имеют SOURCE_METHOD identity на MarkingIT и совпадающий before SHA: `mark_successfulMark_publishesAttendanceMarkedEvent`, `batchHttpPersistsExactPairsStableIdsAndDurableIntents`, `batchHttpFailureAfterRealOutboxInsertRollsBackAndSameCommandRecovers`. Фактический failed stage каждого — **UNKNOWN**. Два остальных failures остаются classname/method/source=null, identity=ORDINAL_ONLY; их нельзя идентифицировать, переименовать или приписать данному дефекту по косвенным признакам. Коррекция source-defect не доказывает, что разрешены все пять failures, и не доказывает последующий успех трёх MarkingIT.
+
+Compile/tests/runtime: **NOT_RUN** в рамках явного задания. Для runtime acceptance нужны разрешённые root hosted outcomes на точной corrected revision/run/attempt; при необходимости доказать первоначальную причину нужны доверенные закрытые stage/assertion facts, без raw logs/bodies/messages.
+
+B013–B015, отклонённые Mongo PUT500/shared-semester experiments и Chromium equivalents остаются FROZEN. Не запускались DB/Mongo/browser/CI/Gradle/тесты, не читались raw project XML/private logs/PII/credentials, не менялся product/test source, не выполнялись commits/push. Cloud runtime skill потребовал environment status; это только metadata access, без запуска окружения, ручных диагностических probes или использования возвращённых сетевых diagnostics для выводов review.
+
+Создан только этот отчёт вне tracked tree: `/workspace/work/test-audit-implementation/review-attendance-correction.md`. Self-fix и перенос не выполнялись. Root лично проверяет и интегрирует только точный incremental patch.

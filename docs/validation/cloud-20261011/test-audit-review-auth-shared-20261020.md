@@ -73,3 +73,80 @@ The author reports nine-module test compilation and focused unit/transport passe
 Accepted implementation choices: AG-R05 moves the inadequate lower-level stale test to the existing actual HTTP suite; AG-R08 uses real service + PG/Redis without claiming an HTTP/private-RPC authorization proof; BS-R02 renames the ineffective structural unit to a real *IT; BS-R06 preserves the current explicit-null JSON contract; BS-R07 corrects an incoherent STUDENT/headman fixture to canonical HEADMAN; BS-R08 uses the audit's permitted local exception-mapping seam. BS-R11 consumer integration remains explicitly outside this writer's completed portion. No other scope deviation identified.
 
 Frozen B013–B015 and historical rejected Mongo/Chromium controls were not changed or executed. Root retains final confirmation of the original accepted audit items and cross-worktree integration.
+
+
+## К4 — независимое review correction после опубликованных outcomes
+
+Review receipt SHA256: `e788a9901cf1cd0dbc721411a03db4c50cc8d9a9ea00868d23d8e08ef1b8994c`.
+
+APPROVE — независимое source review двух frozen test-only corrections. Подтверждённых defects / blocking findings нет. Это разрешение на перенос именно проверенного patch; runtime PASS и устранение четырёх исторических FAIL не установлены.
+
+Requested model/effort: `gpt-6.1-sol` / `high`. Actual runtime model/effort: `UNKNOWN` — доступные инструменты не предоставили подтверждающих metadata. Reviewer не автор corrections, self-fix не выполнялся, дочерние агенты не создавались.
+
+Прочитаны applicable root/services/tests AGENTS.md, `.agent/orchestration-v2/RULES.md`, CURRENT.md и workflow в assigned worktree. Текущее явное задание на review authorized audit corrections применяется выше старой proposals-only формулировки. Проверка ограничена исправлениями BS-R03 / BS-R04 и непосредственно связанными исходниками; полный PR не переаттестовывается.
+
+Проверенная custody:
+
+- Integration checkout `/workspace/work/pr2-review/repo`: HEAD `a6c64389284b9daa9249f056ab443e8cc4f25dac`.
+- Correction worktree `/workspace/work/test-audit-implementation/auth_shared`: HEAD `2eca01a3ef4c65cc2ed1f1ccc6bb7c50eb211615`.
+- `notification-audit-correction.incremental.patch`: SHA256 `2ab64c05e6005227ad30507af361cfc97f4106d398689374cb34065f86bedb14`.
+- Initial inventory SHA256 `182be5e42206aef0b6243fe42ac97f30ee4900ef22400102a6160b49a5b4ca8d`; results SHA256 `5e462e8f13fffc8f406a76050991fb8f9ff2b36dc5a4d3f0191e4fa706a319d7` — совпадают с manifest.
+- Independently reconstructed patch from old integration bytes equals current and frozen bytes exactly. Initial inventory содержит 45 путей; изменились только два ниже, остальные 43 сохранили исходный SHA256 либо исходное отсутствие удалённого файла. `git status --porcelain=v1 --untracked-files=all` не содержит новых путей относительно initial inventory.
+
+| Путь относительно worktree | Old SHA256, integration + initial inventory | New SHA256, current + frozen |
+| --- | --- | --- |
+| `services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java` | `8ea3aba45789f09c17ce793d8df9a3de795979c54a18eb54a4f1db291430fca6` | `083873755593e66ab1806dec13492bf81430d1939fbf457c70fbb929a0e995d8` |
+| `services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java` | `e2ce46154c2ea0cdffb1bbc1911279a2c0513933bfb38d9945cb8b2546c45166` | `511fd9deb8925369f81ea382c767e5b860fdcfa64a0c9ccf271a64746b13fee7` |
+
+В [SecurityIdorIT.java](/workspace/work/test-audit-implementation/auth_shared/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java:86) fixture сохраняет три own и пять foreign записей. Все получают явный `STUDENT` RoleView, `orderAt=sentAt`, `revision=0`; у одной own записи сохраняется исходный root `readAt` и такое же значение projection `readAt`, у остальных оба состояния unread. Это соответствует shape `NotificationRoleHistoryWriter.java:36,71` и `NotificationInboxService.java:261`, а не меняет политику доступа.
+
+Исходный дефект fixture подтверждён source: production `NotificationHistoryService.java:51,64,75` делегирует legacy endpoints в inbox; `NotificationInboxService.java:235` требует одновременно user_id и role projection. `adoptLegacy` (:249) обрабатывает только собственные строки без role_views; для EXCUSE_REQUESTED `legacyRole` (:282) требует совпадающий payload user_id либо отдельный доказуемый HEADMAN shape. Строки только с owner_marker не получают STUDENT view. Исходная own строка с payload user_id получает projection и законно меняет collection при adoption до проверки чужого id в `legacyRead` (:184). Добавление canonical fixture устраняет это смешение migration и IDOR-проверки. Review не установил скрываемого этим изменения product defect; произвольное изменение legacy adoption в продукте не предлагается.
+
+Всё от `asUserA` (:158) до конца SecurityIdorIT byte-identical old/new: signed Internal JWT и disabled legacy headers сохранены; list (:170) требует status200, totalElements3, точное множество трёх own IDs и отсутствие foreign marker/id; forbidden read (:185) требует 403, foreign root readAt=null и recursive equality **всей collection** до/после; nonexistent id (:199) остаётся 403; unread (:210) остаётся 2 → own PATCH204 → 1, с foreign readAt=null. Изменение любой foreign projection, собственной истории, числа документов или полей после forbidden write по-прежнему нарушит whole-collection comparison. Fixture не отключает эти gates. Отдельный existing legacy-adoption case в `NotificationStateV2IT.java:155` также сохранён; его runtime этим review не подтверждается.
+
+В [StompIntegrationIT.java](/workspace/work/test-audit-implementation/auth_shared/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java:173) expected берётся из неизменяемого полного `wsMessage`, сериализованного и прочитанного через ObjectMapper того же `MappingJackson2MessageConverter`, который установлен клиенту (:114). Полученный actual не участвует в построении expected. Нет subset/contains/string-coercion сравнения: Map equality на :192 сохраняет оба верхних поля, оба payload поля, значения, вложенную структуру и отсутствие лишних полей. В частности, group_id43, другой event type, строка вместо числа, удалённое/добавленное поле остаются различимыми. Для данного сообщения единственная необходимая нормализация — JSON integer42 вместо Java Long42; wire значение не изменяется.
+
+Existing bounded readiness loop и deadline5s (:181) сохранены. Negative handshake, valid same-server upgrade control, timeout-as-failure и observed HTTP401 (:199–275) byte-identical old/new; disconnect/finally и closeClient сохранены. Inspected ticket admission, subscription authorization, group equality, broker configuration и signed REST context product sources byte-identical между integration и correction worktrees. Продукт, shared helpers, dependencies и CI gates не входят в incremental delta.
+
+Прочитаны author pure-control source и закрытый PASS-log в `/workspace/work/test-audit-implementation/notification-pure-controls/`: actual Spring converter control показывает исходное numeric Map inequality, canonical full-message equality и negatives wrong group/type/missing field. Reviewer эти Java controls не запускал. Рассуждение о сохранении дополнительных wire negatives основано на полном Map equality и конкретном scalar-only fixture, не объявляется отдельным выполненным sensitivity test.
+
+Историческая evidence принята только из закрытого `/workspace/work/test-audit-implementation/ci-primary-uploaded/notification-projection.safe.json`: run `39505618901`, attempt1, PR head `a6c64389284b9daa9249f056ab443e8cc4f25dac`, checkout `06abc14fd0d67e3de0a7ee8b932e8deec5b05324`, 60PASS/4FAIL/0ERROR/0SKIPPED. Три SecurityIdor failures имеют SOURCE_METHOD identity для `markAsRead_otherUsersNotification_returns403`, `list_returnsOnlyOwnNotifications`, `unreadCount_returnsOnlyOwnUnreadCount`, closed code ASSERTION; точная упавшая assertion stage/status/value UNKNOWN. Четвёртый failure имеет только StompIntegrationIT class + ORDINAL_ONLY, method=null, ASSERTION; failed method и stage UNKNOWN, happy-path failure из этого не выводится. Сохранённые uploaded source hashes совпадают с независимо проверенными old bytes. Сам uploaded checkout git object локально недоступен; независимый `git show` его bytes поэтому не подтверждён. Это ограничение не подменено source-гипотезой.
+
+Review выполнил только чтение source/safe evidence, Git read-only status/HEAD и Python byte/hash/patch comparisons; tracked files не редактировались. Gradle, tests, DB, browser, native Mongo/Chromium, CI/rerun, commit/push и внешние сообщения не запускались. Frozen B013–B015 и rejected equivalents не изменялись/не воспроизводились. Не запрашивались raw private logs/XML/HTML, PII, секреты либо arbitrary diagnostic payloads; incremental patch не добавляет их публикацию или ослабление закрытых evidence collectors. Единственный созданный файл — этот review вне tracked tree.
+
+Ограничение результата: corrections source-ready; compilation и фактический HTTP/Mongo/WebSocket результат остаются NOT_RUN/UNKNOWN. APPROVE не утверждает, что исторические failures устранены, и не заменяет последующую authorized runtime acceptance root.
+
+Review receipt SHA256: `f88b750fe407504c30597ed356d23e8547f04bcf2e28ffd832044271d73db072`.
+
+# Независимое review Auth corrections — 2026-10-20
+
+Вердикт: **APPROVE (SOURCE ONLY)**. Blocking findings не найдены. Это не runtime PASS и не подтверждение исправления двух исторических CI failures.
+
+Scope: только incremental correction двух тестов в `/workspace/work/test-audit-implementation/auth_shared`; текущая база интеграции `/workspace/work/pr2-review/repo` — `5c827c7a20be915654aed56c93c4c8b8790feef3` (Auth unchanged от PR head `a6c64389284b9daa9249f056ab443e8cc4f25dac`). Read-only production review; единственный созданный мной файл — этот отчёт вне tracked tree. Назначение Sol6.1/high/forknone — из root packet; actual runtime model/effort **UNKNOWN**, независимо не подтверждены. Дочерних агентов нет.
+
+Прочитаны root/services AGENTS, RULES, CURRENT, workflow, принятые AG-R05/AG-R10 и актуальная implementation matrix. Текущий owner GO из прямого packet главного применяется к принятым DELETE94/REWRITE169; старые proposals не расширяют scope.
+
+## Проверка поведения
+
+- `services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java:204`: ошибочный oracle `auth_outbox +1` заменён проверкой отсутствия outbox-записи и ровно одного реального `OtpVerifiedEvent` (`:210–218`, `:257`). Production `OtpService.java:259–275` создаёт session и вызывает настоящий `ApplicationEventPublisher.publishEvent`; `event/DomainEventListener.java:39` синхронно обрабатывает событие и отправляет через настоящий RabbitTemplate. Это существующий Spring/Rabbit путь, не durable outbox. Общий DomainEvent действительно наследует Spring ApplicationEvent. В AbstractIntegrationTest нет подмены publisher; конфигурация асинхронного multicaster в проверенных auth/shared/build источниках не найдена.
+- Listener установлен до отправки обоих HTTP запросов, ограничен классом события и synthetic Telegram UID, AtomicInteger виден серверным потокам. Оба HTTP Future завершаются до проверки счётчика; синхронная публикация завершается до успешного HTTP ответа. `finally` (`:260–263`) удаляет именно этот listener и завершает executor. Посторонние типы/UID не увеличивают счётчик. Сохраняются два реальных endpoint, ровно один 200 и один 401 (`:243–249`), прирост PG session ровно на один (`:250`), потребление обоих Redis индексов (`:258–259`). Метод, race и строгий event oracle не удалены; publisher mock не добавлен.
+- `services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java:206` и `:238`: исправлены только две stale admission status expectations 401 → 409; точный `SESSION_STATE_STALE` сохранён. Production `exception/GlobalExceptionHandler.java:144–170` явно сопоставляет SessionAdmissionException stale с 409 и no-store; `session/SessionAdmissionService.java:133–135` проверяет RV/SV. Существующий `InternalSessionAdmissionIT.java:547` ожидает тот же 409. Это correction тестового ожидания, не сокрытие production bug. RV-only/SV-only fixtures, актуальные 200 controls, неизменная identity при SV round-trip, no internalToken и no-store в assertAdmission (`:241–261`) сохранены. Остальные 401 контракты incremental patch не изменяет. Матрица относит этот сценарий к **AG-R05**, не AG-R03.
+
+## Provenance и неизменность
+
+SHA-256 incremental patch `auth-audit-correction.incremental.patch`: `74669ead9eadae770eb259d908c19445ad228e71ba40e51267131bc7062b0f47`. Patch побайтно реконструирован из before snapshot и writer файлов. Два целевых файла совпадают с frozen final snapshot и manifest:
+
+| Файл | До / текущая база | После |
+|---|---|---|
+| OtpIT.java | `1f613fca92ec96ea42f5aa39d1146f69efba20a8cc5963b8ae639c16d4beacfd` | `8a80d2ddaf1dccb9890ecea5bf1f80d9655ed39d910271313525f2468b96605c` |
+| SessionAuthFlowIT.java | `a96227fb55d78100383b502c3dc6de7bcca35b32569f5d617e680e966b7b3dfd` | `e6fc3228a46ac48365258ea66fc53577b7bc18cc8b8d8a955fcf014842a523b9` |
+
+Проверен весь before inventory из45 путей: изменены ровно два разрешённых Auth файла; остальные43 состояния/хеша неизменны, включая frozen Notification corrections. Проверенные production файлы OTP/admission/event и surviving AuthOtpFlowIT побайтно совпадают writer/current. B013–15, rejected Mongo/Chromium equivalence и status/identity collector вне patch; расширения источников/DI/CI нет.
+
+## Ограничения
+
+Safe projection `/workspace/work/test-audit-implementation/ci-primary-uploaded/auth-projection.safe.json`: run39505618901 attempt1, artifact12304252989, zip SHA `719f6a8609d12963c4db033b95d0856625885450fbccd5a17d5cef4d4ac4c456`, 208 PASSED/2 FAILED; оба failures идентифицированы как SOURCE_METHOD с above before hashes. Точная упавшая assertion/stage **UNKNOWN**. Исправления основаны на текущем production contract; safe projection сам по себе не доказывает причину исторического падения.
+
+Runtime/Gradle/tests/DB/browser/CI мной **NOT RUN**; raw private logs/XML не читались. Writer compile1 safe receipt показывает OFFLINE_CACHE_MISSING/DEPENDENCY_RESOLUTION до target compileTestJava; это не результат компиляции исходников. Следующая writer verification ещё не оценена в этом review. Runtime двух исправленных методов остаётся NOT RUN, historical failure resolution UNKNOWN.
+
+Listener доказывает публикацию ровно одного Spring OtpVerifiedEvent при гонке; он не доказывает доставку otp.verified в Rabbit/consumer. Сохранившийся `AuthOtpFlowIT.java:182–210` подтверждает Rabbit delivery **otp.requested**; выдавать его за delivery otp.verified нельзя. Production listener подавляет ошибки Rabbit по существующему контракту; тест эту политику не меняет. Source approval допустим с этим явно указанным пределом; runtime acceptance должна оставаться отдельной.

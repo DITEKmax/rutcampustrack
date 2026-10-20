@@ -586,7 +586,7 @@ jobs:
                                ruleFrame=package + '.' + method + '(UserArchiveLifecycleIT.java:' + str(rule_line) + ')')
                   identity_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java'
                   identity_current = identity_source.read_bytes()
-                  assert hashlib.sha256(identity_current).hexdigest() == '4cccd16f419fdb812114369fe6aaf52ad6c33f279a5772443dab5090e1b61893'
+                  assert hashlib.sha256(identity_current).hexdigest() == '8ee9bb192b91e0803913bc16fb8486039678634603043e576bdd3eb6906566cb'
                   identity_oracle = (b'        assertThat(\n'
                                      b'                        studentIdentity.equals(\n'
                                      b'                                java.util.List.of(\n'
@@ -599,7 +599,7 @@ jobs:
                   identity_update = "        assertThat(\n                        jdbcTemplate.update(\n                                \"UPDATE academic_profiles SET first_name=first_name || '-rct-identity-red' WHERE id=?\",\n                                studentId))\n                .isEqualTo(1);\n".encode()
                   assert identity_current.count(identity_oracle) == 1
                   identity_negative = identity_current.replace(identity_oracle, identity_update + identity_oracle)
-                  assert hashlib.sha256(identity_negative).hexdigest() == '4c165afc0076d36800bf697b5f4bd5a4902c84cadf5d1e998d5e51a857bac2e9'
+                  assert hashlib.sha256(identity_negative).hexdigest() == '97fbfa97a70815f0283d9572ea278248467fc059d94444202417a203d780fd39'
                   identity_line = (identity_negative[:identity_negative.index(identity_update + identity_oracle)].count(b'\n')
                                    + len((identity_update + identity_oracle).splitlines()))
                   identity_package = 'ru.rutcampustrack.academic.integration.RestApiIT'
@@ -886,7 +886,7 @@ jobs:
                   # Captured teacher pairs moved to Academic; T008 grant policy is unchanged.
                   teacher_source = app / 'src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java'
                   teacher_test = teacher_source.read_bytes()
-                  assert hashlib.sha256(teacher_test).hexdigest() == '30afcc02d68553512cd322724485e3bacf8d5d5df16c85610070946b5c3e1b63'
+                  assert hashlib.sha256(teacher_test).hexdigest() == 'b454db34df04d223ad893769ecc392e445b84e22eb5eb18816eb8ae78e944a7b'
                   teacher_production = app / 'src/main/java/ru/rutcampustrack/academic/exportjobs/LocalReportAuthority.java'
                   teacher_current = teacher_production.read_bytes()
                   assert hashlib.sha256(teacher_current).hexdigest() == '2ed6ed5d37c319871a88469064595c65749d7404ac13fabd4a2c544bc90210de'
@@ -895,12 +895,12 @@ jobs:
                   teacher_negative = teacher_current.replace(teacher_anchor, b'', 1)
                   assert hashlib.sha256(teacher_negative).hexdigest() == '7b5466a6c9fb694cea5b0d6417f31f6cc7c7d0afdc43a88023e0fd9212fe9bdc'
                   teacher_lines = teacher_test.decode().splitlines()
-                  assert teacher_lines[501].strip() == 'void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {'
-                  assert teacher_lines[546].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
+                  assert teacher_lines[510].strip() == 'void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {'
+                  assert teacher_lines[555].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
                   scoped_read = {'package': 'ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                  'method': 'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                  'source': teacher_source, 'production': teacher_production, 'file': 'AcademicExportJobsIT.java',
-                                 'proofKey': 'teacherReadyRule', 'ruleLine': 547,
+                                 'proofKey': 'teacherReadyRule', 'ruleLine': 556,
                                  'testSha': hashlib.sha256(teacher_test).hexdigest(),
                                  'productionSha': hashlib.sha256(teacher_current).hexdigest(),
                                  'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
@@ -1542,7 +1542,7 @@ jobs:
                   assert path.read_bytes() == content
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
               if additional is not None and current:
-                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '4cccd16f419fdb812114369fe6aaf52ad6c33f279a5772443dab5090e1b61893'
+                  assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '8ee9bb192b91e0803913bc16fb8486039678634603043e576bdd3eb6906566cb'
                   proof['additionalRule']['sourceRestoredExact'] = True
               if audit is not None and current:
                   assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '3f344884511c3e764afe7529581605e84152123538d530d49c0a7011d7e77589'
@@ -1899,7 +1899,7 @@ jobs:
               'academic-service': ('ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                    'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                    'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java',
-                                   '30afcc02d68553512cd322724485e3bacf8d5d5df16c85610070946b5c3e1b63'),
+                                   'b454db34df04d223ad893769ecc392e445b84e22eb5eb18816eb8ae78e944a7b'),
               'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
                                      'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                                      'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',

@@ -102,6 +102,7 @@ class StompIntegrationIT extends ContainerTestBase {
     @MockitoBean nl.martijndwars.webpush.PushService pushService;
 
     private WebSocketStompClient stompClient;
+    private MappingJackson2MessageConverter messageConverter;
 
     @BeforeEach
     void setUp() {
@@ -110,7 +111,8 @@ class StompIntegrationIT extends ContainerTestBase {
         // native WS handshake на /ws (SockJS — transport-level fallback).
         StandardWebSocketClient wsClient = new StandardWebSocketClient();
         stompClient = new WebSocketStompClient(wsClient);
-        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+        messageConverter = new MappingJackson2MessageConverter();
+        stompClient.setMessageConverter(messageConverter);
     }
 
     @Test
@@ -168,6 +170,14 @@ class StompIntegrationIT extends ContainerTestBase {
                             "lesson.started",
                             "payload",
                             Map.of("lesson_id", 1, "group_id", groupId));
+            // Untyped JSON decodes small integral values as Integer, even if sent as Long.
+            // Compare the complete expected wire representation using the receiving converter.
+            var expectedMessage =
+                    messageConverter
+                            .getObjectMapper()
+                            .readValue(
+                                    messageConverter.getObjectMapper().writeValueAsBytes(wsMessage),
+                                    Map.class);
             org.awaitility.Awaitility.await()
                     .atMost(java.time.Duration.ofSeconds(5))
                     .untilAsserted(
@@ -178,8 +188,8 @@ class StompIntegrationIT extends ContainerTestBase {
                                 assertThat(msg)
                                         .as(
                                                 "observable own-group subscription readiness and"
-                                                    + " delivery")
-                                        .isEqualTo(wsMessage);
+                                                        + " delivery")
+                                        .isEqualTo(expectedMessage);
                             });
         } finally {
             if (session.isConnected()) session.disconnect();

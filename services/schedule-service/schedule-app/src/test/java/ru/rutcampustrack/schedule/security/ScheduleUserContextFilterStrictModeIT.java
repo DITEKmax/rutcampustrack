@@ -49,7 +49,7 @@ class ScheduleUserContextFilterStrictModeIT extends AbstractScheduleIntegrationT
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
         String token =
-                factory.validToken(1L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false);
+                factory.validToken(1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         var headers = new org.springframework.http.HttpHeaders();
         headers.set("X-Internal-Token", token);
         var response =

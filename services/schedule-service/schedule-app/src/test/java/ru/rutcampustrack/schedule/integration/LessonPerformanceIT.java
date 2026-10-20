@@ -205,8 +205,8 @@ VALUES (?,?,950001,900010,99,1,700,'lecture',1,6,TIME '08:30',TIME '09:50','one-
                 retainedOneOff,
                 42L,
                 new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
-                        LocalDate.of(2026, 1, 11),
-                        1,
+                        LocalDate.of(2026, 1, 10),
+                        2,
                         null,
                         null,
                         "moved-one-off",

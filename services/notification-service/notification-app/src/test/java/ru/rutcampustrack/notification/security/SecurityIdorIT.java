@@ -83,13 +83,15 @@ class SecurityIdorIT extends ContainerTestBase {
                         new org.springframework.http.client.JdkClientHttpRequestFactory());
         repository.deleteAll();
         ownIds.clear();
+        Instant sentAt = Instant.now();
         // Notification принадлежащий user B
         NotificationHistoryDocument doc =
                 NotificationHistoryDocument.builder()
                         .userId(userBId)
                         .type(NotificationType.EXCUSE_REQUESTED)
                         .payload(Map.of("user_id", userBId, "group_id", 7))
-                        .sentAt(Instant.now())
+                        .sentAt(sentAt)
+                        .roleViews(studentView(sentAt, null))
                         .traceId("idor-test")
                         .build();
         notificationOfBId = repository.save(doc).getId();
@@ -100,7 +102,8 @@ class SecurityIdorIT extends ContainerTestBase {
                         .userId(userAId)
                         .type(NotificationType.EXCUSE_REQUESTED)
                         .payload(Map.of("user_id", userAId))
-                        .sentAt(Instant.now())
+                        .sentAt(sentAt)
+                        .roleViews(studentView(sentAt, null))
                         .traceId("self-test")
                         .build();
         ownIds.add(repository.save(myDoc).getId());
@@ -112,11 +115,18 @@ class SecurityIdorIT extends ContainerTestBase {
                                             .userId(userAId)
                                             .type(NotificationType.EXCUSE_REQUESTED)
                                             .payload(Map.of("owner_marker", "own-" + n))
-                                            .sentAt(Instant.now())
+                                            .sentAt(sentAt)
                                             .readAt(
                                                     n == 0
                                                             ? Instant.parse("2026-10-01T00:00:00Z")
                                                             : null)
+                                            .roleViews(
+                                                    studentView(
+                                                            sentAt,
+                                                            n == 0
+                                                                    ? Instant.parse(
+                                                                            "2026-10-01T00:00:00Z")
+                                                                    : null))
                                             .traceId("own-state-" + n)
                                             .build())
                             .getId());
@@ -127,9 +137,22 @@ class SecurityIdorIT extends ContainerTestBase {
                             .userId(userBId)
                             .type(NotificationType.EXCUSE_REQUESTED)
                             .payload(Map.of("owner_marker", "foreign-private-marker"))
-                            .sentAt(Instant.now())
+                            .sentAt(sentAt)
+                            .roleViews(studentView(sentAt, null))
                             .traceId("foreign-state-" + n)
                             .build());
+    }
+
+    // Seed the canonical role projection: this IDOR fixture must not trigger legacy adoption.
+    private static Map<String, NotificationHistoryDocument.RoleView> studentView(
+            Instant sentAt, Instant readAt) {
+        return Map.of(
+                "STUDENT",
+                NotificationHistoryDocument.RoleView.builder()
+                        .orderAt(sentAt)
+                        .readAt(readAt)
+                        .revision(0)
+                        .build());
     }
 
     private org.springframework.http.ResponseEntity<String> asUserA(

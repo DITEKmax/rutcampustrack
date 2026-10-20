@@ -193,7 +193,8 @@ class ScheduleUserContextFilterIT extends AbstractScheduleIntegrationTest {
     void legacyHeaders_dualMode_accepted() {
         var headers = new org.springframework.http.HttpHeaders();
         headers.set("X-User-Id", "1");
-        headers.set("X-User-Role", "ADMIN");
+        headers.set("X-User-Role", "STUDENT");
+        headers.set("X-Group-Id", "10");
         readOwnScope(headers, 10L);
     }
 
@@ -231,7 +232,7 @@ class ScheduleUserContextFilterIT extends AbstractScheduleIntegrationTest {
     }
 
     private String validToken() {
-        return factory.validToken(1L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false);
+        return factory.validToken(1L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
     }
 
     private static Instant now() {

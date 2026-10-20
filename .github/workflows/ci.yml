@@ -3411,6 +3411,82 @@ jobs:
           node check-admission-retry.mjs
           npx playwright install --with-deps chromium webkit
 
+      - name: Validate the existing safe artifact privacy contract for client scenarios
+        id: artifact-privacy-controls
+        if: ${{ matrix.group == 'client' }}
+        working-directory: tests/e2e
+        env:
+          RCT_E2E_CONTROL_RECEIPT_PATH: ${{ runner.temp }}/rct-artifact-privacy-client-${{ github.run_id }}-${{ github.run_attempt }}.safe.json
+        run: |
+          umask 077
+          test ! -e "$RCT_E2E_CONTROL_RECEIPT_PATH" && test ! -L "$RCT_E2E_CONTROL_RECEIPT_PATH"
+          if npm run test:artifact-privacy; then privacy_status=0; else privacy_status=$?; fi
+          python3 - "$privacy_status" <<'PY_PRIVACY_RECEIPT'
+          import json, os, re, stat, sys
+          from pathlib import Path
+
+          def receipt_pairs(items):
+              value = {}
+              for key, item in items:
+                  if key in value:
+                      raise ValueError('Duplicate receipt field')
+                  value[key] = item
+              return value
+
+          def closed_privacy_receipt(value):
+              def flags(item, keys):
+                  return (type(item) is dict and set(item) == set(keys)
+                          and all(type(item[key]) is bool for key in keys))
+              def boundary(item):
+                  keys = {'stage', 'markerAbsent', 'failureRetained', 'attachmentNotYetCreated', 'interrupted'}
+                  return (item is None or (type(item) is dict and set(item) == keys
+                          and item['stage'] == 'AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT'
+                          and flags({key: item[key] for key in keys - {'stage'}}, keys - {'stage'})))
+              if type(value) is not dict or value.get('browser') != 'NOT_STARTED':
+                  return False
+              if value.get('state') == 'CONTROL_EXECUTION_ERROR':
+                  return set(value) == {'state', 'rawErrorSuppressed', 'browser'} and value['rawErrorSuppressed'] is True
+              boolean_keys = {'markerAbsent', 'originalMetadataLeakReproduced', 'expectedFailureRetained',
+                              'successRetained', 'interruptionPassed', 'missingGuardRejectedBeforeOperation'}
+              keys = boolean_keys | {'state', 'normalChildStatus', 'producerBoundary', 'interruptedChildStatus',
+                                     'interruptedChildSignal', 'interruptionBoundary', 'browser'}
+              if (set(value) not in (keys, keys | {'guardControl'})
+                      or value['state'] not in {'PRIVACY_BOUNDARIES_PASSED', 'PRIVACY_CONTROL_FAILED'}
+                      or not all(type(value[key]) is bool for key in boolean_keys)
+                      or not boundary(value['producerBoundary']) or not boundary(value['interruptionBoundary'])
+                      or value['interruptedChildSignal'] not in {None, 'SIGTERM', 'SIGKILL', 'SIGINT', 'SIGABRT', 'SIGSEGV'}
+                      or any(value[key] is not None and (type(value[key]) is not int or not 0 <= value[key] <= 255)
+                             for key in ('normalChildStatus', 'interruptedChildStatus'))):
+                  return False
+              guard_keys = {'canonicalReporterAccepted', 'sameBasenameAlternateRejected', 'extraReporterRejected',
+                            'traceRejected', 'videoRejected', 'screenshotRejected', 'missingSnapshotGuardRejected',
+                            'wrongSnapshotGuardRejected'}
+              return 'guardControl' not in value or flags(value['guardControl'], guard_keys)
+
+          run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
+          assert re.fullmatch('[1-9][0-9]{0,19}', run) and re.fullmatch('[1-9][0-9]{0,5}', attempt)
+          path = Path(os.environ['RCT_E2E_CONTROL_RECEIPT_PATH'])
+          assert path == Path(os.environ['RUNNER_TEMP']) / ('rct-artifact-privacy-client-' + run + '-' + attempt + '.safe.json')
+          with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as receipt:
+              info = os.fstat(receipt.fileno())
+              assert (stat.S_ISREG(info.st_mode) and stat.S_IMODE(info.st_mode) == 0o600
+                      and info.st_uid == os.getuid() and 0 < info.st_size <= 4096)
+              payload = receipt.read(4097)
+              assert len(payload) == info.st_size and closed_privacy_receipt(json.loads(payload, object_pairs_hook=receipt_pairs))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('safe_receipt=true\n')
+          raise SystemExit(int(sys.argv[1]))
+          PY_PRIVACY_RECEIPT
+
+      - name: Upload only the closed existing privacy control receipt
+        if: ${{ always() && steps.artifact-privacy-controls.outcome != 'skipped' && steps.artifact-privacy-controls.outputs.safe_receipt == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-privacy-safe-client-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rct-artifact-privacy-client-${{ github.run_id }}-${{ github.run_attempt }}.safe.json
+          if-no-files-found: error
+          retention-days: 7
+
       # Worker script validation needs actual certificate trust, independently of page error handling.
       - name: Trust the disposable localhost certificate for Chromium workers
         id: e2e-ready
@@ -4142,9 +4218,69 @@ jobs:
               return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
                       and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1450}])
 
+          D002_RECONNECT_SOURCES = {
+              'tests/e2e/specs/mobile-real-server.spec.ts':
+                  '327b8516ee0ef5468aef66a901503f28c7a46daf2068fbb8f366f0276ab49d52',
+              'tests/e2e/fixtures/safe-reporter.ts':
+                  '034f780679e33158f0892b24b95d9505d3f7e383b623c78a64cd3ea5466924e7',
+          }
+
+          def verify_d002_reconnect_sources():
+              for source, digest in D002_RECONNECT_SOURCES.items():
+                  path = Path(source)
+                  info = path.lstat()
+                  if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 1048576
+                          or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+                      raise ValueError('D002 reconnect diagnostic source changed')
+
+          def closed_d002_reconnect_observation(value):
+              # Same closed JSON projection as the source-bound SafeReporter; no arbitrary strings.
+              try:
+                  if len(json.dumps(value, separators=(',', ':'), allow_nan=False).encode()) > 2048:
+                      return False
+              except (TypeError, ValueError, RecursionError, UnicodeError):
+                  return False
+              def exact(item, keys):
+                  return type(item) is dict and set(item) == set(keys)
+              def flags(item, keys):
+                  return exact(item, keys) and all(type(item[key]) is bool for key in keys)
+              endpoints, epochs = ('refresh', 'current'), ('preOnline', 'postOnline')
+              top_flags = ('offlineSeen', 'onlineSeen', 'online', 'observationUnknown')
+              if (not exact(value, (*top_flags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus'))
+                      or any(type(value[key]) is not bool for key in top_flags)
+                      or not exact(value['native'], epochs) or not exact(value['pageHttp'], endpoints)
+                      or not flags(value['priorPending'], endpoints)):
+                  return False
+              for epoch in epochs:
+                  states = value['native'][epoch]
+                  if not exact(states, endpoints):
+                      return False
+                  for endpoint in endpoints:
+                      state = states[endpoint]
+                      if (not exact(state, ('phase', 'multiple')) or type(state['phase']) is not str
+                              or state['phase'] not in {'NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'}
+                              or type(state['multiple']) is not bool):
+                          return False
+              if any(not flags(value['pageHttp'][endpoint], ('requested', 'responded', 'failed'))
+                     for endpoint in endpoints):
+                  return False
+              status = value['refreshHttpStatus']
+              return ((type(status) is str and status in {'UNOBSERVED', 'OTHER'})
+                      or (type(status) is int and status in {200, 401, 403, 429, 503}))
+
           def is_homework_failure(value):
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs', 'errorCount', 'diagnostics', 'errorLocations'}
               for row in value['results']:
+                  if type(row) is dict and 'd002ReconnectObservation' in row:
+                      if (set(row) != keys | {'d002ReconnectObservation'}
+                              or row.get('file') != 'mobile-real-server.spec.ts'
+                              or type(row.get('line')) is not int or row['line'] != 3959
+                              or row.get('project') != 'chromium' or row.get('expectedStatus') != 'passed'
+                              or row.get('status') != 'failed' or type(row.get('errorCount')) is not int
+                              or row['errorCount'] <= 0
+                              or not closed_d002_reconnect_observation(row['d002ReconnectObservation'])):
+                          return False
+                      row = {key: row[key] for key in keys}
                   if (type(row) is not dict or set(row) != keys or row['file'] != 'mobile-real-server.spec.ts'
                           or row['project'] != 'chromium' or row['expectedStatus'] != 'passed'
                           or row['status'] not in {'passed', 'failed', 'timedOut', 'skipped', 'interrupted'}
@@ -4159,6 +4295,7 @@ jobs:
               return any(row['status'] == 'failed' and {'stage': 'DATASET_HTTP', 'cause': 'DATASET_HOMEWORK_CREATE_HTTP', 'httpStatus': 503} in row['diagnostics'] for row in value['results'])
 
           def verify_homework_sources():
+              verify_d002_reconnect_sources()
               base = Path('services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic')
               handler = (base / 'exception/GlobalExceptionHandler.java').read_text()
               client = (base / 'grpc/ScheduleGrpcClient.java').read_text()

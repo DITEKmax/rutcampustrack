@@ -2,6 +2,7 @@
 
 import argparse
 import ast
+import copy
 import hashlib
 import json
 import os
@@ -20,6 +21,7 @@ parser.add_argument("--source-root", type=Path)
 parser.add_argument("--fixture-root", type=Path, help="Read-only sparse-worktree fixture overlay")
 parser.add_argument("--hosted-spec", type=Path, help="Read-only frozen hosted source before integration")
 parser.add_argument("--baseline-red", action="store_true")
+parser.add_argument("--homework-compat-red", action="store_true")
 args = parser.parse_args()
 source_root = (args.source_root or Path(__file__).resolve().parents[3]).resolve()
 fixture_root = (args.fixture_root or source_root / "tests/e2e/fixtures").resolve()
@@ -106,6 +108,61 @@ if args.baseline_red:
     raise SystemExit(0 if sources and signature else 1)
 
 
+def reconnect_observation():
+    return {
+        "offlineSeen": True,
+        "onlineSeen": True,
+        "online": True,
+        "observationUnknown": False,
+        "native": {
+            epoch: {endpoint: {"phase": "PENDING", "multiple": False} for endpoint in ("refresh", "current")}
+            for epoch in ("preOnline", "postOnline")
+        },
+        "pageHttp": {
+            endpoint: {"requested": True, "responded": False, "failed": False} for endpoint in ("refresh", "current")
+        },
+        "priorPending": {"refresh": True, "current": False},
+        "refreshHttpStatus": "UNOBSERVED",
+    }
+
+
+def homework_receipt(extension=False):
+    value = current_receipt()
+    homework = value["results"][0]
+    homework.update(
+        file="mobile-real-server.spec.ts",
+        line=123,
+        diagnostics=[{"stage": "DATASET_HTTP", "cause": "DATASET_HOMEWORK_CREATE_HTTP", "httpStatus": 503}],
+        errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 123}],
+    )
+    reconnect = copy.deepcopy(homework)
+    reconnect.update(
+        line=3959,
+        diagnostics=[{"stage": "UNKNOWN", "cause": "REPORTED_CLASS_ERROR", "httpStatus": 0}],
+        errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 3959}],
+    )
+    if extension:
+        reconnect["d002ReconnectObservation"] = reconnect_observation()
+    value["results"].append(reconnect)
+    return value
+
+
+if args.homework_compat_red:
+    homework_config = namespace["STAGES"]["HOMEWORK_CREATE503"]
+    base = namespace["is_target_failure"](homework_receipt(), homework_config)
+    extension = namespace["is_target_failure"](homework_receipt(extension=True), homework_config)
+    print(
+        json.dumps(
+            {
+                "status": "GREEN" if base and extension else "RED",
+                "legacyTwoFailedRowsAccepted": base,
+                "closedD002ExtensionAccepted": extension,
+            }
+        )
+    )
+    raise SystemExit(0 if base and extension else 1)
+
+
 def error_record(stack, *, identity=request_id, gateway=False):
     return json.dumps(
         {
@@ -178,6 +235,212 @@ def complete(payload):
 
 
 class MarkDiagnosticContract(unittest.TestCase):
+    def test_homework_legacy_and_exact_d002_extension_admission(self):
+        homework_config = namespace["STAGES"]["HOMEWORK_CREATE503"]
+        self.assertTrue(namespace["is_target_failure"](homework_receipt(), homework_config))
+        self.assertTrue(namespace["is_target_failure"](homework_receipt(extension=True), homework_config))
+        for field, wrong in (
+            ("line", 3958),
+            ("file", "other.spec.ts"),
+            ("project", "firefox"),
+            ("status", "passed"),
+            ("expectedStatus", "failed"),
+            ("errorCount", 0),
+        ):
+            with self.subTest(field=field):
+                value = homework_receipt(extension=True)
+                value["results"][1][field] = wrong
+                self.assertFalse(namespace["is_target_failure"](value, homework_config))
+        for extra in ("unknownField", "nativePrimaryFailures"):
+            for extension in (False, True):
+                value = homework_receipt(extension=extension)
+                value["results"][1][extra] = []
+                self.assertFalse(namespace["is_target_failure"](value, homework_config))
+
+    def test_homework_previous_base_and_target_guards_remain(self):
+        homework_config = namespace["STAGES"]["HOMEWORK_CREATE503"]
+        for field, wrong in (
+            ("durationMs", -1),
+            ("durationMs", 1800001),
+            ("errorCount", 9),
+            ("line", True),
+            ("errorLocations", [{"file": "other.ts", "line": 1}]),
+            ("diagnostics", [{"stage": "private text", "cause": "X", "httpStatus": 0}]),
+        ):
+            for index in (0, 1):
+                with self.subTest(field=field, index=index):
+                    value = homework_receipt(extension=True)
+                    value["results"][index][field] = wrong
+                    self.assertFalse(namespace["is_target_failure"](value, homework_config))
+        for wrong in (500, 200):
+            value = homework_receipt(extension=True)
+            value["results"][0]["diagnostics"][0]["httpStatus"] = wrong
+            self.assertFalse(namespace["is_target_failure"](value, homework_config))
+        value = homework_receipt(extension=True)
+        value["results"][0]["status"] = "passed"
+        self.assertFalse(namespace["is_target_failure"](value, homework_config))
+        for field, wrong in (("status", "passed"), ("runnerErrors", 1), ("unsafeArtifact", True)):
+            value = homework_receipt(extension=True)
+            value[field] = wrong
+            self.assertFalse(namespace["is_target_failure"](value, homework_config))
+
+    def test_d002_observation_closed_flags_phases_status_and_size(self):
+        closed = namespace["closed_d002_reconnect_observation"]
+        for phase in ("NOT_CALLED", "PENDING", "FULFILLED", "REJECTED"):
+            for status in ("UNOBSERVED", "OTHER", 200, 401, 403, 429, 503):
+                value = reconnect_observation()
+                value["native"]["postOnline"]["current"]["phase"] = phase
+                value["refreshHttpStatus"] = status
+                self.assertTrue(closed(value))
+        changes = [
+            (("native", "preOnline", "refresh", "phase"), private),
+            (("native", "postOnline", "current", "phase"), "x" * 2049),
+            (("native", "postOnline", "refresh", "multiple"), 1),
+            (("pageHttp", "current", "responded"), 0),
+            (("priorPending", "refresh"), "true"),
+            (("offlineSeen",), True.__int__()),
+            (("refreshHttpStatus",), 200.0),
+            (("refreshHttpStatus",), True),
+            (("native", "preOnline"), []),
+            (("pageHttp",), None),
+        ]
+        for path, wrong in changes:
+            with self.subTest(path=path):
+                value = reconnect_observation()
+                target = value
+                for key in path[:-1]:
+                    target = target[key]
+                target[path[-1]] = wrong
+                self.assertFalse(closed(value))
+                receipt = homework_receipt(extension=True)
+                receipt["results"][1]["d002ReconnectObservation"] = value
+                self.assertFalse(namespace["is_homework_failure"](receipt))
+        for path in (
+            (),
+            ("native",),
+            ("native", "preOnline"),
+            ("native", "postOnline", "refresh"),
+            ("pageHttp", "current"),
+            ("priorPending",),
+        ):
+            value = reconnect_observation()
+            target = value
+            for key in path:
+                target = target[key]
+            target["unknownField"] = private
+            self.assertFalse(closed(value))
+        self.assertFalse(closed({}))
+        self.assertFalse(closed([]))
+        self.assertFalse(closed(None))
+
+    def test_d002_schema_source_bindings_fail_before_runtime(self):
+        namespace["verify_d002_reconnect_sources"]()
+        sources = namespace["D002_RECONNECT_SOURCES"]
+        for source in sources:
+            with self.subTest(source=source), patch.dict(sources, {source: "0" * 64}), self.assertRaises(ValueError):
+                namespace["verify_d002_reconnect_sources"]()
+        lines = hosted_spec.read_text().splitlines()
+        self.assertIn(
+            "D002 reconnect rechecks changed grants and a late old feed cannot replace the new account", lines[3958]
+        )
+
+    def test_existing_privacy_suite_is_selected_only_after_client_install(self):
+        install = carrier.index("      - name: Install Playwright + browsers")
+        check = carrier.index("      - name: Validate the existing safe artifact privacy contract for client scenarios")
+        trust = carrier.index("      - name: Trust the disposable localhost certificate for Chromium workers")
+        self.assertLess(install, check)
+        self.assertLess(check, trust)
+        block = carrier[check:trust]
+        self.assertIn("if: ${{ matrix.group == 'client' }}", block)
+        self.assertIn("working-directory: tests/e2e", block)
+        self.assertEqual(carrier.count("npm run test:artifact-privacy"), 1)
+        self.assertIn("if npm run test:artifact-privacy; then privacy_status=0; else privacy_status=$?; fi", block)
+        self.assertIn("raise SystemExit(int(sys.argv[1]))", block)
+        self.assertIn("umask 077", block)
+        self.assertIn("0 < info.st_size <= 4096", block)
+        self.assertIn("RCT_E2E_CONTROL_RECEIPT_PATH:", block)
+        self.assertIn("steps.artifact-privacy-controls.outputs.safe_receipt == 'true'", block)
+        upload = block.split("      - name: Upload only the closed existing privacy control receipt", 1)[1]
+        self.assertIn(
+            "path: ${{ runner.temp }}/rct-artifact-privacy-client-${{ github.run_id }}-${{ github.run_attempt }}.safe.json",
+            upload,
+        )
+        self.assertNotIn("*", upload)
+        self.assertIn(
+            "npm ci\n          node check-admission-retry.mjs\n          npx playwright install --with-deps chromium webkit",
+            carrier[install:check],
+        )
+
+    def test_existing_privacy_receipt_is_closed_without_running_its_suite(self):
+        check = carrier.index("      - name: Validate the existing safe artifact privacy contract for client scenarios")
+        start = carrier.index("          import json, os, re, stat, sys", check)
+        end = carrier.index("          PY_PRIVACY_RECEIPT", start)
+        tree = ast.parse(textwrap.dedent(carrier[start:end]))
+        functions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
+        self.assertEqual([node.name for node in functions], ["receipt_pairs", "closed_privacy_receipt"])
+        scope = {}
+        exec(compile(ast.Module(body=functions, type_ignores=[]), "<privacy receipt validator only>", "exec"), scope)  # noqa: S102
+        closed = scope["closed_privacy_receipt"]
+        boundary = {
+            "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+            "markerAbsent": True,
+            "failureRetained": True,
+            "attachmentNotYetCreated": True,
+            "interrupted": False,
+        }
+        value = {
+            "state": "PRIVACY_BOUNDARIES_PASSED",
+            "normalChildStatus": 0,
+            "markerAbsent": True,
+            "producerBoundary": boundary,
+            "originalMetadataLeakReproduced": True,
+            "expectedFailureRetained": True,
+            "successRetained": True,
+            "interruptedChildStatus": 1,
+            "interruptedChildSignal": None,
+            "interruptionBoundary": dict(boundary, interrupted=True),
+            "interruptionPassed": True,
+            "missingGuardRejectedBeforeOperation": True,
+            "browser": "NOT_STARTED",
+            "guardControl": {
+                key: True
+                for key in (
+                    "canonicalReporterAccepted",
+                    "sameBasenameAlternateRejected",
+                    "extraReporterRejected",
+                    "traceRejected",
+                    "videoRejected",
+                    "screenshotRejected",
+                    "missingSnapshotGuardRejected",
+                    "wrongSnapshotGuardRejected",
+                )
+            },
+        }
+        self.assertTrue(closed(value))
+        failed = dict(value, state="PRIVACY_CONTROL_FAILED", producerBoundary=None, interruptionBoundary=None)
+        del failed["guardControl"]
+        self.assertTrue(closed(failed))
+        self.assertTrue(
+            closed({"state": "CONTROL_EXECUTION_ERROR", "rawErrorSuppressed": True, "browser": "NOT_STARTED"})
+        )
+        for field, wrong in (
+            ("state", private),
+            ("browser", private),
+            ("normalChildStatus", 256),
+            ("interruptedChildStatus", True),
+            ("markerAbsent", 1),
+            ("interruptedChildSignal", private),
+            ("producerBoundary", dict(boundary, raw=private)),
+        ):
+            self.assertFalse(closed(dict(value, **{field: wrong})))
+        self.assertFalse(closed(dict(value, rawOutput=private)))
+        with self.assertRaises(ValueError):
+            json.loads(
+                '{"state":"' + private + '","state":"CONTROL_EXECUTION_ERROR"}',
+                object_pairs_hook=scope["receipt_pairs"],
+            )
+        self.assertLessEqual(len(json.dumps(value).encode()), 4096)
+
     def test_current_signature_and_bound_sources(self):
         self.assertTrue(namespace["is_target_failure"](current_receipt(), config))
         namespace["verify_http_sources"](config)

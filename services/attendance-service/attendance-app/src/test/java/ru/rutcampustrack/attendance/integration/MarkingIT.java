@@ -361,7 +361,7 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                         java.util.UUID.randomUUID(),
                         1L,
                         1L,
-                        "STUDENT",
+                        "HEADMAN",
                         "ACTIVE",
                         GROUP_ID,
                         true,

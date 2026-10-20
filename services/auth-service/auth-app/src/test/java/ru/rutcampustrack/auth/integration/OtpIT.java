@@ -14,6 +14,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +28,7 @@ import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.event.OtpVerifiedEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -33,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
 @Sql(
@@ -45,6 +50,8 @@ class OtpIT extends AbstractIntegrationTest {
     @Autowired private StringRedisTemplate redisTemplate;
 
     @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Autowired private ApplicationEventMulticaster applicationEvents;
 
     @BeforeEach
     void cleanOtpRedisKeys() {
@@ -162,7 +169,7 @@ class OtpIT extends AbstractIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "select count(*) from auth_outbox where event_type ="
-                                    + " 'otp.verified'",
+                                        + " 'otp.verified'",
                                 Long.class))
                 .isEqualTo(eventsBefore);
     }
@@ -195,12 +202,23 @@ class OtpIT extends AbstractIntegrationTest {
         assertThat(code).isNotBlank();
 
         int before = sessionCountForTelegramId(123456789L);
-        Long verifiedBefore =
+        Long outboxBefore =
                 jdbcTemplate.queryForObject(
                         "select count(*) from auth_outbox where event_type='otp.verified'",
                         Long.class);
+        // OTP events use the synchronous Spring/Rabbit path, not the durable outbox.
+        AtomicInteger verifiedEvents = new AtomicInteger();
+        ApplicationListener<ApplicationEvent> verifiedListener =
+                event -> {
+                    if (event instanceof OtpVerifiedEvent verified
+                            && verified.getPayload() instanceof OtpVerifiedEvent.Payload payload
+                            && Long.valueOf(123456789L).equals(payload.telegramId())) {
+                        verifiedEvents.incrementAndGet();
+                    }
+                };
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
+        applicationEvents.addApplicationListener(verifiedListener);
         try {
             Future<ResponseEntity<String>> direct =
                     executor.submit(
@@ -233,12 +251,14 @@ class OtpIT extends AbstractIntegrationTest {
             assertThat(
                             jdbcTemplate.queryForObject(
                                     "select count(*) from auth_outbox where"
-                                        + " event_type='otp.verified'",
+                                            + " event_type='otp.verified'",
                                     Long.class))
-                    .isEqualTo(verifiedBefore + 1);
+                    .isEqualTo(outboxBefore);
+            assertThat(verifiedEvents.get()).isEqualTo(1);
             assertThat(redisTemplate.hasKey("otp:123456789")).isFalse();
             assertThat(redisTemplate.hasKey("otp_code:" + code)).isFalse();
         } finally {
+            applicationEvents.removeApplicationListener(verifiedListener);
             executor.shutdownNow();
         }
     }

@@ -113,7 +113,7 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
             assertThat(
                             jdbc.queryForObject(
                                     "SELECT count(*) FROM account_security_events WHERE user_id=?"
-                                        + " AND event_type=?",
+                                            + " AND event_type=?",
                                     Long.class,
                                     user,
                                     event))
@@ -203,7 +203,7 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
                                 Long.class,
                                 rvUser))
                 .isGreaterThan(Long.parseLong(rvClaims.get("rv", String.class)));
-        assertAdmission(rvSession.accessToken(), 401, "SESSION_STATE_STALE");
+        assertAdmission(rvSession.accessToken(), 409, "SESSION_STATE_STALE");
 
         LoginSession svSession = loginUser(seedSelectableUser());
         var svClaims = jwtService.parseAccessToken(svSession.accessToken()).getPayload();
@@ -235,7 +235,7 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
             assertThat(current.get(field)).as(field).isEqualTo(svClaims.get(field));
         assertThat(current.get("sv", String.class)).isEqualTo("3");
         assertAdmission(currentAccess, 200, null);
-        assertAdmission(svSession.accessToken(), 401, "SESSION_STATE_STALE");
+        assertAdmission(svSession.accessToken(), 409, "SESSION_STATE_STALE");
     }
 
     private void assertAdmission(String access, int status, String code) throws Exception {

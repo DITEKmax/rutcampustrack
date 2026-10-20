@@ -71,8 +71,53 @@ import java.util.concurrent.atomic.AtomicInteger;
             "grpc.client.inProcess.address=in-process:academic-cache-test",
             "grpc.client.inProcess.negotiationType=plaintext"
         })
+@org.springframework.context.annotation.Import({
+    ru.rutcampustrack.academic.testhelpers.AcademicSqlCounter.class,
+    CacheIT.ClockConfiguration.class
+})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class CacheIT extends AbstractAcademicCacheIntegrationTest {
+
+    @org.springframework.boot.test.context.TestConfiguration
+    static class ClockConfiguration {
+        @org.springframework.context.annotation.Bean
+        @org.springframework.context.annotation.Primary
+        InstructionalClock instructionalClock() {
+            return new InstructionalClock();
+        }
+    }
+
+    static class InstructionalClock extends java.time.Clock {
+        private volatile java.time.Instant current = java.time.Instant.now();
+
+        void set(java.time.Instant value) {
+            current = value;
+        }
+
+        @Override
+        public java.time.ZoneId getZone() {
+            return java.time.ZoneId.of("Europe/Moscow");
+        }
+
+        @Override
+        public java.time.Clock withZone(java.time.ZoneId zone) {
+            return java.time.Clock.fixed(current, zone);
+        }
+
+        @Override
+        public java.time.Instant instant() {
+            return current;
+        }
+    }
+
+    @Autowired InstructionalClock instructionalClock;
+    @Autowired org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired com.fasterxml.jackson.databind.ObjectMapper mapper;
+
+    @org.junit.jupiter.api.AfterEach
+    void releaseInstructionalClock() {
+        instructionalClock.set(java.time.Instant.now());
+    }
 
     private long groupId;
     private long semesterId;
@@ -85,6 +130,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
 
     @Autowired private StringRedisTemplate redisTemplate;
+    @Autowired private ru.rutcampustrack.academic.testhelpers.AcademicSqlCounter sql;
 
     @Autowired private CacheManager cacheManager;
 
@@ -279,13 +325,14 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void getGroup_secondCall_servedFromCache() {
-        GroupRequest request = GroupRequest.newBuilder().setGroupId(groupId).build();
-
-        stub.getGroup(request);
-        stub.getGroup(request);
-
-        // If cache works, second call succeeds without error
-        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "groups") + "*")).isNotEmpty();
+        sql.reset();
+        var first = stub.getGroup(GroupRequest.newBuilder().setGroupId(groupId).build());
+        assertThat(sql.count()).isPositive();
+        assertThat(first.getId()).isEqualTo(groupId);
+        sql.reset();
+        var warm = stub.getGroup(GroupRequest.newBuilder().setGroupId(groupId).build());
+        assertThat(warm).isEqualTo(first);
+        assertThat(sql.count()).isZero();
     }
 
     /**
@@ -403,13 +450,14 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void getActiveSemester_secondCall_servedFromCache() {
-        Empty request = Empty.getDefaultInstance();
-
-        stub.getActiveSemester(request);
-        stub.getActiveSemester(request);
-
-        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
-                .isNotEmpty();
+        sql.reset();
+        var first = stub.getActiveSemester(Empty.getDefaultInstance());
+        assertThat(sql.count()).isPositive();
+        assertThat(first.getId()).isEqualTo(semesterId);
+        sql.reset();
+        var warm = stub.getActiveSemester(Empty.getDefaultInstance());
+        assertThat(warm).isEqualTo(first);
+        assertThat(sql.count()).isZero();
     }
 
     /**
@@ -418,13 +466,14 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void getCampusGeofence_secondCall_servedFromCache() {
-        Empty request = Empty.getDefaultInstance();
+        sql.reset();
+        var first = stub.getCampusGeofence(Empty.getDefaultInstance());
+        assertThat(sql.count()).isPositive();
 
-        stub.getCampusGeofence(request);
-        stub.getCampusGeofence(request);
-
-        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "campus_geofence") + "*"))
-                .isNotEmpty();
+        sql.reset();
+        var warm = stub.getCampusGeofence(Empty.getDefaultInstance());
+        assertThat(warm).isEqualTo(first);
+        assertThat(sql.count()).isZero();
     }
 
     /**
@@ -433,18 +482,24 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void getUserById_secondCall_servedFromCache() {
-        UserRequest request = UserRequest.newBuilder().setUserId(teacherId).build();
-
+        var request = UserRequest.newBuilder().setUserId(teacherId).build();
+        sql.reset();
         var first = stub.getUserById(request);
-        var second = stub.getUserById(request);
         assertThat(first.getId()).isEqualTo(teacherId);
-        assertThat(second).isEqualTo(first);
-
-        // Current-authority gRPC deliberately bypasses the cached profile. Retain the original
-        // Redis-key oracle on the actual Spring profile proxy that owns the users cache.
-        academicReads.fetchUserById(teacherId);
-        academicReads.fetchUserById(teacherId);
-        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "users") + "*")).isNotEmpty();
+        assertThat(sql.count()).isPositive();
+        sql.reset();
+        assertThat(stub.getUserById(request)).isEqualTo(first);
+        assertThat(sql.count()).isPositive(); // Current authority bypasses the profile cache.
+        sql.reset();
+        var profile = academicReads.fetchUserById(teacherId);
+        assertThat(profile.getId()).isEqualTo(teacherId);
+        assertThat(sql.count()).isPositive();
+        sql.reset();
+        var warm = academicReads.fetchUserById(teacherId);
+        assertThat(warm.getId()).isEqualTo(profile.getId());
+        assertThat(warm.getStatus()).isEqualTo(profile.getStatus());
+        assertThat(warm.getDisplayName()).isEqualTo(profile.getDisplayName());
+        assertThat(sql.count()).isZero();
     }
 
     // =========================================================================
@@ -480,34 +535,36 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void activateSemester_invalidatesActiveSemesterCache() {
-        Empty request = Empty.getDefaultInstance();
-
-        // This scenario activates a current fixture, never an ended seed period.
-        java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
-        boolean spring = today.getMonthValue() <= 6;
-        jdbcTemplate.update(
-                "UPDATE semesters SET date_from=?,date_to=?,semester_type=?,academic_year=? WHERE"
-                        + " id=?",
-                today.minusDays(5),
-                today.plusDays(5),
-                spring ? "SPRING" : "AUTUMN",
-                today.getYear() - (spring ? 1 : 0),
-                semesterId);
-
-        // Prime the cache
-        stub.getActiveSemester(request);
-        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
-                .isNotEmpty();
-
-        // Mutation: activateSemester triggers @CacheEvict(active_semester, allEntries=true)
-        semesterService.activateSemester(semesterId);
-
-        // Cache must be evicted
-        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
-                .isEmpty();
-
-        // Next gRPC call repopulates cache
-        stub.getActiveSemester(request);
+        var request = Empty.getDefaultInstance();
+        var initial = stub.getActiveSemester(request);
+        assertThat(initial.getId()).isEqualTo(semesterId);
+        var date =
+                jdbcTemplate.queryForObject(
+                        "SELECT date_to+1 FROM semesters WHERE id=?",
+                        java.time.LocalDate.class,
+                        semesterId);
+        long next =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO"
+                            + " semesters(name,date_from,date_to,is_active,semester_type,academic_year)"
+                            + " VALUES('Cache B',?,?,false,'SPRING',?) RETURNING id",
+                        Long.class,
+                        date,
+                        date.plusDays(90),
+                        date.getYear() - 1);
+        var control = academicReads.fetchGroup(groupId);
+        instructionalClock.set(date.atTime(12, 0).atZone(instructionalClock.getZone()).toInstant());
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", admin.internalToken());
+        var response =
+                http.exchange(
+                        "/academic/semesters/" + next + "/activate",
+                        org.springframework.http.HttpMethod.PATCH,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        assertThat(stub.getActiveSemester(request).getId()).isEqualTo(next);
+        assertThat(academicReads.fetchGroup(groupId).getName()).isEqualTo(control.getName());
         assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
                 .isNotEmpty();
     }
@@ -518,7 +575,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      * data) to isolate mutation effects.
      */
     @Test
-    void archiveUser_invalidatesUsersCache() {
+    void archiveUser_invalidatesUsersCache() throws Exception {
         var admin =
                 identityFixture.select(
                         identityFixture.canonical().adminId(),
@@ -549,19 +606,39 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         String userCacheKey = cachePrefix(cacheManager, "users") + testUserId;
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
 
+        var controlBefore = academicReads.fetchUserById(teacherId);
         UUID operation = UUID.randomUUID();
-        try (var ignored = identityFixture.request(admin, operation)) {
-            var preview = archiveService.preview(testUserId);
-            assertThat(preview.requiresPassword()).isFalse();
-            archiveService.archive(
-                    testUserId,
-                    new ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels
-                            .ArchiveRequest(operation, preview.previewDigest(), null));
-        }
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", admin.internalToken());
+        var previewResponse =
+                http.exchange(
+                        "/academic/users/" + testUserId + "/archive-preview",
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(previewResponse.getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.OK);
+        String digest = mapper.readTree(previewResponse.getBody()).path("previewDigest").asText();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        headers.set("Idempotency-Key", operation.toString());
+        var archiveResponse =
+                http.exchange(
+                        "/academic/users/" + testUserId + "/archive",
+                        org.springframework.http.HttpMethod.POST,
+                        new org.springframework.http.HttpEntity<>(
+                                new ArchiveRequest(operation, digest, null), headers),
+                        String.class);
+        assertThat(archiveResponse.getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.NO_CONTENT);
         assertThat(redisTemplate.hasKey(userCacheKey)).isFalse();
 
         // The existing Spring cache proxy repopulates the profile key.
-        academicReads.fetchUserById(testUserId);
+        var archived = academicReads.fetchUserById(testUserId);
+        assertThat(archived.getId()).isEqualTo(testUserId);
+        assertThat(archived.getStatus())
+                .isEqualTo(ru.rutcampustrack.academic.contract.enums.AccountStatus.ARCHIVED);
+        assertThat(academicReads.fetchUserById(teacherId).getStatus())
+                .isEqualTo(controlBefore.getStatus());
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
     }
 

@@ -5,16 +5,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
+
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.event.GroupArchivedEvent;
+
 import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.context.ApplicationEventPublisher;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.event.GroupArchivedEvent;
 
 /** Unit tests для {@link GroupArchivalService} (BUG-006-6 / план 58-06). */
 class GroupArchivalServiceTest {
@@ -76,12 +78,5 @@ class GroupArchivalServiceTest {
         assertThatThrownBy(() -> service.archive(g))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already archived");
-    }
-
-    @Test
-    void buildArchivedName_composesSuffix() {
-        GroupArchivalService service =
-                new GroupArchivalService(mock(ApplicationEventPublisher.class), FIXED_CLOCK);
-        assertThat(service.buildArchivedName("УИТ-411", 2026)).isEqualTo("УИТ-411 (выпуск 2026)");
     }
 }

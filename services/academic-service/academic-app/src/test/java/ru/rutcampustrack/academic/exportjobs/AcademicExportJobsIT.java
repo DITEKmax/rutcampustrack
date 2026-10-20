@@ -9,15 +9,12 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import org.junit.jupiter.api.*;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.*;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.web.server.ResponseStatusException;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
@@ -29,13 +26,10 @@ import java.util.concurrent.*;
 
 /** Actual owner SQL, advisory locks and CAS; no shared Auth tables or remote calls under locks. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AcademicExportJobsIT {
-    private final PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16")
-                    .withDatabaseName("academic_jobs")
-                    .withUsername("academic_jobs")
-                    .withPassword("synthetic_jobs_fixture")
-                    .withLabel("rct.validation.owner", "s19_jobs");
+class AcademicExportJobsIT
+        extends ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest {
+    @org.springframework.beans.factory.annotation.Autowired javax.sql.DataSource runtimeData;
+    private String schema;
     private JdbcTemplate jdbc;
     private ExportJobRepository jobs;
     private LocalReportAuthority local;
@@ -47,52 +41,48 @@ class AcademicExportJobsIT {
             new InternalJwtClaims(
                     101, UUID.randomUUID(), 1, 1, "ADMIN", "ACTIVE", null, false, false);
 
-    @BeforeAll
-    void start() throws Exception {
-        postgres.start();
+    private void initializeRepositories() {
+        schema = "export_" + UUID.randomUUID().toString().replace("-", "");
+        var owner = identityFixture.fixtureOwnerAcademicJdbc();
+        owner.execute("CREATE SCHEMA " + schema);
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(owner.getDataSource())
+                .schemas(schema)
+                .defaultSchema(schema)
+                .locations("classpath:db/academic-migration")
+                .load()
+                .migrate();
+        owner.execute("GRANT USAGE ON SCHEMA " + schema + " TO rct_academic_runtime");
+        owner.execute(
+                "GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA "
+                        + schema
+                        + " TO rct_academic_runtime");
+        owner.execute(
+                "REVOKE ALL ON " + schema + ".flyway_schema_history FROM rct_academic_runtime");
+        owner.execute(
+                "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA "
+                        + schema
+                        + " TO rct_academic_runtime");
+        owner.execute(
+                "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA " + schema + " TO rct_academic_runtime");
         var ds =
-                new DriverManagerDataSource(
-                        postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+                new org.springframework.jdbc.datasource.AbstractDataSource() {
+                    @Override
+                    public java.sql.Connection getConnection() throws java.sql.SQLException {
+                        var connection = runtimeData.getConnection();
+                        connection.setSchema(schema);
+                        return connection;
+                    }
+
+                    @Override
+                    public java.sql.Connection getConnection(String user, String password)
+                            throws java.sql.SQLException {
+                        var connection = runtimeData.getConnection(user, password);
+                        connection.setSchema(schema);
+                        return connection;
+                    }
+                };
         jdbc = new JdbcTemplate(ds);
-        jdbc.execute(
-                "CREATE TABLE academic_profiles(id bigint PRIMARY KEY,academic_revision bigint NOT"
-                    + " NULL,applied_auth_roles_version bigint NOT NULL,archived_at timestamptz)");
-        jdbc.execute(
-                "CREATE TABLE academic_outbox(event_type text NOT NULL,payload jsonb NOT NULL)");
-        jdbc.execute(
-                "CREATE TABLE audit_log(user_id bigint,action text,target_type text,extras"
-                        + " jsonb,succeeded boolean,created_at timestamptz)");
-        jdbc.execute("CREATE TABLE groups(id bigint PRIMARY KEY,is_active boolean NOT NULL)");
-        jdbc.execute(
-                "CREATE TABLE academic_role_eligibility(user_id bigint,role text,status"
-                        + " text,group_id bigint)");
-        jdbc.execute(
-                "CREATE TABLE semesters(id bigint PRIMARY KEY,is_active boolean NOT NULL,date_from"
-                        + " date NOT NULL,date_to date NOT NULL,deletion_phase text)");
-        jdbc.execute(
-                "CREATE TABLE assignments(id bigint PRIMARY KEY,teacher_id bigint,semester_id"
-                    + " bigint,group_id bigint,subject_id bigint,lifecycle_state text,valid_from"
-                    + " date,valid_until_exclusive date)");
-        jdbc.execute(
-                "CREATE TABLE academic_identity_operations(operation_id uuid PRIMARY KEY,phase"
-                        + " text)");
-        jdbc.execute(
-                "CREATE TABLE academic_identity_operation_targets(operation_id uuid,user_id"
-                        + " bigint,fenced boolean)");
-        jdbc.execute(
-                "CREATE TABLE academic_identity_operation_groups(operation_id uuid,group_id"
-                        + " bigint,fenced boolean)");
-        jdbc.execute(
-                "CREATE TABLE academic_group_availability_guards(group_id bigint PRIMARY KEY,"
-                        + "operation_id uuid NOT NULL,original_group_revision bigint NOT NULL)");
-        jdbc.execute(
-                "CREATE TABLE academic_group_availability_headmen(user_id bigint PRIMARY KEY,"
-                        + "operation_id uuid NOT NULL)");
-        try (var connection = ds.getConnection()) {
-            ScriptUtils.executeSqlScript(
-                    connection,
-                    new ClassPathResource("db/academic-migration/V2__academic_export_jobs.sql"));
-        }
         assistants = mock(ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority.class);
         var authority =
                 new LocalReportAuthority(
@@ -119,28 +109,18 @@ class AcademicExportJobsIT {
         jobs = (ExportJobRepository) factory.getProxy();
     }
 
-    @AfterAll
-    void stop() {
-        postgres.stop();
+    @AfterEach
+    void dropOwnedSchema() {
+        if (schema != null)
+            identityFixture
+                    .fixtureOwnerAcademicJdbc()
+                    .execute("DROP SCHEMA " + schema + " CASCADE");
     }
 
     @BeforeEach
     void fixture() {
-        jdbc.update("DELETE FROM academic_export_jobs");
-        jdbc.update("DELETE FROM academic_outbox");
-        jdbc.update("DELETE FROM audit_log");
-        jdbc.update("DELETE FROM academic_profiles");
-        jdbc.update("DELETE FROM groups");
-        jdbc.update("DELETE FROM semesters");
-        jdbc.update("DELETE FROM academic_role_eligibility");
-        jdbc.update("DELETE FROM assignments");
-        jdbc.update("DELETE FROM academic_identity_operation_targets");
-        jdbc.update("DELETE FROM academic_identity_operation_groups");
-        jdbc.update("DELETE FROM academic_identity_operations");
-        jdbc.update("DELETE FROM academic_group_availability_guards");
-        jdbc.update("DELETE FROM academic_group_availability_headmen");
-        reset(assistants);
-        jdbc.update("INSERT INTO academic_profiles VALUES (101,1,1,NULL)");
+        initializeRepositories();
+        insertProfile(101);
     }
 
     private IssueReportDownloadTicketRequest selector(String search) {
@@ -356,7 +336,7 @@ class AcademicExportJobsIT {
     void globalBacklogIsBoundedAcrossDifferentUsersAndSessions() {
         for (int i = 0; i < 256; i++) {
             long user = 1000L + i;
-            jdbc.update("INSERT INTO academic_profiles VALUES (?,1,1,NULL)", user);
+            insertProfile(user);
             var principal =
                     new InternalJwtClaims(
                             user, UUID.randomUUID(), 1, 1, "ADMIN", "ACTIVE", null, false, false);
@@ -378,8 +358,10 @@ class AcademicExportJobsIT {
         var headman =
                 new InternalJwtClaims(
                         101, actor.sessionId(), 1, 1, "HEADMAN", "ACTIVE", 501L, true, false);
-        jdbc.update("INSERT INTO groups VALUES (501,TRUE)");
-        jdbc.update("INSERT INTO academic_role_eligibility VALUES (101,'HEADMAN','ACTIVE',501)");
+        jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
+        jdbc.update(
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                    + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
         var roster =
                 new IssueReportDownloadTicketRequest(
                         ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
@@ -397,10 +379,24 @@ class AcademicExportJobsIT {
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
                         e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
-        jdbc.update(
-                "INSERT INTO semesters VALUES"
-                    + " (1,TRUE,current_date-1,current_date+1,NULL),(2,TRUE,current_date-1,current_date+1,NULL)");
-        assertThatThrownBy(() -> local.teacherScope(101))
+        assertThatThrownBy(
+                        () ->
+                                jdbc.update(
+                                        "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
+                                            + " VALUES(1,'One',TRUE,current_date-1,current_date+1),(2,'Two',TRUE,current_date+2,current_date+3)"))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+        var ambiguousJdbc = mock(JdbcTemplate.class);
+        when(ambiguousJdbc.queryForObject(
+                        "SELECT count(*) FROM semesters WHERE is_active=TRUE", Long.class))
+                .thenReturn(2L);
+        var ambiguousAuthority =
+                new LocalReportAuthority(
+                        ambiguousJdbc,
+                        assistants,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
+        assertThatThrownBy(() -> ambiguousAuthority.teacherScope(101))
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
                         e ->
@@ -413,8 +409,10 @@ class AcademicExportJobsIT {
         var helper =
                 new InternalJwtClaims(
                         101, actor.sessionId(), 1, 1, "STUDENT", "ACTIVE", 501L, false, false);
-        jdbc.update("INSERT INTO groups VALUES (501,TRUE)");
-        jdbc.update("INSERT INTO academic_role_eligibility VALUES (101,'STUDENT','ACTIVE',501)");
+        jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
+        jdbc.update(
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                    + " VALUES(101,'STUDENT','ACTIVE',501,NOW())");
         when(assistants.allows(helper, 501L, "VIEW_STATS")).thenReturn(true);
         var stats =
                 new IssueReportDownloadTicketRequest(
@@ -456,8 +454,10 @@ class AcademicExportJobsIT {
         var headman =
                 new InternalJwtClaims(
                         101, actor.sessionId(), 1, 1, "HEADMAN", "ACTIVE", 501L, true, false);
-        jdbc.update("INSERT INTO groups VALUES (501,TRUE)");
-        jdbc.update("INSERT INTO academic_role_eligibility VALUES (101,'HEADMAN','ACTIVE',501)");
+        jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
+        jdbc.update(
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                    + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
         when(assistants.allows(headman, 501L, "VIEW_STATS")).thenReturn(true);
         var trend =
                 new IssueReportDownloadTicketRequest(
@@ -476,7 +476,9 @@ class AcademicExportJobsIT {
         var identity = local.plan(headman, trend, Instant.now().plusSeconds(599));
         assertThat(identity.semesterId()).isNull();
         local.require(identity, false);
-        jdbc.update("INSERT INTO semesters VALUES (1,TRUE,current_date-1,current_date+1,NULL)");
+        jdbc.update(
+                "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
+                    + " VALUES(1,'Current',TRUE,current_date-1,current_date+1)");
         assertThatThrownBy(() -> local.require(identity, false))
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
@@ -488,11 +490,25 @@ class AcademicExportJobsIT {
         var teacher =
                 new InternalJwtClaims(
                         101, actor.sessionId(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
-        jdbc.update("INSERT INTO academic_role_eligibility VALUES (101,'TEACHER','ACTIVE',NULL)");
-        jdbc.update("INSERT INTO semesters VALUES (1,TRUE,current_date-2,current_date+2,NULL)");
         jdbc.update(
-                "INSERT INTO assignments VALUES (1,101,1,501,601,'ACTIVE',current_date-1,NULL),"
-                        + "(2,101,1,502,602,'ACTIVE',current_date-1,NULL)");
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                    + " VALUES(101,'TEACHER','ACTIVE',NULL,NOW())");
+        jdbc.update(
+                "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
+                    + " VALUES(1,'Current',TRUE,current_date-2,current_date+2)");
+        jdbc.update(
+                "INSERT INTO groups(id,name,is_active)"
+                    + " VALUES(501,'JOB-501',true),(502,'JOB-502',true)");
+        jdbc.update(
+                "INSERT INTO subjects(id,name,type,group_id,semester_id)"
+                    + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
+        jdbc.update(
+                "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                    + " VALUES(601,'lecture'),(602,'lecture')");
+        jdbc.update(
+                "INSERT INTO"
+                    + " assignments(id,teacher_id,semester_id,group_id,subject_id,lesson_type,lifecycle_state,valid_from)"
+                    + " VALUES(1,101,1,501,601,'lecture','ACTIVE',current_date-1),(2,101,1,502,602,'lecture','ACTIVE',current_date-1)");
         var selector =
                 new IssueReportDownloadTicketRequest(
                         ReportDownloadKind.TEACHER_STATS,
@@ -512,7 +528,7 @@ class AcademicExportJobsIT {
         var identity = local.plan(teacher, selector, Instant.now().plusSeconds(599));
         var captured = local.capture(identity, local.teacherScope(101).sha256());
         local.require(captured, true);
-        jdbc.update("UPDATE assignments SET lifecycle_state='REVOKED' WHERE id=2");
+        closeAssignment(2);
         // Ordinary current teacher admission still succeeds on the remaining pair.
         local.require(identity, false);
         assertThatThrownBy(() -> local.require(captured, true))
@@ -530,11 +546,13 @@ class AcademicExportJobsIT {
         var ready = claim(enqueue());
         complete(ready);
         UUID operation = UUID.randomUUID();
-        jdbc.update(
-                "INSERT INTO academic_identity_operations VALUES (?,'AUTH_COMMITTED')", operation);
+        insertIdentityOperation(operation);
         // A different user is in a pending operation; the full registry still includes that scope.
         jdbc.update(
-                "INSERT INTO academic_identity_operation_targets VALUES (?,202,TRUE)", operation);
+                "INSERT INTO"
+                    + " academic_identity_operation_targets(operation_id,target_index,user_id,previous_academic_revision,fenced)"
+                    + " VALUES(?,0,202,1,TRUE)",
+                operation);
         assertThatThrownBy(() -> jobs.content(jobs.load(ready.id())))
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
@@ -555,8 +573,10 @@ class AcademicExportJobsIT {
         var headman =
                 new InternalJwtClaims(
                         101, actor.sessionId(), 1, 1, "HEADMAN", "ACTIVE", 501L, true, false);
-        jdbc.update("INSERT INTO groups VALUES (501,TRUE)");
-        jdbc.update("INSERT INTO academic_role_eligibility VALUES (101,'HEADMAN','ACTIVE',501)");
+        jdbc.update("INSERT INTO groups(id,name,is_active) VALUES(501,'JOB-501',TRUE)");
+        jdbc.update(
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                    + " VALUES(101,'HEADMAN','ACTIVE',501,NOW())");
         var selector =
                 new IssueReportDownloadTicketRequest(
                         ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
@@ -579,20 +599,20 @@ class AcademicExportJobsIT {
                 scoped.id(), scoped.leaseId(), content, "text/html", 1, false, scoped.identity());
         UUID operation = UUID.randomUUID();
         // No phase lookup may waive a retained guard, even after the operation stopped retrying.
-        jdbc.update("INSERT INTO academic_group_availability_guards VALUES (501,?,1)", operation);
+        installGroupGuard(501, operation);
         unavailableContent(registry);
         unavailableContent(scoped);
         jdbc.update("DELETE FROM academic_group_availability_guards");
         assertThat(jobs.content(scoped)).isEqualTo(content);
-        jdbc.update("INSERT INTO academic_group_availability_guards VALUES (999,?,1)", operation);
+        installGroupGuard(999, operation);
         unavailableContent(registry);
         assertThat(jobs.content(scoped)).isEqualTo(content);
         jdbc.update("DELETE FROM academic_group_availability_guards");
-        jdbc.update("INSERT INTO academic_group_availability_headmen VALUES (202,?)", operation);
+        installHeadmanGuard(202, operation);
         unavailableContent(registry);
         assertThat(jobs.content(scoped)).isEqualTo(content);
         jdbc.update("DELETE FROM academic_group_availability_headmen");
-        jdbc.update("INSERT INTO academic_group_availability_headmen VALUES (101,?)", operation);
+        installHeadmanGuard(101, operation);
         unavailableContent(registry);
         unavailableContent(scoped);
         jdbc.update("DELETE FROM academic_group_availability_headmen");
@@ -603,9 +623,7 @@ class AcademicExportJobsIT {
     @Test
     void retainedAvailabilityGuardPreventsReadyPublicationAndSameLeaseCompletesAfterRelease() {
         var preparing = claim(enqueue());
-        jdbc.update(
-                "INSERT INTO academic_group_availability_guards VALUES (999,?,1)",
-                UUID.randomUUID());
+        installGroupGuard(999, UUID.randomUUID());
         assertThatThrownBy(() -> complete(preparing))
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
@@ -707,5 +725,98 @@ class AcademicExportJobsIT {
                                 .map(t -> t.getKey())
                                 .toList())
                 .doesNotContain("jobId", "userId", "sessionId", "filename");
+    }
+
+    private void insertProfile(long id) {
+        jdbc.update(
+                "INSERT INTO"
+                    + " academic_profiles(id,directory_role,directory_status,last_name,first_name,employee_number,academic_revision,applied_auth_roles_version,created_at,updated_at)"
+                    + " VALUES(?,'ADMIN','ACTIVE','Export','Synthetic',?,1,1,NOW(),NOW())",
+                id,
+                "EMP-EXPORT-" + id);
+    }
+
+    private void insertIdentityOperation(UUID operation) {
+        jdbc.update(
+                "INSERT INTO"
+                    + " academic_identity_operations(operation_id,command_hash,local_command_hash,command_payload,local_payload,actor_id,actor_session_id,actor_session_version,actor_roles_version,kind,phase,auth_operation_revision,created_at,updated_at)"
+                    + " VALUES(?,?,?,decode('01','hex'),decode('01','hex'),101,?,1,1,'ROLE','AUTH_PREPARED',1,NOW(),NOW())",
+                operation,
+                new byte[32],
+                new byte[32],
+                UUID.randomUUID());
+    }
+
+    private void availabilityOperation(UUID operation) {
+        jdbc.update(
+                "INSERT INTO"
+                    + " academic_group_availability_operations(operation_id,action,request_digest,scope_group_id,local_payload,local_command_hash,auth_payload,auth_command_hash,actor_mode,actor_id,actor_session_id,actor_session_version,actor_roles_version,phase)"
+                    + " VALUES(?,'MANUAL_CYCLE',?,0,decode('01','hex'),?,decode('01','hex'),?,'HUMAN',101,?,1,1,'ACCEPTED')"
+                    + " ON CONFLICT(operation_id) DO NOTHING",
+                operation,
+                "0".repeat(64),
+                new byte[32],
+                new byte[32],
+                UUID.randomUUID());
+    }
+
+    private void installGroupGuard(long group, UUID operation) {
+        jdbc.update(
+                "INSERT INTO groups(id,name,is_active) VALUES(?,?,TRUE) ON CONFLICT(id) DO NOTHING",
+                group,
+                "JOB-" + group);
+        availabilityOperation(operation);
+        jdbc.update(
+                "INSERT INTO"
+                    + " academic_group_availability_guards(group_id,operation_id,original_group_revision)"
+                    + " VALUES(?,?,1)",
+                group,
+                operation);
+    }
+
+    private void installHeadmanGuard(long user, UUID operation) {
+        if (jdbc.queryForObject(
+                        "SELECT count(*) FROM academic_profiles WHERE id=?", Long.class, user)
+                == 0) insertProfile(user);
+        availabilityOperation(operation);
+        jdbc.update(
+                "INSERT INTO academic_group_availability_headmen(user_id,operation_id) VALUES(?,?)",
+                user,
+                operation);
+    }
+
+    private void closeAssignment(long assignment) {
+        new org.springframework.transaction.support.TransactionTemplate(
+                        new DataSourceTransactionManager(jdbc.getDataSource()))
+                .executeWithoutResult(
+                        tx -> {
+                            UUID operation = UUID.randomUUID();
+                            jdbc.update(
+                                    "INSERT INTO"
+                                        + " assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,source_assignment_id,target_assignment_id,effective_from,source_valid_until,state,operation_kind,requested_cutoff)"
+                                        + " SELECT ?,101,?,?,id,NULL,current_date,(SELECT date_to+1"
+                                        + " FROM semesters WHERE"
+                                        + " id=semester_id),'PREPARED','CLOSE_UNASSIGN',current_date"
+                                        + " FROM assignments WHERE id=?",
+                                    operation,
+                                    UUID.randomUUID(),
+                                    new byte[32],
+                                    assignment);
+                            jdbc.update(
+                                    "UPDATE assignment_replacement_operations SET"
+                                        + " state='APPLIED',schedule_receipt_state='APPLIED' WHERE"
+                                        + " operation_id=?",
+                                    operation);
+                            jdbc.queryForObject(
+                                    "SELECT"
+                                        + " set_config('rutcampustrack.assignment_replacement_operation_id',?,true)",
+                                    String.class,
+                                    operation.toString());
+                            jdbc.update(
+                                    "UPDATE assignments SET"
+                                        + " valid_until_exclusive=current_date,lifecycle_state='CLOSED'"
+                                        + " WHERE id=?",
+                                    assignment);
+                        });
     }
 }

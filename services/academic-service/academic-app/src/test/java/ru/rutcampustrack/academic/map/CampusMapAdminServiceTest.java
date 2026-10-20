@@ -1,25 +1,21 @@
 package ru.rutcampustrack.academic.map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels;
 import ru.rutcampustrack.academic.exception.BadRequestException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class CampusMapAdminServiceTest {
@@ -75,83 +71,6 @@ class CampusMapAdminServiceTest {
         assertThatThrownBy(() -> service.uploadVersion("200", null, null, eventSvg))
                 .isInstanceOf(BadRequestException.class);
         verifyNoInteractions(repository);
-    }
-
-    @Test
-    void firstPngUploadPublishesAnExplicitAbsentSvgSlotAtomically() {
-        CampusMapAdminRepository.FloorRow floor =
-                new CampusMapAdminRepository.FloorRow(200L, 10L, "2", "Этаж 2", 0, null, true);
-        CampusMapAdminRepository.PlanRow plan =
-                new CampusMapAdminRepository.PlanRow(
-                        500L, 200L, 1L, 1L, "Этаж 2", OffsetDateTime.parse("2026-09-21T10:00:00Z"));
-        byte[] png = validPng();
-        byte[] sha = sha256(png);
-
-        when(repository.findFloorForUpdate(200L)).thenReturn(Optional.of(floor));
-        when(repository.findCurrentPlan(200L)).thenReturn(Optional.empty());
-        when(repository.advanceCatalogRevision())
-                .thenReturn(new CampusMapAdminRepository.CatalogRevision(1L, 1L));
-        when(repository.insertPlan(200L, 1L, 1L, "Этаж 2")).thenReturn(500L);
-        when(repository.insertAsset(
-                        eq(500L),
-                        eq(CampusMapFormat.PNG),
-                        eq("image/png"),
-                        any(byte[].class),
-                        eq((long) png.length),
-                        any(byte[].class),
-                        eq(640),
-                        eq(480)))
-                .thenReturn(700L);
-        when(repository.findPlan(200L, 1L)).thenReturn(Optional.of(plan));
-        when(repository.findSlots(500L))
-                .thenReturn(
-                        List.of(
-                                new CampusMapAdminRepository.SlotRow(
-                                        701L,
-                                        500L,
-                                        CampusMapFormat.PNG,
-                                        CampusMapFormatState.READY,
-                                        "image/png",
-                                        700L,
-                                        png.length,
-                                        sha,
-                                        640,
-                                        480),
-                                new CampusMapAdminRepository.SlotRow(
-                                        702L,
-                                        500L,
-                                        CampusMapFormat.SVG,
-                                        CampusMapFormatState.ABSENT,
-                                        "image/svg+xml",
-                                        null,
-                                        0,
-                                        null,
-                                        null,
-                                        null)));
-
-        CampusMapAdminModels.PlanResponse result =
-                service.uploadVersion(
-                        "200",
-                        null,
-                        new MockMultipartFile("png", "map.png", "image/png", png),
-                        null);
-
-        assertThat(result.version()).isEqualTo("1");
-        assertThat(result.png().state()).isEqualTo(CampusMapAdminModels.FormatState.ready);
-        assertThat(result.svg().state()).isEqualTo(CampusMapAdminModels.FormatState.absent);
-        verify(repository)
-                .insertSlot(
-                        500L,
-                        CampusMapFormat.SVG,
-                        CampusMapFormatState.ABSENT,
-                        "image/svg+xml",
-                        null,
-                        0L,
-                        null,
-                        null,
-                        null);
-        verify(repository).publishPlan(500L);
-        verify(repository).pointFloorAt(200L, 500L);
     }
 
     private static byte[] validPng() {

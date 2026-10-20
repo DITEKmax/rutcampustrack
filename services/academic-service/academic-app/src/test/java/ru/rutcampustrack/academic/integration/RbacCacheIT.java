@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
             "grpc.client.inProcess.address=in-process:academic-rbac-cache-test",
             "grpc.client.inProcess.negotiationType=plaintext"
         })
+@org.springframework.context.annotation.Import(
+        ru.rutcampustrack.academic.testhelpers.AcademicSqlCounter.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
 
@@ -54,6 +56,7 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
 
     @Autowired private StringRedisTemplate redisTemplate;
+    @Autowired private ru.rutcampustrack.academic.testhelpers.AcademicSqlCounter sql;
 
     @Autowired private CacheManager cacheManager;
 
@@ -80,17 +83,18 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void isHeadman_secondCall_servedFromRbacCache() {
-        HeadmanCheckRequest request =
-                HeadmanCheckRequest.newBuilder().setUserId(STUDENT_ID).setGroupId(GROUP_ID).build();
-
-        HeadmanCheckResponse first = stub.isHeadman(request);
-        HeadmanCheckResponse second = stub.isHeadman(request);
-
-        assertThat(first.getIsHeadman()).isTrue();
-        assertThat(second.getIsHeadman()).isTrue();
-
-        String cacheKey = cachePrefix(cacheManager, "rbac") + STUDENT_ID + ":" + GROUP_ID;
-        assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
+        var request =
+                HeadmanCheckRequest.newBuilder()
+                        .setUserId(identityFixture.canonical().studentId())
+                        .setGroupId(identityFixture.canonical().groupId())
+                        .build();
+        sql.reset();
+        var first = stub.isHeadman(request);
+        assertThat(first.getIsHeadman()).isEqualTo(true);
+        assertThat(sql.count()).isPositive();
+        sql.reset();
+        assertThat(stub.isHeadman(request)).isEqualTo(first);
+        assertThat(sql.count()).isZero();
     }
 
     /** RBAC-04: TTL кеша rbac соответствует configured 1 минуте (60s). */
@@ -171,18 +175,17 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void isHeadman_negativeResult_alsoCached() {
-        HeadmanCheckRequest request =
-                HeadmanCheckRequest.newBuilder().setUserId(TEACHER_ID).setGroupId(GROUP_ID).build();
-
-        HeadmanCheckResponse first = stub.isHeadman(request);
-        HeadmanCheckResponse second = stub.isHeadman(request);
-
-        assertThat(first.getIsHeadman()).isFalse();
-        assertThat(second.getIsHeadman()).isFalse();
-
-        // Boolean false сериализуется в Redis как валидное значение —
-        // disableCachingNullValues() в CacheConfig не блокирует false.
-        String cacheKey = cachePrefix(cacheManager, "rbac") + TEACHER_ID + ":" + GROUP_ID;
-        assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
+        var request =
+                HeadmanCheckRequest.newBuilder()
+                        .setUserId(identityFixture.canonical().teacherId())
+                        .setGroupId(identityFixture.canonical().groupId())
+                        .build();
+        sql.reset();
+        var first = stub.isHeadman(request);
+        assertThat(first.getIsHeadman()).isEqualTo(false);
+        assertThat(sql.count()).isPositive();
+        sql.reset();
+        assertThat(stub.isHeadman(request)).isEqualTo(first);
+        assertThat(sql.count()).isZero();
     }
 }

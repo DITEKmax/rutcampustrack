@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.auth.session.model.AuthRole;
@@ -37,8 +36,12 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
     private static final UUID SESSION_ID = UUID.fromString("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 
     @Autowired private MockMvc mockMvc;
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired private com.fasterxml.jackson.databind.ObjectMapper mapper;
 
     @Autowired private InternalJwtTestFactory factory;
+    @Autowired private AcademicUserContextFilter filter;
+    @Autowired private RequestContext context;
 
     @Autowired private InternalJwtProperties properties;
 
@@ -104,35 +107,103 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void validInternalToken_passesFilter_notReturning401() throws Exception {
-        String token = validToken();
-        MvcResult result =
-                mockMvc.perform(get("/academic/users").header("X-Internal-Token", token))
-                        .andReturn();
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
+        var selected =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", selected.internalToken());
+        var response =
+                http.exchange(
+                        "/academic/users",
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        var page = mapper.readTree(response.getBody());
+        assertThat(page.path("page").path("totalElements").asLong()).isEqualTo(3);
+        var ids = new java.util.HashSet<Long>();
+        page.path("_embedded")
+                .path("userResponseList")
+                .forEach(
+                        row -> {
+                            ids.add(row.path("id").asLong());
+                            assertThat(row.has("passwordHash")).isFalse();
+                            assertThat(row.has("initialPassword")).isFalse();
+                        });
+        assertThat(ids)
+                .containsExactlyInAnyOrder(
+                        identityFixture.canonical().adminId(),
+                        identityFixture.canonical().teacherId(),
+                        identityFixture.canonical().studentId());
     }
 
     @Test
     void validInternalToken_takesPrecedenceOverLegacyHeaders() throws Exception {
-        String token = validToken();
-        MvcResult result =
-                mockMvc.perform(
-                                get("/academic/users")
-                                        .header("X-Internal-Token", token)
-                                        .header("X-User-Id", "999")
-                                        .header("X-User-Role", "STUDENT"))
-                        .andReturn();
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
+        var selected =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", selected.internalToken());
+        headers.set("X-User-Id", "999");
+        headers.set("X-User-Role", "STUDENT");
+        headers.set("X-Group-Id", "999");
+        headers.set("X-Is-Headman", "true");
+        var response =
+                http.exchange(
+                        "/academic/users",
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        var page = mapper.readTree(response.getBody());
+        assertThat(page.path("page").path("totalElements").asLong()).isEqualTo(3);
+        var ids = new java.util.HashSet<Long>();
+        page.path("_embedded")
+                .path("userResponseList")
+                .forEach(
+                        row -> {
+                            ids.add(row.path("id").asLong());
+                            assertThat(row.has("passwordHash")).isFalse();
+                            assertThat(row.has("initialPassword")).isFalse();
+                        });
+        assertThat(ids)
+                .containsExactlyInAnyOrder(
+                        identityFixture.canonical().adminId(),
+                        identityFixture.canonical().teacherId(),
+                        identityFixture.canonical().studentId());
     }
 
     @Test
     void legacyHeaders_stillAccepted_whileDualModeOn() throws Exception {
-        MvcResult result =
-                mockMvc.perform(
-                                get("/academic/users")
-                                        .header("X-User-Id", "1")
-                                        .header("X-User-Role", "ADMIN"))
-                        .andReturn();
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
+        var request =
+                new org.springframework.mock.web.MockHttpServletRequest("GET", "/academic/users");
+        request.setServletPath("/academic/users");
+        request.addHeader("X-User-Id", "17");
+        request.addHeader("X-User-Role", "STUDENT");
+        request.addHeader("X-Group-Id", "23");
+        request.addHeader("X-Is-Headman", "true");
+        var response = new org.springframework.mock.web.MockHttpServletResponse();
+        var accepted = new java.util.concurrent.atomic.AtomicBoolean();
+        org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(
+                new org.springframework.web.context.request.ServletRequestAttributes(
+                        request, response));
+        try {
+            filter.doFilter(
+                    request,
+                    response,
+                    (req, res) -> {
+                        accepted.set(true);
+                        assertThat(context.getUserId()).isEqualTo(17L);
+                        assertThat(context.getRole())
+                                .isEqualTo(
+                                        ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT);
+                        assertThat(context.getGroupId()).isEqualTo(23L);
+                        assertThat(context.isHeadman()).isTrue();
+                        assertThat(context.getClaims()).isNull();
+                        assertThat(context.getInternalToken()).isNull();
+                    });
+            assertThat(accepted).isTrue();
+        } finally {
+            org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
+        }
     }
 
     private String validToken() {

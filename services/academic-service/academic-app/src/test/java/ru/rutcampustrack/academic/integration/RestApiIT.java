@@ -35,9 +35,37 @@ import ru.rutcampustrack.auth.session.model.AuthRole;
  */
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@org.springframework.context.annotation.Import(RestApiIT.ConfirmationConfig.class)
 class RestApiIT extends AbstractAcademicIntegrationTest {
 
+    @org.springframework.boot.test.context.TestConfiguration
+    static class ConfirmationConfig {
+        @org.springframework.context.annotation.Bean(destroyMethod = "close")
+        ru.rutcampustrack.academic.testhelpers.AuthConfirmationHttpFixture confirmationHttp(
+                AcademicIdentityIntegrationFixture fixture) {
+            return new ru.rutcampustrack.academic.testhelpers.AuthConfirmationHttpFixture(fixture);
+        }
+
+        @org.springframework.context.annotation.Bean
+        @org.springframework.context.annotation.Primary
+        ru.rutcampustrack.academic.semester.AuthSemesterDeletionClient actualPasswordConfirmation(
+                org.springframework.boot.web.client.RestTemplateBuilder builder,
+                ru.rutcampustrack.academic.security.RequestContext context,
+                ru.rutcampustrack.academic.testhelpers.AuthConfirmationHttpFixture server,
+                AcademicIdentityIntegrationFixture fixture) {
+            return new ru.rutcampustrack.academic.semester.AuthSemesterDeletionClient(
+                    builder, context, server.url(), fixture.internalIssuerProperties().getSecret());
+        }
+    }
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    ru.rutcampustrack.academic.grpc.ScheduleGrpcClient deletionSchedule;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    ru.rutcampustrack.academic.grpc.AttendanceSemesterDeletionGrpcClient deletionAttendance;
+
     @Autowired private MockMvc mockMvc;
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate http;
 
     @Autowired private ObjectMapper objectMapper;
 
@@ -606,54 +634,76 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(5)
     void testSemesterDeleteWithWrongConfirmation_returns400() throws Exception {
-        // Create a semester to try to delete
-        jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
+        long semester = identityFixture.canonical().semesterId();
+        org.mockito.Mockito.when(deletionSchedule.previewSemesterDeletion(semester))
+                .thenReturn(
+                        ru.rutcampustrack.schedule.grpc.SemesterDeletionParticipantPreview
+                                .newBuilder()
+                                .setSemesterId(semester)
+                                .setParticipantDigest("11".repeat(32))
+                                .build());
+        org.mockito.Mockito.when(deletionAttendance.preview(semester))
+                .thenReturn(
+                        ru.rutcampustrack.attendance.grpc.SemesterDeletionParticipantPreview
+                                .newBuilder()
+                                .setSemesterId(semester)
+                                .setParticipantDigest("22".repeat(32))
+                                .build());
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", adminActor.internalToken());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var preview =
+                http.exchange(
+                        "/academic/semesters/" + semester + "/delete-preview",
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(preview.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        String digest = objectMapper.readTree(preview.getBody()).path("previewDigest").asText();
+        assertThat(digest).matches("[0-9a-f]{64}");
+        var before = deletionState(semester);
+        headers.set("Idempotency-Key", java.util.UUID.randomUUID().toString());
+        var response =
+                http.exchange(
+                        "/academic/semesters/" + semester,
+                        org.springframework.http.HttpMethod.DELETE,
+                        new org.springframework.http.HttpEntity<>(
+                                java.util.Map.of(
+                                        "previewDigest",
+                                        digest,
+                                        "password",
+                                        "synthetic-wrong-current-password"),
+                                headers),
+                        String.class);
+        assertThat(response.getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
+        assertThat(objectMapper.readTree(response.getBody()).path("status").asInt()).isEqualTo(403);
+        assertThat(deletionState(semester)).isEqualTo(before);
+    }
 
-        // BUG-006-7 / plan 58-05: dateFrom must be >= today AND must not overlap
-        // any existing semester (V10 EXCLUDE gist). Use a far-future empty window.
-        String createBody =
-                """
-                {
-                  "name": "Fall 2035 Test",
-                  "dateFrom": "2035-09-01",
-                  "dateTo": "2036-01-31",
-                  "semesterType": "AUTUMN",
-                  "academicYear": 2035
-                }
-                """;
-
-        MvcResult r =
-                mockMvc.perform(
-                                post("/academic/semesters")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(createBody)
-                                        .header("X-User-Id", seedAdminId)
-                                        .header("X-User-Role", "ADMIN")
-                                        .with(identityFixture.signed(adminActor))
-                                        .header("X-Group-Id", "")
-                                        .header("X-Is-Headman", "false"))
-                        .andExpect(status().isCreated())
-                        .andReturn();
-
-        Long semId = objectMapper.readTree(r.getResponse().getContentAsString()).get("id").asLong();
-
-        // Attempt delete with wrong confirmation
-        String deleteBody =
-                """
-                { "confirmation": "wrong name" }
-                """;
-
-        mockMvc.perform(
-                        delete("/academic/semesters/" + semId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(deleteBody)
-                                .header("X-User-Id", seedAdminId)
-                                .header("X-User-Role", "ADMIN")
-                                .with(identityFixture.signed(adminActor))
-                                .header("X-Group-Id", "")
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status", is(400)));
+    private java.util.List<Object> deletionState(long semester) {
+        return java.util.List.of(
+                jdbcTemplate.queryForMap("SELECT * FROM semesters WHERE id=?", semester),
+                jdbcTemplate.queryForList(
+                        "SELECT * FROM semester_archive_operations ORDER BY operation_id"),
+                jdbcTemplate.queryForList("SELECT * FROM academic_outbox ORDER BY id"),
+                jdbcTemplate.queryForList(
+                        "SELECT to_jsonb(t)::text FROM academic_export_jobs t ORDER BY job_id",
+                        String.class),
+                identityFixture
+                        .authJdbc()
+                        .queryForList(
+                                "SELECT to_jsonb(t)::text FROM auth_identity_operations t ORDER BY"
+                                        + " operation_id",
+                                String.class),
+                jdbcTemplate.queryForList(
+                        "SELECT to_jsonb(t)::text FROM academic_semester_archive_effect_receipts t"
+                                + " ORDER BY source_event_id",
+                        String.class),
+                jdbcTemplate.queryForList(
+                        "SELECT to_jsonb(t)::text FROM academic_semester_archive_barriers t ORDER"
+                                + " BY semester_id",
+                        String.class));
     }
 
     // =====================================================================
@@ -682,62 +732,72 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(7)
     void testThresholdResolution_mostSpecificWins() throws Exception {
-        // Set global threshold as ADMIN
-        String globalBody =
-                """
-                { "minPercentage": 50 }
-                """;
-        mockMvc.perform(
-                        put("/academic/thresholds/global")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(globalBody)
-                                .header("X-User-Id", seedAdminId)
-                                .header("X-User-Role", "ADMIN")
-                                .with(identityFixture.signed(adminActor))
-                                .header("X-Group-Id", "")
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk());
+        long group = seedGroupId;
+        long semester = identityFixture.canonical().semesterId();
+        long subject =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO subjects(name,type,group_id,semester_id) VALUES('threshold"
+                                + " own','lecture',?,?) RETURNING id",
+                        Long.class,
+                        group,
+                        semester);
+        long otherGroup =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO groups(name,is_active,created_at) VALUES('ПРГ-111',true,NOW())"
+                                + " RETURNING id",
+                        Long.class);
+        long otherSubject =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO subjects(name,type,group_id,semester_id) VALUES('threshold"
+                                + " other','lecture',?,?) RETURNING id",
+                        Long.class,
+                        otherGroup,
+                        semester);
+        long global = threshold(null, null, 70);
+        long groupThreshold = threshold(group, null, 80);
+        long subjectThreshold = threshold(group, subject, 90);
+        long control = threshold(otherGroup, otherSubject, 95);
+        resolved(group, subject, "subject", 90, subjectThreshold);
+        resolved(otherGroup, otherSubject, "subject", 95, control);
+        jdbcTemplate.update("DELETE FROM attendance_thresholds WHERE id=?", subjectThreshold);
+        resolved(group, subject, "group", 80, groupThreshold);
+        jdbcTemplate.update("DELETE FROM attendance_thresholds WHERE id=?", groupThreshold);
+        resolved(group, subject, "global", 70, global);
+        jdbcTemplate.update("DELETE FROM attendance_thresholds WHERE id=?", global);
+        resolved(group, subject, "default", 0, null);
+        resolved(otherGroup, otherSubject, "subject", 95, control);
+    }
 
-        // Set group threshold as HEADMAN (seed student with headman flag)
-        String groupBody =
-                """
-                { "minPercentage": 70 }
-                """;
-        mockMvc.perform(
-                        put("/academic/thresholds/group")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(groupBody)
-                                .header("X-User-Id", seedStudentId)
-                                .header("X-User-Role", "STUDENT")
-                                .with(identityFixture.signed(headmanActor))
-                                .header("X-Group-Id", seedGroupId)
-                                .header("X-Is-Headman", "true"))
-                .andExpect(status().isOk());
+    private long threshold(Long group, Long subject, int percent) {
+        return jdbcTemplate.queryForObject(
+                "INSERT INTO"
+                    + " attendance_thresholds(group_id,subject_id,threshold_pct,set_by,created_at)"
+                    + " VALUES(?,?,?,?,NOW()) RETURNING id",
+                Long.class,
+                group,
+                subject,
+                percent,
+                seedAdminId);
+    }
 
-        // Resolve for group — should return group level (70%)
-        mockMvc.perform(
-                        get("/academic/thresholds/resolve")
-                                .param("groupId", seedGroupId.toString())
-                                .header("X-User-Id", seedStudentId)
-                                .header("X-User-Role", "STUDENT")
-                                .with(identityFixture.signed(studentActor))
-                                .header("X-Group-Id", seedGroupId)
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.level", is("group")))
-                .andExpect(jsonPath("$.minPercentage", is(70)));
-
-        // Resolve without groupId — should return global level (50%)
-        mockMvc.perform(
-                        get("/academic/thresholds/resolve")
-                                .header("X-User-Id", seedAdminId)
-                                .header("X-User-Role", "ADMIN")
-                                .with(identityFixture.signed(adminActor))
-                                .header("X-Group-Id", "")
-                                .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.level", is("global")))
-                .andExpect(jsonPath("$.minPercentage", is(50)));
+    private void resolved(long group, long subject, String level, int percent, Long source)
+            throws Exception {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", adminActor.internalToken());
+        var response =
+                http.exchange(
+                        "/academic/thresholds/resolve?groupId=" + group + "&subjectId=" + subject,
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        var json = objectMapper.readTree(response.getBody());
+        assertThat(json.path("level").asText()).isEqualTo(level);
+        assertThat(json.path("minPercentage").asInt()).isEqualTo(percent);
+        if (source == null)
+            assertThat(json.path("sourceId").isMissingNode() || json.path("sourceId").isNull())
+                    .isTrue();
+        else assertThat(json.path("sourceId").asLong()).isEqualTo(source);
     }
 
     // =====================================================================

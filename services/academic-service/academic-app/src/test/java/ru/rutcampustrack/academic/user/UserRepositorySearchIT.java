@@ -133,16 +133,37 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void matchesSearch_blank_returnsAll() {
-        Specification<User> empty = UserSpecifications.matchesSearch("");
-        Specification<User> nullSpec = UserSpecifications.matchesSearch(null);
-        assertThat(empty).isNull();
-        assertThat(nullSpec).isNull();
-
-        // Specification.where(null) — без ограничений → хотя бы 4 засидированных видны.
-        Page<User> all = userRepository.findAll(Specification.where(empty), PageRequest.of(0, 500));
-        assertThat(all.getContent())
-                .extracting(User::getId)
-                .contains(ivanovId, petrovId, student00001Id, percentUserId);
+        var expected =
+                java.util.Set.of(
+                        ivanovId,
+                        petrovId,
+                        student00001Id,
+                        percentUserId,
+                        identityFixture.canonical().adminId(),
+                        identityFixture.canonical().studentId(),
+                        identityFixture.canonical().teacherId());
+        for (String search : new String[] {null, "", "   "}) {
+            var spec =
+                    Specification.where(UserSpecifications.matchesSearch(search))
+                            .and(UserSpecifications.matchesRole(null))
+                            .and(UserSpecifications.matchesStatus(null));
+            var page = userRepository.findAll(spec, PageRequest.of(0, 500));
+            assertThat(page.getTotalElements()).isEqualTo(expected.size());
+            assertThat(page.getContent())
+                    .extracting(User::getId)
+                    .containsExactlyInAnyOrderElementsOf(expected);
+        }
+        for (Specification<User> absent :
+                java.util.Arrays.asList(
+                        UserSpecifications.matchesRole(null),
+                        UserSpecifications.matchesStatus(null))) {
+            assertThat(
+                            userRepository
+                                    .findAll(Specification.where(absent), PageRequest.of(0, 500))
+                                    .getContent())
+                    .extracting(User::getId)
+                    .containsExactlyInAnyOrderElementsOf(expected);
+        }
     }
 
     @Test
@@ -184,9 +205,27 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void escapeLike_escapesUnderscoreAndPercentAndBackslash() {
-        assertThat(UserSpecifications.escapeLike("abc")).isEqualTo("abc");
-        assertThat(UserSpecifications.escapeLike("50%")).isEqualTo("50\\%");
-        assertThat(UserSpecifications.escapeLike("a_b")).isEqualTo("a\\_b");
-        assertThat(UserSpecifications.escapeLike("x\\y")).isEqualTo("x\\\\y");
+        long underscore =
+                insertUser(
+                        "literal_underscore", "a_b", "Literal", null, UserRole.STUDENT, 999999991L);
+        insertUser("wild_underscore", "aXb", "Control", null, UserRole.STUDENT, 999999992L);
+        long slash =
+                insertUser("literal_slash", "x\\y", "Literal", null, UserRole.STUDENT, 999999993L);
+        insertUser("plain_slash", "xy", "Control", null, UserRole.STUDENT, 999999994L);
+        long plain =
+                insertUser(
+                        "plain_text", "PlainToken", "Literal", null, UserRole.STUDENT, 999999995L);
+        for (var vector :
+                java.util.Map.of("a_b", underscore, "x\\y", slash, "PlainToken", plain)
+                        .entrySet()) {
+            var result =
+                    userRepository.findAll(
+                            UserSpecifications.matchesSearch(vector.getKey()),
+                            PageRequest.of(0, 50));
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent())
+                    .extracting(User::getId)
+                    .containsExactly(vector.getValue());
+        }
     }
 }

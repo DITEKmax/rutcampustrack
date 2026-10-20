@@ -10,7 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
+
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
@@ -36,49 +36,74 @@ class SubjectSchemaIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    @Transactional
     void groupIdIsNotNull() {
-        Subject subject = new Subject();
-        subject.setName("Algorithms");
-        subject.setType(SubjectType.LECTURE);
-        // groupId = null — нарушение NOT NULL constraint
-        assertThatThrownBy(() -> subjectRepository.saveAndFlush(subject))
-                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(
+                        () ->
+                                jdbcTemplate.update(
+                                        "INSERT INTO subjects(name,type,group_id,semester_id)"
+                                            + " VALUES('null group','lecture',NULL,?)",
+                                        identityFixture.canonical().semesterId()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .satisfies(
+                        error -> {
+                            var sql = (org.postgresql.util.PSQLException) error.getCause();
+                            assertThat(sql.getSQLState()).isEqualTo("23502");
+                            assertThat(sql.getServerErrorMessage().getColumn())
+                                    .isEqualTo("group_id");
+                        });
     }
 
     @Test
-    @Transactional
     void groupIdHasForeignKey() {
-        Subject subject = new Subject();
-        subject.setName("Algorithms");
-        subject.setType(SubjectType.LECTURE);
-        subject.setGroupId(999_999_999L); // несуществующая группа
-
-        assertThatThrownBy(() -> subjectRepository.saveAndFlush(subject))
-                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(
+                        () ->
+                                jdbcTemplate.update(
+                                        "INSERT INTO subjects(name,type,group_id,semester_id)"
+                                            + " VALUES('missing group','lecture',?,?)",
+                                        Long.MAX_VALUE,
+                                        identityFixture.canonical().semesterId()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .satisfies(
+                        error -> {
+                            var sql = (org.postgresql.util.PSQLException) error.getCause();
+                            assertThat(sql.getSQLState()).isEqualTo("23503");
+                            assertThat(sql.getServerErrorMessage().getConstraint())
+                                    .isEqualTo("fk_subjects_group");
+                        });
     }
 
     @Test
     @Transactional
     void findByGroupId_returnsOnlyThatGroupSubjects() {
-        Long groupId = seedGroupId();
-
-        Subject s1 = new Subject();
-        s1.setName("Calculus");
-        s1.setType(SubjectType.LECTURE);
-        s1.setGroupId(groupId);
-        subjectRepository.saveAndFlush(s1);
-
-        Subject s2 = new Subject();
-        s2.setName("Linear Algebra");
-        s2.setType(SubjectType.PRACTICE);
-        s2.setGroupId(groupId);
-        subjectRepository.saveAndFlush(s2);
-
+        Long groupId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO groups(name,is_active,created_at) VALUES('ТСТ-111',true,NOW())"
+                            + " RETURNING id",
+                        Long.class);
+        Long foreignGroupId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO groups(name,is_active,created_at) VALUES('ТСТ-112',true,NOW())"
+                            + " RETURNING id",
+                        Long.class);
+        long first = subject(groupId, "Calculus");
+        long second = subject(groupId, "Linear Algebra");
+        long foreign = subject(foreignGroupId, "Foreign subject");
         Page<Subject> page = subjectRepository.findByGroupId(groupId, PageRequest.of(0, 20));
+        assertThat(page.getTotalElements()).isEqualTo(2);
         assertThat(page.getContent())
-                .extracting(Subject::getName)
-                .contains("Calculus", "Linear Algebra");
-        assertThat(page.getContent()).allMatch(s -> s.getGroupId().equals(groupId));
+                .extracting(Subject::getId)
+                .containsExactlyInAnyOrder(first, second)
+                .doesNotContain(foreign);
+        assertThat(page.getContent()).allMatch(row -> row.getGroupId().equals(groupId));
+    }
+
+    private long subject(long groupId, String name) {
+        return jdbcTemplate.queryForObject(
+                "INSERT INTO subjects(name,type,group_id,semester_id) VALUES(?,'lecture',?,?)"
+                    + " RETURNING id",
+                Long.class,
+                name,
+                groupId,
+                identityFixture.canonical().semesterId());
     }
 }

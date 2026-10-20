@@ -86,27 +86,58 @@ class StudentProjectionQueryAdapterIT {
     @Test
     void findAssignmentsBindsSemesterGroupsAndBoundsInDeclaredOrder() {
         reset();
-        long groupA = insertGroup("A");
-        long groupB = insertGroup("B");
+        long groupA = insertGroup("A"), groupB = insertGroup("B"), foreignGroup = insertGroup("C");
         insertProfile(1L, "TEACHER", "ACTIVE");
         long semester = insertSemester();
-        long subjectA = insertSubject("A subject", groupA);
-        long subjectB = insertSubject("B subject", groupB);
-        long assignmentA = insertAssignment(1L, subjectA, groupA, semester);
-        long assignmentB = insertAssignment(1L, subjectB, groupB, semester);
+        long otherSemester =
+                jdbc.queryForObject(
+                        "INSERT INTO semesters(name,date_from,date_to,is_active)"
+                            + " VALUES('Other',DATE '2026-11-01',DATE '2026-11-30',FALSE) RETURNING"
+                            + " id",
+                        Long.class);
+        long assignmentA = interval(groupA, semester, "A", "2026-09-05", "2026-09-15");
+        long assignmentB = interval(groupB, semester, "B", "2026-09-15", null);
+        long endingAtStart = interval(groupA, semester, "Ended", "2026-09-01", "2026-09-10");
+        long startingAtEnd = interval(groupA, semester, "Future", "2026-09-20", "2026-09-30");
+        interval(foreignGroup, semester, "Foreign", "2026-09-12", "2026-09-18");
+        interval(groupA, otherSemester, "Other semester", "2026-11-10", null);
         var adapter = adapter(new AtomicReference<>(Map.of()));
         var assignments =
                 adapter.findAssignments(
                         semester,
                         Set.of(groupB, groupA),
-                        LocalDate.of(2026, 9, 1),
-                        LocalDate.of(2026, 10, 1));
+                        LocalDate.of(2026, 9, 10),
+                        LocalDate.of(2026, 9, 20));
         assertThat(assignments)
                 .extracting(StudentProjectionQuery.AssignmentSnapshot::id)
                 .containsExactly(assignmentA, assignmentB);
         assertThat(assignments)
                 .extracting(StudentProjectionQuery.AssignmentSnapshot::groupId)
                 .containsExactly(groupA, groupB);
+        // Broad dates deliberately include a valid different-semester row; semester isolation must
+        // still apply.
+        assertThat(
+                        adapter.findAssignments(
+                                semester,
+                                Set.of(groupA, groupB),
+                                LocalDate.of(2026, 9, 1),
+                                LocalDate.of(2026, 12, 1)))
+                .extracting(StudentProjectionQuery.AssignmentSnapshot::id)
+                .containsExactlyInAnyOrder(assignmentA, assignmentB, endingAtStart, startingAtEnd);
+    }
+
+    private long interval(long group, long semester, String name, String from, String until) {
+        long subject = insertSubject(name, group);
+        return jdbc.queryForObject(
+                "INSERT INTO"
+                    + " assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from,valid_until_exclusive)"
+                    + " VALUES(1,?,?,?,'lecture',?,?) RETURNING id",
+                Long.class,
+                subject,
+                group,
+                semester,
+                LocalDate.parse(from),
+                until == null ? null : LocalDate.parse(until));
     }
 
     @Test

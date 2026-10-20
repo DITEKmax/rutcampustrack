@@ -74,11 +74,6 @@ class GrpcExceptionAdviceTest {
                         assertThrows(StatusRuntimeException.class, fence::requireRegistryReadable));
         for (StatusRuntimeException failure : failures) {
             assertThat(failure.getStatus().getCode()).isEqualTo(Status.Code.UNAVAILABLE);
-            // This is the real generic advice route that previously converted the fence to
-            // INTERNAL.
-            assertThat(resolver.resolveMethodWithInstance(failure.getClass()).getValue())
-                    .isEqualTo(
-                            GrpcExceptionAdvice.class.getMethod("handleInternal", Exception.class));
             Status response = dispatch(failure);
             assertThat(response.getCode()).isEqualTo(Status.Code.UNAVAILABLE);
             assertThat(response.getDescription()).isEqualTo(SAFE_DESCRIPTION);

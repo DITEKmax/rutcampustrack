@@ -25,6 +25,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ru.rutcampustrack.academic.contract.dto.homework.*;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
@@ -33,13 +34,12 @@ import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.exception.HomeworkPublicationPendingException;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
-import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.schedule.grpc.*;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
@@ -104,6 +104,7 @@ class HomeworkEditLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired PlatformTransactionManager transactions;
     @Autowired HomeworkRepository repository;
     @Autowired HomeworkService service;
+    @Autowired org.springframework.boot.test.web.client.TestRestTemplate http;
     @Autowired HomeworkEditPersistence persistence;
     @Autowired HomeworkEditCoordinator coordinator;
     @Autowired HomeworkBindingArchivedEventConsumer archiveConsumer;
@@ -197,6 +198,104 @@ class HomeworkEditLifecycleIT extends AbstractAcademicIntegrationTest {
                     "UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
         if (actor > 0) setHeadmanActive(true);
         boundaryClock.set(Instant.now());
+    }
+
+    @Test
+    void creatorHttpEditAndArchivePreserveAllContentCompletionHistoryAndSingleActionEvents()
+            throws Exception {
+        long originalPublisher = publisher;
+        publisher = actor;
+        Homework homework = linkedHomework();
+        completion(homework);
+        var completionBefore =
+                jdbc.queryForMap(
+                        "SELECT * FROM homework_completions WHERE homework_id=? AND student_id=?",
+                        homework.getId(),
+                        actor);
+        var selected = identityFixture.select(actor, AuthRole.HEADMAN);
+        doCallRealMethod().when(context).getUserId();
+        doCallRealMethod().when(context).getRole();
+        doCallRealMethod().when(context).getGroupId();
+        doCallRealMethod().when(context).getClaims();
+        doCallRealMethod().when(context).getInternalToken();
+        doCallRealMethod().when(context).getAdmittedAdminProfile();
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", selected.internalToken());
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        var request =
+                new UpdateHomeworkRequest(
+                        "new title",
+                        "new desc",
+                        "https://example.test/lesson",
+                        UUID.randomUUID(),
+                        1L);
+        String path = "/academic/homeworks/" + homework.getId();
+        try {
+            for (int replay = 0; replay < 2; replay++) {
+                var updated =
+                        http.exchange(
+                                path,
+                                org.springframework.http.HttpMethod.PUT,
+                                new org.springframework.http.HttpEntity<>(request, headers),
+                                String.class);
+                assertThat(updated.getStatusCode())
+                        .isEqualTo(org.springframework.http.HttpStatus.OK);
+                var body = mapper.readTree(updated.getBody());
+                assertThat(body.path("title").asText()).isEqualTo("new title");
+                assertThat(body.path("description").asText()).isEqualTo("new desc");
+                assertThat(body.path("link").asText()).isEqualTo("https://example.test/lesson");
+                assertThat(body.path("revision").asLong()).isEqualTo(2);
+            }
+            assertThat(updatedOutbox(homework)).isEqualTo(1);
+            var history =
+                    jdbc.queryForList(
+                            "SELECT to_jsonb(h)::text FROM homework_edit_history h WHERE"
+                                + " homework_id=? ORDER BY revision",
+                            String.class,
+                            homework.getId());
+            assertThat(history).hasSize(1);
+            when(schedule.archiveHomeworkBinding(binding, homework.getId(), createKey))
+                    .thenReturn(
+                            linkedBinding(homework.getId(), 2).toBuilder()
+                                    .setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED)
+                                    .build());
+            for (int replay = 0; replay < 2; replay++) {
+                assertThat(
+                                http.exchange(
+                                                path,
+                                                org.springframework.http.HttpMethod.DELETE,
+                                                new org.springframework.http.HttpEntity<>(headers),
+                                                String.class)
+                                        .getStatusCode())
+                        .isEqualTo(org.springframework.http.HttpStatus.NO_CONTENT);
+            }
+            var retained = repository.findById(homework.getId()).orElseThrow();
+            assertThat(retained.getTitle()).isEqualTo("new title");
+            assertThat(retained.getDescription()).isEqualTo("new desc");
+            assertThat(retained.getLink()).isEqualTo("https://example.test/lesson");
+            assertThat(retained.getRevision()).isEqualTo(2);
+            assertThat(retained.getPublishedBy()).isEqualTo(actor);
+            assertThat(retained.getActorId()).isEqualTo(actor);
+            assertThat(retained.getPublicationState()).isEqualTo(HomeworkPublicationState.ARCHIVED);
+            assertThat(
+                            jdbc.queryForMap(
+                                    "SELECT * FROM homework_completions WHERE homework_id=? AND"
+                                        + " student_id=?",
+                                    homework.getId(),
+                                    actor))
+                    .isEqualTo(completionBefore);
+            assertThat(
+                            jdbc.queryForList(
+                                    "SELECT to_jsonb(h)::text FROM homework_edit_history h WHERE"
+                                        + " homework_id=? ORDER BY revision",
+                                    String.class,
+                                    homework.getId()))
+                    .isEqualTo(history);
+            assertThat(actions(homework)).hasSize(2);
+            assertThat(updatedOutbox(homework)).isEqualTo(1);
+        } finally {
+            publisher = originalPublisher;
+        }
     }
 
     @Test

@@ -11,13 +11,14 @@ import org.springframework.http.ResponseEntity;
 class ActuatorIT extends AbstractAcademicIntegrationTest {
 
     @Autowired TestRestTemplate restTemplate;
+    @Autowired com.fasterxml.jackson.databind.ObjectMapper mapper;
 
     @Test
-    void healthEndpointReturnsUp() {
+    void healthEndpointReturnsUp() throws Exception {
         ResponseEntity<String> response =
                 restTemplate.getForEntity("/actuator/health", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("UP");
+        assertThat(mapper.readTree(response.getBody()).path("status").asText()).isEqualTo("UP");
     }
 
     @Test
@@ -47,13 +48,13 @@ class ActuatorIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    void actuatorIndexShowsOnlyHealthAndInfo() {
+    void actuatorIndexShowsOnlyHealthAndInfo() throws Exception {
         ResponseEntity<String> response = restTemplate.getForEntity("/actuator", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("health");
-        assertThat(response.getBody()).contains("info");
-        assertThat(response.getBody()).doesNotContain("\"env\"");
-        assertThat(response.getBody()).doesNotContain("\"beans\"");
-        assertThat(response.getBody()).doesNotContain("\"heapdump\"");
+        var links = mapper.readTree(response.getBody()).path("_links");
+        java.util.Set<String> names = new java.util.HashSet<>();
+        links.fieldNames().forEachRemaining(names::add);
+        assertThat(names)
+                .containsExactlyInAnyOrder("self", "health", "health-path", "info", "prometheus");
     }
 }

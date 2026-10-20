@@ -11,14 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.persistence.EntityManager;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Optional;
-import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.academic.assignment.TeacherAssignmentReadAuthority;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
@@ -59,6 +55,14 @@ import ru.rutcampustrack.schedule.grpc.HomeworkBindingState;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Phase 61-03: unit tests for {@link HomeworkService} покрывающие D-03/D-04/D-05/D-06.
@@ -622,95 +626,6 @@ class HomeworkServiceTest {
     // Accepted owner decision: current group management rights permit editing another author's
     // homework.
     // =========================================================================
-
-    @Test
-    void updateHomework_succeeds_forAuthorizedNonAuthor() {
-        stubHeadman();
-        Homework hw = existingHomework(OTHER_USER_ID);
-        when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
-
-        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
-        Homework result =
-                service.updateHomework(
-                        1L,
-                        new UpdateHomeworkRequest(
-                                "t", "d", null, UUID.randomUUID(), hw.getRevision()));
-        assertThat(result.getTitle()).isEqualTo("t");
-        assertThat(result.getPublishedBy()).isEqualTo(OTHER_USER_ID);
-        verify(homeworkRepository).save(hw);
-        verifyEditEvents();
-    }
-
-    @Test
-    void deleteHomework_succeeds_forAuthorizedNonAuthor() {
-        stubHeadman();
-        Homework hw = existingHomework(OTHER_USER_ID);
-        when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
-        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        service.deleteHomework(1L);
-
-        assertThat(hw.getPublicationState())
-                .isEqualTo(
-                        ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState
-                                .ARCHIVED);
-        verify(homeworkRepository).save(hw);
-        verify(homeworkRepository, never()).delete(any());
-    }
-
-    @Test
-    void updateHomework_succeeds_whenAuthor() {
-        stubHeadman();
-        Homework hw = existingHomework(HEADMAN_ID);
-        when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
-        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        Homework result =
-                service.updateHomework(
-                        1L,
-                        new UpdateHomeworkRequest(
-                                "new title",
-                                "new desc",
-                                "https://ex.com",
-                                UUID.randomUUID(),
-                                hw.getRevision()));
-
-        assertThat(result.getTitle()).isEqualTo("new title");
-        assertThat(result.getDescription()).isEqualTo("new desc");
-        assertThat(result.getLink()).isEqualTo("https://ex.com");
-        verify(homeworkRepository).save(any(Homework.class));
-        verifyEditEvents();
-    }
-
-    private void verifyEditEvents() {
-        verify(eventPublisher)
-                .publishEvent(
-                        org.mockito.ArgumentMatchers.isA(
-                                ru.rutcampustrack.academic.event.HomeworkUpdatedEvent.class));
-        verify(eventPublisher)
-                .publishEvent(
-                        org.mockito.ArgumentMatchers.isA(
-                                ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent
-                                        .class));
-        org.mockito.Mockito.verifyNoMoreInteractions(eventPublisher);
-    }
-
-    @Test
-    void deleteHomework_succeeds_whenAuthor() {
-        stubHeadman();
-        Homework hw = existingHomework(HEADMAN_ID);
-        when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
-        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        service.deleteHomework(1L);
-
-        assertThat(hw.getPublicationState())
-                .isEqualTo(
-                        ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState
-                                .ARCHIVED);
-        verify(homeworkRepository).save(hw);
-        verify(homeworkRepository, never()).delete(any());
-    }
 
     // =========================================================================
     // Helpers

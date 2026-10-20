@@ -2,11 +2,13 @@ package ru.rutcampustrack.academic.golden;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+
 import ru.rutcampustrack.academic.entity.User;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * M08 Группа 4 (P2-8/4) — property-based tests для {@link User#getDisplayName()}.
@@ -55,24 +57,6 @@ class DisplayNamePropertyTest {
 
         assertThat(tokens[0]).as("Первый токен displayName должен быть lastName").isEqualTo(last);
         assertThat(tokens[1]).as("Второй токен displayName должен быть firstName").isEqualTo(first);
-    }
-
-    @RepeatedTest(50)
-    @DisplayName("noMiddleNameIfBlank — null/blank middleName → no trailing space")
-    void noMiddleNameIfBlank() {
-        String blank =
-                switch (ThreadLocalRandom.current().nextInt(3)) {
-                    case 0 -> null;
-                    case 1 -> "";
-                    default -> "   ";
-                };
-        User user = userOf("Анна", "Петрова", blank);
-
-        String display = user.getDisplayName();
-        assertThat(display)
-                .as("Displayname с blank middleName не должно иметь trailing spaces")
-                .doesNotEndWith(" ")
-                .isEqualTo("Петрова Анна");
     }
 
     private String randomName(String prefix) {

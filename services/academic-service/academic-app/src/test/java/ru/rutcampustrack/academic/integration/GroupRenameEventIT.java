@@ -41,6 +41,8 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
     @Autowired private RabbitTemplate rabbitTemplate;
 
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @Autowired private GroupService groupService;
 
@@ -76,33 +78,68 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
     @Test
     void updateGroupWithNewName_publishesGroupRenamedEvent() throws Exception {
         String queueName = bindTempQueue();
-
-        String newName = "Тно-121";
         var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
-        try (var ignored = identityFixture.request(actor)) {
-            groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true, 4));
-        }
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", actor.internalToken());
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        var response =
+                http.exchange(
+                        "/academic/groups/" + group.getId(),
+                        org.springframework.http.HttpMethod.PUT,
+                        new org.springframework.http.HttpEntity<>(
+                                new UpdateGroupRequest("Тно-121", true, 4), headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        String persistedName =
+                jdbc.queryForObject(
+                        "SELECT name FROM groups WHERE id=?", String.class, group.getId());
+        assertThat(persistedName).isEqualTo("ТНО-121");
+        var durable =
+                jdbc.queryForList(
+                        "SELECT payload::text FROM academic_outbox WHERE event_type IN"
+                            + " ('group.renamed','group.updated') AND payload #>>"
+                            + " '{payload,group_id}'=? ORDER BY id",
+                        String.class,
+                        group.getId().toString());
+        assertThat(durable).hasSize(2);
+        var expectedIds = new java.util.HashSet<String>();
+        for (String json : durable)
+            expectedIds.add(objectMapper.readTree(json).path("event_id").asText());
+        assertThat(expectedIds).hasSize(2);
         flushOutbox();
-
-        // Должно прийти минимум 2 события: group.renamed + group.updated (порядок не
-        // гарантируется).
-        Set<String> receivedTypes = new HashSet<>();
+        var observed = new java.util.ArrayList<JsonNode>();
         long deadline = System.currentTimeMillis() + RECEIVE_TIMEOUT_MS;
-        while (receivedTypes.size() < 2 && System.currentTimeMillis() < deadline) {
-            Message m = rabbitTemplate.receive(queueName, 1500);
-            if (m == null) break;
-            JsonNode root = objectMapper.readTree(m.getBody());
-            String type = root.get("event_type").asText();
-            receivedTypes.add(type);
-            if ("group.renamed".equals(type)) {
-                assertThat(root.get("event_id").asText())
-                        .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
-                assertThat(root.get("occurred_at")).isNotNull();
-                assertThat(root.get("payload").get("group_id").asLong()).isEqualTo(group.getId());
+        while (System.currentTimeMillis() < deadline) {
+            Message message = rabbitTemplate.receive(queueName, 500);
+            if (message == null) {
+                if (observed.size() >= 2) break;
+                continue;
+            }
+            var event = objectMapper.readTree(message.getBody());
+            if (event.path("payload").path("group_id").asLong() == group.getId()
+                    && java.util.List.of("group.renamed", "group.updated")
+                            .contains(event.path("event_type").asText())) observed.add(event);
+        }
+        assertThat(observed).hasSize(2);
+        assertThat(observed)
+                .extracting(event -> event.path("event_type").asText())
+                .containsExactlyInAnyOrder("group.renamed", "group.updated");
+        assertThat(observed)
+                .extracting(event -> event.path("event_id").asText())
+                .doesNotHaveDuplicates()
+                .containsExactlyInAnyOrderElementsOf(expectedIds);
+        for (var event : observed) {
+            assertThat(event.path("event_id").asText())
+                    .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+            assertThat(event.path("occurred_at").asText()).isNotBlank();
+            assertThat(event.path("payload").path("group_id").asLong()).isEqualTo(group.getId());
+            if (event.path("event_type").asText().equals("group.renamed")) {
+                assertThat(event.path("payload").path("new_name").asText())
+                        .isEqualTo(persistedName);
+                assertThat(event.path("payload").path("actor_user_id").asLong())
+                        .isEqualTo(actor.userId());
             }
         }
-
-        assertThat(receivedTypes).contains("group.renamed");
     }
 
     @Test

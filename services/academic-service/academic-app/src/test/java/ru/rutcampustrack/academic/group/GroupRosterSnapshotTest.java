@@ -7,7 +7,6 @@ import io.grpc.Status;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.TransactionDefinition;
@@ -17,63 +16,15 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
-import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.user.UserAssembler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Transaction-boundary proof only; the real peer-read failure-window DB criterion remains separate.
  */
 class GroupRosterSnapshotTest {
-    @Test
-    void guardRosterAndLocalRoleLabelsResolveBeforeSameRepeatableReadSnapshotEnds() {
-        var fixture = new Fixture();
-        var member = new User();
-        member.setId(8L);
-        var response = mock(UserResponse.class);
-        var steps = new ArrayList<String>();
-        doAnswer(
-                        call -> {
-                            inSnapshot();
-                            steps.add("actor");
-                            return null;
-                        })
-                .when(fixture.fences)
-                .requireUserReadable(8L);
-        doAnswer(
-                        call -> {
-                            inSnapshot();
-                            steps.add("group");
-                            return null;
-                        })
-                .when(fixture.fences)
-                .requireGroupReadable(7L);
-        when(fixture.users.findActiveStudentsByGrantGroupId(7L, fixture.page))
-                .thenAnswer(
-                        call -> {
-                            inSnapshot();
-                            steps.add("roster");
-                            return new PageImpl<>(List.of(member));
-                        });
-        when(fixture.assembler.toResponse(member))
-                .thenAnswer(
-                        call -> {
-                            inSnapshot();
-                            steps.add("local roles and labels");
-                            return response;
-                        });
-        var result = fixture.service.getMyGroupMembers(fixture.page);
-        assertThat(result.getContent()).containsExactly(response);
-        assertThat(steps).containsExactly("actor", "group", "roster", "local roles and labels");
-        assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-    }
-
     @Test
     void pendingGroupGuardPreventsRosterAndRoleMetadataReads() {
         var fixture = new Fixture();

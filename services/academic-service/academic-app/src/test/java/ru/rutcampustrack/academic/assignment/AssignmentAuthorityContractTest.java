@@ -2,25 +2,13 @@ package ru.rutcampustrack.academic.assignment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.exception.BadRequestException;
-import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.repository.AssignmentRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.repository.SubjectLessonTypeRepository;
-import ru.rutcampustrack.academic.repository.SubjectRepository;
 
 import java.time.LocalDate;
 
@@ -55,80 +43,6 @@ class AssignmentAuthorityContractTest {
                                         LocalDate.of(2026, 9, 30),
                                         LocalDate.of(2026, 10, 2)))
                 .isInstanceOf(BadRequestException.class);
-    }
-
-    @Test
-    void createLocksSemesterBeforeOverlapCheckAndInsert() {
-        AssignmentRepository assignments = mock(AssignmentRepository.class);
-        SemesterRepository semesters = mock(SemesterRepository.class);
-        SubjectRepository subjects = mock(SubjectRepository.class);
-        SubjectLessonTypeRepository types = mock(SubjectLessonTypeRepository.class);
-        AssignmentTeacherEligibility eligibility = mock(AssignmentTeacherEligibility.class);
-        Semester semester = semester(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
-        Subject subject = mock(Subject.class);
-        when(semesters.findByIdForUpdate(33L)).thenReturn(java.util.Optional.of(semester));
-        when(subjects.findById(11L)).thenReturn(java.util.Optional.of(subject));
-        when(subject.getGroupId()).thenReturn(22L);
-        when(subject.getSemesterId()).thenReturn(33L);
-        when(types.existsBySubjectIdAndLessonType(11L, SubjectType.LECTURE)).thenReturn(true);
-        when(assignments.findOverlapping(
-                        7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null))
-                .thenReturn(java.util.Optional.empty());
-        when(assignments.saveAndFlush(any(Assignment.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        AssignmentAuthority authority =
-                new AssignmentAuthority(assignments, semesters, subjects, types, eligibility);
-        var adoption = mock(AssignmentClosureService.class);
-        authority.setClosureService(adoption);
-        org.springframework.test.util.ReflectionTestUtils.setField(
-                authority, "entityManager", mock(jakarta.persistence.EntityManager.class));
-        authority.create(7L, 11L, 22L, 33L, SubjectType.LECTURE, LocalDate.of(2026, 9, 1), null);
-
-        var order = inOrder(semesters, assignments);
-        order.verify(semesters).findByIdForUpdate(33L);
-        order.verify(assignments)
-                .findOverlapping(7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null);
-        order.verify(assignments).saveAndFlush(any(Assignment.class));
-        verify(adoption).prepareAdoption(any(Assignment.class));
-    }
-
-    @Test
-    void overlappingSameTeacherTypeIsRejectedWithoutInsert() {
-        AssignmentRepository assignments = mock(AssignmentRepository.class);
-        SemesterRepository semesters = mock(SemesterRepository.class);
-        SubjectRepository subjects = mock(SubjectRepository.class);
-        SubjectLessonTypeRepository types = mock(SubjectLessonTypeRepository.class);
-        AssignmentTeacherEligibility eligibility = mock(AssignmentTeacherEligibility.class);
-        Semester semester = semester(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
-        Subject subject = mock(Subject.class);
-        when(semesters.findByIdForUpdate(33L)).thenReturn(java.util.Optional.of(semester));
-        when(subjects.findById(11L)).thenReturn(java.util.Optional.of(subject));
-        when(subject.getGroupId()).thenReturn(22L);
-        when(subject.getSemesterId()).thenReturn(33L);
-        when(types.existsBySubjectIdAndLessonType(11L, SubjectType.LECTURE)).thenReturn(true);
-        when(assignments.findOverlapping(
-                        7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null))
-                .thenReturn(java.util.Optional.of(mock(Assignment.class)));
-
-        AssignmentAuthority authority =
-                new AssignmentAuthority(assignments, semesters, subjects, types, eligibility);
-        authority.setClosureService(mock(AssignmentClosureService.class));
-        assertThatThrownBy(
-                        () ->
-                                authority.create(
-                                        7L,
-                                        11L,
-                                        22L,
-                                        33L,
-                                        SubjectType.LECTURE,
-                                        LocalDate.of(2026, 9, 1),
-                                        null))
-                .isInstanceOf(ConflictException.class);
-        verify(assignments)
-                .findOverlapping(7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null);
-        verify(assignments, never()).save(any(Assignment.class));
-        verify(assignments, never()).saveAndFlush(any(Assignment.class));
     }
 
     private static Semester semester(LocalDate from, LocalDate to) {

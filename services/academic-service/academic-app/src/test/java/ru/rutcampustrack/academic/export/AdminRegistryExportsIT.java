@@ -37,6 +37,7 @@ import java.util.zip.*;
 @AutoConfigureMockMvc
 class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
     @Autowired MockMvc mvc;
+    @Autowired org.springframework.boot.test.web.client.TestRestTemplate http;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
     @Autowired AcademicUserIdentityOperations identities;
@@ -335,94 +336,81 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                         actor);
         var fullJob = enqueueUserReport(target.login());
         String fullReportToken = exportJobs.renderAdmission(fullJob).token();
-        mvc.perform(get("/academic/users").header("X-Internal-Token", fullReportToken))
-                .andExpect(status().isUnauthorized());
-        mvc.perform(
-                        post("/academic/export-jobs/{id}/render", fullJob.id())
-                                .servletPath("/academic/export-jobs/" + fullJob.id() + "/render")
-                                .header("X-Internal-Token", fullReportToken)
-                                .contentType(APPLICATION_JSON)
-                                .content(
-                                        mapper.writeValueAsBytes(
-                                                Map.of("leaseId", UUID.randomUUID()))))
-                .andExpect(status().isConflict());
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", fullReportToken);
+        assertThat(
+                        http.exchange(
+                                        "/academic/users",
+                                        org.springframework.http.HttpMethod.GET,
+                                        new org.springframework.http.HttpEntity<>(headers),
+                                        String.class)
+                                .getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.UNAUTHORIZED);
+        assertThat(renderResponse(fullJob, fullReportToken, UUID.randomUUID()).getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.CONFLICT);
         String full = renderUserReport(fullJob, fullReportToken);
         assertThat(full).contains(target.login(), "Telegram ID", Long.toString(telegram));
-
         changeAccess("LIMITED", List.of("USERS_VIEW"));
-        // A FULL job cannot silently become LIMITED after its captured authority changes.
-        mvc.perform(
-                        post("/academic/export-jobs/{id}/render", fullJob.id())
-                                .servletPath("/academic/export-jobs/" + fullJob.id() + "/render")
-                                .header("X-Internal-Token", fullReportToken)
-                                .contentType(APPLICATION_JSON)
-                                .content(
-                                        mapper.writeValueAsBytes(
-                                                Map.of("leaseId", fullJob.leaseId()))))
-                .andExpect(status().isForbidden());
+        assertThat(renderResponse(fullJob, fullReportToken, fullJob.leaseId()).getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
         var limitedJob = enqueueUserReport(target.login());
         String limitedReportToken = exportJobs.renderAdmission(limitedJob).token();
         String limited = renderUserReport(limitedJob, limitedReportToken);
         assertThat(limited)
                 .contains(target.login(), "Привязан")
                 .doesNotContain("Telegram ID", Long.toString(telegram));
-
         changeAccess("LIMITED", List.of("GROUPS_VIEW"));
-        mvc.perform(
-                        post("/academic/export-jobs/{id}/render", limitedJob.id())
-                                .servletPath("/academic/export-jobs/" + limitedJob.id() + "/render")
-                                .header("X-Internal-Token", limitedReportToken)
-                                .contentType(APPLICATION_JSON)
-                                .content(
-                                        mapper.writeValueAsBytes(
-                                                Map.of("leaseId", limitedJob.leaseId()))))
-                .andExpect(status().isForbidden());
+        assertThat(
+                        renderResponse(limitedJob, limitedReportToken, limitedJob.leaseId())
+                                .getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
     }
 
     private ExportJobRepository.Job enqueueUserReport(String search) throws Exception {
-        byte[] response =
-                mvc.perform(
-                                post("/academic/export-jobs")
-                                        .header("X-Internal-Token", token)
-                                        .contentType(APPLICATION_JSON)
-                                        .content(
-                                                mapper.writeValueAsBytes(
-                                                        Map.of(
-                                                                "requestId", UUID.randomUUID(),
-                                                                "report",
-                                                                        Map.of(
-                                                                                "kind",
-                                                                                "ADMIN_USERS",
-                                                                                "adminUsers",
-                                                                                Map.of(
-                                                                                        "search",
-                                                                                        search,
-                                                                                        "format",
-                                                                                        "html"))))))
-                        .andExpect(status().isAccepted())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsByteArray();
-        UUID id = UUID.fromString(mapper.readTree(response).path("jobId").asText());
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", token);
+        headers.setContentType(APPLICATION_JSON);
+        var response =
+                http.exchange(
+                        "/academic/export-jobs",
+                        org.springframework.http.HttpMethod.POST,
+                        new org.springframework.http.HttpEntity<>(
+                                Map.of(
+                                        "requestId",
+                                        UUID.randomUUID(),
+                                        "report",
+                                        Map.of(
+                                                "kind",
+                                                "ADMIN_USERS",
+                                                "adminUsers",
+                                                Map.of("search", search, "format", "html"))),
+                                headers),
+                        String.class);
+        assertThat(response.getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.ACCEPTED);
+        UUID id = UUID.fromString(mapper.readTree(response.getBody()).path("jobId").asText());
         var claimed = exportJobs.claim().orElseThrow();
         assertThat(claimed.id()).isEqualTo(id);
         return claimed;
     }
 
-    private String renderUserReport(ExportJobRepository.Job job, String reportToken)
-            throws Exception {
-        return mvc.perform(
-                        post("/academic/export-jobs/{id}/render", job.id())
-                                .servletPath("/academic/export-jobs/" + job.id() + "/render")
-                                .header("X-Internal-Token", reportToken)
-                                .contentType(APPLICATION_JSON)
-                                .content(
-                                        mapper.writeValueAsBytes(Map.of("leaseId", job.leaseId()))))
-                .andExpect(status().isOk())
-                .andExpect(header().string("X-Export-Row-Count", "1"))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+    private String renderUserReport(ExportJobRepository.Job job, String reportToken) {
+        var response = renderResponse(job, reportToken, job.leaseId());
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        assertThat(response.getHeaders().getFirst("X-Export-Row-Count")).isEqualTo("1");
+        return response.getBody();
+    }
+
+    private org.springframework.http.ResponseEntity<String> renderResponse(
+            ExportJobRepository.Job job, String reportToken, UUID lease) {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", reportToken);
+        headers.setContentType(APPLICATION_JSON);
+        return http.exchange(
+                "/academic/export-jobs/" + job.id() + "/render",
+                org.springframework.http.HttpMethod.POST,
+                new org.springframework.http.HttpEntity<>(Map.of("leaseId", lease), headers),
+                String.class);
     }
 
     private byte[] file(String format) throws Exception {

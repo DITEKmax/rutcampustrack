@@ -507,6 +507,14 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
         return signer;
     }
 
+    public SemesterDeletionConfirmationService semesterDeletionConfirmation() {
+        return authContext.getBean(SemesterDeletionConfirmationService.class);
+    }
+
+    public InternalIssuerProperties internalIssuerProperties() {
+        return authContext.getBean(InternalIssuerProperties.class);
+    }
+
     public JdbcTemplate authJdbc() {
         return auth;
     }

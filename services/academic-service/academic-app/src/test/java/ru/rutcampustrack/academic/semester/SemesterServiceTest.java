@@ -10,16 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import jakarta.persistence.EntityManager;
-import java.lang.reflect.Field;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
@@ -41,6 +33,17 @@ import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.lang.reflect.Field;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Unit tests for SemesterService validation added in BUG-006 п.7 / plan 58-05.
@@ -161,6 +164,16 @@ class SemesterServiceTest {
 
     @Test
     void createAndUpdate_typedSemesterNamesUseTheExplicitAcademicYear() {
+        semesterService =
+                new SemesterService(
+                        semesterRepository,
+                        semesterAssembler,
+                        entityManager,
+                        eventPublisher,
+                        assignmentRepository,
+                        jdbcTemplate,
+                        Clock.fixed(
+                                Instant.parse("2026-08-15T09:00:00Z"), ZoneId.of("Europe/Moscow")));
         LocalDate autumnFrom = LocalDate.of(2026, 9, 1);
         LocalDate autumnTo = LocalDate.of(2027, 1, 31);
         CreateSemesterRequest create =

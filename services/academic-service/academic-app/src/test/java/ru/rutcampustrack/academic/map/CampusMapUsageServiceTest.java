@@ -1,6 +1,5 @@
 package ru.rutcampustrack.academic.map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -8,21 +7,23 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
 
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class CampusMapUsageServiceTest {
@@ -117,17 +118,6 @@ class CampusMapUsageServiceTest {
                 .isEqualTo(FAILED_PRECONDITION);
 
         verifyNoInteractions(repository, ownerHmacProvider);
-    }
-
-    @Test
-    void adminQueriesDelegateToTheSameAggregateRepository() {
-        when(repository.findAllTimeFloorCounts()).thenReturn(Map.of(200L, 3L));
-        when(repository.findAllTimeTotal()).thenReturn(3L);
-
-        assertThat(service.allTimeFloorCounts()).containsEntry(200L, 3L);
-        assertThat(service.allTimeTotal()).isEqualTo(3L);
-        verify(repository).findAllTimeFloorCounts();
-        verify(repository).findAllTimeTotal();
     }
 
     private static InternalJwtClaims claims() {

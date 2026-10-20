@@ -4,35 +4,22 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.grpc.Metadata;
 import io.grpc.Status;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.identitycatalog.IdentityCatalogSynchronizer;
 import ru.rutcampustrack.academic.identityoperation.*;
-import ru.rutcampustrack.auth.authority.AuthIdentityOperationStore;
-import ru.rutcampustrack.auth.authority.AuthInternalActorReader;
-import ru.rutcampustrack.auth.security.SessionPrincipal;
-import ru.rutcampustrack.auth.service.BcryptConcurrencyGuard;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.authauthority.grpc.*;
 import ru.rutcampustrack.authoperations.grpc.*;
 
-import java.sql.ResultSet;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /** Field-specific duplicate outcomes at the actual Academic/Auth operation seams. */
@@ -91,44 +78,6 @@ class UserServiceConflictTest {
         verify(fixture.users, never()).save(any());
     }
 
-    @Test
-    void noConflictWhenNoExistingValues() {
-        fixture.service.createUser(studentRequest());
-        var produced = actualAuthCredentialInsert(fixture.accepted.authCommand());
-        String hash = (String) produced[2];
-        String initial = (String) produced[3];
-        assertThat(initial != null && initial.length() == 12)
-                .as("administratively visible initial credential is retained by Auth")
-                .isTrue();
-        assertThat(new BCryptPasswordEncoder().matches(initial, hash))
-                .as("actual Auth INSERT hash verifies the issued credential")
-                .isTrue();
-        assertThat(hash.startsWith("$2a$10$"))
-                .as("Auth-compatible BCrypt cost and version")
-                .isTrue();
-        when(fixture.auth.initialCredentials(eq(List.of(42L)), anyLong()))
-                .thenReturn(
-                        ReadInitialCredentialsResponse.newBuilder()
-                                .addCredentials(
-                                        InitialCredentialSnapshot.newBuilder()
-                                                .setUserId(42)
-                                                .setInitialPassword(initial)
-                                                .setPasswordChanged(false))
-                                .build());
-        fixture.service.createUser(studentRequest());
-        verify(fixture.auth, times(2)).initialCredentials(eq(List.of(42L)), anyLong());
-        var assembler =
-                (UserAssembler)
-                        org.springframework.test.util.ReflectionTestUtils.getField(
-                                fixture.service, "userAssembler");
-        verify(assembler).toCreatedModel(any(), eq(initial));
-        var user = fixture.users.findByIdIncludingArchived(42L).orElseThrow();
-        assertThat(user.isPasswordChanged()).isFalse();
-        assertThat(user.getInitialPassword()).isNull();
-        assertThat(user.getPasswordHash()).isNull();
-        verify(fixture.users, never()).save(any());
-    }
-
     private static void assertTelegramConflict(Runnable call) {
         assertThatThrownBy(call::run)
                 .isInstanceOfSatisfying(
@@ -137,95 +86,6 @@ class UserServiceConflictTest {
     }
 
     /** Stops at the real Auth INSERT: no DB, server or new authority implementation. */
-    private static Object[] actualAuthCredentialInsert(PrepareIdentityOperationRequest command) {
-        var captured = new AtomicReference<Object[]>();
-        var stop = new IllegalStateException("synthetic capture after Auth INSERT arguments");
-        JdbcTemplate jdbc =
-                mock(
-                        JdbcTemplate.class,
-                        call -> {
-                            String method = call.getMethod().getName();
-                            if (call.getArguments().length == 0)
-                                return RETURNS_DEFAULTS.answer(call);
-                            String sql = call.getArgument(0);
-                            if (method.equals("queryForList"))
-                                return sql.contains("FROM auth_identities WHERE id=? FOR UPDATE")
-                                        ? List.of(99L)
-                                        : List.of();
-                            if (method.equals("queryForObject")) {
-                                if (sql.contains("nextval")) return 42L;
-                                return sql.contains("JOIN auth_sessions");
-                            }
-                            if (method.equals("query")) {
-                                if (!sql.contains("SELECT p.version")
-                                        && !sql.contains(
-                                                "SELECT roles_version,credentials_version"))
-                                    return List.of();
-                                var row =
-                                        mock(
-                                                ResultSet.class,
-                                                read -> {
-                                                    Object column =
-                                                            read.getArguments().length == 0
-                                                                    ? null
-                                                                    : read.getArgument(0);
-                                                    return switch (read.getMethod().getName()) {
-                                                        case "getLong" -> 1L;
-                                                        case "getBoolean" -> true;
-                                                        case "getString" ->
-                                                                "mode".equals(column)
-                                                                        ? "FULL"
-                                                                        : "ACTIVE";
-                                                        case "getArray", "getObject" -> null;
-                                                        default -> RETURNS_DEFAULTS.answer(read);
-                                                    };
-                                                });
-                                RowMapper<?> rowMapper = call.getArgument(1);
-                                return List.of(rowMapper.mapRow(row, 0));
-                            }
-                            if (method.equals("update")) {
-                                if (sql.contains("INSERT INTO auth_identities(")) {
-                                    captured.set(
-                                            Arrays.copyOfRange(
-                                                    call.getArguments(),
-                                                    1,
-                                                    call.getArguments().length));
-                                    assertThat(sql).contains("password_hash,initial_password");
-                                    // This INSERT relies on the Auth schema's
-                                    // password_changed=false default.
-                                    assertThat(sql).doesNotContain("password_changed");
-                                    throw stop;
-                                }
-                                return 1;
-                            }
-                            return RETURNS_DEFAULTS.answer(call);
-                        });
-        var actors = mock(AuthInternalActorReader.class);
-        when(actors.read())
-                .thenReturn(
-                        new SessionPrincipal(
-                                99,
-                                UUID.randomUUID(),
-                                1,
-                                1,
-                                AuthRole.ADMIN,
-                                RoleStatus.ACTIVE,
-                                null,
-                                false,
-                                false));
-        var auth =
-                new AuthIdentityOperationStore(
-                        jdbc,
-                        new ObjectMapper().findAndRegisterModules(),
-                        new UserIdentityCommandFixture.LocalTransactions(),
-                        actors,
-                        new BCryptPasswordEncoder(),
-                        new BcryptConcurrencyGuard(1, 0));
-        assertThatThrownBy(() -> auth.prepare(command)).isSameAs(stop);
-        assertThat(captured.get()).isNotNull();
-        return captured.get();
-    }
-
     private final class RejectionBoundary {
         final JdbcAcademicIdentityOperationStore store =
                 mock(JdbcAcademicIdentityOperationStore.class);

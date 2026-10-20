@@ -41,6 +41,9 @@ import java.util.UUID;
 class UserSearchIT extends AbstractAcademicIntegrationTest {
 
     @Autowired MockMvc mockMvc;
+    @Autowired org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired com.fasterxml.jackson.databind.ObjectMapper mapper;
+
     @Autowired UserService users;
     @Autowired UserArchiveService archives;
     @MockitoBean AttendanceUserImpactGrpcClient attendance;
@@ -249,6 +252,74 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
                                 .param("roleStatus", "ARCHIVED"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements", is(0)));
+        var restoredTeacher =
+                seedUser(
+                        "Arclist-Match",
+                        "АрхивныйПоиск",
+                        "Синтетика",
+                        null,
+                        UserRole.TEACHER,
+                        "EMP-ARCLIST-2005",
+                        null);
+        var activeTeacher =
+                seedUser(
+                        "Arclist-Match",
+                        "АрхивныйПоиск",
+                        "Синтетика",
+                        null,
+                        UserRole.TEACHER,
+                        "EMP-ARCLIST-2006",
+                        null);
+        var suspendedTeacher =
+                seedUser(
+                        "Arclist-Match",
+                        "АрхивныйПоиск",
+                        "Синтетика",
+                        null,
+                        UserRole.TEACHER,
+                        "EMP-ARCLIST-2007",
+                        null);
+        archive(restoredTeacher.userId());
+        var teacherRestore = new RestoreRequest(UUID.randomUUID());
+        try (var ignored = identityFixture.request(adminActor, teacherRestore.operationId())) {
+            archives.restore(restoredTeacher.userId(), teacherRestore);
+        }
+        try (var ignored = identityFixture.request(adminActor)) {
+            users.updateRoleGrant(
+                    suspendedTeacher.userId(),
+                    "TEACHER",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+        }
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", adminActor.internalToken());
+        var seen = new java.util.ArrayList<Long>();
+        for (int page = 0; page < 2; page++) {
+            var response =
+                    http.exchange(
+                            "/academic/users?search=ARCLIST-MATCH&role=TEACHER&roleStatus=ARCHIVED&sort=id,asc&size=1&page="
+                                    + page,
+                            org.springframework.http.HttpMethod.GET,
+                            new org.springframework.http.HttpEntity<>(headers),
+                            String.class);
+            org.assertj.core.api.Assertions.assertThat(response.getStatusCode())
+                    .isEqualTo(org.springframework.http.HttpStatus.OK);
+            var json = mapper.readTree(response.getBody());
+            org.assertj.core.api.Assertions.assertThat(
+                            json.path("page").path("totalElements").asLong())
+                    .isEqualTo(2);
+            org.assertj.core.api.Assertions.assertThat(json.path("page").path("totalPages").asInt())
+                    .isEqualTo(2);
+            var rows = json.path("_embedded").path("userResponseList");
+            org.assertj.core.api.Assertions.assertThat(rows.size()).isEqualTo(1);
+            seen.add(rows.get(0).path("id").asLong());
+        }
+        org.assertj.core.api.Assertions.assertThat(seen)
+                .containsExactly(teacher.userId(), restoredTeacher.userId())
+                .doesNotContain(
+                        activeTeacher.userId(),
+                        suspendedTeacher.userId(),
+                        archived.userId(),
+                        restored.userId());
     }
 
     @Test

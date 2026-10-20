@@ -518,26 +518,17 @@ class GroupServiceTest {
     // =========================================================================
 
     @Test
-    void groupResponse_hasNoCodeField() throws NoSuchFieldException {
+    void groupResponse_hasNoCodeField() throws Exception {
         GroupResponse response =
                 new GroupResponse(
                         1L, "УИТ-311", true, OffsetDateTime.parse("2026-04-14T00:00:00Z"));
-        assertThat(response.getName()).isEqualTo("УИТ-311");
-        // Reflection check: code field removed from GroupResponse entirely.
-        assertThatThrownBy(() -> GroupResponse.class.getDeclaredField("code"))
-                .isInstanceOf(NoSuchFieldException.class);
-    }
-
-    @Test
-    void groupEntity_hasNoCodeField() {
-        // Entity Group поле code удалено — @Column(name="name", unique, length=32)
-        assertThatThrownBy(() -> Group.class.getDeclaredField("code"))
-                .isInstanceOf(NoSuchFieldException.class);
-
-        // Поле name по-прежнему присутствует.
-        assertThat(java.util.Arrays.stream(Group.class.getDeclaredFields()).map(Field::getName))
-                .contains("name")
-                .doesNotContain("code");
+        var mapper =
+                org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json()
+                        .findModulesViaServiceLoader(true)
+                        .build();
+        var json = mapper.readTree(mapper.writeValueAsBytes(response));
+        assertThat(json.path("name").asText()).isEqualTo("УИТ-311");
+        assertThat(json.has("code")).isFalse();
     }
 
     @Test

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.*;
+
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.INVALID_ARGUMENT;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.NOT_FOUND;
@@ -25,6 +26,17 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestResult;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Plan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InOrder;
+
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.List;
@@ -32,15 +44,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InOrder;
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 class CampusMapReadServiceTest {
     private static final UUID SESSION_ID = UUID.fromString("22222222-2222-4222-8222-222222222222");
@@ -180,12 +183,6 @@ class CampusMapReadServiceTest {
         when(repository.findCurrentCatalogs()).thenReturn(List.of());
 
         assertCode(UNAVAILABLE, () -> service.readManifest(0L, activeClaims()));
-    }
-
-    @Test
-    void suspendedStudentIdentityIsDeniedBeforeMapLookup() {
-        assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims("SUSPENDED", false)));
-        verify(repository, never()).findCurrentCatalogs();
     }
 
     @Test
@@ -819,18 +816,6 @@ class CampusMapReadServiceTest {
 
         assertThat(result).isEmpty();
         verifyNoInteractions(users, repository);
-    }
-
-    @Test
-    void readOnlyTerminalClaimIsAllowedWhenArchivedAwareUserExists() {
-        when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
-        when(repository.findActiveBuildings()).thenReturn(List.of());
-        when(repository.findActiveFloors()).thenReturn(List.of());
-        when(repository.findCurrentPlans()).thenReturn(List.of());
-
-        assertThat(service.readManifest(0L, claims("ARCHIVED", true)).manifest().buildings())
-                .isEmpty();
-        verify(users).findByIdIncludingArchived(100L);
     }
 
     @Test

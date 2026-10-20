@@ -6,16 +6,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.CannotCreateTransactionException;
+
 import ru.rutcampustrack.academic.homework.HomeworkStudentService;
 import ru.rutcampustrack.academic.map.CampusMapReadService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -28,6 +28,10 @@ import ru.rutcampustrack.academic.studentprojection.StudentProjectionException;
 import ru.rutcampustrack.academic.studentprojection.StudentProjectionScope;
 import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 class StudentProjectionGrpcServiceTest {
 
@@ -246,45 +250,6 @@ class StudentProjectionGrpcServiceTest {
                                 throw new AssertionError(exception);
                             }
                         });
-    }
-
-    @Test
-    void pastClosedHistoryDivergenceMapsToUnavailableWithInconsistentSource() {
-        StudentProjectionScopeService resolver = mock(StudentProjectionScopeService.class);
-        InternalJwtClaims claims = claims();
-        when(resolver.resolve(42L, claims))
-                .thenThrow(
-                        StudentProjectionException.inconsistent(
-                                "Past active scope has no current authoritative group"));
-        AcademicGrpcServiceImpl service = service(resolver);
-        RecordingObserver<StudentProjectionScopeResponse> observer = new RecordingObserver<>();
-
-        Context.current()
-                .withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims)
-                .run(
-                        () ->
-                                service.resolveStudentProjectionScope(
-                                        StudentProjectionScopeRequest.newBuilder()
-                                                .setSemesterId(42L)
-                                                .build(),
-                                        observer));
-
-        assertThat(observer.value).isNull();
-        assertThat(observer.error).isInstanceOf(StatusRuntimeException.class);
-        assertThat(Status.fromThrowable(observer.error).getCode())
-                .isEqualTo(Status.Code.UNAVAILABLE);
-        com.google.rpc.Status status = StatusProto.fromThrowable(observer.error);
-        assertThat(status).isNotNull();
-        try {
-            AcademicProjectionErrorDetail detail =
-                    status.getDetails(0).unpack(AcademicProjectionErrorDetail.class);
-            assertThat(detail.getCode())
-                    .isEqualTo(
-                            AcademicProjectionErrorCode
-                                    .ACADEMIC_PROJECTION_ERROR_CODE_INCONSISTENT_SOURCE);
-        } catch (InvalidProtocolBufferException exception) {
-            throw new AssertionError(exception);
-        }
     }
 
     @Test

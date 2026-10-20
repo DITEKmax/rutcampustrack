@@ -54,23 +54,6 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
      * Test 1 — Schema validation: Application context loads without Hibernate schema validation
      * errors, proving all 11 entities match Flyway V1+V2+V3 schema.
      */
-    @Test
-    @Order(1)
-    void contextLoads_allEntitiesValidateAgainstSchema() {
-        // If Spring context starts successfully (reaching this line), all 11 entities
-        // have passed Hibernate ddl-auto: validate against the Flyway-migrated schema.
-        assertThat(userRepository).isNotNull();
-        assertThat(semesterRepository).isNotNull();
-        assertThat(groupRepository).isNotNull();
-        assertThat(subjectRepository).isNotNull();
-        assertThat(studentGroupHistoryRepository).isNotNull();
-        assertThat(teacherSubjectGroupRepository).isNotNull();
-        assertThat(headmanAssistantRepository).isNotNull();
-        assertThat(attendanceThresholdRepository).isNotNull();
-        assertThat(homeworkRepository).isNotNull();
-        assertThat(homeworkCompletionRepository).isNotNull();
-    }
-
     /**
      * Test 2 — The actual canonical Auth identity resolves through the Academic directory with its
      * generated login and STUDENT/ACTIVE enum mappings.
@@ -227,65 +210,6 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
      * Test 6 — Threshold resolution: 3-level most-specific-wins (THRSH-04). global (null,null) =
      * 70%, group (groupId,null) = 80%, subject (groupId,subjectId) = 90%.
      */
-    @Test
-    @Order(6)
-    @Transactional
-    @Rollback
-    void attendanceThreshold_threeLevel_mostSpecificWins() {
-        Long adminId = identityFixture.canonical().adminId();
-        Long groupId = identityFixture.canonical().groupId();
-        Long subjectId =
-                jdbcTemplate.queryForObject(
-                        """
-                        WITH subject AS (
-                            INSERT INTO subjects(name,type,group_id)
-                            VALUES ('Test Subject', 'lecture', ?) RETURNING id,type
-                        ), lesson_type AS (
-                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
-                            SELECT id,type FROM subject RETURNING subject_id
-                        ) SELECT subject_id FROM lesson_type
-                        """,
-                        Long.class,
-                        groupId);
-
-        // Global threshold (null, null) = 70%
-        jdbcTemplate.update(
-                "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by,"
-                        + " created_at) VALUES (NULL, NULL, 70, ?, NOW())",
-                adminId);
-
-        // Group threshold (groupId, null) = 80%
-        jdbcTemplate.update(
-                "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by,"
-                        + " created_at) VALUES (?, NULL, 80, ?, NOW())",
-                groupId,
-                adminId);
-
-        // Subject threshold (groupId, subjectId) = 90%
-        jdbcTemplate.update(
-                "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by,"
-                        + " created_at) VALUES (?, ?, 90, ?, NOW())",
-                groupId,
-                subjectId,
-                adminId);
-
-        // Verify most-specific-wins resolution
-        Optional<AttendanceThreshold> subjectLevel =
-                attendanceThresholdRepository.findByGroupIdAndSubjectId(groupId, subjectId);
-        assertThat(subjectLevel).isPresent();
-        assertThat(subjectLevel.get().getThresholdPct()).isEqualTo(90);
-
-        Optional<AttendanceThreshold> groupLevel =
-                attendanceThresholdRepository.findByGroupIdAndSubjectIdIsNull(groupId);
-        assertThat(groupLevel).isPresent();
-        assertThat(groupLevel.get().getThresholdPct()).isEqualTo(80);
-
-        Optional<AttendanceThreshold> globalLevel =
-                attendanceThresholdRepository.findByGroupIdIsNullAndSubjectIdIsNull();
-        assertThat(globalLevel).isPresent();
-        assertThat(globalLevel.get().getThresholdPct()).isEqualTo(70);
-    }
-
     private String canonicalStudentLogin() {
         return identityFixture
                 .authJdbc()

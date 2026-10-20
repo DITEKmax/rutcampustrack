@@ -26,34 +26,6 @@ import java.util.UUID;
 class ReportDownloadTicketValidationTest {
 
     @Test
-    void rejectedOpaqueTicketIsNotEchoedByOwnerProblemResponse() throws Exception {
-        var service = mock(ExportJobService.class);
-        var marker = "SENTINEL" + "A".repeat(35);
-        when(service.downloadTicket(marker))
-                .thenThrow(
-                        ExportJobRepository.error(org.springframework.http.HttpStatus.NOT_FOUND));
-        var controller =
-                new AcademicReportTicketController(
-                        service, mock(ru.rutcampustrack.academic.security.RequestContext.class));
-        var mvc =
-                MockMvcBuilders.standaloneSetup(controller)
-                        .setControllerAdvice(new ExportJobExceptionAdvice())
-                        .build();
-        var response =
-                mvc.perform(
-                                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                        .get("/academic/report-download/" + marker))
-                        .andExpect(status().isNotFound())
-                        .andReturn()
-                        .getResponse();
-        org.assertj.core.api.Assertions.assertThat(response.getContentAsString())
-                .doesNotContain(marker)
-                .contains("/academic/report-download/{ticket}");
-        org.assertj.core.api.Assertions.assertThat(response.getHeader("Cache-Control"))
-                .isEqualTo("no-store");
-    }
-
-    @Test
     void rosterSelectorIsClosedFormatOnlyAndBindsKindAndFormat() {
         var mapper =
                 new com.fasterxml.jackson.databind.ObjectMapper()

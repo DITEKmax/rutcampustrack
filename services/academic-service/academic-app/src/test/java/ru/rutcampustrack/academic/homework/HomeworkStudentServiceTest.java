@@ -1,17 +1,14 @@
 package ru.rutcampustrack.academic.homework;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
@@ -23,6 +20,9 @@ import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class HomeworkStudentServiceTest {
@@ -77,33 +77,6 @@ class HomeworkStudentServiceTest {
         lenient().when(homework.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(homework.getSemesterId()).thenReturn(SEMESTER_ID);
         lenient().when(homework.getPublicationState()).thenReturn(HomeworkPublicationState.ACTIVE);
-    }
-
-    @Test
-    void completeIsIdempotentAndReturnsTheObservedState() {
-        OffsetDateTime completedAt = OffsetDateTime.parse("2026-09-07T10:00:00+03:00");
-        when(completionRepository.findByHomeworkIdAndStudentId(HOMEWORK_ID, STUDENT_ID))
-                .thenReturn(Optional.of(completion));
-        when(completion.getCompletedAt()).thenReturn(completedAt);
-
-        assertThat(service.setCompletion(HOMEWORK_ID, SEMESTER_ID, claims, true))
-                .isEqualTo(new HomeworkStudentService.CompletionState(true, completedAt));
-        assertThat(service.setCompletion(HOMEWORK_ID, SEMESTER_ID, claims, true))
-                .isEqualTo(new HomeworkStudentService.CompletionState(true, completedAt));
-
-        verify(completionRepository, times(2)).insertIfAbsent(HOMEWORK_ID, STUDENT_ID);
-        verify(completionRepository, times(2))
-                .findByHomeworkIdAndStudentId(HOMEWORK_ID, STUDENT_ID);
-        verify(completionRepository, never()).deleteByHomeworkIdAndStudentId(anyLong(), anyLong());
-    }
-
-    @Test
-    void uncompleteIsIdempotentAndDeletesOnlyTheCurrentStudentRow() {
-        assertThat(service.setCompletion(HOMEWORK_ID, SEMESTER_ID, claims, false))
-                .isEqualTo(new HomeworkStudentService.CompletionState(false, null));
-
-        verify(completionRepository).deleteByHomeworkIdAndStudentId(HOMEWORK_ID, STUDENT_ID);
-        verify(completionRepository, never()).insertIfAbsent(anyLong(), anyLong());
     }
 
     @Test

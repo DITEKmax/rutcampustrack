@@ -87,12 +87,19 @@ class HomeworkPaginationLinkTest {
         var result = controller.listHomeworks(11L, 22L, true, pageable, pages).getBody();
 
         assertThat(result).isNotNull();
-        assertThat(result.getRequiredLink("self").getHref())
-                .isEqualTo(
-                        "/api/academic/homeworks?groupId=11&semesterId=22&archived=true&page=0&size=2");
-        assertThat(result.getRequiredLink("next").getHref())
-                .isEqualTo(
-                        "/api/academic/homeworks?groupId=11&semesterId=22&archived=true&page=1&size=2");
+        for (var relation : Map.of("self", "0", "next", "1").entrySet()) {
+            var uri = URI.create(result.getRequiredLink(relation.getKey()).getHref());
+            assertThat(uri.isAbsolute()).isFalse();
+            assertThat(uri.getRawAuthority()).isNull();
+            assertThat(uri.getPath()).isEqualTo("/api/academic/homeworks");
+            var query = UriComponentsBuilder.fromUri(uri).build(true).getQueryParams();
+            assertThat(query).containsOnlyKeys("groupId", "semesterId", "archived", "page", "size");
+            assertThat(query.get("groupId")).containsExactly("11");
+            assertThat(query.get("semesterId")).containsExactly("22");
+            assertThat(query.get("archived")).containsExactly("true");
+            assertThat(query.get("page")).containsExactly(relation.getValue());
+            assertThat(query.get("size")).containsExactly("2");
+        }
     }
 
     private void prepare(PageRequest pageable, long total) {

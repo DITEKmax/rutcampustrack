@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.auth.session.model.AuthRole;
@@ -28,6 +27,8 @@ import ru.rutcampustrack.shared.security.InternalJwtProperties;
 class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired private com.fasterxml.jackson.databind.ObjectMapper mapper;
 
     @Autowired private InternalJwtProperties properties;
 
@@ -52,13 +53,32 @@ class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationT
 
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
-        String token =
-                identityFixture
-                        .select(identityFixture.canonical().adminId(), AuthRole.ADMIN)
-                        .internalToken();
-        MvcResult result =
-                mockMvc.perform(get("/academic/users").header("X-Internal-Token", token))
-                        .andReturn();
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
+        var selected =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", selected.internalToken());
+        var response =
+                http.exchange(
+                        "/academic/users",
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        var page = mapper.readTree(response.getBody());
+        assertThat(page.path("page").path("totalElements").asLong()).isEqualTo(3);
+        var ids = new java.util.HashSet<Long>();
+        page.path("_embedded")
+                .path("userResponseList")
+                .forEach(
+                        row -> {
+                            ids.add(row.path("id").asLong());
+                            assertThat(row.has("passwordHash")).isFalse();
+                            assertThat(row.has("initialPassword")).isFalse();
+                        });
+        assertThat(ids)
+                .containsExactlyInAnyOrder(
+                        identityFixture.canonical().adminId(),
+                        identityFixture.canonical().teacherId(),
+                        identityFixture.canonical().studentId());
     }
 }

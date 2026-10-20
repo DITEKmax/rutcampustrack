@@ -11,14 +11,11 @@ import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.BooleanSupplier;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import ru.rutcampustrack.academic.homework.HomeworkStudentService;
 import ru.rutcampustrack.academic.map.CampusMapReadException;
 import ru.rutcampustrack.academic.map.CampusMapReadModels.Asset;
@@ -31,6 +28,12 @@ import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.BooleanSupplier;
 
 class CampusMapGrpcReadTest {
     private static final UUID SESSION_ID = UUID.fromString("22222222-2222-4222-8222-222222222222");
@@ -82,7 +85,15 @@ class CampusMapGrpcReadTest {
         @SuppressWarnings("unchecked")
         ServerCallStreamObserver<CampusMapAssetChunk> observer =
                 mock(ServerCallStreamObserver.class);
-        when(observer.isCancelled()).thenReturn(false, false, false, true);
+        var cancelled = new java.util.concurrent.atomic.AtomicBoolean();
+        when(observer.isCancelled()).thenAnswer(call -> cancelled.get());
+        org.mockito.Mockito.doAnswer(
+                        call -> {
+                            cancelled.set(true);
+                            return null;
+                        })
+                .when(observer)
+                .onNext(any(CampusMapAssetChunk.class));
 
         Context.current()
                 .withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims())

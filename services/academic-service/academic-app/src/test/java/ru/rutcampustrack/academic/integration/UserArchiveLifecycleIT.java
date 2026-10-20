@@ -776,7 +776,8 @@ RETURNING id
                                                 jdbc.queryForObject(
                                                         """
 SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
-  AND query = 'SELECT id FROM groups WHERE id=$1 FOR UPDATE'
+  AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid=pg_stat_activity.pid
+    AND l.relation='groups'::regclass AND l.mode='RowShareLock' AND l.granted)
   AND ? = ANY(pg_blocking_pids(pid)))
 """,
                                                         Boolean.class,

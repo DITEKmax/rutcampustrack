@@ -3,6 +3,18 @@ package ru.rutcampustrack.academic.semester;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -14,16 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
 
 /** Real route evidence for semester immutability and lock ordering. */
 @AutoConfigureMockMvc
@@ -217,6 +219,129 @@ class SemesterAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
     }
 
     @Test
+    void initialSubjectAssignmentAndSemesterDateMutationCommitOnlyConsistentWholeRows()
+            throws Exception {
+        String subjectName = "Initial subject race " + UUID.randomUUID();
+        LocalDate assignmentStart = fixture.dateFrom().plusDays(20);
+        String assignmentBody =
+                """
+                {"name":"%s","type":"LECTURE","lessonTypes":["LECTURE"],
+                 "initialAssignments":[{"teacherId":%d,"semesterId":%d,"lessonType":"LECTURE",
+                    "validFrom":"%s","validUntilExclusive":null}]}
+                """
+                        .formatted(
+                                subjectName,
+                                fixture.teacher1Id(),
+                                fixture.semesterId(),
+                                assignmentStart);
+        String updateBody =
+                updateBody(
+                        "L5A narrowed semester",
+                        fixture.dateFrom(),
+                        fixture.dateFrom().plusDays(10));
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<Integer>> futures = new ArrayList<>();
+        Callable<Integer> assignment =
+                () -> {
+                    ready.countDown();
+                    start.await(10, TimeUnit.SECONDS);
+                    return mockMvc.perform(
+                                    headman(
+                                            MockMvcRequestBuilders.post("/academic/subjects")
+                                                    .contentType(MediaType.APPLICATION_JSON)
+                                                    .content(assignmentBody),
+                                            fixture))
+                            .andReturn()
+                            .getResponse()
+                            .getStatus();
+                };
+        Callable<Integer> semesterUpdate =
+                () -> {
+                    ready.countDown();
+                    start.await(10, TimeUnit.SECONDS);
+                    return mockMvc.perform(
+                                    admin(
+                                            MockMvcRequestBuilders.put(
+                                                            "/academic/semesters/{id}",
+                                                            fixture.semesterId())
+                                                    .contentType(MediaType.APPLICATION_JSON)
+                                                    .content(updateBody),
+                                            fixture))
+                            .andReturn()
+                            .getResponse()
+                            .getStatus();
+                };
+        try {
+            futures.add(executor.submit(assignment));
+            futures.add(executor.submit(semesterUpdate));
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            int assignmentStatus = futures.get(0).get(30, TimeUnit.SECONDS);
+            int updateStatus = futures.get(1).get(30, TimeUnit.SECONDS);
+            assertThat(
+                            (assignmentStatus == 400 && updateStatus == 200)
+                                    || (assignmentStatus == 201 && updateStatus == 409))
+                    .isTrue();
+
+            int assignmentCount =
+                    jdbcTemplate.queryForObject(
+                            "SELECT COUNT(*) FROM assignments a JOIN subjects s ON"
+                                + " s.id=a.subject_id WHERE s.name=?",
+                            Integer.class,
+                            subjectName);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT count(*) FROM subjects WHERE name=?",
+                                    Long.class,
+                                    subjectName))
+                    .isEqualTo(assignmentStatus == 201 ? 1L : 0L);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT count(*) FROM subject_lesson_types t JOIN subjects s ON"
+                                        + " s.id=t.subject_id WHERE s.name=?",
+                                    Long.class,
+                                    subjectName))
+                    .isEqualTo(assignmentStatus == 201 ? 1L : 0L);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT count(*) FROM assignments a JOIN subjects s ON"
+                                        + " s.id=a.subject_id JOIN semesters sem ON"
+                                        + " sem.id=a.semester_id WHERE s.name=? AND"
+                                        + " (a.valid_from<sem.date_from OR a.valid_from>sem.date_to"
+                                        + " OR a.valid_until_exclusive>sem.date_to+1)",
+                                    Long.class,
+                                    subjectName))
+                    .isZero();
+            if (updateStatus == 200) {
+                assertThat(assignmentStatus).isEqualTo(400);
+                assertThat(assignmentCount).isZero();
+                assertThat(
+                                jdbcTemplate.queryForObject(
+                                        "SELECT date_to FROM semesters WHERE id = ?",
+                                        LocalDate.class,
+                                        fixture.semesterId()))
+                        .isEqualTo(fixture.dateFrom().plusDays(10));
+            } else {
+                assertThat(updateStatus).isEqualTo(409);
+                assertThat(assignmentStatus).isEqualTo(201);
+                assertThat(assignmentCount).isEqualTo(1);
+                assertThat(
+                                jdbcTemplate.queryForObject(
+                                        "SELECT date_to FROM semesters WHERE id = ?",
+                                        LocalDate.class,
+                                        fixture.semesterId()))
+                        .isEqualTo(fixture.dateTo());
+            }
+        } finally {
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
+    }
+
+    @Test
     void completedSemesterRejectsNameOnlyUpdate() throws Exception {
         LocalDate dateFrom = LocalDate.now(MOSCOW).minusYears(10);
         LocalDate dateTo = dateFrom.plusDays(29);
@@ -256,16 +381,16 @@ class SemesterAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         """
-                        {
-                          "employeeNumber":"%s",
-                          "subjectId":%d,
-                          "groupId":%d,
-                          "semesterId":%d,
-                          "lessonType":"LECTURE",
-                          "validFrom":"%s",
-                          "validUntilExclusive":%s
-                        }
-                        """
+                                        {
+                                          "employeeNumber":"%s",
+                                          "subjectId":%d,
+                                          "groupId":%d,
+                                          "semesterId":%d,
+                                          "lessonType":"LECTURE",
+                                          "validFrom":"%s",
+                                          "validUntilExclusive":%s
+                                        }
+                                        """
                                                 .formatted(
                                                         fixture.employee1(),
                                                         subjectId,

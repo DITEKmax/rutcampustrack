@@ -196,17 +196,27 @@ SELECT
                                             assignmentRepository.findByGroupIdAndSemesterId(
                                                     groupId, semesterId);
                                     long elapsed = (System.nanoTime() - start) / 1_000_000L;
-                                    assertThat(result).isNotEmpty();
+                                    assertThat(result)
+                                            .extracting(row -> row.getId())
+                                            .containsExactlyInAnyOrderElementsOf(
+                                                    expectedIds("assignments"));
+                                    assertThat(result)
+                                            .allMatch(
+                                                    row ->
+                                                            row.getGroupId().equals(groupId)
+                                                                    && row.getSemesterId()
+                                                                            .equals(semesterId));
                                     return elapsed;
                                 })
                         .toArray();
 
+        assertBoundedPlan("assignments");
         long best = LongStream.of(timings).min().orElseThrow();
         log.info("Q2 assignments findBy(group,sem) timings(ms): {} — best={}ms", timings, best);
         assertThat(best)
                 .as(
                         "assignments findByGroupIdAndSemesterId — regression guard for"
-                            + " idx_assignments_group_semester")
+                                + " idx_assignments_group_semester")
                 .isLessThan(QUERY_TIME_LIMIT_MS);
     }
 
@@ -226,15 +236,66 @@ SELECT
                                             homeworkRepository.findByGroupIdAndSemesterId(
                                                     groupId, semesterId);
                                     long elapsed = (System.nanoTime() - start) / 1_000_000L;
-                                    assertThat(result).isNotEmpty();
+                                    assertThat(result)
+                                            .extracting(Homework::getId)
+                                            .containsExactlyInAnyOrderElementsOf(
+                                                    expectedIds("homeworks"));
+                                    assertThat(result)
+                                            .allMatch(
+                                                    row ->
+                                                            row.getGroupId().equals(groupId)
+                                                                    && row.getSemesterId()
+                                                                            .equals(semesterId));
                                     return elapsed;
                                 })
                         .toArray();
 
+        assertBoundedPlan("homeworks");
         long best = LongStream.of(timings).min().orElseThrow();
         log.info("Q3 hw findBy(group,sem) timings(ms): {} — best={}ms", timings, best);
         assertThat(best)
                 .as("hw findByGroupIdAndSemesterId — regression guard for idx_hw_group_semester")
                 .isLessThan(QUERY_TIME_LIMIT_MS);
+    }
+
+    private List<Long> expectedIds(String table) {
+        var ids = new java.util.ArrayList<Long>();
+        if (table.equals("assignments")) {
+            for (long slot = 1; slot <= 30; slot++) ids.add(900000L + 10 * 120 + 2 * 30 + slot);
+        } else {
+            for (long subject = 1; subject <= 15; subject++)
+                for (long homework = 1; homework <= 2; homework++)
+                    ids.add(900000L + 10 * 120 + 2 * 30 + subject * 2 + homework);
+        }
+        return ids;
+    }
+
+    private void assertBoundedPlan(String table) {
+        String plan =
+                jdbc.queryForObject(
+                        "EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) SELECT * FROM "
+                                + table
+                                + " WHERE group_id=? AND semester_id=?",
+                        String.class,
+                        900010L,
+                        900002L);
+        try {
+            var node =
+                    new com.fasterxml.jackson.databind.ObjectMapper()
+                            .readTree(plan)
+                            .get(0)
+                            .path("Plan");
+            assertThat(node.path("Actual Rows").asLong()).isEqualTo(30);
+            assertThat(work(node)).isLessThanOrEqualTo(120);
+        } catch (java.io.IOException error) {
+            throw new AssertionError(error);
+        }
+    }
+
+    private long work(com.fasterxml.jackson.databind.JsonNode node) {
+        long rows =
+                node.path("Actual Rows").asLong() + node.path("Rows Removed by Filter").asLong();
+        for (var child : node.path("Plans")) rows += work(child);
+        return rows;
     }
 }

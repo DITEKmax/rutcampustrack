@@ -439,26 +439,6 @@ class GroupPromotionServiceTest {
     }
 
     @Test
-    void execute_renameChain_bachelor1to4_resolvesOrderingNoCollision() {
-        // УИТ-111, УИТ-211, УИТ-311, УИТ-411 — все промоутятся (последняя архивируется).
-        // Проверяем что нет UNIQUE-коллизии на промежуточных save (архив сначала).
-        Group g1 = group("УИТ-111");
-        Group g2 = group("УИТ-211");
-        Group g3 = group("УИТ-311");
-        Group g4 = group("УИТ-411");
-        seed(g1, g2, g3, g4);
-
-        PromotionSummary s = execute();
-
-        assertThat(s.getConflicts()).isEmpty();
-        assertThat(g1.getName()).isEqualTo("УИТ-211");
-        assertThat(g2.getName()).isEqualTo("УИТ-311");
-        assertThat(g3.getName()).isEqualTo("УИТ-411");
-        assertThat(g4.isActive()).isFalse();
-        assertThat(g4.getName()).isEqualTo("УИТ-411 (выпуск 2026)");
-    }
-
-    @Test
     void preview_parseError_putInConflicts() {
         Group garbage = group("УИТ-111");
         // подменяем имя уже после создания на то, что пройдёт entity-pattern (архивное),

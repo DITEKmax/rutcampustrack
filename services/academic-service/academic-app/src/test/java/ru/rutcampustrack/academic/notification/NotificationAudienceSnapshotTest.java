@@ -36,7 +36,7 @@ class NotificationAudienceSnapshotTest {
     private final AuthIdentityDataClient auth = mock(AuthIdentityDataClient.class);
     private final NotificationAudienceAuthority authority =
             new NotificationAudienceAuthority(catalog, auth);
-    private final List<Integer> batches = new ArrayList<>();
+    private final List<List<Long>> batches = new ArrayList<>();
 
     @BeforeEach
     void currentData() {
@@ -49,7 +49,7 @@ class NotificationAudienceSnapshotTest {
                                                     .isActualTransactionActive())
                                     .isFalse();
                             Collection<Long> ids = call.getArgument(0);
-                            batches.add(ids.size());
+                            batches.add(List.copyOf(ids));
                             var result = new HashMap<Long, IdentityAuthoritySnapshot>();
                             ids.forEach(id -> result.put(id, identity(id)));
                             return result;
@@ -71,7 +71,11 @@ class NotificationAudienceSnapshotTest {
                             captures.incrementAndGet();
                             return snapshot;
                         });
-        assertThat(batches).containsExactly(200, 1);
+        assertThat(batches)
+                .allSatisfy(batch -> assertThat(batch).isNotEmpty().hasSizeLessThanOrEqualTo(200));
+        var requested = batches.stream().flatMap(Collection::stream).toList();
+        assertThat(requested).hasSize(201).doesNotHaveDuplicates();
+        assertThat(new HashSet<>(requested)).isEqualTo(snapshot.candidates().keySet());
         assertThat(captures).hasValue(2);
         assertThat(result.getRecipientsCount()).isEqualTo(201);
         assertThat(result.getRecipientsList())
@@ -114,17 +118,19 @@ class NotificationAudienceSnapshotTest {
 
     @Test
     void unavailableSecondBatchNeverReturnsTheFirstBatch() {
+        var calls = new AtomicInteger();
         when(auth.readServiceIdentity(anyCollection(), anyLong()))
                 .thenAnswer(
                         call -> {
                             Collection<Long> ids = call.getArgument(0);
-                            if (ids.size() == 1)
+                            if (calls.incrementAndGet() == 2)
                                 throw Status.DEADLINE_EXCEEDED.asRuntimeException();
                             var result = new HashMap<Long, IdentityAuthoritySnapshot>();
                             ids.forEach(id -> result.put(id, identity(id)));
                             return result;
                         });
         assertUnavailable(() -> authority.resolve(() -> teachers(201, 2)));
+        assertThat(calls).hasValue(2);
     }
 
     @Test

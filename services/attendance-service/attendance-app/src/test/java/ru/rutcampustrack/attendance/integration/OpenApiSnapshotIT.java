@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -50,12 +51,18 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
 
         String expected =
                 normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
-        assertThat(actual)
+        ObjectMapper comparisonMapper =
+                new ObjectMapper()
+                        .enable(
+                                DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
+                                DeserializationFeature.FAIL_ON_TRAILING_TOKENS,
+                                DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        assertThat(comparisonMapper.readTree(actual))
                 .as(
                         "OpenAPI spec drifted from committed snapshot. "
                                 + "To regenerate: ./gradlew :services:attendance-service:attendance-app:integrationTest "
                                 + "--tests OpenApiSnapshotIT -Dopenapi.snapshot.update=true")
-                .isEqualTo(expected);
+                .isEqualTo(comparisonMapper.readTree(expected));
     }
 
     private String fetchAndNormalize() throws Exception {
@@ -63,7 +70,11 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
         String body = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(body).isNotBlank();
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper =
+                new ObjectMapper()
+                        .enable(
+                                DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
+                                DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
         ObjectNode root = (ObjectNode) mapper.readTree(body);
         root.remove("servers");
 

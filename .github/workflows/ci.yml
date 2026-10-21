@@ -2589,12 +2589,12 @@ jobs:
           method = 'apiDocsMatchesSnapshot'
           app = pathlib.Path('services/attendance-service/attendance-app')
           test_source = app / 'src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java'
-          test_sha = 'f7f908c97355eb58786f6da1273a66943a897122c68f7f401c1e01ce0a77126a'
+          test_sha = 'cbfb5fc2fe25e11424e50ea6e0b5a7ddcf4a4a9750a20a5bcdd57a3b962533fe'
           source = test_source.read_bytes()
           assert hashlib.sha256(source).hexdigest() == test_sha
           assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
           lines = source.decode().splitlines()
-          target = '                .isEqualTo(expected);'
+          target = '                .isEqualTo(comparisonMapper.readTree(expected));'
           assert lines.count(target) == 1
           expected_line = lines.index(target) + 1
           report = pathlib.Path('build/ci-test-outcomes/attendance-service/integrationTest/safe-outcomes.json')

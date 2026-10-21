@@ -14,6 +14,9 @@ from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import aio_pika
+from aiormq.abc import ChannelFrame
+from aiormq.connection import Connection as NativeConnection
+from pamqp.commands import Connection as ConnectionFrames
 
 from bot.consumers import event_consumer as consumer
 
@@ -33,6 +36,33 @@ PREPARED = {
         "recipients": [{"user_id": 1, "roles": ["STUDENT", "TEACHER"]}],
     },
 }
+
+
+def close_ok_observer(original, waiters):
+    async def observed(native, frame):
+        await original(native, frame)
+        if type(frame) is ConnectionFrames.CloseOk:
+            signal = waiters.get(native)
+            if signal is not None:
+                # Signal in the reader: EOF/local cleanup may cancel the waiting processor.
+                signal.set()
+    return observed
+
+
+async def close_with_barrier(connection, confirmed, waiters):
+    native = connection.transport.connection
+    assert not confirmed.is_set() and native not in waiters
+    waiters[native] = confirmed
+    try:
+        async with asyncio.timeout(2):
+            # aiormq 6.8.1 normally sends this frame after cancelling its reader.
+            # Keep the reader alive until Rabbit confirms all worker channels are gone.
+            await native.write_queue.put(ChannelFrame.marshall(0, [ConnectionFrames.Close(
+                reply_code=200, reply_text="normally closed", class_id=0, method_id=0,
+            )]))
+            await confirmed.wait()
+    finally:
+        waiters.pop(native, None)
 
 
 async def phase(url, boundary):
@@ -63,6 +93,7 @@ async def phase(url, boundary):
     interrupted = asyncio.Event()
     completed = asyncio.Event()
     providers = []
+    close_waiters = {}
 
     async def connect(*args, **kwargs):
         nonlocal connection
@@ -92,8 +123,7 @@ async def phase(url, boundary):
     original_commit = transaction_type.commit
 
     async def disconnect():
-        await connection.close()
-        interrupted.set()
+        await close_with_barrier(connection, interrupted, close_waiters)
         raise ConnectionError("synthetic transaction boundary loss")
 
     async def publish(exchange, message, *args, **kwargs):
@@ -118,7 +148,15 @@ async def phase(url, boundary):
 
     task = None
     try:
-        with patch.multiple(consumer, **names), patch.object(consumer.aio_pika, "connect_robust", connect):
+        # Narrow pinned aiormq hook; absent/changed dispatch fails closed, with no fallback.
+        original_close_ok = NativeConnection._Connection__handle_close_ok
+        observed_close_ok = close_ok_observer(original_close_ok, close_waiters)
+        # Cover both worker lifetimes: the native reader captures its handler at startup.
+        with (
+            patch.multiple(consumer, **names),
+            patch.object(consumer.aio_pika, "connect_robust", connect),
+            patch.object(NativeConnection, "_Connection__handle_close_ok", observed_close_ok),
+        ):
             with (
                 patch.object(publish_type, "publish", publish),
                 patch.object(aio_pika.IncomingMessage, "ack", ack),
@@ -126,11 +164,12 @@ async def phase(url, boundary):
             ):
                 task = asyncio.create_task(consumer.start_consumer(url, dispatcher, guard))
                 await asyncio.wait_for(interrupted.wait(), 8)
+                await connection.close()  # Close local channels before iterator cancellation.
                 task.cancel()
                 await asyncio.gather(task, return_exceptions=True)
-            # Independent channel reads durable broker contents after the broken worker is gone.
+            # CloseOk proves broker requeue is settled before independent durable reads.
             original = await queue.get(fail=False, timeout=2)
-            assert original is not None, "broker lost both original and projection"
+            assert original is not None, "no message after broker connection close confirmation"
             observed = json.loads(original.body)
             assert await queue.get(fail=False, timeout=2) is None, "broker retained both original and projection"
             is_prepared = "_bot_prepared" in observed
@@ -140,22 +179,23 @@ async def phase(url, boundary):
             if is_prepared:
                 assert original.exchange == "" and original.routing_key == prefix
             await original.nack(requeue=True)
-            # Guard completion precedes automatic ACK and TX commit. Observe the real replay
-            # commit response before cancellation can close its transport and requeue delivery.
+            # Observe replay commit and broker connection close before cancellation/readback.
             replay_committed = asyncio.Event()
 
             async def replay_commit(transaction, *args, **kwargs):
                 result = await original_commit(transaction, *args, **kwargs)
                 if completed.is_set():
-                    replay_committed.set()
+                    await close_with_barrier(connection, replay_committed, close_waiters)
                 return result
 
             with patch.object(transaction_type, "commit", replay_commit):
                 task = asyncio.create_task(consumer.start_consumer(url, dispatcher, guard))
                 await asyncio.wait_for(replay_committed.wait(), 8)
-                assert completed.is_set() and providers == [EVENT["event_id"]]
+                await connection.close()  # Close local channels before iterator cancellation.
                 task.cancel()
                 await asyncio.gather(task, return_exceptions=True)
+            # Include any prefetched processing that raced with the parent's cancellation.
+            assert completed.is_set() and providers == [EVENT["event_id"]]
             assert await asyncio.wait_for(queue.get(fail=False, timeout=2), 3) is None
             return {
                 "boundary": boundary,
@@ -165,11 +205,11 @@ async def phase(url, boundary):
                 "replay_provider_deliveries": len(providers),
             }
     finally:
+        if connection is not None:
+            await connection.close()
         if task is not None and not task.done():
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
-        if connection is not None:
-            await connection.close()
         # Only this run's UUID topology is removed.
         await channel.queue_delete(prefix)
         await channel.queue_delete(names["DLQ_QUEUE_NAME"])

@@ -33,9 +33,9 @@ _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 def prepared_native_failure(raw, source):
     """Bounded terminal signature only; teardown can mask an earlier failure."""
     unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
-    if type(raw) is not bytes or len(raw) > 65536 or type(source) is not bytes or len(source) != 7462:
+    if type(raw) is not bytes or len(raw) > 65536 or type(source) is not bytes or len(source) != 9443:
         return unknown
-    if hashlib.sha256(source).hexdigest() != "1aac406f02799b8cc9cc44903cce374e62df0001ef389b5e94de3daa19f35bd6":
+    if hashlib.sha256(source).hexdigest() != "10cfca8c9631ba8eeabe8084e0cf1599f48537f3bbbe900d95ee2fa19a752a4d":
         return unknown
     try:
         text = raw.decode("utf-8").replace("\r\n", "\n")
@@ -60,18 +60,20 @@ def prepared_native_failure(raw, source):
             )
         }
         stages = {
-            ("<module>", 16): "MODULE_IMPORT", ("<module>", 18): "MODULE_IMPORT",
-            **{("phase", line): "OBSERVER_CONNECT" for line in (47, 48)},
-            **{("phase", line): "OBSERVER_TOPOLOGY" for line in (49, 50, 51, 59)},
-            ("phase", 60): "ORIGIN_PUBLISH", ("phase", 128): "WAIT_FIRST_DISCONNECT",
-            ("phase", 132): "DURABLE_READ", ("phase", 133): "DURABLE_ORIGINAL_PRESENT",
-            ("phase", 134): "DURABLE_DECODE", ("phase", 135): "DURABLE_SINGLE_MESSAGE",
-            ("phase", 137): "DURABLE_ENVELOPE", ("phase", 138): "DURABLE_PROJECTION_CUTPOINT",
-            ("phase", 139): "DURABLE_NO_EARLY_COMPLETION",
-            ("phase", 141): "DURABLE_QUEUE_PROVENANCE", ("phase", 142): "DURABLE_REQUEUE",
-            ("phase", 155): "WAIT_REPLAY_COMMIT",
-            **{("phase", line): "REPLAY_OUTCOME_CHECK" for line in (156, 159)},
-            **{("phase", line): "PROBE_TEARDOWN" for line in (170, 172, 174, 175, 176, 177, 178)},
+            **{("<module>", line): "MODULE_IMPORT" for line in (16, 17, 18, 19, 21)},
+            **{("phase", line): "OBSERVER_CONNECT" for line in (77, 78)},
+            **{("phase", line): "OBSERVER_TOPOLOGY" for line in (79, 80, 81, 89)},
+            ("phase", 90): "ORIGIN_PUBLISH", ("phase", 152): "BROKER_CLOSE_HOOK",
+            ("phase", 166): "WAIT_FIRST_DISCONNECT", ("phase", 171): "DURABLE_READ",
+            ("phase", 172): "DURABLE_ORIGINAL_PRESENT", ("phase", 173): "DURABLE_DECODE",
+            ("phase", 174): "DURABLE_SINGLE_MESSAGE", ("phase", 176): "DURABLE_ENVELOPE",
+            ("phase", 177): "DURABLE_PROJECTION_CUTPOINT", ("phase", 178): "DURABLE_NO_EARLY_COMPLETION",
+            ("phase", 180): "DURABLE_QUEUE_PROVENANCE", ("phase", 181): "DURABLE_REQUEUE",
+            ("phase", 193): "WAIT_REPLAY_COMMIT",
+            **{("phase", line): "REPLAY_OUTCOME_CHECK" for line in (198, 199)},
+            **{("phase", line): "WORKER_CLOSE" for line in (167, 194)},
+            **{("close_with_barrier", line): "BROKER_CLOSE_CONFIRMATION" for line in (54, 57, 60, 63)},
+            **{("phase", line): "PROBE_TEARDOWN" for line in (209, 212, 214, 215, 216, 217, 218)},
         }
         expected_path = str(ROOT / "services/notification-bot/tests/prepared_broker_probe.py")
         source_lines = source.decode("utf-8").splitlines()
@@ -272,7 +274,7 @@ def prepared_transaction_contract(docker):
                     errors.seek(0)
                     native_raw = errors.read(65537)
                     with (ROOT / "services/notification-bot/tests/prepared_broker_probe.py").open("rb") as public_source:
-                        native_source = public_source.read(7463)
+                        native_source = public_source.read(9444)
                     _STATE["native_failure"] = prepared_native_failure(native_raw, native_source)
                 except Exception:  # noqa: BLE001 -- optional diagnostics must never mask the original failure
                     pass

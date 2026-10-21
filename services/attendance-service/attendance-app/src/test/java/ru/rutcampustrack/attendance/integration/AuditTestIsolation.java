@@ -1,11 +1,14 @@
 package ru.rutcampustrack.attendance.integration;
 
+import static ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest.MONGODB;
+import static ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest.RABBITMQ;
+
 import org.springframework.test.context.DynamicPropertyRegistry;
 
 import java.util.UUID;
 
 /** Own runtime namespaces for audit integration tests; production initialization stays enabled. */
-public final class AuditTestIsolation extends AbstractAttendanceIntegrationTest {
+public final class AuditTestIsolation {
     private AuditTestIsolation() {}
 
     public static void register(DynamicPropertyRegistry registry, String owner, int redisDatabase) {

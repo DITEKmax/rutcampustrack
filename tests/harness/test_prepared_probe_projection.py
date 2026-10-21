@@ -1,5 +1,6 @@
 """Finite prepared-probe projection controls; no Docker, Rabbit, bot or provider execution."""
 import ast
+import asyncio
 import hashlib
 import importlib.util
 import json
@@ -85,6 +86,86 @@ class PreparedProjectionControls(unittest.TestCase):
             self.exercise(json.dumps(receipt()).encode(), cleanup=1)
 
 
+class PreparedCloseBarrierControls(unittest.IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Load only the two protocol helpers; no bot, aio-pika or broker imports.
+        tree = ast.parse((ROOT / 'services/notification-bot/tests/prepared_broker_probe.py').read_bytes())
+        selected = [node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and node.name in {'close_ok_observer', 'close_with_barrier'}]
+        class Close:
+            def __init__(self, **fields):
+                self.fields = fields
+        class CloseOk:
+            pass
+        cls.frames = SimpleNamespace(Close=Close, CloseOk=CloseOk)
+        cls.helpers = {'asyncio': asyncio, 'ConnectionFrames': cls.frames,
+                       'ChannelFrame': SimpleNamespace(marshall=lambda channel, frames: (channel, frames))}
+        exec(compile(ast.Module(body=selected, type_ignores=[]), '<pure-close-barrier>', 'exec'), cls.helpers)
+
+    async def asyncSetUp(self):
+        class Native:
+            def __init__(self):
+                self.write_queue = asyncio.Queue()
+        self.native = Native()
+        self.foreign = Native()
+        self.connection = SimpleNamespace(transport=SimpleNamespace(connection=self.native))
+        self.confirmed = asyncio.Event()
+        self.waiters = {}
+        self.handled = []
+        async def original(native, frame):
+            self.handled.append((native, frame))
+        self.handler = self.helpers['close_ok_observer'](original, self.waiters)
+
+    async def test_deferred_close_ok_requires_own_underlay_and_exact_frame(self):
+        task = asyncio.create_task(self.helpers['close_with_barrier'](
+            self.connection, self.confirmed, self.waiters))
+        try:
+            channel, frames = await self.native.write_queue.get()
+            self.assertEqual(channel, 0)
+            self.assertEqual(len(frames), 1)
+            self.assertIs(type(frames[0]), self.frames.Close)
+            self.assertEqual(frames[0].fields, {'reply_code': 200, 'reply_text': 'normally closed',
+                                               'class_id': 0, 'method_id': 0})
+            self.assertFalse(self.confirmed.is_set())
+            self.assertFalse(task.done())
+            await self.handler(self.foreign, self.frames.CloseOk())
+            await self.handler(self.native, self.frames.Close(reply_code=200))
+            self.assertFalse(self.confirmed.is_set())
+            self.assertFalse(task.done())
+            await self.handler(self.native, self.frames.CloseOk())
+            await task
+            self.assertTrue(self.confirmed.is_set())
+            self.assertEqual(self.waiters, {})
+            self.assertEqual(len(self.handled), 3)
+        finally:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    async def test_reader_confirmation_survives_waiting_processor_cancellation(self):
+        task = asyncio.create_task(self.helpers['close_with_barrier'](
+            self.connection, self.confirmed, self.waiters))
+        await self.native.write_queue.get()
+        await self.handler(self.native, self.frames.CloseOk())
+        task.cancel()  # Model EOF cleanup before the processor resumes from Event.wait().
+        await asyncio.gather(task, return_exceptions=True)
+        self.assertTrue(self.confirmed.is_set())
+        self.assertEqual(self.waiters, {})
+
+    async def test_missing_close_ok_and_preset_signal_fail_closed(self):
+        original_timeout = asyncio.timeout
+        with patch.object(asyncio, 'timeout', side_effect=lambda seconds: original_timeout(0)) as bounded:
+            with self.assertRaises(TimeoutError):
+                await self.helpers['close_with_barrier'](self.connection, self.confirmed, self.waiters)
+        bounded.assert_called_once_with(2)
+        self.assertFalse(self.confirmed.is_set())
+        self.assertEqual(self.waiters, {})
+        self.confirmed.set()
+        with self.assertRaises(AssertionError):
+            await self.helpers['close_with_barrier'](self.connection, self.confirmed, self.waiters)
+        self.assertEqual(self.waiters, {})
+
+
 class NativeFailureProjectionControls(unittest.TestCase):
     exercise = PreparedProjectionControls.exercise
 
@@ -108,7 +189,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
         cls.gradle_parent = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
                                  and node.name == 'run_application_gradle')
 
-    def trace(self, line=128, function='phase', category='TimeoutError', path=None):
+    def trace(self, line=166, function='phase', category='TimeoutError', path=None):
         source_line = self.probe_source.decode().splitlines()[line - 1].strip()
         path = path or str(ROOT / 'services/notification-bot/tests/prepared_broker_probe.py')
         return ('Traceback (most recent call last):\n'
@@ -141,19 +222,21 @@ class NativeFailureProjectionControls(unittest.TestCase):
         frozen = self.trace().replace(b'Traceback (most recent call last):\n',
                                      b'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n')
         self.assertEqual(contract.prepared_native_failure(frozen, self.probe_source)['source_stage'], 'WAIT_FIRST_DISCONNECT')
-        for line, function, stage in [(16, '<module>', 'MODULE_IMPORT'), (47, 'phase', 'OBSERVER_CONNECT'),
-                                      (51, 'phase', 'OBSERVER_TOPOLOGY'), (60, 'phase', 'ORIGIN_PUBLISH'),
-                                      (132, 'phase', 'DURABLE_READ'), (133, 'phase', 'DURABLE_ORIGINAL_PRESENT'),
-                                      (134, 'phase', 'DURABLE_DECODE'), (135, 'phase', 'DURABLE_SINGLE_MESSAGE'),
-                                      (137, 'phase', 'DURABLE_ENVELOPE'), (138, 'phase', 'DURABLE_PROJECTION_CUTPOINT'),
-                                      (139, 'phase', 'DURABLE_NO_EARLY_COMPLETION'),
-                                      (141, 'phase', 'DURABLE_QUEUE_PROVENANCE'), (142, 'phase', 'DURABLE_REQUEUE'),
-                                      (155, 'phase', 'WAIT_REPLAY_COMMIT'),
-                                      (159, 'phase', 'REPLAY_OUTCOME_CHECK'), (174, 'phase', 'PROBE_TEARDOWN')]:
+        for line, function, stage in [(16, '<module>', 'MODULE_IMPORT'), (77, 'phase', 'OBSERVER_CONNECT'),
+                                      (81, 'phase', 'OBSERVER_TOPOLOGY'), (90, 'phase', 'ORIGIN_PUBLISH'),
+                                      (171, 'phase', 'DURABLE_READ'), (172, 'phase', 'DURABLE_ORIGINAL_PRESENT'),
+                                      (173, 'phase', 'DURABLE_DECODE'), (174, 'phase', 'DURABLE_SINGLE_MESSAGE'),
+                                      (176, 'phase', 'DURABLE_ENVELOPE'), (177, 'phase', 'DURABLE_PROJECTION_CUTPOINT'),
+                                      (178, 'phase', 'DURABLE_NO_EARLY_COMPLETION'),
+                                      (180, 'phase', 'DURABLE_QUEUE_PROVENANCE'), (181, 'phase', 'DURABLE_REQUEUE'),
+                                      (193, 'phase', 'WAIT_REPLAY_COMMIT'),
+                                      (199, 'phase', 'REPLAY_OUTCOME_CHECK'), (214, 'phase', 'PROBE_TEARDOWN'),
+                                      (152, 'phase', 'BROKER_CLOSE_HOOK'), (167, 'phase', 'WORKER_CLOSE'),
+                                      (63, 'close_with_barrier', 'BROKER_CLOSE_CONFIRMATION')]:
             result = contract.prepared_native_failure(self.trace(line, function), self.probe_source)
             self.assertEqual(result['source_stage'], stage)
             self.assert_closed(result)
-        chain = self.trace() + b'\nDuring handling of the above exception, another exception occurred:\n\n' + self.trace(174)
+        chain = self.trace() + b'\nDuring handling of the above exception, another exception occurred:\n\n' + self.trace(214)
         result = contract.prepared_native_failure(chain, self.probe_source)
         self.assertEqual(result['source_stage'], 'PROBE_TEARDOWN')
         self.assert_closed(result)  # Terminal teardown signature does not assert the earlier first cause.
@@ -167,7 +250,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
             self.assertEqual(contract.prepared_native_failure(malformed, self.probe_source), unknown)
         self.assertEqual(contract.prepared_native_failure(raw, self.probe_source + b' '), unknown)
         self.assertEqual(contract.prepared_native_failure(raw, b''), unknown)
-        for forged in [self.trace(path='/unowned/prepared_broker_probe.py'), self.trace(129), self.trace(function='main')]:
+        for forged in [self.trace(path='/unowned/prepared_broker_probe.py'), self.trace(168), self.trace(function='main')]:
             result = contract.prepared_native_failure(forged, self.probe_source)
             self.assertEqual(result['source_stage'], 'UNKNOWN')
             self.assert_closed(result)
@@ -409,18 +492,27 @@ class NativeFailureProjectionControls(unittest.TestCase):
             source.parent.mkdir(parents=True)
             source.write_bytes(self.test_source)
             report.parent.mkdir(parents=True)
-            with patch.dict(self.pipeline, ROOT=root):
-                started = time.time_ns()
+            with patch.dict(self.pipeline, ROOT=root, time=SimpleNamespace(time_ns=lambda: ended)):
+                started = ended = time.time_ns()
                 self.assertEqual(read(started), absent)
                 report.write_bytes(self.junit())
+                # Bound the real fixture by its filesystem clock, including coarse timestamps.
+                metadata = report.stat()
+                started = min(metadata.st_mtime_ns, metadata.st_ctime_ns)
+                ended = max(metadata.st_mtime_ns, metadata.st_ctime_ns)
                 with patch.object(os, 'open', wraps=os.open) as opened:
                     self.assertEqual(read(started), {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
                                                     'admission_reason': 'SIGNATURE_CLASSIFIED'})
                 opened.assert_called_once_with(report, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
-                self.assertEqual(read(time.time_ns() + 1_000_000_000), absent)
+                ended += 1
+                self.assertEqual(read(ended), absent)
                 os.utime(report, ns=(1, 1))
+                ended = max(ended, report.stat().st_ctime_ns)
                 self.assertEqual(read(started), absent)
-                os.utime(report, ns=(time.time_ns() + 1_000_000_000,) * 2)
+                os.utime(report, ns=(ended + 1_000_000_000,) * 2)
+                metadata = report.stat()
+                started = min(metadata.st_mtime_ns, metadata.st_ctime_ns) - 1
+                ended = metadata.st_mtime_ns - 1
                 self.assertEqual(read(started), absent)
                 report.unlink()
                 report.symlink_to(source)
@@ -435,6 +527,9 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 report.write_bytes(b'x' * (1024**2 + 1))
                 self.assertEqual(read(started), unknown)
                 report.write_bytes(self.junit())
+                metadata = report.stat()
+                started = min(metadata.st_mtime_ns, metadata.st_ctime_ns)
+                ended = max(metadata.st_mtime_ns, metadata.st_ctime_ns)
                 real_fstat = os.fstat
                 count = 0
                 def changed(fd):

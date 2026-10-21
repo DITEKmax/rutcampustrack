@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
  * <p>Attendance использует {@link org.springframework.test.web.servlet.MockMvc} из {@link
  * AbstractAttendanceIntegrationTest} (TestRestTemplate не настроен).
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
 
     private static final String SERVICE_NAME = "attendance";

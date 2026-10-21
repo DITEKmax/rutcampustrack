@@ -122,7 +122,8 @@ SELECT assignment_id, group_id, subject_id, semester_id, 700, 'lecture',
                   FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
                  WHERE si.group_id >= 900000
                 """,
-                weekStart, WEEKS);
+                weekStart,
+                WEEKS);
 
         // lessons: for each schedule_item × 20 weeks = 12000 rows.
         jdbc.update(
@@ -175,7 +176,9 @@ INSERT INTO schedule_assignment_fences(assignment_id,group_id,subject_id,semeste
     lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive)
 VALUES (950001,900010,99,1,700,'lecture',?,?,?)
 """,
-                fenceFrom, fenceFrom.plusYears(1), fenceFrom.plusYears(1));
+                fenceFrom,
+                fenceFrom.plusYears(1),
+                fenceFrom.plusYears(1));
         LocalDate oneOffDate = weekStart.plusDays(5);
         long origin =
                 jdbc.queryForObject(

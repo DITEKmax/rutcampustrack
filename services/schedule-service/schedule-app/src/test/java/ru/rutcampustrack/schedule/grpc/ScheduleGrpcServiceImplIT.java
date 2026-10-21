@@ -206,7 +206,9 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         LocalDate from =
                 jdbcTemplate
                         .queryForObject("SELECT CURRENT_DATE", LocalDate.class)
-                        .with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY));
+                        .with(
+                                java.time.temporal.TemporalAdjusters.next(
+                                        java.time.DayOfWeek.MONDAY));
         org.mockito.Mockito.when(clock.instant())
                 .thenReturn(
                         from.minusDays(1)

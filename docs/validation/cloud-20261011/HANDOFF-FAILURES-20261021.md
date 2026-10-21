@@ -1,79 +1,57 @@
-# PR2 — закрытая диагностика после5033
+# PR2 — уточнение закрытой диагностики на базе a6ff
 
-**SOURCE_READY, runtime readiness BLOCKED.** Цель — установить причины оставшихся failures и исправлять подтверждённые ошибки без ослабления поведения. Source approval не означает готовность PR. Merge/main/deploy запрещены; Deploy257646584 disabled_manually. Audit94DELETE/169REWRITE исторически завершён как source implementation, новой кампании нет.
+**SOURCE_READY; runtime readiness BLOCKED.** Оставшиеся failures не объявляются исправленными по source approval. Merge/main/deploy запрещены; Deploy257646584 disabled_manually. Предыдущая история и packets сохранены в Git на a6ff и5033; audit94/169 не возобновляется.
 
-Main/merge-base3908fad9624f97aec8891fc79338ceb6b0616bf3. Предыдущий опубликованный HEAD84e28aa0006a64557046eeb4154854dcc4c77a63/sourcec843ca3fd181a10c496a9133c8540f3552ed5ee8. Новый source **b31bfc2b25a3bbc4535f56e94e34b292bff63579**. После source меняются только CURRENT/HANDOFF; final docs HEAD отдельный. Подробный предыдущий handoff с Notification/native evidence, CI9 и semantic OpenAPI review сохранён в Git на5033.
+Main/merge-base3908fad9624f97aec8891fc79338ceb6b0616bf3. Предыдущий опубликованный HEADa6ffb068f8ae5a53c600860528757285b26472bf/sourceb31bfc2b25a3bbc4535f56e94e34b292bff63579. Новый executable source **9e10a6c042e78d2cade243012702cf7fb2d3e683**. После source только CURRENT/HANDOFF; final documentation HEAD отдельный.
 
-## 84e: собственная workflow-size regression и correction
+## Что установлено на a6ff
 
-Push39577619176 на84e завершён FAILURE до jobs; check_suite107252273721 содержит0 check runs. PR CI не создан. Workflow вырос с510662 до514209 UTF-8 bytes, что превышает [официальный500KB limit](https://docs.github.com/en/actions/reference/limits) (512000B). YAML parse этот предел не проверил. Exact hosted annotation недоступна; нарушение размера независимо доказано. Это новый дефект собственного diagnostic package, не Attendance assertion или environment cause.
+Собственный workflow-size дефект84e закрыт: вместо0jobs появились нормальные push/PR jobs. CI workflow502389B<=512000, запас9611B. Новый пакет его не меняет. Исходная YAML parse проверка сама по себе не защищала platform limit; historical failure не переименован в Attendance cause.
 
-ONLY Attendance producer вынесен в scripts/ci/attendance-openapi-candidate.py. Его10033B и SHA9b18421e7e281f3cf632b03efdee91ba83d49b2e9aa310e60281e532b73e5046 byte-identical прежнему inline program. Wrapper сохраняет umask077 и python3 в прежнем repository-root cwd; checkout включает новый tracked script. Step name/id/if/env, все другие steps/order/uploads, GITHUB_OUTPUT, relative paths, pins, child flags/timeouts/schema/primary FAIL/privacy неизменны.
-
-Workflow502389B<=512000, запас9611B; SHA63fee721b1635ef62068eb3fda1bbd37190bbdf0aab4394daf6a02ca626f58ba. Exact inverse/program bytes+AST/YAML semantics/compile/mode0644/size и13 pure controls PASS. Первая static проверка остановилась на inherited0600; mode нормализован до0644 до единственного финального13case invocation, program bytes не менялись. Независимая scoped recheck APPROVE_SOURCE. Hosted acceptance PENDING: нужен созданный новый CI run с jobs, старый source approval не заменяет этот факт.
-
-Last read84e09:41UTC: Security39577631989/OpenAPI39577631981 SUCCESS (built-image SKIPPED); Coverage39577632014 in_progress,7success/1failure/1in_progress, failed Attendance Run tests with coverage. Новые case counts/threshold verdict без receipts не придуманы. Это не results5033 и не результаты нового sourceb31.
-
-## Точный delta
-
-Совокупно после5033: три modified source paths и один created,0deleted. Текущая size correction относительно84e — только workflow+новый script:
-
-- .github/workflows/ci.yml
-- scripts/ci/attendance-openapi-candidate.py (created)
-- infra/prometheus/tests/check_pipeline.py
-- tests/harness/test_prepared_probe_projection.py
-
-Product/services/frontend/API/schema/DB/proto/event/generated/dependencies/lockfiles/committed OpenAPI snapshot/scanner policy/thresholds/required gates unchanged. Новых skip/xfail/business retries/deadline increases/exclusions нет.
-
-| Scope | Изменение | Сохранённые guards и проверка |
-| --- | --- | --- |
-| Official Attendance candidate |13 fixed producer stages, FAILED/NOT_APPLICABLE/GENERATED, bounded childExit; один closed safe artifact с current source/run/head/checkout binding. | Source/status/method/hash/XML/assertion/frame/wrapper/baseline/update/schema/change guards прежние; ordinary FAIL сохранён. Early exit0 остаётся0; child check=True/selector/update flag/360s/stdout suppression прежние. Original candidate upload/proof unchanged. Compile/YAML/exact inverse и13 pure controls PASS; independent APPROVE_SOURCE. |
-| Monitoring projection | Один admission_reason из9 static codes различает reader rejection и допущенную неклассифицированную signature. | Category/source_stage после удаления reason IDENTICAL5033; fixed known file/method/source, regular/nofollow/nonblock/read-once/stability/freshness/byte caps/XML guards прежние.11 existing controls и malformed vectors/mutations сохранены;11 pure controls/24 consumer cases PASS; independent APPROVE_SOURCE. |
-
-Stage writer допускается после working/HEAD source/hash/unique-anchor и finite current-context validation. Failure до binding/external kill может не дать artifact: отсутствие UNKNOWN. Exclusive write и stage=true запрещают stale upload; writer error nonzero без exception text. Safe JSON содержит только current binding/configured known selector/hash/fixed stage/state/flags/bounded exit. Никаких XML/exception text/type/stack/body/IDs/credentials/PII/signed URLs. Новые test identities/opaque mapping не добавлены.
-
-Monitoring KNOWN_CASE_NOT_ADMITTED — один общий код для всех unsupported cases, без фактической identity/count. READ_ERROR — coarse qualification прежнего catch, не установленная причина. Terminal signature не становится authenticated first cause. Primary CalledProcessError/FAIL и consumer predicate прежние.
-
-Root лично открыл critical originals/patches/reports и сверил reviewed hashes. Requested independent helpers Sol6.1/high/forknone, actual runtime metadata UNKNOWN. Root sole Git/docs integrator; author checks не выдаются за независимый runtime.
-
-## Последний completed hosted checkpoint5033
-
-Все attempt1; cancellation/rerun0:
+Last metadata read2026-10-21 10:21:47UTC, все attempt1:
 
 | Gate | Run | Actual |
 | --- | --- | --- |
-| Push CI |39565785630|FAILURE23success/2failure: Attendance/Monitoring |
-| PR CI |39565791710|FAILURE23success/2failure: Attendance/Monitoring |
-| Coverage |39565791632|FAILURE8success/1failure/1skip: Attendance test step |
-| Security |39565791684|SUCCESS; built-image scan SKIPPED |
-| OpenAPI |39565791678|SUCCESS |
+| Push CI |39580943358|IN_PROGRESS:19success,2failure,3in_progress; Attendance/Monitoring failed |
+| PR CI |39580956789|IN_PROGRESS:19success,2failure,3in_progress; Attendance/Monitoring failed |
+| Coverage |39580956793|IN_PROGRESS:7success,1failure,1in_progress; Attendance test step failed |
+| Security |39580957032|SUCCESS; built-image scan SKIPPED |
+| OpenAPI |39580956777|SUCCESS |
 
-CI9 push changed-data counterexamples step11 и enum proof14 SUCCESS: прежний SOURCE_ADMISSION mismatch устранён в actual execution; ordinary assertion — другой факт.
+Notification/Schedule/Python jobs SUCCESS. Academic и browser groups ещё выполнялись в данном read. Старый5033 PASS не выдаётся за новый terminal status, aggregate не считается независимой причиной. Coverage fail на выполнении тестов не устанавливает низкий процент покрытия.
 
-Attendance407unit PASS,255IT PASS/2FAILED/0skip в relevant push/PR/Coverage receipts. Один SOURCE_METHOD OpenApiSnapshotIT.apiDocsMatchesSnapshot/sourceSHA cbfb5fc2fe25e11424e50ea6e0b5a7ddcf4a4a9750a20a5bcdd57a3b962533fe; другой ORDINAL_ONLY/classname+method null, не сопоставляется. Closed ASSERTION доказан для opaque Coverage record; named FAILED не устанавливает type/frame/HTTP/JSON delta. JAVA_HEAP не наблюдался; historical OOM cause не закрыта. Official candidate step26 FAILED, artifact отсутствует. Type/frame mismatch сам по себе дал бы exit0: другая producer/child phase пока UNKNOWN. Snapshot не переписывался. Coverage test-step FAIL не означает установленный низкий процент.
+Attendance current originals:407unit PASS;255IT PASS/2FAILED/0skip. Named OpenApiSnapshotIT.apiDocsMatchesSnapshot sourceSHA cbfb5fc2fe25e11424e50ea6e0b5a7ddcf4a4a9750a20a5bcdd57a3b962533fe и один ORDINAL_ONLY, classname/method null. Opaque identity не восстанавливалась.
 
-Monitoring delivery/cleanup PASS. PR exporters PASS; push FAIL/PREPARED_TRANSACTION_NATIVE_CHILD_EXIT/AssertionError/DURABLE_ORIGINAL_PRESENT после immediate GetEmpty. probe_returncode0 — Mongo readiness, не child success. Оба pipeline FAIL/ACTUAL_BACKGROUND_GRADLE/CalledProcessError1; native FAILED_TASK/ATTENDANCE_INTEGRATION_TEST_TASK, background UNKNOWN/UNKNOWN. Новая projection не применяется к старому исходу задним числом.
+Push artifact12337386415 (518B, SHA6172814130bbe2db827990f700604c07d4b56774d98f29a5bbae1730a68d7db7) и PR12337911563 (546B, SHA34f5023fc2d1adc323903f334b5b6a1f56bd16cd1a41df54739f4edd12803306) подтверждают FAILED/GENERATED_CHANGE_GUARDS/childExit0. Все предшествующие source/status/method/XML/assertion/exact-drift-frame/wrapper/baseline guards и generated schema пройдены; original ordinary FAIL сохранён. Это не доказательство выбранного child execution, готового candidate или конкретного failed guard. Source RCA не подтвердила deterministic umask/mode/routing/generated-path culprit; snapshot в PR не менялся.
 
-Client/browser/lifecycle/Python/Academic/Notification/Schedule jobs SUCCESS. Push remaining5 group10PASS/0FAIL/0SKIP, role/logout7PASS/0FAIL/0SKIP. Новые Notification/Schedule case counts без чтения receipts не придуманы; previous84 counts/current-method evidence сохранены в handoff5033. Старый activity failure не объявлен причинно исправленным. Исторические D002/PUT500/429/transferdeadline/heap и другие UNKNOWN не объединены общей причиной.
+Monitoring push artifact12337970581 exporters4phase PASS; PR12338835316 exporters FAIL/PREPARED_TRANSACTION_NATIVE_CHILD_EXIT/AssertionError, native DURABLE_ORIGINAL_PRESENT, cleanup PASS. probe_returncode0 относится к Mongo readiness, не child success. Оба pipeline FAIL/ACTUAL_BACKGROUND_GRADLE/CalledProcessError1/FAILED_TASK/ATTENDANCE_INTEGRATION_TEST_TASK. Background UNKNOWN/UNKNOWN/KNOWN_CASE_NOT_ADMITTED локализует reader rejection до suite/case gate, но не actual condition или Java first cause.
 
-## Source investigation broker barrier: PARTIAL
+## Точная новая delta и сохранённые guarantees
 
-Лично прочитаны production event_consumer, synthetic prepared_broker_probe и public cached aio-pika9.5.3/aiormq6.8.1. Awaited client close отменяет reader/writer и ждёт local callbacks/socket shutdown, не broker Connection.CloseOk/requeue completion. Queue.get timeout2 — RPC/execution timeout; Basic.GetEmpty возвращает None сразу. Immediate GetEmpty после local close не доказывает потерю обоих durable outcomes. Exact actual hosted aiormq binding/cutpoint/broker order UNKNOWN.
+Три modified source/control paths, без новых/удалённых файлов:
 
-Но first-ready wait может пропустить extra outcome, ещё UNACKED старого соединения к следующему snapshot. Даже first+second2s windows при прежних nominal2+2 caps — finite observation без broker-settlement premise. Proposal **PARTIAL/DO_NOT_IMPLEMENT_IN_CURRENT_PACKAGE**. Strict probe/product/four boundaries/exact-one/raw-vs-prepared/payload/provider/replay commit/ACK/cleanup assertions unchanged. Это предел source reasoning, не fixed actual cause. Нового management API, retry policy или real broker experiment нет; local prepared R2 STOP не повторялся.
+- scripts/ci/attendance-openapi-candidate.py: только6 fixed stage assignments перед6 прежними assertions/verify_wrapper. Legacy entry сохранён для начального git-diff exception. Ни выражения guards, ни порядок, child args/check/360s, source/frame pins, binding, official publication, exit/state/proof/privacy не изменены.
+- infra/prometheus/tests/check_pipeline.py: два прежних OR gates разделены в прежнем short-circuit порядке на6 static rejection reasons. Whole-pipeline AST inverse восстанавливает прежние predicates/dispositions/category/source_stage и все остальные statements. Фактические keys/names/counts/values/types/frames/paths/messages/ordinals не выводятся.
+- tests/harness/test_prepared_probe_projection.py: все11 controls сохранены;10 методов AST identical, прежние malformed vectors и mutation prefix сохранены, добавлены11 synthetic shape/priority variants. Result/source_sha consumer и primary FAIL прежние.
 
-## Root offline inspection: только metadata
+Workflows, services/frontends, API/schema/DB/proto/events/generated/dependencies/lockfiles/committed OpenAPI snapshot, exporter/probe, scanner policy/coverage thresholds/required gates byte-identical a6ff. Нет skip/xfail, новых business retries, warming, deadline increases или exclusions.
 
-V1 на clean5033 остановлен через4.109s OWN_DESCENDANT_DETACHED: Gradle single-use daemon отделился от исходной группы. Payload/exit неизвестны, source/index unchanged; post-metadata live Java0/только zombies. Это defect внешнего guard, не Attendance cause. Raw stdout/stderr unread.
+Root лично прочитал changed originals/callers/diff/author proof и независимый combined report. Independent Sol6.1/high review **APPROVE_SOURCE**, report SHA4861f0997d0f601941eb0b6aa3a945f7155abce5246c921735c74ff47d268f76. Actual runtime model/effort UNKNOWN. Source approval не заменяет hosted execution нового9e10.
 
-В новом private v2 guardian исправлены proven parent/start ownership и pidfd cleanup. Init после output-path inverse byte-identical. Bounds unchanged:2CPU/RSS3GiB/wall600s/private128MiB+positive cache growth/diskfloor4GiB/sharedreserve1GiB.40 pure/mock controls PASS/real signals0; independent proposal/final APPROVE_INSPECTION_ONLY. ONE root v2 run COMPLETE16.362s/exit0/guardnull/reapedtrue/source+index unchanged. Peak RSS582959104B/private+cache1515669B.254 external artifacts, Testcontainers1.20.4/coreSHA bb5701004c1c867350f56297b0b34343e3be31fdc7e86fd4683b7d8e3e1f8178/public Ryuk0.11.0;62 task metadata nodes. Safe receipt SHA e9b78983f0065d54357600800230971e6819c8bc7467c8b43006332b48c753ac.
+Проверки: producer compile/exact byte+AST inverse/placement PASS; прежние13 pure controls валидны и переиспользованы. Reviewer нашёл P3 во внешнем v1 adapter:6 новых cases вызывали NameError, а не AssertionError. V1 inputs/results сохранены, утверждение квалифицировано. Новый external v2 adapter передаёт literal sentinel и явно проверяет exact AssertionError; один bounded run только6 corrected cases PASS, source bytes неизменны. V2 receipt SHA1b97c1dce99b52ca313f880095835c575dd5e87e28d3e9d7b3d7babaa4066a9f. Reviewer статически перепроверил v2 и закрыл finding. Это synthetic projection controls, не actual guard/business execution.
 
-Compile/Test/app/DB/Docker/pull0. Это root offline resolution, не actual hosted classpath/native conformance или resource-fit proof. Missing source tags mongo7.0/redis7.2 — CACHE_MISSING, не доказанный NO_FIT. Native/images NOT_RUN_READY; Notification-selected1.21.4/Ryuk0.12.0 не переносится. Дальнейшая необходимость определяется новой closed ordinary CI projection, новый native/pull пакет не готовится.
+Monitoring11 pure controls PASS одним final-byte run0.203s;24 consumer cases PASS; whole-pipeline inverse и retained-oracle checks PASS. Root повторно не гонял unchanged suites. Эти проверки не устанавливают underlying Java cause.
 
-## Custody и продолжение
+## Остаток и ограничения
 
-Cloud running/connected/exec подтверждены; около17GiB RAM/11GiB disk available, swap0, cleanup0. Hosted heap failure не доказывает cloud OOM. Original23 ZIP617/9requested4b3/13original3aa/10original84/7original5033 сохранены без перепаковки; API/run/attempt/head/size/SHA/CRC/path checks выполнены. Current5033 IDs:12329713632,12330820133,12330206539,12330347658,12330766003,12330183166,12330122934. PR/Coverage carrier2a25e5cc157eb32f82a9f0b5da0ec8d9a06518fa: parents main+5033, treea1ce8c045b9567fc783a04405411ed39126139c6 точно tree5033; carrier не переименовывается branch SHA.
+Broker source investigation сохраняет прежний предел: cached aio-pika9.5.3/aiormq6.8.1 awaited close не ждёт broker CloseOk/requeue completion; immediate GetEmpty не доказывает durable loss. Exact hosted binding/order/cutpoint UNKNOWN. First-ready polling может скрыть extra outcome, ещё UNACKED; strict probe и product/four boundaries/replay/ACK/provider/exact-one assertions неизменны. Speculative correction PARTIAL/DO_NOT_IMPLEMENT; local prepared R2 не повторялся.
 
-Exact source manifests/reviews/safe receipts/v1+v2 helpers — в собственной /workspace/work/pr2-failure-corrections-20261021. Ignored evidence не подменяет published source/hosted outcomes. WIP/worktrees/foreign paths/data/ZIPs сохранены. F01–F09/N1/N2/session/live admission/late generation/uncertain keys/authz/CAS/history/outbox/ACK/DLQ/privacy unchanged. B013–B015/rejected Mongo/Chromium equivalents/local prepared R2 STOP не обходились. No raw private reports/logs/real credentials/PII/signed URLs; no production/VPS/SSH/provider/Telegram/migration/secrets/firewall/backup.
+Root offline inspection5033 остаётся только metadata: v1 guardstop, v2 COMPLETE16.362s, Testcontainers1.20.4/public Ryuk0.11.0/254artifacts/62task nodes, compile/Test/app/DB/Docker/pull0. Current a6ff native feasibility:579source inputs5.04MB byte-identical5033, original test всегда требует Mongo/Rabbit/Redis. Image/storage availability, private compile peak и own-container isolation не доказаны. NOT_RUN_READY, а не установленный NO_FIT; новый native/pull пакет не готовился. Прежние128MiB private+positivecachegrowth/1GiB sharedreserve/RSS3GiB/2CPU/diskfloor4GiB не снижались.
 
-Далее: taskdocs-only equivalence, unchanged-policy full-history scanner, expected refs/Deploy readback и один normal push; читать новые ordinary attempt1 statuses/safe artifacts без blind rerun/cancel. Старый PASS/FAIL не приписывать новым bytes. До доказанных фактов не менять product/snapshot/probe. Merge/deploy запрещены.
+Cloud exec работает; около17GiB available RAM/11GiB disk, swap0, cleanup0. Hosted OOM не переносится на cloud host. Все23original ZIP617 и последующие originals/evidence/v1/v2 helpers/worktrees/WIP/foreign data сохранены без перепаковки. Новый a6ff пакет7ZIP получен напрямую штатным artifact tool, API run/attempt/head/size/digest/CRC/paths проверены. Current IDs:12336562028,12337970581,12337386415,12336403478,12337911563,12338835316,12338575251.
+
+PR/Coverage carrieredc639c5925200bb769c9a37a540f33601e8cfd0: parents main+a6ff, treed4ce1ebf91806380f8d9777781fffd31ece1c3bd точно treea6ff. Monitoring source_sha на PR — carrier, не branch head; equivalence доказана, carrier не переименован. Raw private XML/HTML/logs, credentials/PII и signed URLs не читались/публиковались.
+
+F01–F09/N1/N2/session/live admission/late generation/uncertain command keys/authz/CAS/history/outbox/ACK/DLQ/privacy сохранены. Исторические heap/D002/SETUP500/activity/429/transfer deadline и другие UNKNOWN не объединены общей причиной. B013–B015, opaque mapping, rejected Mongo/Chromium equivalents/local prepared R2 STOP сохраняются. Production/VPS/SSH/provider/Telegram/migrations/secrets/firewall/backup исключены.
+
+Далее — unchanged-policy full-history scanner, expected refs/Deploy и отсутствие cancel concurrency в неизменённых workflows; один normal push новой revision, без отмен/слепых reruns. Читать current safe artifacts и исправлять лишь доказанные причины. Ни current red gate, ни новый diagnostic source approval не дают готовности к merge; merge/deploy запрещены.

@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @TestPropertySource(
         properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class AttendanceUserContextFilterStrictModeIT extends AbstractAttendanceIntegrationTest {
     @org.springframework.test.context.DynamicPropertySource
     static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {

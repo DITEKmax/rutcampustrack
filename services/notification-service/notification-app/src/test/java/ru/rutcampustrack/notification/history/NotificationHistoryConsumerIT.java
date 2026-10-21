@@ -200,13 +200,18 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                 .untilAsserted(() -> verify(audienceClient, atLeast(3)).resolve(eq(envelope)));
         await().atMost(ofSeconds(10))
                 .untilAsserted(
-                        () ->
-                                assertThat(
-                                                rabbitAdmin
-                                                        .getQueueInfo(
-                                                                "notification-web.history.dlq")
-                                                        .getMessageCount())
-                                        .isEqualTo(1));
+                        () -> {
+                            assertThat(
+                                            rabbitAdmin
+                                                    .getQueueInfo("notification-web.history.dlq")
+                                                    .getMessageCount())
+                                    .isEqualTo(1);
+                            assertThat(
+                                            rabbitAdmin
+                                                    .getQueueInfo("notification-web.events.dlq")
+                                                    .getMessageCount())
+                                    .isEqualTo(1);
+                        });
         assertThat(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L))).isEmpty();
         Query claimQuery =
                 Query.query(
@@ -214,9 +219,16 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                                 .is(NotificationHistoryConsumer.CONSUMER_ID)
                                 .and("event_id")
                                 .is(eventId));
+        Query deliveryClaimQuery =
+                Query.query(
+                        Criteria.where("consumer_id")
+                                .is(ru.rutcampustrack.notification.event.EventConsumer.CONSUMER_ID)
+                                .and("event_id")
+                                .is(eventId));
         assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION))
                 .isZero();
         assertThat(rabbitTemplate.receive("notification-web.history.dlq")).isNotNull();
+        assertThat(rabbitTemplate.receive("notification-web.events.dlq")).isNotNull();
 
         doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT")))
                 .when(audienceClient)
@@ -229,6 +241,11 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                             assertThat(
                                             mongoTemplate.count(
                                                     claimQuery,
+                                                    MongoIdempotencyStore.DEFAULT_COLLECTION))
+                                    .isEqualTo(1L);
+                            assertThat(
+                                            mongoTemplate.count(
+                                                    deliveryClaimQuery,
                                                     MongoIdempotencyStore.DEFAULT_COLLECTION))
                                     .isEqualTo(1L);
                             assertThat(

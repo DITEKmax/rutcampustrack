@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
@@ -47,6 +48,7 @@ import java.util.List;
  * GeofenceService is mocked to prevent @PostConstruct gRPC calls. AttendanceEventPublisher is spied
  * to verify event publication.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class MarkingIT extends AbstractAttendanceIntegrationTest {
     @org.springframework.test.context.DynamicPropertySource
     static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {

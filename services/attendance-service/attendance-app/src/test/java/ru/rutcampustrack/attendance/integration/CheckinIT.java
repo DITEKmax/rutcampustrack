@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
  * future controller change cannot silently resurrect the old overwrite, deduplication or event
  * path.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class CheckinIT extends AbstractAttendanceIntegrationTest {
     @org.springframework.test.context.DynamicPropertySource
     static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {

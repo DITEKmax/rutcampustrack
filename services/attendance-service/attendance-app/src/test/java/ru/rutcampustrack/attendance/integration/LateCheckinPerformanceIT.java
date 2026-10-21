@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.annotation.DirtiesContext;
 
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
@@ -29,6 +30,7 @@ import java.util.List;
  * sort уходит (index order совпадает с запросом).
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class LateCheckinPerformanceIT extends AbstractAttendanceIntegrationTest {
     @org.springframework.test.context.DynamicPropertySource
     static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {

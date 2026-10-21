@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.annotation.DirtiesContext;
 
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
  * <p>Используется {@code semester.archived} — handler не имеет persistent-эффектов (только cache
  * refresh), поэтому IT надёжно проверяет именно guard, а не побочные delete'ы.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class EventIdempotentIT extends AbstractAttendanceIntegrationTest {
     @org.springframework.test.context.DynamicPropertySource
     static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {

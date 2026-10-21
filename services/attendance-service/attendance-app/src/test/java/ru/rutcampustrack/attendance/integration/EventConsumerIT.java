@@ -14,6 +14,7 @@ import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.annotation.DirtiesContext;
 
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -42,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Integration tests for RabbitMQ event consumers. Publishes real messages to the fanout exchange
  * and verifies MongoDB state. Proves MARK-03, MARK-04, MARK-05 requirements.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class EventConsumerIT extends AbstractAttendanceIntegrationTest {
     @org.springframework.test.context.DynamicPropertySource
     static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {

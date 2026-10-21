@@ -11,6 +11,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -27,6 +28,69 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
+
+
+def prepared_native_failure(raw, source):
+    """Bounded terminal signature only; teardown can mask an earlier failure."""
+    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+    if type(raw) is not bytes or len(raw) > 65536 or type(source) is not bytes or len(source) != 7462:
+        return unknown
+    if hashlib.sha256(source).hexdigest() != "1aac406f02799b8cc9cc44903cce374e62df0001ef389b5e94de3daa19f35bd6":
+        return unknown
+    try:
+        text = raw.decode("utf-8").replace("\r\n", "\n")
+        if not text.endswith("\n") or any(
+            (ord(char) < 32 and char not in "\n\t") or char in "\x7f\x85\u2028\u2029" for char in text
+        ):
+            return unknown
+        lines = text.rstrip("\n").split("\n")
+        headers = [index for index, line in enumerate(lines) if line == "Traceback (most recent call last):"]
+        if not headers:
+            return unknown
+        terminal = lines[headers[-1] + 1 :]
+        if len(terminal) < 3:
+            return unknown
+        summary = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_.]*)(?::[^\n]*)?", terminal[-1])
+        if summary is None:
+            return unknown
+        categories = {
+            name: name for name in (
+                "ModuleNotFoundError", "ImportError", "AssertionError", "TimeoutError", "ConnectionError",
+                "OSError", "RuntimeError", "ValueError", "TypeError", "KeyError",
+            )
+        }
+        stages = {
+            ("<module>", 16): "MODULE_IMPORT", ("<module>", 18): "MODULE_IMPORT",
+            **{("phase", line): "OBSERVER_CONNECT" for line in (47, 48)},
+            **{("phase", line): "OBSERVER_TOPOLOGY" for line in (49, 50, 51, 59)},
+            ("phase", 60): "ORIGIN_PUBLISH", ("phase", 128): "WAIT_FIRST_DISCONNECT",
+            **{("phase", line): "DURABLE_OUTCOME_CHECK" for line in (132, 133, 134, 135, 137, 138, 139, 141, 142)},
+            ("phase", 155): "WAIT_REPLAY_COMMIT",
+            **{("phase", line): "REPLAY_OUTCOME_CHECK" for line in (156, 159)},
+            **{("phase", line): "PROBE_TEARDOWN" for line in (170, 172, 174, 175, 176, 177, 178)},
+        }
+        expected_path = str(ROOT / "services/notification-bot/tests/prepared_broker_probe.py")
+        source_lines = source.decode("utf-8").splitlines()
+        stage = "UNKNOWN"
+        index = 0
+        while index < len(terminal) - 1:
+            frame = re.fullmatch(r'  File "([^"\r\n]+)", line ([1-9][0-9]{0,8}), in ([A-Za-z_][A-Za-z0-9_]*|<module>|<listcomp>)', terminal[index])
+            if frame is None:
+                return unknown
+            index += 1
+            has_context = index < len(terminal) - 1 and terminal[index].startswith("    ")
+            if frame[1] == expected_path:
+                number = int(frame[2])
+                if not has_context or number > len(source_lines) or terminal[index].strip() != source_lines[number - 1].strip():
+                    return unknown
+                stage = stages.get((frame[3], number), "UNKNOWN")
+            if has_context:
+                index += 1
+            if index < len(terminal) - 1 and terminal[index].startswith("    ") and set(terminal[index].strip()) <= {"~", "^"}:
+                index += 1
+        return {"category": categories.get(summary[1], "UNKNOWN"), "source_stage": stage}
+    except (UnicodeError, ValueError, TypeError):
+        return unknown
 
 
 def mongo_monitor_witness(probe):
@@ -198,6 +262,16 @@ def prepared_transaction_contract(docker):
                 stdout=output, stderr=errors, timeout=120, preexec_fn=bounded_child,
             )
             _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_CHILD_EXIT"
+            if completed.returncode != 0:
+                _STATE["native_failure"] = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+                try:
+                    errors.seek(0)
+                    native_raw = errors.read(65537)
+                    with (ROOT / "services/notification-bot/tests/prepared_broker_probe.py").open("rb") as public_source:
+                        native_source = public_source.read(7463)
+                    _STATE["native_failure"] = prepared_native_failure(native_raw, native_source)
+                except Exception:  # noqa: BLE001 -- optional diagnostics must never mask the original failure
+                    pass
             assert completed.returncode == 0, "Prepared transaction native probe failed"
             _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_RECEIPT"
             output.seek(0)
@@ -986,6 +1060,7 @@ if __name__ == "__main__":
                     "exception_class": exception if exception in allowed else "OtherError",
                     "returncode": code if type(code) is int and -128 <= code <= 255 else None,
                     "probe_returncode": _STATE.get("probe_returncode"),
+                    "native_failure": _STATE.get("native_failure", {"category": "UNKNOWN", "source_stage": "UNKNOWN"}),
                     "mongo_monitor": _STATE.get("mongo_monitor"),
                     "redis_probe": _STATE.get("redis_probe"),
                     "redis_exporter": _STATE.get("redis_exporter"),

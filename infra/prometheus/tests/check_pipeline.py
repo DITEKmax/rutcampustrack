@@ -36,6 +36,80 @@ PROM_UID = "PBFA97CFB590B2093"
 PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
 
 
+_BACKGROUND_NATIVE_SOURCE_HASHES = {
+    "build.gradle.kts": "dcdaa1dd36c43ddd8d8722060e4448aa6fccb04281618fd304087b3d533469e7",
+    "settings.gradle.kts": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
+    "services/attendance-service/attendance-app/build.gradle.kts": "2c3680f5666fd30dc168ba17ef23ef60fe4f4ac5316e055d9a7ff8e429faecf2",
+    "services/attendance-service/attendance-api-contract/build.gradle.kts": "e2c1d174ecd031671cbd78326566ca3bda1eea875ef3ecf1eee2d62b6c674038",
+    "services/shared/shared-web/build.gradle.kts": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
+    "services/shared/shared-web-api/build.gradle.kts": "88c458ed5bac640ad3034b1c89b33a331e5540f51521ce7215aee28eafd7f5ee",
+    "services/shared/shared-outbox/build.gradle.kts": "83f7f7084fd46ac9300a81c12ebd871c15fbb1e8647bcf95a1c80e1d4b387faf",
+    "services/shared/shared-events/build.gradle.kts": "f97f06fa555c9fe561f011f511bbb9ddf24f92c2e51619fdea4097a7ef7a7396",
+    "services/shared/shared-security/build.gradle.kts": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
+    "services/shared/shared-observability/build.gradle.kts": "866b614d975477b5acbe96e5b07143543d34ae180a5d72606c5ee12527bb3083",
+    "services/shared/shared-logback/build.gradle.kts": "c61998f894025cc45afa4206d2e7e54b389d8565059cf8ac8d58e941acabf25a",
+    "services/shared/shared-test-containers/build.gradle.kts": "53def03edcae049b0adb06bb13b16ebe3cde52014f9148b0d38162ce9a01ebed"
+}
+_BACKGROUND_NATIVE_TASK_STAGES = {
+    "Execution failed for task ':services:attendance-service:attendance-app:compileJava'.": "ATTENDANCE_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:attendance-service:attendance-api-contract:compileJava'.": "CONTRACT_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-web:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-web-api:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-outbox:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-events:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-security:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-observability:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-logback:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-test-containers:compileJava'.": "SHARED_MAIN_COMPILE_TASK",
+    "Execution failed for task ':services:attendance-service:attendance-app:compileTestJava'.": "ATTENDANCE_TEST_COMPILE_TASK",
+    "Execution failed for task ':services:shared:shared-test-containers:compileTestFixturesJava'.": "TEST_FIXTURE_COMPILE_TASK",
+    "Execution failed for task ':services:attendance-service:attendance-app:extractIncludeProto'.": "ATTENDANCE_PROTO_TASK",
+    "Execution failed for task ':services:attendance-service:attendance-app:extractProto'.": "ATTENDANCE_PROTO_TASK",
+    "Execution failed for task ':services:attendance-service:attendance-app:generateProto'.": "ATTENDANCE_PROTO_TASK",
+    "Execution failed for task ':services:attendance-service:attendance-app:integrationTest'.": "ATTENDANCE_INTEGRATION_TEST_TASK"
+}
+
+
+def background_native_failure(raw, sources):
+    """Recognize a bound terminal failed-task signature, never its first cause."""
+    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+    if type(raw) is not bytes or len(raw) > 65536 or type(sources) is not dict:
+        return unknown
+    if set(sources) != set(_BACKGROUND_NATIVE_SOURCE_HASHES):
+        return unknown
+    for name, expected in _BACKGROUND_NATIVE_SOURCE_HASHES.items():
+        source = sources[name]
+        if type(source) is not bytes or len(source) > 65536 or hashlib.sha256(source).hexdigest() != expected:
+            return unknown
+    try:
+        text = raw.decode("utf-8").replace("\r\n", "\n")
+        if not text.endswith("\n") or any(
+            (ord(char) < 32 and char not in "\n\t") or char in "\x7f\x85\u2028\u2029" for char in text
+        ):
+            return unknown
+        lines = text.rstrip("\n").split("\n")
+        banners = [index for index, line in enumerate(lines) if line.startswith("FAILURE:")]
+        reasons = [index for index, line in enumerate(lines) if line == "* What went wrong:"]
+        failed = [index for index, line in enumerate(lines) if line.startswith("Execution failed for task ")]
+        endings = [index for index, line in enumerate(lines) if line.startswith("BUILD FAILED")]
+        if not (len(banners) == len(reasons) == len(failed) == len(endings) == 1):
+            return unknown
+        banner, reason, task, ending = banners[0], reasons[0], failed[0], endings[0]
+        if not banner < reason < task < ending or lines[banner] != "FAILURE: Build failed with an exception.":
+            return unknown
+        if re.fullmatch(r"BUILD FAILED in [0-9]+(?:ms|h|m|s)(?: [0-9]+(?:ms|h|m|s))*", lines[ending]) is None:
+            return unknown
+        for line in lines[ending + 1 :]:
+            if line and re.fullmatch(r"[0-9]+ actionable tasks?: [0-9]+ (?:executed|up-to-date|from-cache)(?:, [0-9]+ (?:executed|up-to-date|from-cache))*", line) is None:
+                return unknown
+        stage = _BACKGROUND_NATIVE_TASK_STAGES.get(lines[task])
+        if stage is None:
+            return unknown
+        return {"category": "FAILED_TASK", "source_stage": stage}
+    except (UnicodeError, ValueError, TypeError):
+        return unknown
+
+
 def alloy_positions(text):
     """Alloy1.20.1 positions.File: map[{path,labels}]offset, not Promtail YAML."""
     root = yaml.compose(text)
@@ -1390,6 +1464,18 @@ def main():
                 try:
                     result = process.wait(timeout=seconds)
                     if result:
+                        if filename == "background-gradle.private.log":
+                            _STATE["native_failure"] = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+                            try:
+                                with (td / filename).open("rb") as native_log:
+                                    native_raw = native_log.read(65537)
+                                native_sources = {}
+                                for name in _BACKGROUND_NATIVE_SOURCE_HASHES:
+                                    with (ROOT / name).open("rb") as public_source:
+                                        native_sources[name] = public_source.read(65537)
+                                _STATE["native_failure"] = background_native_failure(native_raw, native_sources)
+                            except Exception:  # noqa: BLE001 -- optional diagnostics must not replace the child failure
+                                pass
                         raise subprocess.CalledProcessError(result, command)
                 finally:
                     if process.poll() is None:
@@ -1935,6 +2021,7 @@ if __name__ == "__main__":
                         "cleanup": _STATE["cleanup"],
                         "exception_class": exception if exception in allowed else "OtherError",
                         "returncode": code if type(code) is int and -128 <= code <= 255 else None,
+                        "native_failure": _STATE.get("native_failure", {"category": "UNKNOWN", "source_stage": "UNKNOWN"}),
                         "missing_host_paths": _STATE.get("missing_host_paths", []),
                     }
                 )

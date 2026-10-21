@@ -646,20 +646,20 @@ def e2e_live_panel_queries(query, expected, safe):
     safe.pop("panel_probe", None)
 
 
-def e2e_gateway_openapi(docker, safe):
+def e2e_gateway_openapi(docker, safe, project="rct-e2e"):
     """Seven unauthenticated GETs on the owned Gateway origin, not public ingress."""
     ids = docker(
         "ps",
         "--quiet",
         "--no-trunc",
         "--filter",
-        "label=com.docker.compose.project=rct-e2e",
+        "label=com.docker.compose.project=" + project,
         "--filter",
         "label=com.docker.compose.service=api-gateway",
     ).stdout.splitlines()
     assert len(ids) == 1 and re.fullmatch("[0-9a-f]{64}", ids[0])
     host = docker(
-        "inspect", "--format", '{{(index .NetworkSettings.Networks "rct-e2e_private_net").IPAddress}}', ids[0]
+        "inspect", "--format", '{{(index .NetworkSettings.Networks "' + project + '_private_net").IPAddress}}', ids[0]
     ).stdout.strip()
     address = ipaddress.IPv4Address(host)
     assert address.is_private and not (address.is_loopback or address.is_unspecified or address.is_multicast)
@@ -685,19 +685,34 @@ def e2e_gateway_openapi(docker, safe):
     safe["gateway_openapi"] = result
 
     def get(path, observed):
+        observed.update(stage="HTTP_HEADERS", error_kind=None)
+        started = time.monotonic()
         request = urllib.request.Request("http://" + host + ":8080" + path, headers={"Accept": "application/json"})
         try:
             with opener.open(request, timeout=5) as response:
                 observed["status"] = response.status if 100 <= response.status <= 599 else None
                 assert response.status == 200
+                observed["stage"] = "HTTP_BODY"
                 raw = response.read(2 * 1024**2 + 1)
                 assert 0 < len(raw) <= 2 * 1024**2
         except urllib.error.HTTPError as error:
             observed["status"] = error.code if type(error.code) is int and 100 <= error.code <= 599 else None
             error.close()
+            observed["error_kind"] = "HTTP_STATUS"
             raise
-        value = json.loads(raw, object_pairs_hook=unique_pairs)
-        assert isinstance(value, dict)
+        except (OSError, ValueError, AssertionError) as error:
+            observed["error_kind"] = "TIMEOUT" if isinstance(error, TimeoutError) else "TRANSPORT_OR_BODY"
+            raise
+        finally:
+            observed["elapsed_ms"] = round((time.monotonic() - started) * 1000)
+        observed["stage"] = "JSON_SYNTAX"
+        try:
+            value = json.loads(raw, object_pairs_hook=unique_pairs)
+            assert isinstance(value, dict)
+        except (ValueError, AssertionError):
+            observed["error_kind"] = "JSON_SYNTAX_OR_SHAPE"
+            raise
+        observed["stage"] = "CONTRACT"
         return value
 
     producers = {
@@ -710,6 +725,7 @@ def e2e_gateway_openapi(docker, safe):
     }
     safe["phase"] = "GATEWAY_OPENAPI_CONFIG"
     config_status = {"status": None}
+    result["config"] = config_status
     try:
         config = get("/v3/api-docs/swagger-config", config_status)
     finally:
@@ -722,16 +738,21 @@ def e2e_gateway_openapi(docker, safe):
         observed = {"status": None, "contract_valid": False}
         result["documents"][producer] = observed
         doc = get("/openapi/" + producer, observed)
+        observed["stage"] = "OPENAPI_VERSION"
         assert doc["openapi"] == ("3.0.1" if producer == "mobile-bff" else "3.1.0")
+        observed["stage"] = "SERVERS"
         assert doc["servers"] == [{"url": "/" if producer == "mobile-bff" else "/api"}]
+        observed["stage"] = "PUBLIC_PATHS"
         paths = doc["paths"]
         assert isinstance(paths, dict) and paths and all(path.startswith("/") for path in paths)
         assert not any(path.startswith("/internal/") for path in paths)
         assert isinstance(doc.get("components"), dict)
+        observed["stage"] = "SECURITY_SCHEMES"
         schemes = doc["components"].get("securitySchemes")
         assert isinstance(schemes, dict) and isinstance(schemes.get("bearerAuth"), dict)
         assert schemes["bearerAuth"]["type"] == "http" and schemes["bearerAuth"]["scheme"] == "bearer"
         for item in paths.values():
+            observed["stage"] = "OPERATION_SECURITY"
             assert isinstance(item, dict)
             for method, operation in item.items():
                 if method not in {"get", "post", "put", "patch", "delete", "head", "options", "trace"}:
@@ -743,21 +764,26 @@ def e2e_gateway_openapi(docker, safe):
                     isinstance(requirement, dict) and set(requirement) <= set(schemes) for requirement in requirements
                 )
         if producer == "auth-service":
+            observed["stage"] = "AUTH_LOGIN_SECURITY"
             assert paths["/auth/login"]["post"]["security"] == []
         if producer == "academic-service":
+            observed["stage"] = "ACADEMIC_EXPORT_OPERATION"
             export = paths["/academic/export-jobs"]["post"]
             assert {"bearerAuth": []} in export["security"] and {"202", "503"} <= set(export["responses"])
             assert isinstance(doc["components"].get("schemas"), dict)
+            observed["stage"] = "ACADEMIC_STATUS_REQUIRED_PROPERTIES"
             status = doc["components"]["schemas"]["Status"]
             assert isinstance(status, dict)
             fields = {"jobId", "state", "suggestedFilename", "expiresAt", "errorCode"}
             assert isinstance(status.get("properties"), dict) and isinstance(status.get("required"), list)
             assert set(status["properties"]) == fields and set(status["required"]) == fields
             error = status["properties"]["errorCode"]
+            observed["stage"] = "ACADEMIC_ERROR_CODE_NULLABLE_TYPE"
             assert isinstance(error, dict)
             types = error.get("type")
             assert isinstance(types, list) and all(isinstance(item, str) for item in types)
             assert set(types) == {"string", "null"}
+            observed["stage"] = "ACADEMIC_ERROR_CODE_FLAT_SCHEMA"
             # Require the actual flat3.1 String|null schema, not nullable:true.
             # Reject alternate constraints rather than pretending to validate them.
             assert not (
@@ -765,6 +791,7 @@ def e2e_gateway_openapi(docker, safe):
                 & set(error)
             )
         observed["contract_valid"] = True
+        observed["stage"] = "COMPLETE"
     return result
 
 
@@ -836,12 +863,23 @@ def e2e_export_failure_snapshot(query, baseline=None):
 
 def e2e_async_browser():
     """Observe the existing real browser scenario, never launch another app stand."""
-    assert os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
+    local = None
+    if os.environ.get("RCT_LOCAL_STAGE17_MANIFEST"):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        from local_e2e_async import validate_local
+        local = validate_local()
+        def interrupt_local(*_):
+            raise KeyboardInterrupt
+        signal.signal(signal.SIGTERM, interrupt_local)
+    else:
+        assert os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
     assert os.environ.get("RCT_E2E_ASYNC_REPORT") == "true" and os.environ.get("RCT_E2E_SYNTHETIC_SEED") == "true"
     source_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    assert source_sha == os.environ["GITHUB_SHA"] and re.fullmatch("[0-9a-f]{40}", source_sha)
+    assert source_sha == (local["source_sha"] if local else os.environ["GITHUB_SHA"]) and re.fullmatch("[0-9a-f]{40}", source_sha)
+    project = local["project"] if local else "rct-e2e"
+    temporary_root = str(Path(local["run"]) / "tmp") if local else os.environ["RUNNER_TEMP"]
     run = Path(os.environ["RCT_REMAINING5_RUN"])
-    assert run.is_absolute() and run.is_relative_to(Path(os.environ["RUNNER_TEMP"]))
+    assert run.is_absolute() and (run == Path(local["run"]) if local else run.is_relative_to(Path(os.environ["RUNNER_TEMP"])))
     for directory in [run, run / "artifacts"]:
         assert directory.is_dir() and not directory.is_symlink() and directory.stat().st_mode & 0o777 == 0o700
     report = run / "artifacts/metrics.safe.json"
@@ -866,12 +904,15 @@ def e2e_async_browser():
         },
         "qualification": "Actual existing E2E applications and two real18week DOCX downloads; renderer identity only, DOCX renders inside Attendance. No renderer conversion/bot/external delivery claim.",
     }
+    if local:
+        safe["local_source"] = {"dirty": local["dirty"], "manifest_sha256": hashlib.sha256(
+            Path(os.environ["RCT_LOCAL_STAGE17_MANIFEST"]).read_bytes()).hexdigest()}
     primary = None
 
     def docker(*args, check=True, seconds=15):
         return subprocess.run(["docker", *args], capture_output=True, text=True, check=check, timeout=seconds)
 
-    with tempfile.TemporaryDirectory(prefix=name + "-", dir=os.environ["RUNNER_TEMP"]) as tmp:
+    with tempfile.TemporaryDirectory(prefix=name + "-", dir=temporary_root) as tmp:
         private = Path(tmp)
         data = private / "data"
         data.mkdir()
@@ -976,9 +1017,9 @@ def e2e_async_browser():
                     "inspect",
                     "--format",
                     '{{index .Labels "com.docker.compose.project"}}',
-                    "rct-e2e_private_net",
+                    project + "_private_net",
                 ).stdout.strip()
-                == "rct-e2e"
+                == project
             )
             safe["phase"] = "START_PROMETHEUS"
             attempted = True
@@ -989,8 +1030,9 @@ def e2e_async_browser():
                 name,
                 "--label",
                 "rct.acceptance.owner=" + name,
+                *(["--label", "rct.local.stage17=" + local["nonce"]] if local else []),
                 "--network",
-                "rct-e2e_private_net",
+                project + "_private_net",
                 "--publish",
                 "127.0.0.1::9090",
                 "--memory",
@@ -1040,7 +1082,7 @@ def e2e_async_browser():
             for key, value in baseline.items():
                 failure_baseline["counters"][key]["value"] = value
             safe["phase"] = "BROWSER_REAL_DOWNLOADS"
-            with (private / "browser.private.log").open("wb") as log:
+            with ((run if local else private) / "browser.private.log").open("wb") as log:
                 browser = subprocess.Popen(
                     ["npx", "playwright", "test", "--config", "playwright.real-mobile.config.ts", "--project=chromium"],
                     cwd=ROOT / "tests/e2e",
@@ -1117,7 +1159,7 @@ def e2e_async_browser():
             guard_disk()
             # Metadata failures must never prevent the actual DOCX/browser/panel proof.
             safe["phase"] = "GATEWAY_PUBLIC_OPENAPI"
-            e2e_gateway_openapi(docker, safe)
+            e2e_gateway_openapi(docker, safe, project)
             safe["gateway_config_sha256"] = hashlib.sha256(
                 (ROOT / "services/api-gateway/src/main/resources/application.yml").read_bytes()
             ).hexdigest()

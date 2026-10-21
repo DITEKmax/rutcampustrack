@@ -13,6 +13,7 @@ import { isAbsolute, join, resolve } from 'node:path';
 import { expect, type APIRequestContext, type APIResponse, type Page } from '@playwright/test';
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
+import { requireLocalStage17 } from './local-stage17';
 import { test as base, requirePrivateArtifacts } from './artifact-privacy';
 import {
   datasetHttpFailure,
@@ -419,9 +420,8 @@ export class MobileDataset {
       process.env.RCT_E2E_ASYNC_REPORT !== 'true' ||
       process.env.RCT_E2E_REMAINING5 !== 'true' ||
       process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
-      process.env.CI !== 'true' ||
-      process.env.GITHUB_ACTIONS !== 'true' ||
-      process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      (!(process.env.CI === 'true' && process.env.GITHUB_ACTIONS === 'true' &&
+        process.env.RUNNER_ENVIRONMENT === 'github-hosted') && !requireLocalStage17()) ||
       !['https://localhost:8443', 'https://127.0.0.1:8443', 'https://[::1]:8443'].includes(
         url ?? '',
       )

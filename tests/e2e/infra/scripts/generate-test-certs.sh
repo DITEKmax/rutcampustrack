@@ -15,6 +15,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CERTS_DIR="${SCRIPT_DIR}/../certs"
 
+# Local stage17 provisions only a NEW child of its private owned run.
+if [ -n "${RCT_E2E_NEW_CERTS_DIR:-}" ]; then
+  CERTS_DIR="${RCT_E2E_NEW_CERTS_DIR}"
+  python3 - "${CERTS_DIR}" <<'PY_LOCAL_CERTS'
+import os, stat, sys
+from pathlib import Path
+target = Path(sys.argv[1])
+parent = target.parent
+info = parent.lstat()
+if (not target.is_absolute() or target.name != 'certs' or target.exists() or target.is_symlink()
+        or parent.is_symlink() or not stat.S_ISDIR(info.st_mode)
+        or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700
+        or not parent.name.startswith('rct-local-stage17-')):
+    raise SystemExit('New private local certificate destination required')
+PY_LOCAL_CERTS
+fi
+
 mkdir -p "${CERTS_DIR}"
 
 verify_windows_container_key_readable() {

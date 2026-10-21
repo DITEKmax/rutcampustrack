@@ -3,6 +3,7 @@ import { isAbsolute, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
 import existing from './playwright.config';
 import { readTeachingInstant } from './fixtures/teaching-clock';
+import { requireLocalStage17 } from './fixtures/local-stage17';
 
 // Pinned Playwright checks this before reading a page snapshot, including during teardown.
 process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
@@ -13,6 +14,7 @@ const roleLogout = process.env.RCT_E2E_ROLE_LOGOUT === 'true';
 const webkitSubset = process.env.RCT_E2E_WEBKIT_SUBSET === 'true';
 const workerLifecycle = process.env.RCT_E2E_SW_LIFECYCLE === 'true';
 const asyncReport = process.env.RCT_E2E_ASYNC_REPORT === 'true';
+const localStage17 = requireLocalStage17();
 const botRoleMenu = process.env.RCT_E2E_BOT_ROLE_MENU === 'true';
 if (
   asyncReport &&
@@ -51,6 +53,7 @@ export default defineConfig<
   reporter: [['./fixtures/safe-reporter.ts']],
   use: {
     ...existing.use,
+    ...(localStage17 ? { ignoreHTTPSErrors: false } : {}),
     trace: 'off',
     video: 'off',
     screenshot: 'off',

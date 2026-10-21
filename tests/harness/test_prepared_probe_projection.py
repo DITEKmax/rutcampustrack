@@ -121,10 +121,15 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 f'* What went wrong:\n{task_line}\n> synthetic-private-message /private/path ID=private-marker\n'
                 '\nBUILD FAILED in 2m 15s\n3 actionable tasks: 1 executed, 2 up-to-date\n').encode()
 
-    def assert_closed(self, result):
-        self.assertEqual(set(result), {'category', 'source_stage'})
+    def assert_closed(self, result, admission_reason=None):
+        keys = {'category', 'source_stage'}
+        if admission_reason is not None:
+            keys.add('admission_reason')
+            self.assertEqual(result['admission_reason'], admission_reason)
+        self.assertEqual(set(result), keys)
         serialized = json.dumps(result)
-        for forbidden in ['private', str(ROOT), 'Traceback', 'Execution failed', 'first_cause']:
+        for forbidden in ['private', str(ROOT), 'Traceback', 'Execution failed', 'first_cause',
+                          self.pipeline['_BACKGROUND_TEST_CLASS'], self.pipeline['_BACKGROUND_TEST_METHOD']]:
             self.assertNotIn(forbidden, serialized)
 
     def test_prepared_positive_categories_stages_and_terminal_chain_privacy(self):
@@ -228,7 +233,9 @@ class NativeFailureProjectionControls(unittest.TestCase):
             self.assertEqual(caught.exception.returncode, 1)
             self.assertEqual(state['phase'], 'ACTUAL_BACKGROUND_GRADLE')
             self.assertEqual(state['native_failure'], {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'})
-            self.assertEqual(state['background_test_failure'], {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'})
+            self.assertEqual(state['background_test_failure'],
+                             {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN', 'admission_reason': 'READ_ERROR'})
+            self.assert_closed(state['background_test_failure'], 'READ_ERROR')
 
     def junit(self, function=None, line=408, category='java.lang.AssertionError'):
         function = function or self.pipeline['_BACKGROUND_TEST_METHOD']
@@ -255,8 +262,10 @@ class NativeFailureProjectionControls(unittest.TestCase):
                                    ('java.lang.NoClassDefFoundError', 'CLASS_LOADING'),
                                    ('java.lang.OutOfMemoryError', 'JAVA_MEMORY'), ('private.Error', 'UNKNOWN')]:
             result = classify(self.junit(category=category), self.test_source)
-            self.assertEqual(result, {'category': expected, 'source_stage': 'SELECTED_TEST_BODY'})
-            self.assert_closed(result)
+            reason = 'SIGNATURE_CLASSIFIED' if expected != 'UNKNOWN' else 'SIGNATURE_UNCLASSIFIED'
+            self.assertEqual(result, {'category': expected, 'source_stage': 'SELECTED_TEST_BODY',
+                                      'admission_reason': reason})
+            self.assert_closed(result, reason)
         for function, line, stage in [('<clinit>', 70, 'CLASS_INITIALIZATION'),
                                       ('overrideRabbitVhost', 89, 'CONTEXT_PROPERTIES'),
                                       ('cleanQueues', 110, 'BEFORE_EACH'),
@@ -269,14 +278,22 @@ class NativeFailureProjectionControls(unittest.TestCase):
                                       ('writeCollectorReceipt', 675, 'COLLECTOR_RECEIPT')]:
             result = classify(self.junit(function, line), self.test_source)
             self.assertEqual(result['source_stage'], stage)
-            self.assert_closed(result)
+            self.assert_closed(result, 'SIGNATURE_CLASSIFIED')
         for function, line in [('privateMethod', 408), ('cleanQueues', 408),
                                ('lambda$exportedSpan$10', 628)]:
-            self.assertEqual(classify(self.junit(function, line), self.test_source)['source_stage'], 'UNKNOWN')
+            result = classify(self.junit(function, line), self.test_source)
+            self.assertEqual(result['source_stage'], 'UNKNOWN')
+            self.assert_closed(result, 'SIGNATURE_UNCLASSIFIED')
+        result = classify(self.junit(function='privateMethod', category='private.Error'), self.test_source)
+        self.assertEqual(result, {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN',
+                                  'admission_reason': 'SIGNATURE_UNCLASSIFIED'})
+        self.assert_closed(result, 'SIGNATURE_UNCLASSIFIED')
         root = ET.fromstring(self.junit())
         root[1][0].text = ('java.lang.AssertionError: synthetic-private\n    Caused by: private.Error\n'
                           + (root[1][0].text or '').split('\n', 1)[1])
-        self.assertEqual(classify(ET.tostring(root), self.test_source)['source_stage'], 'UNKNOWN')
+        result = classify(ET.tostring(root), self.test_source)
+        self.assertEqual(result['source_stage'], 'UNKNOWN')
+        self.assert_closed(result, 'SIGNATURE_UNCLASSIFIED')
         for outputs in [(), ('system-out',), ('system-err',), ('system-out', 'system-err')]:
             root = ET.fromstring(self.junit())
             root[0].text = '\n  \t'
@@ -284,18 +301,19 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 if node.tag not in outputs:
                     root.remove(node)
             result = classify(ET.tostring(root), self.test_source)
-            self.assertEqual(result, {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'})
-            self.assert_closed(result)
+            self.assertEqual(result, {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                                      'admission_reason': 'SIGNATURE_CLASSIFIED'})
+            self.assert_closed(result, 'SIGNATURE_CLASSIFIED')
 
     def test_selected_junit_rejects_wrong_identity_schema_xml_and_source(self):
         classify = self.pipeline['background_test_failure']
         unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
         raw = self.junit()
-        cases = [b'', b'\xff', raw[:-4], b'x' * (1024**2 + 1),
+        cases = [(value, 'XML_REJECTED') for value in [b'', b'\xff', raw[:-4], b'x' * (1024**2 + 1),
                  b'<!DOCTYPE testsuite [<!ENTITY private "secret">]>' + raw,
                  raw.replace(b'UTF-8', b'UTF-16').replace(b'utf-8', b'utf-16'),
                  raw.replace(b'<testsuite ', b'<?private value?><testsuite '),
-                 raw.replace(b'<testsuite ', b'<!--private--><testsuite ')]
+                 raw.replace(b'<testsuite ', b'<!--private--><testsuite ')]]
         for mutation in ['class', 'method', 'ordinal', 'count', 'duplicate', 'skipped', 'error', 'extra',
                          'case_attr', 'nested_failure', 'extra_failure', 'root_text', 'tail', 'properties',
                          'type_mismatch', 'missing_properties', 'properties_attr', 'properties_child',
@@ -329,16 +347,25 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 node = root[2]
                 root.remove(node)
                 root.insert(3, node)
-            cases.append(ET.tostring(root))
-        for malformed in cases:
-            self.assertEqual(classify(malformed, self.test_source), unknown)
-        self.assertEqual(classify(raw, self.test_source + b' '), unknown)
-        self.assertEqual(classify(raw, b''), unknown)
+            reason = 'XML_REJECTED'
+            if mutation in {'class', 'method', 'ordinal', 'count', 'skipped', 'extra', 'case_attr', 'extra_failure'}:
+                reason = 'KNOWN_CASE_NOT_ADMITTED'
+            elif mutation in {'error', 'nested_failure', 'type_mismatch'}:
+                reason = 'SIGNATURE_REJECTED'
+            cases.append((ET.tostring(root), reason))
+        for malformed, reason in cases:
+            result = classify(malformed, self.test_source)
+            self.assertEqual(result, {**unknown, 'admission_reason': reason})
+            self.assert_closed(result, reason)
+        for source in [self.test_source + b' ', b'']:
+            result = classify(raw, source)
+            self.assertEqual(result, {**unknown, 'admission_reason': 'SOURCE_REJECTED'})
+            self.assert_closed(result, 'SOURCE_REJECTED')
 
     def test_selected_junit_fixed_reader_freshness_symlink_bounds_and_stability(self):
         read = self.pipeline['read_background_test_failure']
-        unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
-        absent = {'category': 'NO_CURRENT_RESULT', 'source_stage': 'UNKNOWN'}
+        unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN', 'admission_reason': 'REPORT_REJECTED'}
+        absent = {'category': 'NO_CURRENT_RESULT', 'source_stage': 'UNKNOWN', 'admission_reason': 'NO_CURRENT_RESULT'}
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             report = root / self.pipeline['_BACKGROUND_TEST_REPORT']
@@ -351,7 +378,8 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 self.assertEqual(read(started), absent)
                 report.write_bytes(self.junit())
                 with patch.object(os, 'open', wraps=os.open) as opened:
-                    self.assertEqual(read(started), {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'})
+                    self.assertEqual(read(started), {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                                                    'admission_reason': 'SIGNATURE_CLASSIFIED'})
                 opened.assert_called_once_with(report, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
                 self.assertEqual(read(time.time_ns() + 1_000_000_000), absent)
                 os.utime(report, ns=(1, 1))
@@ -363,7 +391,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 self.assertEqual(read(started), unknown)
                 report.unlink()
                 report.mkdir()
-                self.assertEqual(read(started), unknown)
+                self.assertEqual(read(started), {**unknown, 'admission_reason': 'READ_ERROR'})
                 report.rmdir()
                 os.mkfifo(report)
                 self.assertEqual(read(started), unknown)
@@ -384,10 +412,16 @@ class NativeFailureProjectionControls(unittest.TestCase):
                     return result
                 with patch.object(os, 'fstat', side_effect=changed):
                     self.assertEqual(read(started), unknown)
+                with patch.object(os, 'open', side_effect=OSError('synthetic-private-io')):
+                    result = read(started)
+                    self.assertEqual(result, {**unknown, 'admission_reason': 'READ_ERROR'})
+                    self.assert_closed(result, 'READ_ERROR')
                 source.write_bytes(self.test_source + b' ')
-                self.assertEqual(read(started), unknown)
+                self.assertEqual(read(started), {**unknown, 'admission_reason': 'SOURCE_REJECTED'})
                 source.unlink()
-                self.assertEqual(read(started), unknown)
+                self.assertEqual(read(started), {**unknown, 'admission_reason': 'READ_ERROR'})
+                self.assert_closed(unknown, 'REPORT_REJECTED')
+                self.assert_closed(absent, 'NO_CURRENT_RESULT')
 
     def test_junit_diagnostic_only_runs_for_background_nonzero_and_preserves_exit(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -397,7 +431,8 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 calls = []
                 def diagnostic(started):
                     calls.append(started)
-                    return {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'}
+                    return {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                            'admission_reason': 'SIGNATURE_CLASSIFIED'}
                 namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess,
                                  read_background_test_failure=diagnostic)
                 exec(compile(ast.Module(body=[self.gradle_parent], type_ignores=[]), '<existing-parent-control>', 'exec'), namespace)
@@ -412,7 +447,9 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 self.assertEqual(len(calls), int(filename == 'background-gradle.private.log' and code != 0))
                 if calls:
                     self.assertEqual(state['background_test_failure'],
-                                     {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'})
+                                     {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                                      'admission_reason': 'SIGNATURE_CLASSIFIED'})
+                    self.assert_closed(state['background_test_failure'], 'SIGNATURE_CLASSIFIED')
                 else:
                     self.assertNotIn('background_test_failure', state)
 

@@ -121,10 +121,12 @@ _BACKGROUND_TEST_REPORT = "services/attendance-service/attendance-app/build/test
 
 def background_test_failure(raw, source):
     """One declared public test's terminal XML signature; never an authenticated first cause."""
-    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
-    if (type(raw) is not bytes or not raw or len(raw) > 1024**2 or type(source) is not bytes
-            or len(source) > 65536 or hashlib.sha256(source).hexdigest() != _BACKGROUND_TEST_SOURCE_HASH):
+    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN", "admission_reason": "XML_REJECTED"}
+    if type(raw) is not bytes or not raw or len(raw) > 1024**2:
         return unknown
+    if (type(source) is not bytes or len(source) > 65536
+            or hashlib.sha256(source).hexdigest() != _BACKGROUND_TEST_SOURCE_HASH):
+        return {**unknown, "admission_reason": "SOURCE_REJECTED"}
     try:
         text = raw.decode("utf-8")
         if ("<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper() or "<!--" in text
@@ -138,7 +140,7 @@ def background_test_failure(raw, source):
                 or root.attrib["name"] != _BACKGROUND_TEST_CLASS
                 or any(root.attrib[key] != value for key, value in
                        {"tests": "1", "skipped": "0", "failures": "1", "errors": "0"}.items())):
-            return unknown
+            return {**unknown, "admission_reason": "KNOWN_CASE_NOT_ADMITTED"}
         if root.text and root.text.strip():
             return unknown
         # Gradle 8.12 JUnitXmlResultWriter always emits empty properties before cases,
@@ -163,15 +165,15 @@ def background_test_failure(raw, source):
                 or case.attrib["name"] != _BACKGROUND_TEST_METHOD + "()"
                 or case.attrib["classname"] != _BACKGROUND_TEST_CLASS
                 or (case.text and case.text.strip()) or len(case) != 1):
-            return unknown
+            return {**unknown, "admission_reason": "KNOWN_CASE_NOT_ADMITTED"}
         failure = case[0]
         if (failure.tag != "failure" or set(failure.attrib) != {"message", "type"}
                 or len(failure) or (failure.tail and failure.tail.strip())):
-            return unknown
+            return {**unknown, "admission_reason": "SIGNATURE_REJECTED"}
         stack = (failure.text or "").splitlines()
         if not stack or not (stack[0] == failure.attrib["type"]
                              or stack[0].startswith(failure.attrib["type"] + ":")):
-            return unknown
+            return {**unknown, "admission_reason": "SIGNATURE_REJECTED"}
         categories = {
             "java.lang.AssertionError": "ASSERTION",
             "org.opentest4j.AssertionFailedError": "ASSERTION",
@@ -207,19 +209,24 @@ def background_test_failure(raw, source):
                 if bound and bound[0] <= int(match[2]) <= bound[1]:
                     stage = bound[2]
                 break
-        return {"category": categories.get(failure.attrib["type"], "UNKNOWN"), "source_stage": stage}
+        return {
+            "category": categories.get(failure.attrib["type"], "UNKNOWN"), "source_stage": stage,
+            "admission_reason": "SIGNATURE_CLASSIFIED"
+            if categories.get(failure.attrib["type"], "UNKNOWN") != "UNKNOWN" and stage != "UNKNOWN"
+            else "SIGNATURE_UNCLASSIFIED",
+        }
     except (UnicodeError, ValueError, TypeError, ET.ParseError):
         return unknown
 
 
 def read_background_test_failure(started_ns):
     """Read only the fixed current-call report, once, through a stable regular descriptor."""
-    absent = {"category": "NO_CURRENT_RESULT", "source_stage": "UNKNOWN"}
-    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+    absent = {"category": "NO_CURRENT_RESULT", "source_stage": "UNKNOWN", "admission_reason": "NO_CURRENT_RESULT"}
+    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN", "admission_reason": "READ_ERROR"}
     path = ROOT / _BACKGROUND_TEST_REPORT
     try:
         if path.resolve() != path or path.is_symlink():
-            return unknown
+            return {**unknown, "admission_reason": "REPORT_REJECTED"}
         try:
             descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
         except FileNotFoundError:
@@ -227,7 +234,7 @@ def read_background_test_failure(started_ns):
         with os.fdopen(descriptor, "rb") as report:
             before = os.fstat(report.fileno())
             if not stat.S_ISREG(before.st_mode) or before.st_size > 1024**2:
-                return unknown
+                return {**unknown, "admission_reason": "REPORT_REJECTED"}
             ended_ns = time.time_ns()
             if not all(started_ns <= value <= ended_ns for value in (before.st_mtime_ns, before.st_ctime_ns)):
                 return absent
@@ -237,7 +244,7 @@ def read_background_test_failure(started_ns):
             fields = ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns")
             if (any(getattr(before, key) != getattr(after, key) or getattr(before, key) != getattr(current, key)
                     for key in fields) or len(raw) != before.st_size):
-                return unknown
+                return {**unknown, "admission_reason": "REPORT_REJECTED"}
         with (ROOT / _BACKGROUND_TEST_SOURCE).open("rb") as public_source:
             source = public_source.read(65537)
         return background_test_failure(raw, source)
@@ -1601,7 +1608,9 @@ def main():
                     result = process.wait(timeout=seconds)
                     if result:
                         if filename == "background-gradle.private.log":
-                            _STATE["background_test_failure"] = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+                            _STATE["background_test_failure"] = {
+                                "category": "UNKNOWN", "source_stage": "UNKNOWN", "admission_reason": "READ_ERROR"
+                            }
                             try:
                                 _STATE["background_test_failure"] = read_background_test_failure(diagnostic_started_ns)
                             except Exception:  # noqa: BLE001 -- optional diagnostics preserve the primary failure

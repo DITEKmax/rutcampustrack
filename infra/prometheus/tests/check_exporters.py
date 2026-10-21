@@ -169,6 +169,7 @@ def prepared_transaction_contract(docker):
     """Reuse only this fixture's synthetic Rabbit cohort; no Redis/provider process."""
     import resource
 
+    _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_TOPOLOGY"
     vhost = "audit.prepared." + uuid.uuid4().hex
     address = docker("port", "rabbitmq", "5672", seconds=10).stdout.strip()
     host, port = address.rsplit(":", 1)
@@ -190,12 +191,15 @@ def prepared_transaction_contract(docker):
             resource.setrlimit(resource.RLIMIT_FSIZE, (4 * 1024**2, 4 * 1024**2))
 
         with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
+            _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_CHILD_RUN"
             completed = subprocess.run(
                 [sys.executable, "-B", "-m", "tests.prepared_broker_probe"],
                 cwd=ROOT / "services/notification-bot", env=environment,
                 stdout=output, stderr=errors, timeout=120, preexec_fn=bounded_child,
             )
+            _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_CHILD_EXIT"
             assert completed.returncode == 0, "Prepared transaction native probe failed"
+            _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_RECEIPT"
             output.seek(0)
             raw = output.read(4097)
         assert len(raw) <= 4096, "Prepared transaction receipt exceeds closed budget"
@@ -214,6 +218,7 @@ def prepared_transaction_contract(docker):
         phases = ("publish", "ack", "commit_before", "commit_after")
         assert type(rows) is list and len(rows) == len(phases)
         projection = []
+        _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_BOUNDARY_CONTRACT"
         for boundary, row in zip(phases, rows, strict=True):
             assert type(row) is dict and set(row) == {
                 "boundary", "durable_outcomes", "projection_after_loss",
@@ -235,8 +240,10 @@ def prepared_transaction_contract(docker):
             assert cleanup.returncode == 0, "Owned prepared probe vhost cleanup failed"
         except Exception:
             if primary is None:
+                _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_CLEANUP"
                 raise
             # The first probe failure remains primary; fixture teardown still removes its whole owned cohort.
+    _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_BOUNDARIES"
     return {"phases": projection, "owned_vhost_removed": True, "broker_only": True}
 
 

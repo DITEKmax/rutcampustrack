@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.homework.HomeworkBindingService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
@@ -175,6 +177,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
      * exists with the given ID.
      */
     @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public void getLessonById(
             LessonByIdRequest request, StreamObserver<LessonResponse> responseObserver) {
         Lesson lesson =
@@ -185,6 +188,10 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                         new ResourceNotFoundException(
                                                 "Lesson", "id", request.getLessonId()));
 
+        // Retained generations keep their physical rows; only the occurrence pointer is current.
+        lesson.setCurrent(
+                lessonRepository.currentPointersForLessons(List.of(lesson.getId())).stream()
+                        .anyMatch(LessonRepository.CurrentLessonPointer::getCurrent));
         ScheduleItem item = findTemplateForRead(lesson);
 
         responseObserver.onNext(buildResponse(lesson, item));

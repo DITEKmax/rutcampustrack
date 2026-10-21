@@ -189,7 +189,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
         cls.gradle_parent = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
                                  and node.name == 'run_application_gradle')
 
-    def trace(self, line=166, function='phase', category='TimeoutError', path=None):
+    def trace(self, line=177, function='phase', category='TimeoutError', path=None):
         source_line = self.probe_source.decode().splitlines()[line - 1].strip()
         path = path or str(ROOT / 'services/notification-bot/tests/prepared_broker_probe.py')
         return ('Traceback (most recent call last):\n'
@@ -222,21 +222,22 @@ class NativeFailureProjectionControls(unittest.TestCase):
         frozen = self.trace().replace(b'Traceback (most recent call last):\n',
                                      b'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n')
         self.assertEqual(contract.prepared_native_failure(frozen, self.probe_source)['source_stage'], 'WAIT_FIRST_DISCONNECT')
-        for line, function, stage in [(16, '<module>', 'MODULE_IMPORT'), (77, 'phase', 'OBSERVER_CONNECT'),
-                                      (81, 'phase', 'OBSERVER_TOPOLOGY'), (90, 'phase', 'ORIGIN_PUBLISH'),
-                                      (171, 'phase', 'DURABLE_READ'), (172, 'phase', 'DURABLE_ORIGINAL_PRESENT'),
-                                      (173, 'phase', 'DURABLE_DECODE'), (174, 'phase', 'DURABLE_SINGLE_MESSAGE'),
-                                      (176, 'phase', 'DURABLE_ENVELOPE'), (177, 'phase', 'DURABLE_PROJECTION_CUTPOINT'),
-                                      (178, 'phase', 'DURABLE_NO_EARLY_COMPLETION'),
-                                      (180, 'phase', 'DURABLE_QUEUE_PROVENANCE'), (181, 'phase', 'DURABLE_REQUEUE'),
-                                      (193, 'phase', 'WAIT_REPLAY_COMMIT'),
-                                      (199, 'phase', 'REPLAY_OUTCOME_CHECK'), (214, 'phase', 'PROBE_TEARDOWN'),
-                                      (152, 'phase', 'BROKER_CLOSE_HOOK'), (167, 'phase', 'WORKER_CLOSE'),
-                                      (63, 'close_with_barrier', 'BROKER_CLOSE_CONFIRMATION')]:
+        for line, function, stage in [(16, '<module>', 'MODULE_IMPORT'), (88, 'phase', 'OBSERVER_CONNECT'),
+                                      (92, 'phase', 'OBSERVER_TOPOLOGY'), (101, 'phase', 'ORIGIN_PUBLISH'),
+                                      (182, 'phase', 'DURABLE_READ'), (183, 'phase', 'DURABLE_ORIGINAL_PRESENT'),
+                                      (184, 'phase', 'DURABLE_DECODE'), (185, 'phase', 'DURABLE_SINGLE_MESSAGE'),
+                                      (187, 'phase', 'DURABLE_ENVELOPE'), (188, 'phase', 'DURABLE_PROJECTION_CUTPOINT'),
+                                      (189, 'phase', 'DURABLE_NO_EARLY_COMPLETION'),
+                                      (191, 'phase', 'DURABLE_QUEUE_PROVENANCE'), (192, 'phase', 'DURABLE_REQUEUE'),
+                                      (204, 'phase', 'WAIT_REPLAY_COMMIT'),
+                                      (210, 'phase', 'REPLAY_OUTCOME_CHECK'), (225, 'phase', 'PROBE_TEARDOWN'),
+                                      (163, 'phase', 'BROKER_CLOSE_HOOK'), (178, 'phase', 'WORKER_CLOSE'),
+                                      *[(line, 'close_with_barrier', 'BROKER_CLOSE_CONFIRMATION')
+                                        for line in (55, 58, 61, 62, 65, 74)]]:
             result = contract.prepared_native_failure(self.trace(line, function), self.probe_source)
             self.assertEqual(result['source_stage'], stage)
             self.assert_closed(result)
-        chain = self.trace() + b'\nDuring handling of the above exception, another exception occurred:\n\n' + self.trace(214)
+        chain = self.trace() + b'\nDuring handling of the above exception, another exception occurred:\n\n' + self.trace(225)
         result = contract.prepared_native_failure(chain, self.probe_source)
         self.assertEqual(result['source_stage'], 'PROBE_TEARDOWN')
         self.assert_closed(result)  # Terminal teardown signature does not assert the earlier first cause.
@@ -250,7 +251,8 @@ class NativeFailureProjectionControls(unittest.TestCase):
             self.assertEqual(contract.prepared_native_failure(malformed, self.probe_source), unknown)
         self.assertEqual(contract.prepared_native_failure(raw, self.probe_source + b' '), unknown)
         self.assertEqual(contract.prepared_native_failure(raw, b''), unknown)
-        for forged in [self.trace(path='/unowned/prepared_broker_probe.py'), self.trace(168), self.trace(function='main')]:
+        for forged in [self.trace(path='/unowned/prepared_broker_probe.py'), self.trace(179),
+                       self.trace(63, 'close_with_barrier'), self.trace(function='main')]:
             result = contract.prepared_native_failure(forged, self.probe_source)
             self.assertEqual(result['source_stage'], 'UNKNOWN')
             self.assert_closed(result)

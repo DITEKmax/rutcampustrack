@@ -46,6 +46,7 @@ def close_ok_observer(original, waiters):
             if signal is not None:
                 # Signal in the reader: EOF/local cleanup may cancel the waiting processor.
                 signal.set()
+
     return observed
 
 
@@ -57,9 +58,19 @@ async def close_with_barrier(connection, confirmed, waiters):
         async with asyncio.timeout(2):
             # aiormq 6.8.1 normally sends this frame after cancelling its reader.
             # Keep the reader alive until Rabbit confirms all worker channels are gone.
-            await native.write_queue.put(ChannelFrame.marshall(0, [ConnectionFrames.Close(
-                reply_code=200, reply_text="normally closed", class_id=0, method_id=0,
-            )]))
+            await native.write_queue.put(
+                ChannelFrame.marshall(
+                    0,
+                    [
+                        ConnectionFrames.Close(
+                            reply_code=200,
+                            reply_text="normally closed",
+                            class_id=0,
+                            method_id=0,
+                        )
+                    ],
+                )
+            )
             await confirmed.wait()
     finally:
         waiters.pop(native, None)

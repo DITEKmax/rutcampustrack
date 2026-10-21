@@ -33,9 +33,9 @@ _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 def prepared_native_failure(raw, source):
     """Bounded terminal signature only; teardown can mask an earlier failure."""
     unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
-    if type(raw) is not bytes or len(raw) > 65536 or type(source) is not bytes or len(source) != 9443:
+    if type(raw) is not bytes or len(raw) > 65536 or type(source) is not bytes or len(source) != 9687:
         return unknown
-    if hashlib.sha256(source).hexdigest() != "10cfca8c9631ba8eeabe8084e0cf1599f48537f3bbbe900d95ee2fa19a752a4d":
+    if hashlib.sha256(source).hexdigest() != "f936f5af40e686130619056a718ddc7902bf4794e8bd089073ed2c984a3b0428":
         return unknown
     try:
         text = raw.decode("utf-8").replace("\r\n", "\n")
@@ -61,19 +61,19 @@ def prepared_native_failure(raw, source):
         }
         stages = {
             **{("<module>", line): "MODULE_IMPORT" for line in (16, 17, 18, 19, 21)},
-            **{("phase", line): "OBSERVER_CONNECT" for line in (77, 78)},
-            **{("phase", line): "OBSERVER_TOPOLOGY" for line in (79, 80, 81, 89)},
-            ("phase", 90): "ORIGIN_PUBLISH", ("phase", 152): "BROKER_CLOSE_HOOK",
-            ("phase", 166): "WAIT_FIRST_DISCONNECT", ("phase", 171): "DURABLE_READ",
-            ("phase", 172): "DURABLE_ORIGINAL_PRESENT", ("phase", 173): "DURABLE_DECODE",
-            ("phase", 174): "DURABLE_SINGLE_MESSAGE", ("phase", 176): "DURABLE_ENVELOPE",
-            ("phase", 177): "DURABLE_PROJECTION_CUTPOINT", ("phase", 178): "DURABLE_NO_EARLY_COMPLETION",
-            ("phase", 180): "DURABLE_QUEUE_PROVENANCE", ("phase", 181): "DURABLE_REQUEUE",
-            ("phase", 193): "WAIT_REPLAY_COMMIT",
-            **{("phase", line): "REPLAY_OUTCOME_CHECK" for line in (198, 199)},
-            **{("phase", line): "WORKER_CLOSE" for line in (167, 194)},
-            **{("close_with_barrier", line): "BROKER_CLOSE_CONFIRMATION" for line in (54, 57, 60, 63)},
-            **{("phase", line): "PROBE_TEARDOWN" for line in (209, 212, 214, 215, 216, 217, 218)},
+            **{("phase", line): "OBSERVER_CONNECT" for line in (88, 89)},
+            **{("phase", line): "OBSERVER_TOPOLOGY" for line in (90, 91, 92, 100)},
+            ("phase", 101): "ORIGIN_PUBLISH", ("phase", 163): "BROKER_CLOSE_HOOK",
+            ("phase", 177): "WAIT_FIRST_DISCONNECT", ("phase", 182): "DURABLE_READ",
+            ("phase", 183): "DURABLE_ORIGINAL_PRESENT", ("phase", 184): "DURABLE_DECODE",
+            ("phase", 185): "DURABLE_SINGLE_MESSAGE", ("phase", 187): "DURABLE_ENVELOPE",
+            ("phase", 188): "DURABLE_PROJECTION_CUTPOINT", ("phase", 189): "DURABLE_NO_EARLY_COMPLETION",
+            ("phase", 191): "DURABLE_QUEUE_PROVENANCE", ("phase", 192): "DURABLE_REQUEUE",
+            ("phase", 204): "WAIT_REPLAY_COMMIT",
+            **{("phase", line): "REPLAY_OUTCOME_CHECK" for line in (209, 210)},
+            **{("phase", line): "WORKER_CLOSE" for line in (178, 205)},
+            **{("close_with_barrier", line): "BROKER_CLOSE_CONFIRMATION" for line in (55, 58, 61, 62, 65, 74)},
+            **{("phase", line): "PROBE_TEARDOWN" for line in (220, 223, 225, 226, 227, 228, 229)},
         }
         expected_path = str(ROOT / "services/notification-bot/tests/prepared_broker_probe.py")
         source_lines = source.decode("utf-8").splitlines()

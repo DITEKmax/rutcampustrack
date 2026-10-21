@@ -3903,7 +3903,7 @@ jobs:
           HOSTED_MARK_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
                   'e5fd78781d9526b0951a2ea4273ebd5803ad2e3f8f5c3aafb89fa0e6f75b078b',
-              'tests/e2e/fixtures/mobile-dataset.ts': '66d4b793d92c0d6df61e9c3578945e976fa853c4c7d772e53038d4e9560b059c',
+              'tests/e2e/fixtures/mobile-dataset.ts': '7eca9dccdddd55160b5e8ac1c386c49d832c2419572fa7c4f05ada5cdec1fcdd',
           }
           ORDINARY_MARK_FRAME_SOURCES = {
               'ATTENDANCE_MARKING_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingController',
@@ -3929,7 +3929,7 @@ jobs:
               'tests/e2e/fixtures/semester-lifecycle.spec.ts':
                   '413be7c4a2b1c44f5f8af0b8f018151d62624d726321c84304ebbaa251852570',
               'tests/e2e/fixtures/mobile-dataset.ts':
-                  '66d4b793d92c0d6df61e9c3578945e976fa853c4c7d772e53038d4e9560b059c',
+                  '7eca9dccdddd55160b5e8ac1c386c49d832c2419572fa7c4f05ada5cdec1fcdd',
           }
           # Driver 5.5.2 / Spring Data MongoDB 4.5.13; no suffix or package wildcard.
           HOSTED_CLASSES = {

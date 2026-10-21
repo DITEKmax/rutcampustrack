@@ -1498,6 +1498,7 @@ def main():
 
         def background_transport():
             receipt = td / "background-receipt.json"
+            _STATE["phase"] = "ACTUAL_BACKGROUND_TEMPO_PORT_LOOKUP"
             address = docker("port", "tempo", "4318").stdout.strip()
             env = dict(
                 os.environ,
@@ -1517,7 +1518,9 @@ def main():
                 "--max-workers=1",
                 "-Dorg.gradle.jvmargs=-Xmx512m -XX:ActiveProcessorCount=2",
             ]
+            _STATE["phase"] = "ACTUAL_BACKGROUND_GRADLE"
             run_application_gradle(command, env, "background-gradle.private.log", 600)
+            _STATE["phase"] = "ACTUAL_BACKGROUND_TRANSPORT"
             assert receipt.is_file() and receipt.stat().st_size <= 1024 * 1024
             evidence = json.loads(receipt.read_text())
             assert evidence["schema"] == 1 and evidence["kind"] == "actual_application_background"

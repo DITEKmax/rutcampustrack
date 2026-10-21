@@ -107,6 +107,29 @@ ATTENDANCE_FAILURE_CLASSES = {
 }
 ATTENDANCE_FAILURE_CODES = {name: code for code, names in ATTENDANCE_FAILURE_CLASSES.items() for name in names}
 ATTENDANCE_DIAGNOSTIC_CHARS = 65536
+# Additive, independently versioned projection; existing class codes and identities stay unchanged.
+ATTENDANCE_OOM_TYPE = "java.lang.OutOfMemoryError"
+ATTENDANCE_OOM_MESSAGES = {
+    "Java heap space": "JAVA_HEAP",
+    "GC overhead limit exceeded": "GC_OVERHEAD",
+    "Metaspace": "METASPACE",
+    "Compressed class space": "COMPRESSED_CLASS_SPACE",
+    "Direct buffer memory": "DIRECT_BUFFER",
+    "unable to create native thread: possibly out of memory or process/resource limits reached": "NATIVE_THREAD",
+    "unable to create new native thread": "NATIVE_THREAD",
+}
+ATTENDANCE_OOM_DIRECT_BUFFER = re.compile(
+    r"Cannot reserve [0-9]{1,20} bytes of direct buffer memory "
+    r"\(allocated: [0-9]{1,20}, limit: [0-9]{1,20}\)"
+)
+ATTENDANCE_OOM_CAUSE = re.compile(
+    r"(?m)^[ \t]{0,32}Caused by:[ \t]{1,8}"
+    + re.escape(ATTENDANCE_OOM_TYPE)
+    + r"(?=:|\r?$)([^\r\n]*)\r?$"
+)
+ATTENDANCE_OOM_TOP = re.compile(
+    re.escape(ATTENDANCE_OOM_TYPE) + r"(?:: ([^\r\n]{0,2048}))?"
+)
 ATTENDANCE_EXEC_TYPE = "org.gradle.process.internal.ExecException"
 ATTENDANCE_EXEC_MESSAGE = re.compile(
     r"Process '[^'\r\n]{1,512}' finished with non-zero exit value ([1-9][0-9]{0,2})"
@@ -534,6 +557,40 @@ def notification_failure_diagnostic(case: ElementTree.Element) -> dict:
     return {"state": "CLOSED_CLASSES", "codes": codes, "overflow": overflow}
 
 
+def attendance_oom_resource_diagnostic(failure: ElementTree.Element, prefix: str, overflow: bool) -> dict:
+    result = {"kind": "ATTENDANCE_OOM_RESOURCE_V1", "family": "UNKNOWN"}
+    if overflow:
+        return result
+    messages = []
+    if failure.get("type") == ATTENDANCE_OOM_TYPE:
+        message = failure.get("message", "")
+        if message:
+            if len(message) <= 2048:
+                top = ATTENDANCE_OOM_TOP.fullmatch(message)
+                messages.append(top[1] if top else message)
+            else:
+                messages.append(None)
+        # A native first stack line can supply an absent top message, never an assertion body.
+        first_line = prefix.split("\n", 1)[0].removesuffix("\r")
+        top = ATTENDANCE_OOM_TOP.fullmatch(first_line)
+        if top:
+            messages.append(top[1])
+    for match in ATTENDANCE_OOM_CAUSE.finditer(prefix):
+        suffix = match[1]
+        messages.append(suffix[2:] if suffix.startswith(": ") and len(suffix) <= 2050 else None)
+    families = set()
+    for message in messages:
+        family = ATTENDANCE_OOM_MESSAGES.get(message, "UNKNOWN")
+        if isinstance(message, str) and ATTENDANCE_OOM_DIRECT_BUFFER.fullmatch(message):
+            family = "DIRECT_BUFFER"
+        families.add(family)
+    if len(families) == 1:
+        result["family"] = families.pop()
+    elif families:
+        result["family"] = "AMBIGUOUS"
+    return result
+
+
 def attendance_failure_diagnostic(case: ElementTree.Element) -> dict:
     result = {
         "kind": "ATTENDANCE_FAILURE_V1",
@@ -571,6 +628,8 @@ def attendance_failure_diagnostic(case: ElementTree.Element) -> dict:
     elif exits:
         result["processExit"]["state"] = "AMBIGUOUS"
     result.update(state="CLOSED_CLASSES", codes=codes, overflow=overflow)
+    if "OOM" in codes:
+        result["oomResource"] = attendance_oom_resource_diagnostic(failure, prefix, overflow)
     return result
 
 

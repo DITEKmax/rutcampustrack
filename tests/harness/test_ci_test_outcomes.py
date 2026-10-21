@@ -897,6 +897,129 @@ class SafeCases {
                 "processExit": {"state": "ABSENT_OR_UNRECOGNIZED", "value": None},
             })
 
+    def test_attendance_oom_resource_projects_only_exact_native_messages_and_headers(self) -> None:
+        native = "java.lang.OutOfMemoryError"
+        vectors = (
+            ("Java heap space", "JAVA_HEAP"),
+            ("GC overhead limit exceeded", "GC_OVERHEAD"),
+            ("Metaspace", "METASPACE"),
+            ("Compressed class space", "COMPRESSED_CLASS_SPACE"),
+            ("Direct buffer memory", "DIRECT_BUFFER"),
+            ("Cannot reserve 501234701234 bytes of direct buffer memory (allocated: 601234701234, limit: 701234701234)", "DIRECT_BUFFER"),
+            ("unable to create native thread: possibly out of memory or process/resource limits reached", "NATIVE_THREAD"),
+            ("unable to create new native thread", "NATIVE_THREAD"),
+        )
+        for message, family in vectors:
+            for failure_type, attribute, text in (
+                (native, message, MARKER),
+                (native, native + ": " + message, MARKER),
+                (native, "", native + ": " + message + "\r\n" + MARKER),
+                ("org.gradle.api.internal.tasks.testing.TestSuiteExecutionException", MARKER,
+                 "\tCaused by: " + native + ": " + message + "\r\n" + MARKER),
+            ):
+                with self.subTest(family=family, native_top=failure_type == native, first_line=attribute == ""):
+                    value = COLLECTOR.attendance_failure_diagnostic(
+                        self.attendance_case(failure_type, text, message=attribute)
+                    )
+                    self.assertEqual(value["oomResource"], {"kind": "ATTENDANCE_OOM_RESOURCE_V1", "family": family})
+                    self.assertIn("OOM", value["codes"])
+                    self.assertEqual(value["processExit"], {"state": "ABSENT_OR_UNRECOGNIZED", "value": None})
+                    self.assertNotIn(MARKER, json.dumps(value))
+                    for private_number in ("501234701234", "601234701234", "701234701234"):
+                        self.assertNotIn(private_number, json.dumps(value))
+
+    def test_attendance_oom_resource_rejects_lookalikes_assertion_text_and_unbounded_messages(self) -> None:
+        native = "java.lang.OutOfMemoryError"
+        for failure_type, text, attribute in (
+            ("java.lang.AssertionError", "Java heap space", "Java heap space"),
+            ("java.lang.AssertionError", native + ": Java heap space", native + ": Java heap space"),
+            (native + "Counterfeit", MARKER, "Java heap space"),
+            (MARKER, "prefix Caused by: " + native + ": Java heap space", "Java heap space"),
+            (MARKER, "Caused by: " + native + "Counterfeit: Java heap space", "Java heap space"),
+            (MARKER, " " * 33 + "Caused by: " + native + ": Java heap space", MARKER),
+            (MARKER, "Caused by: " + " " * 8 + native + ": Java heap space", MARKER),
+            (MARKER, "    at " + native + ".Java heap space(" + MARKER + ")", MARKER),
+        ):
+            value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(failure_type, text, message=attribute))
+            self.assertNotIn("oomResource", value)
+        for message in (
+            "", MARKER, "prefix Java heap space", "Java heap space extra", "Java heap space\n",
+            "Java heap space\r", "Java\u00a0heap space", "Requested array size exceeds VM limit",
+            "Cannot reserve -1 bytes of direct buffer memory (allocated: 1, limit: 2)",
+            "Cannot reserve " + "1" * 21 + " bytes of direct buffer memory (allocated: 1, limit: 2)",
+            "Java heap space" + "x" * 2049,
+        ):
+            for text, attribute in ((MARKER, message), ("Caused by: " + native + ": " + message, MARKER)):
+                if text != MARKER and message in ("Java heap space\n", "Java heap space\r"):
+                    # CR/LF terminate a valid cause header; only the top attribute rejects them.
+                    continue
+                value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(native, text, message=attribute))
+                self.assertEqual(value["oomResource"]["family"], "UNKNOWN")
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_attendance_oom_resource_conflicts_are_ambiguous_and_repeated_family_is_stable(self) -> None:
+        native = "java.lang.OutOfMemoryError"
+        for messages, expected in (
+            (("Java heap space", "Java heap space"), "JAVA_HEAP"),
+            (("Java heap space", "Metaspace"), "AMBIGUOUS"),
+            (("Java heap space", MARKER), "AMBIGUOUS"),
+            (("Java heap space", "x" * 2049), "AMBIGUOUS"),
+            ((MARKER, MARKER), "UNKNOWN"),
+        ):
+            text = "\n".join("Caused by: " + native + ": " + message for message in messages)
+            value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, text))
+            self.assertEqual(value["oomResource"]["family"], expected)
+        value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(
+            native, "Caused by: " + native + ": Metaspace", message="Java heap space"
+        ))
+        self.assertEqual(value["oomResource"]["family"], "AMBIGUOUS")
+
+    def test_attendance_oom_resource_cutoff_never_projects_a_partial_or_incomplete_chain(self) -> None:
+        native = "java.lang.OutOfMemoryError"
+        header = "Caused by: " + native + ": Java heap space"
+        for text in (
+            "x" * COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS + "\n" + header,
+            "x\n" * ((COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS - 10) // 2) + header,
+            header + "\n" + "x" * COLLECTOR.ATTENDANCE_DIAGNOSTIC_CHARS,
+        ):
+            value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(native, text, message="Java heap space"))
+            self.assertEqual(value["oomResource"]["family"], "UNKNOWN")
+            self.assertTrue(value["overflow"])
+        with patch.object(COLLECTOR, "ATTENDANCE_DIAGNOSTIC_CHARS", len(header)):
+            value = COLLECTOR.attendance_failure_diagnostic(self.attendance_case(MARKER, header))
+            self.assertEqual(value["oomResource"]["family"], "JAVA_HEAP")
+            self.assertFalse(value["overflow"])
+
+    def test_attendance_oom_resource_collection_adds_only_nested_family_for_unknown_failures(self) -> None:
+        classname = self.attendance_fixture()
+        self.xml(
+            f'<testcase classname="{MARKER}" name="{MARKER}"><failure type="java.lang.OutOfMemoryError" message="Java heap space">{MARKER}</failure></testcase>'
+            f'<testcase classname="{MARKER}" name="{MARKER}"><error type="java.lang.OutOfMemoryError" message="Metaspace">{MARKER}</error></testcase>'
+            f'<testcase classname="{classname}" name="contextStarts()"><failure type="java.lang.OutOfMemoryError" message="Java heap space"/></testcase>'
+            f'<testcase classname="{classname}" name="{MARKER}"><failure type="java.lang.OutOfMemoryError" message="Java heap space"/></testcase>',
+            tests=4, failures=3, errors=1,
+        )
+        report = COLLECTOR.collect(self.root, "attendance-service", "integrationTest", self.environment)
+        self.assertEqual(report["schemaVersion"], 1)
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        self.assertEqual(report["summary"], {"PASSED": 0, "FAILED": 3, "ERROR": 1, "SKIPPED": 0, "NOT_EXECUTED": 0})
+        for case, family in zip(report["cases"][:2], ("JAVA_HEAP", "METASPACE")):
+            self.assertEqual(case["failureDiagnostic"]["oomResource"], {"kind": "ATTENDANCE_OOM_RESOURCE_V1", "family": family})
+            self.assertEqual(case["identity"], "ORDINAL_ONLY")
+            self.assertIsNone(case["classname"])
+            self.assertIsNone(case["method"])
+            self.assertNotIn("source", case)
+            self.assertNotIn("sourceSha256", case)
+            # Existing readers still see the exact original diagnostic contract when ignoring the optional field.
+            legacy = {key: value for key, value in case["failureDiagnostic"].items() if key != "oomResource"}
+            self.assertEqual(legacy, {
+                "kind": "ATTENDANCE_FAILURE_V1", "state": "CLOSED_CLASSES", "codes": ["OOM"], "overflow": False,
+                "processExit": {"state": "ABSENT_OR_UNRECOGNIZED", "value": None},
+            })
+        self.assertTrue(all("failureDiagnostic" not in case for case in report["cases"][2:]))
+        self.assertTrue(report["xml"][0]["suites"][0]["countsConsistent"])
+        self.assertNotIn(MARKER, json.dumps(report))
+
     def academic_fixture(self, source_path: str | None = None) -> str:
         source = self.root / (source_path or COLLECTOR.ACADEMIC_SCHEMA_SOURCE)
         source.parent.mkdir(parents=True)

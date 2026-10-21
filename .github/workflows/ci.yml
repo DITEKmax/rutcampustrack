@@ -403,9 +403,62 @@ jobs:
               'org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency',
               'org.flywaydb.core.Flyway.migrate','org.testcontainers.containers.GenericContainer.start',
               'org.testcontainers.containers.GenericContainer.tryStart','org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse'}
+          def read_log_window(path):
+              try:
+                  if path.is_symlink() or not path.is_file():
+                      return '', 'UNAVAILABLE'
+                  with path.open('rb') as log:
+                      size = log.seek(0, 2)
+                      cutoff = size > 65536
+                      log.seek(max(0, size - 65536))
+                      data = log.read(65536)
+                  if cutoff:
+                      data = data.partition(b'\n')[2]
+                  # A partial original line cannot attest a public Gradle marker.
+                  if not data.endswith(b'\n'):
+                      data = data.rpartition(b'\n')[0]
+                  return data.decode('utf-8', errors='replace'), 'TAIL_64_KIB' if cutoff else 'FULL'
+              except OSError:
+                  return '', 'UNREADABLE'
+
+          def boundary_diagnostic(log_text, window, report, failure_type, causes):
+              tasks = {
+                  ':services:schedule-service:schedule-app:' + name: name
+                  for name in ('extractIncludeProto', 'extractProto', 'generateProto', 'compileJava',
+                               'processResources', 'compileTestJava', 'processTestResources', 'integrationTest')}
+              failed = [match.group(1) for line in log_text.splitlines()
+                        if (match := re.fullmatch(r'> Task ([^\s]+) FAILED', line))]
+              task = tasks.get(failed[0], 'OTHER') if failed else 'NONE'
+              dependency_markers = {
+                  "> Could not resolve all files for configuration ':services:schedule-service:schedule-app:" + name + "'."
+                  for name in ('compileClasspath', 'testCompileClasspath', 'testRuntimeClasspath',
+                               'protobufToolsLocator_protoc', 'protobufToolsLocator_grpc')}
+              lines = log_text.splitlines()
+              category, evidence = 'UNKNOWN', 'NONE'
+              if any(line in dependency_markers for line in lines):
+                  category, evidence = 'DEPENDENCY', 'GRADLE_MARKER'
+              elif task in {'compileJava', 'compileTestJava'} and any(
+                      line == '> Compilation failed; see the compiler output below.' for line in lines):
+                  category, evidence = 'COMPILE', 'GRADLE_MARKER'
+              elif any(re.fullmatch(r"> Process 'Gradle Test Executor [0-9]{1,6}' finished with non-zero exit value [1-9][0-9]{0,2}", line) for line in lines):
+                  category, evidence = 'TEST_WORKER', 'GRADLE_MARKER'
+              elif failure_type in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}:
+                  category, evidence = 'TEST_ASSERTION', 'JUNIT_TYPE'
+              elif any(value.startswith(('org.springframework.beans.', 'org.springframework.context.',
+                                        'org.springframework.boot.context.properties.'))
+                       for value in [failure_type, *causes]):
+                  category, evidence = 'STARTUP', 'JUNIT_TYPE'
+              return {'logWindow': window, 'failedTask': task,
+                      'taskScope': 'VISIBLE_WINDOW' if window == 'TAIL_64_KIB' else 'FULL_LOG' if window == 'FULL' else 'NONE',
+                      'category': category, 'evidence': evidence, 'junitReport': report}
+
+          log_text, log_window = read_log_window(private/'red.private.log')
+          report_presence = 'MISSING'
           text = ''
           try:
               result = pathlib.Path('services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT.xml')
+              report_presence = ('SYMLINK' if result.is_symlink() else 'MISSING' if not result.is_file()
+                                 else 'OVERSIZE' if result.stat().st_size > 33554432 else 'PRESENT')
               if result.is_file() and not result.is_symlink() and result.stat().st_size <= 33554432:
                   data = result.read_bytes()
                   assert b'<!DOCTYPE' not in data.upper() and b'<!ENTITY' not in data.upper()
@@ -416,14 +469,17 @@ jobs:
                       kind = failures[0].get('type','')
                       proof['failureType'] = kind if kind in allowed_types else 'OTHER'
                       text = '\n'.join((node.text or '') for node in failures)
-              elif (private/'red.private.log').is_file():
-                  with (private/'red.private.log').open('rb') as log:
-                      log.seek(max(0,(private/'red.private.log').stat().st_size-1048576))
-                      text = log.read(1048576).decode('utf-8',errors='replace')
+              else:
+                  text = log_text
               proof['causeClasses'] = sorted({value for value in re.findall(r'(?m)^\s*Caused by:\s+([A-Za-z0-9_.$]+)',text) if value in allowed_types})
               proof['stackMethods'] = sorted({value for value in re.findall(r'(?m)^\s*at\s+(?:[^\s/]+/)?([A-Za-z0-9_.$]+)\(',text) if value in allowed_methods})
           except (OSError,ValueError,AssertionError,ET.ParseError):
               proof['diagnosticKind'] = 'UNREADABLE_JUNIT'
+              report_presence = 'UNREADABLE'
+          has_junit = proof['diagnosticKind'] == 'JUNIT_TYPES_ONLY'
+          proof['boundaryDiagnostic'] = boundary_diagnostic(
+              log_text, log_window, report_presence,
+              proof['failureType'] if has_junit else 'NONE', proof['causeClasses'] if has_junit else [])
           (private/'verified.safe.json').write_text(json.dumps(proof,indent=2)+'\n')
           PY_ONEOFF_DIAGNOSTICS
           python3 - "$private" "$red_exit" <<'PY'

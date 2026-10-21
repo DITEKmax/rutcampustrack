@@ -886,7 +886,7 @@ jobs:
                   # Captured teacher pairs moved to Academic; T008 grant policy is unchanged.
                   teacher_source = app / 'src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java'
                   teacher_test = teacher_source.read_bytes()
-                  assert hashlib.sha256(teacher_test).hexdigest() == 'b454db34df04d223ad893769ecc392e445b84e22eb5eb18816eb8ae78e944a7b'
+                  assert hashlib.sha256(teacher_test).hexdigest() == 'c9663d155c57cd6464060bedf9583dbd02e180e3999ecb1fa36c5715f2339307'
                   teacher_production = app / 'src/main/java/ru/rutcampustrack/academic/exportjobs/LocalReportAuthority.java'
                   teacher_current = teacher_production.read_bytes()
                   assert hashlib.sha256(teacher_current).hexdigest() == '2ed6ed5d37c319871a88469064595c65749d7404ac13fabd4a2c544bc90210de'
@@ -896,11 +896,11 @@ jobs:
                   assert hashlib.sha256(teacher_negative).hexdigest() == '7b5466a6c9fb694cea5b0d6417f31f6cc7c7d0afdc43a88023e0fd9212fe9bdc'
                   teacher_lines = teacher_test.decode().splitlines()
                   assert teacher_lines[510].strip() == 'void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {'
-                  assert teacher_lines[555].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
+                  assert teacher_lines[560].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
                   scoped_read = {'package': 'ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                  'method': 'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                  'source': teacher_source, 'production': teacher_production, 'file': 'AcademicExportJobsIT.java',
-                                 'proofKey': 'teacherReadyRule', 'ruleLine': 556,
+                                 'proofKey': 'teacherReadyRule', 'ruleLine': 561,
                                  'testSha': hashlib.sha256(teacher_test).hexdigest(),
                                  'productionSha': hashlib.sha256(teacher_current).hexdigest(),
                                  'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
@@ -1484,7 +1484,7 @@ jobs:
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
                       + re.escape(initial_membership['package'] + '.' + initial_membership['method'])
                       + r'\(EventConsumerIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', backfill_failure.text or '')
-                  assert backfill_named_lines == ['829']
+                  assert backfill_named_lines == ['778']
                   proof['initialMembershipRule'].update(
                       state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
                       tests=1, failures=1, errors=0, skipped=0,
@@ -1899,7 +1899,7 @@ jobs:
               'academic-service': ('ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                                    'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                                    'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java',
-                                   'b454db34df04d223ad893769ecc392e445b84e22eb5eb18816eb8ae78e944a7b'),
+                                   'c9663d155c57cd6464060bedf9583dbd02e180e3999ecb1fa36c5715f2339307'),
               'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
                                      'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                                      'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',

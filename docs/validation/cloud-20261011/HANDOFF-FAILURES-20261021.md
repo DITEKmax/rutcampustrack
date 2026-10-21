@@ -2,13 +2,24 @@
 
 **SOURCE_READY, runtime readiness BLOCKED.** Цель — установить причины оставшихся failures и исправлять подтверждённые ошибки без ослабления поведения. Source approval не означает готовность PR. Merge/main/deploy запрещены; Deploy257646584 disabled_manually. Audit94DELETE/169REWRITE исторически завершён как source implementation, новой кампании нет.
 
-Main/merge-base3908fad9624f97aec8891fc79338ceb6b0616bf3. Предыдущий опубликованный HEAD5033b6dadd0e80440f1c18d3c6d49fac5c8087cf/sourcebfd747577af1dc29780bb05111d8b1bd82726adc. Новый source **c843ca3fd181a10c496a9133c8540f3552ed5ee8**. После source меняются только CURRENT/HANDOFF; final docs HEAD отдельный. Подробный предыдущий handoff с Notification/native evidence, CI9 и semantic OpenAPI review сохранён в Git на5033.
+Main/merge-base3908fad9624f97aec8891fc79338ceb6b0616bf3. Предыдущий опубликованный HEAD84e28aa0006a64557046eeb4154854dcc4c77a63/sourcec843ca3fd181a10c496a9133c8540f3552ed5ee8. Новый source **b31bfc2b25a3bbc4535f56e94e34b292bff63579**. После source меняются только CURRENT/HANDOFF; final docs HEAD отдельный. Подробный предыдущий handoff с Notification/native evidence, CI9 и semantic OpenAPI review сохранён в Git на5033.
+
+## 84e: собственная workflow-size regression и correction
+
+Push39577619176 на84e завершён FAILURE до jobs; check_suite107252273721 содержит0 check runs. PR CI не создан. Workflow вырос с510662 до514209 UTF-8 bytes, что превышает [официальный500KB limit](https://docs.github.com/en/actions/reference/limits) (512000B). YAML parse этот предел не проверил. Exact hosted annotation недоступна; нарушение размера независимо доказано. Это новый дефект собственного diagnostic package, не Attendance assertion или environment cause.
+
+ONLY Attendance producer вынесен в scripts/ci/attendance-openapi-candidate.py. Его10033B и SHA9b18421e7e281f3cf632b03efdee91ba83d49b2e9aa310e60281e532b73e5046 byte-identical прежнему inline program. Wrapper сохраняет umask077 и python3 в прежнем repository-root cwd; checkout включает новый tracked script. Step name/id/if/env, все другие steps/order/uploads, GITHUB_OUTPUT, relative paths, pins, child flags/timeouts/schema/primary FAIL/privacy неизменны.
+
+Workflow502389B<=512000, запас9611B; SHA63fee721b1635ef62068eb3fda1bbd37190bbdf0aab4394daf6a02ca626f58ba. Exact inverse/program bytes+AST/YAML semantics/compile/mode0644/size и13 pure controls PASS. Первая static проверка остановилась на inherited0600; mode нормализован до0644 до единственного финального13case invocation, program bytes не менялись. Независимая scoped recheck APPROVE_SOURCE. Hosted acceptance PENDING: нужен созданный новый CI run с jobs, старый source approval не заменяет этот факт.
+
+Last read84e09:41UTC: Security39577631989/OpenAPI39577631981 SUCCESS (built-image SKIPPED); Coverage39577632014 in_progress,7success/1failure/1in_progress, failed Attendance Run tests with coverage. Новые case counts/threshold verdict без receipts не придуманы. Это не results5033 и не результаты нового sourceb31.
 
 ## Точный delta
 
-Три modified paths,0added/0deleted:
+Совокупно после5033: три modified source paths и один created,0deleted. Текущая size correction относительно84e — только workflow+новый script:
 
 - .github/workflows/ci.yml
+- scripts/ci/attendance-openapi-candidate.py (created)
 - infra/prometheus/tests/check_pipeline.py
 - tests/harness/test_prepared_probe_projection.py
 

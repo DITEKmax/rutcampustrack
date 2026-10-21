@@ -521,12 +521,17 @@ class AcademicExportJobsIT
         jdbc.update(
                 "INSERT INTO groups(id,name,is_active)"
                         + " VALUES(501,'JOB-501',true),(502,'JOB-502',true)");
-        jdbc.update(
-                "INSERT INTO subjects(id,name,type,group_id,semester_id)"
-                        + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
-        jdbc.update(
-                "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
-                        + " VALUES(601,'lecture'),(602,'lecture')");
+        new org.springframework.transaction.support.TransactionTemplate(
+                        new DataSourceTransactionManager(jdbc.getDataSource()))
+                .executeWithoutResult(
+                        tx -> {
+                            jdbc.update(
+                                    "INSERT INTO subjects(id,name,type,group_id,semester_id)"
+                                        + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
+                            jdbc.update(
+                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                            + " VALUES(601,'lecture'),(602,'lecture')");
+                        });
         jdbc.update(
                 "INSERT INTO"
                     + " assignments(id,teacher_id,semester_id,group_id,subject_id,lesson_type,lifecycle_state,valid_from)"
@@ -772,14 +777,15 @@ class AcademicExportJobsIT
     private void availabilityOperation(UUID operation) {
         jdbc.update(
                 "INSERT INTO"
-                    + " academic_group_availability_operations(operation_id,action,request_digest,scope_group_id,local_payload,local_command_hash,auth_payload,auth_command_hash,actor_mode,actor_id,actor_session_id,actor_session_version,actor_roles_version,phase)"
-                    + " VALUES(?,'MANUAL_CYCLE',?,0,decode('01','hex'),?,decode('01','hex'),?,'HUMAN',101,?,1,1,'ACCEPTED')"
+                    + " academic_group_availability_operations(operation_id,action,request_digest,scope_group_id,local_payload,local_command_hash,auth_payload,auth_command_hash,actor_mode,actor_id,actor_session_id,actor_session_version,actor_roles_version,api_action,api_target_id,api_request_digest,phase)"
+                    + " VALUES(?,'MANUAL_CYCLE',?,0,decode('01','hex'),?,decode('01','hex'),?,'HUMAN',101,?,1,1,'GROUP_MANUAL_CYCLE',0,?,'FAILED_SAFE')"
                     + " ON CONFLICT(operation_id) DO NOTHING",
                 operation,
                 "0".repeat(64),
                 new byte[32],
                 new byte[32],
-                UUID.randomUUID());
+                UUID.randomUUID(),
+                "0".repeat(64));
     }
 
     private void installGroupGuard(long group, UUID operation) {

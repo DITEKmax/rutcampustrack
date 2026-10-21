@@ -91,8 +91,11 @@ class HomeworkMigrationIT extends AbstractAcademicIntegrationTest {
         var canonical = identityFixture.canonical();
         Long subject =
                 jdbcTemplate.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id,semester_id) VALUES('binding"
-                            + " constraint','lecture',?,?) RETURNING id",
+                        "WITH subject AS (INSERT INTO subjects(name,type,group_id,semester_id)"
+                            + " VALUES('binding constraint','lecture',?,?) RETURNING id), types AS"
+                            + " (INSERT INTO subject_lesson_types(subject_id,lesson_type) SELECT"
+                            + " id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id"
+                            + " FROM types",
                         Long.class,
                         canonical.groupId(),
                         canonical.semesterId());

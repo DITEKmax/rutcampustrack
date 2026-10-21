@@ -202,17 +202,26 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void getLessonsByGroup_happyPath_returnsAllMatchingLessons() {
+        // The transfer's SQL authority uses CURRENT_DATE independently of the mocked Java clock.
+        LocalDate from =
+                jdbcTemplate
+                        .queryForObject("SELECT CURRENT_DATE", LocalDate.class)
+                        .with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY));
+        org.mockito.Mockito.when(clock.instant())
+                .thenReturn(
+                        from.minusDays(1)
+                                .atTime(9, 0)
+                                .atZone(java.time.ZoneId.of("Europe/Moscow"))
+                                .toInstant());
         ScheduleItem item = createScheduleItem(100L, 1L, (short) 1, "A101");
 
-        Lesson first = createLesson(item.getId(), LocalDate.of(2026, 4, 1), LessonStatus.CLOSED);
-        Lesson middle = createLesson(item.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
-        Lesson last = createLesson(item.getId(), LocalDate.of(2026, 4, 30), LessonStatus.PLANNED);
-        createLesson(item.getId(), LocalDate.of(2026, 3, 31), LessonStatus.PLANNED);
-        createLesson(item.getId(), LocalDate.of(2026, 5, 1), LessonStatus.PLANNED);
-        Lesson cancelled =
-                createLesson(item.getId(), LocalDate.of(2026, 4, 9), LessonStatus.CANCELLED);
-        Lesson superseded =
-                createLesson(item.getId(), LocalDate.of(2026, 4, 16), LessonStatus.PLANNED);
+        Lesson first = createLesson(item.getId(), from, LessonStatus.CLOSED);
+        Lesson middle = createLesson(item.getId(), from.plusDays(7), LessonStatus.ACTIVE);
+        Lesson last = createLesson(item.getId(), from.plusDays(29), LessonStatus.PLANNED);
+        createLesson(item.getId(), from.minusDays(1), LessonStatus.PLANNED);
+        createLesson(item.getId(), from.plusDays(30), LessonStatus.PLANNED);
+        Lesson cancelled = createLesson(item.getId(), from.plusDays(8), LessonStatus.CANCELLED);
+        Lesson superseded = createLesson(item.getId(), from.plusDays(15), LessonStatus.PLANNED);
         org.mockito.Mockito.when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
@@ -222,7 +231,7 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
                 superseded.getId(),
                 42L,
                 new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
-                        LocalDate.of(2026, 4, 17),
+                        from.plusDays(16),
                         1,
                         null,
                         null,
@@ -236,16 +245,16 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
                         superseded.getOccurrenceId());
         assertThat(current).isNotEqualTo(superseded.getId());
         var foreignGroup = createScheduleItem(101L, 1L, (short) 1, "foreign");
-        createLesson(foreignGroup.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
+        createLesson(foreignGroup.getId(), from.plusDays(7), LessonStatus.ACTIVE);
         var foreignSemester = createScheduleItem(100L, 2L, (short) 2, "foreign");
-        createLesson(foreignSemester.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
+        createLesson(foreignSemester.getId(), from.plusDays(7), LessonStatus.ACTIVE);
 
         LessonsByGroupRequest request =
                 LessonsByGroupRequest.newBuilder()
                         .setGroupId(100L)
                         .setSemesterId(1L)
-                        .setDateFrom("2026-04-01")
-                        .setDateTo("2026-04-30")
+                        .setDateFrom(from.toString())
+                        .setDateTo(from.plusDays(29).toString())
                         .build();
 
         @SuppressWarnings("unchecked")

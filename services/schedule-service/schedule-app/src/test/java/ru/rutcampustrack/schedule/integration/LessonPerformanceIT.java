@@ -47,6 +47,7 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
 
     private long retainedOneOff;
     private long currentOneOff;
+    private LocalDate weekStart;
     @Autowired private jakarta.persistence.EntityManagerFactory entityManagerFactory;
 
     @org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -55,8 +56,15 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
     @BeforeEach
     void seed() {
         resetScheduleData();
+        // The transfer's SQL authority uses CURRENT_DATE independently of the mocked Java clock.
+        LocalDate today = jdbc.queryForObject("SELECT CURRENT_DATE", LocalDate.class);
+        weekStart =
+                today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY));
         org.mockito.Mockito.when(clock.instant())
-                .thenReturn(java.time.Instant.parse("2026-01-01T06:00:00Z"));
+                .thenReturn(
+                        today.atTime(9, 0)
+                                .atZone(java.time.ZoneId.of("Europe/Moscow"))
+                                .toInstant());
         org.mockito.Mockito.when(clock.getZone()).thenReturn(java.time.ZoneId.of("Europe/Moscow"));
         org.mockito.Mockito.when(clock.withZone(org.mockito.ArgumentMatchers.any()))
                 .thenAnswer(
@@ -109,12 +117,12 @@ SELECT assignment_id, group_id, subject_id, semester_id, 700, 'lecture',
                 INSERT INTO lesson_occurrences
                     (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,
                      semester_id, assigned_teacher_id, lesson_type)
-                SELECT si.id, (DATE '2026-01-05') + ((w.wo - 1) * 7) + (si.day_of_week - 1),
+                SELECT si.id, CAST(? AS DATE) + ((w.wo - 1) * 7) + (si.day_of_week - 1),
                        si.assignment_id, si.group_id, si.subject_id, si.semester_id, 700, 'lecture'
                   FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
                  WHERE si.group_id >= 900000
                 """,
-                WEEKS);
+                weekStart, WEEKS);
 
         // lessons: for each schedule_item × 20 weeks = 12000 rows.
         jdbc.update(
@@ -129,7 +137,7 @@ SELECT
     si.id, occurrence.id, si.assignment_id, si.group_id, si.subject_id, si.semester_id,
     700, 'lecture', si.lesson_number, si.day_of_week, si.start_time, si.end_time,
     si.room, 'all', 1, 1,
-    DATE '2026-01-05'
+    CAST(? AS DATE)
         + ((w.wo - 1) * INTERVAL '7 days')
         + ((si.day_of_week - 1) * INTERVAL '1 day'),
     CASE
@@ -144,10 +152,10 @@ SELECT
     FALSE
 FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
 JOIN lesson_occurrences occurrence ON occurrence.schedule_item_id = si.id
- AND occurrence.occurrence_date = (DATE '2026-01-05') + ((w.wo - 1) * 7) + (si.day_of_week - 1)
+ AND occurrence.occurrence_date = CAST(? AS DATE) + ((w.wo - 1) * 7) + (si.day_of_week - 1)
 WHERE si.group_id >= 900000
 """,
-                WEEKS);
+                weekStart, WEEKS, weekStart);
 
         jdbc.update(
                 """
@@ -160,39 +168,45 @@ WHERE si.group_id >= 900000
     }
 
     private void seedRetainedOneOffHistory() {
+        LocalDate fenceFrom = weekStart.minusDays(4);
         jdbc.update(
                 """
 INSERT INTO schedule_assignment_fences(assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,
     lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive)
-VALUES (950001,900010,99,1,700,'lecture',DATE '2026-01-01',DATE '2027-01-01',DATE '2027-01-01')
-""");
+VALUES (950001,900010,99,1,700,'lecture',?,?,?)
+""",
+                fenceFrom, fenceFrom.plusYears(1), fenceFrom.plusYears(1));
+        LocalDate oneOffDate = weekStart.plusDays(5);
         long origin =
                 jdbc.queryForObject(
                         """
 INSERT INTO schedule_one_off_lessons(group_id,subject_id,semester_id,date,lesson_number,classroom,created_by)
-VALUES (900010,99,1,DATE '2026-01-10',1,'one-off',42) RETURNING id
+VALUES (900010,99,1,?,1,'one-off',42) RETURNING id
 """,
-                        Long.class);
+                        Long.class,
+                        oneOffDate);
         long occurrence =
                 jdbc.queryForObject(
                         """
 INSERT INTO lesson_occurrences(one_off_lesson_id,occurrence_date,assignment_id,group_id,subject_id,
     semester_id,assigned_teacher_id,lesson_type,generation,revision)
-VALUES (?,DATE '2026-01-10',950001,900010,99,1,700,'lecture',1,1) RETURNING id
+VALUES (?,?,950001,900010,99,1,700,'lecture',1,1) RETURNING id
 """,
                         Long.class,
-                        origin);
+                        origin,
+                        oneOffDate);
         retainedOneOff =
                 jdbc.queryForObject(
                         """
 INSERT INTO lessons(one_off_lesson_id,occurrence_id,assignment_id,group_id,subject_id,semester_id,
     assigned_teacher_id,lesson_type,lesson_number,day_of_week,start_time,end_time,
     room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked)
-VALUES (?,?,950001,900010,99,1,700,'lecture',1,6,TIME '08:30',TIME '09:50','one-off','all',1,1,DATE '2026-01-10','planned',FALSE) RETURNING id
+VALUES (?,?,950001,900010,99,1,700,'lecture',1,6,TIME '08:30',TIME '09:50','one-off','all',1,1,?,'planned',FALSE) RETURNING id
 """,
                         Long.class,
                         origin,
-                        occurrence);
+                        occurrence,
+                        oneOffDate);
         jdbc.update(
                 "UPDATE lesson_occurrences SET current_lesson_id=? WHERE id=?",
                 retainedOneOff,
@@ -205,7 +219,7 @@ VALUES (?,?,950001,900010,99,1,700,'lecture',1,6,TIME '08:30',TIME '09:50','one-
                 retainedOneOff,
                 42L,
                 new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
-                        LocalDate.of(2026, 1, 10),
+                        oneOffDate,
                         2,
                         null,
                         null,
@@ -233,15 +247,21 @@ VALUES (?,?,950001,900010,99,1,700,'lecture',1,6,TIME '08:30',TIME '09:50','one-
         var expected =
                 jdbc.queryForList(
                         """
-SELECT id FROM lessons WHERE group_id = 900010 AND date BETWEEN DATE '2026-01-05'
-    AND DATE '2026-01-11' AND status IN ('planned','active','closed','transferred') ORDER BY id
+SELECT id FROM lessons WHERE group_id = 900010 AND date BETWEEN ?
+    AND ? AND status IN ('planned','active','closed','transferred') ORDER BY id
 """,
-                        Long.class);
+                        Long.class,
+                        weekStart,
+                        weekStart.plusDays(6));
         assertThat(expected).hasSize(32).contains(retainedOneOff, currentOneOff);
         var stats = entityManagerFactory.unwrap(org.hibernate.SessionFactory.class).getStatistics();
         // Warm-up the same endpoint once; measure every subsequent response, never best-of-N.
         String url =
-                "/schedule/groups/900010/lessons?dateFrom=2026-01-05&dateTo=2026-01-11&size=200&status=PLANNED&status=ACTIVE&status=CLOSED&status=TRANSFERRED";
+                "/schedule/groups/900010/lessons?dateFrom="
+                        + weekStart
+                        + "&dateTo="
+                        + weekStart.plusDays(6)
+                        + "&size=200&status=PLANNED&status=ACTIVE&status=CLOSED&status=TRANSFERRED";
         http.exchange(
                 url,
                 org.springframework.http.HttpMethod.GET,

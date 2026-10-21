@@ -10,6 +10,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client import attendance_pb2
+from bot.notifications.headman_alerts import _EXCUSE_REASON_LABELS
 from bot.notifications.presentation import message_options
 from bot.services.notification_prefs import (
     BUSINESS_EVENTS,
@@ -57,6 +58,7 @@ _PRIVATE_FIELDS = {
     "decided_at",
     "excluded_lesson_ids",
     "excluded_occurrence_ids",
+    "resolution_reason",
 }
 _TEACHER_EVENTS = {
     "lesson.cancelled",
@@ -412,7 +414,28 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             )
             role = next(role for role in role_order if role in role_state[0])
             fallback = None
+            facts = None
             if pending_context is not None and role == "HEADMAN":
+                detail = pending_context.detail
+                # Only protected canonical display facts reach the current headman.
+                # Comments, attachments and event-supplied personal data stay private.
+                facts = {
+                    "student_name": pending_context.student_name,
+                    "created_at": detail.summary.created_at,
+                    "lessons": [
+                        {
+                            "date": lesson.date,
+                            "lesson_number": lesson.lesson_number,
+                            "subject_name": lesson.subject_name,
+                            "lesson_type": lesson.subject_type,
+                            "start_time": lesson.starts_at,
+                            "end_time": lesson.ends_at,
+                        }
+                        for lesson in detail.summary.lessons
+                    ],
+                }
+                if kind == "excuse.requested" and detail.HasField("reason"):
+                    facts["reason_label"] = _EXCUSE_REASON_LABELS.get(detail.reason, "")
                 prefix = "ex" if kind.startswith("excuse.") else "lcr"
                 fallback = InlineKeyboardMarkup(
                     inline_keyboard=[
@@ -424,7 +447,7 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
                 )
             result = await bot.send_message(
                 chat_id=chat,
-                **message_options(display, config=config, role=role, fallback_markup=fallback),
+                **message_options(display, config=config, facts=facts, role=role, fallback_markup=fallback),
             )
             # Persist receipt before best-effort auxiliary state.
             await state.complete(event_id, uid)

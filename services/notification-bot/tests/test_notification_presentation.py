@@ -1,5 +1,6 @@
 """Content trust and single-recipient business notification regression."""
 
+import asyncio
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
@@ -69,6 +70,41 @@ async def test_requested_summary_uses_canonical_context_once_without_private_doc
 
 async def test_multiple_legacy_cards_emit_one_decision_with_fresh_authority(fake_redis):
     await assert_terminal_cards(fake_redis)
+
+
+@pytest.mark.parametrize("kind", ["excuse.requested", "late_checkin.requested"])
+@pytest.mark.parametrize("change", ["headman_revoked", "request_terminal"])
+async def test_queued_canonical_summary_is_private_after_authority_changes(kind, change, fake_redis):
+    from tests.business_delivery import BusinessDelivery, fact_event
+
+    h = BusinessDelivery(fake_redis)
+    h.roles = {2: ["HEADMAN"]}
+    if kind == "late_checkin.requested":
+        h.request_context.detail.summary.kind = pb.STUDENT_REQUEST_KIND_LATE_CHECKIN
+    waiting, release = asyncio.Event(), asyncio.Event()
+
+    async def rate_wait():
+        waiting.set()
+        await release.wait()
+
+    h.queue._consume_token = rate_wait
+    h.queue.start()
+    raw = fact_event(kind)
+    delivery = asyncio.create_task(h.dispatch(raw))
+    try:
+        await asyncio.wait_for(waiting.wait(), 2)
+        if change == "headman_revoked":
+            h.roles.clear()
+        else:
+            h.request_context.detail.summary.status = pb.STUDENT_REQUEST_STATUS_APPROVED
+        release.set()
+        await asyncio.wait_for(delivery, 2)
+        assert not h.sent and not h.edited
+        assert await fake_redis.get(f"notification-bot:sent:{raw['event_id']}:2") is None
+    finally:
+        delivery.cancel()
+        await asyncio.gather(delivery, return_exceptions=True)
+        await h.queue.shutdown()
 
 
 def test_addressed_action_uses_only_existing_target_and_verified_context():

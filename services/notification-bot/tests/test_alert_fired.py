@@ -117,6 +117,17 @@ def test_format_message_escapes_html():
     assert "alert &amp; more" in msg
 
 
+@pytest.mark.parametrize("value", ["<&>", "😀", "ß"])
+def test_format_message_bounds_all_provider_fields_before_html_escaping(value):
+    import html
+    import re
+
+    text = _format_message({key: value * 5000 for key in ("name", "severity", "status", "summary", "description")})
+    plain = html.unescape(text.replace("<b>", "").replace("</b>", ""))
+    assert len(plain.encode("utf-16-le")) // 2 <= 4096
+    assert "&" not in re.sub(r"&(?:amp|lt|gt|quot|#x27);", "", text)
+
+
 @pytest.mark.asyncio
 async def test_handle_alert_fired_enqueues_one_per_admin():
     bot = MagicMock()

@@ -49,36 +49,35 @@ def _parse_admin_ids(raw: str | None) -> list[int]:
     return out
 
 
-# G11 M4 fix: Telegram sendMessage лимит 4096. Длинный Alertmanager
-# description (runbook + stack trace) разрывал формирование сообщения.
-# Ограничение 3500 оставляет буфер на header + summary + markup.
+# All plain fields and fixed labels together fit Telegram's 4096-unit limit.
+# Bound before escaping so entities and our HTML tags always remain complete.
 _MAX_DESCRIPTION_CHARS = 3500
-_TRUNCATION_SUFFIX = "…\n<i>[truncated]</i>"
+_TRUNCATION_SUFFIX = "…\n[truncated]"
 
 
 def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
+    encoded = text.encode("utf-16-le")
+    if len(encoded) <= limit * 2:
         return text
-    return text[: limit - len(_TRUNCATION_SUFFIX)] + _TRUNCATION_SUFFIX
+    return encoded[: (limit - len(_TRUNCATION_SUFFIX)) * 2].decode("utf-16-le", errors="ignore") + _TRUNCATION_SUFFIX
 
 
 def _format_message(payload: dict) -> str:
-    name = html.escape(str(payload.get("name", "unknown")))
+    name = html.escape(_truncate(str(payload.get("name", "unknown")), 200))
     severity = str(payload.get("severity", "unknown")).lower()
     status = str(payload.get("status", "unknown")).lower()
-    summary = html.escape(str(payload.get("summary") or ""))
-    description = _truncate(
-        html.escape(str(payload.get("description") or "")),
-        _MAX_DESCRIPTION_CHARS,
-    )
+    severity_text = html.escape(_truncate(severity.upper(), 32))
+    status_text = html.escape(_truncate(status, 32))
+    summary = html.escape(_truncate(str(payload.get("summary") or ""), 250))
+    description = html.escape(_truncate(str(payload.get("description") or ""), _MAX_DESCRIPTION_CHARS))
 
     status_prefix = STATUS_EMOJI.get(status, "❓")
     severity_marker = SEVERITY_EMOJI.get(severity, "⚪")
 
     lines = [
-        f"{status_prefix} <b>Alert: {severity_marker} {html.escape(severity.upper())}</b>",
+        f"{status_prefix} <b>Alert: {severity_marker} {severity_text}</b>",
         f"Название: {name}",
-        f"Статус: {html.escape(status)}",
+        f"Статус: {status_text}",
     ]
     if summary:
         lines.extend(["", f"<b>Кратко:</b>\n{summary}"])

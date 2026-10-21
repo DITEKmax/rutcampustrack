@@ -17,6 +17,7 @@ import shutil
 import signal
 import socket
 import ssl
+import stat
 import subprocess
 import sys
 import tempfile
@@ -25,6 +26,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import yaml
@@ -107,6 +109,139 @@ def background_native_failure(raw, sources):
             return unknown
         return {"category": "FAILED_TASK", "source_stage": stage}
     except (UnicodeError, ValueError, TypeError):
+        return unknown
+
+
+_BACKGROUND_TEST_CLASS = "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT"
+_BACKGROUND_TEST_METHOD = "transientOutageAfterThreeAttemptsAutomaticallyRedrivesOriginalAfterThirtySeconds"
+_BACKGROUND_TEST_SOURCE = "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java"
+_BACKGROUND_TEST_SOURCE_HASH = "b37440ac80044742dc771b1e728d3daba7dd9aa7fe3ad10e25a5a4fbbfbe0287"
+_BACKGROUND_TEST_REPORT = "services/attendance-service/attendance-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT.xml"
+
+
+def background_test_failure(raw, source):
+    """One declared public test's terminal XML signature; never an authenticated first cause."""
+    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+    if (type(raw) is not bytes or not raw or len(raw) > 1024**2 or type(source) is not bytes
+            or len(source) > 65536 or hashlib.sha256(source).hexdigest() != _BACKGROUND_TEST_SOURCE_HASH):
+        return unknown
+    try:
+        text = raw.decode("utf-8")
+        if ("<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper() or "<!--" in text
+                or re.search(r"<\?(?!xml\s)", text)
+                or re.search(r"encoding\s*=\s*['\"](?!UTF-8['\"])[^'\"]+['\"]", text, re.IGNORECASE)):
+            return unknown
+        root = ET.fromstring(text)
+        required = {"name", "tests", "skipped", "failures", "errors", "time", "timestamp"}
+        if (root.tag != "testsuite" or not required <= set(root.attrib)
+                or set(root.attrib) - required - {"hostname"}
+                or root.attrib["name"] != _BACKGROUND_TEST_CLASS
+                or any(root.attrib[key] != value for key, value in
+                       {"tests": "1", "skipped": "0", "failures": "1", "errors": "0"}.items())):
+            return unknown
+        if root.text and root.text.strip():
+            return unknown
+        # Gradle 8.12 JUnitXmlResultWriter always emits empty properties before cases,
+        # followed by optional suite stdout, then stderr, in that fixed order.
+        if [node.tag for node in root] not in (
+                ["properties", "testcase"], ["properties", "testcase", "system-out"],
+                ["properties", "testcase", "system-err"],
+                ["properties", "testcase", "system-out", "system-err"]):
+            return unknown
+        properties = root[0]
+        if properties.attrib or len(properties) or (properties.text and properties.text.strip()):
+            return unknown
+        for name in ("system-out", "system-err"):
+            nodes = [node for node in root if node.tag == name]
+            if len(nodes) > 1 or any(node.attrib or len(node) for node in nodes):
+                return unknown
+        if any(node.tag not in {"properties", "testcase", "system-out", "system-err"}
+               or (node.tail and node.tail.strip()) for node in root):
+            return unknown
+        case = root[1]
+        if (set(case.attrib) != {"name", "classname", "time"}
+                or case.attrib["name"] != _BACKGROUND_TEST_METHOD + "()"
+                or case.attrib["classname"] != _BACKGROUND_TEST_CLASS
+                or (case.text and case.text.strip()) or len(case) != 1):
+            return unknown
+        failure = case[0]
+        if (failure.tag != "failure" or set(failure.attrib) != {"message", "type"}
+                or len(failure) or (failure.tail and failure.tail.strip())):
+            return unknown
+        stack = (failure.text or "").splitlines()
+        if not stack or not (stack[0] == failure.attrib["type"]
+                             or stack[0].startswith(failure.attrib["type"] + ":")):
+            return unknown
+        categories = {
+            "java.lang.AssertionError": "ASSERTION",
+            "org.opentest4j.AssertionFailedError": "ASSERTION",
+            "org.awaitility.core.ConditionTimeoutException": "AWAIT_TIMEOUT",
+            "java.lang.IllegalStateException": "ILLEGAL_STATE",
+            "java.lang.ExceptionInInitializerError": "INITIALIZATION",
+            "java.lang.NoClassDefFoundError": "CLASS_LOADING",
+            "java.lang.OutOfMemoryError": "JAVA_MEMORY",
+        }
+        stages = {
+            "<clinit>": (69, 71, "CLASS_INITIALIZATION"),
+            "overrideRabbitVhost": (83, 95, "CONTEXT_PROPERTIES"),
+            "cleanQueues": (99, 114, "BEFORE_EACH"),
+            _BACKGROUND_TEST_METHOD: (328, 494, "SELECTED_TEST_BODY"),
+            "acceptedOrigin": (559, 583, "TEST_ORIGIN"),
+            "assertExportedWorker": (599, 608, "TEST_WORKER_SPAN"),
+            "producer": (610, 622, "TEST_PRODUCER_SPAN"),
+            "exportedSpan": (624, 629, "TEST_EXPORTED_SPAN"),
+            "assertWorkerCorrelation": (631, 644, "TEST_WORKER_CORRELATION"),
+            "collectorEndpoint": (646, 666, "COLLECTOR_ENDPOINT"),
+            "writeCollectorReceipt": (668, 745, "COLLECTOR_RECEIPT"),
+        }
+        # The first exact public frame in the primary exception only. Do not promote causes,
+        # suppressed failures, unknown frames or arbitrary line numbers to a public identity.
+        stage = "UNKNOWN"
+        for line in stack[1:]:
+            if line.lstrip().startswith(("Caused by:", "Suppressed:")):
+                break
+            match = re.fullmatch(r"\s*at " + re.escape(_BACKGROUND_TEST_CLASS)
+                                 + r"\.([A-Za-z0-9_$<>]+)\(RabbitDecisionRetryIT\.java:([1-9][0-9]{0,5})\)", line)
+            if match:
+                bound = stages.get(match[1])
+                if bound and bound[0] <= int(match[2]) <= bound[1]:
+                    stage = bound[2]
+                break
+        return {"category": categories.get(failure.attrib["type"], "UNKNOWN"), "source_stage": stage}
+    except (UnicodeError, ValueError, TypeError, ET.ParseError):
+        return unknown
+
+
+def read_background_test_failure(started_ns):
+    """Read only the fixed current-call report, once, through a stable regular descriptor."""
+    absent = {"category": "NO_CURRENT_RESULT", "source_stage": "UNKNOWN"}
+    unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+    path = ROOT / _BACKGROUND_TEST_REPORT
+    try:
+        if path.resolve() != path or path.is_symlink():
+            return unknown
+        try:
+            descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        except FileNotFoundError:
+            return absent
+        with os.fdopen(descriptor, "rb") as report:
+            before = os.fstat(report.fileno())
+            if not stat.S_ISREG(before.st_mode) or before.st_size > 1024**2:
+                return unknown
+            ended_ns = time.time_ns()
+            if not all(started_ns <= value <= ended_ns for value in (before.st_mtime_ns, before.st_ctime_ns)):
+                return absent
+            raw = report.read(1024**2 + 1)
+            after = os.fstat(report.fileno())
+            current = path.lstat()
+            fields = ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns")
+            if (any(getattr(before, key) != getattr(after, key) or getattr(before, key) != getattr(current, key)
+                    for key in fields) or len(raw) != before.st_size):
+                return unknown
+        with (ROOT / _BACKGROUND_TEST_SOURCE).open("rb") as public_source:
+            source = public_source.read(65537)
+        return background_test_failure(raw, source)
+    except Exception:  # noqa: BLE001 -- optional diagnostics preserve the primary Gradle failure
         return unknown
 
 
@@ -1458,6 +1593,7 @@ def main():
 
         def run_application_gradle(command, env, filename, seconds):
             with (td / filename).open("wb") as log:
+                diagnostic_started_ns = time.time_ns()
                 process = subprocess.Popen(
                     command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True
                 )
@@ -1465,6 +1601,11 @@ def main():
                     result = process.wait(timeout=seconds)
                     if result:
                         if filename == "background-gradle.private.log":
+                            _STATE["background_test_failure"] = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
+                            try:
+                                _STATE["background_test_failure"] = read_background_test_failure(diagnostic_started_ns)
+                            except Exception:  # noqa: BLE001 -- optional diagnostics preserve the primary failure
+                                pass
                             _STATE["native_failure"] = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
                             try:
                                 with (td / filename).open("rb") as native_log:
@@ -2022,6 +2163,8 @@ if __name__ == "__main__":
                         "exception_class": exception if exception in allowed else "OtherError",
                         "returncode": code if type(code) is int and -128 <= code <= 255 else None,
                         "native_failure": _STATE.get("native_failure", {"category": "UNKNOWN", "source_stage": "UNKNOWN"}),
+                        **({"background_test_failure": _STATE["background_test_failure"]}
+                           if "background_test_failure" in _STATE else {}),
                         "missing_host_paths": _STATE.get("missing_host_paths", []),
                     }
                 )

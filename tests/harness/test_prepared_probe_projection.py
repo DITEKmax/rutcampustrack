@@ -3,14 +3,18 @@ import ast
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 import tempfile
+import time
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'infra/prometheus/tests'))
@@ -88,15 +92,19 @@ class NativeFailureProjectionControls(unittest.TestCase):
     def setUpClass(cls):
         cls.probe_source = (ROOT / 'services/notification-bot/tests/prepared_broker_probe.py').read_bytes()
         tree = ast.parse((ROOT / 'infra/prometheus/tests/check_pipeline.py').read_text())
-        names = {'_BACKGROUND_NATIVE_SOURCE_HASHES', '_BACKGROUND_NATIVE_TASK_STAGES'}
+        names = {'_BACKGROUND_NATIVE_SOURCE_HASHES', '_BACKGROUND_NATIVE_TASK_STAGES',
+                 '_BACKGROUND_TEST_CLASS', '_BACKGROUND_TEST_METHOD', '_BACKGROUND_TEST_SOURCE',
+                 '_BACKGROUND_TEST_SOURCE_HASH', '_BACKGROUND_TEST_REPORT'}
         selected = [node for node in tree.body if
                     (isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id in names
                                                         for target in node.targets)) or
-                    (isinstance(node, ast.FunctionDef) and node.name == 'background_native_failure')]
-        cls.pipeline = {'hashlib': hashlib, 're': re}
+                    (isinstance(node, ast.FunctionDef) and node.name in
+                     {'background_native_failure', 'background_test_failure', 'read_background_test_failure'})]
+        cls.pipeline = {'hashlib': hashlib, 're': re, 'ET': ET, 'os': os, 'stat': stat, 'time': time, 'ROOT': ROOT}
         exec(compile(ast.Module(body=selected, type_ignores=[]), '<pure-native-projection>', 'exec'), cls.pipeline)
         cls.gradle_sources = {name: (ROOT / name).read_bytes()
                               for name in cls.pipeline['_BACKGROUND_NATIVE_SOURCE_HASHES']}
+        cls.test_source = (ROOT / cls.pipeline['_BACKGROUND_TEST_SOURCE']).read_bytes()
         cls.gradle_parent = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
                                  and node.name == 'run_application_gradle')
 
@@ -130,7 +138,12 @@ class NativeFailureProjectionControls(unittest.TestCase):
         self.assertEqual(contract.prepared_native_failure(frozen, self.probe_source)['source_stage'], 'WAIT_FIRST_DISCONNECT')
         for line, function, stage in [(16, '<module>', 'MODULE_IMPORT'), (47, 'phase', 'OBSERVER_CONNECT'),
                                       (51, 'phase', 'OBSERVER_TOPOLOGY'), (60, 'phase', 'ORIGIN_PUBLISH'),
-                                      (133, 'phase', 'DURABLE_OUTCOME_CHECK'), (155, 'phase', 'WAIT_REPLAY_COMMIT'),
+                                      (132, 'phase', 'DURABLE_READ'), (133, 'phase', 'DURABLE_ORIGINAL_PRESENT'),
+                                      (134, 'phase', 'DURABLE_DECODE'), (135, 'phase', 'DURABLE_SINGLE_MESSAGE'),
+                                      (137, 'phase', 'DURABLE_ENVELOPE'), (138, 'phase', 'DURABLE_PROJECTION_CUTPOINT'),
+                                      (139, 'phase', 'DURABLE_NO_EARLY_COMPLETION'),
+                                      (141, 'phase', 'DURABLE_QUEUE_PROVENANCE'), (142, 'phase', 'DURABLE_REQUEUE'),
+                                      (155, 'phase', 'WAIT_REPLAY_COMMIT'),
                                       (159, 'phase', 'REPLAY_OUTCOME_CHECK'), (174, 'phase', 'PROBE_TEARDOWN')]:
             result = contract.prepared_native_failure(self.trace(line, function), self.probe_source)
             self.assertEqual(result['source_stage'], stage)
@@ -201,7 +214,10 @@ class NativeFailureProjectionControls(unittest.TestCase):
             self.assertEqual(contract._STATE['native_failure'], {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'})
         with tempfile.TemporaryDirectory() as directory:
             state = {'phase': 'ACTUAL_BACKGROUND_GRADLE'}
-            namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess)
+            def diagnostic_failure(started_ns):
+                raise OSError('synthetic-private-io')
+            namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess,
+                             read_background_test_failure=diagnostic_failure)
             exec(compile(ast.Module(body=[self.gradle_parent], type_ignores=[]), '<existing-parent-control>', 'exec'), namespace)
             process = SimpleNamespace(wait=lambda **kwargs: 1, poll=lambda: 1)
             with patch.object(subprocess, 'Popen', return_value=process):
@@ -212,6 +228,193 @@ class NativeFailureProjectionControls(unittest.TestCase):
             self.assertEqual(caught.exception.returncode, 1)
             self.assertEqual(state['phase'], 'ACTUAL_BACKGROUND_GRADLE')
             self.assertEqual(state['native_failure'], {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'})
+            self.assertEqual(state['background_test_failure'], {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'})
+
+    def junit(self, function=None, line=408, category='java.lang.AssertionError'):
+        function = function or self.pipeline['_BACKGROUND_TEST_METHOD']
+        root = ET.Element('testsuite', name=self.pipeline['_BACKGROUND_TEST_CLASS'], tests='1', skipped='0',
+                          failures='1', errors='0', time='1.0', timestamp='2026-10-21T00:00:00', hostname='private-host')
+        ET.SubElement(root, 'properties')
+        case = ET.SubElement(root, 'testcase', name=self.pipeline['_BACKGROUND_TEST_METHOD'] + '()',
+                             classname=self.pipeline['_BACKGROUND_TEST_CLASS'], time='1.0')
+        failure = ET.SubElement(case, 'failure', message='synthetic-private-message ID=private-marker', type=category)
+        failure.text = (category + ': synthetic-private-message /private/path\n\tat '
+                        + self.pipeline['_BACKGROUND_TEST_CLASS'] + '.' + function
+                        + f'(RabbitDecisionRetryIT.java:{line})\n')
+        ET.SubElement(root, 'system-out').text = 'synthetic-private-output'
+        ET.SubElement(root, 'system-err').text = 'synthetic-private-error'
+        return ET.tostring(root, encoding='utf-8', xml_declaration=True)
+
+    def test_selected_junit_exact_identity_closed_categories_and_public_frames(self):
+        classify = self.pipeline['background_test_failure']
+        for category, expected in [('java.lang.AssertionError', 'ASSERTION'),
+                                   ('org.opentest4j.AssertionFailedError', 'ASSERTION'),
+                                   ('org.awaitility.core.ConditionTimeoutException', 'AWAIT_TIMEOUT'),
+                                   ('java.lang.IllegalStateException', 'ILLEGAL_STATE'),
+                                   ('java.lang.ExceptionInInitializerError', 'INITIALIZATION'),
+                                   ('java.lang.NoClassDefFoundError', 'CLASS_LOADING'),
+                                   ('java.lang.OutOfMemoryError', 'JAVA_MEMORY'), ('private.Error', 'UNKNOWN')]:
+            result = classify(self.junit(category=category), self.test_source)
+            self.assertEqual(result, {'category': expected, 'source_stage': 'SELECTED_TEST_BODY'})
+            self.assert_closed(result)
+        for function, line, stage in [('<clinit>', 70, 'CLASS_INITIALIZATION'),
+                                      ('overrideRabbitVhost', 89, 'CONTEXT_PROPERTIES'),
+                                      ('cleanQueues', 110, 'BEFORE_EACH'),
+                                      ('acceptedOrigin', 566, 'TEST_ORIGIN'),
+                                      ('assertExportedWorker', 601, 'TEST_WORKER_SPAN'),
+                                      ('producer', 614, 'TEST_PRODUCER_SPAN'),
+                                      ('exportedSpan', 628, 'TEST_EXPORTED_SPAN'),
+                                      ('assertWorkerCorrelation', 637, 'TEST_WORKER_CORRELATION'),
+                                      ('collectorEndpoint', 650, 'COLLECTOR_ENDPOINT'),
+                                      ('writeCollectorReceipt', 675, 'COLLECTOR_RECEIPT')]:
+            result = classify(self.junit(function, line), self.test_source)
+            self.assertEqual(result['source_stage'], stage)
+            self.assert_closed(result)
+        for function, line in [('privateMethod', 408), ('cleanQueues', 408),
+                               ('lambda$exportedSpan$10', 628)]:
+            self.assertEqual(classify(self.junit(function, line), self.test_source)['source_stage'], 'UNKNOWN')
+        root = ET.fromstring(self.junit())
+        root[1][0].text = ('java.lang.AssertionError: synthetic-private\n    Caused by: private.Error\n'
+                          + (root[1][0].text or '').split('\n', 1)[1])
+        self.assertEqual(classify(ET.tostring(root), self.test_source)['source_stage'], 'UNKNOWN')
+        for outputs in [(), ('system-out',), ('system-err',), ('system-out', 'system-err')]:
+            root = ET.fromstring(self.junit())
+            root[0].text = '\n  \t'
+            for node in list(root)[2:]:
+                if node.tag not in outputs:
+                    root.remove(node)
+            result = classify(ET.tostring(root), self.test_source)
+            self.assertEqual(result, {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'})
+            self.assert_closed(result)
+
+    def test_selected_junit_rejects_wrong_identity_schema_xml_and_source(self):
+        classify = self.pipeline['background_test_failure']
+        unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
+        raw = self.junit()
+        cases = [b'', b'\xff', raw[:-4], b'x' * (1024**2 + 1),
+                 b'<!DOCTYPE testsuite [<!ENTITY private "secret">]>' + raw,
+                 raw.replace(b'UTF-8', b'UTF-16').replace(b'utf-8', b'utf-16'),
+                 raw.replace(b'<testsuite ', b'<?private value?><testsuite '),
+                 raw.replace(b'<testsuite ', b'<!--private--><testsuite ')]
+        for mutation in ['class', 'method', 'ordinal', 'count', 'duplicate', 'skipped', 'error', 'extra',
+                         'case_attr', 'nested_failure', 'extra_failure', 'root_text', 'tail', 'properties',
+                         'type_mismatch', 'missing_properties', 'properties_attr', 'properties_child',
+                         'properties_text', 'misordered_properties', 'misordered_outputs']:
+            root = ET.fromstring(raw)
+            case = root[1]
+            if mutation == 'class': case.set('classname', 'private.OtherIT')
+            elif mutation == 'method': case.set('name', 'privateMethod()')
+            elif mutation == 'ordinal': case.set('name', '[1]')
+            elif mutation == 'count': root.set('tests', '2')
+            elif mutation == 'duplicate': root.append(ET.fromstring(ET.tostring(case)))
+            elif mutation == 'skipped': root.set('skipped', '1')
+            elif mutation == 'error': case[0].tag = 'error'
+            elif mutation == 'extra': root.set('private', 'value')
+            elif mutation == 'case_attr': case.set('private', 'value')
+            elif mutation == 'nested_failure': ET.SubElement(case[0], 'private')
+            elif mutation == 'extra_failure': ET.SubElement(case, 'failure')
+            elif mutation == 'root_text': root.text = 'private'
+            elif mutation == 'tail': root[0].tail = 'private'
+            elif mutation == 'properties': ET.SubElement(root, 'properties')
+            elif mutation == 'type_mismatch': case[0].text = 'private.Error\n' + case[0].text
+            elif mutation == 'missing_properties': root.remove(root[0])
+            elif mutation == 'properties_attr': root[0].set('private', 'value')
+            elif mutation == 'properties_child': ET.SubElement(root[0], 'property', name='private', value='secret')
+            elif mutation == 'properties_text': root[0].text = 'private'
+            elif mutation == 'misordered_properties':
+                node = root[0]
+                root.remove(node)
+                root.insert(1, node)
+            elif mutation == 'misordered_outputs':
+                node = root[2]
+                root.remove(node)
+                root.insert(3, node)
+            cases.append(ET.tostring(root))
+        for malformed in cases:
+            self.assertEqual(classify(malformed, self.test_source), unknown)
+        self.assertEqual(classify(raw, self.test_source + b' '), unknown)
+        self.assertEqual(classify(raw, b''), unknown)
+
+    def test_selected_junit_fixed_reader_freshness_symlink_bounds_and_stability(self):
+        read = self.pipeline['read_background_test_failure']
+        unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
+        absent = {'category': 'NO_CURRENT_RESULT', 'source_stage': 'UNKNOWN'}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report = root / self.pipeline['_BACKGROUND_TEST_REPORT']
+            source = root / self.pipeline['_BACKGROUND_TEST_SOURCE']
+            source.parent.mkdir(parents=True)
+            source.write_bytes(self.test_source)
+            report.parent.mkdir(parents=True)
+            with patch.dict(self.pipeline, ROOT=root):
+                started = time.time_ns()
+                self.assertEqual(read(started), absent)
+                report.write_bytes(self.junit())
+                with patch.object(os, 'open', wraps=os.open) as opened:
+                    self.assertEqual(read(started), {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'})
+                opened.assert_called_once_with(report, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+                self.assertEqual(read(time.time_ns() + 1_000_000_000), absent)
+                os.utime(report, ns=(1, 1))
+                self.assertEqual(read(started), absent)
+                os.utime(report, ns=(time.time_ns() + 1_000_000_000,) * 2)
+                self.assertEqual(read(started), absent)
+                report.unlink()
+                report.symlink_to(source)
+                self.assertEqual(read(started), unknown)
+                report.unlink()
+                report.mkdir()
+                self.assertEqual(read(started), unknown)
+                report.rmdir()
+                os.mkfifo(report)
+                self.assertEqual(read(started), unknown)
+                report.unlink()
+                report.write_bytes(b'x' * (1024**2 + 1))
+                self.assertEqual(read(started), unknown)
+                report.write_bytes(self.junit())
+                real_fstat = os.fstat
+                count = 0
+                def changed(fd):
+                    nonlocal count
+                    result = real_fstat(fd)
+                    count += 1
+                    if count == 2:
+                        return SimpleNamespace(**{name: getattr(result, name) + (name == 'st_size')
+                                                  for name in ('st_dev', 'st_ino', 'st_mode', 'st_size',
+                                                               'st_mtime_ns', 'st_ctime_ns')})
+                    return result
+                with patch.object(os, 'fstat', side_effect=changed):
+                    self.assertEqual(read(started), unknown)
+                source.write_bytes(self.test_source + b' ')
+                self.assertEqual(read(started), unknown)
+                source.unlink()
+                self.assertEqual(read(started), unknown)
+
+    def test_junit_diagnostic_only_runs_for_background_nonzero_and_preserves_exit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for filename, code in [('background-gradle.private.log', 0), ('application-gradle.private.log', 1),
+                                   ('background-gradle.private.log', 1)]:
+                state = {'phase': 'ACTUAL_BACKGROUND_GRADLE'}
+                calls = []
+                def diagnostic(started):
+                    calls.append(started)
+                    return {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'}
+                namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess,
+                                 read_background_test_failure=diagnostic)
+                exec(compile(ast.Module(body=[self.gradle_parent], type_ignores=[]), '<existing-parent-control>', 'exec'), namespace)
+                process = SimpleNamespace(wait=lambda **kwargs: code, poll=lambda: code)
+                with patch.object(subprocess, 'Popen', return_value=process):
+                    if code:
+                        with self.assertRaises(subprocess.CalledProcessError) as caught:
+                            namespace['run_application_gradle'](['never-executed'], {}, filename, 600)
+                        self.assertEqual(caught.exception.returncode, code)
+                    else:
+                        namespace['run_application_gradle'](['never-executed'], {}, filename, 600)
+                self.assertEqual(len(calls), int(filename == 'background-gradle.private.log' and code != 0))
+                if calls:
+                    self.assertEqual(state['background_test_failure'],
+                                     {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY'})
+                else:
+                    self.assertNotIn('background_test_failure', state)
 
 
 if __name__ == '__main__':

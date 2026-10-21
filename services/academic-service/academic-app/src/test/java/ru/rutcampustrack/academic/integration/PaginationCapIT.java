@@ -38,7 +38,7 @@ class PaginationCapIT extends AbstractAcademicIntegrationTest {
                                             UserRole.STUDENT,
                                             canonical.groupId(),
                                             null,
-                                            null),
+                                            610000005000L + index),
                                     actor)
                             .userId());
         }

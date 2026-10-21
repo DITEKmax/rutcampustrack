@@ -43,7 +43,7 @@ class GroupRosterSnapshotIT extends AbstractAcademicIntegrationTest {
                                         UserRole.STUDENT,
                                         canonical.groupId(),
                                         null,
-                                        null),
+                                        610000004002L),
                                 admin)
                         .userId();
         var student = identityFixture.select(canonical.studentId(), AuthRole.STUDENT);

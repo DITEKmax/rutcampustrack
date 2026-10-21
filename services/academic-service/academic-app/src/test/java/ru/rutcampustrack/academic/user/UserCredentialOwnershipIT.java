@@ -40,7 +40,9 @@ class UserCredentialOwnershipIT extends AbstractAcademicIntegrationTest {
                                         "role",
                                         "STUDENT",
                                         "groupId",
-                                        identityFixture.canonical().groupId()),
+                                        identityFixture.canonical().groupId(),
+                                        "telegramId",
+                                        610000004001L),
                                 headers),
                         String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);

@@ -867,7 +867,7 @@ jobs:
               if service == 'attendance-service':
                   backfill_source = app / 'src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java'
                   backfill_test = backfill_source.read_bytes()
-                  assert hashlib.sha256(backfill_test).hexdigest() == '4dd81beaa372273837efded6a6ebba4453116ee5a296864fadc1ee7129b48c98'
+                  assert hashlib.sha256(backfill_test).hexdigest() == 'ca768c803f25eda4a2110d7709aaf6f07a7fc61b7a183c6f7dd841c2c943b3bf'
                   backfill_production = app / 'src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java'
                   backfill_current = backfill_production.read_bytes()
                   assert hashlib.sha256(backfill_current).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
@@ -875,10 +875,10 @@ jobs:
                       assert path.read_bytes() == subprocess.check_output(['git', 'show', 'HEAD:' + path.as_posix()])
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   backfill_lines = backfill_test.decode().splitlines()
-                  assert backfill_lines[684].strip() == 'void lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal()'
-                  assert backfill_lines[775].strip() == 'assertThat(inserted != null)'
-                  assert backfill_lines[776].strip() == '.as("late initial member must have a stored attendance record")'
-                  assert backfill_lines[777].strip() == '.isTrue();'
+                  assert backfill_lines[686].strip() == 'void lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal()'
+                  assert backfill_lines[777].strip() == 'assertThat(inserted != null)'
+                  assert backfill_lines[778].strip() == '.as("late initial member must have a stored attendance record")'
+                  assert backfill_lines[779].strip() == '.isTrue();'
                   backfill_anchor = b'                        lessons.applyInitialMembership(snapshot);'
                   backfill_changed = b'                        // Deliberate sensitivity fault: omit the admitted target effect.'
                   assert backfill_current.count(backfill_anchor) == 1
@@ -895,7 +895,7 @@ jobs:
                       'testSourceSha256': hashlib.sha256(backfill_test).hexdigest(),
                       'productionSourceSha256': hashlib.sha256(backfill_current).hexdigest(),
                       'counterexampleSourceSha256': hashlib.sha256(backfill_negative).hexdigest(),
-                      'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:778)'}
+                      'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:780)'}
 
               if service == 'academic-service':
                   spring_source = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
@@ -1540,7 +1540,7 @@ jobs:
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
                       + re.escape(initial_membership['package'] + '.' + initial_membership['method'])
                       + r'\(EventConsumerIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', backfill_failure.text or '')
-                  assert backfill_named_lines == ['778']
+                  assert backfill_named_lines == ['780']
                   proof['initialMembershipRule'].update(
                       state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
                       tests=1, failures=1, errors=0, skipped=0,
@@ -1645,7 +1645,7 @@ jobs:
                   proof['acceptedBoundaryRule']['sourceRestoredExact'] = True
 
               if initial_membership is not None and current:
-                  assert hashlib.sha256(initial_membership['source'].read_bytes()).hexdigest() == '4dd81beaa372273837efded6a6ebba4453116ee5a296864fadc1ee7129b48c98'
+                  assert hashlib.sha256(initial_membership['source'].read_bytes()).hexdigest() == 'ca768c803f25eda4a2110d7709aaf6f07a7fc61b7a183c6f7dd841c2c943b3bf'
                   assert hashlib.sha256(initial_membership['production'].read_bytes()).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
                   for path in (initial_membership['source'], initial_membership['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
@@ -2068,7 +2068,7 @@ jobs:
                       'v61IsAdditiveAndRestoresPendingAndAppliedReplayIdentities')),
               'attendance-service': ('ru.rutcampustrack.attendance.integration.EventConsumerIT',
                   'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java',
-                  '4dd81beaa372273837efded6a6ebba4453116ee5a296864fadc1ee7129b48c98', (
+                  'ca768c803f25eda4a2110d7709aaf6f07a7fc61b7a183c6f7dd841c2c943b3bf', (
                       'lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal',
                       'initialMembershipForeignUnknownAndOutboxFailureNeverPartiallyApply',
                       'initialMembershipCannotResurrectSubjectOrSemesterTombstones')),

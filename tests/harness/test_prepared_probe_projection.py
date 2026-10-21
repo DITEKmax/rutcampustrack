@@ -317,7 +317,11 @@ class NativeFailureProjectionControls(unittest.TestCase):
         for mutation in ['class', 'method', 'ordinal', 'count', 'duplicate', 'skipped', 'error', 'extra',
                          'case_attr', 'nested_failure', 'extra_failure', 'root_text', 'tail', 'properties',
                          'type_mismatch', 'missing_properties', 'properties_attr', 'properties_child',
-                         'properties_text', 'misordered_properties', 'misordered_outputs']:
+                         'properties_text', 'misordered_properties', 'misordered_outputs',
+                         'root_tag', 'root_missing_attribute', 'suite_identity', 'failure_count',
+                         'case_missing_attribute', 'testcase_text', 'missing_failure',
+                         'suite_shape_priority', 'suite_identity_priority', 'case_attr_priority',
+                         'case_identity_priority']:
             root = ET.fromstring(raw)
             case = root[1]
             if mutation == 'class': case.set('classname', 'private.OtherIT')
@@ -347,9 +351,41 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 node = root[2]
                 root.remove(node)
                 root.insert(3, node)
+            elif mutation == 'root_tag': root.tag = 'private'
+            elif mutation == 'root_missing_attribute': del root.attrib['timestamp']
+            elif mutation == 'suite_identity': root.set('name', 'private.OtherIT')
+            elif mutation == 'failure_count': root.set('failures', '0')
+            elif mutation == 'case_missing_attribute': del case.attrib['time']
+            elif mutation == 'testcase_text': case.text = 'private'
+            elif mutation == 'missing_failure': case.remove(case[0])
+            elif mutation == 'suite_shape_priority':
+                root.set('private', 'value')
+                root.set('name', 'private.OtherIT')
+                root.set('tests', '2')
+            elif mutation == 'suite_identity_priority':
+                root.set('name', 'private.OtherIT')
+                root.set('tests', '2')
+            elif mutation == 'case_attr_priority':
+                case.set('private', 'value')
+                case.set('name', 'privateMethod()')
+                case.text = 'private'
+            elif mutation == 'case_identity_priority':
+                case.set('name', 'privateMethod()')
+                case.text = 'private'
+                ET.SubElement(case, 'failure')
             reason = 'XML_REJECTED'
-            if mutation in {'class', 'method', 'ordinal', 'count', 'skipped', 'extra', 'case_attr', 'extra_failure'}:
-                reason = 'KNOWN_CASE_NOT_ADMITTED'
+            if mutation in {'class', 'method', 'ordinal', 'case_identity_priority'}:
+                reason = 'FIXED_CASE_NOT_ADMITTED'
+            elif mutation in {'count', 'skipped', 'failure_count'}:
+                reason = 'FIXED_COUNTS_NOT_ADMITTED'
+            elif mutation in {'extra', 'root_tag', 'root_missing_attribute', 'suite_shape_priority'}:
+                reason = 'SUITE_SHAPE_NOT_ADMITTED'
+            elif mutation in {'suite_identity', 'suite_identity_priority'}:
+                reason = 'FIXED_SUITE_NOT_ADMITTED'
+            elif mutation in {'case_attr', 'case_missing_attribute', 'case_attr_priority'}:
+                reason = 'CASE_ATTRIBUTES_NOT_ADMITTED'
+            elif mutation in {'extra_failure', 'testcase_text', 'missing_failure'}:
+                reason = 'CASE_CONTENT_NOT_ADMITTED'
             elif mutation in {'error', 'nested_failure', 'type_mismatch'}:
                 reason = 'SIGNATURE_REJECTED'
             cases.append((ET.tostring(root), reason))

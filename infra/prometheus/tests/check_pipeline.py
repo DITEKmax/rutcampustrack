@@ -136,11 +136,13 @@ def background_test_failure(raw, source):
         root = ET.fromstring(text)
         required = {"name", "tests", "skipped", "failures", "errors", "time", "timestamp"}
         if (root.tag != "testsuite" or not required <= set(root.attrib)
-                or set(root.attrib) - required - {"hostname"}
-                or root.attrib["name"] != _BACKGROUND_TEST_CLASS
-                or any(root.attrib[key] != value for key, value in
-                       {"tests": "1", "skipped": "0", "failures": "1", "errors": "0"}.items())):
-            return {**unknown, "admission_reason": "KNOWN_CASE_NOT_ADMITTED"}
+                or set(root.attrib) - required - {"hostname"}):
+            return {**unknown, "admission_reason": "SUITE_SHAPE_NOT_ADMITTED"}
+        if root.attrib["name"] != _BACKGROUND_TEST_CLASS:
+            return {**unknown, "admission_reason": "FIXED_SUITE_NOT_ADMITTED"}
+        if any(root.attrib[key] != value for key, value in
+               {"tests": "1", "skipped": "0", "failures": "1", "errors": "0"}.items()):
+            return {**unknown, "admission_reason": "FIXED_COUNTS_NOT_ADMITTED"}
         if root.text and root.text.strip():
             return unknown
         # Gradle 8.12 JUnitXmlResultWriter always emits empty properties before cases,
@@ -161,11 +163,13 @@ def background_test_failure(raw, source):
                or (node.tail and node.tail.strip()) for node in root):
             return unknown
         case = root[1]
-        if (set(case.attrib) != {"name", "classname", "time"}
-                or case.attrib["name"] != _BACKGROUND_TEST_METHOD + "()"
-                or case.attrib["classname"] != _BACKGROUND_TEST_CLASS
-                or (case.text and case.text.strip()) or len(case) != 1):
-            return {**unknown, "admission_reason": "KNOWN_CASE_NOT_ADMITTED"}
+        if set(case.attrib) != {"name", "classname", "time"}:
+            return {**unknown, "admission_reason": "CASE_ATTRIBUTES_NOT_ADMITTED"}
+        if (case.attrib["name"] != _BACKGROUND_TEST_METHOD + "()"
+                or case.attrib["classname"] != _BACKGROUND_TEST_CLASS):
+            return {**unknown, "admission_reason": "FIXED_CASE_NOT_ADMITTED"}
+        if (case.text and case.text.strip()) or len(case) != 1:
+            return {**unknown, "admission_reason": "CASE_CONTENT_NOT_ADMITTED"}
         failure = case[0]
         if (failure.tag != "failure" or set(failure.attrib) != {"message", "type"}
                 or len(failure) or (failure.tail and failure.tail.strip())):

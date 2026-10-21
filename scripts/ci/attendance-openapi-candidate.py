@@ -159,11 +159,17 @@ assert (type(generated) is dict and set(generated) == {'openapi', 'info', 'tags'
         and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
 stage = 'GENERATED_CHANGE_GUARDS'
 changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
+stage = 'GENERATED_CHANGED_PATHS'
 assert {path for path in changed if path} == baseline | {b'docs/openapi/attendance.json'}
+stage = 'GENERATED_INDEX_CLEAN'
 assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+stage = 'GENERATED_WRAPPER_UNCHANGED'
 verify_wrapper()
+stage = 'GENERATED_TRACKED_MODE'
 assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', snapshot.as_posix()]) == b'100644\n'
+stage = 'GENERATED_FILE_MODE'
 assert snapshot.stat().st_mode & 0o7777 == 0o644
+stage = 'GENERATED_CONTENT_CHANGED'
 assert payload != subprocess.check_output(['git', 'show', 'HEAD:' + snapshot.as_posix()])
 stage = 'OFFICIAL_CANDIDATE_WRITE'
 output = pathlib.Path('build/ci-test-outcomes/attendance-service/openapi-generated')

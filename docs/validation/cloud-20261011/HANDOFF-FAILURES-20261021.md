@@ -1,79 +1,72 @@
-# PR2 — causal correction checkpoint, 2026-10-21
+# PR2 — actual failure corrections, 2026-10-21
 
-Status: SOURCE_VERIFIED_PENDING_CURRENT_GATES. Это checkpoint проверенных corrections, не утверждение готовности PR. Merge/deploy запрещены новым поручением владельца. Existing PR2/branch сохраняются; Deploy disabled_manually.
+**SOURCE_VERIFIED_PENDING_NEW_GATES.** Готовность PR не заявлена. Поручение разрешает исправления и публикацию в существующую PR-ветку, запрещает merge/main/deploy. Deploy257646584 disabled_manually. Старый checkpoint остаётся в Git на `bac3ebd8`; этот документ обновляет текущие факты, не стирает прежние FAIL/UNKNOWN.
 
-## Goal / scope
+## Scope and custody
 
-Установить причины actual отказов после `617e1e33`, исправить доказанные ошибки продукта/fixtures/обвязки без изменения принятого API/прав/данных. Audit263 IDs уже обработан; нового массового удаления/переписывания тестов нет. Root sole Git/docs/CI integrator; шесть непересекающихся author worktrees сохранены, дополнительный E2E writer не внёс необоснованных изменений. Все новые writers/reviewers запрошены gpt-6.1-sol/high/forknone; фактические runtime model/effort UNKNOWN.
+Baseline `617e1e33`, main/merge-base `3908fad9`, предыдущий published HEAD `bac3ebd8`/executable `a44636ba`; новый проверенный source **`7bd0a527`**. Финальный taskdoc HEAD и результаты его запусков сообщаются отдельно. Root единственный Git/docs integrator; отдельные sole writers и read-only reviewers, запрос Sol6.1/high/forknone, actual model metadata UNKNOWN. Audit263 groups уже source-implemented; нового общего аудита или удаления suites нет.
 
-## Context and source custody
+Все23 переданных исходных ZIP сохранены побайтно248260B, проверены exact size/SHA256/CRC/paths и GitHub artifact/run/attempt/head bindings23/23.40JSON entries прочитаны строгим decoder. Исходные runs attempt1: push39514103147/PR39514114181/Coverage39514114251 на617. PR merge carrier `ddd8a5a2` имеет тот же Git tree; текущий bac3 carrier `d3a0c2ee` также tree-equal branch source. Commit SHA не переименованы друг в друга. Дополнительные bac3 originals получены напрямую через connector, exact API digest/size/paths/CRC/source проверены. Ручная передача пользователем больше не требуется.
 
-Starting branch HEAD `617e1e33`, main/merge-base `3908fad9`. Executable corrections:
+Raw private XML/HTML/full logs, реальные secrets/PII и signed URLs не публикуются. ORDINAL_ONLY не превращается в SOURCE_METHOD. Aggregate browser FAIL — следствие, split-group SKIP — не PASS. Coverage test-step failure не доказывает низкий процент покрытия.
 
-- `5cbe9b46`: Academic V12 и два fixture файла.
-- `23fc4a35`: Schedule durable by-ID current pointer.
-- `6dca44d8`: четыре bot product и два regression test файла.
-- `a44636ba`: пять CI source/frame scalar bindings.
+## Сохранённые предыдущие исправления
 
-Последующий documentation commit меняет только CURRENT и этот handoff. Его точный SHA и PR readback сообщаются отдельно; source bytes не выдаются за выполненный runtime на docs HEAD.
+- `5cbe9b46`: Academic additive V12 явно отклоняет LESSON+NULL; V1–V11 и retained data не переписаны. DATE+NULL сохранён. Homework fixture создаёт required subject/type атомарно; Jobs fixture сохраняет transaction и обязательные V8 API fields/FAILED_SAFE.
+- `23fc4a35`: Schedule by-ID current определяется durable occurrence pointer в read-only REPEATABLE_READ; historical superseded/legacy NULL/wire contracts сохранены.
+- `6dca44d8`: bot canonical display/current authorization, правильные EXCUSE/LATE IDs и enum reason/new_name, HTML/UTF16 bounds, логи без raw recipient IDs. Keyboard locking/common4/role union/retry/ACK/DLQ не менялись.
+- `a44636ba`: ровно5CI scalar source/frame bindings; predicates/status/count/identity/schema/privacy/thresholds/required gates не менялись.
 
-## Primary evidence
+V12 валидирует retained rows: существующий invalid LESSON+NULL остановит migration; данные не исправлялись и не удалялись. Fresh owned PG/migrations и отдельные current CI tests не заменяют upgrade/restore реальной среды.
 
-Все23 original ZIP из переданного manifest сохранены побайтно,248260B; size/SHA256/CRC/безопасные entry paths проверены до чтения. GitHub metadata подтвердил23/23 artifact IDs/digests/sizes/run/head bindings; все три run attempt1.40JSON entries прочитаны со строгим отказом duplicate keys/nonfinite values. Подписанные download URLs не публикуются. Git tree PR carrier `ddd8a5a2` равен tree `617e1e33`; разные commit SHA не переименованы друг в друга. Все file hashes Monitoring совпали с starting source.
+Независимые Academic/Schedule/Bot/integration SOURCE_APPROVE сохранены на этих bytes. На bac3 actual Academic4 ранее исправленных SOURCE_METHOD прошли, recurring Schedule case прошёл. Python push/PR/Coverage и Notification unit/IT jobs SUCCESS; Notification PR64PASS/0FAIL. Это не доказательство исторической причины единственного617PR notification assertion.
 
-- Push CI [39514103147](https://github.com/DITEKmax/rutcampustrack/actions/runs/39514103147): FAILURE.
-- PR CI [39514114181](https://github.com/DITEKmax/rutcampustrack/actions/runs/39514114181): FAILURE.
-- Coverage [39514114251](https://github.com/DITEKmax/rutcampustrack/actions/runs/39514114251): FAILURE в шагах тестов; недостаточный coverage percentage не установлен.
+## Новые доказанные причины и test-only corrections
 
-Сырые private XML/HTML/full logs не читались. ORDINAL_ONLY не превращался в имя метода; безопасная категория исключения не превращалась в первую assertion. Parent aggregate browser FAIL — следствие client FAIL, не отдельная причина. Split-group SKIP не PASS.
-
-## Actual failures and corrections
-
-| Область | Actual617 факт | Подтверждённая correction / остаток |
+| Область | Подтверждение причины | Минимальная correction и проверка |
 | --- | --- | --- |
-| Academic | Во всех трёх IT projections510PASS/30FAIL/1SKIP; unit584PASS | V3 CHECK пропускает LESSON+NULL через UNKNOWN; additive V12 явно требует номер, DATE+NULL сохранён. Homework fixture атомарно создаёт required subject/type. Jobs teacher fixture делает то же в одной транзакции; guard fixtures заполняют обязательные V8 API fields и моделируют FAILED_SAFE. First actual assertion/stage остаётся UNKNOWN; 24 HTTP/domain и2 report HTTP causes не угаданы. |
-| Schedule | Во всех трёх IT211PASS/3FAIL; unit75PASS | getLessonById раньше сериализовал transient current=true для retained superseded rows. Теперь читает durable occurrence pointer в read-only REPEATABLE_READ. Existing recurring history/superseded/successor assertions сохранены. Actual stages group/performance/recurring UNKNOWN; source fix не объявлен устранением всех трёх native failures. |
-| Attendance | IT255PASS/2FAIL/1SKIP, unit407PASS | Все11MarkingIT и8RabbitDecisionRetryIT PASS. Два ORDINAL_ONLY имеют closed codes GRADLE_SUITE/OOM и ASSERTION; OOM subtype/firststage UNKNOWN. Product/test patch0. Source-proven CI defect: comparison829 против уже admitted source assertion/ruleFrame778; исправлен только scalar. |
-| Notification | Push64PASS; PR63PASS/1FAIL | Единственный PR SOURCE_METHOD — groupFailureRollsBackClaimAndCommittedReplayKeepsReadState, ASSERTION. WS cases PASS. First assertion UNKNOWN; fanout/snapshot race остаётся source hypothesis, speculative patch0. Нужен закрытый first-source-assertion/stage witness либо доступный addressed stand. |
-| Monitoring | deliveryPASS; exporters PREPARED_TRANSACTION_NATIVE_BOUNDARIES/AssertionError; pipeline ACTUAL_BACKGROUND_TRANSPORT/CalledProcessError1; cleanupPASS | Prepared child execution versus receipt-admission stage не различены; root readiness probe_returncode0 не является child exit. Background Gradle child завершился1 до receipt/Tempo validation; compile/setup/assertion UNKNOWN. Исправлений по предположению нет. |
-| Browser | Оба lifecycle jobs SUCCESS; first3 оба3PASS; push remaining10PASS, PR9PASS/1D002FAIL | D002 pre-online native refresh к snapshot REJECTED, post-online auth calls нет; rejection/finally timing UNKNOWN. N2 допускает явную current-only «Перезагрузить» и запрещает blind refresh mutation retry. D002 не ослаблялся. Push smoke не имеет exact safe case evidence в этих23ZIP; Homework GREEN save-click/PUT observation deadline отдельно UNKNOWN, PRGREEN PASS. |
-| Python bot | Hosted test steps FAIL; отдельного testcase artifact нет | Семь source defects воспроизведены адресными локальными tests и исправлены. Hosted failed method mapping остаётся UNKNOWN; локальные PASS не заменяют hosted proof. |
+| Schedule2 | Обе native ошибки достигли authority INSERT LessonTransferWriter:279. Фиксированные январь/апрель2026 уже прошли относительно реального PG; V28:646 запрещает target_date<=CURRENT_DATE. Exact native exception/SQLState остаётся UNKNOWN. | `25e905f5`: nextMonday от SELECT CURRENT_DATE и согласованный Java Clock. Границы диапазона, canonical IDs,12000rows/exact32, history/current, own STUDENT, <=6queries/<1000ms сохранены. Native2/2PASS40.8s. `fab83837` только AOSP layout, javac AST/string identity проверена независимо; after-format native повтор не выдаётся за новый PASS. |
+| Academic global HTTP500 | Native3 exact200→500. Закрытый внешний observer: requestAttributesBound=false, SCOPE_NOT_ACTIVE/ILLEGAL_STATE, AcademicUserContextFilter:68. Test-only AuthConfirmationHttpFixture.Mvc был @Configuration+EnableWebMvc и отключал Boot MVC/request-context auto-configuration при implicit scan. В production classpath helper отсутствует. | `02058dea`: @TestConfiguration(proxyBeanMethods=false), explicit context.register(Mvc.class) сохранён для настоящего Auth fixture. Native4/4PASS54.61s, включая wrong-password403 и неизменное durable состояние. Дальнейший ordinary23:19SUCCESS/4FAIL85.3s. Оба strict401 MockMvc negatives PASS. |
+| Academic positive create3 | Все3 STUDENT inputs содержали null/omitted telegramId, что запрещает actual AcademicUserIdentityOperations.validate:1345. Surviving negative/positive Telegram tests сохраняют правило. Исходный runtime exception type/status в старой проекции UNKNOWN; HTTP400 не называется прочитанным фактом. | `9036600d`:3explicit positive synthetic IDs, pagination102unique, без product/DTO/helper изменения. Сохранены credentials/BCrypt/ownership, repeatable-read roster/late revocation, paging oracles. Native GroupRoster и Credential PASS; pagination дошёл до следующего assertion. |
+| Academic Actuator | Boot3.5.16 test customizer отключает default metrics exporters; Prometheus auto-config условен. Production health/info/prometheus exposure и registry dependency существуют. | Тот же9036: class-local management.prometheus.metrics.export.enabled=true, exact5link oracle и все404 checks неизменны. Native все6 Actuator PASS. |
+| Academic pagination | AssertJ3.27.7 doesNotContainAnyElementsOf требует непустой forbidden iterable; previous=Set.of() на первой странице. Native failure на65 после успешного создания102/HTTP200/total105/100rows; конкретный runtime exception остаётся UNKNOWN. | `7bd0a527`: separate hasSize + Collections.disjoint(ids,previous).isTrue обе итерации; cap100/105total/100+5/complete union сохранены. Native exact1PASS64.35s, без повторения остальных8. |
 
-## Bot accepted behavior
+Новый diff после bac3 — **7 test/helper files**,0product/config/workflow/schema/dependency changes,0added/deleted paths. Все authored patches frozen/hash-checked, assertions сохранились; независимые source reviews и targeted AOSP/diff checks PASS. Native callbacks публиковали только exact identity/status/known class/source-frame/status-enum проекции, без error messages/bodies. Проверяемый checkout до/после clean.
 
-Текущий уполномоченный HEADMAN получает только canonical student/lesson/known-reason display facts, без comments/attachments/event-supplied PII. Queued authority/status revalidation сохраняется. EXCUSE использует ticket_id, LATE_CHECKIN — request_id; alternate field не перенаправляет N2. Producer resolution_reason проходит через private owner projection и отображается только известными enum labels. Group rename использует producer new_name с прежним fallback. Alert fields ограничены до4096 UTF-16 units после parsing, HTML escaping выполняется после truncation. Retry templates не содержат raw recipient IDs; счётчики/отсрочки/тип ошибки сохранены. Roles/common4/keyboard publication lock, ACK/DLQ/idempotency не менялись.
+Наборы Academic пересекаются и не суммируются: ordinary4/4; ordinary23=19PASS4FAIL; послеfixture corrections9=8PASS1FAIL; послеoracle correction pagination1PASS. Дополнительно оба прежних CacheIT failures прошли на7bd0:2/2PASS38.4s с отдельными own PG/AuthRedis/cacheRedis и исходными cache commit/invalidation assertions. Последние runs имели live witness observerClasspathPresent=false/observerSystemPropertyPresent=false. Полный541IT и3Rabbit-dependent Academic cases локально NOT_RUN; SUCCESS отдельных методов не заменяет whole-suite green.
 
-## Migration and data safety
+## Runtime и ограничения
 
-V1–V11 побайтно сохранены. V12 не переписывает retained data и не меняет grants/владельца. Если в существующей БД есть invalid LESSON+NULL, validation откажется продолжать migration; исправление данных не выполнялось и не скрыто. Fresh migrations не seed/copy homework rows.17 direct SQL test insertion sites и persistent helpers проверены на совместимость; дополнительных invalid fixtures не найдено.39 finite expression witnesses подтверждают только логическую acceptance delta; PostgreSQL/Flyway runtime NOT_RUN.
+Первоначальный Docker EPERM относился к execution sandbox без стандартного additional-network grant. При штатном grant managed Docker доступен; Unix permissions/daemon/groups/config не менялись. Реальные PG/Redis адресные runs использовали fresh owned fixtures/migrations, один heavy lease,1Gradleworker/CPU2, own-RSS guard3GiB/wall600s/private-output128MiB/disk reserve4GiB. Ни один guard не сработал. Никакого доступа к production или provider.
 
-## Verification and independent review
+Bot local verification: selected43 baseline28PASS15FAIL→corrected43PASS; пересекающийся107PASS; полная620 попытка610PASS10loopbackEPERM. Закрытый syscall discriminator подтвердил EPERM; exact10 при стандартном network grant10PASS. Это не единый620PASS run. Hosted bac3 Python jobs SUCCESS. Настоящий Telegram не выполнялся.
 
-- Academic+Schedule compileTestJava: PASS30.79s, оба target tasks observed, frozen input hashes unchanged. Проверялся тот же source до scoped commits; ни DB, ни acceptance tests не выполнялись.
-- Bot existing selected43: baseline28PASS/15FAIL, исправленные43PASS. Дополнительный пересекающийся набор107PASS/0FAIL/0SKIP; counts не суммируются. Семь добавленных cases защищают queued authority/status privacy и HTML/astral/uppercase protocol bounds. Ruff check/format и diff-check PASS; full suite/Telegram/broker NOT_RUN.
-- Independent Academic, Schedule, Bot reviews: APPROVE_SOURCE; authors собственные patches не одобряли. Final independent integration review проверил11 code/SQL/test/CI paths и все author hashes, findings0.
-- CI delta ровно5scalars: current Jobs hash2, moved teacher coordinates2, existing Attendance backfill frame1. Все29embedded Python blocks AST-parse; native counterexamples/frozen checks локально не исполнялись. Predicates, wire/status/count/identity/schema/privacy/current-source/restored-green/thresholds/required gates не ослаблены.
-- Managed Docker daemon/socket проверен штатно: uid1000 получает socket permission denied. Daemon/groups/config не менялись; sudo/alternate sockets/network bypass не использовались. Реальные PostgreSQL/Rabbit/Mongo/browser checks сейчас NOT_RUN по этому resource/access blocker, не PASS.
+Rabbit native diagnostic: R1 framing исправлен только в external helper; затем собственная fixture не создалась до child. R2 с независимым review различил CREATE0 и START1/START_FAILURE_OTHER, state created/running=false/exit128/OOM=false; child invocations0. Readiness/native testcase NOT_RUN, specific START cause UNKNOWN. Owned container/network cleanup завершён, claim сохранён; caps/image/privileges не расширялись, дальнейшего обхода/повторного probe нет. Docker PG/Redis PASS не доказывает, что Rabbit может стартовать. Его локальный отказ не объявлен причиной hosted Monitoring FAIL.
 
-## Exact changed inventory
+## Последний опубликованный gate snapshot и остаток
 
-11 source/SQL/test/tooling paths:10 modified,1 added,0 deleted. Modified:
+Readback bac3: Security39522002428/OpenAPI39522002569 SUCCESS; Coverage39522002380/PRCI39522002462/pushCI39521996471 FAILURE, attempt1/completed. Новые7test bytes пока не имеют natural hosted результатов; финальные source/docs SHA и новые runs будут сообщены отдельно. Built-image Security scan SKIPPED, не PASS.
 
-- `.github/workflows/ci.yml`
-- `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java`
-- `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkMigrationIT.java`
-- `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java`
-- `services/notification-bot/bot/notifications/alert_fired.py`
-- `services/notification-bot/bot/notifications/audience.py`
-- `services/notification-bot/bot/notifications/presentation.py`
-- `services/notification-bot/bot/services/send_queue.py`
-- `services/notification-bot/tests/test_alert_fired.py`
-- `services/notification-bot/tests/test_notification_presentation.py`
+| Остаток на bac3 | Доказанные факты и неизвестность |
+| --- | --- |
+| Attendance | unit407PASS;IT255PASS2ORDINAL_FAIL1SKIP. Safe categories GRADLE_SUITE/OOM и ASSERTION; OOM subtype/JVM role/effective limits/firststage UNKNOWN. Ordinal mapping и guess heap/test patches не выполнялись. Для cause-directed correction нужен закрытый subtype/role/limits либо first-source-stage witness. |
+| Monitoring | deliveryPASS; exporters PREPARED_TRANSACTION_NATIVE_BOUNDARIES/AssertionError; pipeline ACTUAL_BACKGROUND_TRANSPORT/CalledProcessError1. probe_returncode0 относится к datastore readiness, не native child. Нужны первый prepared child boundary/stage/category и background child compile/setup/assertion category. Source callgraph исключает новую canonical-display enrichment как причину prepared probe: он подменяет prepare/dispatch. Runtime cause UNKNOWN; source patch не выдуман. |
+| Browser push lifecycle | Transfer POST202/PENDING, собственный GET PENDING к10s deadline, identities совпали; opposite PR case PASS. После step+cleanup snapshots COMPLETED/APPLIED/SENT, PER_DB_ONLY/DEADLINE_NOT_CONFIRMED. Это не state-at-deadline или доказательство стабилизации. |
+| Browser PR worker | 1FAIL2PASS: update click завершён, reload не наблюдался, candidate installed/старый document; native postMessage вернулся, candidate не activated. Opposite push3PASS. Нужны worker-side receive/handler/skipWaiting settlement; отсутствие waitUntil само по себе не finding. |
+| D002/история | На bac3 remaining scenarios push/PR10PASS, включая D002/N2. Исторические refresh rejection/finally timing, SETUPPUT500, activity-card,429 и другие квалифицированные причины UNKNOWN сохранены. Новые PASS не доказывают их причинного исправления. |
 
-Added: `services/academic-service/academic-app/src/main/resources/db/academic-migration/V12__homework_lesson_binding_requires_number.sql`. Taskdocs: CURRENT modified, this handoff added. Dependencies/lockfiles/proto/generated/API schema/scanner rules/branch protections unchanged.
+## Точный inventory / доставка
 
-## Remaining work and constraints
+С617:18 code/SQL/test/workflow paths (17modified/1added V12),0deleted, плюс2taskdocs. Новый послеbac3 пакет7modified:
 
-Новый stable published HEAD должен получить свои ordinary gates; нельзя переносить старый PASS или disappearance имени теста в утверждение fixed. Safe outcomes читать по точным run/attempt/head/digest. При remaining FAIL устанавливать первый подтверждённый механизм либо сохранять UNKNOWN с конкретным missing witness. Source approvals и завершение audit не равны readiness PR.
+- services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java
+- services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java
+- services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/testhelpers/AuthConfirmationHttpFixture.java
+- services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRosterSnapshotIT.java
+- services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java
+- services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserCredentialOwnershipIT.java
+- services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java
 
-F01–F09/N1/N2 не ослаблены. B013/B014/B015 и rejected Mongo/Chromium equivalents FROZEN; raw diagnostic disclosure не расширялся. CI не отменялись/не перезапускались. Worktrees/WIP/data/foreign resources сохранены, cleanup0. Deploy257646584 disabled_manually; merge/main/deploy/VPS/SSH/provider/Telegram/production migrations/secrets/grants/firewall/backup операции не выполнялись и не разрешены этой задачей.
+Taskdocs: CURRENT и этот handoff. Root должен опубликовать только проверенный checkpoint обычным nonforce push после сверки expected remote HEAD, source equivalence, scanner и independent review. Текущие CI не отменять/не перезапускать. Внешние safe artifacts читаются с exact bindings; UNKNOWN не меняется на PASS из-за исчезновения имени/job.
+
+F01–F09/N1/N2/security/ownership/uncertain keys/late generation guards/CAS/outbox/ACK/DLQ/privacy не ослаблены. B013/B014/B015 и rejected Mongo/Chromium equivalents FROZEN. Все WIP/worktrees/data/foreign resources сохранены; foreign cleanup0, собственные disposable fixtures штатно завершаются. Нет merge/main/deploy/VPS/SSH/provider/Telegram/production migrations/secrets/grants/firewall/backup операций.

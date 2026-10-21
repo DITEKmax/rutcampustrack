@@ -1,8 +1,8 @@
 package ru.rutcampustrack.academic.testhelpers;
 
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -18,7 +18,7 @@ import java.net.InetAddress;
  * Loopback servlet transport for the real Auth password handler and its actual Redis/JDBC service.
  */
 public final class AuthConfirmationHttpFixture implements AutoCloseable {
-    @Configuration(proxyBeanMethods = false)
+    @TestConfiguration(proxyBeanMethods = false)
     @EnableWebMvc
     static class Mvc {}
 

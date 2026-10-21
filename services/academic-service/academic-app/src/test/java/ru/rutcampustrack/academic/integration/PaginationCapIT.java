@@ -62,7 +62,8 @@ class PaginationCapIT extends AbstractAcademicIntegrationTest {
             var rows = json.path("_embedded").path("userResponseList");
             rows.forEach(row -> ids.add(row.path("id").asLong()));
             assertThat(rows.size()).isEqualTo(page == 0 ? 100 : expected.size() - 100);
-            assertThat(ids).hasSize(rows.size()).doesNotContainAnyElementsOf(previous);
+            assertThat(ids).hasSize(rows.size());
+            assertThat(java.util.Collections.disjoint(ids, previous)).isTrue();
             assertThat(expected).containsAll(ids);
             seen.addAll(ids);
             previous = ids;

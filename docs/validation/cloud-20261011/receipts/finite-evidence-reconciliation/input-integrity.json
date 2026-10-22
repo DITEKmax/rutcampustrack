@@ -1,0 +1,42 @@
+[
+  {
+    "group": "security-boundaries-developer",
+    "archive_sha256": "4eab4ab54a2925b9876d52cc2c2adc2a4ed2be678730b0a916d054f25711d211",
+    "archive_entries": 9,
+    "indexed_entries_verified": 9,
+    "mismatches": [],
+    "crc_ok": true
+  },
+  {
+    "group": "data-lecture-developer",
+    "archive_sha256": "adee9979a8f00d92757d6bb5f66203b2159ba95c52f1306ee0ec60c44073bce8",
+    "archive_entries": 21,
+    "indexed_entries_verified": 21,
+    "mismatches": [],
+    "crc_ok": true
+  },
+  {
+    "group": "gateway-claims-developer",
+    "archive_sha256": "dee0e49c5920e80c34bd2a7a29ef41875152cc223d2f965f907f3f5f2aebb772",
+    "archive_entries": 20,
+    "indexed_entries_verified": 20,
+    "mismatches": [],
+    "crc_ok": true
+  },
+  {
+    "group": "data-lecture-review",
+    "archive_sha256": "12cdee7c7fa011104624a326d75cd1d9d7b28ce55dab586fbedb7d6274173ed0",
+    "archive_entries": 12,
+    "indexed_entries_verified": 0,
+    "mismatches": [],
+    "crc_ok": true
+  },
+  {
+    "group": "gateway-claims-review",
+    "archive_sha256": "45f0601555a233b2886fac7703d6b9d5c88d9fefdaef2da383b2b5f05aabe972",
+    "archive_entries": 7,
+    "indexed_entries_verified": 7,
+    "mismatches": [],
+    "crc_ok": true
+  }
+]

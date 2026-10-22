@@ -20,7 +20,7 @@ export async function assertNoA11yCriticalOrSerious(page: Page, scope = 'main'):
     .analyze();
 
   const blocking = results.violations.filter(
-    (v) => v.impact === 'critical' || v.impact === 'serious'
+    (v) => v.impact === 'critical' || v.impact === 'serious',
   );
 
   if (blocking.length > 0) {
@@ -41,7 +41,7 @@ export async function assertNoA11yCriticalOrSerious(page: Page, scope = 'main'):
     }));
     throw new Error(
       `axe-core found ${blocking.length} CRITICAL/SERIOUS violations:\n` +
-        JSON.stringify(report, null, 2)
+        JSON.stringify(report, null, 2),
     );
   }
 }

@@ -8,7 +8,8 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 
 /** Connects raw WebSocket close callbacks to the STOMP session binding lifecycle. */
 @Component
-public final class WsSessionBindingWebSocketDecoratorFactory implements WebSocketHandlerDecoratorFactory {
+public final class WsSessionBindingWebSocketDecoratorFactory
+        implements WebSocketHandlerDecoratorFactory {
 
     private final WsSessionBindingRegistry registry;
 
@@ -28,8 +29,8 @@ public final class WsSessionBindingWebSocketDecoratorFactory implements WebSocke
             @Override
             public void afterConnectionClosed(
                     WebSocketSession session,
-                    org.springframework.web.socket.CloseStatus closeStatus
-            ) throws Exception {
+                    org.springframework.web.socket.CloseStatus closeStatus)
+                    throws Exception {
                 try {
                     super.afterConnectionClosed(session, closeStatus);
                 } finally {

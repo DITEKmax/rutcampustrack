@@ -1,0 +1,32 @@
+{
+  "verdict": "CHANGES_REQUESTED_SOURCE",
+  "input_ready_sha256": "04f6baa830920810a044adb512bd4adee2e45aa35c1fc3551c2ad78694d10886",
+  "input_driver_sha256": "d7021dead5b4bc13e3ee219c6b965948552ab7cd39161dda5e49292c551971b7",
+  "members": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 4756,
+      "sha256": "8fb6b7f4ce7ff54aedebd12a2d8a8de942763c906ba5b16705e07948b48e8527",
+      "mode": "0o600"
+    },
+    {
+      "path": "findings.safe.json",
+      "bytes": 2045,
+      "sha256": "bf541f9d8f7211daeebae6211b86632718d45b67a49b4d0d45767ed59b7c775e",
+      "mode": "0o600"
+    },
+    {
+      "path": "selected-source-controls.safe.json",
+      "bytes": 1504,
+      "sha256": "465d558556fbfb5613d28483d48e2fdd9ad97525be90f1d2f4041c38f0230c92",
+      "mode": "0o600"
+    },
+    {
+      "path": "source-ledger.safe.json",
+      "bytes": 9733,
+      "sha256": "3ba02de4d0745c90872fcd451061d2c2bf885defa24a12a2419d4f21ca040fb0",
+      "mode": "0o600"
+    }
+  ],
+  "source_or_runtime_mutation": "NONE"
+}

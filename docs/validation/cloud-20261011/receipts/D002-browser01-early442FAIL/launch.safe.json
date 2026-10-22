@@ -1,0 +1,28 @@
+{
+  "state": "LAUNCHING",
+  "prepared_source_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "execution_checkout_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "ready_sha256": "954d2fbb5faea5272f3a5e9924a563e6d66bc786a849b7318a807651d3c6e4b9",
+  "grant_sha256": "23251469b44d83ecad2ffd0ca0d211304ecf10384c3aa3435d4c45b29815f77b",
+  "issued_at": "2026-10-13T03:43:33.551508+00:00",
+  "absolute_stop_at": "2026-10-13T03:47:37.701191+00:00",
+  "deadline_seconds": 242,
+  "project": "chromium",
+  "case_count": 1,
+  "workers": 1,
+  "retries": 0,
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+    "test",
+    "--config",
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.d002-steps.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0"
+  ],
+  "own_driver_pid": 467082,
+  "own_driver_birth": 11680630,
+  "requested_context": "approved VM network/IPC; ordinary actor1000/root0"
+}

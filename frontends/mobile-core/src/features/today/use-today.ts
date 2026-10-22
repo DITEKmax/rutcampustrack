@@ -43,7 +43,9 @@ export interface TodayCheckinInput {
   scope?: StudentTodayQueryScope
 }
 
-export function normalizeTodayScope(scope: StudentTodayQueryScope | null | undefined): StudentTodayQueryScope {
+export function normalizeTodayScope(
+  scope: StudentTodayQueryScope | null | undefined,
+): StudentTodayQueryScope {
   return {
     userId: scope?.userId ?? null,
     activeRole: scope?.activeRole ?? null,
@@ -53,9 +55,10 @@ export function normalizeTodayScope(scope: StudentTodayQueryScope | null | undef
     sessionVersion: scope?.sessionVersion ?? null,
     rolesVersion: scope?.rolesVersion ?? null,
     readOnly: scope?.readOnly ?? false,
-    resetGeneration: Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
-      ? scope?.resetGeneration ?? 0
-      : 0,
+    resetGeneration:
+      Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
+        ? (scope?.resetGeneration ?? 0)
+        : 0,
   }
 }
 
@@ -76,7 +79,9 @@ export function todayQueryKey(scope: StudentTodayQueryScope | null | undefined):
   ]
 }
 
-export function todayScopeQueryPrefix(scope: StudentTodayQueryScope | null | undefined): readonly unknown[] {
+export function todayScopeQueryPrefix(
+  scope: StudentTodayQueryScope | null | undefined,
+): readonly unknown[] {
   return todayQueryKey(scope)
 }
 
@@ -105,29 +110,37 @@ export function useToday(
     // Readonly authority may still read Today. Mutations have their own
     // guards in the owner and mutation boundary.
     enabled: computed(() => enabled.value && !offline.value),
-    refetchInterval: computed(() => enabled.value
-      && !offline.value
-      && activeToday.value
-      && hasPendingCheckin.value
-      ? 15_000
-      : false),
+    refetchInterval: computed(() =>
+      enabled.value && !offline.value && activeToday.value && hasPendingCheckin.value
+        ? 15_000
+        : false,
+    ),
     refetchIntervalInBackground: false,
     retry: 1,
   })
 
-  watch(() => query.data.value, (data) => {
-    hasPendingCheckin.value = data?.lessons.some(isPendingCheckin) ?? false
-  }, { immediate: true })
+  watch(
+    () => query.data.value,
+    (data) => {
+      hasPendingCheckin.value = data?.lessons.some(isPendingCheckin) ?? false
+    },
+    { immediate: true },
+  )
 
   watch(activeToday, (active, wasActive) => {
     if (active && !wasActive && enabled.value && !offline.value) void query.refetch()
   })
 
-  async function refresh(expectedScope: StudentTodayQueryScope | null | undefined = scope.value): Promise<void> {
+  async function refresh(
+    expectedScope: StudentTodayQueryScope | null | undefined = scope.value,
+  ): Promise<void> {
     const requestScope = normalizeTodayScope(expectedScope)
-    if (!enabled.value
-      || offline.value
-      || studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) return
+    if (
+      !enabled.value ||
+      offline.value ||
+      studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
+    )
+      return
     await query.refetch()
   }
 
@@ -146,8 +159,11 @@ export function useToday(
     },
     onSuccess: (ack: StudentCheckinAck, input) => {
       const ownerScope = normalizeTodayScope(input.scope ?? scope.value)
-      if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(ownerScope)) return
-      queryClient.setQueryData<StudentToday>(todayQueryKey(ownerScope), (current) => current ? applyCheckinAck(current, ack) : current)
+      if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(ownerScope))
+        return
+      queryClient.setQueryData<StudentToday>(todayQueryKey(ownerScope), (current) =>
+        current ? applyCheckinAck(current, ack) : current,
+      )
       void queryClient.invalidateQueries({ queryKey: todayScopeQueryPrefix(ownerScope) })
     },
   })

@@ -1,0 +1,76 @@
+{
+  "sourceBase": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "state": "FORMAT_CANDIDATE_STRICT_PROOF_FAILED",
+  "files": [
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 379,
+      "sha256": "e8de4baa49d47e66150ec8de8a2de8acbd576618a35ed5ad5aa422d2d2be2b40"
+    },
+    {
+      "path": "candidate.safe.json",
+      "bytes": 2323,
+      "sha256": "ca9bef1751fbabf5f26aacc5ecbd1c4407cd82d89ae1dfa06b96ba2b8e4089a0"
+    },
+    {
+      "path": "format-launch.safe.json",
+      "bytes": 957,
+      "sha256": "0af3017f27e1b5379884ae27ed4e2e70e023318c7e6fed0f369dfe664c7a4b95"
+    },
+    {
+      "path": "format-outcome.safe.json",
+      "bytes": 183,
+      "sha256": "950209ad718ba3033e64ae7c63bd20c5f91e1e2594e14b3f943e281a312279d5"
+    },
+    {
+      "path": "format-process.safe.json",
+      "bytes": 147,
+      "sha256": "0334a34a54d94d36a7fe7af8730ba1bbd2bd057e28d31782cc35fa7f29c4a7e4"
+    },
+    {
+      "path": "format-terminal.safe.json",
+      "bytes": 561,
+      "sha256": "d6e55d8c0aaaf0739e5cf3bf49f5a67b1191d2a37a555a50f0c6e2ee15456b1f"
+    },
+    {
+      "path": "parserproof-launch.safe.json",
+      "bytes": 498,
+      "sha256": "6a60e1018bf0d63eb8d12ceda5e7581d7306c0dd1fbcc6d0378a9ededb175c7d"
+    },
+    {
+      "path": "parserproof-outcome.safe.json",
+      "bytes": 69,
+      "sha256": "f2eedf0748da1a9d060bbef45fda08654a4d9d10002e03644443ffccddf9653f"
+    },
+    {
+      "path": "parserproof-process.safe.json",
+      "bytes": 147,
+      "sha256": "75127b3b9ad1e76cd1edbd56c50f4b19a0c23583a3641014cdbc7bdfbb061a45"
+    },
+    {
+      "path": "parserproof-terminal.safe.json",
+      "bytes": 568,
+      "sha256": "11838b38d5ee60086de268031a79185bfb93323d322eeebffec15cfd026dc112"
+    },
+    {
+      "path": "parserproof.safe.json",
+      "bytes": 3669,
+      "sha256": "29f1874a8d1a215169407595982c979be789f462ea863526b389ad3985d268d0"
+    },
+    {
+      "path": "source-before.safe.json",
+      "bytes": 995,
+      "sha256": "1b8c3929df02d171a82d47145d1887e52185aa75106158f903d8f9fc717ac07a"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 119,
+      "sha256": "755300b715ac2465c72cf80db6c4db5e165a50600a1f759e6db6af42464d0712"
+    },
+    {
+      "path": "erratum.safe.json",
+      "bytes": 191,
+      "sha256": "46040f827a1a45bf5316e30886d5cbc55d8a1cb8172ea9c3b2fe386f0f56eba9"
+    }
+  ]
+}

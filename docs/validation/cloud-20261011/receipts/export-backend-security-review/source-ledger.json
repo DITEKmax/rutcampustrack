@@ -1,0 +1,571 @@
+[
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+    "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "Accepted owner decisions embedded in JS-ADMIN-01/02/03, chat 7",
+        "status": "canonical-for-admin-users-delivery; later conflicting owner decisions must be surfaced before dependent edits",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": "Original owner decision date not inferred from file mtime; chat 7 attribution retained",
+        "supersedes": [
+          "role-prefixed UserService.generateLogin behavior",
+          "terminal-role selectability in Auth RoleStatus where inconsistent with JS-ADMIN-02 active-only RoleSwitcher"
+        ]
+      },
+      {
+        "source": "design:knowledge/job-stories.md",
+        "status": "copy-archive",
+        "source_sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 98,
+        "to_line": 102
+      },
+      {
+        "from_line": 253,
+        "to_line": 259
+      },
+      {
+        "from_line": 374,
+        "to_line": 377
+      },
+      {
+        "from_line": 630,
+        "to_line": 639
+      },
+      {
+        "from_line": 751,
+        "to_line": 753
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+    "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:02-backend/backend-conflicts.md",
+        "status": "copy-archive",
+        "source_sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 80,
+        "to_line": 89
+      },
+      {
+        "from_line": 115,
+        "to_line": 126
+      },
+      {
+        "from_line": 580,
+        "to_line": 593
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/architecture/reference-rutcampustrack-design/TRANSPORT.md",
+    "sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:knowledge/TRANSPORT.md",
+        "status": "copy-canonical",
+        "source_sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 29,
+        "to_line": 38
+      },
+      {
+        "from_line": 57,
+        "to_line": 61
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/reference-rutcampustrack-design/COMPONENT_REGISTRY.md",
+    "sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:knowledge/COMPONENT_REGISTRY.md",
+        "status": "copy-canonical",
+        "source_sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 210,
+        "to_line": 210
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+    "sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:02-backend/backend-requests.md",
+        "status": "copy-archive",
+        "source_sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 342,
+        "to_line": 342
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/112-headman-attendance.md",
+    "sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:01-wireframes/headman/112-headman-attendance.md",
+        "status": "copy-canonical",
+        "source_sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/headman/112-headman-attendance.md",
+        "status": "duplicate",
+        "source_sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 157,
+        "to_line": 164
+      },
+      {
+        "from_line": 176,
+        "to_line": 187
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/113-headman-stats.md",
+    "sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "Current PWA/TMA implementation and accepted VIEW_STATS export decision in owner conversation",
+        "status": "resolved: implement in mobile-core shared by pwa-vue and tma-vue; named statistical rows allowed under VIEW_STATS, separate roster export remains outside this permission",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": null,
+        "supersedes": "read-only scout proposal to implement legacy frontends/pwa React and infer anonymization of all statistical exports; no owner decision superseded"
+      },
+      {
+        "source": "design:01-wireframes/headman/113-headman-stats.md",
+        "status": "copy-canonical",
+        "source_sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/headman/113-headman-stats.md",
+        "status": "duplicate",
+        "source_sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 202,
+        "to_line": 208
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/116-headman-group.md",
+    "sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:01-wireframes/headman/116-headman-group.md",
+        "status": "copy-canonical",
+        "source_sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/headman/116-headman-group.md",
+        "status": "duplicate",
+        "source_sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 167,
+        "to_line": 171
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/teacher/122-teacher-attendance.md",
+    "sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "ПК-122 explicit partial state versus tentative period interpretation",
+        "status": "resolved: preserve full-semester journal/export, blank future columns, future lessons excluded from metrics",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": null,
+        "supersedes": "root export contract to-today assumption of 2026-09-23; no owner decision superseded"
+      },
+      {
+        "source": "design:01-wireframes/teacher/122-teacher-attendance.md",
+        "status": "copy-canonical",
+        "source_sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/teacher/122-teacher-attendance.md",
+        "status": "duplicate",
+        "source_sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 94,
+        "to_line": 105
+      },
+      {
+        "from_line": 167,
+        "to_line": 173
+      },
+      {
+        "from_line": 206,
+        "to_line": 206
+      },
+      {
+        "from_line": 234,
+        "to_line": 234
+      },
+      {
+        "from_line": 288,
+        "to_line": 291
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/teacher/123-teacher-stats.md",
+    "sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:01-wireframes/teacher/123-teacher-stats.md",
+        "status": "copy-canonical",
+        "source_sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/teacher/123-teacher-stats.md",
+        "status": "duplicate",
+        "source_sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 122,
+        "to_line": 139
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/132-admin-users.md",
+    "sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:01-wireframes/admin/132-admin-users.md",
+        "status": "copy-canonical",
+        "source_sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/admin/132-admin-users.md",
+        "status": "duplicate",
+        "source_sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 111,
+        "to_line": 116
+      },
+      {
+        "from_line": 197,
+        "to_line": 202
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/133-admin-groups.md",
+    "sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "design:01-wireframes/admin/133-admin-groups.md",
+        "status": "copy-canonical",
+        "source_sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/admin/133-admin-groups.md",
+        "status": "duplicate",
+        "source_sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 99,
+        "to_line": 99
+      },
+      {
+        "from_line": 113,
+        "to_line": 116
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-09-24-assistant-report-export.md",
+    "sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 1,
+        "to_line": 11
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-10-01-group-roster-export.md",
+    "sha256": "d10d83c0e9b5a343f07782ed62def870a9ced616ccd6310ac2b2a6e81ae85d4b",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 1,
+        "to_line": 9
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-10-08-limited-administrators.md",
+    "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "Direct owner async reply in frontend main chat: selected rights for administrators, adequate split delegated to team; independently read by backend root",
+        "status": "accepted rule; frozen capability/API contract R1; backend and frontend implementation in progress, runtime not accepted",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": null,
+        "supersedes": "Proposal to keep only full administrator access with frontend confirmation"
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 1,
+        "to_line": 27
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/implementation/release-surface-matrix.md",
+    "sha256": "b933e14e408a7ac226ba838b8cbec67fb0ed773bbf6c3357fe813c8849121d16",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [
+      {
+        "source": "derived:preparation/docs/implementation/release-surface-matrix.md",
+        "status": "generated",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 1,
+        "to_line": 17
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+    "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 1,
+        "to_line": 24
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-09-20-retrospective-attendance.md",
+    "sha256": "951e833291cdae03874b36d3128a5cce46826f974953005ddf53b857f8564be4",
+    "author_equivalent": true,
+    "read": "opened whole bytes; critical fragments read separately",
+    "source_entries": [],
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred",
+    "acceptance_ledger_fragment_addresses": [
+      {
+        "from_line": 1,
+        "to_line": 30
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+    "sha256": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+    "source_entries": [
+      {
+        "source": "D006/D007",
+        "status": "accepted owner decision",
+        "decision_date": "2026-10-11"
+      }
+    ],
+    "read": "full text",
+    "supersedes": "unresolved column/audit/LIMITED export branches for D006/D007; D008 unrelated PNG resource budget",
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+    "source_entries": [
+      {
+        "source": "current owner contract including D008",
+        "status": "accepted owner decision",
+        "decision_date": "2026-10-11"
+      }
+    ],
+    "read": "full text",
+    "supersedes": "unresolved column/audit/LIMITED export branches for D006/D007; D008 unrelated PNG resource budget",
+    "metadata_provenance": "root acceptance ledger metadata; original source independently reopened and SHA matched; relevant fragments independently read, not a claim of semantic full-file coverage for long specifications; no owner/date inferred"
+  }
+]

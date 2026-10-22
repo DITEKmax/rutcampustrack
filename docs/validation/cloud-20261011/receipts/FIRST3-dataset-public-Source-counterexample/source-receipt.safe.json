@@ -1,0 +1,313 @@
+{
+  "schema": "RCT_FIRST3_SOURCE_RECEIPT_V1",
+  "scope": "FIRST3_DATASET_CALL_SOURCE",
+  "result": "CONFIRMED_HARNESS_INPUT_DEFECT_CURRENT_CI_CAUSE_UNKNOWN",
+  "utc": "2026-10-13 08:14:41 UTC",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "repository": "/workspace/rutcampustrack",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "inspected_head": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "ownership": "READ_ONLY_REPOSITORY; OWN_RECEIPT_ONLY; ROOT_SHARED_WRITER",
+  "current_evidence": {
+    "source_id": "F3DC-E01",
+    "path": "docs/validation/cloud-20261011/receipts/current597716-FIRST3-untrusted-dataset-hint-FAIL/first3-safe-1.safe.json",
+    "sha256": "4c9ef4b458d097e4dc804cbafde39f0d196487a5c883e12713cd169b1558ba03",
+    "ci_run_id": 38363252108,
+    "case_declaration_lines": [
+      14,
+      61,
+      142
+    ],
+    "durations_ms": [
+      72,
+      89,
+      47
+    ],
+    "observations": "ALL_THREE_MISSING",
+    "runner_errors": 0,
+    "unsafe_artifact": false,
+    "diagnostics_per_case": [
+      "UNKNOWN/0",
+      "REPORTED_CLASS_ERROR/0",
+      "REPORTED_FRAME_DATASET_CALL/0"
+    ],
+    "actual_browser_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+    "qualification": "Reported class and frame are bounded untrusted serialized text. They authenticate neither source execution, operation, HTTP status, failing cause, nor setup stage. Declaration locations are not failing call-site locations. Current cause remains UNKNOWN."
+  },
+  "sources": [
+    {
+      "id": "F3DC-S01",
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+      "symbols": [
+        "Actor.call:25-41",
+        "MobileDataset.initialize:160-291",
+        "dataset worker fixture:310-342"
+      ],
+      "fragment": "Actor.call throws `${method} ${path}: HTTP ${response.status()}, expected ${statuses.join('/')}` for an unexpected status; dataset.initialize calls group() twice with numericCode `1${randomBytes(1)[0] % 100}`.padEnd(3, '0') and expects201."
+    },
+    {
+      "id": "F3DC-S02",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupCodeRules.java",
+      "sha256": "b464e9f69a29f632f263025658ac36587a975415ad469a5746322d4a2eb0962a",
+      "symbols": [
+        "fromParts:62-80"
+      ],
+      "fragment": "numeric.charAt(1) -> Character.digit -> ProgramType.fromDigit; first course must1..5 and <=trainingDurationYears."
+    },
+    {
+      "id": "F3DC-S03",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/ProgramType.java",
+      "sha256": "11d42f2b8532f750e244b85c272d22e329b4d61c824f158240c7e642059389a7",
+      "symbols": [
+        "enum constants:12-20",
+        "fromDigit:63-69"
+      ],
+      "fragment": "The nine explicit stable program digits are1..9; fromDigit(0) throws UnknownProgramTypeException."
+    },
+    {
+      "id": "F3DC-S04",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java",
+      "sha256": "d277bccc120a16aabae16a994f15e7170ac5e500ed15c581407559bc213df2d5",
+      "symbols": [
+        "createAdminGroup:117-132",
+        "createGroupCanonical:135-154"
+      ],
+      "fragment": "createAdminGroup calls GroupCodeRules.fromParts first; catches UnknownProgramTypeException and throws BadRequestException with field numericCode, before createGroupCanonical persists."
+    },
+    {
+      "id": "F3DC-S05",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+      "sha256": "ce14f386c6715122201d4113cf856e1a8b02ce3c40cfa9337dc8f86c157ec013",
+      "symbols": [
+        "handleBadRequest:123-133"
+      ],
+      "fragment": "BadRequestException is mapped to HttpStatus.BAD_REQUEST."
+    },
+    {
+      "id": "F3DC-S06",
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/CreateAdminGroupRequest.java",
+      "sha256": "e377223913d42b7030e571575a4a46d993ec3b92737872e2c5f70aa1b00a5a13",
+      "symbols": [
+        "numericCode validation:28-37",
+        "duration validation:38-47"
+      ],
+      "fragment": "DTO shape ^[1-5]\\\\d{2}$ permits100, but canonical domain validation rejects middle0; explicit duration1..5."
+    },
+    {
+      "id": "F3DC-S07",
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+      "symbols": [
+        "reportedFrameHints:40-44",
+        "reportedFailureHints:113-156",
+        "classifySafeFailure:159-184"
+      ],
+      "fragment": "Exact reported frame Actor.call at canonical mobile-dataset.ts -> REPORTED_FRAME_DATASET_CALL, alwaysUNKNOWN/0; core classifier accepts only exact known messages and Synthetic actor login/session/role HTTP forms, not Actor.call method/path/status message."
+    },
+    {
+      "id": "F3DC-S08",
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+      "symbols": [
+        "privateArtifacts:10-27",
+        "recordSafeFailure:66-82",
+        "sanitizeTestErrors:84-103"
+      ],
+      "fragment": "Automatic privacy fixture catches/rethrows, records closed diagnostics and sanitizes original error before artifacts. Preserve these guards and status/failure accounting."
+    },
+    {
+      "id": "F3DC-S09",
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "sha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "symbols": [
+        "beforeEach:7-12",
+        "afterEach:15-19",
+        "original spec registration:21-22"
+      ],
+      "fragment": "beforeEach requires resolved dataset before clock/FocusObserver.start; if worker fixture initialization throws, no observer instance exists and afterEach publishes no observations."
+    },
+    {
+      "id": "F3DC-S10",
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "sha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "symbols": [
+        "private directory guards:10-23",
+        "FIRST3 selection/config:25-58"
+      ],
+      "fragment": "Only unchanged original three tests; one chromium worker/retries0; dedicated safe reporter/no capture; teachingInstant propagated."
+    },
+    {
+      "id": "F3DC-S11",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+      "symbols": [
+        "e2e-auth:316-432",
+        "FIRST3 preparation:337-358",
+        "FIRST3 invocation:402-413",
+        "SAFE upload:415-428"
+      ],
+      "fragment": "Workflow creates private FIRST3 directories and exports clock/run/observations paths; disposable stack via checked .env.ci and clock compose overlay; FIRST3 explicit synthetic=true HTTPSlocalhost8443; only allowlisted safe-results/threeobservations uploads."
+    },
+    {
+      "id": "F3DC-S12",
+      "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "symbols": [
+        "JS-ADMIN-05:193-199"
+      ],
+      "fragment": "Accepted group creation supplies separate alphabetic/numeric codes and mandatory training duration; server builds the display name. Exact digit acceptance is current canonical domain mapping in S02/S03, not an invented new product rule."
+    },
+    {
+      "id": "F3DC-S13",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupController.java",
+      "sha256": "088ebc59cc5259f1d56ab6e18006e974a7f79e35e093bcc0c11dcee233bffb59",
+      "symbols": [
+        "createAdminGroup:70-76"
+      ],
+      "fragment": "Live ADMIN/GROUPS_MANAGE guard precedes service; valid registry creation returns201."
+    }
+  ],
+  "finding": {
+    "id": "DF-FIRST3-DATASET-NUMERIC-CODE-001",
+    "severity": "P2",
+    "category": "CONFIRMED_SOURCE_HARNESS_INPUT_DEFECT",
+    "accepted_behavior": "Success-path FIRST3 dataset must use a valid current group program code and explicit duration while preserving canonical server rejection of unknown program codes.",
+    "actual_behavior": "Generator admits100 even though the canonical middle-digit domain is1..9; success-path expected201 cannot hold for this reachable generated input.",
+    "counterexample": {
+      "public_random_byte": 0,
+      "numeric_code": "100",
+      "valid_dto_shape": true,
+      "course": 1,
+      "training_duration": 4,
+      "program_digit": 0,
+      "canonical_program_known": false,
+      "source_projected_http_status": 400,
+      "fixture_expected_status": 201
+    },
+    "source_causal_chain": [
+      "S01 byte0 -> numeric100 -> POST static group-registry route, expected201",
+      "S06 DTO syntax accepts100",
+      "S02 middle0 -> S03 UnknownProgramTypeException",
+      "S04 field-specific BadRequestException before any group persistence",
+      "S05 HTTP400 projection; S01 unexpected status throws genericError",
+      "S09 initialization failure precedes observer start",
+      "S07 generic method/path/error form mapsUNKNOWN/0; matching reportedActor.call stays untrusted"
+    ],
+    "runtime_verdict": "NOT_RUN",
+    "current_ci_cause": "UNKNOWN",
+    "limits": "This is a constructive Source counterexample, not an authenticated cause of current threeFAIL. Byte distribution yields3/256 invalid per group draw, so no inference from timings or repeated failures. Earlier/local accepted client evidence is preserved."
+  },
+  "bounded_v8_public_check": {
+    "mode": "BOUNDED_PUBLIC_EXPRESSION_V8_RAM_ONLY",
+    "inputCount": 256,
+    "actualSourceExpression": "`1${byte % 100}`.padEnd(3, '0')",
+    "actualDomainFromSource": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "oldCodeCount": 91,
+    "oldSyntaxInvalid": 0,
+    "oldProgramInvalid": [
+      {
+        "byte": 0,
+        "numericCode": "100",
+        "typeDigit": 0
+      },
+      {
+        "byte": 100,
+        "numericCode": "100",
+        "typeDigit": 0
+      },
+      {
+        "byte": 200,
+        "numericCode": "100",
+        "typeDigit": 0
+      }
+    ],
+    "recommendedExpression": "`11${byte % 10}`",
+    "recommendedInputCount": 256,
+    "recommendedCodeCount": 10,
+    "recommendedInvalid": 0,
+    "limits": [
+      "Exact TS expression enumerated in V8; Java validation chain inspected statically only.",
+      "No runtime API, dataset, credentials, Node, Java, Docker, browser or artifact-reader execution.",
+      "Recommended expression is a Source-only correction candidate; no product/harness mutation."
+    ]
+  },
+  "fixture_input_path": {
+    "declared_guards": [
+      "private canonical reporter/capture off",
+      "explicit synthetic=true",
+      "HTTPSloopback8443",
+      "oneworker/retries0",
+      "clock fixture/disposable marker"
+    ],
+    "setup_call_order": [
+      "ADMIN admit(login/session/optionalrole)",
+      "SEMESTERS_READ",
+      "optionalSEMESTER_CREATE",
+      "optionalSEMESTER_ACTIVATE",
+      "GROUP_CREATE twice",
+      "USER_CREATE six times",
+      "HEADMAN_SET",
+      "HEADMAN admit",
+      "SUBJECT_CREATE",
+      "SUBJECT_READ publication poll",
+      "LESSON_CREATE",
+      "HOMEWORK_CREATE publication poll",
+      "ASSISTANT_CREATE",
+      "use(dataset)",
+      "beforeEach clock/observer start",
+      "original test body"
+    ],
+    "ci_seed_source": "Only public semester fragment read: V2__seed_test_data.sql:10-12 starts active Spring2026 ending2026-06-30. Dataset dynamically finds active range or creates/activates a new range. Actual remote state isUNKNOWN; no dataset credentials or raw seed user rows read.",
+    "config_result": "No concrete current CI target/private-dir/clock/seed-input-path violation established. Source guard flow appears intentional; runtime validity not inferred."
+  },
+  "minimal_correction_proposal": {
+    "scope": "Separate appointed sole harness writer in frozen current worktree; this read-only agent made no code changes.",
+    "generation": "For these role/mark/homework scenarios use numericCode `11${randomBytes(1)[0] % 10}`: course1/current BACHELOR1/ordinal0..9 with duration4. Existing randomized alphabetic uniqueness remains. This narrows only incidental setup variety; original client assertions, forbidden-access expectations and server validation stay unchanged.",
+    "source_check": "Enumerate all256 byte inputs for existing and corrected expression, prove old100 counterexample/newallvalid and keep positive ordinal0 coverage. Canonical ProgramType guard remains; no expected-status relaxation or new general test framework.",
+    "current_cause_evidence_gap": "Source-owned closed observation at Actor.call unexpected-status boundary, plus a closed setup-operation identifier, is absent before the first client observer. Exact thrown form is `${method} ${path}: HTTP ${response.status()}, expected ${statuses.join('/')}`. Do not export or parse its raw path/ID/title/body/stack.",
+    "minimal_next_diagnostic": "Instrument only existing FIRST3 setup call sites with finite source-authored operation code and allowlisted response.status() before throwing unchanged unexpected-status error. Closed code candidates: SEMESTERS_READ, SEMESTER_CREATE, SEMESTER_ACTIVATE, GROUP_CREATE, USER_CREATE, HEADMAN_SET, SUBJECT_CREATE, SUBJECT_READ, LESSON_CREATE, HOMEWORK_CREATE, ASSISTANT_CREATE. Record in the existing privacy-protected closed annotation/result path under independent privacy review; no arbitrary string/reflection/body/credential reads. Map unallowed numericstatus toUNKNOWN0. Preserve existing core diagnostics priority/max8/private guards and old SAFE schema acceptance until the explicitly updated consumer is reviewed.",
+    "sufficient_followup": "After source correction/closed diagnostics have frozen review and privacy controls, run the unchanged FIRST3 once in an already authorized genuine isolated lane/current CI and capture exact operation/status if it still fails. No setup repetition or test rerun performed here."
+  },
+  "checks": {
+    "executed": [
+      "Full required task/process/current/decisions/questions/resources reread",
+      "Targeted static public source reads and scoped status/hash checks",
+      "V8 RAM enumeration of256 byteinputs"
+    ],
+    "runtime_executions": [],
+    "network_calls": 0,
+    "artifact_reader_runs": 0,
+    "credential_access": false,
+    "raw_logs_html_xml_read": false,
+    "repository_modified_files": [],
+    "created_files": [
+      "/workspace/scratch/rct-validation/first3_dataset_call_source/source-receipt.safe.json"
+    ],
+    "unchanged_required": [
+      "Angular subtree",
+      "server ProgramType/auth/TLS/rights guards",
+      "original FIRST3 assertions/status expectations",
+      "mandatory CI gates",
+      "privacy guards/sanitizer"
+    ],
+    "limits": [
+      "No real HTTP400 observed for this counterexample.",
+      "Current three actual FAIL remainUNKNOWN cause; no parent scenarioPASS/closure.",
+      "Root may integrate receipt and appoint existing authorized writer; receipt itself authorizes no native effect.",
+      "B013 rejected journal-rights mutation remains unrelated/untouched."
+    ]
+  }
+}

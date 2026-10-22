@@ -1,0 +1,2509 @@
+{
+  "author_archive_sha256": "f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317",
+  "author_archive_members": 25,
+  "author_manifest_hashed_payloads": 24,
+  "all_original_bytes_equal": true,
+  "prior_review_archive_sha256": "53a1ffbea1d68a2b2e0040cc56af388b72bda09211c6a6c114e5fde886af3214",
+  "prior_archive_members": 9,
+  "prior_nested_archive_members": 98,
+  "all_archive_CRC_checks": "PASS",
+  "prior_partial_files": [
+    {
+      "path": "accepted-context-source-audit.json",
+      "bytes": 1905,
+      "sha256": "dc92623ae0bb5cb25dc472f289156abc2c2626145d6917b2c988b641b5d87b09"
+    },
+    {
+      "path": "audit_evidence.py",
+      "bytes": 17750,
+      "sha256": "8a7074cbda8268545c1cd6112f1a9b7c54a34f496e1fe11bff9ff1b5d4e4d678"
+    },
+    {
+      "path": "cleanup-qualification.json",
+      "bytes": 1317,
+      "sha256": "aea16426a8f201324fff4dfb2ee7e7785bc8fc03fe84ac938de959fb9d97a56d"
+    },
+    {
+      "path": "findings.md",
+      "bytes": 10080,
+      "sha256": "8e99b8245ee01a0fb2262ff77e6185b23879adbd596123230521534c9e3244a2"
+    },
+    {
+      "path": "immutable-author-25-originals.zip",
+      "bytes": 70007,
+      "sha256": "f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317"
+    },
+    {
+      "path": "input-hash-manifest.json",
+      "bytes": 1473,
+      "sha256": "6fde217ceab7bf6c7dc66a8d1e010dd6f77049d34c3aa224f72a2e7308f3f7f5"
+    },
+    {
+      "path": "oracle-evidence-audit.json",
+      "bytes": 2017,
+      "sha256": "0fa10adeaa3599abf6748a1b044e30f029d165f8c8b8b70dbf40e8921e1ec985"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-before-test.java",
+      "bytes": 5654,
+      "sha256": "2ef39d5d4530854c738de0a7b3eda244a1b8f4497afbb34f9b1a50ad027d5f3a"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-capture.py",
+      "bytes": 4187,
+      "sha256": "712002a07d48104abb01a4c2d180a3cd21f347832d7f1524ae073cf78b8ec98b"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-cleanup.json",
+      "bytes": 896,
+      "sha256": "134b00c6875aebcaa168549fb8759c8cfe20f172f8bc501c719dddf98acbbf59"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-controlled-test.java",
+      "bytes": 7245,
+      "sha256": "0169c535ed3a0f9a2d431c8c657f1cb3079219372a4ed477e5ff80228d4a21c8"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-green-command.json",
+      "bytes": 65419,
+      "sha256": "5a4dd162b7e6375aa7cf071d39edb36639a4a461539e2533a96dab0f48eae9f3"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-green-result.json",
+      "bytes": 1039,
+      "sha256": "f97bac388d98a060fbca7b4aea1fc809eadd99e2b6383c611c910745b61d320f"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-green-safe.xml",
+      "bytes": 531,
+      "sha256": "91c206d59bd0210cbc519cd7ac6a652d0252bafd5c78b3d7799c6126d5eb6019"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-plan.json",
+      "bytes": 2709,
+      "sha256": "cff55ed73bf53694c35878ba6b19cd094477f306c5d53cbc63cc49c13de5fcf6"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-prelaunch-protocol.md",
+      "bytes": 3615,
+      "sha256": "3aaf219deb0cae28a79c8bfca58bd18a82259d5566e8cf80d8657d266376a2fa"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-red-command.json",
+      "bytes": 65246,
+      "sha256": "228dbdae838d0bb0cffe0aba24dab408f1d1b70342994a78cff6e8636db80f20"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-red-result.json",
+      "bytes": 1174,
+      "sha256": "741261e504e1dff77b77de6835d61ac40d7cd8e5de6e68ffa55810076130c08e"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-red-safe.xml",
+      "bytes": 1132,
+      "sha256": "f868a81ee4d77f92ae6af942696758d7b93111e3cbcae41c53162af25faaa4a8"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-restoration.json",
+      "bytes": 234,
+      "sha256": "565bab342059fe35e29123be1a11b09bd3d529f6f03a91bbd97f8efb5d68e610"
+    },
+    {
+      "path": "original-safe-evidence/NTR01-restored-target.java",
+      "bytes": 7047,
+      "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+    },
+    {
+      "path": "original-safe-evidence/change.patch",
+      "bytes": 3467,
+      "sha256": "3750dcac133c90db5488ae02061015d4f05a83f05ab95b4d36c732d4af530f4d"
+    },
+    {
+      "path": "original-safe-evidence/commit.log",
+      "bytes": 172,
+      "sha256": "44d722afd3d9cfc7b05f2f445ec89ea0ff99ebe608914684f3f813ece1bc829c"
+    },
+    {
+      "path": "original-safe-evidence/completion.json",
+      "bytes": 1221,
+      "sha256": "795247079773a66753abbb9b3cdf55d70208492065fe1ffce817e5c77ae7d2c2"
+    },
+    {
+      "path": "original-safe-evidence/original-review.md",
+      "bytes": 12047,
+      "sha256": "35d8a75ffbf0895453894e8ae74ab8e210787297ea72b7fb689b579353e0ef8f"
+    },
+    {
+      "path": "original-safe-evidence/review-packet.md",
+      "bytes": 4686,
+      "sha256": "02670f954153583cdef88efc079cab24569af557768e13fb7379657d62c426fc"
+    },
+    {
+      "path": "original-safe-evidence/source-manifest.json",
+      "bytes": 6347,
+      "sha256": "acadb9ae3c8a4b8e4559d19d3a9292a20c351b37a53d085d9682cb270d914bb5"
+    },
+    {
+      "path": "original-safe-evidence/sources/InternalWsTicketController.java",
+      "bytes": 2976,
+      "sha256": "63c157427b625e0435a2ea3f25f38161fd55e3fbc7f0ae6fdf7e6ceb81a343de"
+    },
+    {
+      "path": "original-safe-evidence/sources/WsTicketController.java",
+      "bytes": 2348,
+      "sha256": "7ad5f53eaa8093ece692bf40bf2a115edcbd42853d6d760881aa9999688da2de"
+    },
+    {
+      "path": "original-safe-evidence/sources/WsTicketResponse.java",
+      "bytes": 405,
+      "sha256": "132c3462b2ab05cf45d2cb44403c5e8c8eefe0c0f869cda5632bd29d8e1b4cb7"
+    },
+    {
+      "path": "original-safe-evidence/sources/WsTicketService.java",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4"
+    },
+    {
+      "path": "original-safe-evidence/sources/websocket-flow.md",
+      "bytes": 11710,
+      "sha256": "2d6d086ed3c6fd580f1d3f2694ad1246fcca25f54b851b4e1592f81d543a46f7"
+    },
+    {
+      "path": "original-safe-evidence-audit.json",
+      "bytes": 4772,
+      "sha256": "65c7a77b7fee99bd1a24bb148dffb41ce2cd71262dd6f77b3bf200ec62cf19fa"
+    },
+    {
+      "path": "prior-map-preservation.json",
+      "bytes": 184,
+      "sha256": "f0e0fb5dfc0e86194af0dcb4719e6e11280fcaa1c714f0de77cac9dbcbbbf47d"
+    },
+    {
+      "path": "prior-review-reuse.json",
+      "bytes": 4115,
+      "sha256": "79c5f55849a8e3aabd48da3d767221a28db525fdd789a6ec8b6f13ef4a3c6e82"
+    },
+    {
+      "path": "safe-log-identity-audit.json",
+      "bytes": 1201,
+      "sha256": "37670902226db487d881743bba23f93cea01defc22db9a24a0fe74a76f49bb3b"
+    },
+    {
+      "path": "safe-session-provenance.json",
+      "bytes": 2757,
+      "sha256": "44682550f0a212be07858c74a9e2980639aa879dff4a417d073430725a5fccad"
+    },
+    {
+      "path": "source-equivalence.json",
+      "bytes": 83904,
+      "sha256": "83c525755eafae13081d4b7f56777360d5edc007ae0fc99c45d010a76b787ca2"
+    }
+  ],
+  "prior_partial_findings": "APPROVE preserved; original completion/transfer metadata absent. Fresh completion belongs only to ntr_seal_review.",
+  "input_hashes": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "role": "governing-input",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "role": "governing-input",
+      "bytes": 4601,
+      "sha256": "5c3e2713a896818c43b1cf2820dad9b90606bbfb3305a86913610cc7af7686a8"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "role": "governing-input",
+      "bytes": 11724,
+      "sha256": "d22223fb721663b89628b50b9522e90838530c5569b0a3bf9aef1dd42baa26cd"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "role": "governing-input",
+      "bytes": 9930,
+      "sha256": "27f657586c7bca1cba84457063741fa5f744ee9d57021900a27b8b5cafeace17"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "role": "governing-input",
+      "bytes": 2111,
+      "sha256": "8cbedffb12e5cacdc74d3f52ecbc493d0872d648e852d1b90efe7cd1afdf9f92"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-ntr-seal-review.md",
+      "role": "governing-input",
+      "bytes": 3686,
+      "sha256": "c9e6393b1b40860662e15a7adc275d1d60b1007c23b95c7e2893528c0721faae"
+    },
+    {
+      "path": "/workspace/rutcampustrack/AGENTS.md",
+      "role": "process-input",
+      "bytes": 4327,
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "role": "process-input",
+      "bytes": 24809,
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/AGENTS.md",
+      "role": "process-input",
+      "bytes": 2914,
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3"
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/AGENTS.md",
+      "role": "process-input",
+      "bytes": 5464,
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "role": "process-input",
+      "bytes": 7916,
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-verification/SKILL.md",
+      "role": "process-input",
+      "bytes": 1733,
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-source-resolution/SKILL.md",
+      "role": "process-input",
+      "bytes": 1557,
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/accepted-context-source-audit.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1905,
+      "sha256": "dc92623ae0bb5cb25dc472f289156abc2c2626145d6917b2c988b641b5d87b09"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/audit_evidence.py",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 17750,
+      "sha256": "8a7074cbda8268545c1cd6112f1a9b7c54a34f496e1fe11bff9ff1b5d4e4d678"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/cleanup-qualification.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1317,
+      "sha256": "aea16426a8f201324fff4dfb2ee7e7785bc8fc03fe84ac938de959fb9d97a56d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/findings.md",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 10080,
+      "sha256": "8e99b8245ee01a0fb2262ff77e6185b23879adbd596123230521534c9e3244a2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/immutable-author-25-originals.zip",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 70007,
+      "sha256": "f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/input-hash-manifest.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1473,
+      "sha256": "6fde217ceab7bf6c7dc66a8d1e010dd6f77049d34c3aa224f72a2e7308f3f7f5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/oracle-evidence-audit.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 2017,
+      "sha256": "0fa10adeaa3599abf6748a1b044e30f029d165f8c8b8b70dbf40e8921e1ec985"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-before-test.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 5654,
+      "sha256": "2ef39d5d4530854c738de0a7b3eda244a1b8f4497afbb34f9b1a50ad027d5f3a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-capture.py",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 4187,
+      "sha256": "712002a07d48104abb01a4c2d180a3cd21f347832d7f1524ae073cf78b8ec98b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-cleanup.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 896,
+      "sha256": "134b00c6875aebcaa168549fb8759c8cfe20f172f8bc501c719dddf98acbbf59"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-controlled-test.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 7245,
+      "sha256": "0169c535ed3a0f9a2d431c8c657f1cb3079219372a4ed477e5ff80228d4a21c8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-green-command.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 65419,
+      "sha256": "5a4dd162b7e6375aa7cf071d39edb36639a4a461539e2533a96dab0f48eae9f3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-green-result.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1039,
+      "sha256": "f97bac388d98a060fbca7b4aea1fc809eadd99e2b6383c611c910745b61d320f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-green-safe.xml",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 531,
+      "sha256": "91c206d59bd0210cbc519cd7ac6a652d0252bafd5c78b3d7799c6126d5eb6019"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-plan.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 2709,
+      "sha256": "cff55ed73bf53694c35878ba6b19cd094477f306c5d53cbc63cc49c13de5fcf6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-prelaunch-protocol.md",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 3615,
+      "sha256": "3aaf219deb0cae28a79c8bfca58bd18a82259d5566e8cf80d8657d266376a2fa"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-red-command.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 65246,
+      "sha256": "228dbdae838d0bb0cffe0aba24dab408f1d1b70342994a78cff6e8636db80f20"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-red-result.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1174,
+      "sha256": "741261e504e1dff77b77de6835d61ac40d7cd8e5de6e68ffa55810076130c08e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-red-safe.xml",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1132,
+      "sha256": "f868a81ee4d77f92ae6af942696758d7b93111e3cbcae41c53162af25faaa4a8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-restoration.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 234,
+      "sha256": "565bab342059fe35e29123be1a11b09bd3d529f6f03a91bbd97f8efb5d68e610"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/NTR01-restored-target.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 7047,
+      "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/change.patch",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 3467,
+      "sha256": "3750dcac133c90db5488ae02061015d4f05a83f05ab95b4d36c732d4af530f4d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/commit.log",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 172,
+      "sha256": "44d722afd3d9cfc7b05f2f445ec89ea0ff99ebe608914684f3f813ece1bc829c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/completion.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1221,
+      "sha256": "795247079773a66753abbb9b3cdf55d70208492065fe1ffce817e5c77ae7d2c2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/original-review.md",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 12047,
+      "sha256": "35d8a75ffbf0895453894e8ae74ab8e210787297ea72b7fb689b579353e0ef8f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/review-packet.md",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 4686,
+      "sha256": "02670f954153583cdef88efc079cab24569af557768e13fb7379657d62c426fc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/source-manifest.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 6347,
+      "sha256": "acadb9ae3c8a4b8e4559d19d3a9292a20c351b37a53d085d9682cb270d914bb5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/sources/InternalWsTicketController.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 2976,
+      "sha256": "63c157427b625e0435a2ea3f25f38161fd55e3fbc7f0ae6fdf7e6ceb81a343de"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/sources/WsTicketController.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 2348,
+      "sha256": "7ad5f53eaa8093ece692bf40bf2a115edcbd42853d6d760881aa9999688da2de"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/sources/WsTicketResponse.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 405,
+      "sha256": "132c3462b2ab05cf45d2cb44403c5e8c8eefe0c0f869cda5632bd29d8e1b4cb7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/sources/WsTicketService.java",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence/sources/websocket-flow.md",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 11710,
+      "sha256": "2d6d086ed3c6fd580f1d3f2694ad1246fcca25f54b851b4e1592f81d543a46f7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/original-safe-evidence-audit.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 4772,
+      "sha256": "65c7a77b7fee99bd1a24bb148dffb41ce2cd71262dd6f77b3bf200ec62cf19fa"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/prior-map-preservation.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 184,
+      "sha256": "f0e0fb5dfc0e86194af0dcb4719e6e11280fcaa1c714f0de77cac9dbcbbbf47d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/prior-review-reuse.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 4115,
+      "sha256": "79c5f55849a8e3aabd48da3d767221a28db525fdd789a6ec8b6f13ef4a3c6e82"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/safe-log-identity-audit.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 1201,
+      "sha256": "37670902226db487d881743bba23f93cea01defc22db9a24a0fe74a76f49bb3b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/safe-session-provenance.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 2757,
+      "sha256": "44682550f0a212be07858c74a9e2980639aa879dff4a417d073430725a5fccad"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_recheck/ntr01-recheck/source-equivalence.json",
+      "role": "prior-incomplete-review-preserved",
+      "bytes": 83904,
+      "sha256": "83c525755eafae13081d4b7f56777360d5edc007ae0fc99c45d010a76b787ca2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck-originals.zip",
+      "role": "sealed-author-25-originals",
+      "bytes": 70007,
+      "sha256": "f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-before-test.java",
+      "role": "sealed-author-original",
+      "bytes": 5654,
+      "sha256": "2ef39d5d4530854c738de0a7b3eda244a1b8f4497afbb34f9b1a50ad027d5f3a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-capture.py",
+      "role": "sealed-author-original",
+      "bytes": 4187,
+      "sha256": "712002a07d48104abb01a4c2d180a3cd21f347832d7f1524ae073cf78b8ec98b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-cleanup.json",
+      "role": "sealed-author-original",
+      "bytes": 896,
+      "sha256": "134b00c6875aebcaa168549fb8759c8cfe20f172f8bc501c719dddf98acbbf59"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-controlled-test.java",
+      "role": "sealed-author-original",
+      "bytes": 7245,
+      "sha256": "0169c535ed3a0f9a2d431c8c657f1cb3079219372a4ed477e5ff80228d4a21c8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-green-command.json",
+      "role": "sealed-author-original",
+      "bytes": 65419,
+      "sha256": "5a4dd162b7e6375aa7cf071d39edb36639a4a461539e2533a96dab0f48eae9f3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-green-result.json",
+      "role": "sealed-author-original",
+      "bytes": 1039,
+      "sha256": "f97bac388d98a060fbca7b4aea1fc809eadd99e2b6383c611c910745b61d320f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-green-safe.xml",
+      "role": "sealed-author-original",
+      "bytes": 531,
+      "sha256": "91c206d59bd0210cbc519cd7ac6a652d0252bafd5c78b3d7799c6126d5eb6019"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-plan.json",
+      "role": "sealed-author-original",
+      "bytes": 2709,
+      "sha256": "cff55ed73bf53694c35878ba6b19cd094477f306c5d53cbc63cc49c13de5fcf6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-prelaunch-protocol.md",
+      "role": "sealed-author-original",
+      "bytes": 3615,
+      "sha256": "3aaf219deb0cae28a79c8bfca58bd18a82259d5566e8cf80d8657d266376a2fa"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-red-command.json",
+      "role": "sealed-author-original",
+      "bytes": 65246,
+      "sha256": "228dbdae838d0bb0cffe0aba24dab408f1d1b70342994a78cff6e8636db80f20"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-red-result.json",
+      "role": "sealed-author-original",
+      "bytes": 1174,
+      "sha256": "741261e504e1dff77b77de6835d61ac40d7cd8e5de6e68ffa55810076130c08e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-red-safe.xml",
+      "role": "sealed-author-original",
+      "bytes": 1132,
+      "sha256": "f868a81ee4d77f92ae6af942696758d7b93111e3cbcae41c53162af25faaa4a8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-restoration.json",
+      "role": "sealed-author-original",
+      "bytes": 234,
+      "sha256": "565bab342059fe35e29123be1a11b09bd3d529f6f03a91bbd97f8efb5d68e610"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/NTR01-restored-target.java",
+      "role": "sealed-author-original",
+      "bytes": 7047,
+      "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/change.patch",
+      "role": "sealed-author-original",
+      "bytes": 3467,
+      "sha256": "3750dcac133c90db5488ae02061015d4f05a83f05ab95b4d36c732d4af530f4d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/commit.log",
+      "role": "sealed-author-original",
+      "bytes": 172,
+      "sha256": "44d722afd3d9cfc7b05f2f445ec89ea0ff99ebe608914684f3f813ece1bc829c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/completion.json",
+      "role": "sealed-author-original",
+      "bytes": 1221,
+      "sha256": "795247079773a66753abbb9b3cdf55d70208492065fe1ffce817e5c77ae7d2c2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/original-review.md",
+      "role": "sealed-author-original",
+      "bytes": 12047,
+      "sha256": "35d8a75ffbf0895453894e8ae74ab8e210787297ea72b7fb689b579353e0ef8f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/review-packet.md",
+      "role": "sealed-author-original",
+      "bytes": 4686,
+      "sha256": "02670f954153583cdef88efc079cab24569af557768e13fb7379657d62c426fc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/sources/InternalWsTicketController.java",
+      "role": "sealed-author-original",
+      "bytes": 2976,
+      "sha256": "63c157427b625e0435a2ea3f25f38161fd55e3fbc7f0ae6fdf7e6ceb81a343de"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/sources/WsTicketController.java",
+      "role": "sealed-author-original",
+      "bytes": 2348,
+      "sha256": "7ad5f53eaa8093ece692bf40bf2a115edcbd42853d6d760881aa9999688da2de"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/sources/WsTicketResponse.java",
+      "role": "sealed-author-original",
+      "bytes": 405,
+      "sha256": "132c3462b2ab05cf45d2cb44403c5e8c8eefe0c0f869cda5632bd29d8e1b4cb7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/sources/WsTicketService.java",
+      "role": "sealed-author-original",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/sources/websocket-flow.md",
+      "role": "sealed-author-original",
+      "bytes": 11710,
+      "sha256": "2d6d086ed3c6fd580f1d3f2694ad1246fcca25f54b851b4e1592f81d543a46f7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck/source-manifest.json",
+      "role": "sealed-author-manifest",
+      "bytes": 6347,
+      "sha256": "acadb9ae3c8a4b8e4559d19d3a9292a20c351b37a53d085d9682cb270d914bb5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+      "role": "current-reviewed-test",
+      "bytes": 7047,
+      "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 14839,
+      "sha256": "e12742c7400b228fc27577bf1db365648e9512ede3aee45d51a890f77563e7ec"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/gradle/libs.versions.toml",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2181,
+      "sha256": "31f2c8b6a39801380de5674b74517b0707f1acc2bb3ac06f2ee767c9000dcdb8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/gradle/wrapper/gradle-wrapper.properties",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 251,
+      "sha256": "ff27f2701f204c648a4322fcc1cbd1126764f9538d59c06532d014eaf7ff2b08"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/Dockerfile",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4778,
+      "sha256": "503fac94af3793c27933f9c4e6da6bb3d03568da5ea43052a640fdaf41c35ee8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1185,
+      "sha256": "77ba41730cdaf93acf45a33057eb24380a68377273d5e5e319335f442c6fb0da"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AdminPasswordResetApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 903,
+      "sha256": "20101b1ecab9da725c69a29907478c797504831cee8a4c66aaf8ee8717203bee"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5848,
+      "sha256": "d8ae422756f4a9035c7a52fed380d86948b2e98bf21608636799f7569847aa24"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthSessionApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4273,
+      "sha256": "130deae405b093cc49badf539b6cd2d0b3341db0dec02b3a2853fbfebc7505d9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalIssuerApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1809,
+      "sha256": "36b25267d87a151d75a37794a95e3cb558fddd7d26266b24dfad16d658145ed4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalMapDeletionConfirmationApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1433,
+      "sha256": "6763a17efb1c875c6758f861ff5de844c743e5b20af3a9a40c1236b9027e6bba"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalReportDownloadTicketApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1381,
+      "sha256": "96b20860a4fe7d44e16e56e06fa602129eb6c4a5dd299e2985325799c83a0ebc"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSemesterDeletionConfirmationApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1475,
+      "sha256": "d5dfb73e87a48e33e46782ada7fb95b65fbbd1f8762b659cd0489561a7fdb8c7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSessionAdmissionApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1322,
+      "sha256": "c7fbae2321d52ea92cb2eb699b99e184b76c396d34e1e3820edcc43617f8ce2b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalUserArchiveConfirmationApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 515,
+      "sha256": "f45ab68d0f6e3b1780213444bc9d7d9525af77f3b2c21a4b784b3c52f12bbf50"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalWsSessionAdmissionApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1935,
+      "sha256": "dca7adb227a20737851f1b6d04bc8577c60afd0956a2f4d0d77de21161b40904"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalWsTicketApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2029,
+      "sha256": "92408c98dd705eab41cdb0569dff39623185d70a6bd92743906f116e30a0b028"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/PasswordResetApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2534,
+      "sha256": "6a0812bb8c07ca9187b01e07c8a02ac854743eb66ab606f1448dcb055600cd99"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/QrLoginApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1870,
+      "sha256": "0fa3b4f0f83cecd2a7df87c0bcf245fe3bd3d16ddb9e9125a6100bf9f7c711d8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/ReportDownloadTicketApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1546,
+      "sha256": "900cdcc49b42968e03430981b2d226128bdf5949a2913a2e067b4f96d0757b33"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/WsTicketApi.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1622,
+      "sha256": "2cef12eca41484fb4f58862c07f8c4f452d600b9ae2d2e8c233f75e72e46168a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1613,
+      "sha256": "bce1e72d3e7a02fa15378725ba3e14d0715b47d746c9766d0f87ab948d3f9468"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 564,
+      "sha256": "ad99408b7a918da2aed96f0c9473b3f613f58b352e08d7614c716b9ea195d75a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AdminPasswordResetLinkResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 467,
+      "sha256": "3ab9860ac49af14bcfb4bd65ed98311f9dd9b71243a96be84a57af2c36489daf"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 624,
+      "sha256": "4a0a79610d0f7b4617a36a9d78325e6e67bfce680b7ec75a48186770ccaf4ec5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2968,
+      "sha256": "4be6ae22a2aa6ee0c6a0f301c9f534ff2ff38c2f7f228fc41c17a259bbc08edf"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2022,
+      "sha256": "47e63c65f9344e2cc47544da1c85c3dfc47858ca470c26660cf50cad309f5639"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 557,
+      "sha256": "9c512eae4f1f001afda5576c2c77718f04f86155fb336555afa2a36fdc58966c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ChangePasswordRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 430,
+      "sha256": "a82a86c88532dcf7df17b2159426d1d4598db96d6fef2f89e15fd8e920e3a3c2"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmMapDeletionRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 799,
+      "sha256": "c76bdeef01f65803c8cf27a766755daaab9ed1769eff48ebd83f5be871e61cbe"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmSemesterDeletionRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 634,
+      "sha256": "eb9d507e6d3f55b5f28bfff1c9dd9e4fe6a8717f523da279897e74d02d22d32e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmUserArchiveRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 512,
+      "sha256": "45eb8bab872d45506a128bd5afab44d59f53abec626d1799100202bcf4d7c37e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConsumeWsTicketRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 311,
+      "sha256": "522a9631bb150bcea5433d86217f8ceabf84d9eb4c49b583e57d0ebe85aa125c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConsumeWsTicketResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1091,
+      "sha256": "0dbe1357469787c23cfc2440a94e8dd5b7b27064834626ae75a54bfa9b8cb9f5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2929,
+      "sha256": "6dbc9fabc68681636796aa9e988fb24ab7097d6c71cd38f492df461c3c83aea6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/InternalIssueRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 500,
+      "sha256": "ba7ae4cae4a53cd1c29d112278e1d5b9d85aaba0cde37a5359e366ae57a87455"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/InternalIssueResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 264,
+      "sha256": "430ef25755237d0ca52aa7903604a351394a5173103bd26ac56238ba41386fd2"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 20230,
+      "sha256": "1cf99aa1a3f3312e253741c0a1d0adfe63ece260d46b9061153e217c3aa9b675"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/LoginRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 177,
+      "sha256": "4a2753f1bc520ac7666ac64dbe9c710f8ac75e6cc4ebf79d7eeccaa95e0c6084"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 186,
+      "sha256": "8450d2abcb23263292bb24c7745684de84ff85ba87901258e63b8b544437418f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyByCodeRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 296,
+      "sha256": "8536222927d53654c27988ef1da2be3a71c3ddbbf6d18e88df48ae4553ee7386"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 408,
+      "sha256": "fb86f2995598c49da5fa4c6b162f523067d86bddd4bfc36b4b9b8d24e5ee58b1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1597,
+      "sha256": "19bc12bcb51b879b9115fbb77e5c972352faeeca87cf710172a2546d0492151d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetCompleteRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 434,
+      "sha256": "6827f3c5b2b5bd15886b88180e0286769379ee94c2bc2d40bfc6cea0a969e070"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 843,
+      "sha256": "10fb7cb0c140f50891af57813a84ebebd7cd2b0e100e568783062c5d85e9fd8e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetRequestResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 249,
+      "sha256": "6558b18cb3fb61132b2abe40a1af56b5104d04913059827206afbdc4ff802532"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetVerifyRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 476,
+      "sha256": "93100327ffcf50c1eaedaa8578b6d39f94be8b7298a2988535676e127d1d2ccc"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetVerifyResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 552,
+      "sha256": "5f80ea32458b1bd6921029f47140cd14a329b47e549f8729964ab57377a7502c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PublicKeyResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 118,
+      "sha256": "6a8eb7609f4717b6ae2229c3733a301e12ffaca1bca12e0f14d7241fb3833b96"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginApprovalRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 506,
+      "sha256": "261b8a7f80e7bea80b5bdacf286e2fa415ed99428ff5a43b75f9bc1ee593284b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginDecisionRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 751,
+      "sha256": "e2cb496c29163e91ce9b261fc35d71ff8996342af860c4457b941d35103b3305"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginIssueRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 726,
+      "sha256": "ebbd48494bb99c0c9dbb0643ffd8ca8a29025bcb05173f080da40743cd0c2d56"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginIssueResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 519,
+      "sha256": "9fc9236d1deef40d4b7bcccdbb813114f75014bd7c80ba789730d4d60aad2e20"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginPreviewResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 272,
+      "sha256": "66e25a210310037c9c6364ff175661b1415990a354f07ef1481c091c8dce474b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginProofRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 659,
+      "sha256": "a72e25d99d1dbe6db0f870c62bff7205426a35f727f6b8b33407679c0b7286e7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginPurpose.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 162,
+      "sha256": "ac8bdb88d52bd7d0990cae2c48bdae9bacc6428caddac4dda6febb1a2f0d7c4b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginState.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 267,
+      "sha256": "9aba7975f10156c42eac61820840371847d7ced19dd59c624ee30c963f4cccf6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginStatusResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 298,
+      "sha256": "1666cbf682e6bbd02752c7f66b3213bba46b4c59617ea7179e85f646f5fb8f2a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RedeemReportDownloadTicketRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 462,
+      "sha256": "d1603f8cfec3bdb344df01d6fcdd9b04281ae6d6ddd54fb59aebaba34045e803"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RefreshRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 155,
+      "sha256": "e574bd7abe88a7506462a5b885d8aa02e29339f8ec2582e9d649c78a5a593b87"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadFormat.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1427,
+      "sha256": "af9383cac946a8c096b049c98f012f905ee23fc44df355d8c0ce085ff3d339a5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 328,
+      "sha256": "12afe3519b5a3ec1a276751e08102ecd73ca4d97ea2bba08fc478ca9f1cd7626"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketRedemptionResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 749,
+      "sha256": "b8713d45af6ccbedc72ef10e02d6e202bf462baf7d610c082f9c07198372d7a9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 319,
+      "sha256": "b461ed4b28895dd93d0ebfdc12415c38e7a0cc52fad6ef3b0ac09b5a7af997ba"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1506,
+      "sha256": "d05af4ec02df64fa151c4972b1f697ce12c6934706c95784901b581d95453f0e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1164,
+      "sha256": "7a964c3929d681a832681f656a2a145473ebef275bbf8c3f0fc57a2094e3be44"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1071,
+      "sha256": "067674a8eb208514faaf6ce444a312e927a463c9d1d6b172a6a862f06805f7f5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TmaAuthRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 191,
+      "sha256": "4d3d9567dad7ec2695d4f5f5fb47d44222563109de93ff67ef9b2893b2277b3b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TokenResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 414,
+      "sha256": "cfae88ccbc5614e81a60ae8416c85074ee726e93731469fecadbd068904c9490"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/WsSessionAdmissionRequest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2379,
+      "sha256": "bd9ee41ca2d621d4935925667cf131e56d2e19eeac58adc79a02264154b54a8d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/WsTicketResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 405,
+      "sha256": "132c3462b2ab05cf45d2cb44403c5e8c8eefe0c0f869cda5632bd29d8e1b4cb7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4860,
+      "sha256": "f298169c2e1c30042a7856d3f0089d6ee5306440aa3d95ddc247af7221830a6e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/AuthApplication.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1637,
+      "sha256": "5ed2257d141fa8d83d3ea3cd74980f2a81f43319dc027e30f8b16daa90377a2e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/EnumConverters.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 752,
+      "sha256": "8b05c8d490d6af54e328cd001614a5dbaf358a0d6ef49c33b7b47f26d4619168"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/InternalIssuerProperties.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2051,
+      "sha256": "53a912b15cfbb5f8eb4a077e7d0c79915597ad9a40166ec5ad6754c24603e25b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 14790,
+      "sha256": "7cc3fe0e4a5db3068cfab0c9b6535a14fcace9f6af39aae21efcae31ca590694"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtProperties.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 275,
+      "sha256": "0afc93141a435e794253579235905f7f462a87c6562ecb10708d6a5d7e3fae4e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/LowercaseEnumConverter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1249,
+      "sha256": "e779b1a418834bd2d99f9a37c32de578303cd16f8fa2e88879d33be781541c78"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/ObservabilityConfig.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 810,
+      "sha256": "c80af21705fbd8e58151e31613d61ea320e10fe1c1eb479a75af6d717d3e0e8a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/OtpProperties.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1107,
+      "sha256": "ee94441fd0046a23e7869d9e3dfd7303ec37c8fdbe243fa726ca1fd33b5795e1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/PasswordResetNoStoreFilter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1390,
+      "sha256": "8d4ca428b431cee81a73516897d9990f5a2df98fb8d895450ff0205190dd04d0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/QrLoginNoStoreFilter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 971,
+      "sha256": "7c60f0b4dcc5658bee10dbf295bb1465cfe9545c2d6d22d7330709eec94104a1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3711,
+      "sha256": "61b1b4d397bcd761b5c72ee07c4e6c70c06d28ead0cafe34dbb62461ece1a266"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/TmaProperties.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 244,
+      "sha256": "e6c1c846163cca393b31b1fbadfaa045cd912ecad6bd553aebc6c7eb9826bf8c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AdminPasswordResetController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1318,
+      "sha256": "6cdaeb3d04350d5651f6e3d5c8ce93774389bbfa51f52671b08115e62b80cbc3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4596,
+      "sha256": "7fb6a294b33c9d895ca65f6e038bcd5a4e206da2901b93207f9159beac3d99e1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthSessionController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 10548,
+      "sha256": "086dda3a081e491e92334dfece65c04caff220a291cf5919f66d1a5e197d912a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalMapDeletionConfirmationController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1113,
+      "sha256": "25f36f0a18e422406f09dd1ccf2f73e924460fe37430d5b7e4ab0d109b0bc44e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalReportDownloadTicketController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1540,
+      "sha256": "09f3efe94ff6f5af8a363a0f0c9dc69680a24e1d05e2872187f07cf82f8fc209"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSemesterDeletionConfirmationController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1159,
+      "sha256": "bc91e47fc78f4962c68227a66406f9b91634795f4a346e00fb75d7b514213c5c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSessionAdmissionController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1265,
+      "sha256": "516a07387dad8f172a1d002d24b21d2bef6b59e9bed321b2c9c10748c0c5e991"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalUserArchiveConfirmationController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 973,
+      "sha256": "3b5f471d8d89860becb8d9eca9296592e0fc32f81cb0e1af089dbf347ad31056"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalWsSessionAdmissionController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3699,
+      "sha256": "96a3633a836f31cf05709bef781a0400de1667d8e3556638ab7b503895c63a51"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalWsTicketController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2976,
+      "sha256": "63c157427b625e0435a2ea3f25f38161fd55e3fbc7f0ae6fdf7e6ceb81a343de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/PasswordResetController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1642,
+      "sha256": "2688629a104fbe90f3aa43821e41db02382087f76c8a0de5f7320082f0f2fa1f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/QrLoginController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2693,
+      "sha256": "561665f2f0647f8fc094a35c6d2f63bcaee6e30d0dbb2607fb0c7c2c7df32c32"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1620,
+      "sha256": "948b008b8c53ac8ccc61fcec4e62e3349a1751d902fd93acdd2d18cf65357473"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/WsTicketController.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2348,
+      "sha256": "7ad5f53eaa8093ece692bf40bf2a115edcbd42853d6d760881aa9999688da2de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/User.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2222,
+      "sha256": "9b0046f6a3a1e9f65e972c00db7ce1185dd8efe541c7ec4d7cdbf17b3580475c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/enums/AccountStatus.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 114,
+      "sha256": "3371e35b38d5a0c352018f2e31699c3c3939297b4b97955faaeee1db94e7cb38"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/enums/UserRole.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 95,
+      "sha256": "df14c54ac43e107a1f4c3937756464578563d076b96a70d7d907a859ea48d940"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxCleanupJob.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 835,
+      "sha256": "bfe50fd1200a5f8f4072e75f89bbcb7f5c2fb39e482c8b74c15d67c264aa5181"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxEntity.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 296,
+      "sha256": "6ff383a5602070d90fc75bbc283438f33158eb139305f9376c1867216b4cb665"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxPublisherJob.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1022,
+      "sha256": "06d30e52860d1ebc071e2bcbb87ea686208d8f33b8804ed64dfc273520997b3d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/DomainEvent.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 395,
+      "sha256": "ce11e19f9429873dfb7eb93956d3b65d254ff97e2d98d372784b71b4c96c86e8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/DomainEventListener.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2628,
+      "sha256": "38de7f95e76fbf1e16208b5828a8d6ea59f8c1c0601458b53c0ad00276cd5234"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/OtpRequestedEvent.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2067,
+      "sha256": "17dc24d5603495160f6f43a3c152b3844d64e4b88dd3702e0677d1081b3fd195"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/OtpVerifiedEvent.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 667,
+      "sha256": "375b5db557868db7784b63842498782a010c61acdf17624bfc250083d5e84512"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/OutboxConfig.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2260,
+      "sha256": "6ca00534222911ee698aefbf68c1ea4deb4f26c622f1b0c5072304e414c56290"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedEvent.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 640,
+      "sha256": "ddcc815ed090c7cda240f3f76934186e01063ac7260376fb8be3c5771236d0e0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2066,
+      "sha256": "e863811ed08a1fef05458ad59e16b4a0e45439465522493871a2ba95a20af742"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitConfig.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3082,
+      "sha256": "0605aa5aff68fac9334f69fa4f399f6f87ef4cacfbb224e69aad1601e67d306b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitOutboxEventSender.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1623,
+      "sha256": "ced222870303b444c7b5a928c2708cce8d649f01f17950815f35efbfaecd3dc0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 10122,
+      "sha256": "b9d29e4a17a6250f445050067db8b76c23d0f2a5ade6bd31441884c933483bf8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/InvalidCredentialsException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 295,
+      "sha256": "6668cd7db818eba88b50b4cc3da18bdaf5b8fd8aeea4ebbb95c05f820717cf64"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/InvalidReportDownloadTicketRequestException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 349,
+      "sha256": "1fc0c9cd214a07fcc2990dc2abfb0e3e0be812dba19b6e2374e6b2e2f6262fe9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/OtpExpiredException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 200,
+      "sha256": "761141d28b73a7fa50ced59e537c559946024b076381c482147bbabe22e092bf"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/OtpRateLimitException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 189,
+      "sha256": "92ceda1a9c7bf743998676938504a3af47c0ee71ed16f04b32c036a1f95e459c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/PasswordResetException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1217,
+      "sha256": "bf3ee7da6dabad0497a6cecf349ceb77fcc179bd47a07e049297ed4f29239950"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/PasswordResetValidationExceptionHandler.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2267,
+      "sha256": "d9e103c17b6dfcca8bcd8063335c653789add20add4533b2a8972b342ff3b69e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/QrLoginExceptionHandler.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2608,
+      "sha256": "05efed922ad8c795ed07893c316e4cdac791c52bcbb422fdc7be02932e8c7159"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/SemesterDeletionConfirmationExceptionHandler.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4977,
+      "sha256": "44a16e191624f7fae261fe3698a7b87029ed1606087e94c9919a0d6624b39324"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/TmaValidationException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 190,
+      "sha256": "6221fa6e938b6f9f4c32d5b1cf3ab8e9f45800086e2c04bf2d219e20437a0962"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/TokenRefreshException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 284,
+      "sha256": "895de7f00a3b86bbd1b2ff8ef86e255d0fe496491f3f5443c8dfb7eda2654b2a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/grpc/AcademicAssistantPermissionClient.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1942,
+      "sha256": "59b5c3dc58a2ac2686f5f863561ec50d27b8e18260a0227e6be9082f20062426"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/grpc/GrpcSecretClientInterceptor.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1404,
+      "sha256": "ac72bbec9a80c5551f7a3de04bdd10d46b1e0659a8a080e936283389bb59255e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginCleanupJob.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1021,
+      "sha256": "650e3a8fcc1f53cbb6a18d72983e841852cce4e1be5afb5740a707d5ca3f50fd"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginClientIp.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1605,
+      "sha256": "6c6368e2ae6653497300cf307bb6f92b6279dcf6f6aea9d937a1ae36151c12df"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginCrypto.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1243,
+      "sha256": "b6641e680265e934482230d64e533913247bea3c2c0b6ac639d2e913cb7cc14a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 656,
+      "sha256": "54e2ff29977552b5094f33058b6a7dfe273cbe864bf5e2055818fa582c401513"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginPersistence.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 15962,
+      "sha256": "1712297de596821c54073edc896e050b4aff2e7611c2fcf05a2ff5e4c184e373"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginProperties.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3628,
+      "sha256": "732522953681d8b9e9491c848d1deb3d650779334f2f6baa101a1cdd37eb19d8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginRateLimiter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2300,
+      "sha256": "5f72e067f53fcd70c67db8400e003641cd94b989615773d0fecee58d9e62d1a9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 848,
+      "sha256": "7e5f2e0a088b514ef3e36e1f1ec2d37d1fea69d738364d6d7684548ef8ec3cac"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/AuthAdminAccess.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1511,
+      "sha256": "447b34d5bcbace79dcb50ee541b03adcbdd31f5419ca221c34b7910036ea649e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/AuthCookies.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1292,
+      "sha256": "e766ed03fb071c1c48e4720ed638828065748f60877a40e40f0c663c5f65eaba"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/InternalIssuerSecretFilter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4050,
+      "sha256": "64c3e91e99366bde711a8eb9f68be1ab69341041481e33c8fb85f27bfce9f47b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/SessionPrincipal.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1736,
+      "sha256": "503f580c7abb4b0b9040484da9d203eefe72c43ee789d91a5819be3a1217004d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AdminPasswordResetService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5493,
+      "sha256": "f81e38e5d81205d32ec002e6ace45b515d031e73bf57e1f7e275012c7a138d89"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 36238,
+      "sha256": "70ae6d3f2b5f25f86d3a46783a1a2408d1fd31ad551bab940d00935ff634d86f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/BcryptConcurrencyGuard.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3313,
+      "sha256": "36574a53e58d5e3c926d4ef83ac39cdb1b91609f0dda58514318a2228e248814"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 44724,
+      "sha256": "de59ca3e60600f9d8fa9c6d8d34f052386ad0cd32d9204b9a41dbe640d2abfd6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/LoginRateLimiter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4705,
+      "sha256": "0975df7f7f2fb554bc89af9ec3c5278f0421c3da96cdea15238f737e67835513"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/OtpService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 15895,
+      "sha256": "45d70918db75fb747fbd6a673bfe1e59f3018f65cfefe535c2948e4218b038b9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 22366,
+      "sha256": "666a53ca85f417ccfc7be05fb61a2d3b43408cda83bd07ae977b7baef6daf9a7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/QrLoginService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3304,
+      "sha256": "efd07a1c80963960f46faf4c3d31161c0b8a89ea71f384c737f874ff51839440"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStore.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2790,
+      "sha256": "98a0f8cb77aa75e596f711afa00994207c9e6b8df0b7cefc7022f1981fa564c1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketRateLimitException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 305,
+      "sha256": "72d0e6b88e199aff59efb82b4411b869fcc5917cb2d8bb9130979e4ac2991e38"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 14101,
+      "sha256": "c69dc2a62bb4e707fe502dc6b31f4e3b425456e41b8cd44af4cc00d32b4c4a59"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketStore.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 518,
+      "sha256": "91a64ca84d2f6529742794480b8b135b90fbea1f6d96673d1725bf74997aedb9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SemesterDeletionConfirmationService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 8198,
+      "sha256": "ffd41a95f387bdfa96c7f1af579608d2837b9bd4ca6bd344d7af3c83eeab682b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2116,
+      "sha256": "2d0e960b8408c71bc3ab434456718e6dd6e49064044973d2b1dac3cc9b841ed7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 6437,
+      "sha256": "e723345c6def48bb8b0ad01a35fb7124be278849c355cd8ca452f8cad9363dc4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4573,
+      "sha256": "7f3f6d9b2f78bed99b22d89b8f943481cd4db5fbd672ee977d39533418fabd13"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/AuthSessionException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1159,
+      "sha256": "d2806706b6552541719e364000b355547449d9415dfa0018f5047c4741415b96"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4056,
+      "sha256": "f5f06ef05cc7d3f15c2941e407128de63b4ff0a1c6d1300cb0e655b2d0fd8d1a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 962,
+      "sha256": "bcb876e5ae18957789ffa169d3617bbdaeac35aa542a2db267883685e2e25f9f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 12672,
+      "sha256": "89ae726537b778ab769935a858ae542415870f8c3972330b17456ae09923490a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 18002,
+      "sha256": "18c206319e26d0191cbccfcb98b5a447ee677a0d0c099f6e6620621e00e8dc85"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 18159,
+      "sha256": "30c34f7c8d3f77a5f6ac4b3ca37f76fa6e40aea2a9b1e646849edf2320e6abd1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 40223,
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 113,
+      "sha256": "e2359d56192147072c5162644e6d11ffcba7504c054e0fe1cf96dda8e0e338cf"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 182,
+      "sha256": "2232e8973b0804a43bbf84d51fbaf432f35c72a1c6a709a175b302dce35857fd"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1696,
+      "sha256": "171b2644b245770368a865b7907942578ec12343b8a4282f7023f5824c940dce"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 734,
+      "sha256": "d27f6ff82baa41308de2eacf9bdd83bc4505481ffc2763fbee94f8ebac3ef1ac"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1185,
+      "sha256": "8ffda7a8cc0019aa8d8d158219357d7ab550bd1b66881a58652dc873d5fb5963"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 162,
+      "sha256": "0c076e9bf5cf002542ef35931e0bac26fb5f1f5558bd39c7fdfaf6e1c0c5857f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3854,
+      "sha256": "615acd1676e9e74ad34a1e73a48a45255269e7ef410cbd3bbbf5a70daa34d61e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5452,
+      "sha256": "f89e60c86a9e3a5cae9e3790ecda3d258e024b38969030e246db26ae0360d32f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/AuthSessionQueryPort.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5315,
+      "sha256": "924ee9bb53304386dcb7bf25f57bd4c7450b3acb862eb036876d991de97ff7b9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 6423,
+      "sha256": "bc9fc4491495733bb803d439971967251f298c2ef5f0d4ed9260a97b1af123ec"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 15019,
+      "sha256": "f842d7621c3e28268d0f6f491d3326a4991dbeef0e6d1a3197982114dd7adc0f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/resources/application-dev.yml",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 317,
+      "sha256": "99c4bab27b6ed852cc498150bda4f2331a86061cab467f3aba42d0b2a303d814"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/resources/application-prod.yml",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 639,
+      "sha256": "8b97efe1f4b09469e6ef3aaeace0296f408191f8c73c63f5c9aad17a068e9094"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/resources/application.yml",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5385,
+      "sha256": "0401fbd198daf60725688604b87ed827b031625b583f5fef6b5b84e6afe4289e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/resources/logback-spring.xml",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 454,
+      "sha256": "4c47af2d43c469e54bc48bd745b17f4aaf46efe99e0a8c997b8d7941b77219ca"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4612,
+      "sha256": "f12e9273abef4ebf749caa0bb26f805dd71897dc0699a6a4bfb8fff02cf17f6c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/IntegrationTestNamingConventionIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 849,
+      "sha256": "071ade1e6e02efa15a2acf3873f3e74200a928bed0a12bfcc8ef99b8f9d3c885"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1952,
+      "sha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 16630,
+      "sha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1747,
+      "sha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7332,
+      "sha256": "f2f304840d1b2cefa55e4fc90ad56f0875731624a602eede372842264601eeee"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 16918,
+      "sha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/PasswordResetValidationExceptionHandlerTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3268,
+      "sha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4585,
+      "sha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 12697,
+      "sha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/EventSchemaValidator.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1588,
+      "sha256": "9396a088ec7b320a1e96374c9d2dabecde4aed026008109a5515194c300bf6ab"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5496,
+      "sha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1565,
+      "sha256": "4c525652a020a4812ad340dc97d45cc104fc0ae1be9b2c5658073f5236aac873"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2614,
+      "sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2144,
+      "sha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorSpanFilterIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 6696,
+      "sha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 9727,
+      "sha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 43335,
+      "sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/BcryptDoSMitigationIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4841,
+      "sha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 48465,
+      "sha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LoginRateLimiterIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5584,
+      "sha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 10620,
+      "sha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4069,
+      "sha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 11854,
+      "sha256": "b973fdf6d765d1b6732786c5bcddd9a1860b08ed5c9aef12ed835180b72e2e46"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 24630,
+      "sha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SameSiteCookieContractIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7966,
+      "sha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 23300,
+      "sha256": "0117888befe3f6df17bbb9a339872f162d6e0028ab62e06dc9513128b2b9280a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 15241,
+      "sha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7047,
+      "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 10265,
+      "sha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4393,
+      "sha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 19078,
+      "sha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 6578,
+      "sha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 16291,
+      "sha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStoreContextTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2205,
+      "sha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 16897,
+      "sha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3240,
+      "sha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4799,
+      "sha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3665,
+      "sha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3176,
+      "sha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 20398,
+      "sha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 39520,
+      "sha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 13281,
+      "sha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 76983,
+      "sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/resources/application-test.yml",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1448,
+      "sha256": "ae7804f50dcdd33cb37567576faa4603a2f4647d6dcfea93a7e34132c9abfd3d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/resources/db/migration/V1__baseline.sql",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 6664,
+      "sha256": "4e8c995c8b08b73b3436638159523845d71790b2a470205feb743e2e571b302a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/resources/db/migration/V2__seed_test_data.sql",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1366,
+      "sha256": "a221513f3b9701587229621786a391d6077caf7d7d52cf868ad50b6b0ef80a9d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/resources/sql/clear-telegram-id.sql",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 61,
+      "sha256": "f2d8ecb120b58843421b53d70f8f5de0233cc90f5fb81caa0f6a7619fec1e4f1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/resources/sql/reset-student-password.sql",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 147,
+      "sha256": "1b68c5ff43aa8666a87f67c40fabe97a47a7836ad7137fe48aee3ec4b2e8086f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/resources/sql/set-telegram-id.sql",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 66,
+      "sha256": "0943d5bea82027a85c87050fc64975f4a6438f46c915435f2ada39895918a406"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2940,
+      "sha256": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/DualModeUserContextFilter.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7068,
+      "sha256": "e95cfb6f4e07b0d86357626fbfc504058e550511e7a59cfd2c74b08e0b681ae9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1220,
+      "sha256": "e91d7d1bee834c0bc762dc733b1bb43cfc44b125f10c54060100755c5b7267a4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 415,
+      "sha256": "a3b8dec4b89d39bb653dd1e6a5f5461fa1d8b037186474bd2421d22290297fbd"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtProperties.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1392,
+      "sha256": "3cefcc0e1be4410ed53cfc57352ae46952ecf3ed5b568847c278cb48ca664e80"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 23346,
+      "sha256": "f77651e3ae4ba71883bdc0fa984ffe03d70c33bf8c5d60f99eb97a84494d9ce3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/PublicKeyProvider.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4642,
+      "sha256": "3ca1fa28a99299da5d523ad193c347e21f7e3cf370450586a66dec46da596ab3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessException.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1286,
+      "sha256": "17c8cc8e08d2ebc356736170c7a3d0a205d3ddc3da86b589ba2205899f110d92"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessJdbcAuthority.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5855,
+      "sha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessProfile.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 433,
+      "sha256": "55ab90befd26d96e84c2ad198b4fa0994227c6517193859caebee87dd1a33ee4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3942,
+      "sha256": "68eb8a7787bf374050c03b13015bfca0cdeeeeaea174b504ce3961e1c394e25a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4336,
+      "sha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5816,
+      "sha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServicePrincipal.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1683,
+      "sha256": "9cc0ada0fdd7650ec2a3858662b1fc127319c339a595a9a858784925fba07643"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentials.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3590,
+      "sha256": "75f8f9dceba3169bb577f1815bffecb7b3490df6257f4b59ea91376ae60ec7fb"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenClientInterceptor.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1752,
+      "sha256": "7a308ad6546d9b1771fb4116fbc7ce82b2d07fd7543d83b13fdb1e706d30eebb"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7760,
+      "sha256": "d9cba0de5852ea310d82c90573d6de8b5b5bc838d2a7e996dc245ac2969514d9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtPropertiesTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1501,
+      "sha256": "7025c5cf0509566de610df7448b3f902e783b2b397eb7660b69008e6e302e13d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 15142,
+      "sha256": "01171a1f02feed98faf51b2a6d77bf302990d3cd6f0acf6baae842c7120066d1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 16103,
+      "sha256": "21fe80098d4c51ea5ccdf4b1c45a5c8fda3b7bf48975328fa854a36a816884d9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityTlsTransportTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 18828,
+      "sha256": "512937d08d9a7a2be74adc971e9458d6558d6c6bba78d580979b361271ae7f73"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentialsTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7927,
+      "sha256": "32911123e47c4d82931290bec3289235e1ba1f282244af6b5498b5e334e9bf04"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3355,
+      "sha256": "da186908cbc27f752195ebbbf8a874004e183f507ef928c78b32d24910cbcf52"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/README.md",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2229,
+      "sha256": "4390c411bc7b7d375e9f2866b59d8a880e2e12f20e83aa363739d79b1d47befa"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2270,
+      "sha256": "53def03edcae049b0adb06bb13b16ebe3cde52014f9148b0d38162ce9a01ebed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/src/test/java/ru/rutcampustrack/shared/testcontainers/FixtureSmokeTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2653,
+      "sha256": "460be84818988a7f39cbe6a1400518c5f77fb9aad52ccb0d634514cd8b37d544"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/src/testFixtures/java/ru/rutcampustrack/shared/testcontainers/ContainerTestBase.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4194,
+      "sha256": "cd3d4f4b04bb21aa6223c609439b454b23788ca7252a3ff998c54b39f4cc47c8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/src/testFixtures/java/ru/rutcampustrack/shared/testcontainers/GrpcInProcessFixture.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3512,
+      "sha256": "54a66ef0ed9b42bb2f48695ff43b8b371800fa3c19a1d153d3a578148fb80183"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/src/testFixtures/java/ru/rutcampustrack/shared/testcontainers/IntegrationTestNamingRule.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4967,
+      "sha256": "de2af2f36037fd7ed3f8a9c5249a62537a0743d25af4e00f96becfb97c93eb55"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/src/testFixtures/java/ru/rutcampustrack/shared/testcontainers/MigrationTestUtils.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2072,
+      "sha256": "094507052d68206bc7895f31c3bae4a692ff9f774f1df2df0f9818b4765949c2"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-test-containers/src/testFixtures/java/ru/rutcampustrack/shared/testcontainers/WireMockFixture.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1651,
+      "sha256": "fb84bfcd1e619ac8a336a9311b1fdd00d67dbf217c014bd148fc01f81e8900ec"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web-api/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1100,
+      "sha256": "88c458ed5bac640ad3034b1c89b33a331e5540f51521ce7215aee28eafd7f5ee"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/api/exception/ErrorResponse.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7779,
+      "sha256": "04682069ab2120f0b8a6ea47b1baceed02a1022b551d00eef22fe50428ef6cb9"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/api/exception/FieldError.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1322,
+      "sha256": "2151ec2fab1e2d3f939c83e4ca59360c5a47cb881246e458d55bbee85b241413"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web-api/src/test/java/ru/rutcampustrack/shared/web/api/exception/ErrorResponseTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5797,
+      "sha256": "255834ba6afdd43504dfbc3476983949af282ad40da92fb705e2e0870fa919a1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/build.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3645,
+      "sha256": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AdminAction.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 962,
+      "sha256": "3f8fdc14c44c04f551971a13e4589de3576de0b0f35063d168a2856b4d67e9ad"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AdminActionAspect.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 4491,
+      "sha256": "9e7c0d65484894e9222404912ee452b229990505399dc98ea1f92c6bf3db08a3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AuditLogContextProvider.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1833,
+      "sha256": "062f50c2c12e3badd9ca434a56a30e0483383fd2570f781424def23c79ca2bc6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AuditLogEntry.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3462,
+      "sha256": "724c933d2ec5a7b0e42dfa23684145543a085af370e0769a7f5470371a03520f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AuditLogStorage.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1498,
+      "sha256": "159610d3c41aee6d6826ebf0215df0fd2dca99849efaf3f558a331430cddf981"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/PageableDefaultsPostProcessor.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1723,
+      "sha256": "985ca021e138609884c454b56994ccd46e90872c433a1691597f88d1a0331cb2"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/RequiredSecretsValidator.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7495,
+      "sha256": "1c3466755f8ef17a534dd9775f6c71ad3955587d6320be11acba8dfe40d2865c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/SharedWebAutoConfiguration.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1656,
+      "sha256": "e3a4c3b7f555d3d98e5e734d4ed194a37412088dc584db449a3b7880e47df231"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/GlobalErrorResponsesCustomizer.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7889,
+      "sha256": "026542774cd1a95afd3f792433d4f40a4cd24bd2eb9beeba8aa6585c462d5e0c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/JacksonConfig.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2210,
+      "sha256": "f99a19ff11ad4e5237c8eec28b59a23ecbe1a045cd8bd1d4a3549f5a56f48d1e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/SharedOpenApiCustomizer.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1312,
+      "sha256": "28c8470fc0076c7715e5831a9f7c24c4c9b3f72d73ff3c9db1c024cf480db516"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 13872,
+      "sha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/DateRangeValid.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1058,
+      "sha256": "f4934ea039e5e0eeb4fb9b89f80b37beced4a9e489c571243ae491ea85be5781"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/DateRangeValidator.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1962,
+      "sha256": "8c285262d1013446d7a9def16174cc1592f743ec652e4a040adf951ed0b85c9f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/StartBeforeEnd.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1449,
+      "sha256": "946cde865d739a9883a9816999e615da3d25df21e51d2d5bfb504f4bc4251d17"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/StartBeforeEndValidator.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2001,
+      "sha256": "ab3a122bdc6395e5ad96ab396572299aaf68fd474ab3124ef347dc3681475d36"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/ValidFile.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1527,
+      "sha256": "f7ade5fba35f298aee2bcf636bff0d99427cd9e6c45900a63bebf3a866e9cbb4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/ValidFileValidator.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1862,
+      "sha256": "20fff1937649779c2dc4fbddcfa044678d5ae3474913b66e5a409a5a386d5352"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/resources/META-INF/spring.factories",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 199,
+      "sha256": "9ecdc4bf648cdce9cdb21b275f65ad3fa68bf3044a48fc61324d8de493497241"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 70,
+      "sha256": "428f6d40fe9d1f88b0879db34c577ea5b3fcbd7a7686f08c947afc7d9d8ddd40"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/audit/AdminActionAspectTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 5866,
+      "sha256": "e1139ddb38f482c2fa388ec8d474759a4a42b482846263bfa3a4d85ee46802ad"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/autoconfigure/RequiredSecretsValidatorTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7627,
+      "sha256": "67621d2a46f96b957e2c813c49cfeb54c106210620fcc9ebed37f66de7d2f73a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/GlobalErrorResponsesCustomizerTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 7678,
+      "sha256": "139aac56a88b765eb28febb838609d668e6446d9e17c8d57ac0314246c1560fb"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/JacksonConfigTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3422,
+      "sha256": "4a3f1804ff84a4f683eafca372c3c15dc5a04b9104a25f4906509c807e7cce10"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/SharedOpenApiCustomizerTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 877,
+      "sha256": "b2136c625ba5fd5af73f2b7cef05aed1945b92bd5bd322e2bbfc168b29278d40"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandlerTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 11763,
+      "sha256": "5b2e337c88a8cec438ab711c82ea3b7bd437657e5be4f98d872bdd24f47d7370"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/DateRangeValidatorTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 2212,
+      "sha256": "e1290e089264605d998569d012552dcef447694de88c6804c229e52ccada033e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/StartBeforeEndValidatorTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3092,
+      "sha256": "9878cedc5e33d96503150ba0c41d6788b6f009aa35c5e408caa4c41d734e949a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/ValidFileValidatorTest.java",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 3719,
+      "sha256": "e8e6c5c815440204fcce2be789e57050803d6543e37e0617491eaeaf37077b6b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/settings.gradle.kts",
+      "role": "green-prelaunch-source-byte-bridge",
+      "bytes": 1522,
+      "sha256": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/notifications/otp_requested.py",
+      "role": "unchanged-fa02-package-sibling",
+      "bytes": 4698,
+      "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "role": "unchanged-fa02-package-sibling",
+      "bytes": 11218,
+      "sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_otp_requested.py",
+      "role": "unchanged-fa02-package-sibling",
+      "bytes": 4697,
+      "sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_provider_http_boundaries.py",
+      "role": "unchanged-fa02-package-sibling",
+      "bytes": 6897,
+      "sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+      "role": "unchanged-fa02-package-sibling",
+      "bytes": 10048,
+      "sha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java",
+      "role": "critical-original-current-source",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/WsTicketController.java",
+      "role": "critical-original-current-source",
+      "bytes": 2348,
+      "sha256": "7ad5f53eaa8093ece692bf40bf2a115edcbd42853d6d760881aa9999688da2de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalWsTicketController.java",
+      "role": "critical-original-current-source",
+      "bytes": 2976,
+      "sha256": "63c157427b625e0435a2ea3f25f38161fd55e3fbc7f0ae6fdf7e6ceb81a343de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/WsTicketResponse.java",
+      "role": "critical-original-current-source",
+      "bytes": 405,
+      "sha256": "132c3462b2ab05cf45d2cb44403c5e8c8eefe0c0f869cda5632bd29d8e1b4cb7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/docs/architecture/websocket-flow.md",
+      "role": "critical-original-current-source",
+      "bytes": 11710,
+      "sha256": "2d6d086ed3c6fd580f1d3f2694ad1246fcca25f54b851b4e1592f81d543a46f7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "role": "NP01-generic-redaction-boundary",
+      "bytes": 76650,
+      "sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/attempts.ndjson",
+      "role": "author-lifecycle-hash-only",
+      "bytes": 36002,
+      "sha256": "2ed44bc8d12685821a60f1255abb216b012ec0f8d714844675936e52ff41840f"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/notification-recovery-review/immutable-original-receipts.zip",
+      "role": "prior-original-nine-receipts",
+      "bytes": 301166,
+      "sha256": "53a1ffbea1d68a2b2e0040cc56af388b72bda09211c6a6c114e5fde886af3214"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/notification-recovery-review/original-byte-index.json",
+      "role": "prior-original-byte-index",
+      "bytes": 3198,
+      "sha256": "f2c27976e3b027b3d0c3d7edadf15ca900cf8e830f3baadf8fccd3da5668f98b"
+    }
+  ]
+}

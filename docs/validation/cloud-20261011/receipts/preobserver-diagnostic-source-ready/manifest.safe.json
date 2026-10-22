@@ -1,0 +1,59 @@
+{
+  "entries": [
+    {
+      "path": "PLAN.md",
+      "bytes": 1968,
+      "sha256": "e1898016922f96fdb1310fe4b7a8c73ac3fb5a690fc0fd0322c981b1e69f4b0b"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 3184,
+      "sha256": "ee32281757a61a2d3438e9f883bb1257a07448b8ba932ea8e0551878c892f17f"
+    },
+    {
+      "path": "before/artifact-privacy.ts",
+      "bytes": 1985,
+      "sha256": "a682b63534c6dfdba54843df8a412f08a020b76734de1fa6546805076d82b8d0"
+    },
+    {
+      "path": "before/safe-reporter.ts",
+      "bytes": 3330,
+      "sha256": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e"
+    },
+    {
+      "path": "controls/preobserver.control.spec.ts",
+      "bytes": 1481,
+      "sha256": "f8d308086f7226246da7a921204f3e35604124d97bdad04b62ff980aca6a943b"
+    },
+    {
+      "path": "diagnostic-controls.cjs",
+      "bytes": 6456,
+      "sha256": "5a2711c8017f9b8481eae23f522b0835eabbbb3f5174b1ed6fd3aa05d05c9570"
+    },
+    {
+      "path": "diagnostics.diff.patch",
+      "bytes": 8481,
+      "sha256": "407dbeb879b76698ef640ac6ef9b9c6438158a36aaee294d6cacaac2a17e0bed"
+    },
+    {
+      "path": "source/artifact-privacy.ts",
+      "bytes": 2929,
+      "sha256": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db"
+    },
+    {
+      "path": "source/safe-reporter.ts",
+      "bytes": 8603,
+      "sha256": "7db6e044a9b462d608aca467729f37d60ff5c3a1e8a11b5851015aeb0b217ebe"
+    },
+    {
+      "path": "worker-control.cjs",
+      "bytes": 2140,
+      "sha256": "e94edd23e718ebcea130048cfd72924ec9ad66aac4b477869c26b704a4ede0c6"
+    },
+    {
+      "path": "worker-control.config.ts",
+      "bytes": 621,
+      "sha256": "fa4f479b9e96e619dd4a1b3414dd3322328d286a26d98d4058a93d0b8c341633"
+    }
+  ]
+}

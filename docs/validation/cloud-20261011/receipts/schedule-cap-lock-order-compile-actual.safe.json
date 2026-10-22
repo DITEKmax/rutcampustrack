@@ -1,0 +1,104 @@
+{
+  "schema": "RCT_CAP_COMPILE01_ACTUAL_V1",
+  "utc": "2026-10-13T20:00:47.313533+00:00",
+  "tool_session": 44837,
+  "start_chunk": "d7bb40",
+  "terminal_chunk": "a43438",
+  "terminal": {
+    "direct_pid": 553878,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 553878,
+        "start_ticks": 17531195
+      },
+      {
+        "pid": 553879,
+        "start_ticks": 17531199
+      },
+      {
+        "pid": 553913,
+        "start_ticks": 17531321
+      },
+      {
+        "pid": 553995,
+        "start_ticks": 17533621
+      },
+      {
+        "pid": 553999,
+        "start_ticks": 17533644
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T19:59:28.917320+00:00",
+    "peaks": {
+      "memory": 6866079744,
+      "min_workspace_free": 6595801088,
+      "owned_rss": 1140277248,
+      "log_bytes": 3214
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "fresh_completion_marker_counts": {
+    "main": 1,
+    "test": 1
+  },
+  "compile_main_test_tasks": "EXECUTED_EACH_ONCE_TASK_SPECIFIC_RERUN",
+  "source_commit": "141a4d3c4a00a841ff4eedbb4378b022bf5fbf9e",
+  "test_source_sha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9",
+  "public_test_class_sha256": "c1d9961e2025976801fdd5d8c2b2db4ddb39e8951de85772330ce81f060ef279",
+  "all16_Source_inputs_exact": true,
+  "WT_clean": true,
+  "all6_owned_births_fresh_absent": true,
+  "births": [
+    {
+      "pid": 553874,
+      "start_ticks": 17531164,
+      "birth_absent": true
+    },
+    {
+      "pid": 553878,
+      "start_ticks": 17531195,
+      "birth_absent": true
+    },
+    {
+      "pid": 553879,
+      "start_ticks": 17531199,
+      "birth_absent": true
+    },
+    {
+      "pid": 553913,
+      "start_ticks": 17531321,
+      "birth_absent": true
+    },
+    {
+      "pid": 553995,
+      "start_ticks": 17533621,
+      "birth_absent": true
+    },
+    {
+      "pid": 553999,
+      "start_ticks": 17533644,
+      "birth_absent": true
+    }
+  ],
+  "private_TMP_absent": true,
+  "authority_absent": true,
+  "private_log600_unhashed": true,
+  "terminal_and_final_before_active_margin": true,
+  "margin_remaining_seconds": 130.691,
+  "tests_XML_PG_Docker_API_executed": false,
+  "qualification": "Exactly scopedSchedulemain+test compilation withunchangeddependencytasks cached; fixedexistingcompletionmarkers1each/native0. CAPcase remains NOT_RUN aftercorrection; actualred40P01 retained. FreshRootonePGgrant and image/foreign/resources join required."
+}

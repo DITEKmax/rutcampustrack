@@ -1,0 +1,442 @@
+{
+  "reviewer": "fresh independent read-only; actual model metadata UNKNOWN",
+  "entries": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-matrix-review.md",
+      "sha256": "dacd141e2bcf1b4d9450ef83d7e9d5824786bb2916ca1bc1e9a0b9b62bd269b7",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "945f875a21124503e54a883806f95c329351e67c632fbc0f10331d411e59908b",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "178a9f4e0c020efbdd287c76a199595dd222161e49fb8e763166d569fbf1ffde",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "577ba4674e8879409e0e49cc77328fb0f504767cd81dd40b9cccf5ac4c8448a5",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "40bc8ed127b94d174b4993862756a61873a994e727f073bdd8f70254b3340a47",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/frontends/AGENTS.md",
+      "sha256": "165680e3eeb6476af0099a70bc96bc58c5492b851393381c63071677a04f1d8f",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/READINESS.md",
+      "sha256": "2ceb491f46df6d830be9c70d01df92756c1547db3eb631652da50a7700cfb836",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/job-stories.md",
+      "sha256": "0fdb93456790f4453e94765a74a827dad7a91bb6260d824c973eb0e9015c762d",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "Historical 82-ID reference identified through READINESS; not fully semantically reread. Canonical 147-ID original used."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/job-stories.yaml",
+      "sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "parsed full registry; all original row/ID pointer checks independently verified; historical labels not acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/implementation/backend-delta.yaml",
+      "sha256": "b32d0cbf83da5ec8b478b132e08302e7f88379905052d7290ff38d95237b4e6a",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "parsed full registry; all original row/ID pointer checks independently verified; historical labels not acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/implementation/story-backend-map.yaml",
+      "sha256": "5008dbaae1ca78d8570698d6ec0a64ae78cb9cbfc17cb2483097b80dde29da05",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "parsed full registry; all original row/ID pointer checks independently verified; historical labels not acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/implementation/release-surface-matrix.md",
+      "sha256": "b933e14e408a7ac226ba838b8cbec67fb0ed773bbf6c3357fe813c8849121d16",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/implementation/source-conflicts.md",
+      "sha256": "0009a54f724cb478c05e7ef25f9917fb2d19a7c8881bd21954cf502ab5b33d11",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/BACKEND-STAGE-20261001.md",
+      "sha256": "980539960f975c73aad7e2731e3bda924dd724efc19c9c5025bbbdcfdd3f61b6",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/BACKEND-CLOSURE-20261004.md",
+      "sha256": "d1c7e0151f1ac0cb840da7c41d396d7d8dc44299df3a37633554e34eccdf0b06",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/CURRENT.md",
+      "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "Searched later-acceptance references and relevant current-stage clauses; not a claim of rereading all historical process entries."
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "sha256": "68eb8a7787bf374050c03b13015bfca0cdeeeeaea174b504ce3961e1c394e25a",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "sha256": "46622682400cab89a3034aff642e4c80adbbdcd897071c82170159c2bb931338",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java",
+      "sha256": "b3957a275dbc86f2f260c55e285fee6a7c3024aac3ee192dfde6b8d7790bddae",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseController.java",
+      "sha256": "096fa57848576bec152bfe5a7b6abcf0f73271e2f7ef92f0103cea6e2510d119",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseService.java",
+      "sha256": "5736e1dca4b2e6fc78c5619db02e3031845a15d104c880511aef4cdb972f49a4",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened relevant creation/status-mapping fragments, search findings only"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+      "sha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened118-131 and90-165: legacy direct fixture oracle, not current public runtime"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/scenarios.csv",
+      "sha256": "9f43f2b0a7e349e12c8e3b86476398bb5d4be848c908b26b4cc21f489ae2a103",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-20-delivery-policy.md",
+      "sha256": "3925fb673e26c31076036b4065e31cd6b052122215de2c56bde0946477dbea0e",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-20-retrospective-attendance.md",
+      "sha256": "951e833291cdae03874b36d3128a5cce46826f974953005ddf53b857f8564be4",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-23-admin-active-dashboard-counts.md",
+      "sha256": "822095af246fe9a905c35425e95c7ce3ba092a12d2488f32363635707d1fa4eb",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-24-assistant-report-export.md",
+      "sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-25-headman-student-stats-detail.md",
+      "sha256": "8b0bcbf34b37f821ece2a085d87667b7541c5b819c56d961a8dddb2593edfdff",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-25-notification-history-membership.md",
+      "sha256": "a1a9e95b459a7b48f96ab9d71ed7dd54d060658d4d9e3f765ddb15a62528d768",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-25-semester-academic-year-name.md",
+      "sha256": "8befb6759f5cf118cdde526e990d9e38951402a13cbaa7a363de5a17e48ea611",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-27-group-promotion-cycle.md",
+      "sha256": "df1f3331774ca1270edfd71bed212e27e9af8225a3facd4be7369186309a8c16",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-28-figma-conformance-stage.md",
+      "sha256": "26338db6652de435a88a1add024d5fb2861f9967ed99094320b8ad7f58a6dc61",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-28-restored-lesson-teacher.md",
+      "sha256": "beb622fd2f80302a593e6a840631569edd28cdaeb8419cbe86e75b659b1ac576",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-29-semester-archive-write-lock.md",
+      "sha256": "9dde6e18eeee65052e270bd6c0528afe1f3c2302de6115bf5466bf73b62f6095",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-01-group-roster-export.md",
+      "sha256": "d10d83c0e9b5a343f07782ed62def870a9ced616ccd6310ac2b2a6e81ae85d4b",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "sha256": "03e6c248c5009cd6fa693eb68e908cfb5edd71c66b76d8a4157e0be41e40ff50",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-map-scheme-final-delete.md",
+      "sha256": "1d25908af27557b9de303ea378a0cb55ce417278f6974e1fe430be1a7e709429",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "sha256": "13467ee1997662c85c6b5203e2060a4994430204eaefc9e95983673e9716f06c",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "sha256": "32a28e7539cb95ca6060428441d4d9afd6fd785756a043c3a586aeb0dba81741",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-qr-login-backend-now.md",
+      "sha256": "65b7bcd35de77f4903f5eb3eeb7b90d7f3db78b7258a1107b9dd761713a0727b",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-unbound-homework-archive.md",
+      "sha256": "0626c28e093a3a2cfe20f82dd695dd8800a5013785f1bc26d4e08de866f4dc00",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-02-user-restore-without-rights.md",
+      "sha256": "f3cb44eca63bef01ecc4c91ee60455aed3a2d966f94aa7ab640c5d8b8e52dd22",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-04-canonical-lesson-times.md",
+      "sha256": "0f30fc6cbb7435ff869b89b78c59ad6a309ac94fba89ae2c1aaf6ad3d173344b",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md",
+      "sha256": "9a96a9ccfdbf12648eacf9a4d66766795f8718b73a283491fce54f6686bfaf33",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-08-admin-activity-action-time.md",
+      "sha256": "7f5f8c64590d3b7c01011f43bcc5c1b85987bef31e413f52d5d58ddd68f2d599",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-08-limited-administrators.md",
+      "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-09-archived-semester-date-extension.md",
+      "sha256": "296a1a4a30d32a635166c649889fcf710113f2d1242866aee3854e10225c6e4b",
+      "revision_context": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-pwa-offline-read-only-session.md",
+      "sha256": "6f15d160ede2d99f6a6c3f074a555fff755fb7e020500ebd68674004de10e9ff",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-map-legend-deferred.md",
+      "sha256": "b929529c2b36a5be3c4098d8628dacf06bcc6a0c4c8a14f1e89cc7915c2713ff",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-tma-init-data-reuse.md",
+      "sha256": "893544fe7acc85efff1971d50f3fa86077992f7f055c04109f3ce95ccc43d279",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "independently opened original; semantically reviewed relevant scope"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/frontend-inventory/findings.md",
+      "sha256": "78458ad0ece6ded044ae5d48605f99eb96ad0e1d397da26468bc185c041a3c01",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/delivery-data-diagnostics/findings.md",
+      "sha256": "d018ab0c6c26b8727e2414cbf14cb6d871022f7b561c443953822e7ca0c8b2e8",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/security-diagnostics/findings.md",
+      "sha256": "9ddf59cc25d5dc8d6b3f190fbb9b0a4779fdb7347900d3f100c948b0d6bc0c06",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/security-developer/findings.md",
+      "sha256": "67e199efccc31011196da74cf314a2faf1034fa964cb1709f73c000948ab20a9",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/scenario-sources/findings.md",
+      "sha256": "0093721683b61c8a9066c0d2ecb4fdd22250d06fa17a1af20f22579a9f65a2f7",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/frontend-inventory/finite-runtime-packet.md",
+      "sha256": "2cc9cc621856322c5b4ba320da71c6b4d8cca2aa38bad0e79e3f003f3998ed0e",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/scenario-sources/grants-catalog.json",
+      "sha256": "6a20c12ef7cfc01a79aa727db84df8c95085b8499ce0ea16cc5600a0cbd15c55",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/delivery-data-diagnostics/next-checks.md",
+      "sha256": "69bac23b89c9bcdec76c49832af3ea95a73c8fa1ce452701c3dfb1a1f2847a24",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/security-diagnostics/next-checks.md",
+      "sha256": "f6b6c56981044bf4bacff5e0ef02f54caca0071b43ec123898c886ee7c24ba5d",
+      "revision_context": "root current uncommitted task docs at read time",
+      "reading_scope": "Read relevant author receipt as input only; independently opened critical originals; author receipt is not runtime proof."
+    },
+    {
+      "path": "/workspace/rct-cloud-handoff/owner-handoff.md",
+      "sha256": "0872540aeffb823b015e64f2bf3633c85a8772365c9f2f4dc92a3cfccb341593",
+      "reading_scope": "independently opened handoff; incompatible historical scope superseded by full current owner contract"
+    },
+    {
+      "path": "/workspace/rct-cloud-handoff/source-map.md",
+      "sha256": "c9380174957a0d5940cc7c723024bf5b04ca9751ab35324bda823229f6b660d3",
+      "reading_scope": "independently opened handoff; incompatible historical scope superseded by full current owner contract"
+    },
+    {
+      "path": "/workspace/rct-cloud-handoff/owner-updates-20261011.md",
+      "sha256": "75dbcb9506219155c4733613f42d09913f491a16c6b60d52616f68bf28b42ef4",
+      "reading_scope": "independently opened handoff; incompatible historical scope superseded by full current owner contract"
+    },
+    {
+      "path": "/workspace/rct-cloud-handoff/cloud-server-contract.md",
+      "sha256": "2a438fce7886cf189b16a35dc98f6d58f280de08104ca77685fa826af9744313",
+      "reading_scope": "independently opened handoff; incompatible historical scope superseded by full current owner contract"
+    }
+  ],
+  "research_originals": "Raw lecture ZIP/PDF/DOCX personally not reopened; complete included contract research brief used as research, no specification promotion",
+  "limitations": "Relevant original fragments and all full stable ID/request row pointer identities inspected. Test names/found files are execution candidates, no runtime verdict; no unfinished implementation patch reviewed.",
+  "checkpoint_note": "Ledger hashes are read-time identities; shared root docs may change after this early review. Product source context remains frozen baseline."
+}

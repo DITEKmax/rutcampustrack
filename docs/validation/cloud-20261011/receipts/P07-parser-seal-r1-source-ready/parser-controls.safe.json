@@ -1,0 +1,34 @@
+{
+  "qualification": "PURE_RAM_SYNTHETIC_XML_NO_JAVA_GRADLE_NODE_API_OR_REAL_TEST_EXECUTION",
+  "controls": [
+    {
+      "control": "EXACT15_GREEN",
+      "pass": true
+    },
+    {
+      "control": "MISSING_ONE_REJECT",
+      "pass": true
+    },
+    {
+      "control": "UNKNOWN_NAME_CLOSED",
+      "pass": true
+    },
+    {
+      "control": "ACTUAL_FAIL_RETAINED_CLOSED",
+      "pass": true
+    },
+    {
+      "control": "COUNT_MISMATCH_REJECT",
+      "pass": true
+    },
+    {
+      "control": "DTD_REJECT_CLOSED",
+      "pass": true
+    },
+    {
+      "control": "UTF16_REJECT",
+      "pass": true
+    }
+  ],
+  "pass": true
+}

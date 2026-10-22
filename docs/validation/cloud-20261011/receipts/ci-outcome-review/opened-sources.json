@@ -1,0 +1,148 @@
+{
+  "recorded_at": "2026-10-11T22:30:31.742065+00:00",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "read_full_task_contract": true,
+  "files": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "bytes": 82004
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "65403a5b84b1e6b9e2741d864a93e6559fc2cf99b53202b6a7c5698345d3abda",
+      "bytes": 8693
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+      "bytes": 7182
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "3e4a0b297be4ae895394119b94d25899eb0cbd244202ab938cb8db90dc613929",
+      "bytes": 6335
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "081c2a169f9afce9284c935a5aac0c53e7aeedbace426ea0df664d8ad9cdd829",
+      "bytes": 2900
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-ci-outcome-evidence-review.md",
+      "sha256": "f766dbd7cad70bcf7f44758620969b0e64fb1a2f348971769bde920e51e66147",
+      "bytes": 2855
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "bytes": 4327
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "bytes": 5464
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "bytes": 24809
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/.github/workflows/ci.yml",
+      "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "bytes": 14123
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/scripts/collect-ci-test-outcomes.py",
+      "sha256": "b74573b9e062efddbcb5f1298a941e12d8803e003687cf8aaf7ba834f2f7f522",
+      "bytes": 11816
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/tests/harness/test_ci_test_outcomes.py",
+      "sha256": "f4bbd6730146403cbc804517d4ad4c95e67b3a2d932955801285e0af9baa1934",
+      "bytes": 10170
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "bytes": 10364
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/current-academic-source-identity.json",
+      "sha256": "7dec2c037902eb2dd18229445b386ea9b3e5c5fe36e1274cde28c9c3f43794df",
+      "bytes": 639
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/CURRENT.md",
+      "sha256": "8b9125c92e6e5107439b6dda839bd1f00c1fcf39cf036b4603ab7ff3bba79349",
+      "bytes": 1692
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/control-final.log",
+      "sha256": "1ae11e2bd0266c3d59ff90ed9b5abbd5524cc0d43ab8b0c642b9dbf4fd2402ab",
+      "bytes": 109
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/privacy-mutation-red.log",
+      "sha256": "9be154f08e2ad7885f46b6ab28a6ecd44e4e5de97fab3a38e6f33130998770e4",
+      "bytes": 1652
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/local-no-results.json",
+      "sha256": "668c46346385519c702ecf953b9c3ca59bf036932cf7257f024916f5151c6096",
+      "bytes": 555
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/source-ready.md",
+      "sha256": "e84656f44d85442d9241e6fb59ab1ba459fbf5d47b48d86a31fe5b4b54efd160",
+      "bytes": 1896
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/control-01.log",
+      "sha256": "fa845003e2f964988ac4e8804c18e355559f6065081d685e4abc4ea972efbee0",
+      "bytes": 106
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/workflow-preservation.json",
+      "sha256": "eafb85bcf2cb43716ef1ca7fe04fcc48e2f1e6c0d13ac40d26a68e83467fb879",
+      "bytes": 393
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/source-ready.json",
+      "sha256": "bb29e61e7699328ff541945bbfd9d3fe6b8e2a60926716bb7cda6ad162dfde4b",
+      "bytes": 1495
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/attempts.ndjson",
+      "sha256": "3a14d36a6193eb52fe51d29b46953ef789ca3ccd52b3895abdeefa4a4fda475a",
+      "bytes": 1832
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/build/ci-test-outcomes/api-gateway/test/safe-outcomes.json",
+      "sha256": "668c46346385519c702ecf953b9c3ca59bf036932cf7257f024916f5151c6096",
+      "bytes": 555
+    }
+  ],
+  "original_workflow": {
+    "revision": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+    "path": ".github/workflows/ci.yml",
+    "sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c"
+  },
+  "prior_GW_review": "UNCHANGED_IMMUTABLE",
+  "writer_scope": "/workspace/scratch/rct-validation/ci_outcome_review",
+  "additional_sources": [
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/launch-provenance-clarification.md",
+      "sha256": "775d28f52da2789d9d0508e3dc39ba04ca1f3f9e6163691bba3b038b55b15864",
+      "bytes": 1335
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/launch-provenance-clarification.json",
+      "sha256": "149362cd8fbac2a154595c3e79e78a6695cfb1a6a537e88ceccd9c8581679825",
+      "bytes": 3884
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "state": "EIGHT_BACKEND_CACHE_MOUNT_SOURCE_CANDIDATE_READY_INDEPENDENT_REVIEW",
+  "author": "ci731_reconcile",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "base": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
+  "worktree": "/workspace/rct-worktrees/boot-gradle-cache-isolation",
+  "scope": "8 backend Dockerfile mount options/comments only",
+  "observed_failure": "CURRENT1742_SCHEDULE_BOOTJAR_DAEMON_CONNECT_TIMEOUT",
+  "historical_cache_mechanism": "HYPOTHESIS_NOT_PROVEN",
+  "static_validation": "PASS",
+  "native_build_test": "NOT_RUN",
+  "commit": "NOT_CREATED_UNGRANTED_HOOKS_NOT_EXECUTED",
+  "Root_integration_and_normal_CI_required": true,
+  "entries": [
+    {
+      "path": "REPORT.md",
+      "bytes": 4895,
+      "sha256": "08a668191be021656dbae2bea23aba30cdcb07d95caaa08477692c2d312252f7"
+    },
+    {
+      "path": "cache-isolation.patch",
+      "bytes": 7985,
+      "sha256": "af369b677dd6ca021c4ed5d12c4c2ca35294d7b5df1893f00a33d1ccfebae506"
+    },
+    {
+      "path": "gradle812-public-source.safe.json",
+      "bytes": 2751,
+      "sha256": "81634eabcd76a9a2c3dd8c5a8adde358829d55f42d0827dc0521ab1cb94f049c"
+    },
+    {
+      "path": "source-checks.safe.json",
+      "bytes": 3536,
+      "sha256": "9cd673196400753a8b22e545df05799eabd6e1702f20444f2c742877d4dc948c"
+    }
+  ]
+}

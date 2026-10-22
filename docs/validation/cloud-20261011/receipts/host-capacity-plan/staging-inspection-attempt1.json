@@ -1,0 +1,11 @@
+{
+  "status": "FAILED_READ_ONLY_MODE_ASSUMPTION",
+  "native_exit": 1,
+  "counterexample": {
+    "entry": "BOOT-INF/classes/ru/rutcampustrack/documentrenderer/grpc/ConvertDocumentRequest$1.class",
+    "zip_mode": "0o600"
+  },
+  "actual_extraction": "NOT_RUN",
+  "product_failure_claim": false,
+  "correction": "Own manifest proposal uses NEW public compiled file644 plus existingexecute bits; preserves original ZIP mode separately, no current chmod."
+}

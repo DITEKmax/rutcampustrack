@@ -1,0 +1,22 @@
+{
+  "utc": "2026-10-12T06:43:19.143900+00:00",
+  "author_sha": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "verdict": "APPROVE_MINIMAL_HARNESS_CORRECTION",
+  "reviewer": "Root independent source reader, not implementation author",
+  "cause": "currentced755 compiler Integer inference against overloaded AssertJ IntPredicate/Object and I001 actualRuff",
+  "before": "ced755/actualcheckout7c5b34ef/Academiczeroexecuted",
+  "changes": "Only typed Integer local preserves expectedactualpublication count1, plus aiohttp.web importordering; all producer/domain/security/grants/mappings and priorassertions unchanged",
+  "paths": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "8660f1e49daa90dcfb4319ab9b4aa6634f2acf76021878c18bb09a38bfd1e05e"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "7f2942cfc098b5ecfb0aea910429b582563a642d4356599f001e0d76875da9f6"
+    }
+  ],
+  "runtime_compile": "PENDING actualcompile; nativeRuff/sourcehooks passed authorreceipts",
+  "prior_source_review": "cb originalfourP2controls retainedexact; no new behavior",
+  "severity": "harness compileP2/lintP3, not productFAIL/redregressioncredit"
+}

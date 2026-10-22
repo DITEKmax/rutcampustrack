@@ -3,11 +3,11 @@ package ru.rutcampustrack.academic.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Published when group composition changes: student transferred,
- * group updated (name/code/active), or group deleted.
- * <p>
- * Per EVENT-01, D-01 (minimal payload): only group_id is required.
- * Consumers call gRPC GetGroup to retrieve full data if needed.
+ * Published when group composition changes: student transferred, group updated (name/code/active),
+ * or group deleted.
+ *
+ * <p>Per EVENT-01, D-01 (minimal payload): only group_id is required. Consumers call gRPC GetGroup
+ * to retrieve full data if needed.
  */
 public class GroupUpdatedEvent extends DomainEvent {
 

@@ -1,0 +1,17 @@
+[
+  {
+    "source": "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md",
+    "target": "/workspace/rutcampustrack/.agent/evidence/backend-continuation-20261006/headman/ASSIGNMENT-RUNTIME-ACCEPTED.md",
+    "link": "../../../.agent/evidence/backend-continuation-20261006/headman/ASSIGNMENT-RUNTIME-ACCEPTED.md"
+  },
+  {
+    "source": "docs/product/decisions/2026-10-09-archived-semester-date-extension.md",
+    "target": "/workspace/rutcampustrack/.agent/evidence/admin-r4-backend-20261009/CONTRACT.md",
+    "link": "../../../.agent/evidence/admin-r4-backend-20261009/CONTRACT.md"
+  },
+  {
+    "source": "docs/product/decisions/2026-10-09-archived-semester-date-extension.md",
+    "target": "/workspace/rutcampustrack/.agent/evidence/admin-r4-backend-20261009/DELIVERY.md",
+    "link": "../../../.agent/evidence/admin-r4-backend-20261009/DELIVERY.md"
+  }
+]

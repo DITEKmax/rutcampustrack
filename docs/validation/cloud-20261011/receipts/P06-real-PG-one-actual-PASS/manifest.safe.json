@@ -1,0 +1,7 @@
+{
+  "schema": "RCT_P06_ONE_REAL_PG_ACTUAL_MANIFEST_V1",
+  "files": {
+    "REPORT.safe.json": "d02086694afd80efcbbd64b4726e161a4da57d9fe728e732166f90da1567b249"
+  },
+  "excluded": "selected.raw.private.xml and /tmp raw Gradlelog: private600/unhashed/notexported"
+}

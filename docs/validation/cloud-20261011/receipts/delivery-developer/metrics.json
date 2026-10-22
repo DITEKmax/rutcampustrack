@@ -1,0 +1,15 @@
+{
+  "supported_gradle_test_invocations": 11,
+  "config_only_aborted_invocations": 1,
+  "prelaunch_errors": 2,
+  "supported_invocations_logged_seconds": 1227,
+  "target_cases_pass": 11,
+  "new_target_cases": 6,
+  "repeat_reasons": "Each failed repeat addressed demonstrated fixture mismatch or new runtime bounded-confirm defect; passed L02/schedule checks not repeated; newNACK distinctnegativeconfirmation risk; rootAuthextension compile only",
+  "product_files_modified": 9,
+  "existing_tests_modified": 1,
+  "new_test_files": 3,
+  "review_correction_runs": 2,
+  "review_correction_seconds": 68,
+  "review_correction_reason": "DR01 new uncovered caller interaction meaningful red on reviewed product then identical focused green after minimal boundary change; DR02 metadata only no repeats"
+}

@@ -1,0 +1,836 @@
+{
+  "reviewed_at": "2026-10-11T22:15:17.202271+00:00",
+  "receipt_manifest_path": "/workspace/scratch/rct-validation/gateway_claims_developer/receipt-manifest.json",
+  "receipt_manifest_sha256": "9da5ae28a44729a733de1ee48d5d6912b279d3f706038f3fdd3e2beb4b75da16",
+  "receipt_count": 19,
+  "all_hash_and_byte_matches": true,
+  "receipts": [
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/CURRENT.md",
+      "sha256": "794e0ab0ea364268f8abbe8891032a823411646e373babcb099e662e419a8dff",
+      "bytes": 1121,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/attempts.ndjson",
+      "sha256": "d2bca5ece61e375f00d3c5bc0fbdb23005683ed8b65f2cc83f0348bdeb79b770",
+      "bytes": 6272,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-command.json",
+      "sha256": "809b2296236c57fb6f2197be34c91058bb4fadafaca77f723c1b5fff6199f191",
+      "bytes": 965,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-result.json",
+      "sha256": "82cc1bb19656ddb5cf85b63da2bed8c1cd08cb852ba804d02db8cc24b5fdad47",
+      "bytes": 723,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-selected.log",
+      "sha256": "c37f38d9ed4ccd83a56d6ceec626903075ff6877661336a74ff9e9af5c5c9616",
+      "bytes": 2438,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-selected.xml",
+      "sha256": "22b9e3b9e744d76ddf5057290ac15057caf6f5e6ccb18596564debc86c78a35d",
+      "bytes": 5562,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/commit.log",
+      "sha256": "0cc481a5506da53db5eeaa7f16560baa2f3db95f8bd2a24fed2d233814eb2138",
+      "bytes": 172,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/completion.json",
+      "sha256": "9003ca79f9c0eb89f142b9e9feeb63d133243f46f905358ded488037547f6f9c",
+      "bytes": 675,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/final-selected-green.log",
+      "sha256": "105233695b339828f19d7aa33e5d89857ccf7fab83e6cefa536b26173831541b",
+      "bytes": 2495,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/final-selected-green.xml",
+      "sha256": "3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897",
+      "bytes": 7237,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/green-command.json",
+      "sha256": "fb4dea672658814161f47124ae779a8445ad2ec8ea4a74fa4c6fa35290038bbf",
+      "bytes": 1042,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/green-result.json",
+      "sha256": "81d5b5598c2a36ea8a184f90bb3526c27f5900d52af762851968cffcc0899960",
+      "bytes": 1093,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/inventory.json",
+      "sha256": "ba135b7085a8589f2270e684f58ecb50075c243879b162b75ed7591e7627c0d4",
+      "bytes": 548,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/review-packet.md",
+      "sha256": "ba38f87c5e695a32d224ca5f6d7bde33616198894fb684ecfe36ef3646abd4f1",
+      "bytes": 5656,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/source-ledger.json",
+      "sha256": "a166b0dd04bab361e8f7171a8edd0040d48f592a3b706722f46c2b88695793d2",
+      "bytes": 795,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-boundary-red.log",
+      "sha256": "4bd56be95a3f141d7906e8a267c0ddf2ca91c4fc7fcd41e69178248a163f2d9e",
+      "bytes": 3360,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-boundary-red.xml",
+      "sha256": "472d82642b15cd705e99b6a6c1e5ea9d5cb84f2abe41065af962c2502b199b70",
+      "bytes": 11726,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-command.json",
+      "sha256": "78870e17ae816804d0abe36244bf4dfad573ffaacfa9054a06f9a4411d545d49",
+      "bytes": 756,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-result.json",
+      "sha256": "752b4346863899ac1b75ea8864185540dfda693b90b4fbdd8350edc9ba2f147f",
+      "bytes": 1791,
+      "manifest_hash_matches": true,
+      "manifest_bytes_matches": true,
+      "safe_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    }
+  ],
+  "original_byte_equivalence": [
+    {
+      "original_path": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/baseline-selected.log",
+      "packet_path": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-selected.log",
+      "sha256": "c37f38d9ed4ccd83a56d6ceec626903075ff6877661336a74ff9e9af5c5c9616",
+      "byte_equal": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/structural-boundary-red.log",
+      "packet_path": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-boundary-red.log",
+      "sha256": "4bd56be95a3f141d7906e8a267c0ddf2ca91c4fc7fcd41e69178248a163f2d9e",
+      "byte_equal": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/final-selected-green.log",
+      "packet_path": "/workspace/scratch/rct-validation/gateway_claims_developer/final-selected-green.log",
+      "sha256": "105233695b339828f19d7aa33e5d89857ccf7fab83e6cefa536b26173831541b",
+      "byte_equal": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/commit.log",
+      "packet_path": "/workspace/scratch/rct-validation/gateway_claims_developer/commit.log",
+      "sha256": "0cc481a5506da53db5eeaa7f16560baa2f3db95f8bd2a24fed2d233814eb2138",
+      "byte_equal": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/gateway-claims/services/api-gateway/build/test-results/test/TEST-ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.xml",
+      "packet_path": "/workspace/scratch/rct-validation/gateway_claims_developer/final-selected-green.xml",
+      "sha256": "3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897",
+      "byte_equal": true
+    }
+  ],
+  "xml_reconciliation": [
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-selected.xml",
+      "sha256": "22b9e3b9e744d76ddf5057290ac15057caf6f5e6ccb18596564debc86c78a35d",
+      "suite": {
+        "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "tests": "35",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T22:00:19",
+        "hostname": "993a1bc854c1",
+        "time": "1.526"
+      },
+      "case_count": 35,
+      "skipped_nodes": 0,
+      "cases": [
+        {
+          "name": "missing issuer",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong issuer",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type issuer",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing audience",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong audience",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type audience",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "multiple audiences",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "string issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "non-whole issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "future issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "string expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "non-whole expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "issued-at is not before expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "nonpositive subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "negative subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "overflow subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "nonstring subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type token use",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing session id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong session id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing session version",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing roles version",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing role",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type role",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "unknown role",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing status",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "unknown status",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type group id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "null group id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type headman flag",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing read-only flag",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type read-only flag",
+          "status": "PASS",
+          "failure": null
+        }
+      ],
+      "raw_signed_payload_structural_metadata": ""
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-boundary-red.xml",
+      "sha256": "472d82642b15cd705e99b6a6c1e5ea9d5cb84f2abe41065af962c2502b199b70",
+      "suite": {
+        "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "tests": "6",
+        "skipped": "0",
+        "failures": "2",
+        "errors": "0",
+        "timestamp": "2026-10-11T22:01:56",
+        "hostname": "993a1bc854c1",
+        "time": "1.235"
+      },
+      "case_count": 6,
+      "skipped_nodes": 0,
+      "cases": [
+        {
+          "name": "iat fractional fixture at millisecond 0",
+          "status": "FAIL",
+          "failure": {
+            "message": "org.opentest4j.AssertionFailedError: [controlled raw NumericDate boundary] \nexpected: 401 UNAUTHORIZED\n but was: null",
+            "type": "org.opentest4j.AssertionFailedError"
+          }
+        },
+        {
+          "name": "iat fractional fixture at millisecond 1",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "iat fractional fixture at millisecond 999",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "exp fractional fixture at millisecond 0",
+          "status": "FAIL",
+          "failure": {
+            "message": "org.opentest4j.AssertionFailedError: [controlled raw NumericDate boundary] \nexpected: 401 UNAUTHORIZED\n but was: null",
+            "type": "org.opentest4j.AssertionFailedError"
+          }
+        },
+        {
+          "name": "exp fractional fixture at millisecond 1",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "exp fractional fixture at millisecond 999",
+          "status": "PASS",
+          "failure": null
+        }
+      ],
+      "raw_signed_payload_structural_metadata": "NumericDate fixture field=iat millis=0 node=NUMBER integral=true fractional=false\nNumericDate fixture field=iat millis=1 node=NUMBER integral=false fractional=true\nNumericDate fixture field=iat millis=999 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=0 node=NUMBER integral=true fractional=false\nNumericDate fixture field=exp millis=1 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=999 node=NUMBER integral=false fractional=true\n"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/gateway_claims_developer/final-selected-green.xml",
+      "sha256": "3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897",
+      "suite": {
+        "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "tests": "43",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T22:04:10",
+        "hostname": "993a1bc854c1",
+        "time": "2.46"
+      },
+      "case_count": 43,
+      "skipped_nodes": 0,
+      "cases": [
+        {
+          "name": "iat fractional fixture at millisecond 0",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "iat fractional fixture at millisecond 1",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "iat fractional fixture at millisecond 999",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "exp fractional fixture at millisecond 0",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "exp fractional fixture at millisecond 1",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "exp fractional fixture at millisecond 999",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing issuer",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong issuer",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type issuer",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing audience",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong audience",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type audience",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "multiple audiences",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "string issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "non-whole issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "future issued-at",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "string expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "non-whole expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "issued-at is not before expiration",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "nonpositive subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "negative subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "overflow subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "nonstring subject",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type token use",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing session id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong session id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing session version",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing roles version",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing role",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type role",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "unknown role",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing status",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "unknown status",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type group id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "null group id",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type headman flag",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "missing read-only flag",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "wrong type read-only flag",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "legacy whole-second iat fixture is valid",
+          "status": "PASS",
+          "failure": null
+        },
+        {
+          "name": "legacy whole-second exp fixture is valid",
+          "status": "PASS",
+          "failure": null
+        }
+      ],
+      "raw_signed_payload_structural_metadata": "NumericDate fixture field=iat millis=0 node=NUMBER integral=false fractional=true\nNumericDate fixture field=iat millis=1 node=NUMBER integral=false fractional=true\nNumericDate fixture field=iat millis=999 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=0 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=1 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=999 node=NUMBER integral=false fractional=true\n"
+    }
+  ],
+  "case_reconciliation": {
+    "old_count": 35,
+    "final_count": 43,
+    "missing_old": [],
+    "new_cases": [
+      "exp fractional fixture at millisecond 0",
+      "exp fractional fixture at millisecond 1",
+      "exp fractional fixture at millisecond 999",
+      "iat fractional fixture at millisecond 0",
+      "iat fractional fixture at millisecond 1",
+      "iat fractional fixture at millisecond 999",
+      "legacy whole-second exp fixture is valid",
+      "legacy whole-second iat fixture is valid"
+    ]
+  },
+  "exact_commands": [
+    {
+      "receipt": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-command.json",
+      "sha256": "809b2296236c57fb6f2197be34c91058bb4fadafaca77f723c1b5fff6199f191",
+      "prelaunch_time": "2026-10-11T21:59:50.736986+00:00",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        "--no-daemon",
+        "--max-workers=1",
+        ":services:api-gateway:compileJava",
+        ":services:api-gateway:compileTestJava",
+        ":services:api-gateway:test",
+        "--tests",
+        "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.signedInvalidAccessClaims_areRejected"
+      ],
+      "frozen_head": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "tested_test_sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c"
+    },
+    {
+      "receipt": "/workspace/scratch/rct-validation/gateway_claims_developer/structural-command.json",
+      "sha256": "78870e17ae816804d0abe36244bf4dfad573ffaacfa9054a06f9a4411d545d49",
+      "prelaunch_time": "2026-10-11T22:01:35.756645+00:00",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        "--no-daemon",
+        "--max-workers=1",
+        ":services:api-gateway:compileTestJava",
+        ":services:api-gateway:test",
+        "--tests",
+        "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary"
+      ],
+      "frozen_head": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "tested_test_sha256": "82fc4fc477c4f2008f8a8d973b2c30c0b85204b0ba56017b8530fde6bb28202c"
+    },
+    {
+      "receipt": "/workspace/scratch/rct-validation/gateway_claims_developer/green-command.json",
+      "sha256": "fb4dea672658814161f47124ae779a8445ad2ec8ea4a74fa4c6fa35290038bbf",
+      "prelaunch_time": "2026-10-11T22:03:39.064990+00:00",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        "--no-daemon",
+        "--max-workers=1",
+        ":services:api-gateway:compileTestJava",
+        ":services:api-gateway:test",
+        "--tests",
+        "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.signedInvalidAccessClaims_areRejected",
+        "--tests",
+        "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary",
+        "--tests",
+        "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.legacyWholeWallSecondFixtureSerializesAsIntegralAndIsCorrectlyForwarded"
+      ],
+      "frozen_head": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "tested_test_sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    }
+  ],
+  "results": {
+    "baseline_session": 57001,
+    "baseline_tool_exit": 0,
+    "structural_session": 91703,
+    "structural_tool_exit": 1,
+    "final_tool_session": "UNKNOWN_TOOL_RESULT_TRUNCATED",
+    "final_tool_exit": "UNKNOWN_TOOL_RESULT_TRUNCATED",
+    "observed_final_gradle_terminal_line": "BUILD SUCCESSFUL in 34s",
+    "terminal_line_found_in_original": true,
+    "reviewer_runtime": "NOT_RUN; read-only metadata/source inspection only"
+  },
+  "ci_provenance": {
+    "safe_local_receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/e093-gateway-invalid-exp-ci.json",
+    "head_sha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+    "run_id": 38175673119,
+    "job_id": 114577427225,
+    "merge_checkout": "93ca323572a05b713aa30cdf395edf3feb24278b",
+    "failed_case": "signedInvalidAccessClaims_areRejected / non-whole expiration",
+    "full_original_ci_log": "PARENT_TOOL_SESSION_ONLY; not independently accessible as persisted local raw file",
+    "NPE": "PARENT_OBSERVED_IN_DIAGNOSTIC_PACKET; independent baseline source proves unstubbed chain returns null on admission; actual local structural XML proves valid integral admission, no claim of reproducing CI NPE"
+  },
+  "cleanup": {
+    "reviewer_runtime_started": false,
+    "gateway_owned_java_gradle_processes_observed": [],
+    "author_lease": "GATEWAY1_RELEASED",
+    "foreign_resources": "NOT_TOUCHED"
+  },
+  "remaining_delivery_requirement": "Normal final exact integrated remote CI/Coverage/Security; this review does not satisfy all authentication/session/client acceptance."
+}

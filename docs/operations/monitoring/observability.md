@@ -1,246 +1,172 @@
-# Observability Runbook
+# Наблюдаемость RutCampusTrack
 
-Документ описывает observability-стек RutCampusTrack после M04. Рассчитан
-на on-call и разработчиков которые диагностируют прод-инциденты.
+Это рабочая карта конфигурации ветки PR #2. Фактические проверки и исполняемый
+SHA указаны в [CURRENT](../../validation/cloud-20261011/CURRENT.md); наличие
+конфигурации не означает, что она уже развёрнута или принята в production.
 
-## Стек (конец M04)
+## Компоненты и хранение
 
-| Слой | Компонент | Retention | Доступ |
-|------|-----------|-----------|--------|
-| Метрики | Prometheus | 14d | `private_net`, scrape `/actuator/prometheus` |
-| Логи | Loki + Promtail | 14d (336h) | `private_net` |
-| Трейсы | Tempo (OTLP gRPC :4317) | 14d | `private_net` |
-| Алерты | Alertmanager | — | webhook → `notification-web:9094/internal/alert` |
-| UI | Grafana | — | доступ через reverse proxy |
-| Бизнес-метрики | Micrometer (BusinessMetrics helper) | — | 6 backend-сервисов + Python-бот |
+| Сигнал | Источник и путь | Хранение / граница доступа |
+| --- | --- | --- |
+| Метрики приложений | Gateway, BFF, Auth, Academic, Schedule, Attendance, Notification, renderer: `/actuator/prometheus`; Python-бот: частный `/metrics` | Prometheus, 35 дней и предел размера 4 GB; доступ через частную сеть и разрешённый proxy |
+| Ресурсы и зависимости | node-exporter, cAdvisor, PostgreSQL academic/schedule, MongoDB, Redis, RabbitMQ | Отдельные exporter/monitoring identities с минимальными правами; не публичные database/admin API |
+| Логи | JSON stdout Java/Python → Promtail → Loki | 14 дней; ограничение строк/потоков/ingestion; positions Promtail и WAL/storage сохраняются в выделенных volumes |
+| Трассы | Framework observations / OTel SDK → Tempo OTLP HTTP `4318` или gRPC `4317` | 14 дней; bounded attributes, events, links и ingestion; query/storage API частные |
+| Оповещения | Prometheus rules → Alertmanager → авторизованный receiver | Grouping/dedup/inhibition; повтор 3 часа, warning quiet hours 22:00–08:00 Europe/Moscow; critical не заглушается |
+| Интерфейс оператора | Git-provisioned Grafana | Доступ через доверенный reverse proxy; разрешённые query endpoints не открывают произвольные admin mutations |
 
-## Как данные связаны
+Размерный предел может удалить историю Prometheus раньше 35 дней. Неполные
+30 дней показываются как недостаточная история, а не как 100% доступности.
+Все лимиты контейнеров, диска и ротации собраны в
+[resource-limits.md](../deploy/resource-limits.md). Это исходный бюджет для
+подбора VPS; производительность под нагрузкой владельца им не доказана.
 
-```
-Java-сервис → Micrometer → /actuator/prometheus ─┐
-                                                 ├→ Prometheus (scrape 15s) ─┐
-Node-exporter / cAdvisor ────────────────────────┘                           │
-                                                                             ├→ Alertmanager (rules fire) ─→ notification-web /internal/alert
-                                                                             │                                       │
-Java-сервис → OTel SDK (1.0 sampler) ──→ Tempo (OTLP 4317)                   │                                       ↓
-Python-бот → OTLP exporter ───────────→                                      │                                   RabbitMQ alert.fired
-                                                                             │                                       ↓
-Java-сервис → JSON logs (logstash-logback-encoder) ─┐                        │                                   notification-bot
-                                                    ├→ Promtail → Loki ──────┘                                       ↓
-Python-бот → structlog JSON ────────────────────────┘                                                            Telegram admin(s)
-```
+Один актуальный перечень targets — `infra/prometheus/prometheus.yml` вместе с
+`rules/expected-targets.yml`. Важны и `up=0`, и исчезнувший ожидаемый target.
+Отсутствующий exporter, метрика без producer и нулевой трафик — разные состояния.
+Host RAM, cgroup limit и JVM heap/native renderer memory также различаются.
 
-Все три signal типа связываются через `trace_id` (UUID v4):
+## Идентификаторы и переходы
 
-- **Jakarta** — Micrometer Tracing bridges OTel: `traceId` пишется в
-  MDC, `logback-base.xml` включает `%X{traceId}` в JSON, Tempo получает
-  spans с тем же ID.
-- **Python-бот** — `bot/observability.py` биндит `trace_id` в structlog
-  contextvars через `bind_trace_context()`. Middleware генерирует UUID
-  per-update, aio-pika consumer извлекает его из envelope события.
-- **События RabbitMQ** — unified envelope (shared-events.DomainEvent)
-  несёт `trace_id` от publisher'а → consumer. `AbstractEventConsumer.
-  withTraceContext(envelope, runnable)` восстанавливает MDC перед
-  handler'ом (Java-сторона), bot делает аналогичное через
-  `bind_trace_context()`.
+| Поле | Назначение |
+| --- | --- |
+| `requestId` | Канонический UUID одного HTTP-обращения; Gateway нормализует вход и возвращает header, включая application-отказ |
+| `traceId` / `spanId` | Стандартные W3C/OTel IDs: 32/16 hex-символов; связанная работа имеет собственные spans и корректные parent/link |
+| `originTraceId` | Сохранённая диагностическая связь с исходной работой при отдельном фоновом выполнении |
+| `eventId` / message ID | Стабильная идентичность события и dedup; повтор доставки не является новым бизнес-событием |
+| job ID / idempotency request ID / lease / attempt | Принадлежность и повтор фонового отчёта; не заменяют HTTP request ID, trace context или проверку прав |
 
-## Sampling policy (M13 G10)
+Java JSON содержит `service`, `environment`, `version`, `instance` и разрешённые
+поля MDC. Python использует согласованные `traceId`/`spanId`/`requestId`;
+старое `trace_id` остаётся legacy correlation и не становится W3C trace ID
+только из-за имени. Не ищи UUID запроса в Tempo как trace ID.
 
-| Endpoint | Decision | Где применяется | Почему |
-|----------|----------|-----------------|--------|
-| `/actuator/**` | **drop** | `ActuatorTracingExcludeFilter` (shared-observability) | Health/prometheus probes — высокочастотный шум, не имеет диагностической ценности |
-| Бизнес-эндпоинты `/api/**` | **sample 100%** | Spring Boot `OpenTelemetryTracingAutoConfiguration` (default `probability=1.0`) | M04 baseline для v0.0.0 (малый traffic, ловим всё) |
-| Внутренние spans (security/JPA) | наследуют от parent | OTel `parentBased` sampler | Стандартный OTel design |
+Gateway → BFF → gRPC используют стандартные framework observations и
+propagators. Настройки baggage включают только принятый `requestId`;
+Authentication и весь MDC между процессами не копируются. Executor и consumer
+восстанавливают прежний контекст после success/error/cancel. Optional event
+`traceparent`/`request_id` совместимы со старыми envelope; повтор worker не
+должен перезаписать связь или оставить контекст предыдущего сообщения.
 
-### Где сделан фильтр
-
-`services/shared/shared-observability/src/main/java/.../ActuatorTracingExcludeFilter.java`
-— bean типа `io.micrometer.tracing.exporter.SpanExportingPredicate`. Spring
-Boot 3.x tracing auto-config (`OpenTelemetryTracingAutoConfiguration#otelSpanProcessor`)
-собирает все predicate'ы через `ObjectProvider<SpanExportingPredicate>` и
-оборачивает их в `CompositeSpanExporter` — фильтр срабатывает между
-`BatchSpanProcessor` и OTLP exporter (т.е. до сетевого экспорта в Tempo).
-
-### Почему `SpanExportingPredicate`, а не `Sampler`
-
-В Spring Boot 3.4 + Micrometer Bridge attribute `url.path` устанавливается
-на http server span **после** вызова `Sampler#shouldSample`. Sampling-time
-дроп для actuator paths поэтому невозможен — sampler не видит URL в момент
-своего вызова. `SpanExportingPredicate` видит финальный `FinishedSpan` со
-всеми tags и финализированным `name` (типично `"http get /actuator/health"`).
-
-### Стратегия для child spans
-
-Spring Security/JPA генерируют 5–7 child spans внутри одного http server
-request (security filterchain before/after, authorize request, secured
-request). Фильтр запоминает `trace_id` отброшенного root в LRU set
-(capacity 256) и дропает все последующие spans того же trace_id. Capacity
-256 покрывает 5 сервисов × 2 actuator endpoints × 30s probe interval ×
-∞-time без накопления memory bloat.
-
-### Property override (если когда-то понадобится включить actuator tracing)
-
-Filter применяется через auto-config, не имеет on/off property. Чтобы
-временно отключить — добавить в `application-dev.yml` целевого сервиса
-exclude-bean:
-
-```yaml
-spring.autoconfigure.exclude:
-  - ru.rutcampustrack.shared.observability.SharedObservabilityAutoConfiguration
-```
-
-Не делайте этого в `application.yml` / `application-prod.yml`: actuator
-spam нагружает Tempo на ровном месте.
-
-## Быстрые ссылки в Grafana
-
-- **Business KPIs & Health** (`business-kpis-m04`) — 8 панелей: checkin
-  rate, login/OTP rate, red zone студентов, active WS, outbox lag, JVM
-  heap, RabbitMQ queues, KI-2 fallback rate.
-- **Spring Boot APM** — стандартный Boot dashboard (pre-M04).
-- **Logs Overview** — Loki search интерфейс.
-
-## Типичные запросы
-
-### Prometheus (PromQL)
-
-```promql
-# Rate гео-отметок по статусам за последний час
-sum by (status) (rate(attendance_checkin_total[5m]))
-
-# Outbox lag по сервисам — выявить публишер не успевает
-max by (job) (outbox_lag_seconds)
-
-# KI-2 fallback — любой ненулевой rate = регрессия M03a
-sum by (job) (rate(internal_jwt_fallback_total[5m]))
-
-# Heap pressure — сервис идёт к OOM
-max by (application) (jvm_memory_used_bytes{area="heap"})
-  / max by (application) (jvm_memory_max_bytes{area="heap"})
-```
-
-### Loki (LogQL)
+В Grafana сохранены datasource UIDs: Prometheus `PBFA97CFB590B2093`, Loki `loki`,
+Tempo `tempo`. В Explore:
 
 ```logql
-# Все ошибки в auth-service за 15 минут
-{service="auth-service"} |= "ERROR" | json | line_format "{{.msg}}"
-
-# Конкретный trace_id — полная цепочка через все сервисы
-{service=~".+"} | json | trace_id="<uuid>"
-
-# Rate ERROR лог-записей по сервисам — быстрый health-check
-sum by (service) (rate({service=~".+"} |= "ERROR" [5m]))
+{environment="production",service="api-gateway"} | json | requestId="<UUID>"
 ```
 
-### Tempo
+Из JSON-лога поле `traceId` открывает Tempo через Loki derived field. Из span
+переход в Loki ограничивает service и окно времени, затем фильтрует JSON
+`traceId`. Request/trace/job IDs не превращаются в Loki или metric labels.
+Если нужного span нет, проверь sampling, export/drop/queue и freshness;
+отсутствие trace не доказывает отсутствие полезной операции.
 
-В Grafana: Explore → Tempo → Search → filter по `service.name` и
-`duration > 500ms`. Клик на span → переход в Loki с pre-filled
-`trace_id`.
+## Метрики и смысл результата
 
-## Troubleshooting
+- HTTP eligible — наблюдавшиеся business 2xx/3xx/5xx. Good — 2xx/3xx, error —
+  5xx. Ожидаемые отказы прав/валидации и cancellation не входят в этот
+  знаменатель. Отдельные ранние ingress/TLS/parser отказы ищутся по ingress
+  сигналам; HTML 200 сам по себе не доказывает работающий журнал.
+- Исходная цель доступности — 99,9% за 30 дней. Latency p95: чтение/вход 2 s,
+  обычная запись 3 s, семестровый DOCX 30 s. Это инженерные начальные цели,
+  которые следует сверять с измерениями, а не обещание времени каждого запроса.
+- p95 считается из сумм bucket histogram по подходящему operation scope.
+  Широкий Gateway route вроде `/api/attendance/**` не классифицируется как
+  обычная запись с целью 3 s. Backend report timer имеет отдельную цель.
+- 30-дневная доступность использует ограниченные recording rollups конечных
+  operation classes. Требуются успешные scrape, наблюдавшиеся counters и
+  полная история; idle/missing/stale/query error не заменяются здоровым нулём.
+  Короткие окна по route/replica остаются для расследования.
+- `outbox_publish_attempts_total` означает попытки с конечным outcome.
+  Broker confirmation не доказывает consumer effect.
+  `outbox_published_total` учитывает SENT после commit; откатившаяся запись не
+  считается опубликованной бизнес-операцией. Persistent dedup защищает effect.
+- `attendance_report_duration_seconds_*` и `attendance_report_active` показывают
+  выполнение синхронного совместимого report API, его конечный outcome и slots.
+  Повторы временной зависимости не становятся отдельными готовыми отчётами.
+- `rct_export_jobs_*` отражают durable async admission, retry, terminal outcome,
+  due/waiting/running/stuck/expired и возраст. Snapshot timestamp проверяется
+  отдельно; scrape не ходит в БД. Цель окончательного результата — 99,5% в
+  пределах 60 s; accepted/queued не означает готовый файл.
+- RabbitMQ ready/unacked/total, retry и DLQ проверяются раздельно. Возраст head
+  вычисляется по AMQP publisher timestamp в секундах: это не время нахождения
+  в DLQ. Старый head без timestamp остаётся unknown. Classic DLX сам по себе
+  не доказывает zero loss.
+- Счётчики process-local сбрасываются при restart. Durable состояние jobs и
+  business data остаётся источником истины; crash после commit до increment
+  нельзя выдавать за exactly-once долговременный счётчик.
 
-### Сервис DOWN в Grafana
+Диск показывается по наиболее заполненному filesystem, heap — только по пулам
+с положительным max, реплики — по отдельным instance. Process CPU не называется
+host CPU, а свободная память не вычисляется формулой занятой памяти.
+Окончательные запросы находятся в versioned dashboards/rules, а не в UI-save.
 
-1. `docker compose ps` на VPS — контейнер запущен?
-2. `docker logs rct-<service> --tail 100` — stack trace старта?
-3. `/actuator/health` через API Gateway (если UP):
-    ```bash
-    curl -s http://api-gateway:8080/api/<service>/actuator/health | jq
-    ```
-   Поле `components.<db|rabbit|redis|mongo>.status` скажет какая
-   зависимость положила сервис.
-4. Смотри соответствующий alert в Alertmanager: была фоновая deps
-   деградация до crash?
+## Отчёт журнала за 18 недель и восстановление
 
-### Outbox lag растёт
+В PWA/TMA журнал использует существующий async export port. Auth сохраняет job
+в PostgreSQL до 202 Accepted; Gateway worker получает lease, вызывает реальный
+HTTP report API Attendance и сохраняет результат. Сам DOCX renderer этого пути
+не передаёт большой файл через RabbitMQ. Совместимый синхронный endpoint
+`POST /api/attendance/reports/headman-weekly/export` сохраняется.
 
-1. Grafana → outbox.lag.seconds per job → найти отстающий сервис.
-2. Проверить RabbitMQ health (`rct-rabbitmq` up?) — publisher job
-   зависит от него.
-3. Логи сервиса: `{service="<svc>"} |= "Outbox publish failed"`. При
-   transport-сбое rows остаются `pending` и должны уйти после восстановления
-   RabbitMQ; `outbox.lag.seconds` должен вернуться к baseline.
-4. RabbitMQ management UI (в dev экспонирован `:15672`): queue depth,
-   DLQ size. Consumers online?
+Клиент хранит только безопасный locator/intention той же сессии; возвращение
+на экран, reconnect и пропущенный push читают серверное состояние. Неизвестный
+исход create повторяется с тем же idempotency ID, известный job читается по ID.
+Другой экран остаётся доступным. Logout/отзыв прав проверяет сервер; possession
+job ID не разрешает status, ticket или файл.
 
-### Alert не долетает в Telegram
+Текущие границы: срок результата 10 минут, lease 90 секунд, до 3 attempts,
+не более 2 действующих тяжёлых leases, bounded backlog/expiry cleanup. Retry
+временной ошибки имеет задержку 5/10 секунд. Отмена локального ожидания не
+отменяет серверную работу. Ограничение leases не означает автоматической
+остановки удалённого physical renderer после сетевой cancellation.
 
-1. Проверь что alert действительно fire'ит в Alertmanager:
-    ```bash
-    docker exec rct-alertmanager amtool alert query
-    ```
-2. notification-web логи:
-    ```
-    docker logs rct-notification-web | grep /internal/alert
-    ```
-   Должно быть `INFO Alert webhook processed: N alerts published`.
-   Если 401 — проверь `ALERT_WEBHOOK_SECRET` совпадает в compose и
-   alertmanager.yml.
-3. notification-bot логи:
-    ```
-    docker logs rct-notification-bot | grep alert.fired
-    ```
-   Нет `alert.fired`? Событие не долетело в RabbitMQ (проверь
-   fanout exchange subscription).
-4. `ADMIN_TELEGRAM_IDS` env переменная задана (не "0")?
-5. Admin заблокировал бота в Telegram → `send_queue` упадёт,
-   проверить `send_queue._total_failed` через debug лог.
+События RabbitMQ имеют отдельный путь: подтверждённая публикация, устойчивый
+consumer effect/dedup, ACK; временная ошибка допускает ограниченный delayed
+redrive, неисправимая изолируется. См.
+[dlq-triage.md](../runbooks/dlq-triage.md). Не удаляй очереди/volumes и не
+перезапускай бесконечно poison message ради освобождения очереди.
 
-### Тихий час работает не так как ожидал
+## Расследование и безопасная эксплуатация
 
-Alertmanager `time_intervals` использует **UTC**, не MSK. Текущая
-конфигурация `start_time: '19:00' end_time: '05:00'` = 22:00-08:00 MSK
-(MSK = UTC+3). Только `warning` муте, `critical` всегда fire'ит.
+1. Найди request ID, временное окно, service/instance и соответствующий trace.
+   Для фонового действия свяжи job/event ID с исходным запросом и попыткой.
+2. Различи liveness, readiness конкретной функции и её полезный результат.
+   Readiness dependency outage не должен превращаться в каскад liveness restart.
+3. Проверь target/series/freshness, p95/error ratio и зависимость. Rate errors/s
+   не является процентом ошибок; no traffic не является успешным synthetic probe.
+4. При telemetry outage проверь собственные scrape/evaluation/ingest/drop/
+   queue/storage/notification failure метрики. Недоступность мониторинга не
+   должна блокировать commit пользовательских данных.
+5. Пользуйся частными read endpoints и разрешёнными operator правами. Не
+   открывай весь actuator/raw query/admin API наружу ради диагностики.
 
-## Логирование
+JSON message masking — дополнительная защита. Credentials запрещены также в
+structured arguments, exception/stack details, MDC, baggage, spans, URL и
+публикуемых CI artifacts. Export filter сохраняет разрешённые protocol outcomes
+и URI templates, удаляя raw URL/query, чувствительные attributes и exception
+text. Новый diagnostic field требует проверки источника, а не только новой
+регулярной маски. Synthetic marker controls и safe CI summaries не разрешают
+читать настоящие пароли/токены ради поиска утечек.
 
-### Java-сервисы
+Панели/datasources/rules, volumes, retention и secret **references** хранятся
+в Git. Secret values туда не входят. Адресный recreate/storage/positions check
+выполняется только на выделенном synthetic scope; production deploy,
+grants/secret rotation и удаление данных требуют отдельного разрешения.
+Актуальная карта stores/owners/auth находится в
+[architecture.md, §6](../../architecture/architecture.md#6-хранилища-данных).
 
-- Default level: `INFO` (верифицировано CI-check `verifyNoDebugInProd`).
-- `application-dev.yml` — `ru.rutcampustrack: DEBUG` и `sampling.
-  probability: 1.0` для локальной разработки.
-- JSON schema: `{ts, v, level, logger, thread, msg, service, traceId?,
-  spanId?, <MDC>...}`. `shared-logback/logback-base.xml` маскирует
-  `Bearer`, `telegram_id=<digits>`, `fcm_token` через regex.
-- Ошибки пишутся в поле `stack` (logstash-logback-encoder).
+## Локальная передача владельцу
 
-### Python-бот
+- **DEFERRED_LOCAL:** конечный alert-бот, его URL/auth secret references и
+  настоящая доставка; Cloud проверяет firing/resolved до тестового receiver.
+  Это не отключает существующий бизнес notification-bot.
+- **DEFERRED_LOCAL:** независимый off-host probe при deploy: настроить и
+  проверить обнаружение потери всей машины. Same-host blackbox такого
+  доказательства не даёт (решение Q030).
+- VPS ещё не выбран. Нагрузка 300–400 check-ins, около 200 других активных
+  пользователей и 3–7 отчётов — вход для sizing/приёмки, а не выполненный benchmark.
 
-- `structlog` конфигурируется в `bot/observability.py:setup_observability()`.
-- Processors: merge_contextvars → add_log_level → add_logger_name →
-  TimeStamper(iso,utc) → add_service_name → `_mask_pii` (маскирует
-  `user_id/telegram_id/from_user_id/chat_id`) → rename `event`→`msg` →
-  JSONRenderer.
-- stdlib logging (aiogram, aio_pika, grpcio) проходят через тот же
-  ProcessorFormatter — единый JSON формат.
-
-### Секреты, которые НЕ должны попадать в логи
-
-- Telegram bot token (`BOT_TOKEN`)
-- OTP коды (`OtpService` не логирует код)
-- FCM tokens (shared-logback masking)
-- JWT body (shared-logback маскирует Bearer)
-- User Telegram IDs (Python `_mask_pii` оставляет только `***<last3>`)
-
-При появлении нового secret — добавить паттерн в `logback-base.xml` и
-в `_mask_pii._SENSITIVE_KEYS`.
-
-## M04 deferred items → followups
-
-| Item | Куда |
-|------|------|
-| `/actuator/**` исключить из tracing sampling | M04 G11 backlog или M05 |
-| docker-compose healthcheck directives | M06 Ops & Supply Chain |
-| `AlertPublisher extends AbstractEventPublisher` | M05 (code-reviewer SHOULD #1) |
-| Typed DTO для Alertmanager webhook | M06 (code-reviewer SHOULD #2) |
-| mTLS вместо Bearer secret для `/internal/alert` | M06 |
-| Per-subject/per-group thresholds в RedZoneGauge | Future (cross-service join) |
-
-## Ссылки
-
-- Исходные требования: `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md`
-  строки 1349-1564 (QA1..QA7).
-- M04 план: `docs/milestones/M04-observability/PLAN.md`.
-- Alert каталог: `docs/operations/monitoring/alerts.md`.
-- Архитектура: `docs/architecture/architecture.md` раздел Observability stack.
+Alert descriptions содержат owner/impact/action/runbook. Проверки доставки,
+roles/exporters, реальных запросов Grafana и восстановления отмечаются в
+CURRENT отдельно от source/formula PASS; Cloud DONE не является production deploy.

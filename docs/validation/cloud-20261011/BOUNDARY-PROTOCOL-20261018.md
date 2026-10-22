@@ -1,0 +1,257 @@
+# S19 boundary protocol — accepted source boundaries / runtime pending
+
+Target/GO: TASK-ADDENDUM-SPLIT-APPS-20261018.md. VariantБ owner-approved; this
+engineering contract has independently reviewed source implementations; Group
+whole-cycle continuation is finishing. Source acceptance is not runtime acceptance.
+Base26c. Auth/sharedproto writer s19_boundary; Academic writer s19_academic;
+BotPython s19_bot; directed BotRead producer s19_bot_producer; reviewer s19_review.
+Root soleintegration/docs. No cross-owner SQL/shared users/FDW as final state.
+
+## Ownership and storage
+
+Auth logical auth_db/new versioned auth-migration path owns UID/login/BCrypt/
+initial/reset/change flags/TG binding+generation/roles+versions/adminprofile/
+sessions/securityproofs/credentialcardledger/securityoutbox. Auth identities have
+PENDING/active state and an operation fence. Auth identity operation ledger stores
+UUID/hash/kind/orderedtargets/expectedversions/grantdelta/phase/nonsecretresult/CAS;
+never password/token in ledger. Auth user-facing credential retrieval remains
+separate, privileged, live and available only after successful activation.
+
+Academic logical academic_db owns assigned-UID profile(names/avatar/employeeNo),
+groups/headman/helpers/membership/assignments/history/local eligibility+revision,
+operation coordinator and all academic report jobs/artifacts. Auth group IDs
+are opaque admission scope, not second domain membership authority. Nonsecret
+identity fields use an owner-fed NONAUTHORITATIVE read model for full-list filtering/ordering/counts; current grants/session admission always stay Auth-authoritative.
+No crossDB FK. Runtime/migrator identities restricted to their own DB; published
+V62/V63 immutable, new schema/bootstrap/migrations explicit and nonresetting.
+
+## First cutover / code rollback boundary (prepared; no deploy executed)
+
+Owner confirmed there are no production legacy data. First rollout uses the explicit
+Auth/Academic own-DB migration paths and restricted principals; retained Cloud synthetic
+stores are not reset, reseeded or used as an implicit migration source. Verify the
+resolved DB names/principals, immutable migration ledger and own/foreign rights before
+opening admission; then run Q033 explicitly once only if no administrator exists.
+
+Auth and Academic are switched as a compatible pair with the same directed proto,
+operation receipts/fences/catalog and report job formats. A timeout or partial startup
+keeps accepted work in those stores; reconcile its original operation ID after repair.
+After the first new write, never route back to the old shared database, rewrite/repair
+Flyway, replay an older snapshot, delete a volume or discard a job to roll code back.
+
+A previous binary pair is eligible only after schema/wire/stored-state compatibility
+and retained-data/current-permission checks on the same stores. Otherwise keep the
+new stores and apply a forward fix; incompatible backward rollback is refused. No
+previous production-compatible split pair is declared here. Before first rollout,
+the separately authorized operator must choose the exact eligible pair or forward-fix
+path; quiescing/resuming writers and real backups remain separate deployment actions.
+
+Evidence applicability: UserOwnershipLifecycleIT at219 proves nonempty two-DB repeat,
+not a binary rollback experiment. The219 package changes no SQL migration or protobuf
+from b836 (git diff inventory); this is a bounded source compatibility observation,
+not an approved production fallback. Existing durable unknown-outcome/lease fencing
+and the strict own-DB startup/role guards remain required in either permitted path.
+
+## Provisioning / mutation stages
+
+Academic ACCEPTED → AUTH_PREPARED → LOCAL_COMMITTED → SUCCEEDED.
+Auth PREPARED_FENCED → COMMITTED or FAILED_SAFE. Exact terminal/recovery enum
+names and failure resolution must match final implementation and review.
+
+1. Accept canonical UUID + command hash once; same UUID/different payload409.
+   Persist command/actor UID/SID/version tuple/expectedlocalversions, not bearer.
+2. Auth Prepare validates live actor and current operation-specific permission,
+   last-full invariants and expected authority versions; reserves ordered target
+   UID aggregate (headman old+new together). CREATE allocates UID/login/BCrypt
+   only in Auth. Fence authority before ACK and reserve finalRolesVersion=expected+1 (CREATE=1). Pending/
+   fenced identity denies credential read/login/OTP/QR/TMA/menu/session admission.
+3. Academic rechecks group/profile/headman local revisions, atomically commits
+   profile/eligibility/history/helpers/outbox + exact LOCAL_COMMITTED receipt once,
+   including that reserved finalRolesVersion.
+   No RPC under its transaction/DB locks. Domain failure has no partial localeffect.
+4. Auth Commit uses directed service identity + exact UUID/hash/operation CAS and
+   Academic committed receipt. Apply full intended grant set preserving unaffected
+   grant IDs; activate/unfence at the already reserved finalRolesVersion, without
+   another rolesVersion increment/projection-lag window; archive revokes sessions/cards.
+5. Lost ACK/timeout queries same UUID/hash; never newUUID or timeout auto-unfence.
+   Definite failure stays safe/fenced. Recovery uses durable accepted command,
+   not forged fresh actor JWT. Explicit reconcile must validate current local
+   state and fresh authority; no implicit restoration of obsolete privileges.
+
+Review must establish every fence/recovery interleaving, including CREATE failure
+after real Academic history flush: no localprofile/history/outbox effect; Auth
+reservation remains nonactive/fenced or safely terminal, not distributed rollback.
+Clarify FAILED_SAFE/reconcile paths in code so accepted work never stays silently
+pending and an expired original actor cannot authorize unrelated new commands.
+Reading status/result still requires current request authority/object scope.
+
+Commit actor stamp binds credential/binding/admin-profile generations, selectedgrant,
+SID/sessionVersion/revokedAt and rolesVersion (adjusted for own reservation). Natural
+access/refresh expiry alone may recover an accepted fixedcommand; permanent revoke,
+logout, changedgrants/credentials/binding/profile must fail safe, never activate stale
+privilege. Local committed receipt remains for a fresh authorized reconcile. No bearer
+is persisted. Definite domainrollback and unknown commit outcome remain distinct.
+
+Auth durable ordered identity catalog feed has own transactional sequence and bounded
+ReadChanges(after,limit<=200)/watermark RPC. Only visible nonsecret identity changes,
+not login/refresh/session churn; Telegram ID stays PII/FULL-only output, never telemetry.
+Academic contiguouscursor/versionedprojection catches up to prewatermark within3s,
+queries fullfilter/count/order under localRR beforepage, then checks postwatermark;
+bounded retry/503 rather than partialpage. Coordinator SUCCESS waits committedcatalog
+projection. Feed retention/freshness budget required; no arbitrary shortTTL.
+
+No-key legacy mutations remain valid with new operationUUID/responseoperationheader;
+strong lostresponse replay requires caller supplied stable Idempotency-Key. Do not
+payload-dedupe identical names/optionalTG legitimate creates. Actual PWA/TMA per-intent
+keys preserve unknownoutcome recovery; never blind retry with a newUUID.
+
+Definite local preflight failure reserves an immutable negative receipt under the
+same operationUUID advisory lock as positive acceptance, exact actor/API intent.
+It blocks delayed acceptance; a positive winner returns its actual state. A missing
+GET receipt or generic409 is not evidence of rejection. Group preflight must also
+terminate its new key K before returning a selector for an older failed operation O.
+Unknown RPC/DB outcomes remain recoverable, never inferred rejected by the client.
+
+## Group availability / credential-reader invalidation
+
+Academic installs durable group/headman guards before selecting an immutable ordered
+manifest; ANY guard row denies the affected read scope, without phase filtering.
+Only the current eligible HEADMAN credential-reader rolesVersion is invalidated;
+ordinary students/teachers are not an all-user fanout. Auth prepares one multi-group
+command and locks identities in order, bumps RV once, then Academic applies the
+whole accepted manual cycle/group change locally. RPC never spans Academic locks.
+Auth commit rechecks the accepted actor/security tuple and exact local receipt,
+publishes the catalog without another RV bump. Failed-safe retains local guards;
+fresh currently authorized reconcile uses the same immutable command and staged
+effect, with history/outbox once. RejectUnprepared uses the same UUID lock.
+
+Existing all-group manual cycle semantics remain; no arbitrary cycle-count cap.
+Semester transition identity is durably guarded across RPC gaps; lock order is
+semester transition family, then groups, then profiles, consistent with deletion.
+Ordinary successful group DTO/204 stays compatible; pending202 returns operation
+status/header/Location. Explicit POST identity-operations/{failedUUID}/reconcile
+has no body, a new stable key and OperationStatus200/202; current GROUPS_MANAGE
+can inspect an automatic Group operation without widening other ledger ownership.
+The opaque failed UUID is a selector, not authority. UI confirms FAILED_SAFE by
+current GET before offering recovery, then refreshes authoritative registry data.
+
+## Transport / consumers
+
+Additive proto/auth_authority.proto; existing academic/subject deletion wire numbers
+unchanged. Planned PrepareIdentityOperation, CommitIdentityOperation,
+GetIdentityOperation, FailIdentityOperation; typed bounded target deltas and
+nonsecret replies with operation/state/revision/UID/login/versions/resultCode.
+Prepare carries canonicalhash/kind/expectedAuth+Academicversions+desiredgrant/admin/
+identity changes, not caller-trusted arbitrary SQL. Directed clients and Auth server
+validate method/action/service/actor boundaries; deadline≤3s outside DB transactions.
+
+Public user controllers retain successful bodies; idempotency UUID/header +
+pending202/operation link/status for interrupted work, typed409/503/deny. Explicit
+compatibility needed for existing clients that did not previously supply a key.
+No blind retry mutation after unknown result. Auth context/admission reads its
+own current authority only. Presentation composition belongs BFF; optional
+Auth→Academic service-only label read has no reverse Auth admission call/cycle.
+
+Subject/semester stepup Auth validates password/OTP/purpose/actor/SID/binding/
+credential generations/expiry/replay/digest/operation; Academic verifies local
+preview/eligibility/consequences/delete. Proof cannot become permission on a
+foreign object or survive invalid current state. Auth never reads Academic tables.
+
+BotAuth MenuScope/CheckOwnAuthority: private sender/chat + expectedUID/binding/
+rolesVersion/action, no bot-chosen role/group/date/teacher. Directed BotRead APIs
+compose fresh authority with domain own-headman/own-teacher eligibility and exact
+Moscow day/current lesson. Fixed method determines action. Recheck authority after
+read; no storeduserJWT/fabricated HTTP RequestContext/broad machineJWT. Sharedproto
+sole Auth writer, producer/consumer exact fields freeze together before generation.
+
+## Report lifecycle
+
+All academic report queue/idempotency/leases/retries/artifacts/expiry/cleanup/audit/
+worker/metrics move to Academic. Single queue preserves global2active, attempts3,
+backoff5/10s, lease90s, retention10min, user10/global256. Gateway retains fixed public
+routes/specific legacy alias before generic route and admission; no job dispatcher.
+Auth retains security capability only: jobID/kind/selector hash/session generations,
+never READY/artifact/domainselector responsibility.
+
+Academic builds exact immutable admitted report plan, commits claim, then invokes
+bounded renderer/data-only producer. Do not copy current public MobileBFF exporter
+dispatch mechanically: Academic→BFF→Academic callback/cycle must be removed.
+Reuse Attendance/headman/teacher/registry renderers with explicit internal plan,
+not generic worker microservice. No report bytes in Rabbit or bearer in job.
+The bounded existing renderer seam uses real HTTP POST only to exact
+/academic/export-jobs/{jobUUID}/render with lease ID and Auth-signed purpose-bound
+capability. The dedicated filter validates exact job/kind/selectorhash/lease/current
+storedsession/actor generations, derives selector from ownerlocal record and constructs
+normal verified request context only for this route. Capability cannot authorize CRUD.
+All Auth RPCs outside DB locks; stale lease cannot commit. Legacy ticket downloads wait
+bounded on the same durable queue, preserving completion semantics without another
+parallel renderer; disconnect cancels waiting only, not accepted work.
+Notification export.state.changed v1 shape/queues preserved, producer and perhint
+current admission move Auth→Academic. Auth retains security capability only.
+Current Auth authority + fresh local report eligibility rechecked at claim/complete/
+download; final CAS publishes artifact. Recheck after bytes where applicable.
+Lost202/navigation/reconnect/crash/retry resolve the same durable job, not replacement.
+1..64weekStarts validation preserved; prove2x18week and a short distinct validperiod.
+
+## Current recovery boundary (source implementation, runtime pending)
+
+User FAILED_SAFE requires explicit fresh RECONCILE; never auto-unfence or resend the
+original command blindly. Additive own ledger links immutable root intent and a
+single active successor; atomically transfer ALL fences under group→profile→operation
+locks. Unknown Auth outcome retains fences. Confirmed negative tombstone returns
+them atomically. Staged effects get fresh receipts/RV only; unstaged effects apply
+once. Preserve originating local admission capability, assigned CREATE UID/credentials,
+sticky archive danger and fresh proof bound to the new UUID. S3 design GO is not
+implementation acceptance. Canonical HTTP seam41688487: directed reconcile-preview
+for ARCHIVE; existing reconcile POST optional archive body, others/group empty.
+Same-key accepted replay precedes preview/password. UI retains scoped nonsecret
+recovery reference and confirms current status before explicit recovery.
+
+Dashboard publication capture runs only after committed SUCCEEDED/guard release,
+using existing pending CHANGE and REQUIRES_NEW; failure keeps the durable marker.
+Assistant RPC uses live Auth pre/post outside local RR; pending local fence takes
+precedence over definitive Auth denial. Both source-reviewed; runtime NOT_RUN.
+Existing map/semester password-confirm HTTP compatibility stays: Auth own security
+checks, Academic own eligibility/digest/receipt; no transport-only rewrite.
+
+## Required changed-risk proof / implementation order
+
+First preserve corrected old Event/Map fixtures and diagnose usercreate500 without
+granting secret SELECT; no final U14 closure of sharedDB. Then concrete proto/schema
+S3 review, Auth authority core + Academic coordinator in parallel frozen contracts,
+separate DB fresh/minrights/repeat evidence, bot/domain consumers, job/stepup move,
+actual PWA/TMA/current OpenAPI/gRPC/TS checks and ordinary final gates.
+
+Source review must check authority ownership and every write entry point, CAS /
+commit/aftercommit/outbox semantics, unknown acknowledgements/restart/revoke/stale /
+last-full/headman aggregate, no recursive live calls/heldlockRPC, idempotent history,
+pending credentials denied and final artifact authorization. Meaningful real DB/
+RPC tests required; mocks and schema/source approval do not establish end-to-endPASS.
+Old U15 sameDB evidence remains historical, new twoDB preservation separateU15.1.
+B013/B014/B015 FROZEN: no equivalent forbidden caller/mutation/proof rerun.
+
+## Disposable browser baseline — scoped contract (design review pending)
+
+1. Goal: existing client/lifecycle UI paths start with their coherent synthetic baseline; all user assertions remain.
+2. Evidence: 9928 Boot succeeds; Link fails exactly «E2E teacher seed is missing». New migrationchains exclude old V2 actors, not a table/ACL error.
+3. Owner/scope: ac9_auth_it; retained /tmp/rct-s19-auth. Only new tests/e2e/infra/docker-compose.synthetic-baseline.yml, baseline/{auth,academic}/afterMigrate__e2e_synthetic_*_baseline.sql and the existing CI Boot step.
+4. Order: each own production Flyway chain -> own migrator callback -> normal JPA/HTTP startup. Auth identities/grants/FULLprofile/COMMITTED receipt/catalog; Academic profiles/group/membership history/semester/campus use the same existing fixture IDs/logins.
+5. Invariants: explicit disposable-scope plus database/principal guards; ownDB transactions; sequences advance; no sharedSQL/foreignjoins/disabledguards/sessions/JWTs. Real catalog emission after coherent Auth receipt; Academic consumes after its own baseline is ready.
+6. Pattern: trusted initial fixture analogous to current Java twoDB fixtures, not a user provisioning operation. No production callback mount, users or published SQL changes; preserve TEST_USERS/Link seed/assertions.
+7. Repeat: immutable fixture/provision marker permits NO reset of mutable credentials/domain state; partial or conflicting initialization fails closed. Both sides finish before UI; no silent ON CONFLICT repair.
+8. Verification: source/compose/SQL boundaries, actual isolated fresh/repeat/conflict checks and existing Link/create/login/DOCX UI paths; no mocked runtime PASS.
+9. Exclusions: no real first-admin setup (Q033 separate), grants widening, unrelated workflow/config/consumer rewrite, reset or B013/B014/B015 caller. Root+independent S3 design GO before implementation; final changed-risk source review thereafter.
+
+## U14.7 / Q033 operator bootstrap — SOURCE APPROVE / runtime pending
+
+1. Goal: one explicit operator command creates the first FULL administrator with matching Auth identity/credentials and Academic profile; no production invocation in this task.
+2. Evidence: current CREATE requires a live admin; fresh split chains create no sample actors. Actorless bootstrap is a separate trust root, not a fabricated session or normal create bypass. Weight8 fixed before code; v3 adds only U14.7.
+3. Owner/inventory: s19_edge_it_diagnosis; own service bootstrap/InitialAdministrator{Auth,Academic}Command.java; AuthIdentityOperationStore ordinary-origin filters; reserved Auth V13/Academic V11 migrations; exact SecurityConfig.passwordEncoder static factory modifier; scripts/bootstrap-initial-admin.py; Academic InitialAdministratorBootstrapIT; one Python orchestration/privacy unittest. No e2e baseline/CI/config/generated overlap.
+4. Protocol: Auth prepare singleton stableUID/PENDING/fenced -> Academic apply+immutable receipt -> ownDB verify -> Auth grant/FULLprofile/targetreceipt/COMMITTED/unfence atomically -> Academic realcatalog finalize/readback. No DB locks held across subprocess calls. Exact retry never rotates credentials or resets later user changes.
+5. Trust: service-specific offline commands connect only to their own DB via explicit operator migration principals. Strict bootstrap-origin constraints and DB guard deny ordinaryruntime inserts/updates; ordinary RPC cannot lookup/commit bootstrap operations. Operator IPC is private, not a network receipt API; Academic never receives password.
+6. Reuse: existing PasswordEncoder factory/guard/PasswordPolicy and actual initial_password storage/clear lifecycle; existing operation/target/fence/catalog/projection. PropertiesLauncher main excludes normal application/component scanning/listeners/schedulers/consumers/Flyway. No new service/framework.
+7. Acceptance: refuse other administrator/reservation; exact own retry and unknown/crash/concurrency preserve UID/result; admission waits committed Academic profile; live firstlogin/FULLprofile/firstpasswordchange work. stdout only bounded operationId/UID/status; no secret/hash/SQL/config/stack. Protected regular secretfile with failclosed permissions/size/symlink rules.
+8. Checks: real synthetic twoDB fresh/repeat/upgrade/preservation, partial-crash/lostresponse/existingadmin/mismatchedrequest-receipt/concurrency; ordinaryruntime DML/RPC deny; privacy/wrapper checks. Appropriate compile before DB IT; no production credentials or execution.
+9. Exclusions: public HTTP/RPC/startup bootstrap/defaultpassword/sharedSQL/FDW/fakeactor/session/new generic saga, normal provisioning policy changes, production/deploy, B013/B014/B015 mutation/caller. S3 design GO before implementation, then one independent substantial source review and addressed findings recheck.
+
+Q033 implementation conditions accepted by independent reviewer: ordinary negative/noop/reconcile paths treat bootstrap UUID as reserved; ownDB/session_user operator guard and shared authority/UUID lock; committed retry returns stored result without checking an old password or resetting later state; private Academic payload excludes the secretfile/password; finalize preserves newer projections. Singleton receipt blocks recreation after revoke/archive. Source has no CredentialVault: preserve actual restricted initial_password lifecycle, without inventing new crypto. The ninth routine file only makes the existing @Bean factory static; name/type/body/parameters unchanged. No extra user result/weight.

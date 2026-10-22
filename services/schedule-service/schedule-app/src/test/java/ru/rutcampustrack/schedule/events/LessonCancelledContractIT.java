@@ -1,58 +1,51 @@
 package ru.rutcampustrack.schedule.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
-import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
-import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
-import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 import ru.rutcampustrack.schedule.lesson.LessonService;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
+import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 import ru.rutcampustrack.schedule.security.RequestContext;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 /**
- * M02 Группа 8 / M09 G5 — contract test: cancelLesson() → lesson.cancelled
- * event в outbox валидируется против event-schemas/lesson.cancelled.json
- * и содержит full snapshot (start_time/end_time/lesson_number/cancelled_by/
- * cancelled_at) дополнительно к базовым ключам.
+ * M02 Группа 8 / M09 G5 — contract test: cancelLesson() → lesson.cancelled event в outbox
+ * валидируется против event-schemas/lesson.cancelled.json и содержит full snapshot
+ * (start_time/end_time/lesson_number/cancelled_by/ cancelled_at) дополнительно к базовым ключам.
  */
 class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
 
-    @Autowired
-    LessonService lessonService;
+    @Autowired LessonService lessonService;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    RecurringScheduleItemWriter writer;
+    @Autowired RecurringScheduleItemWriter writer;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @MockitoBean
-    RequestContext requestContext;
+    @MockitoBean RequestContext requestContext;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -73,16 +66,15 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
 
         lessonService.cancelLesson(lesson.getId(), new CancelLessonRequest("Preparation day"));
 
-        Optional<OutboxRecord> cancelled = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.cancelled".equals(r.eventType()))
-                .findFirst();
+        Optional<OutboxRecord> cancelled =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.cancelled".equals(r.eventType()))
+                        .findFirst();
         assertThat(cancelled).isPresent();
 
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "lesson.cancelled.json", cancelled.get().payload());
-        assertThat(errors)
-                .as("lesson.cancelled payload должен соответствовать schema")
-                .isEmpty();
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("lesson.cancelled.json", cancelled.get().payload());
+        assertThat(errors).as("lesson.cancelled payload должен соответствовать schema").isEmpty();
 
         // M09 G5 — full snapshot: bot/attendance не должны делать second-look
         // gRPC в schedule; start_time/end_time/lesson_number/cancelled_by/at
@@ -115,13 +107,32 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
         LocalDate date = LocalDate.of(2026, 4, 3);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
                 .thenReturn(SemesterStateResponse.newBuilder().setId(1L).build());
-        var authority = new RecurringAssignmentAuthority(501L, 700L, 200L, 10L, 1L,
-                "lecture", date, date.plusDays(1));
-        var created = writer.write(new CreateScheduleItemRequest(501L, 10L, 200L, 1L,
-                (short) 5, (short) 2, null, null, WeekType.ALL, "B-202"), UUID.randomUUID(), 999L,
-                authority, date, date);
-        Long lessonId = jdbcTemplate.queryForObject("SELECT id FROM lessons WHERE schedule_item_id = ?",
-                Long.class, created.scheduleItemId());
+        var authority =
+                new RecurringAssignmentAuthority(
+                        501L, 700L, 200L, 10L, 1L, "lecture", date, date.plusDays(1));
+        var created =
+                writer.write(
+                        new CreateScheduleItemRequest(
+                                501L,
+                                10L,
+                                200L,
+                                1L,
+                                (short) 5,
+                                (short) 2,
+                                null,
+                                null,
+                                WeekType.ALL,
+                                "B-202"),
+                        UUID.randomUUID(),
+                        999L,
+                        authority,
+                        date,
+                        date);
+        Long lessonId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM lessons WHERE schedule_item_id = ?",
+                        Long.class,
+                        created.scheduleItemId());
         return lessonRepository.findById(lessonId).orElseThrow();
     }
 }

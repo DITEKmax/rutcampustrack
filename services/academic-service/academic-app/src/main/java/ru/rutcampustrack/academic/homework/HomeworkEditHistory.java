@@ -2,6 +2,13 @@ package ru.rutcampustrack.academic.homework;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -13,14 +20,6 @@ import ru.rutcampustrack.academic.contract.dto.homework.HomeworkSnapshot;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.exception.ConflictException;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 /** Uses the caller's semester/binding transaction and its shared mutation lock. */
 @Component
@@ -35,7 +34,8 @@ public class HomeworkEditHistory {
 
     public byte[] commandHash(UpdateHomeworkRequest request) {
         try {
-            return MessageDigest.getInstance("SHA-256").digest(commandJson(request).getBytes(StandardCharsets.UTF_8));
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(commandJson(request).getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException unavailable) {
             throw new IllegalStateException(unavailable);
         }
@@ -44,19 +44,36 @@ public class HomeworkEditHistory {
     private String commandJson(UpdateHomeworkRequest request) {
         // Preserve exact pre-addition JSON/hash for legacy commands with no new fields.
         var value = mapper.valueToTree(request);
-        if (request.lessonType() == null && request.selectedOccurrenceId() == null && request.selectedOccurrenceRevision() == null) {
-            ((com.fasterxml.jackson.databind.node.ObjectNode) value).remove(java.util.List.of("lessonType", "selectedOccurrenceId", "selectedOccurrenceRevision", "selectedOccurrenceValid"));
+        if (request.lessonType() == null
+                && request.selectedOccurrenceId() == null
+                && request.selectedOccurrenceRevision() == null) {
+            ((com.fasterxml.jackson.databind.node.ObjectNode) value)
+                    .remove(
+                            java.util.List.of(
+                                    "lessonType",
+                                    "selectedOccurrenceId",
+                                    "selectedOccurrenceRevision",
+                                    "selectedOccurrenceValid"));
         }
         return json(value);
     }
 
     public Homework replay(Homework homework, long actor, UUID key, byte[] hash) {
-        List<Receipt> rows = jdbc.query("""
+        List<Receipt> rows =
+                jdbc.query(
+                        """
                 SELECT command_hash, result_revision, result_snapshot::text
                   FROM homework_edit_receipts
                  WHERE homework_id = ? AND actor_id = ? AND request_key = ?
-                """, (rs, index) -> new Receipt(rs.getBytes(1), rs.getLong(2),
-                read(rs.getString(3), HomeworkSnapshot.class)), homework.getId(), actor, key);
+                """,
+                        (rs, index) ->
+                                new Receipt(
+                                        rs.getBytes(1),
+                                        rs.getLong(2),
+                                        read(rs.getString(3), HomeworkSnapshot.class)),
+                        homework.getId(),
+                        actor,
+                        key);
         if (rows.isEmpty()) return null;
         Receipt receipt = rows.getFirst();
         if (!Arrays.equals(receipt.hash(), hash)) {
@@ -65,56 +82,104 @@ public class HomeworkEditHistory {
         return homework.recordedResult(receipt.snapshot(), receipt.revision());
     }
 
-    public void record(Homework homework, long actor, UUID key, byte[] hash,
-                       HomeworkSnapshot before, OffsetDateTime occurredAt, boolean changed) {
+    public void record(
+            Homework homework,
+            long actor,
+            UUID key,
+            byte[] hash,
+            HomeworkSnapshot before,
+            OffsetDateTime occurredAt,
+            boolean changed) {
         HomeworkSnapshot after = homework.snapshot();
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO homework_edit_receipts
                     (homework_id, semester_id, actor_id, request_key, command_hash, result_revision, result_snapshot)
                 VALUES (?, ?, ?, ?, ?, ?, ?::jsonb)
-                """, homework.getId(), homework.getSemesterId(), actor, key, hash, homework.getRevision(), json(after));
+                """,
+                homework.getId(),
+                homework.getSemesterId(),
+                actor,
+                key,
+                hash,
+                homework.getRevision(),
+                json(after));
         if (changed) append(homework, actor, before, occurredAt, "EDITED");
     }
 
-    public void append(Homework homework, long actor, HomeworkSnapshot before,
-                       OffsetDateTime occurredAt, String action) {
-        jdbc.update("""
+    public void append(
+            Homework homework,
+            long actor,
+            HomeworkSnapshot before,
+            OffsetDateTime occurredAt,
+            String action) {
+        jdbc.update(
+                """
                 INSERT INTO homework_edit_history
                     (homework_id, semester_id, revision, actor_id, occurred_at, action, before_snapshot, after_snapshot)
                 VALUES (?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb)
-                """, homework.getId(), homework.getSemesterId(), homework.getRevision(), actor, occurredAt, action,
-                json(before), json(homework.snapshot()));
+                """,
+                homework.getId(),
+                homework.getSemesterId(),
+                homework.getRevision(),
+                actor,
+                occurredAt,
+                action,
+                json(before),
+                json(homework.snapshot()));
     }
 
     public Page<HomeworkHistoryResponse> history(long homeworkId, Pageable requested) {
         // Caller-supplied sort never changes chronological ordering.
-        Pageable page = PageRequest.of(requested.getPageNumber(), Math.min(requested.getPageSize(), 100));
-        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM homework_edit_history WHERE homework_id = ?",
-                Long.class, homeworkId);
-        List<HomeworkHistoryResponse> rows = jdbc.query("""
+        Pageable page =
+                PageRequest.of(requested.getPageNumber(), Math.min(requested.getPageSize(), 100));
+        Long count =
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM homework_edit_history WHERE homework_id = ?",
+                        Long.class,
+                        homeworkId);
+        List<HomeworkHistoryResponse> rows =
+                jdbc.query(
+                        """
                 SELECT history.id, history.revision, history.actor_id, history.occurred_at, history.action,
                        history.before_snapshot::text, history.after_snapshot::text,
                        NULLIF(CONCAT_WS(' ', author.last_name, author.first_name,
                            CASE WHEN author.middle_name IS NULL OR BTRIM(author.middle_name) = ''
                                 THEN NULL ELSE author.middle_name END), '') AS actor_display_name
-                  FROM homework_edit_history history LEFT JOIN users author ON author.id = history.actor_id
+                  FROM homework_edit_history history LEFT JOIN academic_profiles author ON author.id = history.actor_id
                  WHERE history.homework_id = ?
                  ORDER BY history.revision ASC, history.id ASC LIMIT ? OFFSET ?
-                """, (rs, index) -> new HomeworkHistoryResponse(rs.getLong(1), rs.getLong(2),
-                rs.getLong(3), rs.getString(8), rs.getObject(4, OffsetDateTime.class), rs.getString(5),
-                read(rs.getString(6), HomeworkSnapshot.class), read(rs.getString(7), HomeworkSnapshot.class)),
-                homeworkId, page.getPageSize(), page.getOffset());
+                """,
+                        (rs, index) ->
+                                new HomeworkHistoryResponse(
+                                        rs.getLong(1),
+                                        rs.getLong(2),
+                                        rs.getLong(3),
+                                        rs.getString(8),
+                                        rs.getObject(4, OffsetDateTime.class),
+                                        rs.getString(5),
+                                        read(rs.getString(6), HomeworkSnapshot.class),
+                                        read(rs.getString(7), HomeworkSnapshot.class)),
+                        homeworkId,
+                        page.getPageSize(),
+                        page.getOffset());
         return new PageImpl<>(rows, page, count == null ? 0 : count);
     }
 
     private String json(Object value) {
-        try { return mapper.writeValueAsString(value); }
-        catch (JsonProcessingException invalid) { throw new IllegalStateException("homework snapshot encoding failed", invalid); }
+        try {
+            return mapper.writeValueAsString(value);
+        } catch (JsonProcessingException invalid) {
+            throw new IllegalStateException("homework snapshot encoding failed", invalid);
+        }
     }
 
     private <T> T read(String json, Class<T> type) {
-        try { return mapper.readValue(json, type); }
-        catch (JsonProcessingException invalid) { throw new IllegalStateException("homework snapshot decoding failed", invalid); }
+        try {
+            return mapper.readValue(json, type);
+        } catch (JsonProcessingException invalid) {
+            throw new IllegalStateException("homework snapshot decoding failed", invalid);
+        }
     }
 
     private record Receipt(byte[] hash, long revision, HomeworkSnapshot snapshot) {}

@@ -1,11 +1,30 @@
 @import '../../styles/tokens.pcss';
-.admin-shell { min-block-size: 100dvh; background: var(--rct-color-surface-base); }
-.admin-shell[data-dock-visible='true'] { padding-block-end: calc(var(--rct-mobile-dock-height) + var(--rct-mobile-dock-bottom) + var(--rct-space-4) + env(safe-area-inset-bottom)); }
+.admin-shell {
+  min-block-size: 100dvh;
+  background: var(--rct-color-surface-base);
+}
+.admin-shell[data-dock-visible='true'] {
+  padding-block-end: calc(
+    var(--rct-mobile-dock-height) + var(--rct-mobile-dock-bottom) + var(--rct-space-4) +
+      env(safe-area-inset-bottom)
+  );
+}
 
 .admin-shell[data-back-owner='host'] .admin-groups-back,
 .admin-shell[data-back-owner='host'] .admin-semester-back,
-.admin-shell[data-back-owner='host'] .admin-users-screen__header > .admin-users-icon-button[aria-label='Назад'],
-.admin-shell[data-back-owner='host'] .profile-back { display: none; }
-.admin-shell__access-state { box-sizing: border-box; max-inline-size: calc(var(--rct-mobile-content-width) + var(--rct-space-4) * 2); margin: var(--rct-space-4) auto 0; padding-inline: var(--rct-space-4); }
+.admin-shell[data-back-owner='host']
+  .admin-users-screen__header
+  > .admin-users-icon-button[aria-label='Назад'],
+.admin-shell[data-back-owner='host'] .profile-back {
+  display: none;
+}
+.admin-shell__access-state {
+  box-sizing: border-box;
+  max-inline-size: calc(var(--rct-mobile-content-width) + var(--rct-space-4) * 2);
+  margin: var(--rct-space-4) auto 0;
+  padding-inline: var(--rct-space-4);
+}
 
-.admin-shell__back-slot { display: contents; }
+.admin-shell__back-slot {
+  display: contents;
+}

@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-12T07:02:20.463609+00:00",
+  "own_allocated_bytes": 196198400,
+  "final_cap": 201326592,
+  "archive_available_own_budget": 5128192,
+  "free_bytes": 8396857344,
+  "stage_already_charged_budget_bytes": 196198400,
+  "runtime_original_phase_budget": 8277277457,
+  "future_runtime_remaining_budget_including_unspent_final_reserve": 8081079057,
+  "runtime_headroom_after_already_charged_stage": 315778287,
+  "native_PID_absent": true,
+  "transient_files_remaining": 0
+}

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.mobilebff.map;
 
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
@@ -8,8 +9,6 @@ import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MapAcademicClient;
 import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.util.UUID;
 
 /** One role-scoped map reader shared by canonical and compatibility routes. */
 @Service
@@ -32,11 +31,12 @@ public class MapQueryFacade {
         return academic.floorPlan(buildingId, floorId);
     }
 
-    public MapAcademicClient.Download asset(String buildingId,
-                                            String floorId,
-                                            String version,
-                                            StudentMapModels.Format format,
-                                            String assetId) {
+    public MapAcademicClient.Download asset(
+            String buildingId,
+            String floorId,
+            String version,
+            StudentMapModels.Format format,
+            String assetId) {
         requireReadScope();
         return academic.asset(buildingId, floorId, version, format, assetId);
     }
@@ -49,12 +49,14 @@ public class MapQueryFacade {
     private void requireReadScope() {
         InternalJwtClaims claims = requestContext.claims();
         if (claims == null) {
-            throw new MobileBffException(HttpStatus.UNAUTHORIZED, ProblemCode.INVALID_SESSION,
-                    "Сессия недействительна");
+            throw new MobileBffException(
+                    HttpStatus.UNAUTHORIZED, ProblemCode.INVALID_SESSION, "Сессия недействительна");
         }
         if ("STUDENT".equalsIgnoreCase(claims.domainRole())) {
             if (claims.userId() <= 0 || claims.groupId() == null || claims.groupId() <= 0) {
-                throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+                throw new MobileBffException(
+                        HttpStatus.FORBIDDEN,
+                        ProblemCode.OUT_OF_SCOPE,
                         "Не хватает student/group scope для карты");
             }
             return;
@@ -65,7 +67,9 @@ public class MapQueryFacade {
                 && "ACTIVE".equalsIgnoreCase(claims.status())) {
             return;
         }
-        throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.WRONG_ROLE,
+        throw new MobileBffException(
+                HttpStatus.FORBIDDEN,
+                ProblemCode.WRONG_ROLE,
                 "Карта доступна ролям STUDENT и TEACHER");
     }
 

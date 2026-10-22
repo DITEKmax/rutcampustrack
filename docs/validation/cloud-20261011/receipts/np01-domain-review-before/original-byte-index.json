@@ -1,0 +1,131 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_domain_review",
+  "manifest": "immutable-review-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "e199206159dce6e23a22ce31934dc3d5fa1fcc89fb23e4841804d79ec0da4319",
+      "original_bytes": 491,
+      "working_sha256": "e199206159dce6e23a22ce31934dc3d5fa1fcc89fb23e4841804d79ec0da4319",
+      "working_bytes": 491,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "7afe5d6898215b77b4e59cc5625f9ab7e50f8e14a1721d051e14ec46e3acf7a7",
+      "original_bytes": 17638,
+      "working_sha256": "7afe5d6898215b77b4e59cc5625f9ab7e50f8e14a1721d051e14ec46e3acf7a7",
+      "working_bytes": 17638,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "config2-inputs.json",
+      "original_sha256": "4c8ed1b44db5f9974b03ad6eabeb591945d7d9d16abbaa9416b472912f532f26",
+      "original_bytes": 485,
+      "working_sha256": "4c8ed1b44db5f9974b03ad6eabeb591945d7d9d16abbaa9416b472912f532f26",
+      "working_bytes": 485,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "consulted-common-inputs.json",
+      "original_sha256": "34c5ec966a7577c1c215f540c0a81a64ed97cf072341359287e407d7b1f1d267",
+      "original_bytes": 1068,
+      "working_sha256": "34c5ec966a7577c1c215f540c0a81a64ed97cf072341359287e407d7b1f1d267",
+      "working_bytes": 1068,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "dependency-inputs.json",
+      "original_sha256": "9cdd98f12f4f6f17310b885b1329f21424e511915618f04770c64b38507d3d5e",
+      "original_bytes": 2592,
+      "working_sha256": "9cdd98f12f4f6f17310b885b1329f21424e511915618f04770c64b38507d3d5e",
+      "working_bytes": 2592,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.json",
+      "original_sha256": "760912f5cf4a58c4d1203f2cfce6e04417873f2dc8f3ddcda4747824dd4971d5",
+      "original_bytes": 1028,
+      "working_sha256": "760912f5cf4a58c4d1203f2cfce6e04417873f2dc8f3ddcda4747824dd4971d5",
+      "working_bytes": 1028,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "frozen22-inventory.json",
+      "original_sha256": "e20e917eb142ca6615298ff2e6a8b67db31dfe79dc4a8b0ca259e5206cf22068",
+      "original_bytes": 5756,
+      "working_sha256": "e20e917eb142ca6615298ff2e6a8b67db31dfe79dc4a8b0ca259e5206cf22068",
+      "working_bytes": 5756,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "generic-profile-byte-proof.json",
+      "original_sha256": "364e34d4bd543869af877899ef3d3081f7f5cc47c2a9976c33ef484fff3d42bd",
+      "original_bytes": 452,
+      "working_sha256": "364e34d4bd543869af877899ef3d3081f7f5cc47c2a9976c33ef484fff3d42bd",
+      "working_bytes": 452,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "governing-acceptance-inputs.json",
+      "original_sha256": "e1e24029f8ab03eb641b42c3be7ab4dfc928b9392e07842a7eac0e04069d5caa",
+      "original_bytes": 3083,
+      "working_sha256": "e1e24029f8ab03eb641b42c3be7ab4dfc928b9392e07842a7eac0e04069d5caa",
+      "working_bytes": 3083,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "previous-seals-unchanged.json",
+      "original_sha256": "4c2d0b2807c80a19df8e8254f55a2fe11b788c0303c9c19255c91b82c858304e",
+      "original_bytes": 353,
+      "working_sha256": "4c2d0b2807c80a19df8e8254f55a2fe11b788c0303c9c19255c91b82c858304e",
+      "working_bytes": 353,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "python-static-syntax.json",
+      "original_sha256": "672b81ce7c0d20c8640e103d8a4dd892d0b9460cf22e7c9a1b6b5aba02758192",
+      "original_bytes": 1631,
+      "working_sha256": "672b81ce7c0d20c8640e103d8a4dd892d0b9460cf22e7c9a1b6b5aba02758192",
+      "working_bytes": 1631,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-proof.py",
+      "original_sha256": "34dd422d6c7e99c3455c79b2ff494fff595b79cc00d4491fa54ae6ffefd0131e",
+      "original_bytes": 6998,
+      "working_sha256": "34dd422d6c7e99c3455c79b2ff494fff595b79cc00d4491fa54ae6ffefd0131e",
+      "working_bytes": 6998,
+      "transformation": "byte equal; copied source preserved losslessly in read-only wrapper",
+      "working_path": "source-proof.py.readable.zip",
+      "working_archive_member": "source-proof.py",
+      "working_container_sha256": "123f1ccfc259f324b28378c8fca9b2559aed3dc0b1741b9354a4f9500c3ba536",
+      "working_container_bytes": 2544
+    },
+    {
+      "path": "source-review-summary.json",
+      "original_sha256": "7188e841cc0b0e1c9bfd6176428bdfab19fc10c34d1b7a118200776a91f9e093",
+      "original_bytes": 615,
+      "working_sha256": "7188e841cc0b0e1c9bfd6176428bdfab19fc10c34d1b7a118200776a91f9e093",
+      "working_bytes": 615,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification-dependencies.json",
+      "original_sha256": "b82675957a74cdc0ae8a056c9276cba0900e28845474fa161d84fde946c96471",
+      "original_bytes": 1736,
+      "working_sha256": "b82675957a74cdc0ae8a056c9276cba0900e28845474fa161d84fde946c96471",
+      "working_bytes": 1736,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "original_sha256": "42a2d450f6746ea21112518ed676250973ad1de2d98a05383f58e96d59cdc519",
+      "original_bytes": 2501,
+      "working_sha256": "42a2d450f6746ea21112518ed676250973ad1de2d98a05383f58e96d59cdc519",
+      "working_bytes": 2501,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

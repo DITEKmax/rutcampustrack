@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-10-12T02:29:23.973660+00:00",
+  "disposition": "APPROVE",
+  "findings": [],
+  "scope": "Exactly scripts/format-authored.mjs atf09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+  "author_commit": "f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+  "source_identity": {
+    "path": "scripts/format-authored.mjs",
+    "sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960",
+    "bytes": 8764
+  },
+  "assessment": "Only precise37set-membership exclusions added; subtracting the exact sets/guards recovers complete previoussourcebytes including parsers/drivers/versions. No general receipt/fixture/doc/source-directory exclusion.",
+  "independent_proofs": "33exact copies rehashed and originalassociated identity verified:31 ZIPmembers+manifests,2 manifest-only artifactidentity records. Four precise separate-root-owner source/hash registries preserved.",
+  "retained_coverage": "Root25668 snapshot7334 paths: actualbuild.gradle.kts Spotless-policy Java1581 matches classifier; six SQLtargets retained; ten maintainedpositivecontrols including build-matrix.py/newhelper/fixtureTS/landingdist/PCSS/Vue unchanged. V56/V57 migrations and generatedPB exclusions preserved.",
+  "probe_qualification": "Node subprocess EPERM on initial Git extraction; read frozen Git blobs through separate Python step then pureNodeclassification PASS. No source/product change, dependency installation or formatterrun.",
+  "limits": [
+    "Source/inventoryapproval only; massformat/parser/lint/build outputs not claimed.",
+    "1581 describes the recorded root25668 snapshot; refresh final integrated inventory before formatting.",
+    "Two manifest-only helpers have exact recorded artifact identity; no ZIP proof claimed for them."
+  ],
+  "input_checks": [
+    "classifier-independent-check.safe.json",
+    "classifier-original-proof-recheck.safe.json"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "reviewer_source_edits": 0,
+  "reviewer_heavy_reruns": 0
+}

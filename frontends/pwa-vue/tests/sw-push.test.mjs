@@ -10,7 +10,12 @@ function worker() {
   const opened = []
   const sent = []
   const scope = 'https://campus.example/app/'
-  const windowClient = { id: 'tab', url: scope, focus: async () => {}, postMessage: (value) => sent.push(value) }
+  const windowClient = {
+    id: 'tab',
+    url: scope,
+    focus: async () => {},
+    postMessage: (value) => sent.push(value),
+  }
   let windows = []
   let stored = null
   const indexedDB = {
@@ -19,11 +24,25 @@ function worker() {
       request.result = {
         close() {},
         transaction() {
-          const tx = { objectStore: () => ({
-            get: () => { const query = { result: stored }; queueMicrotask(() => tx.oncomplete()); return query },
-            put: (value) => { stored = value; queueMicrotask(() => tx.oncomplete()); return {} },
-            delete: () => { stored = null; queueMicrotask(() => tx.oncomplete()); return {} },
-          }) }
+          const tx = {
+            objectStore: () => ({
+              get: () => {
+                const query = { result: stored }
+                queueMicrotask(() => tx.oncomplete())
+                return query
+              },
+              put: (value) => {
+                stored = value
+                queueMicrotask(() => tx.oncomplete())
+                return {}
+              },
+              delete: () => {
+                stored = null
+                queueMicrotask(() => tx.oncomplete())
+                return {}
+              },
+            }),
+          }
           return tx
         },
       }
@@ -32,33 +51,73 @@ function worker() {
     },
   }
   runInNewContext(source, {
-    indexedDB, URL, importScripts() {},
+    indexedDB,
+    URL,
+    importScripts() {},
     self: {
-      location: new URL(`${scope}sw.js`), registration: {
+      location: new URL(`${scope}sw.js`),
+      registration: {
         scope,
-        showNotification: async (title, options) => { notifications.push({ title, ...options, close() { this.closed = true } }) },
+        showNotification: async (title, options) => {
+          notifications.push({
+            title,
+            ...options,
+            close() {
+              this.closed = true
+            },
+          })
+        },
         getNotifications: async () => notifications,
       },
-      clients: { get: async () => windowClient, matchAll: async () => windows, openWindow: async (url) => opened.push(url) },
+      clients: {
+        get: async () => windowClient,
+        matchAll: async () => windows,
+        openWindow: async (url) => opened.push(url),
+      },
       addEventListener: (type, handler) => handlers.set(type, handler),
     },
   })
   async function dispatch(type, fields) {
     let pending
-    handlers.get(type)({ ...fields, waitUntil: (promise) => { pending = promise } })
+    handlers.get(type)({
+      ...fields,
+      waitUntil: (promise) => {
+        pending = promise
+      },
+    })
     await pending
   }
   return {
-    notifications, opened, sent,
-    setWindows: () => { windows = [windowClient] },
-    bind: (binding) => dispatch('message', { source: { id: 'tab' }, data: { type: 'RCT_PUSH_BIND', binding }, ports: [{ postMessage() {} }] }),
-    clear: (binding) => dispatch('message', { source: { id: 'tab' }, data: { type: 'RCT_PUSH_CLEAR', binding }, ports: [{ postMessage() {} }] }),
+    notifications,
+    opened,
+    sent,
+    setWindows: () => {
+      windows = [windowClient]
+    },
+    bind: (binding) =>
+      dispatch('message', {
+        source: { id: 'tab' },
+        data: { type: 'RCT_PUSH_BIND', binding },
+        ports: [{ postMessage() {} }],
+      }),
+    clear: (binding) =>
+      dispatch('message', {
+        source: { id: 'tab' },
+        data: { type: 'RCT_PUSH_CLEAR', binding },
+        ports: [{ postMessage() {} }],
+      }),
     push: (payload) => dispatch('push', { data: { json: () => payload } }),
     click: (notification) => dispatch('notificationclick', { notification }),
   }
 }
 const fingerprint = 'a'.repeat(64)
-const payload = { title: 'Новое ДЗ', body: 'Проверь задание', recipientUserId: '1', subscriptionFingerprint: fingerprint, data: { url: 'https://hostile.example/' } }
+const payload = {
+  title: 'Новое ДЗ',
+  body: 'Проверь задание',
+  recipientUserId: '1',
+  subscriptionFingerprint: fingerprint,
+  data: { url: 'https://hostile.example/' },
+}
 
 test('worker fails closed for malformed, unbound, old-account and retired-endpoint payloads', async () => {
   const w = worker()
@@ -113,10 +172,11 @@ test('late compare-and-clear cannot disable a different account or endpoint bind
   assert.equal(w.notifications.length, 1)
 })
 
-
 test('bounded action forwarding keeps recipient admission for new and existing windows', async () => {
   const w = worker()
-  const action = Buffer.from(JSON.stringify({ v: 2, action: { kind: 'group', role: 'ADMIN', groupId: '22' } })).toString('base64url')
+  const action = Buffer.from(
+    JSON.stringify({ v: 2, action: { kind: 'group', role: 'ADMIN', groupId: '22' } }),
+  ).toString('base64url')
   await w.bind({ userId: '1', fingerprint })
   await w.push({ ...payload, notificationAction: action })
   await w.click(w.notifications[0])
@@ -136,7 +196,12 @@ test('bounded action forwarding keeps recipient admission for new and existing w
 test('worker drops object, URL and oversized actions without accepting them as navigation', async () => {
   const w = worker()
   await w.bind({ userId: '1', fingerprint })
-  for (const notificationAction of [{ kind: 'group' }, 'https://hostile.example', 'a'.repeat(385), '']) {
+  for (const notificationAction of [
+    { kind: 'group' },
+    'https://hostile.example',
+    'a'.repeat(385),
+    '',
+  ]) {
     await w.push({ ...payload, notificationAction })
     const notification = w.notifications.at(-1)
     assert.equal('notificationAction' in notification.data, false)

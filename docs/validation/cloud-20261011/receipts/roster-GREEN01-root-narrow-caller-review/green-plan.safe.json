@@ -1,0 +1,46 @@
+{
+  "lease": "ROSTER_ACADEMIC_GREEN01",
+  "base": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "worktree": "/workspace/rct-worktrees/roster-academic-auth-backend",
+  "run": "/tmp/rct-roster-academic-green-20261013-attempt01",
+  "test_path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HeadmanJournalSemesterTransportTest.java",
+  "test_sha256": "c377f4cf857dc6910794934b39467e9d214ad11176334dc4b9a3c81e2726df75",
+  "guard_path": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "gradle_arguments": [
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:attendance-service:attendance-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:attendance-service:attendance-app:compileTestJava",
+    ":services:academic-service:academic-app:test",
+    "--tests",
+    "ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterTransportTest",
+    ":services:attendance-service:attendance-app:test",
+    "--tests",
+    "ru.rutcampustrack.attendance.grpc.HeadmanJournalSemesterClientTransportTest",
+    "--tests",
+    "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "--tests",
+    "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest"
+  ],
+  "expected_native_exit": 0,
+  "runtime_scope": "Both modules main/test compile then exactly4selected unit classes, realNetty ephemeral loopback; no DB/Docker/app",
+  "source_manifest": "formatted-source13-manifest.safe.json",
+  "source_manifest_sha256": "f8cf8c4be77550d86de02f4687c508742e84b05171600c62bccc61149c1641a9",
+  "required_xml_classes": {
+    "services/academic-service/academic-app": [
+      "ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterTransportTest"
+    ],
+    "services/attendance-service/attendance-app": [
+      "ru.rutcampustrack.attendance.grpc.HeadmanJournalSemesterClientTransportTest",
+      "ru.rutcampustrack.attendance.report.ReportServiceTest",
+      "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest"
+    ]
+  }
+}

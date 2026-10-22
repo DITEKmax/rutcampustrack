@@ -1,103 +1,135 @@
 package ru.rutcampustrack.academic.contract.dto.homework;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
 import java.time.LocalDate;
 import java.util.UUID;
-import jakarta.validation.constraints.AssertTrue;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /**
  * Request DTO for creating a new homework assignment.
  *
- * <p>Phase 61 / D-01, D-03: {@code lessonDate} + {@code lessonNumber} образуют natural key пары,
- * к которой привязывается ДЗ. {@code @FutureOrPresent} сверяется по {@link java.time.Clock} bean,
- * но быстрая Bean Validation-проверка добавляет ещё один слой защиты (pitfall: при массовых
+ * <p>Phase 61 / D-01, D-03: {@code lessonDate} + {@code lessonNumber} образуют natural key пары, к
+ * которой привязывается ДЗ. {@code @FutureOrPresent} сверяется по {@link java.time.Clock} bean, но
+ * быстрая Bean Validation-проверка добавляет ещё один слой защиты (pitfall: при массовых
  * неправильных заявках не доходим до БД / gRPC).
  */
 @Schema(description = "Запрос на создание нового домашнего задания (HEADMAN/ASSISTANT)")
 public record CreateHomeworkRequest(
-
-        @Schema(description = "Название задания",
-                example = "Интегралы 1-5",
-                requiredMode = Schema.RequiredMode.REQUIRED,
-                maxLength = 255)
-        @NotBlank(message = "Название задания обязательно")
-        @Size(max = 255)
-        String title,
-
-        @Schema(description = "Описание задания (опционально)",
-                example = "Решить задачи 1-5 из учебника Демидовича",
-                maxLength = 4000)
-        @Size(max = 4000)
-        String description,
-
-        @Schema(description = "Ссылка на материалы (опционально)",
-                example = "https://example.com/homework.pdf",
-                maxLength = 2048)
-        @Size(max = 2048)
-        String link,
-
-        @Schema(description = "ID предмета", example = "42",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "ID предмета обязателен")
-        Long subjectId,
-
-        @Schema(description = "ID группы", example = "42",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "ID группы обязателен")
-        Long groupId,
-
-        @Schema(description = "ID семестра", example = "42",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "ID семестра обязателен")
-        Long semesterId,
-
-        @Schema(description = "Дата пары (не в прошлом)", example = "2026-04-24",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "Дата пары обязательна")
-        LocalDate lessonDate,
-
-        @Schema(description = "Номер пары (1..8)", example = "3",
-                minimum = "1", maximum = "8")
-        @Min(value = 1, message = "Номер пары должен быть в диапазоне 1..8")
-        @Max(value = 8, message = "Номер пары должен быть в диапазоне 1..8")
-        Integer lessonNumber,
-
-        @Schema(description = "Ключ идемпотентности команды (повтор запроса продолжает ту же публикацию)",
-                example = "4d1f2f1f-42f0-4e9a-a9d4-fd5cbf9f9e1f")
-        UUID requestKey,
-
+        @Schema(
+                        description = "Название задания",
+                        example = "Интегралы 1-5",
+                        requiredMode = Schema.RequiredMode.REQUIRED,
+                        maxLength = 255)
+                @NotBlank(message = "Название задания обязательно")
+                @Size(max = 255)
+                String title,
+        @Schema(
+                        description = "Описание задания (опционально)",
+                        example = "Решить задачи 1-5 из учебника Демидовича",
+                        maxLength = 4000)
+                @Size(max = 4000)
+                String description,
+        @Schema(
+                        description = "Ссылка на материалы (опционально)",
+                        example = "https://example.com/homework.pdf",
+                        maxLength = 2048)
+                @Size(max = 2048)
+                String link,
+        @Schema(
+                        description = "ID предмета",
+                        example = "42",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull(message = "ID предмета обязателен")
+                Long subjectId,
+        @Schema(
+                        description = "ID группы",
+                        example = "42",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull(message = "ID группы обязателен")
+                Long groupId,
+        @Schema(
+                        description = "ID семестра",
+                        example = "42",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull(message = "ID семестра обязателен")
+                Long semesterId,
+        @Schema(
+                        description = "Дата пары (не в прошлом)",
+                        example = "2026-04-24",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull(message = "Дата пары обязательна")
+                LocalDate lessonDate,
+        @Schema(description = "Номер пары (1..8)", example = "3", minimum = "1", maximum = "8")
+                @Min(value = 1, message = "Номер пары должен быть в диапазоне 1..8")
+                @Max(value = 8, message = "Номер пары должен быть в диапазоне 1..8")
+                Integer lessonNumber,
+        @Schema(
+                        description =
+                                "Ключ идемпотентности команды (повтор запроса продолжает ту же публикацию)",
+                        example = "4d1f2f1f-42f0-4e9a-a9d4-fd5cbf9f9e1f")
+                UUID requestKey,
         @Schema(description = "Привязка к паре LESSON (по умолчанию) или к календарному дню DATE")
-        HomeworkBindingMode bindingMode,
-        @Schema(description = "Тип занятия для DATE; для LESSON должен совпадать с выбранной парой") @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) SubjectType lessonType,
-        @Min(1) @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Long selectedOccurrenceId,
-        @Min(1) @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Long selectedOccurrenceRevision
-) {
+                HomeworkBindingMode bindingMode,
+        @Schema(description = "Тип занятия для DATE; для LESSON должен совпадать с выбранной парой")
+                @com.fasterxml.jackson.annotation.JsonInclude(
+                        com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                SubjectType lessonType,
+        @Min(1)
+                @com.fasterxml.jackson.annotation.JsonInclude(
+                        com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                Long selectedOccurrenceId,
+        @Min(1)
+                @com.fasterxml.jackson.annotation.JsonInclude(
+                        com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                Long selectedOccurrenceRevision) {
     public CreateHomeworkRequest {
         if (bindingMode == null) bindingMode = HomeworkBindingMode.LESSON;
     }
 
-    public CreateHomeworkRequest(String title, String description, String link, Long subjectId, Long groupId,
-                                 Long semesterId, LocalDate lessonDate, Integer lessonNumber, UUID requestKey,
-                                 HomeworkBindingMode bindingMode) {
-        this(title, description, link, subjectId, groupId, semesterId, lessonDate, lessonNumber, requestKey,
-                bindingMode, null, null, null);
+    public CreateHomeworkRequest(
+            String title,
+            String description,
+            String link,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            LocalDate lessonDate,
+            Integer lessonNumber,
+            UUID requestKey,
+            HomeworkBindingMode bindingMode) {
+        this(
+                title,
+                description,
+                link,
+                subjectId,
+                groupId,
+                semesterId,
+                lessonDate,
+                lessonNumber,
+                requestKey,
+                bindingMode,
+                null,
+                null,
+                null);
     }
 
     @AssertTrue(message = "Выбранная пара требует согласованные occurrence ID/revision и LESSON")
     @JsonIgnore
     public boolean isSelectedOccurrenceValid() {
         return (selectedOccurrenceId == null && selectedOccurrenceRevision == null)
-                || bindingMode == HomeworkBindingMode.LESSON && selectedOccurrenceId != null
-                && selectedOccurrenceRevision != null && selectedOccurrenceId > 0 && selectedOccurrenceRevision > 0;
+                || bindingMode == HomeworkBindingMode.LESSON
+                        && selectedOccurrenceId != null
+                        && selectedOccurrenceRevision != null
+                        && selectedOccurrenceId > 0
+                        && selectedOccurrenceRevision > 0;
     }
 
     @AssertTrue(message = "LESSON требует номер пары; DATE не допускает номер пары")
@@ -108,17 +140,49 @@ public record CreateHomeworkRequest(
                 : lessonNumber != null && lessonNumber >= 1 && lessonNumber <= 8;
     }
 
-    public CreateHomeworkRequest(String title, String description, String link,
-                                 Long subjectId, Long groupId, Long semesterId,
-                                 LocalDate lessonDate, Integer lessonNumber, UUID requestKey) {
-        this(title, description, link, subjectId, groupId, semesterId,
-                lessonDate, lessonNumber, requestKey, HomeworkBindingMode.LESSON);
+    public CreateHomeworkRequest(
+            String title,
+            String description,
+            String link,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            LocalDate lessonDate,
+            Integer lessonNumber,
+            UUID requestKey) {
+        this(
+                title,
+                description,
+                link,
+                subjectId,
+                groupId,
+                semesterId,
+                lessonDate,
+                lessonNumber,
+                requestKey,
+                HomeworkBindingMode.LESSON);
     }
+
     /** Backward-compatible source constructor for clients that omit the key. */
-    public CreateHomeworkRequest(String title, String description, String link,
-                                 Long subjectId, Long groupId, Long semesterId,
-                                 LocalDate lessonDate, Integer lessonNumber) {
-        this(title, description, link, subjectId, groupId, semesterId,
-                lessonDate, lessonNumber, null, HomeworkBindingMode.LESSON);
+    public CreateHomeworkRequest(
+            String title,
+            String description,
+            String link,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            LocalDate lessonDate,
+            Integer lessonNumber) {
+        this(
+                title,
+                description,
+                link,
+                subjectId,
+                groupId,
+                semesterId,
+                lessonDate,
+                lessonNumber,
+                null,
+                HomeworkBindingMode.LESSON);
     }
 }

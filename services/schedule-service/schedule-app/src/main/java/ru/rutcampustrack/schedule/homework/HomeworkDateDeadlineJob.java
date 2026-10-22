@@ -10,9 +10,14 @@ import org.springframework.stereotype.Component;
 @Profile("!test")
 public class HomeworkDateDeadlineJob {
     private final HomeworkPlacementService placement;
-    public HomeworkDateDeadlineJob(HomeworkPlacementService placement) { this.placement = placement; }
+
+    public HomeworkDateDeadlineJob(HomeworkPlacementService placement) {
+        this.placement = placement;
+    }
 
     @Scheduled(fixedDelay = 30_000)
     @SchedulerLock(name = "homework-date-deadline", lockAtMostFor = "PT2M", lockAtLeastFor = "PT5S")
-    public void archiveDueDates() { placement.archiveExpiredDates(); }
+    public void archiveDueDates() {
+        placement.archiveExpiredDates();
+    }
 }

@@ -5,9 +5,9 @@ import net.devh.boot.grpc.server.advice.GrpcAdvice;
 import net.devh.boot.grpc.server.advice.GrpcExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
-import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
+import ru.rutcampustrack.schedule.exception.ConflictException;
+import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 
 @GrpcAdvice
 public class GrpcExceptionAdvice {

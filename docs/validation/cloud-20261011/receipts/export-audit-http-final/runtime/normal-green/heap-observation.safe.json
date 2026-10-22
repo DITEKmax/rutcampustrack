@@ -1,0 +1,38 @@
+{
+  "time": "2026-10-12T02:55:24.433685+00:00",
+  "own_runner_pid": 186740,
+  "own_java": [
+    {
+      "pid": 186750,
+      "ppid": 186740,
+      "comm": "java",
+      "state": "S",
+      "heap_flags": [
+        "-Xmx64m",
+        "-Xms64m"
+      ],
+      "role": "Gradle wrapper"
+    },
+    {
+      "pid": 186790,
+      "ppid": 186750,
+      "comm": "java",
+      "state": "S",
+      "heap_flags": [
+        "-XX:MaxMetaspaceSize=384m",
+        "-Xmx768m"
+      ],
+      "role": "Gradle daemon"
+    },
+    {
+      "pid": 187017,
+      "ppid": 186790,
+      "comm": "java",
+      "state": "S",
+      "heap_flags": [
+        "-Xmx768m"
+      ],
+      "role": "test worker"
+    }
+  ]
+}

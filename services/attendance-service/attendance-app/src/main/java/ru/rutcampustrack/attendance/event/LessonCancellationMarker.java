@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.event;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,8 +10,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.Instant;
-
 /** Durable terminal cancellation authority keyed by the physical lesson id. */
 @Document(collection = "lesson_cancellation_markers")
 @Getter
@@ -19,8 +18,7 @@ import java.time.Instant;
 @AllArgsConstructor
 public class LessonCancellationMarker {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     @Indexed(unique = true)
     @Field("lesson_id")

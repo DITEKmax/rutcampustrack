@@ -1,260 +1,962 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.grpc.Status;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import ru.rutcampustrack.academic.assistant.AssistantService;
+import ru.rutcampustrack.academic.contract.dto.IdentityOperationHttpModels;
+import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.*;
 import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.*;
 import ru.rutcampustrack.academic.contract.enums.*;
-import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
-import ru.rutcampustrack.academic.assistant.AssistantService;
-import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
-import ru.rutcampustrack.academic.exception.AccessDeniedException;
-import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.group.GroupService;
-import ru.rutcampustrack.academic.security.RequestContext;
-import ru.rutcampustrack.academic.user.*;
-import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
+import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicIdentityPendingException;
+import ru.rutcampustrack.academic.identityoperation.JdbcAcademicIdentityOperationStore;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
+import ru.rutcampustrack.academic.user.*;
 import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import static org.awaitility.Awaitility.await;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.*;
 
+@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
-    private static final String OWNED_SEMESTER_NAME="user-archive-"+UUID.randomUUID();
+    private static final String OWNED_SEMESTER_NAME = "user-archive-" + UUID.randomUUID();
     @Autowired JdbcTemplate jdbc;
+    @Autowired MockMvc mockMvc;
     @Autowired UserService users;
     @Autowired GroupService groups;
-    @Autowired UserArchiveRepository repository;
-    @Autowired AcademicAdminAccess adminAccess;
+    @MockitoSpyBean UserArchiveRepository repository;
+    @MockitoSpyBean JdbcAcademicIdentityOperationStore identityOperationStore;
     @Autowired UserRoleGrantReader grants;
     @Autowired PlatformTransactionManager transactionManager;
-    @Autowired org.springframework.context.ApplicationEventPublisher eventPublisher;
-    @Autowired GroupRepository groupRepository;
-    @Autowired UserRepository userRepository;
-    @Autowired UserRoleGrantRepository roleGrantRepository;
+    @MockitoSpyBean GroupRepository groupRepository;
     @Autowired HeadmanAssistantRepository assistantRepository;
-    private final AuthUserArchiveClient auth=mock(AuthUserArchiveClient.class);
-    private final AttendanceUserImpactGrpcClient attendance=mock(AttendanceUserImpactGrpcClient.class);
-    private final RequestContext context=mock(RequestContext.class);
-    private long owner,target,semester,group;
+    @Autowired AssistantService assistant;
+    @Autowired UserArchiveService service;
+    @Autowired ru.rutcampustrack.academic.security.AcademicLiveSessionClient liveSessions;
+    @MockitoSpyBean AuthUserArchiveClient auth;
+    @MockitoBean AttendanceUserImpactGrpcClient attendance;
+    private long owner, target, semester, group;
     private UUID session;
-    private UserArchiveService service;
+    private SelectedActor adminActor, studentActor, headmanActor;
     private LocalDate today;
 
-    @BeforeEach void seedOwnedLifecycle() {
-        today=LocalDate.now(ZoneId.of("Europe/Moscow"));
+    @BeforeEach
+    void seedOwnedLifecycle() {
+        today = LocalDate.now(ZoneId.of("Europe/Moscow"));
         jdbc.update("UPDATE semesters SET is_active=FALSE WHERE is_active");
-        var ownedSemesters=jdbc.queryForList("SELECT id FROM semesters WHERE name=?",Long.class,OWNED_SEMESTER_NAME);
+        var ownedSemesters =
+                jdbc.queryForList(
+                        "SELECT id FROM semesters WHERE name=?", Long.class, OWNED_SEMESTER_NAME);
         if (ownedSemesters.isEmpty()) {
-            semester=jdbc.queryForObject("INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,TRUE,NOW()) RETURNING id",
-                    Long.class,OWNED_SEMESTER_NAME,today.minusDays(5),today.plusDays(5));
+            semester =
+                    jdbc.queryForObject(
+                            "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
+                                    + " VALUES(?,?,?,TRUE,NOW()) RETURNING id",
+                            Long.class,
+                            OWNED_SEMESTER_NAME,
+                            today.minusDays(5),
+                            today.plusDays(5));
         } else {
-            semester=ownedSemesters.getFirst();
-            jdbc.update("UPDATE semesters SET is_active=TRUE WHERE id=?",semester);
+            semester = ownedSemesters.getFirst();
+            jdbc.update("UPDATE semesters SET is_active=TRUE WHERE id=?", semester);
         }
-        group=groups.createGroup(new CreateGroupRequest("УАР-11"+Math.floorMod(System.nanoTime(),10))).getId();
-        owner=jdbc.queryForObject("""
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
-                VALUES (?, 'synthetic-hash','Archive','Admin','admin','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """,Long.class,"archive-admin-"+UUID.randomUUID().toString().substring(0,8));
-        jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
-                + "VALUES(?,TRUE,'FULL','{}',1)", owner);
-        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'admin','active',NOW(),NOW())",owner);
-        target=users.createUser(new CreateUserRequest("Archive","Student",null,UserRole.STUDENT,group,null,
-                Math.abs(System.nanoTime())+100000)).getContent().getId();
-        users.updateRoleGrant(target,"TEACHER",new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE,null,"archive-employee-"+target,null));
-        jdbc.update("UPDATE users SET is_headman=TRUE WHERE id=?",target);
-        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) VALUES(?,'headman','active',?,NOW(),NOW())",target,group);
-        session=UUID.randomUUID();
-        jdbc.update("""
-                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)
-                VALUES (?,?,(SELECT id FROM user_role_grants WHERE user_id=? AND role='student'),1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-                """,session,target,target,UUID.randomUUID());
-        when(context.getUserId()).thenReturn(owner); when(context.getRole()).thenReturn(UserRole.ADMIN);
-        when(attendance.preview(target)).thenReturn(UserImpactSnapshot.newBuilder().setUserId(target)
-                .setAttendanceMarksCount(7).setObservedAtEpochMs(Instant.now().toEpochMilli()).setSnapshotDigest("b".repeat(64)).build());
-        service=new UserArchiveService(repository,users,auth,attendance,context,transactionManager,null,eventPublisher);
+        group =
+                groups.createGroup(
+                                new CreateGroupRequest(
+                                        "УАР-11" + Math.floorMod(System.nanoTime(), 10)))
+                        .getId();
+        owner = identityFixture.canonical().adminId();
+        adminActor = identityFixture.select(owner, AuthRole.ADMIN);
+        target =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Archive",
+                                        "Student",
+                                        null,
+                                        UserRole.STUDENT,
+                                        group,
+                                        null,
+                                        610000008001L),
+                                adminActor)
+                        .userId();
+        try (var scope = identityFixture.request(adminActor)) {
+            users.updateRoleGrant(
+                    target,
+                    "TEACHER",
+                    new RoleGrantUpdateRequest(
+                            RoleGrantStatus.ACTIVE, null, "archive-employee-" + target, null));
+        }
+        try (var scope = identityFixture.request(adminActor)) {
+            users.patchUser(
+                    target, new PatchUserRequest(null, null, null, true, null, null, null, null));
+        }
+        studentActor = identityFixture.select(target, AuthRole.STUDENT);
+        headmanActor = identityFixture.select(target, AuthRole.HEADMAN);
+        session = studentActor.sessionId();
+        when(attendance.preview(target))
+                .thenReturn(
+                        UserImpactSnapshot.newBuilder()
+                                .setUserId(target)
+                                .setAttendanceMarksCount(7)
+                                .setObservedAtEpochMs(Instant.now().toEpochMilli())
+                                .setSnapshotDigest("b".repeat(64))
+                                .build());
+    }
+
+    private Preview preview(long user) {
+        try (var scope = identityFixture.request(adminActor)) {
+            return service.preview(user);
+        }
+    }
+
+    private void archive(long user, ArchiveRequest request) {
+        try (var scope = identityFixture.request(adminActor, request.operationId())) {
+            service.archive(user, request);
+        }
+    }
+
+    private void restore(long user, RestoreRequest request) {
+        try (var scope = identityFixture.request(adminActor, request.operationId())) {
+            service.restore(user, request);
+        }
+    }
+
+    private void requireOldSessionDenied() throws Exception {
+        assertThatThrownBy(() -> liveSessions.admit(studentActor.claims()))
+                .satisfies(
+                        failure ->
+                                assertThat(Status.fromThrowable(failure).getCode())
+                                        .isEqualTo(Status.Code.PERMISSION_DENIED));
+        mockMvc.perform(get("/academic/users/me").with(identityFixture.signed(studentActor)))
+                .andExpect(status().isUnauthorized());
     }
 
     // The owned reset precedes each test. Retained profiles/history are not
     // deleted through application tables as teardown (V51 uses RESTRICT).
 
-    @Test void protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment() {
-        var before=jdbc.queryForMap("SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",target);
-        var grantIds=jdbc.queryForList("SELECT id FROM user_role_grants WHERE user_id=? ORDER BY id",Long.class,target);
-        Preview preview=service.preview(target);
+    @Test
+    void protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment() throws Exception {
+        // Reuse HomeworkStudentCompletionConcurrencyIT's persisted fixture shape.
+        // This is retained personal history, not a new homework-creation flow.
+        long subject =
+                jdbc.queryForObject(
+                        """
+                        WITH subject AS (
+                            INSERT INTO subjects(name,type,group_id)
+                            VALUES (?, 'lecture', ?) RETURNING id,type
+                        ), lesson_type AS (
+                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                            SELECT id,type FROM subject RETURNING subject_id
+                        ) SELECT subject_id FROM lesson_type
+                        """,
+                        Long.class,
+                        "Archive retained homework " + UUID.randomUUID(),
+                        group);
+        OffsetDateTime completedAt =
+                today.minusDays(1).atTime(19, 23, 41).atOffset(ZoneOffset.ofHours(3));
+        long homework =
+                jdbc.queryForObject(
+                        """
+INSERT INTO homeworks(group_id,subject_id,semester_id,lesson_date,lesson_number,
+    title,description,link,published_by,binding_id,actor_id,request_key,payload_hash,
+    publication_state,created_at,updated_at)
+VALUES(?,?,?,?,1,?,?,?, ?,?,?,?,decode(repeat('11',32),'hex'),'ACTIVE',?,?)
+RETURNING id
+""",
+                        Long.class,
+                        group,
+                        subject,
+                        semester,
+                        today.minusDays(1),
+                        "Сохранённое задание",
+                        "Личная история до архивации аккаунта",
+                        "https://example.invalid/retained-homework",
+                        target,
+                        subject,
+                        target,
+                        UUID.randomUUID(),
+                        completedAt.minusHours(4),
+                        completedAt.minusHours(4));
+        long completion =
+                jdbc.queryForObject(
+                        "INSERT INTO homework_completions(homework_id,student_id,completed_at)"
+                                + " VALUES(?,?,?) RETURNING id",
+                        Long.class,
+                        homework,
+                        target,
+                        completedAt);
+        String retainedHomeworkSql =
+                """
+                SELECT to_jsonb(h)::text AS homework, to_jsonb(c)::text AS completion
+                FROM homeworks h JOIN homework_completions c ON c.homework_id=h.id
+                WHERE h.id=? AND c.id=? AND c.student_id=?
+                """;
+        var retainedHomework = jdbc.queryForList(retainedHomeworkSql, homework, completion, target);
+        assertThat(retainedHomework).hasSize(1);
+        var before =
+                identityFixture
+                        .authJdbc()
+                        .queryForMap(
+                                "SELECT login,password_hash,initial_password,telegram_id FROM"
+                                        + " auth_identities WHERE id=?",
+                                target);
+        var grantIds =
+                identityFixture
+                        .authJdbc()
+                        .queryForList(
+                                "SELECT id FROM user_role_grants WHERE user_id=? ORDER BY id",
+                                Long.class,
+                                target);
+        Preview preview = preview(target);
         assertThat(preview.attendanceMarksCount()).isEqualTo(7);
         assertThat(preview.linkedGroupCount()).isEqualTo(1);
         assertThat(preview.requiresPassword()).isTrue();
-        ArchiveRequest request=new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic-password");
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN,"denied")).when(auth).confirm(target,request.operationId(),request.previewDigest(),request.password());
-        assertThatThrownBy(()->service.archive(target,request)).isInstanceOf(ResponseStatusException.class);
+        var beforeProof =
+                java.util.List.of(
+                        jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target),
+                        jdbc.queryForList(
+                                "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
+                                target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForMap("SELECT * FROM auth_identities WHERE id=?", target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id=? ORDER BY"
+                                                + " id",
+                                        target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForMap("SELECT * FROM auth_sessions WHERE sid=?", session),
+                        jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class));
+        ArchiveRequest denied =
+                new ArchiveRequest(
+                        UUID.randomUUID(), preview.previewDigest(), "synthetic-wrong-password");
+        assertThatThrownBy(() -> archive(target, denied))
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        failure ->
+                                assertThat(failure.getStatusCode())
+                                        .isEqualTo(HttpStatus.FORBIDDEN));
         assertThat(repository.observe(target).status()).isEqualTo("active");
-        reset(auth);
-        UserArchiveRepository failing=spy(archiveRepositoryWithAuthority());
-        doThrow(new IllegalStateException("synthetic receipt write failure")).when(failing)
-                .saveReceipt(eq(request.operationId()),eq(owner),eq(target),eq("ARCHIVE"),eq(request.previewDigest()),eq(true));
-        var rollback=new UserArchiveService(failing,users,auth,attendance,context,transactionManager,null,eventPublisher);
-        assertThatThrownBy(()->rollback.archive(target,request)).isInstanceOf(IllegalStateException.class);
-        assertThat(repository.observe(target).status()).isEqualTo("active");
-        assertThat(jdbc.queryForObject("SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE sid=?",Boolean.class,session)).isTrue();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM student_group_history WHERE user_id=? AND left_at IS NULL",Long.class,target)).isEqualTo(1);
-        service.archive(target,request);
-        long version=jdbc.queryForObject("SELECT session_version FROM auth_sessions WHERE sid=?",Long.class,session);
-        service.archive(target,request);
-        assertThat(jdbc.queryForObject("SELECT session_version FROM auth_sessions WHERE sid=?",Long.class,session)).isEqualTo(version);
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN,"denied retry")).when(auth).confirm(target,request.operationId(),request.previewDigest(),request.password());
-        assertThatThrownBy(()->service.archive(target,request)).isInstanceOf(ResponseStatusException.class);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_archive_receipt WHERE operation_id=?",Long.class,request.operationId())).isEqualTo(1);
-        var closedHistory=jdbc.queryForList("SELECT id,user_id,group_id,joined_at,left_at,reason FROM student_group_history WHERE user_id=?",target);
-        RestoreRequest restore=new RestoreRequest(UUID.randomUUID());
-        service.restore(target,restore); service.restore(target,restore);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND status='active'",Long.class,target)).isZero();
-        assertThat(jdbc.queryForObject("SELECT group_id IS NULL AND NOT is_headman FROM users WHERE id=?",Boolean.class,target)).isTrue();
-        assertThat(jdbc.queryForObject("SELECT active_role_grant_id FROM auth_sessions WHERE sid=?",Long.class,session)).isNull();
-        assertThat(jdbc.queryForMap("SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",target)).isEqualTo(before);
-        assertThat(grants.findByUserId(target).stream().filter(g->g.role().equals("STUDENT")).findFirst().orElseThrow().canUpdate()).isTrue();
-        assertThatThrownBy(()->service.restore(target,new RestoreRequest(UUID.randomUUID()))).isInstanceOf(ResponseStatusException.class);
-        long destination=groups.createGroup(new CreateGroupRequest("УВС-11"+Math.floorMod(System.nanoTime(),10))).getId();
-        users.updateRoleGrant(target,"STUDENT",new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE,destination,null,null));
-        assertThat(jdbc.queryForObject("SELECT joined_at FROM student_group_history WHERE user_id=? AND left_at IS NULL",LocalDate.class,target)).isEqualTo(today);
-        assertThat(jdbc.queryForList("SELECT id,user_id,group_id,joined_at,left_at,reason FROM student_group_history WHERE user_id=? AND left_at IS NOT NULL",target)).isEqualTo(closedHistory);
-        assertThat(jdbc.queryForList("SELECT id FROM user_role_grants WHERE user_id=? ORDER BY id",Long.class,target)).isEqualTo(grantIds);
-        assertThat(jdbc.queryForObject("SELECT active_role_grant_id FROM auth_sessions WHERE sid=?",Long.class,session)).isNull();
-    }
+        verify(auth)
+                .confirm(target, denied.operationId(), denied.previewDigest(), denied.password());
+        assertThat(
+                        beforeProof.equals(
+                                java.util.List.of(
+                                        jdbc.queryForMap(
+                                                "SELECT * FROM academic_profiles WHERE id=?",
+                                                target),
+                                        jdbc.queryForList(
+                                                "SELECT * FROM student_group_history WHERE"
+                                                        + " user_id=? ORDER BY id",
+                                                target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(
+                                                        "SELECT * FROM auth_identities WHERE id=?",
+                                                        target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForList(
+                                                        "SELECT * FROM user_role_grants WHERE"
+                                                                + " user_id=? ORDER BY id",
+                                                        target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(
+                                                        "SELECT * FROM auth_sessions WHERE sid=?",
+                                                        session),
+                                        jdbc.queryForObject(
+                                                "SELECT COUNT(*) FROM academic_outbox",
+                                                Long.class))))
+                .as("A fresh protected operation with wrong password has no account/domain effects")
+                .isTrue();
 
-    @Test void stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority() {
-        Preview preview=service.preview(target);
-        jdbc.update("UPDATE users SET last_name='Changed' WHERE id=?",target);
-        assertThatThrownBy(()->service.archive(target,new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic")))
-                .isInstanceOfSatisfying(ResponseStatusException.class,e->assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+        ArchiveRequest request =
+                new ArchiveRequest(
+                        UUID.randomUUID(),
+                        preview.previewDigest(),
+                        AcademicIdentityIntegrationFixture.FIRST_FULL_TEST_PASSWORD);
+        var beforeProfile = jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target);
+        var beforeHistory =
+                jdbc.queryForList(
+                        "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id", target);
+        long beforeOutbox = jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class);
+        doThrow(new DataAccessResourceFailureException("synthetic receipt write outcome unknown"))
+                .doCallRealMethod()
+                .when(repository)
+                .saveReceipt(
+                        eq(request.operationId()),
+                        eq(owner),
+                        eq(target),
+                        eq("ARCHIVE"),
+                        eq(request.previewDigest()),
+                        eq(true));
+        assertThatThrownBy(() -> archive(target, request))
+                .isInstanceOfSatisfying(
+                        AcademicIdentityPendingException.class,
+                        pending -> {
+                            assertThat(pending.operation().operationId())
+                                    .isEqualTo(request.operationId());
+                            assertThat(pending.operation().status())
+                                    .isEqualTo(IdentityOperationHttpModels.Status.PENDING);
+                            assertThat(pending.operation().retryAfterSeconds()).isEqualTo(2);
+                        });
+        // The typed pending outcome must originate at this exact APPLY receipt seam.
+        verify(repository, times(1))
+                .saveReceipt(
+                        request.operationId(),
+                        owner,
+                        target,
+                        "ARCHIVE",
+                        request.previewDigest(),
+                        true);
+        // Only Academic APPLY rolls back. Auth PREPARE and its admission fence are durable.
+        assertThat(jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target))
+                .isEqualTo(beforeProfile);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
+                                target))
+                .isEqualTo(beforeHistory);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class))
+                .isEqualTo(beforeOutbox);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM user_archive_receipt WHERE operation_id=?",
+                                Long.class,
+                                request.operationId()))
+                .isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT phase FROM academic_identity_operations WHERE"
+                                        + " operation_id=?",
+                                String.class,
+                                request.operationId()))
+                .isEqualTo("AUTH_PREPARED");
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT fence_operation_id FROM auth_identities WHERE id=?",
+                                        UUID.class,
+                                        target))
+                .isEqualTo(request.operationId());
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT roles_version FROM auth_identities WHERE id=?",
+                                        Long.class,
+                                        target))
+                .isGreaterThan(studentActor.rolesVersion());
+        requireOldSessionDenied();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM student_group_history WHERE user_id=? AND"
+                                        + " left_at IS NULL",
+                                Long.class,
+                                target))
+                .isEqualTo(1);
+        archive(target, request);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT phase FROM academic_identity_operations WHERE"
+                                        + " operation_id=?",
+                                String.class,
+                                request.operationId()))
+                .isEqualTo("SUCCEEDED");
+        assertThat(
+                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)
+                                .equals(retainedHomework))
+                .isTrue();
+        requireOldSessionDenied();
+        long version =
+                identityFixture
+                        .authJdbc()
+                        .queryForObject(
+                                "SELECT session_version FROM auth_sessions WHERE sid=?",
+                                Long.class,
+                                session);
+        archive(target, request);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT session_version FROM auth_sessions WHERE sid=?",
+                                        Long.class,
+                                        session))
+                .isEqualTo(version);
+        var committedProfile =
+                jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target);
+        var committedHistory =
+                jdbc.queryForList(
+                        "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id", target);
+        long committedOutbox =
+                jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class);
+        long committedRolesVersion =
+                identityFixture
+                        .authJdbc()
+                        .queryForObject(
+                                "SELECT roles_version FROM auth_identities WHERE id=?",
+                                Long.class,
+                                target);
+        clearInvocations(auth);
+        // An exact committed retry reuses accepted material; a fresh ACTIVE target still needs
+        // proof
+        // (the wrong-password attempt above exercised the actual Auth proof before PREPARE).
+        archive(target, request);
         verifyNoInteractions(auth);
-        assertThatThrownBy(()->users.patchUser(target,new PatchUserRequest(null,null,null,null,null,null,null,AccountStatus.ARCHIVED)))
-                .isInstanceOf(ResponseStatusException.class);
-        var controller=new UserController(users,mock(UserAssembler.class),grants,service);
-        assertThatThrownBy(()->controller.archiveUser(target)).isInstanceOf(ResponseStatusException.class);
-        assertThatThrownBy(()->service.preview(owner)).isInstanceOf(ResponseStatusException.class);
-        assertThat(repository.observe(target).status()).isEqualTo("active");
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_archive_receipt WHERE target_id=?",Long.class,target)).isZero();
+        assertThat(jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target))
+                .isEqualTo(committedProfile);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
+                                target))
+                .isEqualTo(committedHistory);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class))
+                .isEqualTo(committedOutbox);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT roles_version FROM auth_identities WHERE id=?",
+                                        Long.class,
+                                        target))
+                .isEqualTo(committedRolesVersion);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT session_version FROM auth_sessions WHERE sid=?",
+                                        Long.class,
+                                        session))
+                .isEqualTo(version);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM user_archive_receipt WHERE operation_id=?",
+                                Long.class,
+                                request.operationId()))
+                .isEqualTo(1);
+        var closedHistory =
+                jdbc.queryForList(
+                        "SELECT id,user_id,group_id,joined_at,left_at,reason FROM"
+                                + " student_group_history WHERE user_id=?",
+                        target);
+        RestoreRequest restore = new RestoreRequest(UUID.randomUUID());
+        restore(target, restore);
+        restore(target, restore);
+        assertThat(
+                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)
+                                .equals(retainedHomework))
+                .isTrue();
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND"
+                                                + " status='active'",
+                                        Long.class,
+                                        target))
+                .isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT group_id IS NULL AND NOT is_headman FROM"
+                                        + " academic_user_directory WHERE id=?",
+                                Boolean.class,
+                                target))
+                .isTrue();
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT revoked_at IS NOT NULL AND"
+                                            + " revoke_reason='SECURITY_REVOKED' FROM auth_sessions"
+                                            + " WHERE sid=?",
+                                        Boolean.class,
+                                        session))
+                .isTrue();
+        requireOldSessionDenied();
+        assertThat(
+                        before.equals(
+                                identityFixture
+                                        .authJdbc()
+                                        .queryForMap(
+                                                "SELECT"
+                                                    + " login,password_hash,initial_password,telegram_id"
+                                                    + " FROM auth_identities WHERE id=?",
+                                                target)))
+                .as("Archive and restore retain identity and credential material")
+                .isTrue();
+        assertThat(
+                        grants.findByUserId(target).stream()
+                                .filter(g -> g.role().equals("STUDENT"))
+                                .findFirst()
+                                .orElseThrow()
+                                .canUpdate())
+                .isTrue();
+        var restoredState =
+                java.util.List.of(
+                        jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target),
+                        jdbc.queryForList(
+                                "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
+                                target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForMap("SELECT * FROM auth_identities WHERE id=?", target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id=? ORDER BY"
+                                                + " id",
+                                        target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForMap("SELECT * FROM auth_sessions WHERE sid=?", session),
+                        jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class));
+        UUID freshRestore = UUID.randomUUID();
+        // The public mapper retains the original domain conflict: ACTIVE is not restorable.
+        mockMvc.perform(
+                        post("/academic/users/{id}/restore", target)
+                                .with(identityFixture.signed(adminActor, freshRestore))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"operationId\":\"" + freshRestore + "\"}"))
+                .andExpect(status().isConflict());
+        assertThat(
+                        restoredState.equals(
+                                java.util.List.of(
+                                        jdbc.queryForMap(
+                                                "SELECT * FROM academic_profiles WHERE id=?",
+                                                target),
+                                        jdbc.queryForList(
+                                                "SELECT * FROM student_group_history WHERE"
+                                                        + " user_id=? ORDER BY id",
+                                                target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(
+                                                        "SELECT * FROM auth_identities WHERE id=?",
+                                                        target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForList(
+                                                        "SELECT * FROM user_role_grants WHERE"
+                                                                + " user_id=? ORDER BY id",
+                                                        target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(
+                                                        "SELECT * FROM auth_sessions WHERE sid=?",
+                                                        session),
+                                        jdbc.queryForObject(
+                                                "SELECT COUNT(*) FROM academic_outbox",
+                                                Long.class))))
+                .as("A fresh restore of an ACTIVE account preserves committed state")
+                .isTrue();
+        long destination =
+                groups.createGroup(
+                                new CreateGroupRequest(
+                                        "УВС-11" + Math.floorMod(System.nanoTime(), 10)))
+                        .getId();
+        try (var scope = identityFixture.request(adminActor)) {
+            users.updateRoleGrant(
+                    target,
+                    "STUDENT",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, destination, null, null));
+        }
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT joined_at FROM student_group_history WHERE user_id=? AND"
+                                        + " left_at IS NULL",
+                                LocalDate.class,
+                                target))
+                .isEqualTo(today);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT id,user_id,group_id,joined_at,left_at,reason FROM"
+                                    + " student_group_history WHERE user_id=? AND left_at IS NOT"
+                                    + " NULL",
+                                target))
+                .isEqualTo(closedHistory);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForList(
+                                        "SELECT id FROM user_role_grants WHERE user_id=? ORDER BY"
+                                                + " id",
+                                        Long.class,
+                                        target))
+                .isEqualTo(grantIds);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT revoked_at IS NOT NULL AND"
+                                            + " revoke_reason='SECURITY_REVOKED' FROM auth_sessions"
+                                            + " WHERE sid=?",
+                                        Boolean.class,
+                                        session))
+                .isTrue();
+        requireOldSessionDenied();
+        var freshStudent = identityFixture.select(target, AuthRole.STUDENT);
+        assertThat(freshStudent.sessionId()).isNotEqualTo(session);
+        assertThat(freshStudent.claims().groupId()).isEqualTo(destination);
+        assertThat(liveSessions.admit(freshStudent.claims())).isNotNull();
     }
 
-    @Test void archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock() throws Exception {
-        long candidate=users.createUser(new CreateUserRequest("Archive","Helper",null,UserRole.STUDENT,group,null,
-                Math.abs(System.nanoTime())+100000)).getContent().getId();
-        Preview preview=service.preview(target);
-        ArchiveRequest request=new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic");
-        RequestContext headman=mock(RequestContext.class);
-        when(headman.getUserId()).thenReturn(target);
-        when(headman.getGroupId()).thenReturn(group);
-        when(headman.isHeadman()).thenReturn(true);
-        CountDownLatch groupLocked=new CountDownLatch(1), finishHelper=new CountDownLatch(1);
-        GroupRepository gatedGroups=mock(GroupRepository.class);
-        when(gatedGroups.findByIdForUpdate(group)).thenAnswer(invocation -> {
-            var locked=groupRepository.findByIdForUpdate(group);
-            groupLocked.countDown();
-            if (!finishHelper.await(10,TimeUnit.SECONDS)) throw new IllegalStateException("helper release timed out");
-            return locked;
-        });
-        AssistantService gatedAssistant=new AssistantService(assistantRepository,userRepository,gatedGroups,roleGrantRepository,headman);
-        AssistantService assistant=new AssistantService(assistantRepository,userRepository,groupRepository,roleGrantRepository,headman);
-        AssignAssistantRequest assign=new AssignAssistantRequest(candidate,group,List.of(AssistantPermission.MARK_ATTENDANCE));
-        AtomicInteger archivePid=new AtomicInteger();
-        UserArchiveRepository observed=spy(archiveRepositoryWithAuthority());
-        doAnswer(invocation -> {
-            archivePid.set(jdbc.queryForObject("SELECT pg_backend_pid()",Integer.class));
-            return invocation.callRealMethod();
-        }).when(observed).lock(owner,target,request.operationId());
-        UserArchiveService archive=new UserArchiveService(observed,users,auth,attendance,context,transactionManager,null,eventPublisher);
-        TransactionTemplate tx=new TransactionTemplate(transactionManager);
-        ExecutorService workers=Executors.newFixedThreadPool(2);
-        Future<?> helperWrite=null, archiveWrite=null;
+    @Test
+    void stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority() {
+        Preview preview = preview(target);
+        try (var scope = identityFixture.request(adminActor)) {
+            users.patchUser(
+                    target,
+                    new PatchUserRequest("Changed", null, null, null, null, null, null, null));
+        }
+        assertThatThrownBy(
+                        () ->
+                                archive(
+                                        target,
+                                        new ArchiveRequest(
+                                                UUID.randomUUID(),
+                                                preview.previewDigest(),
+                                                "synthetic")))
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+        verifyNoInteractions(auth);
+        try (var scope = identityFixture.request(adminActor)) {
+            assertThatThrownBy(
+                            () ->
+                                    users.patchUser(
+                                            target,
+                                            new PatchUserRequest(
+                                                    null,
+                                                    null,
+                                                    null,
+                                                    null,
+                                                    null,
+                                                    null,
+                                                    null,
+                                                    AccountStatus.ARCHIVED)))
+                    .isInstanceOf(ResponseStatusException.class);
+        }
+        var controller = new UserController(users, mock(UserAssembler.class), grants, service);
+        assertThatThrownBy(() -> controller.archiveUser(target))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> preview(owner)).isInstanceOf(ResponseStatusException.class);
+        assertThat(repository.observe(target).status()).isEqualTo("active");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM user_archive_receipt WHERE target_id=?",
+                                Long.class,
+                                target))
+                .isZero();
+    }
+
+    @Test
+    void archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock()
+            throws Exception {
+        long candidate =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Archive",
+                                        "Helper",
+                                        null,
+                                        UserRole.STUDENT,
+                                        group,
+                                        null,
+                                        610000008002L),
+                                adminActor)
+                        .userId();
+        Preview preview = preview(target);
+        ArchiveRequest request =
+                new ArchiveRequest(
+                        UUID.randomUUID(),
+                        preview.previewDigest(),
+                        AcademicIdentityIntegrationFixture.FIRST_FULL_TEST_PASSWORD);
+        CountDownLatch groupLocked = new CountDownLatch(1), finishHelper = new CountDownLatch(1);
+        AtomicInteger helperPid = new AtomicInteger();
+        doAnswer(
+                        invocation -> {
+                            // Spring wraps a JDK repository proxy with delegatesTo(original).
+                            // callRealMethod() cannot invoke its abstract repository interface.
+                            var locked =
+                                    mockingDetails(groupRepository)
+                                            .getMockCreationSettings()
+                                            .getDefaultAnswer()
+                                            .answer(invocation);
+                            helperPid.set(
+                                    jdbc.queryForObject("SELECT pg_backend_pid()", Integer.class));
+                            groupLocked.countDown();
+                            if (!finishHelper.await(10, TimeUnit.SECONDS))
+                                throw new IllegalStateException("helper release timed out");
+                            return locked;
+                        })
+                .when(groupRepository)
+                .findByIdForUpdate(group);
+        AssignAssistantRequest assign =
+                new AssignAssistantRequest(
+                        candidate, group, List.of(AssistantPermission.MARK_ATTENDANCE));
+        AtomicInteger archivePid = new AtomicInteger();
+        doAnswer(
+                        invocation -> {
+                            // Acceptance takes the group lock before Auth prepare and APPLY.
+                            assertThat(
+                                            TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isTrue();
+                            archivePid.set(
+                                    jdbc.queryForObject("SELECT pg_backend_pid()", Integer.class));
+                            return invocation.callRealMethod();
+                        })
+                .when(identityOperationStore)
+                .accept(any());
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        ExecutorService workers = Executors.newFixedThreadPool(2);
+        Future<?> helperWrite = null, archiveWrite = null;
         try {
-            helperWrite=workers.submit(() -> tx.executeWithoutResult(status -> {
-                gatedAssistant.assignAssistant(assign);
-                assistantRepository.flush(); // Executes the assigned_by FK KEY SHARE before releasing the group.
-            }));
-            assertThat(groupLocked.await(10,TimeUnit.SECONDS)).isTrue();
-            archiveWrite=workers.submit(() -> archive.archive(target,request));
-            await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
-                assertThat(archivePid.get()).isPositive();
-                assertThat(jdbc.queryForObject("""
-                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
-                          AND query LIKE '%SELECT id FROM groups WHERE id IN%')
-                        """,Boolean.class,archivePid.get())).isTrue();
-            });
+            helperWrite =
+                    workers.submit(
+                            () -> {
+                                try (var scope = identityFixture.request(headmanActor)) {
+                                    tx.executeWithoutResult(
+                                            status -> {
+                                                assistant.assignAssistant(assign);
+                                                // Execute assigned_by's FK KEY SHARE while the
+                                                // helper owns the group.
+                                                assistantRepository.flush();
+                                            });
+                                }
+                            });
+            assertThat(groupLocked.await(10, TimeUnit.SECONDS)).isTrue();
+            archiveWrite = workers.submit(() -> archive(target, request));
+            await().atMost(Duration.ofSeconds(10))
+                    .untilAsserted(
+                            () -> {
+                                assertThat(archivePid.get()).isPositive();
+                                assertThat(helperPid.get()).isPositive();
+                                assertThat(
+                                                jdbc.queryForObject(
+                                                        """
+SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
+  AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid=pg_stat_activity.pid
+    AND l.relation='groups'::regclass AND l.mode='RowShareLock' AND l.granted)
+  AND ? = ANY(pg_blocking_pids(pid)))
+""",
+                                                        Boolean.class,
+                                                        archivePid.get(),
+                                                        helperPid.get()))
+                                        .isTrue();
+                            });
             finishHelper.countDown();
-            helperWrite.get(10,TimeUnit.SECONDS);
-            archiveWrite.get(10,TimeUnit.SECONDS);
-            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND is_active",Long.class,group)).isZero();
-            assertThat(jdbc.queryForObject("SELECT NOT is_active AND revoked_at IS NOT NULL FROM headman_assistants WHERE group_id=? AND student_id=?",Boolean.class,group,candidate)).isTrue();
-            assertThatThrownBy(() -> tx.executeWithoutResult(status -> assistant.assignAssistant(assign))).isInstanceOf(AccessDeniedException.class);
-            service.restore(target,new RestoreRequest(UUID.randomUUID()));
-            assertThatThrownBy(() -> tx.executeWithoutResult(status -> assistant.assignAssistant(assign))).isInstanceOf(AccessDeniedException.class);
-            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND is_active",Long.class,group)).isZero();
+            helperWrite.get(10, TimeUnit.SECONDS);
+            archiveWrite.get(10, TimeUnit.SECONDS);
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND"
+                                            + " is_active",
+                                    Long.class,
+                                    group))
+                    .isZero();
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT NOT is_active AND revoked_at IS NOT NULL FROM"
+                                        + " headman_assistants WHERE group_id=? AND student_id=?",
+                                    Boolean.class,
+                                    group,
+                                    candidate))
+                    .isTrue();
+            assertThatThrownBy(
+                            () -> {
+                                try (var scope = identityFixture.request(headmanActor)) {
+                                    assistant.assignAssistant(assign);
+                                }
+                            })
+                    .isInstanceOfSatisfying(
+                            ResponseStatusException.class,
+                            denied ->
+                                    assertThat(denied.getStatusCode())
+                                            .isEqualTo(HttpStatus.UNAUTHORIZED));
+            restore(target, new RestoreRequest(UUID.randomUUID()));
+            assertThatThrownBy(
+                            () -> {
+                                try (var scope = identityFixture.request(headmanActor)) {
+                                    assistant.assignAssistant(assign);
+                                }
+                            })
+                    .isInstanceOfSatisfying(
+                            ResponseStatusException.class,
+                            denied ->
+                                    assertThat(denied.getStatusCode())
+                                            .isEqualTo(HttpStatus.UNAUTHORIZED));
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND"
+                                            + " is_active",
+                                    Long.class,
+                                    group))
+                    .isZero();
         } finally {
             finishHelper.countDown();
-            if (helperWrite!=null && !helperWrite.isDone()) helperWrite.cancel(true);
-            if (archiveWrite!=null && !archiveWrite.isDone()) archiveWrite.cancel(true);
+            if (helperWrite != null && !helperWrite.isDone()) helperWrite.cancel(true);
+            if (archiveWrite != null && !archiveWrite.isDone()) archiveWrite.cancel(true);
             workers.shutdownNow();
-            assertThat(workers.awaitTermination(10,TimeUnit.SECONDS)).isTrue();
+            assertThat(workers.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
         }
     }
 
-    private UserArchiveRepository archiveRepositoryWithAuthority() {
-        UserArchiveRepository result=new UserArchiveRepository(jdbc);
-        // Manual failure/lock probes still execute the real persisted admin authority.
-        org.springframework.test.util.ReflectionTestUtils.setField(result,"adminAccess",adminAccess);
-        return result;
-    }
-
-    @Test void previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges() {
-        // Assignment identity/history cannot be deleted. Roll back only this test's synthetic
-        // assignments and subject instead of weakening their database retention guards.
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            status.setRollbackOnly();
-            long other=jdbc.queryForObject("""
-                    INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at,employee_number)
-                    VALUES (?, 'synthetic-hash','Archive','OtherTeacher','teacher','active',FALSE,FALSE,NOW(),NOW(),'ARCHIVE-OTHER-01') RETURNING id
-                    """,Long.class,"archive-other-"+UUID.randomUUID().toString().substring(0,8));
-            jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'teacher','active',NOW(),NOW())",other);
-            long subject=jdbc.queryForObject("INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",Long.class,"Archive "+UUID.randomUUID(),group);
-            jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')",subject);
-            for (long teacher:List.of(target,other)) jdbc.update("""
-                    INSERT INTO assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from,valid_until_exclusive)
-                    VALUES(?,?,?,?,'lecture',?,?)
-                    """,teacher,subject,group,semester,today.minusDays(1),today.plusDays(1));
-            Preview preview=service.preview(target);
-            assertThat(preview.soleTeacherAssignmentCount()).isZero();
-            var unchangedTarget=jdbc.queryForMap("SELECT to_jsonb(u)::text AS state FROM users u WHERE id=?",target);
-            var unchangedGrants=jdbc.queryForList("SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",target);
-            jdbc.update("UPDATE user_role_grants SET status='suspended',updated_at=NOW() WHERE user_id=? AND role='teacher'",other);
-            assertThat(repository.observe(target).soleTeacherCount()).isEqualTo(1);
-            assertThat(jdbc.queryForMap("SELECT to_jsonb(u)::text AS state FROM users u WHERE id=?",target)).isEqualTo(unchangedTarget);
-            assertThat(jdbc.queryForList("SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",target)).isEqualTo(unchangedGrants);
-            assertThatThrownBy(() -> service.archive(target,new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic")))
-                    .isInstanceOfSatisfying(ResponseStatusException.class,e -> {
-                        assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-                        assertThat(e.getReason()).isEqualTo("archive_preview_stale");
-                    });
-            verifyNoInteractions(auth);
-            assertThat(repository.observe(target).status()).isEqualTo("active");
-            assertThat(jdbc.queryForObject("SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE sid=?",Boolean.class,session)).isTrue();
-            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_archive_receipt WHERE target_id=?",Long.class,target)).isZero();
-        });
+    @Test
+    void previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges() {
+        // Per-test owned reset isolates committed retained fixtures. A local rollback cannot
+        // surround the other teacher's distributed role command.
+        long other =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Archive",
+                                        "OtherTeacher",
+                                        null,
+                                        UserRole.TEACHER,
+                                        null,
+                                        "ARCHIVE-OTHER-01",
+                                        null),
+                                adminActor)
+                        .userId();
+        long subject =
+                jdbc.queryForObject(
+                        """
+                        WITH subject AS (
+                            INSERT INTO subjects(name,type,group_id)
+                            VALUES (?, 'lecture', ?) RETURNING id,type
+                        ), lesson_type AS (
+                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                            SELECT id,type FROM subject RETURNING subject_id
+                        ) SELECT subject_id FROM lesson_type
+                        """,
+                        Long.class,
+                        "Archive " + UUID.randomUUID(),
+                        group);
+        for (long teacher : List.of(target, other))
+            jdbc.update(
+                    """
+INSERT INTO assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from,valid_until_exclusive)
+VALUES(?,?,?,?,'lecture',?,?)
+""",
+                    teacher,
+                    subject,
+                    group,
+                    semester,
+                    today.minusDays(1),
+                    today.plusDays(1));
+        Preview preview = preview(target);
+        assertThat(preview.soleTeacherAssignmentCount()).isZero();
+        var unchangedTarget =
+                java.util.List.of(
+                        jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target),
+                        identityFixture
+                                .authJdbc()
+                                .queryForMap("SELECT * FROM auth_identities WHERE id=?", target));
+        var unchangedGrants =
+                identityFixture
+                        .authJdbc()
+                        .queryForList(
+                                "SELECT * FROM user_role_grants WHERE user_id=? ORDER" + " BY id",
+                                target);
+        try (var scope = identityFixture.request(adminActor)) {
+            users.updateRoleGrant(
+                    other,
+                    "TEACHER",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+        }
+        assertThat(repository.observe(target).soleTeacherCount()).isEqualTo(1);
+        assertThat(
+                        unchangedTarget.equals(
+                                java.util.List.of(
+                                        jdbc.queryForMap(
+                                                "SELECT * FROM academic_profiles WHERE id=?",
+                                                target),
+                                        identityFixture
+                                                .authJdbc()
+                                                .queryForMap(
+                                                        "SELECT * FROM auth_identities WHERE id=?",
+                                                        target))))
+                .as("Another teacher's role change retains this account and profile")
+                .isTrue();
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id=?"
+                                                + " ORDER BY id",
+                                        target))
+                .isEqualTo(unchangedGrants);
+        assertThatThrownBy(
+                        () ->
+                                archive(
+                                        target,
+                                        new ArchiveRequest(
+                                                UUID.randomUUID(),
+                                                preview.previewDigest(),
+                                                "synthetic")))
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        e -> {
+                            assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+                            assertThat(e.getReason()).isEqualTo("archive_preview_stale");
+                        });
+        verifyNoInteractions(auth);
+        assertThat(repository.observe(target).status()).isEqualTo("active");
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT active_role_grant_id IS NOT NULL FROM"
+                                                + " auth_sessions WHERE sid=?",
+                                        Boolean.class,
+                                        session))
+                .isTrue();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM user_archive_receipt" + " WHERE target_id=?",
+                                Long.class,
+                                target))
+                .isZero();
     }
 }

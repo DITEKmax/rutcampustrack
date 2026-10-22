@@ -1,12 +1,11 @@
 package ru.rutcampustrack.auth.service;
 
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.stereotype.Repository;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.stereotype.Repository;
 
 /** Redis implementation using fixed-window Lua counters and absolute ticket TTLs. */
 @Repository
@@ -16,7 +15,8 @@ public class RedisReportDownloadTicketStore implements ReportDownloadTicketStore
     private static final String ISSUE_PREFIX = "report_download_ticket_issue:";
     private static final String REDEMPTION_PREFIX = "report_download_ticket_redemption:";
 
-    private static final String INCREMENT_WITH_LIMIT_SCRIPT = """
+    private static final String INCREMENT_WITH_LIMIT_SCRIPT =
+            """
             local current = tonumber(redis.call('GET', KEYS[1]) or '0')
             local maximum = tonumber(ARGV[1])
             if current >= maximum then
@@ -39,8 +39,10 @@ public class RedisReportDownloadTicketStore implements ReportDownloadTicketStore
 
     @Override
     public boolean putIfAbsent(String ticketDigest, String serializedTicket, Duration ttl) {
-        Boolean stored = redisTemplate.opsForValue().setIfAbsent(
-                TICKET_PREFIX + ticketDigest, serializedTicket, ttl);
+        Boolean stored =
+                redisTemplate
+                        .opsForValue()
+                        .setIfAbsent(TICKET_PREFIX + ticketDigest, serializedTicket, ttl);
         return Boolean.TRUE.equals(stored);
     }
 
@@ -60,8 +62,12 @@ public class RedisReportDownloadTicketStore implements ReportDownloadTicketStore
     }
 
     private boolean incrementWithinLimit(String key, int maximum, Duration window) {
-        Long count = redisTemplate.execute(incrementWithLimitScript, List.of(key),
-                Integer.toString(maximum), Long.toString(window.toSeconds()));
+        Long count =
+                redisTemplate.execute(
+                        incrementWithLimitScript,
+                        List.of(key),
+                        Integer.toString(maximum),
+                        Long.toString(window.toSeconds()));
         if (count == null) {
             throw new IllegalStateException("Redis rate counter returned no result");
         }

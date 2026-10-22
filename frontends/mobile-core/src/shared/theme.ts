@@ -64,7 +64,10 @@ function resolveMediaQuery(target: HTMLElement | null): MediaQueryList | null {
   return view?.matchMedia ? view.matchMedia(MEDIA_QUERY) : null
 }
 
-function resolveMode(mode: MobileThemeMode, mediaQuery: MediaQueryList | null): MobileThemeResolvedMode {
+function resolveMode(
+  mode: MobileThemeMode,
+  mediaQuery: MediaQueryList | null,
+): MobileThemeResolvedMode {
   if (mode !== 'system') return mode
   return mediaQuery?.matches ? 'dark' : 'light'
 }
@@ -135,7 +138,8 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
     const normalized = normalizeMode(nextMode)
     if (normalized === mode) return
     mode = normalized
-    if (!options.lockedMode && mode === 'system' && !mediaQuery) mediaQuery = resolveMediaQuery(target)
+    if (!options.lockedMode && mode === 'system' && !mediaQuery)
+      mediaQuery = resolveMediaQuery(target)
     resolvedMode = options.lockedMode ?? resolveMode(mode, mediaQuery)
     apply()
     watchMedia()
@@ -165,8 +169,12 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
   watchMedia()
 
   return {
-    get mode() { return mode },
-    get resolvedMode() { return resolvedMode },
+    get mode() {
+      return mode
+    },
+    get resolvedMode() {
+      return resolvedMode
+    },
     setMode,
     subscribe,
     dispose,

@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-12T02:33:48.848923+00:00",
+  "root_revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "exit": 0,
+  "files": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/coverage.yml",
+    "event-schemas/password.changed.json",
+    "proto/academic.proto",
+    "scripts/format-authored.mjs",
+    "scripts/generate-bot-proto.py",
+    "services/academic-service/academic-app/src/main/resources/application.yml",
+    "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+    "services/notification-bot/bot/config.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+  ],
+  "hooks": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...............................................................Passed",
+    "check json...............................................................Passed",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "raw_private": "/workspace/scratch/rct-validation/np01-root-dependency-source-gates.raw.log",
+  "qualification": "manualapplicablemandatorysourcechecks; no installedautoHook claim"
+}

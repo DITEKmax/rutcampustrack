@@ -1,0 +1,94 @@
+{
+  "entries": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1053,
+      "sha256": "3a94262dc2c39bc0473c622201cce4f2fb3eff4c3cbb6cdfc398ffac76670363"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 4371,
+      "sha256": "14dc9f419463b890db96d459ec5020bde6f9634c5bdbf66f378e09f2d4d4f610"
+    },
+    {
+      "path": "after-outcome.safe.json",
+      "bytes": 280,
+      "sha256": "ebbdd6887646fae2266177a893acc0dd35a5e891afcf74a47bc6ae3417f3cd4e"
+    },
+    {
+      "path": "before-outcome.safe.json",
+      "bytes": 1482,
+      "sha256": "5cf45b0d9fc533eefc9c66d116749b6c11031032bd54f90d260146f3991846cd"
+    },
+    {
+      "path": "ci.after.yml",
+      "bytes": 16485,
+      "sha256": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f"
+    },
+    {
+      "path": "ci.before.yml",
+      "bytes": 16222,
+      "sha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce"
+    },
+    {
+      "path": "dependency.safe.json",
+      "bytes": 278,
+      "sha256": "28ea01d287df6b36159c39f7e91cb9a8995d39bac31440b52e33d82856737873"
+    },
+    {
+      "path": "download-checksums-process.safe.json",
+      "bytes": 147,
+      "sha256": "a05acdd1a16dc7425c8372e9bf06cebae37c701993ab3c40ee0fde3dd6593e9b"
+    },
+    {
+      "path": "download-checksums-terminal.safe.json",
+      "bytes": 551,
+      "sha256": "db134cfe3e79fa72704ab92e86282cdfd02275b11c17b43619bd7f90c55347f3"
+    },
+    {
+      "path": "download-release-process.safe.json",
+      "bytes": 147,
+      "sha256": "7b4fe5351e4d1524d368179601eccea946d58b0655a767c8f8fa53332c559706"
+    },
+    {
+      "path": "download-release-terminal.safe.json",
+      "bytes": 551,
+      "sha256": "b173b837f4407754f4693993c990ea2a3c99a3fe60c3669da44d7138c4304a06"
+    },
+    {
+      "path": "lint-after-process.safe.json",
+      "bytes": 147,
+      "sha256": "3d1f1596979e75f979e222f085482a1216c9d10e6365a1adacee869ea1208588"
+    },
+    {
+      "path": "lint-after-terminal.safe.json",
+      "bytes": 545,
+      "sha256": "ef6109d4c1fe3d5c155144fd0ffdff905861bf27e57b8b11992fa1e4dcee68c3"
+    },
+    {
+      "path": "lint-before-process.safe.json",
+      "bytes": 147,
+      "sha256": "5db268809343d51603205b59c1de89d6c539f4b0be1fa98c45c5a02bd5fc963f"
+    },
+    {
+      "path": "lint-before-terminal.safe.json",
+      "bytes": 547,
+      "sha256": "cc4c1fd54f72efc524479c8bc4939c64a2c4e535a5fdd1f53cdc4a1dbb27849e"
+    },
+    {
+      "path": "supervisor-after.safe.json",
+      "bytes": 120,
+      "sha256": "664108a3868f3a235722780c5b335ec60de07c93916b0a8ce936706a5bef34d5"
+    },
+    {
+      "path": "supervisor-before.safe.json",
+      "bytes": 120,
+      "sha256": "cead73dbb6d5989c64012a2fda79872ac849909ad575c9cb5c596b540bb45696"
+    },
+    {
+      "path": "workflow.diff.patch",
+      "bytes": 1733,
+      "sha256": "ff29c5b93505e6037fa4f6e0cc8a34ffa82037197be1e858bd27e1422e6cba63"
+    }
+  ]
+}

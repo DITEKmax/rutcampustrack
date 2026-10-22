@@ -1,0 +1,79 @@
+{
+  "schema": "P10_HTTP02_FRESH_READONLY_DOCKER_RESOURCE_JOIN_V1",
+  "utc": "2026-10-13T17:33:48.889605+00:00",
+  "foreign": {
+    "containers": [],
+    "volumes": [
+      "07f49c0637013097f8676e554d7813dab1a9c4dc059f926c3c64ca2dcf1e97bf",
+      "0b6a589413978b9f04ec7bffdec64f38eb7c091f5d249a46e8276aae7f722ede",
+      "1dc0fa19b091e5952f82213c8e123ace2a7adde18667e913ddc050fdbdb8d96e",
+      "5d1ef09ab0ee4aa15cea7715a04f4e15f13d5397ca2b1b4eaa1cf4a95482b816",
+      "a1f3d0a417acca871d4d22eab95c0f2f17a997181a6cbf917a540b31beb962cc",
+      "bab010ecf6099429257a93dd7759510095fc8bb73688b87ab6ec4514ac335405",
+      "rct-client-host-config-20261012_owned-mongo-attendance",
+      "rct-client-host-config-20261012_owned-postgres-academic",
+      "rct-client-host-config-20261012_owned-postgres-schedule",
+      "rct-client-host-config-20261012_owned-rabbitmq",
+      "rct-client-host-config-20261012_owned-redis"
+    ],
+    "networks": [
+      "1911064eb8533cd59ddb14acc50b8e7a9dbb8a965b2987aa288fe8a8a789ed02",
+      "5a818f4fe5d3b8d8ee8a422a6c37dba03d0f6330f9d132f1bad1a72a3db19f51",
+      "b92899604cbc84c843014b87b35200b1e69d266eab531ffa5b27c7dfca991f58"
+    ]
+  },
+  "container_images": {
+    "postgres": [
+      {
+        "tag": "postgres:16",
+        "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+        "size": 451303453
+      }
+    ],
+    "mongo": [],
+    "rabbitmq": [
+      {
+        "tag": "rabbitmq:3.13-management-alpine",
+        "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "size": 176465533
+      }
+    ],
+    "redis": [
+      {
+        "tag": "redis:7-alpine",
+        "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+        "size": 39061364
+      }
+    ],
+    "ryuk": [
+      {
+        "tag": "testcontainers/ryuk:0.11.0",
+        "id": "sha256:0cd5951d043f34c6fdb61274eb61c42bbb15aa8e05eab35c110ffd69a84e9463",
+        "size": 15293388
+      },
+      {
+        "tag": "testcontainers/ryuk:0.12.0",
+        "id": "sha256:a926383422af308b62b39b3c3527fb4af09cb99fcae506e07c6b6429b513792d",
+        "size": 15810893
+      }
+    ],
+    "probe": [
+      {
+        "tag": "alpine:3.17",
+        "id": "sha256:775f483016a7d128be2a6c6978785619990f9ac24abb5ff1868222020118b279",
+        "size": 7076442
+      }
+    ]
+  },
+  "image_lookup_missing": [],
+  "prior_foreign_exact_equal": true,
+  "prior_exact_imageID_size_equal": true,
+  "resources": {
+    "workspace_free": 7013490688,
+    "tmp_free": 7229218816,
+    "shared_used": 5383024640,
+    "shared_max": 17179869184
+  },
+  "Docker_mutation_HTTP_private_ENV_data_read": false,
+  "qualification": "Read-only exact metadata only; no pulls/start/delete/reset; Root originalP06baseline/newgrant join still required."
+}

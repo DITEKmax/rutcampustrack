@@ -1,14 +1,75 @@
 @import '../../styles/tokens.pcss';
-.semester-calendar { min-inline-size:0; }
-.semester-calendar__context, .semester-calendar__today { margin:0; color:var(--rct-color-text-secondary); font-size:var(--rct-font-size-caption); }
-.semester-calendar__pager { display:grid; grid-template-columns:var(--rct-control-min-touch) minmax(0,1fr) var(--rct-control-min-touch); gap:var(--rct-space-2); align-items:center; margin-block:var(--rct-space-2); }
-.semester-calendar__pager strong { align-content:center; min-block-size:var(--rct-control-min-touch); text-align:center; border-radius:var(--rct-radius-lg); background:var(--rct-color-surface-raised); color:var(--rct-color-text-primary); font-size:var(--rct-font-size-dense); font-weight:var(--rct-font-weight-regular); text-transform:capitalize; }
-.semester-calendar button { min-inline-size:0; min-block-size:var(--rct-control-min-touch); padding:0; border:0; background:transparent; border-radius:var(--rct-radius-full); color:var(--rct-color-text-primary); font:inherit; cursor:pointer; @mixin rct-focus-ring; }
-.semester-calendar__pager button { display:grid; place-items:center; background:var(--rct-color-surface-float); }
-.semester-calendar__next { transform:rotate(180deg); }
-.semester-calendar__today { text-align:center; margin-block-end:var(--rct-space-2); }
-.semester-calendar__grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:var(--rct-space-1); text-align:center; align-items:center; }
-.semester-calendar__grid > span { color:var(--rct-color-text-muted); font-size:var(--rct-font-size-caption); min-block-size:var(--rct-space-6); }
-.semester-calendar__grid button[data-outside='true'] { color:var(--rct-color-text-muted); }
-.semester-calendar__grid button[aria-pressed='true'] { background:var(--rct-color-accent-now); color:var(--rct-color-accent-on-now); }
-.semester-calendar__grid button[aria-current='date'] { outline:var(--rct-border-hairline) solid var(--rct-color-accent-now); outline-offset:calc(-1 * var(--rct-border-hairline)); }
+.semester-calendar {
+  min-inline-size: 0;
+}
+.semester-calendar__context,
+.semester-calendar__today {
+  margin: 0;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+.semester-calendar__pager {
+  display: grid;
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
+  gap: var(--rct-space-2);
+  align-items: center;
+  margin-block: var(--rct-space-2);
+}
+.semester-calendar__pager strong {
+  align-content: center;
+  min-block-size: var(--rct-control-min-touch);
+  text-align: center;
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-regular);
+  text-transform: capitalize;
+}
+.semester-calendar button {
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-primary);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.semester-calendar__pager button {
+  display: grid;
+  place-items: center;
+  background: var(--rct-color-surface-float);
+}
+.semester-calendar__next {
+  transform: rotate(180deg);
+}
+.semester-calendar__today {
+  text-align: center;
+  margin-block-end: var(--rct-space-2);
+}
+.semester-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--rct-space-1);
+  text-align: center;
+  align-items: center;
+}
+.semester-calendar__grid > span {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+  min-block-size: var(--rct-space-6);
+}
+.semester-calendar__grid button[data-outside='true'] {
+  color: var(--rct-color-text-muted);
+}
+.semester-calendar__grid button[aria-pressed='true'] {
+  background: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+}
+.semester-calendar__grid button[aria-current='date'] {
+  outline: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  outline-offset: calc(-1 * var(--rct-border-hairline));
+}

@@ -37,6 +37,8 @@ hdr() { echo -e "\n${BOLD}=== $* ===${NC}"; }
 warn() { echo -e "${YELLOW}!${NC} $*"; }
 
 OVERALL_FAIL=0
+INCOMPLETE=()
+incomplete() { INCOMPLETE+=("$1"); warn "INCOMPLETE: $1"; }
 
 # -----------------------------------------------------------------------------
 # 1. Environment secrets (M13 G13)
@@ -71,7 +73,7 @@ if [ -x scripts/validate-grafana-dashboards.sh ]; then
         OVERALL_FAIL=2
     fi
 else
-    warn "scripts/validate-grafana-dashboards.sh не найден или не executable"
+    incomplete "grafana-dashboard-validator"
 fi
 
 # -----------------------------------------------------------------------------
@@ -92,7 +94,7 @@ if command -v docker >/dev/null 2>&1; then
         OVERALL_FAIL=3
     fi
 else
-    warn "docker не найден — promtool check skipped (запусти на VPS перед deploy)"
+    incomplete "promtool-rules"
 fi
 
 # -----------------------------------------------------------------------------
@@ -113,7 +115,7 @@ if command -v docker >/dev/null 2>&1; then
         OVERALL_FAIL=4
     fi
 else
-    warn "docker не найден — compose validation skipped"
+    incomplete "compose-config"
 fi
 
 # -----------------------------------------------------------------------------
@@ -164,6 +166,10 @@ fi
 # Final verdict
 # -----------------------------------------------------------------------------
 echo
+if [ "$OVERALL_FAIL" -eq 0 ] && [ "${#INCOMPLETE[@]}" -gt 0 ]; then
+    printf 'INCOMPLETE: %s\n' "${INCOMPLETE[@]}"
+    exit 6
+fi
 if [ $OVERALL_FAIL -eq 0 ]; then
     echo -e "${GREEN}${BOLD}✓ Все pre-flight проверки прошли${NC}"
     echo "Можно деплоить: docker compose --env-file \"$ENV_FILE\" -f \"$COMPOSE_FILE\" up -d"

@@ -1,0 +1,36 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "fault-enum01",
+  "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "native_exit": 1,
+  "disk_aborted": false,
+  "seconds": 32.454,
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup()",
+      "status": "FAIL",
+      "failure_type": "java.lang.AssertionError"
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13386,
+      "sha256": "785877f17824be15959ad1859db3ab9100a6deb86bf6d2b2fb47968e247c60a6"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "a5dfe67507345045a6e8834411d443a7df0512c42a424849c206860b4454c4ac",
+  "free_bytes": 9005735936,
+  "utc": "2026-10-12T03:11:14Z"
+}

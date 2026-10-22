@@ -1,0 +1,74 @@
+{
+  "schema": "RCT_P10_INDEPENDENT_FINITE_FORMAT_COMPILE_ACTUAL_RECHECK_V1",
+  "utc": "2026-10-13T10:51:51.397Z",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "OUTCOME": "ACCEPT_FINITE_CANONICAL_FORMAT_AND_AUTH_COMPILE_ROOT_ONE_TEST_INTEGRATION_READY",
+  "findings": [],
+  "critical_source_review_sha256": "0537a736112ceb6d5c2c55b5256a45534652eb8d203895d51217cb6de6d89b9b",
+  "source": {
+    "semantic_commit": "425b40dd43dbc729ed923a586c6a280891a435cf",
+    "semantic_sha256": "a2865bfef3dc00c1208476677e82dea0b30e75679e454b1ab226a53a3dbc7e33",
+    "mechanical_commit": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+    "final_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+    "target": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "one_file_clean_head": true,
+    "independent_lexical_equivalence": "All token sequence after removing comments/whitespace and import ordering equal; all raw string/char/text-block literals byte equal; import sets and mode100644 equal. Original0537 Source review carries over."
+  },
+  "format": {
+    "tool_session": 84986,
+    "tool_exit": 0,
+    "marker_count": 2,
+    "apply_check_native0": true,
+    "report_sha256": "2d2fb1d8cd4adf634927676a98111fafd9ed136167206c5a12e63eb4ca5e9923",
+    "manifest_sha256": "ed0a969d3b0008fcc37033fc67513442f319c516a07548a90f2b534ff81f68e4",
+    "zip_sha256": "97a8985825ab990688fe54a0e243a6bbfbda622f05049b5fd8a9b1b169be75a2",
+    "grant_sha256_from_safe_dispatch_and_Root_resources": "de2d296981a6f9fef8e9ca2bf136ad9a0e56a33a3ff502cbbd8801fd998e6cee",
+    "terminal_utc": "2026-10-13T10:37:05.366816+00:00",
+    "protected_WT_inputs": 16,
+    "total_WT_inputs_with_target": 17
+  },
+  "compile": {
+    "tool_session": 63002,
+    "tool_exit": 0,
+    "fresh_completion_markers": {
+      "RCT_P06_AUTH_COMPILE_MAIN_OK": 1,
+      "RCT_P06_AUTH_COMPILE_TEST_OK": 1
+    },
+    "report_sha256": "4d29961f41675fd978400483f4b4e9d869ef04fa97ba956bb9deb9e8ef58adfa",
+    "manifest_sha256": "0bb0cf148839af434634e70bd4a4d97dd4c7cdd6a8d2c8f839817f4a4add31e1",
+    "zip_sha256": "1eca9a67f2080e601446b36f5cf56e0d180fb70f2d921844f2af99b492b817eb",
+    "grant_sha256_from_safe_dispatch_and_Root_resources": "c28bd0b43a4e355aa017e7fa24241bbf4ce40276872dd2c4e46ff04bbc6cb21c",
+    "terminal_utc": "2026-10-13T10:44:13.263961+00:00",
+    "WT_source_inputs": 17,
+    "checking_init_inputs": 1,
+    "effective_inputs_verified": 18,
+    "plan_sha256": "b4fc9144eec1531006526b9108f655c2d987fb7891ecc445ea1fe7a895f0d5d3",
+    "source_manifest_sha256": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "XML_evidence": "NONE_EXPECTED_COMPILE_ONLY_INHERITED_TERMINAL_XML_WORDING_NOT_TEST_PROOF"
+  },
+  "independent_checks": {
+    "two_original_safe_archives_CRC_members_bytes_and_manifests_exact": true,
+    "terminal_child_exit_dispatch_supervisor_identity_joins": true,
+    "each_six_unique_births_currently_absent": true,
+    "all_five_children_each_settled_reaped_without_signals": true,
+    "both_privateTMP_and_authority_envelope_paths_absent_current_metadata": true,
+    "five_callback_and_compile_init_files_byte_exact_reviewed_P06": true,
+    "formatter_init_inverse_exact_one_target_literal": true,
+    "compile_binding_only_base_testSHA_manifestSHA_bindingState_NULL_to_actual": true,
+    "both_terminal_times_after_fresh_Root_grant_and_before_cleanup_margin": true,
+    "current18_effective_pins_unchanged": true
+  },
+  "assessment": "Canonical one-file apply/check and applicable fresh Auth main/test compile accepted from closed reviewed marker producer and native0/settlement/Source joins; mechanical change preserves critical0537 test behavior. No concrete new risk requires rerun or whole Source review. Root may integrate only the assigned test Source and obtain current normalCI evidence.",
+  "outstanding": [
+    "Real HTTP exact new SOURCE_METHOD nonempty PASS/0F-E-S on actual reviewed integrated Source/checkout remains NOT_RUN; compile does not initialize real PG/Redis/Rabbit fixture or execute the test.",
+    "Separate relevant causal password-data sensitivity and restored GREEN required later. No fault preparation/runtime authority supplied here; B013 remains frozen.",
+    "Parent P10 UNKNOWN; current mandatory CI/Coverage/Security and full accepted matrix remain separate."
+  ],
+  "limits": [
+    "Read-only public Source/SAFE receipt/archive and exact /proc birth/TMP absence metadata; no Java/Gradle/Node/Docker/browser/API/new native/replay/child or product/Root/shared writes.",
+    "No private raw log/XML/body/credentials read or private log/body hash exported. Marker facts accepted from previously reviewed closed producer; no independent raw-log reread.",
+    "Resource peaks are sampled, not instantaneous hard isolation. Published Root grant times/hashes joined from SAFE records; private actual grant contents not opened.",
+    "Own finite review report only. Preferred next real test path existing current normalCI, no local3DB/new infrastructure or unchanged suites repeated."
+  ]
+}

@@ -1,0 +1,332 @@
+{
+  "at": "2026-10-12T02:13:17.833016+00:00",
+  "status": "EXACT_OWN_METADATA_CANDIDATES_ONLY_NO_PRUNE",
+  "candidates": [
+    {
+      "CreatedAt": "2026-10-11 23:59:55.387452467 +0000 UTC",
+      "Description": "[stage-0 3/5] WORKDIR /app",
+      "ID": "jdr4sxwhjnpni53brlg0x28gi",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "2o1w8rn791myfm6csayrdke60"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "0B",
+      "Type": "regular",
+      "UsageCount": 5,
+      "owner_service": "auth-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-auth-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/auth-service",
+      "owner_receipt_sha256": "533231a35af6e083ed593e8098ea10a4b925c0e50f7ed311bdbe8d929afa0d4d",
+      "owner_build_start": "2026-10-11T23:59:43.871586+00:00",
+      "owner_build_end": "2026-10-12T00:00:01.380091+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:06.904855892 +0000 UTC",
+      "Description": "[3/4] WORKDIR /app",
+      "ID": "vwidtwn33ziesiyfojrmw1hhj",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "l211f4paf5nx44yi805z2nyiz"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "0B",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "academic-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-academic-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/academic-service",
+      "owner_receipt_sha256": "5c8183521d45be674a107dd8c9ed10484e7f6285ae6ccb54d080e09da81e1b77",
+      "owner_build_start": "2026-10-12T00:00:01.381975+00:00",
+      "owner_build_end": "2026-10-12T00:00:08.053691+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:09.807159743 +0000 UTC",
+      "Description": "[3/4] WORKDIR /app",
+      "ID": "z9oag2b57kp1htgji7yb5tbe5",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "vuzw1c1bxukbxch5nhal5wdzw"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "0B",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "schedule-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-schedule-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/schedule-service",
+      "owner_receipt_sha256": "6bf264b13e544697872f2f55a6e6f7fbbc66bcbe3ecafa048033d0daa5ab3117",
+      "owner_build_start": "2026-10-12T00:00:08.056160+00:00",
+      "owner_build_end": "2026-10-12T00:00:11.052761+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-11 23:59:54.426503418 +0000 UTC",
+      "Description": "mount / from exec /bin/sh -c addgroup -S app && adduser -S app -G app",
+      "ID": "2o1w8rn791myfm6csayrdke60",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "dxmi5csxal0nj5oasdwgxxhsw"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "3.033kB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "auth-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-auth-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/auth-service",
+      "owner_receipt_sha256": "533231a35af6e083ed593e8098ea10a4b925c0e50f7ed311bdbe8d929afa0d4d",
+      "owner_build_start": "2026-10-11T23:59:43.871586+00:00",
+      "owner_build_end": "2026-10-12T00:00:01.380091+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:06.028797068 +0000 UTC",
+      "Description": "mount / from exec /bin/sh -c addgroup -S -g 10001 app && adduser -S -u 10001 app -G app",
+      "ID": "l211f4paf5nx44yi805z2nyiz",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "dxmi5csxal0nj5oasdwgxxhsw"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "3.041kB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "academic-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-academic-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/academic-service",
+      "owner_receipt_sha256": "5c8183521d45be674a107dd8c9ed10484e7f6285ae6ccb54d080e09da81e1b77",
+      "owner_build_start": "2026-10-12T00:00:01.381975+00:00",
+      "owner_build_end": "2026-10-12T00:00:08.053691+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:09.559160381 +0000 UTC",
+      "Description": "mount / from exec /bin/sh -c addgroup -S -g 10002 app && adduser -S -u 10002 app -G app",
+      "ID": "vuzw1c1bxukbxch5nhal5wdzw",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "dxmi5csxal0nj5oasdwgxxhsw"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "3.041kB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "schedule-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-schedule-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/schedule-service",
+      "owner_receipt_sha256": "6bf264b13e544697872f2f55a6e6f7fbbc66bcbe3ecafa048033d0daa5ab3117",
+      "owner_build_start": "2026-10-12T00:00:08.056160+00:00",
+      "owner_build_end": "2026-10-12T00:00:11.052761+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:00.955849561 +0000 UTC",
+      "Description": "mount / from exec /bin/sh -c cp /etc/ssl/cert.pem /tmp/rct-original-ca.pem &&     cat /run/secrets/system_ca > /etc/ssl/cert.pem &&     mkdir -p /keys &&     apk add --no-cache openssl &&     openssl genrsa -out /keys/private.key.pkcs1 3072 &&     openssl pkcs8 -topk8 -nocrypt -in /keys/private.key.pkcs1 -out /keys/private.key &&     openssl rsa -in /keys/private.key -pubout -out /keys/public.key &&     rm /keys/private.key.pkcs1 &&     head -c 4 /dev/urandom | od -A n -t x1 | tr -d ' \\n' > /keys/kid.txt &&     chown -R app:app /keys &&     chmod 600 /keys/private.key /keys/kid.txt &&     chmod 644 /keys/public.key &&     apk del openssl &&     mv /tmp/rct-original-ca.pem /etc/ssl/cert.pem",
+      "ID": "vz3s00i9bjxjdyrxw4a2rkkaw",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "xld9cixg2zf065ckuhu0wtjpr"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "3.571MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "auth-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-auth-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/auth-service",
+      "owner_receipt_sha256": "533231a35af6e083ed593e8098ea10a4b925c0e50f7ed311bdbe8d929afa0d4d",
+      "owner_build_start": "2026-10-11T23:59:43.871586+00:00",
+      "owner_build_end": "2026-10-12T00:00:01.380091+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:14.747613578 +0000 UTC",
+      "Description": "[4/4] COPY rootfs/ ./",
+      "ID": "lv1hxsvqr2gmwrrxx5s2u8efx",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "jdr4sxwhjnpni53brlg0x28gi"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "55.62MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "mobile-bff",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-mobile-bff.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/mobile-bff",
+      "owner_receipt_sha256": "cd015a3c6f9a3972e33c86ece9011fedfb7ae7ba7a154693cea94543ca9bd261",
+      "owner_build_start": "2026-10-12T00:00:13.268679+00:00",
+      "owner_build_end": "2026-10-12T00:00:15.041736+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:16.782195088 +0000 UTC",
+      "Description": "[4/4] COPY rootfs/ ./",
+      "ID": "w058d3omube7o0h9bpb87rafp",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "jdr4sxwhjnpni53brlg0x28gi"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "62.41MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "api-gateway",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-api-gateway.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/api-gateway",
+      "owner_receipt_sha256": "a7e53b04682c8aeacb8766dbc2d3f5de8afe88c1d729369100bd4eca929f487c",
+      "owner_build_start": "2026-10-12T00:00:15.042373+00:00",
+      "owner_build_end": "2026-10-12T00:00:17.038683+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:18.628393816 +0000 UTC",
+      "Description": "[4/4] COPY rootfs/ ./",
+      "ID": "i6ren2qwert8xq06ct7k0by2w",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "jdr4sxwhjnpni53brlg0x28gi"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "92.09MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "notification-web",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-notification-web.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/notification-web",
+      "owner_receipt_sha256": "10990df2b0cc4e00848d1830a8f35661f05d95da634bda95de572d44061281fc",
+      "owner_build_start": "2026-10-12T00:00:17.039517+00:00",
+      "owner_build_end": "2026-10-12T00:00:19.051401+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:10.229388375 +0000 UTC",
+      "Description": "[4/4] COPY rootfs/ ./",
+      "ID": "79f7cf5hn4fc74t4vjfark4g7",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "z9oag2b57kp1htgji7yb5tbe5"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "99.25MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "schedule-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-schedule-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/schedule-service",
+      "owner_receipt_sha256": "6bf264b13e544697872f2f55a6e6f7fbbc66bcbe3ecafa048033d0daa5ab3117",
+      "owner_build_start": "2026-10-12T00:00:08.056160+00:00",
+      "owner_build_end": "2026-10-12T00:00:11.052761+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:12.878664958 +0000 UTC",
+      "Description": "[4/4] COPY rootfs/ ./",
+      "ID": "popynjor3mjua1kxfpd7x8qy4",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "jdr4sxwhjnpni53brlg0x28gi"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "102.7MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "attendance-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-attendance-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/attendance-service",
+      "owner_receipt_sha256": "45350c862e78694bab4fbd65ab3cbe7235846c60282312473e500370d1ff89f1",
+      "owner_build_start": "2026-10-12T00:00:11.053407+00:00",
+      "owner_build_end": "2026-10-12T00:00:13.268155+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-11 23:59:57.064721295 +0000 UTC",
+      "Description": "[stage-0 4/5] COPY rootfs/ ./",
+      "ID": "xld9cixg2zf065ckuhu0wtjpr",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "jdr4sxwhjnpni53brlg0x28gi"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "105.8MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "auth-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-auth-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/auth-service",
+      "owner_receipt_sha256": "533231a35af6e083ed593e8098ea10a4b925c0e50f7ed311bdbe8d929afa0d4d",
+      "owner_build_start": "2026-10-11T23:59:43.871586+00:00",
+      "owner_build_end": "2026-10-12T00:00:01.380091+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    },
+    {
+      "CreatedAt": "2026-10-12 00:00:07.310272494 +0000 UTC",
+      "Description": "[4/4] COPY rootfs/ ./",
+      "ID": "k83nl6as79uj7497kzo8gzn6a",
+      "LastUsedAt": "2 hours ago",
+      "Mutable": false,
+      "Parents": [
+        "vwidtwn33ziesiyfojrmw1hhj"
+      ],
+      "Reclaimable": true,
+      "Shared": false,
+      "Size": "106.3MB",
+      "Type": "regular",
+      "UsageCount": 1,
+      "owner_service": "academic-service",
+      "owner_receipt": "/workspace/scratch/rct-validation/real_client_runtime/docker-build-receipts-02/build-academic-service.json",
+      "source_path": "/workspace/scratch/rct-validation/real_client_runtime/runtime-images/academic-service",
+      "owner_receipt_sha256": "5c8183521d45be674a107dd8c9ed10484e7f6285ae6ccb54d080e09da81e1b77",
+      "owner_build_start": "2026-10-12T00:00:01.381975+00:00",
+      "owner_build_end": "2026-10-12T00:00:08.053691+00:00",
+      "old_metadata_sha256": "474e4300375fb171351593392bd701b7078c0ee275289b9b5a547f3f08630f1f"
+    }
+  ],
+  "count": 14,
+  "logical_size_sum_bytes": 627750115,
+  "allocated_bytes": "UNKNOWN: Docker VFS du does not expose actual snapshot allocation; metadata is not freed bytes",
+  "protected": {
+    "native_renderer_image": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+    "rules": "Exclude ALL base/pulled/frontend/Shared=true/foreign records and nativeRenderer descendants. Preserve every protected image and every volume/source/JAR/evidence."
+  },
+  "exact_id_filter_proof": {
+    "unsupported": "id==ID rejected parse; no cleanup attempted",
+    "supported": "id=^ID$ du native0 on auth copy exact ID",
+    "file": "buildkit-exact-filter-proof.jsonl"
+  },
+  "later_action_template": [
+    "env -u DOCKER_HOST -u DOCKER_CONTEXT -u DOCKER_TLS -u DOCKER_TLS_VERIFY -u DOCKER_CERT_PATH BUILDX_CONFIG=<own-new-dir> docker --host=unix:///var/run/docker.sock buildx prune --filter id=^<one-exact-approved-id>$",
+    "Interactive confirmation after root exactIDs grant; no --all/global/wildcards; recheck selected ID Shared=false/Reclaimable/ownership and all protected images/containerrefs before each. Do not infer freed amount from logical sizes. Measure statvfs delta after bounded batch and keep native outcomes."
+  ],
+  "sufficient_capacity": false,
+  "no_mutation": true
+}

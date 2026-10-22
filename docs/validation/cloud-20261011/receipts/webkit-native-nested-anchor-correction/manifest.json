@@ -1,0 +1,246 @@
+{
+  "utc": "2026-10-12T18:16:45.180923+00:00",
+  "count": 34,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "size": 483,
+      "mode": "0o600",
+      "sha256": "818cc3a29f553e7bbd533f82ddd90c882e317ee079741d30de48ec2e8545c39d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "size": 1972,
+      "mode": "0o600",
+      "sha256": "979fa716a8dd17db33f33fc761b7b6b4a0a6466dba6af2ca36a97c13e54c8372"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/anchor-controls.py",
+      "relative_path": "anchor-controls.py",
+      "size": 3128,
+      "mode": "0o600",
+      "sha256": "ea029cbf28784f02fd60c0dfb6b964ca4968c8fc60d4f68ff32305cf0b8a0a5b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/anchor-controls.safe.json",
+      "relative_path": "anchor-controls.safe.json",
+      "size": 1809,
+      "mode": "0o600",
+      "sha256": "352b4f32fde07a35869d9c41d4419c64d9ec6e2c37c8af244cd344c2a7438e66"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/caller-controls.py",
+      "relative_path": "caller-controls.py",
+      "size": 11548,
+      "mode": "0o600",
+      "sha256": "b155057e5d21033627e03e8211c42686ba98f619618ad9a1ce918470eb7c3a38"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/caller-controls.safe.json",
+      "relative_path": "caller-controls.safe.json",
+      "size": 12333,
+      "mode": "0o600",
+      "sha256": "6610bf40e63fbb471031ff389e94db81b36040b71a3c2ff86b79fac735270a2d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/copy-controls.py",
+      "relative_path": "copy-controls.py",
+      "size": 3189,
+      "mode": "0o600",
+      "sha256": "4f7f4357ee6b507c6d2e053cad98af66cab2fcc080b245b59f1e4a3c982e8002"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/copy-controls.safe.json",
+      "relative_path": "copy-controls.safe.json",
+      "size": 1809,
+      "mode": "0o600",
+      "sha256": "2705a68049914d5b5ba3436e4fa1e743526063443b46dffe068295b4ec14609b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/custom-executable-proposal.py",
+      "relative_path": "custom-executable-proposal.py",
+      "size": 2025,
+      "mode": "0o600",
+      "sha256": "881e959391debab6f44430f143c21c6a4d49215997ced24f33799445fd2d5db9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/custom-wrapper-boundary.safe.json",
+      "relative_path": "custom-wrapper-boundary.safe.json",
+      "size": 1406,
+      "mode": "0o600",
+      "sha256": "1833873b7fd574638df0e25a78903e03b6f1616f6ed8b69017c29e3c285e97c7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/deadline-controls.py",
+      "relative_path": "deadline-controls.py",
+      "size": 8765,
+      "mode": "0o600",
+      "sha256": "5586bb7e74ebc7d941971515b3546f655254c7e6277476c8550ce18a5cc46b2d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/deadline-controls.safe.json",
+      "relative_path": "deadline-controls.safe.json",
+      "size": 3430,
+      "mode": "0o600",
+      "sha256": "81d21b2d75dcdac2581f85de1d06ef929928789f75421215258a6d282e85afd2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/extract-selected.py",
+      "relative_path": "extract-selected.py",
+      "size": 14053,
+      "mode": "0o600",
+      "sha256": "4c22b30b394f0e74caa887405f1459b741f37c085a2f3c7376736c26c4a5ea5e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/extraction-procedure.safe.json",
+      "relative_path": "extraction-procedure.safe.json",
+      "size": 2415,
+      "mode": "0o600",
+      "sha256": "35f4cfc858f725456696f35f55c75e633e3d9adf6f076e53637e544f1a42805c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/launch-schema.safe.json",
+      "relative_path": "launch-schema.safe.json",
+      "size": 7304,
+      "mode": "0o600",
+      "sha256": "bf5f73840fdbd57c8ad4882af536dca4d048ca91d952b9aefa64bedf5fe18b69"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/native-probe.py",
+      "relative_path": "native-probe.py",
+      "size": 7070,
+      "mode": "0o600",
+      "sha256": "1816f6a987d107410a1c6815b73935c5d45962033f391d45ee37215fedc5de0e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/native-tools.safe.json",
+      "relative_path": "native-tools.safe.json",
+      "size": 907,
+      "mode": "0o600",
+      "sha256": "266aea178c952fb6b598ba38d228c1232392abc2a69deef8b87f95cb4a97b4b4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/native-validation-procedure.safe.json",
+      "relative_path": "native-validation-procedure.safe.json",
+      "size": 31866,
+      "mode": "0o600",
+      "sha256": "46a95f60b8bd7d071f709d792bc27dcecda3d80304980078ab66daf758893587"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/original-preservation.safe.json",
+      "relative_path": "original-preservation.safe.json",
+      "size": 5789,
+      "mode": "0o600",
+      "sha256": "4c77ee6378d693c461952fc29be2117e192996030ad0656a0833489a17fae491"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/own-paths.py",
+      "relative_path": "own-paths.py",
+      "size": 3886,
+      "mode": "0o600",
+      "sha256": "f2b1e995e3fd9be2ca02dcf7df997f2c827fee210cf587c8e2df1defc190f5a9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/prior-authorities.safe.json",
+      "relative_path": "prior-authorities.safe.json",
+      "size": 1921,
+      "mode": "0o600",
+      "sha256": "d23b5cb5ce382878b3ef7af56d5a01f2071587943c89109666855afe0427899d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/prior-correction-preservation.safe.json",
+      "relative_path": "prior-correction-preservation.safe.json",
+      "size": 6744,
+      "mode": "0o600",
+      "sha256": "b9f4b09a710a654f118c1c3732e80e155be06839d4f7168f751c00c1f6ee0290"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/publication-controls.py",
+      "relative_path": "publication-controls.py",
+      "size": 3641,
+      "mode": "0o600",
+      "sha256": "d47acb02b2a5288594cc121386786baea9316116760392a178b4a73a789a892b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/publication-controls.safe.json",
+      "relative_path": "publication-controls.safe.json",
+      "size": 1229,
+      "mode": "0o600",
+      "sha256": "8c9bf19ba503658c60447a1883be14e41180e7388b0112f7bc941433a4752342"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/publication-source-preservation.safe.json",
+      "relative_path": "publication-source-preservation.safe.json",
+      "size": 10000,
+      "mode": "0o600",
+      "sha256": "e754c01e140f18cc377fb575124d4dc04312932dd97c6a5323f17375bd4d1ffc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/runtime-anchors.safe.json",
+      "relative_path": "runtime-anchors.safe.json",
+      "size": 1171,
+      "mode": "0o600",
+      "sha256": "e8581ae98340d682c6c15be7e058dabc40f55435dd99bbd6e0bbcfce2b06a791"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/selected-dso-headers.safe.json",
+      "relative_path": "selected-dso-headers.safe.json",
+      "size": 10266,
+      "mode": "0o600",
+      "sha256": "471e8831efec056e5d941bb0a9019d9f36ac0f883863369870831c0f134c8eb8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/selection.py",
+      "relative_path": "selection.py",
+      "size": 2236,
+      "mode": "0o600",
+      "sha256": "db0e9ccf49a2f6e11e4db0ee39f8e9d1aa96ba415419919f0e57298c49bb61eb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/signed-archive-inputs.safe.json",
+      "relative_path": "signed-archive-inputs.safe.json",
+      "size": 3531,
+      "mode": "0o600",
+      "sha256": "5f0b55e24cde22b9bab8ef7c54fb9198a3ce3bea1858f9de981ac6c3ead6a218"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/source-controls.py",
+      "relative_path": "source-controls.py",
+      "size": 3300,
+      "mode": "0o600",
+      "sha256": "b99d40f0a556b314cc57eb5b13b6e8771f9f04d71e7df9acac230934103877ae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/source-controls.safe.json",
+      "relative_path": "source-controls.safe.json",
+      "size": 3780,
+      "mode": "0o600",
+      "sha256": "71aa334d7a1db22737b4293749d94016c42b52f2a8c53222494cfa87e69e16b2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/use-gates.py",
+      "relative_path": "use-gates.py",
+      "size": 1281,
+      "mode": "0o600",
+      "sha256": "544f4342d6829ef7568a88830dacca5df4e02e60a5aa10e734d728be378399e1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/validate-native.py",
+      "relative_path": "validate-native.py",
+      "size": 10199,
+      "mode": "0o600",
+      "sha256": "71f9513399fbc8d6d1d3da0f23e1274d1a7c32402b91780ff9e02075bd547b1f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/webkit-custom-exec.py",
+      "relative_path": "webkit-custom-exec.py",
+      "size": 7583,
+      "mode": "0o555",
+      "sha256": "e16157a8c5db5aa8cced6dbc3ba25e582a607b10e89eecb963e32c21e267f81b"
+    }
+  ],
+  "private_inputs_and_DSO_binaries_excluded": true,
+  "nativeABI": "NOT_RUN"
+}

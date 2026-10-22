@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-13T16:38:23.135616+00:00",
+  "scope": "BOOT_PAYLOAD02_ORIGINAL_LOG_CONSUME_FINAL",
+  "result": "SAME12274_NATIVE1_STRICT_LOG_FORMAT_REFUSED_NO_PRODUCT_VERDICT",
+  "recorded_births": 2,
+  "all_known_births_fresh_absent": true,
+  "carrier_bytes": 284430,
+  "carrier_mode": "0o600",
+  "carrier_nlink": 1,
+  "raw_private_absent": true,
+  "REPORT_present": false,
+  "qualification": "Original captured text retained privately. Parser Source refuses ANSI SGR36/blank2/oneunprefixed row; completed_at seconds excludes final failure fractional second. No same parser/API retry; console fixed literal search separately establishes actual Gradle daemon timeout. Lease RELEASED; final read-only absence after hardstop qualified."
+}

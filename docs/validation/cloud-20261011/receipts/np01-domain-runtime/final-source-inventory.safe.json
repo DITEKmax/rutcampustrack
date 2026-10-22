@@ -1,0 +1,110 @@
+{
+  "state": "SOURCE_READY_FOR_INDEPENDENT_REVIEW",
+  "runtime": "NOT_RUN",
+  "base_commit": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "product_checkpoint": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "harness_checkpoint": "dc9acc4385c756ce7bf070f248feadc7c4dba234",
+  "final_source_commit": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+  "config_dependency": "5d564870e631a276d88ac5a4b97463929f9b6687",
+  "common_contract_dependency": "1dbee1831e58477b7ea455e0220751fda09284a0; product paths unchanged in common successor",
+  "python_ast_files": 12,
+  "generic_profile_method_byte_unchanged": true,
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java",
+      "sha256": "c45a9c13b563568860aea9da97622b3ecdabdbbe976cb2c3efd80f23e9f7c839"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialServiceIdentityInterceptor.java",
+      "sha256": "567ad68f32c37f7214f8bc092d5da65a47bc2ed7e96ba1cea427c6101e7125d7"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialsService.java",
+      "sha256": "917f7a1312e88a2b1c5badab34230f2b797aa31c445fb09865e25a479e0e3e7d"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotOwnInitialCredentialsQuery.java",
+      "sha256": "0664e81daccc73468886e5e5d58da4776606d7e078d456ac037cd9537871dca9"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sha256": "396aaab6cd24392941737331bd5f2c42c812dc198bc9908fa3a2999762b6e89b"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+      "sha256": "db140be01f4be426baadc86d7e5adc9e4cef7c3f0785dbdb2f76f85f540040a4"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+      "sha256": "607e7e7ecf95b0d5fa5fb276abb57969dd2ee68fff989fd554f8c1eb6ce86a71"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialServiceIdentityInterceptorTest.java",
+      "sha256": "a1b8389f8c0846bedcf32cab99ee2b7ad775c7198ce32eefe05f3f27a21d9ab8"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedEvent.java",
+      "sha256": "39f5cfb2babd8884f474bef35f183d74ce3d0b21139227f3cdccf165d203b173"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "sha256": "913c31f242faaddd0a8cc45261e318f03ab53e3a65656cc96a0510d10b767352"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+      "sha256": "4bf21512bc882e5cd8dbffe1de49f001ff5988d89ea2dd93c4491798553d40e6"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "sha256": "97a58eebbcaa342c7a9b5c59072b75d50041d5c502bdc67c89dedeaf589ec3c7"
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0"
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+      "sha256": "c57bb4bbbd273eef447d6af703e3ebd47b86b371b6d0f465f54118c4a9c74124"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+      "sha256": "b4e043e54057c03da54bff89857314274b6bbba1ac100a1db8998d7fc9388727"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+      "sha256": "16fe232cd7c544ba2e179685b9c35fef88fe4926547eb34dcb887274be621e14"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/start.py",
+      "sha256": "1a75ee21186fe277997bd9b84d81afa6d33fc40ce90ee71445bb7a9c7f4081a3"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5"
+    },
+    {
+      "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+      "sha256": "e3d8989fa3e84219997984a9672b15280f092680ac779d838d5af5430667ee03"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f"
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "sha256": "5ca0e87e09e68e6c28252202c7cd20113544e8f9e430fbbea1b0f1ed403e97db"
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+      "sha256": "89afa08c158ef861de08f005f310d6634142e54b4a3e3ef457522691cc7728dd"
+    },
+    {
+      "path": "services/notification-bot/tests/test_password_changed.py",
+      "sha256": "000fd42d30b661ab9ed251114ff59096d7539693040f6d41493bb1dbcad9d8f1"
+    },
+    {
+      "path": "services/notification-bot/tests/test_start_handler.py",
+      "sha256": "8de37ee97d3995067cbf661a4288a9e20d1ab7545d85210408d4634e5c0d3be6"
+    }
+  ]
+}

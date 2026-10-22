@@ -1,0 +1,136 @@
+{
+  "schema": "RCT_D002_CLOSED_STEP_BROWSER01_ACTUAL_V1",
+  "state": "FINITE_FAILED_BEFORE_ORIGINAL_OPERATION_CAUSE_UNKNOWN",
+  "utc": "2026-10-13T03:47:28.837558+00:00",
+  "tool_session": 14894,
+  "tool_native_exit": 0,
+  "playwright_native_exit": 1,
+  "prepared_source_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "execution_checkout_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "cohort": "restart-20261013-next04",
+  "result": {
+    "file": "mobile-real-server.spec.ts",
+    "line": 367,
+    "project": "chromium",
+    "status": "failed",
+    "expectedStatus": "passed",
+    "durationMs": 442,
+    "errorCount": 1,
+    "diagnostics": [
+      {
+        "stage": "UNKNOWN",
+        "cause": "UNKNOWN",
+        "httpStatus": 0
+      }
+    ],
+    "errorLocations": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 367
+      }
+    ]
+  },
+  "observer": {
+    "schema_valid": true,
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "events": 36,
+    "ignored": 22,
+    "unknown_hook_fixture_events": 32,
+    "all_steps_paired": true,
+    "original_operations": 0,
+    "pwa_auth_operations": 0,
+    "wrapper_clock_line5_begin_end": true,
+    "classification": "NO_ORIGINAL_OR_PWA_AUTH_OPERATION_OBSERVED_NOT_PRIOR_TIMEOUT_REPRODUCTION"
+  },
+  "births": [
+    {
+      "pid": 467082,
+      "start_ticks": 11680630,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467104,
+      "start_ticks": 11680812,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467178,
+      "start_ticks": 11681326,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467243,
+      "start_ticks": 11681562,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467245,
+      "start_ticks": 11681581,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467246,
+      "start_ticks": 11681581,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467262,
+      "start_ticks": 11681605,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467278,
+      "start_ticks": 11681650,
+      "absent_or_replaced": true
+    },
+    {
+      "pid": 467292,
+      "start_ticks": 11681663,
+      "absent_or_replaced": true
+    }
+  ],
+  "all_known_births_absent_or_replaced": true,
+  "owned_lease": "RELEASED",
+  "private_tmp_removed": true,
+  "transform_cache_removed": true,
+  "transform_cache_checked_mode": "0700",
+  "source_checks": {
+    "root19": {
+      "count": 19,
+      "all_match": true
+    },
+    "own": {
+      "count": 12,
+      "all_match": true
+    },
+    "runtime": {
+      "count": 13,
+      "all_match": true
+    },
+    "clock": {
+      "count": 2,
+      "all_match": true
+    },
+    "dependencies7": {
+      "count": 7,
+      "all_match": true
+    },
+    "academic_ready_stand_bind": {
+      "all_match": true
+    }
+  },
+  "peaks": {
+    "owned_rss_bytes": 688648192,
+    "run_allocated_bytes": 577536,
+    "shared_memory_bytes": 11177504768
+  },
+  "signal_count": 0,
+  "qualifications": [
+    "Original367 failed in442ms withoneclosedUNKNOWN diagnostic; earlier60160msTIMEOUT cause remainsUNKNOWN.",
+    "Public step BEGIN/END doesnot prove success. Datasetfixture/internal operations outside sourceallowlist areignored; zeroORIGINAL/PWA_AUTH events bounds observation, not root cause.",
+    "All9supervisor-and-childbirthsabsent/replaced; no retry260/SWprobe/APIwitness/browserbootstrap performed.",
+    "SampledRSS/TMP/shared controls are finite observations, not hardOSisolation.",
+    "D002 acceptance and parentfamilies remainUNKNOWN; prior260finitePASS retained separately."
+  ]
+}

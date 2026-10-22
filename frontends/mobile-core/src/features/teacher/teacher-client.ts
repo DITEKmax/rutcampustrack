@@ -1,6 +1,9 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { validatedTeacherJournalReportSelector } from '../../shared/report-download-client'
-import { normalizeLessonSlotCatalog, type HeadmanLessonSlotCatalog } from '../schedule/headman-schedule-client'
+import {
+  normalizeLessonSlotCatalog,
+  type HeadmanLessonSlotCatalog,
+} from '../schedule/headman-schedule-client'
 import type {
   ReportDownloadFormat,
   ReportDownloadTicketRequest,
@@ -108,12 +111,15 @@ interface TeacherJournalQueryBase {
   readonly page?: number
   readonly pageSize?: number
   readonly pastOnly?: boolean
+  readonly includeMetrics?: boolean
+  readonly metricsStudentId?: number | undefined
 }
 
-export type TeacherJournalQuery = TeacherJournalQueryBase & (
-  | { readonly lessonType: string; readonly lessonTypes?: never }
-  | { readonly lessonType?: never; readonly lessonTypes: readonly string[] }
-)
+export type TeacherJournalQuery = TeacherJournalQueryBase &
+  (
+    | { readonly lessonType: string; readonly lessonTypes?: never }
+    | { readonly lessonType?: never; readonly lessonTypes: readonly string[] }
+  )
 
 export function teacherJournalTypes(query: TeacherJournalQuery): readonly string[] {
   return query.lessonTypes ?? (query.lessonType ? [query.lessonType] : [])
@@ -139,6 +145,19 @@ export function toTeacherJournalReportRequest(
   }
 }
 
+export interface TeacherJournalLessonMetrics {
+  readonly lessonId: number
+  readonly present: TeacherStatsMetric
+  readonly presentOrExcused: TeacherStatsMetric
+  readonly excused: TeacherStatsMetric
+  readonly absent: TeacherStatsMetric
+}
+export interface TeacherJournalMetrics {
+  readonly students: readonly TeacherStatsStudent[]
+  readonly series: readonly TeacherJournalLessonMetrics[]
+  readonly selectedStudentId: number | null
+  readonly serverNow: string
+}
 export interface TeacherJournalResponse {
   readonly lessons: readonly TeacherDayLesson[]
   readonly students: readonly TeacherJournalStudent[]
@@ -147,6 +166,7 @@ export interface TeacherJournalResponse {
   readonly pageSize: number
   readonly totalLessons: number
   readonly hasMore: boolean
+  readonly metrics?: TeacherJournalMetrics | null
 }
 
 export type TeacherExportFormatCode = ReportDownloadFormat
@@ -258,7 +278,12 @@ export interface TeacherCatalogResponse {
 
 export interface TeacherSearchResponse {
   readonly groups: readonly { readonly id: string; readonly name: string }[]
-  readonly students: readonly { readonly id: string; readonly displayName: string; readonly groupId: string; readonly groupName: string }[]
+  readonly students: readonly {
+    readonly id: string
+    readonly displayName: string
+    readonly groupId: string
+    readonly groupName: string
+  }[]
   readonly truncated: boolean
 }
 
@@ -331,7 +356,10 @@ export interface TeacherApiOptions {
 }
 
 export class TeacherApiError extends Error {
-  constructor(readonly response: Response, readonly problem: unknown) {
+  constructor(
+    readonly response: Response,
+    readonly problem: unknown,
+  ) {
     super(problemDetail(problem) ?? `HTTP ${response.status}`)
     this.name = 'TeacherApiError'
   }
@@ -352,14 +380,19 @@ export class TeacherApi {
     return this.request<unknown>('/api/schedule/lesson-slots').then(normalizeLessonSlotCatalog)
   }
 
-  assignments(semesterId: number, dateFrom: string, dateTo: string): Promise<readonly TeacherAssignment[]> {
+  assignments(
+    semesterId: number,
+    dateFrom: string,
+    dateTo: string,
+  ): Promise<readonly TeacherAssignment[]> {
     assertPositiveInteger(semesterId, 'semesterId')
     assertDate(dateFrom, 'dateFrom')
     assertDate(dateTo, 'dateTo')
     if (dateFrom > dateTo) throw new RangeError('dateFrom must be before or equal to dateTo')
     const query = new URLSearchParams({ semesterId: String(semesterId), dateFrom, dateTo })
-    return this.request<unknown>(`/api/v1/teacher/assignments?${query.toString()}`)
-      .then((value) => arrayValue(value).map(normalizeAssignment))
+    return this.request<unknown>(`/api/v1/teacher/assignments?${query.toString()}`).then((value) =>
+      arrayValue(value).map(normalizeAssignment),
+    )
   }
 
   day(semesterId: number, date: string): Promise<TeacherDayResponse> {
@@ -371,7 +404,9 @@ export class TeacherApi {
 
   lesson(lessonId: number): Promise<TeacherLessonResponse> {
     assertPositiveInteger(lessonId, 'lessonId')
-    return this.request<unknown>(`/api/v1/teacher/lessons/${lessonId}`).then((value) => normalizeLesson(value))
+    return this.request<unknown>(`/api/v1/teacher/lessons/${lessonId}`).then((value) =>
+      normalizeLesson(value),
+    )
   }
 
   journal(query: TeacherJournalQuery): Promise<TeacherJournalResponse> {
@@ -383,6 +418,12 @@ export class TeacherApi {
       throw new RangeError('lessonTypes must contain one to three values')
     }
     lessonTypes.forEach((lessonType) => assertText(lessonType, 'lessonType'))
+    if (query.includeMetrics !== undefined && typeof query.includeMetrics !== 'boolean')
+      throw new RangeError('includeMetrics must be boolean')
+    if (query.metricsStudentId !== undefined) {
+      assertPositiveInteger(query.metricsStudentId, 'metricsStudentId')
+      if (query.includeMetrics !== true) throw new RangeError('metricsStudentId requires metrics')
+    }
     const period = journalPeriod(query.dateFrom, query.dateTo)
     const page = query.page ?? 0
     const pageSize = query.pageSize ?? 100
@@ -395,6 +436,10 @@ export class TeacherApi {
       page: String(page),
       pageSize: String(pageSize),
     })
+    if (query.includeMetrics !== undefined)
+      params.set('includeMetrics', String(query.includeMetrics))
+    if (query.metricsStudentId !== undefined)
+      params.set('metricsStudentId', String(query.metricsStudentId))
     for (const lessonType of lessonTypes) params.append('lessonType', lessonType)
     if (query.pastOnly !== undefined) {
       if (typeof query.pastOnly !== 'boolean') throw new RangeError('pastOnly must be boolean')
@@ -404,22 +449,26 @@ export class TeacherApi {
       params.set('dateFrom', period.dateFrom)
       params.set('dateTo', period.dateTo)
     }
-    return this.request<unknown>(`/api/v1/teacher/journal?${params.toString()}`)
-      .then(normalizeJournal)
+    return this.request<unknown>(`/api/v1/teacher/journal?${params.toString()}`).then(
+      normalizeJournal,
+    )
   }
 
   journalExportFormats(): Promise<readonly TeacherExportFormat[]> {
-    return this.request<unknown>('/api/v1/teacher/journal/export/formats')
-      .then((value) => {
-        const record = requiredRecord(value)
-        const formats = arrayValue(record.formats).map(normalizeExportFormat)
-        if (formats.length !== 5
-          || new Set(formats.map((format) => format.code)).size !== 5
-          || !(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).every((code) => formats.some((format) => format.code === code))) {
-          throw new Error('Сервер вернул неполный список форматов журнала.')
-        }
-        return formats
-      })
+    return this.request<unknown>('/api/v1/teacher/journal/export/formats').then((value) => {
+      const record = requiredRecord(value)
+      const formats = arrayValue(record.formats).map(normalizeExportFormat)
+      if (
+        formats.length !== 5 ||
+        new Set(formats.map((format) => format.code)).size !== 5 ||
+        !(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).every((code) =>
+          formats.some((format) => format.code === code),
+        )
+      ) {
+        throw new Error('Сервер вернул неполный список форматов журнала.')
+      }
+      return formats
+    })
   }
 
   async exportJournal(query: TeacherJournalExportQuery): Promise<TeacherJournalExportFile> {
@@ -449,22 +498,26 @@ export class TeacherApi {
       params.set('pastOnly', String(query.pastOnly))
     }
     if (query.lessonId != null) {
-      if (typeof query.lessonId !== 'string' || !/^[1-9]\d*$/.test(query.lessonId)) throw new RangeError('lessonId must be a positive identifier')
+      if (typeof query.lessonId !== 'string' || !/^[1-9]\d*$/.test(query.lessonId))
+        throw new RangeError('lessonId must be a positive identifier')
       params.set('lessonId', query.lessonId)
     }
-    const response = await this.response(
-      `/api/v1/teacher/journal/export?${params.toString()}`,
-      { headers: { Accept: 'application/octet-stream' } },
-    )
+    const response = await this.response(`/api/v1/teacher/journal/export?${params.toString()}`, {
+      headers: { Accept: 'application/octet-stream' },
+    })
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
     this.options.assertCurrent?.()
     if (blob.size === 0) throw new Error('Сервер вернул пустой файл журнала.')
-    const contentType = response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
+    const contentType =
+      response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
     const filename = downloadFilename(response.headers.get('Content-Disposition'))
     const expectedExtension = query.format === 'png' ? 'zip' : query.format
-    if (!filename || !filename.toLowerCase().endsWith(`.${expectedExtension}`)
-      || contentType !== TEACHER_EXPORT_CONTENT_TYPES[query.format]) {
+    if (
+      !filename ||
+      !filename.toLowerCase().endsWith(`.${expectedExtension}`) ||
+      contentType !== TEACHER_EXPORT_CONTENT_TYPES[query.format]
+    ) {
       throw new Error('Сервер вернул некорректные метаданные файла журнала.')
     }
     return { blob, filename, contentType }
@@ -473,16 +526,24 @@ export class TeacherApi {
   catalog(semesterId: number): Promise<TeacherCatalogResponse> {
     assertPositiveInteger(semesterId, 'semesterId')
     const params = new URLSearchParams({ semesterId: String(semesterId) })
-    return this.request<unknown>(`/api/v1/teacher/catalog?${params.toString()}`).then(normalizeCatalog)
+    return this.request<unknown>(`/api/v1/teacher/catalog?${params.toString()}`).then(
+      normalizeCatalog,
+    )
   }
 
   search(semesterId: number, query: string): Promise<TeacherSearchResponse> {
     assertPositiveInteger(semesterId, 'semesterId')
-    if (typeof query !== 'string' || query.length > 128 || query.trim() !== '' && query.trim().length < 2) {
+    if (
+      typeof query !== 'string' ||
+      query.length > 128 ||
+      (query.trim() !== '' && query.trim().length < 2)
+    ) {
       throw new RangeError('Введи от 2 до 128 символов для поиска.')
     }
     const params = new URLSearchParams({ semesterId: String(semesterId), q: query })
-    return this.request<unknown>(`/api/v1/teacher/search?${params.toString()}`, { cache: 'no-store' }).then(normalizeTeacherSearch)
+    return this.request<unknown>(`/api/v1/teacher/search?${params.toString()}`, {
+      cache: 'no-store',
+    }).then(normalizeTeacherSearch)
   }
 
   stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
@@ -491,38 +552,47 @@ export class TeacherApi {
   }
 
   statsExportFormats(): Promise<readonly TeacherExportFormat[]> {
-    return this.request<unknown>('/api/v1/teacher/stats/export/formats')
-      .then((value) => {
-        const record = requiredRecord(value)
-        const formats = arrayValue(record.formats).map((item) => normalizeStatsExportFormat(item))
-        if (formats.length !== 5
-          || new Set(formats.map((format) => format.code)).size !== 5
-          || !(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).every((code) => formats.some((format) => format.code === code))) {
-          throw new Error('Сервер вернул неполный список форматов статистики.')
-        }
-        return formats
-      })
+    return this.request<unknown>('/api/v1/teacher/stats/export/formats').then((value) => {
+      const record = requiredRecord(value)
+      const formats = arrayValue(record.formats).map((item) => normalizeStatsExportFormat(item))
+      if (
+        formats.length !== 5 ||
+        new Set(formats.map((format) => format.code)).size !== 5 ||
+        !(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).every((code) =>
+          formats.some((format) => format.code === code),
+        )
+      ) {
+        throw new Error('Сервер вернул неполный список форматов статистики.')
+      }
+      return formats
+    })
   }
 
-  async exportStats(query: TeacherStatsQuery, format: TeacherExportFormatCode): Promise<TeacherStatsExportFile> {
+  async exportStats(
+    query: TeacherStatsQuery,
+    format: TeacherExportFormatCode,
+  ): Promise<TeacherStatsExportFile> {
     const params = this.statsQueryParams(query)
     if (!(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).includes(format)) {
       throw new RangeError('format is invalid')
     }
     params.set('format', format)
-    const response = await this.response(
-      `/api/v1/teacher/stats/export?${params.toString()}`,
-      { headers: { Accept: 'application/octet-stream' } },
-    )
+    const response = await this.response(`/api/v1/teacher/stats/export?${params.toString()}`, {
+      headers: { Accept: 'application/octet-stream' },
+    })
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
     this.options.assertCurrent?.()
     if (blob.size === 0) throw new Error('Сервер вернул пустой файл статистики.')
-    const contentType = response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
+    const contentType =
+      response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
     const filename = downloadFilename(response.headers.get('Content-Disposition'))
     const expectedExtension = format === 'png' ? 'zip' : format
-    if (!filename || !filename.toLowerCase().endsWith(`.${expectedExtension}`)
-      || contentType !== TEACHER_EXPORT_CONTENT_TYPES[format]) {
+    if (
+      !filename ||
+      !filename.toLowerCase().endsWith(`.${expectedExtension}`) ||
+      contentType !== TEACHER_EXPORT_CONTENT_TYPES[format]
+    ) {
       throw new Error('Сервер вернул некорректные метаданные файла статистики.')
     }
     return { blob, filename, contentType }
@@ -534,8 +604,9 @@ export class TeacherApi {
 
   excuse(requestId: string): Promise<TeacherExcuseResponse> {
     assertText(requestId, 'requestId')
-    return this.request<unknown>(`/api/v1/teacher/excuses/${encodeURIComponent(requestId)}`)
-      .then(normalizeExcuse)
+    return this.request<unknown>(`/api/v1/teacher/excuses/${encodeURIComponent(requestId)}`).then(
+      normalizeExcuse,
+    )
   }
 
   async downloadAttachment(requestId: string, attachmentId: string): Promise<Blob> {
@@ -554,7 +625,7 @@ export class TeacherApi {
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.response(path, init, retried)
     if (!response.ok) throw await this.apiError(response)
-    const value = response.status === 204 ? undefined as T : await response.json() as T
+    const value = response.status === 204 ? (undefined as T) : ((await response.json()) as T)
     this.options.assertCurrent?.()
     return value
   }
@@ -576,7 +647,11 @@ export class TeacherApi {
 
   private async apiError(response: Response): Promise<TeacherApiError> {
     let problem: unknown = null
-    try { problem = await response.json() } catch { /* Preserve status. */ }
+    try {
+      problem = await response.json()
+    } catch {
+      /* Preserve status. */
+    }
     this.options.assertCurrent?.()
     return new TeacherApiError(response, problem)
   }
@@ -584,9 +659,13 @@ export class TeacherApi {
 
 function createTeacherStatsQueryParams(query: TeacherStatsQuery): URLSearchParams {
   assertPositiveInteger(query.semesterId, 'semesterId')
-  if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
-  assertPositiveInteger(query.groupId ?? 0, 'groupId')
-  assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+  if (query.scope !== 'students' && query.scope !== 'groups')
+    throw new RangeError('scope is invalid')
+  const allGroups = query.scope === 'groups' && query.groupId == null && query.subjectId == null
+  if (!allGroups) {
+    assertPositiveInteger(query.groupId ?? 0, 'groupId')
+    assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+  }
   if (!query.lessonTypes?.length) throw new RangeError('select at least one lessonType')
   const params = new URLSearchParams({
     semesterId: String(query.semesterId),
@@ -638,29 +717,46 @@ export function createGenerationBoundTeacherApi(
       await owner.refreshFor(generation)
       assertCurrent()
     },
-    fetcher: fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init)),
+    fetcher:
+      fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init)),
   })
 }
 
 function normalizeTeacherSearch(value: unknown): TeacherSearchResponse {
   const record = requiredRecord(value)
-  if (!Array.isArray(record.groups) || !Array.isArray(record.students)
-    || record.groups.length > 20 || record.students.length > 50) throw new Error('Сервер вернул некорректные результаты поиска.')
+  if (
+    !Array.isArray(record.groups) ||
+    !Array.isArray(record.students) ||
+    record.groups.length > 20 ||
+    record.students.length > 50
+  )
+    throw new Error('Сервер вернул некорректные результаты поиска.')
   const canonicalId = (value: unknown, field: string): string => {
-    if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) throw new Error(`Сервер вернул некорректный идентификатор ${field}.`)
+    if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value))
+      throw new Error(`Сервер вернул некорректный идентификатор ${field}.`)
     return value
   }
-  const groups = record.groups.map(value => {
+  const groups = record.groups.map((value) => {
     const group = requiredRecord(value)
-    return { id: canonicalId(group.id, 'search.group.id'), name: requiredString(group.name, 'search.group.name') }
+    return {
+      id: canonicalId(group.id, 'search.group.id'),
+      name: requiredString(group.name, 'search.group.name'),
+    }
   })
-  const students = record.students.map(value => {
+  const students = record.students.map((value) => {
     const student = requiredRecord(value)
-    return { id: canonicalId(student.id, 'search.student.id'), displayName: requiredString(student.displayName, 'search.student.displayName'),
-      groupId: canonicalId(student.groupId, 'search.student.groupId'), groupName: requiredString(student.groupName, 'search.student.groupName') }
+    return {
+      id: canonicalId(student.id, 'search.student.id'),
+      displayName: requiredString(student.displayName, 'search.student.displayName'),
+      groupId: canonicalId(student.groupId, 'search.student.groupId'),
+      groupName: requiredString(student.groupName, 'search.student.groupName'),
+    }
   })
-  if (new Set(groups.map(group => group.id)).size !== groups.length
-    || new Set(students.map(student => `${student.groupId}:${student.id}`)).size !== students.length) throw new Error('Сервер вернул повторяющиеся результаты поиска.')
+  if (
+    new Set(groups.map((group) => group.id)).size !== groups.length ||
+    new Set(students.map((student) => `${student.groupId}:${student.id}`)).size !== students.length
+  )
+    throw new Error('Сервер вернул повторяющиеся результаты поиска.')
   return { groups, students, truncated: requiredBoolean(record.truncated, 'search.truncated') }
 }
 
@@ -689,8 +785,11 @@ function normalizeExportFormat(value: unknown): TeacherExportFormat {
   const extension = requiredString(record.extension, 'exportFormat.extension')
   const contentType = requiredString(record.contentType, 'exportFormat.contentType')
   const expectedExtension = code === 'png' ? 'zip' : code
-  if (extension !== expectedExtension
-    || contentType.split(';', 1)[0]?.trim().toLowerCase() !== TEACHER_EXPORT_CONTENT_TYPES[code as TeacherExportFormatCode]) {
+  if (
+    extension !== expectedExtension ||
+    contentType.split(';', 1)[0]?.trim().toLowerCase() !==
+      TEACHER_EXPORT_CONTENT_TYPES[code as TeacherExportFormatCode]
+  ) {
     throw new Error('Сервер вернул несовместимые метаданные формата журнала.')
   }
   return {
@@ -710,8 +809,11 @@ function normalizeStatsExportFormat(value: unknown): TeacherExportFormat {
   const extension = requiredString(record.extension, 'statsExportFormat.extension')
   const contentType = requiredString(record.contentType, 'statsExportFormat.contentType')
   const expectedExtension = code === 'png' ? 'zip' : code
-  if (extension !== expectedExtension
-    || contentType.split(';', 1)[0]?.trim().toLowerCase() !== TEACHER_EXPORT_CONTENT_TYPES[code as TeacherExportFormatCode]) {
+  if (
+    extension !== expectedExtension ||
+    contentType.split(';', 1)[0]?.trim().toLowerCase() !==
+      TEACHER_EXPORT_CONTENT_TYPES[code as TeacherExportFormatCode]
+  ) {
     throw new Error('Сервер вернул несовместимые метаданные формата статистики.')
   }
   return {
@@ -760,7 +862,9 @@ function normalizeLesson(value: unknown): TeacherLessonResponse {
   const record = requiredRecord(value)
   return {
     lesson: normalizeDayLesson(record.lesson),
-    roster: arrayValue(record.roster).map(normalizeRoster).sort((left, right) => left.displayName.localeCompare(right.displayName, 'ru')),
+    roster: arrayValue(record.roster)
+      .map(normalizeRoster)
+      .sort((left, right) => left.displayName.localeCompare(right.displayName, 'ru')),
     serverNow: requiredString(record.serverNow, 'lesson.serverNow'),
   }
 }
@@ -769,19 +873,65 @@ function normalizeJournal(value: unknown): TeacherJournalResponse {
   const record = requiredRecord(value)
   return {
     lessons: arrayValue(record.lessons).map(normalizeDayLesson).sort(compareLessons),
-    students: arrayValue(record.students).map(normalizeStudent).sort((left, right) => left.displayName.localeCompare(right.displayName, 'ru')),
+    students: arrayValue(record.students)
+      .map(normalizeStudent)
+      .sort((left, right) => left.displayName.localeCompare(right.displayName, 'ru')),
     serverNow: requiredString(record.serverNow, 'journal.serverNow'),
     page: nonNegativeInteger(record.page, 'journal.page'),
     pageSize: pageSizeValue(record.pageSize, 'journal.pageSize'),
     totalLessons: nonNegativeInteger(record.totalLessons, 'journal.totalLessons'),
     hasMore: requiredBoolean(record.hasMore, 'journal.hasMore'),
+    metrics: record.metrics == null ? null : normalizeJournalMetrics(record.metrics),
+  }
+}
+
+function normalizeJournalMetrics(value: unknown): TeacherJournalMetrics {
+  const record = requiredRecord(value)
+  if (!Array.isArray(record.students) || !Array.isArray(record.series))
+    throw new Error('Метрики журнала недоступны.')
+  const students = record.students.map(normalizeStatsStudent)
+  const series = record.series.map((value) => {
+    const point = requiredRecord(value)
+    return {
+      lessonId: positiveInteger(point.lessonId, 'journal.metrics.lessonId'),
+      present: normalizeStatsMetric(point.present),
+      presentOrExcused: normalizeStatsMetric(point.presentOrExcused),
+      excused: normalizeStatsMetric(point.excused),
+      absent: normalizeStatsMetric(point.absent),
+    }
+  })
+  if (
+    new Set(students.map((row) => row.studentId)).size !== students.length ||
+    new Set(series.map((point) => point.lessonId)).size !== series.length
+  )
+    throw new Error('Метрики журнала несогласованы.')
+  const selectedStudentId =
+    record.selectedStudentId == null
+      ? null
+      : positiveInteger(record.selectedStudentId, 'journal.metrics.studentId')
+  if (selectedStudentId !== null && !students.some((row) => row.studentId === selectedStudentId))
+    throw new Error('Студент недоступен в журнале.')
+  for (const row of [...students, ...series]) {
+    if (
+      [row.presentOrExcused, row.excused, row.absent].some(
+        (metric) => metric.denominator !== row.present.denominator,
+      )
+    )
+      throw new Error('Знаменатели метрик журнала несогласованы.')
+  }
+  return {
+    students,
+    series,
+    selectedStudentId,
+    serverNow: requiredString(record.serverNow, 'journal.metrics.serverNow'),
   }
 }
 
 function normalizeStats(value: unknown): TeacherStatsResponse {
   const record = requiredRecord(value)
   const scope = requiredString(record.scope, 'stats.scope')
-  if (scope !== 'students' && scope !== 'groups') throw new Error('Сервер вернул неизвестный разрез статистики.')
+  if (scope !== 'students' && scope !== 'groups')
+    throw new Error('Сервер вернул неизвестный разрез статистики.')
   return {
     scope,
     semesterId: positiveInteger(record.semesterId, 'stats.semesterId'),
@@ -797,28 +947,45 @@ function normalizeStats(value: unknown): TeacherStatsResponse {
 
 function normalizeCatalog(value: unknown): TeacherCatalogResponse {
   const record = requiredRecord(value)
-  if (!Array.isArray(record.groups) || !Array.isArray(record.subjectOptions) || !Array.isArray(record.taughtSubjectOptions)) {
+  if (
+    !Array.isArray(record.groups) ||
+    !Array.isArray(record.subjectOptions) ||
+    !Array.isArray(record.taughtSubjectOptions)
+  ) {
     throw new Error('Сервер вернул некорректный каталог преподавателя.')
   }
-  const groups = record.groups.map(value => {
+  const groups = record.groups.map((value) => {
     const group = requiredRecord(value)
-    return { id: positiveInteger(group.id, 'catalog.group.id'), name: requiredString(group.name, 'catalog.group.name') }
+    return {
+      id: positiveInteger(group.id, 'catalog.group.id'),
+      name: requiredString(group.name, 'catalog.group.name'),
+    }
   })
-  const groupIds = new Set(groups.map(group => group.id))
-  const subjectOptions = record.subjectOptions.map(value => {
+  const groupIds = new Set(groups.map((group) => group.id))
+  const subjectOptions = record.subjectOptions.map((value) => {
     const option = requiredRecord(value)
-    if (!Array.isArray(option.lessonTypes)) throw new Error('Сервер вернул некорректные типы занятий каталога.')
+    if (!Array.isArray(option.lessonTypes))
+      throw new Error('Сервер вернул некорректные типы занятий каталога.')
     return normalizeStatsSubjectOption(option)
   })
-  const taughtSubjectOptions = record.taughtSubjectOptions.map(value => {
+  const taughtSubjectOptions = record.taughtSubjectOptions.map((value) => {
     const option = requiredRecord(value)
-    if (!Array.isArray(option.lessonTypes)) throw new Error('Сервер вернул некорректные типы занятий каталога.')
+    if (!Array.isArray(option.lessonTypes))
+      throw new Error('Сервер вернул некорректные типы занятий каталога.')
     return normalizeStatsSubjectOption(option)
   })
-  if (groupIds.size !== groups.length || [...subjectOptions, ...taughtSubjectOptions].some(option => !groupIds.has(option.groupId))) {
+  if (
+    groupIds.size !== groups.length ||
+    [...subjectOptions, ...taughtSubjectOptions].some((option) => !groupIds.has(option.groupId))
+  ) {
     throw new Error('Сервер вернул несогласованный каталог преподавателя.')
   }
-  return { groups, subjectOptions, taughtSubjectOptions, serverNow: requiredString(record.serverNow, 'catalog.serverNow') }
+  return {
+    groups,
+    subjectOptions,
+    taughtSubjectOptions,
+    serverNow: requiredString(record.serverNow, 'catalog.serverNow'),
+  }
 }
 
 function normalizeStatsSubjectOption(value: unknown): TeacherStatsSubjectOption {
@@ -827,8 +994,9 @@ function normalizeStatsSubjectOption(value: unknown): TeacherStatsSubjectOption 
     groupId: positiveInteger(record.groupId, 'stats.subjectOption.groupId'),
     subjectId: positiveInteger(record.subjectId, 'stats.subjectOption.subjectId'),
     subjectName: requiredString(record.subjectName, 'stats.subjectOption.subjectName'),
-    lessonTypes: arrayValue(record.lessonTypes)
-      .map((lessonType) => requiredString(lessonType, 'stats.subjectOption.lessonType')),
+    lessonTypes: arrayValue(record.lessonTypes).map((lessonType) =>
+      requiredString(lessonType, 'stats.subjectOption.lessonType'),
+    ),
   }
 }
 
@@ -861,8 +1029,10 @@ function normalizeStatsMetric(value: unknown): TeacherStatsMetric {
   const record = requiredRecord(value)
   const numerator = nonNegativeInteger(record.numerator, 'stats.metric.numerator')
   const denominator = nonNegativeInteger(record.denominator, 'stats.metric.denominator')
-  const percent = typeof record.percent === 'number' && Number.isFinite(record.percent)
-    ? record.percent : Number.NaN
+  const percent =
+    typeof record.percent === 'number' && Number.isFinite(record.percent)
+      ? record.percent
+      : Number.NaN
   if (!Number.isFinite(percent) || percent < 0 || percent > 100 || numerator > denominator) {
     throw new Error('Сервер вернул некорректную метрику статистики.')
   }
@@ -896,11 +1066,19 @@ function normalizeExcuse(value: unknown): TeacherExcuseResponse {
 function normalizeDayLesson(value: unknown): TeacherDayLesson {
   const record = requiredRecord(value)
   const rawStatus = requiredString(record.status, 'lesson.status').toUpperCase()
-  const status: TeacherDayLesson['status'] = rawStatus === 'PLANNED' || rawStatus === 'ACTIVE'
-    || rawStatus === 'CLOSED' || rawStatus === 'CANCELLED' ? rawStatus : 'UNKNOWN'
+  const status: TeacherDayLesson['status'] =
+    rawStatus === 'PLANNED' ||
+    rawStatus === 'ACTIVE' ||
+    rawStatus === 'CLOSED' ||
+    rawStatus === 'CANCELLED'
+      ? rawStatus
+      : 'UNKNOWN'
   return {
     id: positiveInteger(record.id, 'lesson.id'),
-    assignmentId: record.assignmentId == null ? null : nonNegativeInteger(record.assignmentId, 'lesson.assignmentId'),
+    assignmentId:
+      record.assignmentId == null
+        ? null
+        : nonNegativeInteger(record.assignmentId, 'lesson.assignmentId'),
     groupId: positiveInteger(record.groupId, 'lesson.groupId'),
     groupName: requiredString(record.groupName, 'lesson.groupName'),
     subjectId: positiveInteger(record.subjectId, 'lesson.subjectId'),
@@ -916,7 +1094,8 @@ function normalizeDayLesson(value: unknown): TeacherDayLesson {
     oneOff: requiredBoolean(record.oneOff, 'lesson.oneOff'),
     moved: requiredBoolean(record.moved, 'lesson.moved'),
     cancelled: requiredBoolean(record.cancelled, 'lesson.cancelled'),
-    cancellationReason: record.cancelled === true ? nullableString(record.cancellationReason) : null,
+    cancellationReason:
+      record.cancelled === true ? nullableString(record.cancellationReason) : null,
   }
 }
 
@@ -947,7 +1126,9 @@ function normalizeStudent(value: unknown): TeacherJournalStudent {
   return {
     studentId: positiveInteger(record.studentId, 'journal.studentId'),
     displayName: requiredString(record.displayName, 'journal.displayName'),
-    cells: arrayValue(record.cells).map(normalizeCell).sort((left, right) => left.lessonId - right.lessonId),
+    cells: arrayValue(record.cells)
+      .map(normalizeCell)
+      .sort((left, right) => left.lessonId - right.lessonId),
   }
 }
 
@@ -980,11 +1161,13 @@ function normalizeAttachment(value: unknown): TeacherExcuseAttachment {
 }
 
 function compareLessons(left: TeacherDayLesson, right: TeacherDayLesson): number {
-  return left.date.localeCompare(right.date)
-    || (left.startsAt ?? '').localeCompare(right.startsAt ?? '')
-    || left.lessonNumber - right.lessonNumber
-    || left.groupName.localeCompare(right.groupName, 'ru')
-    || left.id - right.id
+  return (
+    left.date.localeCompare(right.date) ||
+    (left.startsAt ?? '').localeCompare(right.startsAt ?? '') ||
+    left.lessonNumber - right.lessonNumber ||
+    left.groupName.localeCompare(right.groupName, 'ru') ||
+    left.id - right.id
+  )
 }
 
 function arrayValue(value: unknown): unknown[] {
@@ -992,12 +1175,14 @@ function arrayValue(value: unknown): unknown[] {
 }
 
 function requiredRecord(value: unknown): Record<string, unknown> {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Error('Сервер вернул некорректные данные преподавателя.')
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    throw new Error('Сервер вернул некорректные данные преподавателя.')
   return value as Record<string, unknown>
 }
 
 function requiredString(value: unknown, field: string): string {
-  if (typeof value !== 'string' || value.trim() === '') throw new Error(`Сервер вернул пустое поле ${field}.`)
+  if (typeof value !== 'string' || value.trim() === '')
+    throw new Error(`Сервер вернул пустое поле ${field}.`)
   return value
 }
 
@@ -1023,7 +1208,8 @@ function requiredBoolean(value: unknown, field: string): boolean {
 
 function positiveInteger(value: unknown, field: string): number {
   const parsed = integerValue(value)
-  if (parsed === null || parsed <= 0) throw new Error(`Сервер вернул некорректный идентификатор ${field}.`)
+  if (parsed === null || parsed <= 0)
+    throw new Error(`Сервер вернул некорректный идентификатор ${field}.`)
   return parsed
 }
 
@@ -1044,7 +1230,8 @@ function nullableNonNegativeInteger(value: unknown, field: string): number | nul
 }
 
 function assertPositiveInteger(value: number, field: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${field} must be a positive integer`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${field} must be a positive integer`)
 }
 
 function assertDate(value: string, field: string): void {
@@ -1070,7 +1257,8 @@ function journalPeriod(
 }
 
 function assertNonNegativeInteger(value: number, field: string): void {
-  if (!Number.isSafeInteger(value) || value < 0) throw new RangeError(`${field} must be a non-negative integer`)
+  if (!Number.isSafeInteger(value) || value < 0)
+    throw new RangeError(`${field} must be a non-negative integer`)
 }
 
 function assertPageSize(value: number): void {
@@ -1101,5 +1289,9 @@ function integerValue(value: unknown): number | null {
 function problemDetail(value: unknown): string | null {
   if (typeof value !== 'object' || value === null) return null
   const record = value as Record<string, unknown>
-  return typeof record.detail === 'string' ? record.detail : typeof record.title === 'string' ? record.title : null
+  return typeof record.detail === 'string'
+    ? record.detail
+    : typeof record.title === 'string'
+      ? record.title
+      : null
 }

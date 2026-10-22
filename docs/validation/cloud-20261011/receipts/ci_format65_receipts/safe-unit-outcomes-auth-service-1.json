@@ -1,0 +1,2161 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+    "service": "auth-service",
+    "task": "test",
+    "job": "java-unit-test",
+    "runId": "38236931589",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "5aa0c0ea62d87539c63558c791d3bbfab819adb61883cc19cf695506605505c1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "0d2693d78247186e17172bf32885bdffe3b9f45e51206fa5dcefdc4b90071e95",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "8367ddd875148e2d3e7e9cb1e3bb914a68b869d92602a33e0ce69a67453608e7",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 9,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "915c9e8175a9231fa85bf40bb99e9b93cef1aaeeb295f3d2de3e78a2e26a28e4",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 5,
+      "sha256": "b910c62ebadef1dee107a59cdd4e49a589259d2bd7082dadfd359622a307c06a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 6,
+      "sha256": "3243f634bacb141d7c11c5e59206c227e575a09eab70819e73b126936af63863",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 9,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 7,
+      "sha256": "105c35a569a89e3f162c3bb91863b3c125a2ea86b73c0493de7d5454847beadc",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 8,
+      "sha256": "050cbcdacf8e462482c91122a9642f7d0f866b159aadbd3cb7d954898140a795",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 9,
+      "sha256": "73a6f5ed85a5466799210cfc153bf96b628da6490297c92714257bd6f86571f0",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 10,
+      "sha256": "3d7ee63e0bd0d19c7db0e09cb4bfe8843f3883e6680f57d8fc6277396df97df0",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 11,
+      "sha256": "47b41306b5dd181862840a362afdba8585cf90b5bca49d32ee1fb74e115da142",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 12,
+      "sha256": "825a9a51427a397dd991019d4afe9b301c3ade187cb05a7ebd07bc4666bcc1fc",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 13,
+      "sha256": "18b17623db3ab763fb39584090f5251f5a315254b4db6fa05c9e1031c32e3c76",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 14,
+      "sha256": "8d8fe2676c7a66291004723634901217ca3ed77a3a723052d3097ff7d154949e",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 15,
+      "sha256": "44e6d9d7ee4a5bce90185639ce6d6e2d620b81d3df38099bfea981bfa3890378",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 15,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 15,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 16,
+      "sha256": "f9cc2e77512e7cb713607912a7265de52b08b66b41032862eeda3e30ba1a2543",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 11,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 11,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 17,
+      "sha256": "d2c1334c9c79ab3f5cd920f34d9cbc2bb294c462a8c4ece22c50ea1801ab75e3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 13,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 13,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 18,
+      "sha256": "53dbaaf5732891aa760055c477c63867f9917ca527fa27f906de4c396e0fc55a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 19,
+      "sha256": "246a4c3dd417ec6629cdc52008056f8d76169b0d3b6f714a690ec89c7016af45",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 20,
+      "sha256": "b93c40c5fa320d73c3adfb7e19970a97252aff3b58ee7fdab5cfaf5027fc6348",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 21,
+      "sha256": "0b469f4d9d74edfd77e4529ad081ff97643068864fe8c9aee4326e4893bee316",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 22,
+      "sha256": "c92733e803bdf2a8ec42c370548bd66194480bbf6cdcc1122218468df4099c4a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 23,
+      "sha256": "afb7fdc324920f768104438a29428a92b7149847650ed77d1b75d3d9d04aba8c",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 24,
+      "sha256": "4211239e56f77da7330353ef6edb94e5eca486fa14e770c9e6f2fcf129ef6622",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 13,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 13,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 25,
+      "sha256": "6c96e60598efa23c5d9ce92b2f101d524846caef52023ed666295c0b2964e1c1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 11,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 11,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+      "method": "ttl_zero_fails",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+      "method": "blankSecret_failsFast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+      "method": "emptySecret_failsFast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+      "method": "validSecret_passes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+      "method": "shortSecret_failsFast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+      "method": "ttl_over3600_fails",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+      "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "cookieLogoutDoesNotTurnAuthorityFailureIntoCookieSuccess",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "refreshTokenIsNotAnAuthenticatedAccessRequest",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "invalidBearerClearsPreexistingAuthentication",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "bootstrapBearerIsAcceptedOnlyOnTheExactSessionOperations",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "cookieLogoutIgnoresExpiredOrStaleIncidentalBearer",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "validAccessTokenAuthenticatesWithKnownRole",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "internalTokenAndMalformedAccessClaimsAreRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "missingBearerLeavesRequestUnauthenticated",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "method": "bootstrapBearerIsDeniedForHistoryPasswordAndLookalikeRoutes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.config.LowercaseEnumConverterTest",
+      "method": "persistedCodesRemainStableUnderTurkishLocale",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+      "sourceSha256": "6b4a19d6b6b0d2ac42211dada11ae2e84bd566d891cd241d320a5d2097ca31ff"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.config.LowercaseEnumConverterTest",
+      "method": "nullAndUnknownValuesDoNotBecomeKnownRoles",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+      "sourceSha256": "6b4a19d6b6b0d2ac42211dada11ae2e84bd566d891cd241d320a5d2097ca31ff"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+      "method": "otpProofRepresentationsAreRedactedWithoutChangingJsonWire",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "sourceSha256": "71aa9d891c0e9d610dcbc706e546ba541c6723aeaf8666cd8abe41fcc3823f3b"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+      "method": "selectActiveRoleResponseRedactsTokenButKeepsJsonWire",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "sourceSha256": "71aa9d891c0e9d610dcbc706e546ba541c6723aeaf8666cd8abe41fcc3823f3b"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+      "method": "authContractsRejectNonCanonicalWireValues",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "sourceSha256": "71aa9d891c0e9d610dcbc706e546ba541c6723aeaf8666cd8abe41fcc3823f3b"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+      "method": "authAdmissionResponseRedactsTokenButKeepsJsonWire",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "sourceSha256": "71aa9d891c0e9d610dcbc706e546ba541c6723aeaf8666cd8abe41fcc3823f3b"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+      "method": "authAdmissionRequestRedactsTokenButKeepsJsonWire",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "sourceSha256": "71aa9d891c0e9d610dcbc706e546ba541c6723aeaf8666cd8abe41fcc3823f3b"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "cookieLogoutAuthorityFailureReturns503WithoutClearingCookie",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "logoutSupportsCookieOnlyAndBearerOnlyWithDurableServiceDelegation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "currentSessionUsesAuthoritativeIdentityAndNoStore",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "currentPasswordInvalidIsAnHttp400ProblemWithoutCache",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "successfulLogoutAllAndPasswordChangeInvalidateTicketsAfterDurableService",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "foreignAuthenticatedPrincipalCannotRevokeAnotherSessionCookie",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "committedChangesKeep204AndClearCookieWhenRedisCleanupFails",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "bearerLogoutAuthorityFailureDoesNotInvalidateTicketsOrClearCookie",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+      "method": "publicAuthResponsesAreNoStoreAndTokenResponseKeepsTmaRefreshField",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+      "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.controller.PasswordResetValidationExceptionHandlerTest",
+      "method": "invalidRequestAndProofValuesAreNotIncludedInRecoveryErrors",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/PasswordResetValidationExceptionHandlerTest.java",
+      "sourceSha256": "73a02b24f7af0e308585f57a248fa3f232ab57265fc894f1f6c33fdea12db26e"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest",
+      "method": "invalidBrowserProofAndApprovalValuesAreRedacted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+      "sourceSha256": "043e38570982dec1a03876ff09dead5ac5b0c99e25423acad0b2a2d6ad67d13d"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest",
+      "method": "malformedAndUnknownEnumProofsAreNotCacheable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+      "sourceSha256": "043e38570982dec1a03876ff09dead5ac5b0c99e25423acad0b2a2d6ad67d13d"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest",
+      "method": "redactionGuardDetectsMissingAdviceInIsolatedMvcControl",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+      "sourceSha256": "043e38570982dec1a03876ff09dead5ac5b0c99e25423acad0b2a2d6ad67d13d"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+      "method": "explicitServiceSelectorFailureMapsToBadRequest",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+      "sourceSha256": "db62f46e479d968ae1d04c1ee7d997ad0140d2bf92846cd0b3b24f1c2660bdb8"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+      "method": "trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+      "sourceSha256": "db62f46e479d968ae1d04c1ee7d997ad0140d2bf92846cd0b3b24f1c2660bdb8"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+      "method": "rosterSelectorIsClosedFormatOnlyAndBindsKindAndFormat",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+      "sourceSha256": "db62f46e479d968ae1d04c1ee7d997ad0140d2bf92846cd0b3b24f1c2660bdb8"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+      "method": "selectorWithAnExtraParameterObjectIsRejectedAsBadRequestBeforeIssuance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+      "sourceSha256": "db62f46e479d968ae1d04c1ee7d997ad0140d2bf92846cd0b3b24f1c2660bdb8"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+      "method": "journalTicketBindsCompletedAndExactSelectionAndNormalizesMissingFalse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+      "sourceSha256": "db62f46e479d968ae1d04c1ee7d997ad0140d2bf92846cd0b3b24f1c2660bdb8"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+      "method": "actualProducerCodesRoundTripAndSchemaExcludesUnknownStatesAndFileContents",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+      "sourceSha256": "e1c5009afb6939c29942a2b83d607ab16eca227703bde6428ed2f7fbd2f75d7f"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+      "method": "passwordResetEvent_rejectsMissingChallenge",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+      "sourceSha256": "346190271c76c455e7d2af18a0d20cce02c906b0f21fc1505534a9b780a370c0"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+      "method": "otpRequestedEvent_rejectsMissingCode",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+      "sourceSha256": "346190271c76c455e7d2af18a0d20cce02c906b0f21fc1505534a9b780a370c0"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+      "method": "otpRequestedEvent_matchesSchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+      "sourceSha256": "346190271c76c455e7d2af18a0d20cce02c906b0f21fc1505534a9b780a370c0"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+      "method": "otpRequestedEvent_rejectsNonSixDigitCode",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+      "sourceSha256": "346190271c76c455e7d2af18a0d20cce02c906b0f21fc1505534a9b780a370c0"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+      "method": "passwordResetEvent_carriesPurposeChallengeAndServerAttempts",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+      "sourceSha256": "346190271c76c455e7d2af18a0d20cce02c906b0f21fc1505534a9b780a370c0"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+      "method": "explicitLegacySchemaRemainsValidButCannotPretendToHaveV2Identity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+      "sourceSha256": "4013d2fb0c83ba42dfe5b9287b736aeb94a67fc7ee28c13bb282908a32edcfa9"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+      "method": "passwordChangedEvent_matchesMetadataOnlySchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+      "sourceSha256": "4013d2fb0c83ba42dfe5b9287b736aeb94a67fc7ee28c13bb282908a32edcfa9"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+      "method": "unlinkedCleanupEventHasOriginalIdentityWithoutFabricatedTelegram",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+      "sourceSha256": "4013d2fb0c83ba42dfe5b9287b736aeb94a67fc7ee28c13bb282908a32edcfa9"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+      "method": "fullFileMetadataRequiresFullEvenWhenOrdinaryAdmissionAndRolesVersionAreValid",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportReportAuthorityTest.java",
+      "sourceSha256": "a8b5f3aeb72c124455131c175473d95782db5a4d701853f51d656448d5777dd8"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.AuthServiceRepositoryFailureTest",
+      "method": "changePassword_repositoryFailureIsTypedAuthorityUnavailableBeforeMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+      "sourceSha256": "0dd427c1cb39c9b982b469fb1a8aabf25f5b128de23c818b4b6ff41b200e7fd0"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "accessTokenCannotBeUsedByRefreshParser",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessParserAcceptsSignedTokenWithoutOptionalGroupId",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "accessParserRejectsMalformedRequiredClaims",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessParserRejectsFutureAndNonNumberTimes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessParserRejectsMissingRequiredClaims",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "parserStillRejectsWrongIssuerAudienceAndSignature",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "refreshParserRejectsMissingPurposeSubjectExpirationOrJti",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessParserRejectsSemanticIdentityMismatches",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "generatedAccessTokenIsStrictlyAcceptedAndParseTokenIsAccessAlias",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessParserRejectsUnknownRolesStatusesAndInvalidDecimalStrings",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "sessionAccessParserRejectsRawTypeCoercionAndFractionalOrExponentTimes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "accessParserRejectsMissingOrWrongPurpose",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "method": "generatedRefreshTokenIsAcceptedOnlyByRefreshParserAndExtractors",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+      "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+      "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.RedisReportDownloadTicketStoreContextTest",
+      "method": "repositoryStartsWithBootExceptionTranslationProxy",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStoreContextTest.java",
+      "sourceSha256": "5f0406a9fb5980b8e21aa4fd8b42eff832adec22597e606c7740f593ad68ae9b"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "revokedViewStatsDeniesTrendTicketBeforeRateLimitOrStorage",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "rechecksLiveSessionBeforeMintingAndDeniesARevokedOrChangedSession",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "viewStatsAssistantCannotIssueRosterTicketOrConsumeIssueBudget",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "readyJobCapabilityCannotOutliveItsCommittedFileExpiry",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+      "method": "rosterTicketsBindOwnHeadmanSessionAcrossFormatsAndRefuseRevokedRedemption",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest",
+      "method": "authenticate_repositoryFailureIsTypedAuthorityUnavailableBeforeSessionIssue",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+      "sourceSha256": "fd247cfdd3e392a08e0253f18efb2d3d4b83ed2fa9053ef8543d38104bf65522"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.service.TmaServiceTest",
+      "method": "signedFutureAuthDateCannotIssueSession",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+      "sourceSha256": "e037c2da6c52e2e39968f7a3a2c7092ad010a188ae000bfffb731cf8d30a97b3"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.service.TmaServiceTest",
+      "method": "acceptedPastWindowIncludesExactBoundaryAndRejectsNextSecond",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+      "sourceSha256": "e037c2da6c52e2e39968f7a3a2c7092ad010a188ae000bfffb731cf8d30a97b3"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.service.TmaServiceTest",
+      "method": "signedMalformedAuthDatesAreSafeValidationFailures",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+      "sourceSha256": "e037c2da6c52e2e39968f7a3a2c7092ad010a188ae000bfffb731cf8d30a97b3"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.session.ActiveRolePolicyTest",
+      "method": "suspendedGrantIsActualButCannotBeSelected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "sourceSha256": "0efc621295aedb83bdcadf597a90a9a605f8fa32c69f18130e5dd5028a06a5d1"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.session.ActiveRolePolicyTest",
+      "method": "foreignAndDuplicateGrantsAreRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "sourceSha256": "0efc621295aedb83bdcadf597a90a9a605f8fa32c69f18130e5dd5028a06a5d1"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.session.ActiveRolePolicyTest",
+      "method": "teacherIsFallbackAndAdminHeadmanOnlyStayNeutral",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "sourceSha256": "0efc621295aedb83bdcadf597a90a9a605f8fa32c69f18130e5dd5028a06a5d1"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.session.ActiveRolePolicyTest",
+      "method": "terminalStudentRemainsVisibleButActiveTeacherWinsDefault",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "sourceSha256": "0efc621295aedb83bdcadf597a90a9a605f8fa32c69f18130e5dd5028a06a5d1"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+      "method": "rejectsMissingDigitOrSpecialAndDoesNotTreatSpaceOrCombiningMarkAsSpecial",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+      "method": "symbolAloneSatisfiesSpecialCategoryWithoutPunctuation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+      "method": "acceptsTwelveUnicodeScalarsWithNdAndPSpecial",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+      "method": "enforcesScalarMinimumAndUtf8ByteMaximumWithoutTruncation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+      "method": "supplementaryScalarsCountAsOneAndUnicodeNdIsAccepted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+      "method": "rejectsUnpairedSurrogatesInsteadOfReplacingThem",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "terminalGrantRemainsVisibleButCannotBeAdmitted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "sessionExpiryDuringSnapshotIsRejectedBeforeSigning",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "staleVersionsAndChangedGrantIdentityAreConflicts",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "authoritativeSuspendedGrantIsRoleNotSelectable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "signingDelayPastSessionExpiryIsRejectedBeforeResponse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "sameVersionIdentityMismatchesReachTheAuthoritativeGrantCheck",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "authorityFailuresRemainTyped",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "signingDelayPastInternalExpiryIsRejectedBeforeResponse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "malformedAccessIsInvalidAndDoesNotReadAuthority",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "noAdmissionCacheCallsAuthorityAndSignsOnEveryRequest",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "originalAccessExpiryAfterSnapshotIsRejectedBeforeSigning",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "delayedSnapshotUsesFreshClockAndRetainsOriginalSnapshotRequestTime",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "method": "admitsLiveSnapshotAndBuildsResponseFromTheSameGrant",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "snapshotBoundaryRejectsSameIdInconsistentRoleAndDuplicateGrants",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "logoutAllIncludesCurrentAndPasswordFailureDoesNotPartiallyRevoke",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "expiredAndRevokedSessionsRejectSnapshotSelectionAndRefresh",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "currentLogoutIsDurableAndIdempotent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "refreshClearsUnavailableActiveGrantWithoutFallback",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "createUsesStudentThenTeacherAndLeavesAdminHeadmanNeutral",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "createRejectsCallerSnapshotWhenAuthoritativeVersionOrGrantsChanged",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "sessionAuthorityFailureDoesNotMutateStateOrEvents",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "passwordChangeSuccessRevokesEverySessionAndAuthorityFailureIsTyped",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "roleSwitchIsAtomicIdempotentAndVersionBound",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "method": "refreshHasOneWinnerPreviousIs409UnknownIs401AndExpiryStaysFixed",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+    }
+  ],
+  "summary": {
+    "PASSED": 140,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

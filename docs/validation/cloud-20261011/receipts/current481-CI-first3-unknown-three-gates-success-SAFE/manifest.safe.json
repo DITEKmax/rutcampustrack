@@ -1,0 +1,407 @@
+{
+  "producer": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "scope": "CURRENT_NORMAL_ACTIONS_SAFE_ONLY",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 736,
+      "sha256": "38c3e79415b491e76516ad672750631bd8cc7f7976b5a15991b8e887db674248"
+    },
+    {
+      "path": "SOURCE-PREP.md",
+      "bytes": 2366,
+      "sha256": "86dcf6e963be159a19c4decd7c74acdca7ed3a2ffbab7afb0483378c312ac7fd"
+    },
+    {
+      "path": "binding-requirements.safe.json",
+      "bytes": 691,
+      "sha256": "22f8b292ce1e5c1d20825c3989e38a07e07804b7053d28027432319f19d42049"
+    },
+    {
+      "path": "checkout-qualification.safe.json",
+      "bytes": 677,
+      "sha256": "67c7cc56b9817499dbf8d0ac00a7a1da757076f58630a87a52abdfac39469e5e"
+    },
+    {
+      "path": "download-first3-safe.py",
+      "bytes": 5937,
+      "sha256": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8"
+    },
+    {
+      "path": "download-safe.py",
+      "bytes": 9052,
+      "sha256": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0"
+    },
+    {
+      "path": "final-outcome.safe.json",
+      "bytes": 22197,
+      "sha256": "ff558573344b6409142245463380d5b6be08a0e7ac4e029686f387072f4091f9"
+    },
+    {
+      "path": "first3-safe-1-artifacts-safe-results.json",
+      "bytes": 1569,
+      "sha256": "1af25961a54e66d91c8e416cdff01ad3dcecb08c3aa79ed5217b323225accdda"
+    },
+    {
+      "path": "first3-safe-1.safe.json",
+      "bytes": 2833,
+      "sha256": "b6905e1e5814339cc83213a74e0ab818c41953960ea34f29993cd66dea5c9e6f"
+    },
+    {
+      "path": "first3-safe-1.zip",
+      "bytes": 468,
+      "sha256": "292d1c72237bf8a98d5a39dd67308021ff5c4451ac4a135a8178102de51de6bb"
+    },
+    {
+      "path": "metadata-initial.safe.json",
+      "bytes": 78483,
+      "sha256": "e683724d2423bb5f9ec67fa0ce47dff38943810853ae816f9fc14cb9bd271468"
+    },
+    {
+      "path": "metadata-terminal.safe.json",
+      "bytes": 50308,
+      "sha256": "68fb8faec4aa0cf8b948ddfabd7ecdf67be7ce26d4f36de80d86206f532e7d79"
+    },
+    {
+      "path": "preparation.safe.json",
+      "bytes": 1204,
+      "sha256": "9cec8f082aeb3cb4ea604fc2669451672b1fb3681f28ced79c0823bdd69a51a1"
+    },
+    {
+      "path": "run-binding.actual.safe.json",
+      "bytes": 538,
+      "sha256": "346d6ccf09ec730d6fbc770792b912547a50f77feaf1df19e7990beb31dce64f"
+    },
+    {
+      "path": "safe-coverage-outcomes-academic-service-1-integrationTest.json",
+      "bytes": 263934,
+      "sha256": "83087ba6299eff744f211a3ffd220ee6243bafe0dff1326d664b731f77ad191e"
+    },
+    {
+      "path": "safe-coverage-outcomes-academic-service-1-test.json",
+      "bytes": 257576,
+      "sha256": "c146ee342b7cc816e50c4d781921bfb94f49256e601faf6447d334e2f28fc26a"
+    },
+    {
+      "path": "safe-coverage-outcomes-academic-service-1.safe.json",
+      "bytes": 2530,
+      "sha256": "2d8c461057d391182442d9a74c2631d9cec94dc16e6f4d7c30b78987bd2192bc"
+    },
+    {
+      "path": "safe-coverage-outcomes-academic-service-1.zip",
+      "bytes": 36684,
+      "sha256": "8d953bad9ecf3e3fdbb3b186b8cd6cf98ceb3474e18b1ebe5c67234f4b8628f8"
+    },
+    {
+      "path": "safe-coverage-outcomes-api-gateway-1-integrationTest.json",
+      "bytes": 8158,
+      "sha256": "de278d3bcf8d5a4302c9e675db86891da1af523fe4bde5c457549e3127e99942"
+    },
+    {
+      "path": "safe-coverage-outcomes-api-gateway-1-test.json",
+      "bytes": 91358,
+      "sha256": "3a4f414671e546e4cc1f3afc936ee04c9ee4ee5f3210577948b4252365bc267d"
+    },
+    {
+      "path": "safe-coverage-outcomes-api-gateway-1.safe.json",
+      "bytes": 1982,
+      "sha256": "54e49a58cb9e5dd492a7da8548c104d1aa78b7eb34409535916451e42defeef9"
+    },
+    {
+      "path": "safe-coverage-outcomes-api-gateway-1.zip",
+      "bytes": 7640,
+      "sha256": "f06d1a7607abcfe7fac6ffc0c6538c83be774079ca4a4d44e54e4e2e7adfbdc2"
+    },
+    {
+      "path": "safe-coverage-outcomes-attendance-service-1-integrationTest.json",
+      "bytes": 138678,
+      "sha256": "68765b366b5a1e2334210e03d6b32252929359c81268f5e89304acaa89c127d1"
+    },
+    {
+      "path": "safe-coverage-outcomes-attendance-service-1-test.json",
+      "bytes": 193504,
+      "sha256": "5d2320c424bfd31b94a106deb72bd395363056cf5609d2be518ff6cad8ca8ffd"
+    },
+    {
+      "path": "safe-coverage-outcomes-attendance-service-1.safe.json",
+      "bytes": 2006,
+      "sha256": "627f6ac9812fb0b77af814d9570557c7c134beaa1fcfeb7ade304c392f4160b6"
+    },
+    {
+      "path": "safe-coverage-outcomes-attendance-service-1.zip",
+      "bytes": 27725,
+      "sha256": "d0944c1b29887186b9deacc7ae6997ae5927f18a8829658a53b799ef0c7d6081"
+    },
+    {
+      "path": "safe-coverage-outcomes-auth-service-1-integrationTest.json",
+      "bytes": 95942,
+      "sha256": "de2cdd8207d4b005664a348bab11a02a8fa0b48a050f779f46991d96229e35c4"
+    },
+    {
+      "path": "safe-coverage-outcomes-auth-service-1-test.json",
+      "bytes": 83524,
+      "sha256": "f0a31c7e2b7a0344e831cacfce775e58e4f11a64412601175e11b17a49a130ef"
+    },
+    {
+      "path": "safe-coverage-outcomes-auth-service-1.safe.json",
+      "bytes": 1988,
+      "sha256": "b83b65416e06c122faccad67ae7aa6afe854d29ec337cf0a1a983a1eaac8e4a0"
+    },
+    {
+      "path": "safe-coverage-outcomes-auth-service-1.zip",
+      "bytes": 16170,
+      "sha256": "ddaf406fd40af03c2ab8a20860402daf0a4d6a35f2d52f23cfc1fd2e46e82977"
+    },
+    {
+      "path": "safe-coverage-outcomes-notification-service-1-integrationTest.json",
+      "bytes": 40030,
+      "sha256": "c44f16399db564607238a0a4da5d13a5da155690fb1318877655d7269fd8d93b"
+    },
+    {
+      "path": "safe-coverage-outcomes-notification-service-1-test.json",
+      "bytes": 82311,
+      "sha256": "81b2d7bbaa52f40552a3b9fbe283c2fbc6276fb025fd6755caaae3c9f6ca1e32"
+    },
+    {
+      "path": "safe-coverage-outcomes-notification-service-1.safe.json",
+      "bytes": 2011,
+      "sha256": "42d82ce8f58deec0845fb542e9285cda2c41638615cc77c8f5bca266d39083e1"
+    },
+    {
+      "path": "safe-coverage-outcomes-notification-service-1.zip",
+      "bytes": 11867,
+      "sha256": "24ee4d756744c02ae6efcc61a6432eeba5bef4def4a843815ad5c990519d99fb"
+    },
+    {
+      "path": "safe-coverage-outcomes-schedule-service-1-integrationTest.json",
+      "bytes": 125364,
+      "sha256": "bd271420aec4950753e1a80b56bb9210a52a1ba6f8ed7517b8428f8340604d19"
+    },
+    {
+      "path": "safe-coverage-outcomes-schedule-service-1-test.json",
+      "bytes": 139036,
+      "sha256": "0b84b863fe2b7457d820ce79b4b4723b7767e503a6b3cca6f12e6bdb7b72abfb"
+    },
+    {
+      "path": "safe-coverage-outcomes-schedule-service-1.safe.json",
+      "bytes": 2539,
+      "sha256": "f8f9605a0eb08eeb962fb7691aa1d71003ef262a28af4354cd494ec8b4407c2d"
+    },
+    {
+      "path": "safe-coverage-outcomes-schedule-service-1.zip",
+      "bytes": 16246,
+      "sha256": "47172ae4a212b798e9579645e429b61f8f435aa3a7750e2423360edcb4357954"
+    },
+    {
+      "path": "safe-integration-outcomes-academic-service-1-integrationTest.json",
+      "bytes": 263894,
+      "sha256": "fe88ec817cd9134d3feb9668d929b4509870ba2c1ecf830a8ca9d144f7519563"
+    },
+    {
+      "path": "safe-integration-outcomes-academic-service-1.safe.json",
+      "bytes": 1649,
+      "sha256": "1b3fd5ba6aac8f584b79961e52f5585ac877c0a848fa0cac3f4c2336d97cf157"
+    },
+    {
+      "path": "safe-integration-outcomes-academic-service-1.zip",
+      "bytes": 21420,
+      "sha256": "ff536047da74615a01f23ce6e9977544ad0369a33ac5bf3f4b35cbdd94773dfd"
+    },
+    {
+      "path": "safe-integration-outcomes-api-gateway-1-integrationTest.json",
+      "bytes": 8118,
+      "sha256": "7bf1f7c2603f204ed6a95a16e93ec901464122da3e3d98c1e1835e5b36a2a3b6"
+    },
+    {
+      "path": "safe-integration-outcomes-api-gateway-1.safe.json",
+      "bytes": 1106,
+      "sha256": "2de8502757f69545f36f81d18f3e71d4a1eff990aa70f0c7b509a26803b83825"
+    },
+    {
+      "path": "safe-integration-outcomes-api-gateway-1.zip",
+      "bytes": 1341,
+      "sha256": "46c9082934ddb0afdd1a87ceb1291c4bd135bb9245f0efd050a33d3f5355564d"
+    },
+    {
+      "path": "safe-integration-outcomes-attendance-service-1-integrationTest.json",
+      "bytes": 138638,
+      "sha256": "4dab46265256d96516982eaf29957a21a05e764392b86cb538fa37320cab1a20"
+    },
+    {
+      "path": "safe-integration-outcomes-attendance-service-1.safe.json",
+      "bytes": 1123,
+      "sha256": "200ba5a6069e4e5de618954bc6c2c6c466927b101037caae7366db07ce535c57"
+    },
+    {
+      "path": "safe-integration-outcomes-attendance-service-1.zip",
+      "bytes": 12449,
+      "sha256": "acfd02eb165058c441dcc39680f12a0e22a76d30e266408e43bbc1eb3fee3da0"
+    },
+    {
+      "path": "safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "bytes": 95902,
+      "sha256": "2f37e6bcd1c26360c67bf853a7592488b77b5962b31ed7bd24bdd950e4aab1c5"
+    },
+    {
+      "path": "safe-integration-outcomes-auth-service-1.safe.json",
+      "bytes": 1110,
+      "sha256": "9c7059a358a1788938bb39dda63bbd006a717b528d315deae3d0c77a5a63380a"
+    },
+    {
+      "path": "safe-integration-outcomes-auth-service-1.zip",
+      "bytes": 8315,
+      "sha256": "3c3c95654000e62db9cf3700c2e1d07e05d302b96b1f5a8f018f42679735f0a2"
+    },
+    {
+      "path": "safe-integration-outcomes-notification-service-1-integrationTest.json",
+      "bytes": 39990,
+      "sha256": "ec6eb58715266ebb98fa5c86ff7ffcb8bcedbe274f7237081bf65ac70c93ed1c"
+    },
+    {
+      "path": "safe-integration-outcomes-notification-service-1.safe.json",
+      "bytes": 1125,
+      "sha256": "85c22703a6d29ae7e4b33b0a480ed390ecee06e40f41ed55e782bc99518e0bf2"
+    },
+    {
+      "path": "safe-integration-outcomes-notification-service-1.zip",
+      "bytes": 4165,
+      "sha256": "474b585ac1547a6bdc9f0071fbf5b379f567b25b49fa65a9f013ec6443881550"
+    },
+    {
+      "path": "safe-integration-outcomes-schedule-service-1-integrationTest.json",
+      "bytes": 125324,
+      "sha256": "6f61d47a04477961b7c6e1742a0ab208866eb05a183523ab63cfa4649021c57c"
+    },
+    {
+      "path": "safe-integration-outcomes-schedule-service-1.safe.json",
+      "bytes": 1658,
+      "sha256": "e1e215901c64a300389d223920d75c1e1f3ecf2d40e44ec35c199b2dfc4bf8bd"
+    },
+    {
+      "path": "safe-integration-outcomes-schedule-service-1.zip",
+      "bytes": 10773,
+      "sha256": "a597f4cab51da869ad06ba0dee6efb236c3a314f96adf5517c4a5a96231002b7"
+    },
+    {
+      "path": "safe-unit-outcomes-academic-service-1-test.json",
+      "bytes": 257529,
+      "sha256": "deb0f59058b3b92e368f9b521b51fce2e0b70401806d2adf0bcd71baf0d80eab"
+    },
+    {
+      "path": "safe-unit-outcomes-academic-service-1.safe.json",
+      "bytes": 1094,
+      "sha256": "e4d1401301706c33b17f3a6a0b31f0d412b114fde8c1bcd06926bb80f2f51132"
+    },
+    {
+      "path": "safe-unit-outcomes-academic-service-1.zip",
+      "bytes": 15181,
+      "sha256": "90fa07bc3fa74c9c04ab442d30e8b784ef6aef70e121435d43a2df1c4b42e3f8"
+    },
+    {
+      "path": "safe-unit-outcomes-api-gateway-1-test.json",
+      "bytes": 91311,
+      "sha256": "0193fdd797a6ec7ab2adf50706c98735d9e09c2192350a9af0166767ed0201c4"
+    },
+    {
+      "path": "safe-unit-outcomes-api-gateway-1.safe.json",
+      "bytes": 1083,
+      "sha256": "c421c1d1674ebddcadff99b11b3dace0afbecb2b837e181d4efd177efed31c4b"
+    },
+    {
+      "path": "safe-unit-outcomes-api-gateway-1.zip",
+      "bytes": 6223,
+      "sha256": "fa806055fada71daaa37e26caa16e0e89289dd36f3d0ffffec965b72cc1e80cc"
+    },
+    {
+      "path": "safe-unit-outcomes-attendance-service-1-test.json",
+      "bytes": 193457,
+      "sha256": "8511dc903dea290575bb42570eee27b04bafb57237fad128be89492a09f760a6"
+    },
+    {
+      "path": "safe-unit-outcomes-attendance-service-1.safe.json",
+      "bytes": 1098,
+      "sha256": "26fc97432393b50192406579ebaed969df95f50cc129c2be39f931235f11c3b0"
+    },
+    {
+      "path": "safe-unit-outcomes-attendance-service-1.zip",
+      "bytes": 15198,
+      "sha256": "433ee8e24a1e15b9b4f78e5766fb4fc06cc70d2e47953b8a8b9e8d3598559a21"
+    },
+    {
+      "path": "safe-unit-outcomes-auth-service-1-test.json",
+      "bytes": 83477,
+      "sha256": "07ca90829e8803ea5df101142ccbfa7cf2fbc3dcb5bb560ab9e5b623c8bcda4c"
+    },
+    {
+      "path": "safe-unit-outcomes-auth-service-1.safe.json",
+      "bytes": 1085,
+      "sha256": "0dd1ffe5952c5f42844072b25adae2edb27be463755322b632e74a91b5f6acac"
+    },
+    {
+      "path": "safe-unit-outcomes-auth-service-1.zip",
+      "bytes": 7786,
+      "sha256": "804e124257d27e21c56ab8cc19774544958dabcc20f0dcc1e2091c57c4c25135"
+    },
+    {
+      "path": "safe-unit-outcomes-notification-service-1-test.json",
+      "bytes": 82264,
+      "sha256": "609fb9277473eaae346340156f47cccb80a3ac2c87929b40bf6f36659dbb71b8"
+    },
+    {
+      "path": "safe-unit-outcomes-notification-service-1.safe.json",
+      "bytes": 1101,
+      "sha256": "28e2e54bf9802559f082fe2444e272cdc4cc71ee6a8392645aef7c9f0972b877"
+    },
+    {
+      "path": "safe-unit-outcomes-notification-service-1.zip",
+      "bytes": 7633,
+      "sha256": "4dacfa254225e69d37c3bb18ce3ad56152e2a8a4be692e85d47d474f2e12a5e3"
+    },
+    {
+      "path": "safe-unit-outcomes-schedule-service-1-test.json",
+      "bytes": 138989,
+      "sha256": "8eaf7e4f1d0b4ab40bc1547f78f59f3302406ad8b47f0b827d808ff05514e9ae"
+    },
+    {
+      "path": "safe-unit-outcomes-schedule-service-1.safe.json",
+      "bytes": 1093,
+      "sha256": "7f695f34d11d52fddcd3c38f0e96d4918573e3b59664496becf9957856087db5"
+    },
+    {
+      "path": "safe-unit-outcomes-schedule-service-1.zip",
+      "bytes": 5417,
+      "sha256": "aeb7c8d6fd67ffa3e06325d76f1d44981237a86fd971a2bd165d1823b7a7a164"
+    },
+    {
+      "path": "schema-controls.py",
+      "bytes": 4137,
+      "sha256": "ecf7e65e1491b76c79f374238f7273f5ae9e3855fb69111c0c31c720e6dabd99"
+    },
+    {
+      "path": "schema-controls.safe.json",
+      "bytes": 3626,
+      "sha256": "f8b169ae1028874ccf0ca5181173d17bd53cf76efa32c4c061e28471c1938371"
+    },
+    {
+      "path": "seal-current.py",
+      "bytes": 4854,
+      "sha256": "90bdcaec4871edc8c9ed78ac05d6599c223a34d8edf47c3b045a2ecdfcffe5e3"
+    },
+    {
+      "path": "source-preparation-manifest.json",
+      "bytes": 1790,
+      "sha256": "0c4132af2ca3f1798fc38af82519963cea9cecc6c0a342a63d7d20c6a3ead47a"
+    },
+    {
+      "path": "source-preparation.safe.zip",
+      "bytes": 15448,
+      "sha256": "c41908fba83820505b539d1925e12e95ec54390022ebad84722ed84d4f5e27b2"
+    },
+    {
+      "path": "strict-browser-schema.py",
+      "bytes": 5811,
+      "sha256": "f55cae0945b042d482a4395b1e8a21f255d80ccdd80da818fdd6ad5861b2bed8"
+    }
+  ],
+  "raw_XML_logs_private_fields": false
+}

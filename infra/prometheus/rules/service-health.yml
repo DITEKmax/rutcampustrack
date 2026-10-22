@@ -1,176 +1,120 @@
-# M04 Группа 9 — alert rules. QA4 + NEW-62/63/64.
-#
-# Правила группируются по domain — Prometheus oбрабатывает каждую
-# группу sequentially, но группы независимы друг от друга. Severity
-# labels routed в alertmanager.yml (critical → немедленно,
-# warning → с задержкой).
 groups:
-  - name: service-health
-    rules:
-      # up == 0 пятнадцать секунд — сервис упал или не scrape-ится.
-      # for=1m чтобы не фальсивить на рестартах (обычный рестарт
-      # укладывается в 30-40с).
-      - alert: ServiceDown
-        expr: up == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Сервис {{ $labels.job }} недоступен"
-          description: "Prometheus не может scrape {{ $labels.instance }} более 1 мин. {{ $labels.job }} либо упал, либо сеть сломана."
-
-      # Liveness probe: actuator/health сам говорит DOWN (M04 G4 добавил
-      # show-details:always + per-dep indicators). Полезно для: RabbitMQ
-      # обрыв, Postgres не отвечает, Redis unreachable — сервис up, но
-      # dependency упала.
-      - alert: HealthCheckDown
-        expr: health_status{status!="UP"} == 1
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "{{ $labels.instance }} health={{ $labels.status }}"
-          description: "Actuator health endpoint возвращает {{ $labels.status }} более 2 мин. Проверь /actuator/health."
-
-  - name: outbox-eventing
-    rules:
-      # M04 Группа 8 — outbox.lag.seconds gauge. Если старейшая pending
-      # запись висит более 5 мин — publisher не справляется или
-      # RabbitMQ недоступен.
-      - alert: OutboxLagHigh
-        expr: outbox_lag_seconds > 300
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Outbox lag {{ $value | humanizeDuration }} в {{ $labels.job }}"
-          description: "Старейшее pending-событие висит > 5 мин. Проверь RabbitMQ + publisher job logs. Событие: {{ $labels.instance }}."
-
-      # DLQBacklog перенесён в rabbitmq.yml (M13 G19) — был silent
-      # dangling до image switch на management-alpine.
-
-  - name: http-sli
-    rules:
-      # M13 G19 — SLI alerts на http_server_requests_seconds (Spring
-      # Boot Actuator default metric). 5xx rate > 1 req/sec на сервис
-      # = регрессия release / зависимость отвалилась / panic loop.
-      - alert: HighErrorRate
-        expr: |
-          sum by (job) (
-            rate(http_server_requests_seconds_count{status=~"5.."}[5m])
-          ) > 1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "HTTP 5xx rate > 1 req/s в {{ $labels.job }}"
-          description: "{{ $labels.job }} возвращает {{ $value | printf \"%.2f\" }} req/sec ошибок 5xx за последние 5 мин. Проверь логи + последние deploy'и."
-
-      # p95 latency > 2 сек — аномалия для всех endpoint'ов кроме
-      # batch upload'ов. Использует _bucket метрику для quantile().
-      - alert: HighRequestLatency
-        expr: |
-          histogram_quantile(0.95,
-            sum by (job, le) (
-              rate(http_server_requests_seconds_bucket[5m])
-            )
-          ) > 2
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "p95 latency > 2s в {{ $labels.job }}"
-          description: "{{ $labels.job }} p95={{ $value | printf \"%.2f\" }}s за последние 10 мин. Проверь HikariPoolExhaustion + downstream latency + slow queries."
-
-  - name: infra
-    rules:
-      # cAdvisor → container_fs_usage_bytes / container_fs_limit_bytes.
-      # Для prod-VPS > 80% — начать чистку (Mongo/PG backup'ы, Docker
-      # volumes, logs).
-      - alert: DiskUsageHigh
-        expr: (container_fs_usage_bytes{device=~"/dev/.*"} / container_fs_limit_bytes) > 0.80
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Disk {{ $labels.device }} > 80%"
-          description: "{{ $value | humanizePercentage }} использования на {{ $labels.instance }}. Почисти docker volumes / старые бэкапы."
-
-      # Heap — утечка памяти в Java-сервисах. G max JVM / heap_used
-      # уже имеется через Micrometer JVM metrics.
-      - alert: JvmHeapPressure
-        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.90
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "JVM heap > 90% в {{ $labels.application }}"
-          description: "{{ $labels.application }} heap={{ $value | humanizePercentage }}. Возможна утечка — сними heap dump."
-
-      # M05 Группа 6 / P2-10/6 — HikariCP pool exhaustion. Если >80% pool
-      # занято 5 минут — concurrent-queries растут быстрее чем pool
-      # spec'нут (n+2+diskSpindles формула в NEW-147). Решение:
-      # поднять maximum-pool-size или профилировать hot-path на leak.
-      # Метрика hikaricp_connections_active / hikaricp_connections_max
-      # экспортится Micrometer'ом автоматически из spring-boot-actuator.
-      - alert: HikariPoolExhaustion
-        expr: (hikaricp_connections_active / hikaricp_connections_max) > 0.80
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "HikariCP pool > 80% в {{ $labels.application }}"
-          description: "{{ $labels.application }} pool={{ $value | humanizePercentage }} занято. Риск connection-timeout. Подними maximum-pool-size или ищи долгие транзакции (leak-detection-threshold=60s)."
-
-  - name: business-anomaly
-    rules:
-      # Если за рабочее окно (09:00-18:00 MSK) rate checkin'ов = 0 — что-то
-      # случилось: либо gateway не пускает, либо клиенты offline, либо
-      # геоотметка повсеместно отваливается. Правило срабатывает только
-      # в рабочие часы (Prometheus не поддерживает time-window expr
-      # directly — используем hour() из Prometheus functions). Vector
-      # hour() возвращает UTC, поэтому 06-15 ≈ 09-18 MSK.
-      - alert: CheckinRateZero
-        # G11 H5 fix: добавлен absent() branch. Без него, если counter
-        # отсутствует совсем (fresh restart, 0 отметок за retention
-        # window), rate() возвращает пустой vector и alert не fire'ит.
-        expr: |
-          (
-            (rate(attendance_checkin_total[10m]) == 0)
-            or absent(attendance_checkin_total)
-          )
-          and on() (hour() >= 6 and hour() <= 15)
-          and on() (day_of_week() >= 1 and day_of_week() <= 5)
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Нет гео-отметок 10 минут подряд в рабочее время"
-          description: "rate(attendance.checkin)=0 уже 10 мин. Проверь Gateway + attendance-service. Если целенаправленно сервис выкачен — silence alert."
-
-      # KI-2 silent fallback — индикатор того, что какой-то service-to-
-      # service вызов до сих пор не несёт internal JWT. Не critical,
-      # но должен в норме быть нулевой — пика rate > 0.1/s означает
-      # регрессию.
-      - alert: InternalJwtFallbackUnexpected
-        expr: rate(internal_jwt_fallback_total[5m]) > 0.1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "KI-2 fallback rate={{ $value }}/s в {{ $labels.job }}"
-          description: "Silent fallback на legacy X-User-* headers. В M03a+ все service-calls обязаны нести X-Internal-Token. Проверь источник: `{{ $labels.from }}` → `{{ $labels.to }}`."
-
-      # M16 G3 — brute-force на /otp/verify-by-code. Endpoint защищён
-      # per-IP counter'ом (otp_verify_by_code_miss:<ip>, лимит 20/5min).
-      # При atypical wave mismatch'ей > 10/sec за 5 мин — почти наверняка
-      # botnet или scripted attack. Один legit user редко делает > 1
-      # ошибку (paste typo).
-      - alert: OtpBruteForceSuspect
-        expr: rate(otp_verify_total{outcome="mismatch"}[5m]) > 10
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "OTP brute-force suspect rate={{ $value | printf \"%.2f\" }}/s в {{ $labels.job }}"
-          description: "Mismatch rate > 10/s на /otp/verify-by-code за 5 мин. Per-IP counter уже throttle'ит после 20 mismatch'ей, но широкий botnet может распределять. Проверь Loki ({service=\"rct-auth-service\"} |= \"verify-by-code\") + Gateway IP-distribution."
+- name: service-health
+  rules:
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: "\u0421\u0435\u0440\u0432\u0438\u0441 {{ $labels.job }} \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\
+        \u043D"
+      description: Scrape failed for {{ $labels.instance }}. Check target process, scrape authorization and network; this
+        is not useful-operation availability.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: HealthCheckDown
+    expr: probe_success{job="blackbox-readiness"} == 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: '{{ $labels.instance }} health={{ $labels.status }}'
+      description: Readiness HTTP/JSON check failed for {{ $labels.service }}. Check dependency health and logs; liveness
+        restart does not repair downstream outages.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+- name: outbox-eventing
+  rules:
+  - alert: OutboxLagHigh
+    expr: outbox_lag_seconds > 300
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "Outbox lag {{ $value | humanizeDuration }} \u0432 {{ $labels.job }}"
+      description: "\u0421\u0442\u0430\u0440\u0435\u0439\u0448\u0435\u0435 pending-\u0441\u043E\u0431\u044B\u0442\u0438\u0435\
+        \ \u0432\u0438\u0441\u0438\u0442 > 5 \u043C\u0438\u043D. \u041F\u0440\u043E\u0432\u0435\u0440\u044C RabbitMQ + publisher\
+        \ job logs. \u0421\u043E\u0431\u044B\u0442\u0438\u0435: {{ $labels.instance }}."
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+- name: http-sli
+  rules:
+  - alert: HighErrorRate
+    expr: sum by (job, environment) (rate(http_server_requests_seconds_count{status=~"5..",uri!~"/actuator.*"}[5m])) > 1
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "HTTP 5xx rate > 1 req/s \u0432 {{ $labels.job }}"
+      description: "{{ $labels.job }} \u0432\u043E\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442 {{ $value | printf \"%.2f\"\
+        \ }} req/sec \u043E\u0448\u0438\u0431\u043E\u043A 5xx \u0437\u0430 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\
+        \u0435 5 \u043C\u0438\u043D. \u041F\u0440\u043E\u0432\u0435\u0440\u044C \u043B\u043E\u0433\u0438 + \u043F\u043E\u0441\
+        \u043B\u0435\u0434\u043D\u0438\u0435 deploy'\u0438."
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+- name: infra
+  rules:
+  - alert: DiskUsageHigh
+    expr: ((1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"} / node_filesystem_size_bytes{fstype=~"ext4|xfs|btrfs"})
+      > 0.80) and on (instance, device, mountpoint) (node_filesystem_readonly == 0)
+    for: 10m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Disk {{ $labels.device }} > 80%
+      description: Filesystem {{ $labels.mountpoint }} exceeds 80% available-space usage. Inspect retention, log rotation
+        and capacity. Preserve data, backups and volumes; cleanup requires explicit authorization.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: JvmHeapPressure
+    expr: (sum by (job, instance, environment) (jvm_memory_used_bytes{area="heap"}) / sum by (job, instance, environment)
+      (jvm_memory_max_bytes{area="heap"} > 0)) > 0.90
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: JVM heap >90% in {{ $labels.job }}
+      description: Per-instance bounded heap pools >90%. Inspect allocation/GC and limits; heap dumps contain sensitive data
+        and require controlled handling.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: HikariPoolExhaustion
+    expr: (hikaricp_connections_active / hikaricp_connections_max > 0.80) and hikaricp_connections_max > 0
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "HikariCP pool > 80% \u0432 {{ $labels.application }}"
+      description: Connection pool >80% occupied in {{ $labels.job }}. Inspect pending requests, slow/blocked transactions
+        and DB capacity before changing limits.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+- name: business-anomaly
+  rules:
+  - alert: InternalJwtFallbackUnexpected
+    expr: rate(internal_jwt_fallback_total[5m]) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "KI-2 fallback rate={{ $value }}/s \u0432 {{ $labels.job }}"
+      description: "Silent fallback \u043D\u0430 legacy X-User-* headers. \u0412 M03a+ \u0432\u0441\u0435 service-calls \u043E\
+        \u0431\u044F\u0437\u0430\u043D\u044B \u043D\u0435\u0441\u0442\u0438 X-Internal-Token. \u041F\u0440\u043E\u0432\u0435\
+        \u0440\u044C \u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A: `{{ $labels.from }}` \u2192 `{{ $labels.to }}`."
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: OtpBruteForceSuspect
+    expr: rate(otp_verify_total{outcome="mismatch"}[5m]) > 10
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "OTP brute-force suspect rate={{ $value | printf \"%.2f\" }}/s \u0432 {{ $labels.job }}"
+      description: "Mismatch rate > 10/s \u043D\u0430 /otp/verify-by-code \u0437\u0430 5 \u043C\u0438\u043D. Per-IP counter\
+        \ \u0443\u0436\u0435 throttle'\u0438\u0442 \u043F\u043E\u0441\u043B\u0435 20 mismatch'\u0435\u0439, \u043D\u043E \u0448\
+        \u0438\u0440\u043E\u043A\u0438\u0439 botnet \u043C\u043E\u0436\u0435\u0442 \u0440\u0430\u0441\u043F\u0440\u0435\u0434\
+        \u0435\u043B\u044F\u0442\u044C. \u041F\u0440\u043E\u0432\u0435\u0440\u044C Loki ({service=\"rct-auth-service\"} |=\
+        \ \"verify-by-code\") + Gateway IP-distribution."
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md

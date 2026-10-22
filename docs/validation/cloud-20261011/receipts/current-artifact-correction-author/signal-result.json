@@ -1,0 +1,28 @@
+{
+  "direct_pid": 209133,
+  "native_exit": -9,
+  "terminal_reason": "STOP_REQUEST",
+  "signal_count": 2,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 209133,
+      "start_ticks": 3644977
+    },
+    {
+      "pid": 209134,
+      "start_ticks": 3644980
+    }
+  ],
+  "adopted_waitpid_receipts": [
+    {
+      "pid": 209134,
+      "start_ticks": 3644980,
+      "native_exit": -9
+    }
+  ],
+  "supervision_error_type": null,
+  "phase_success": false
+}

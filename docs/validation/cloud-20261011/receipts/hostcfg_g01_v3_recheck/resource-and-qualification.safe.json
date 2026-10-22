@@ -1,0 +1,16 @@
+{
+  "actual_new_v3_unique_allocation_bytes": 294912,
+  "author_bound_bytes": 307200,
+  "cap_bytes": 16777216,
+  "author_free_available": 8182878208,
+  "original_conservative_remaining": 8095894289,
+  "author_headroom_after_original_remaining": 86983919,
+  "preferred256MiB": "not owner criterion; below preferred; snapshots are not future capacity PASS",
+  "already_charged_stage_Vue_config": "retain prior once-per-lane accounting, charge actual v3 separately",
+  "before_launch": "Root separate exact source/lease + fresh actual disk/shared/ports/IPAM/images/ownership/mount preflight and bounded actual VFS growth/floor monitor",
+  "disk_floor_bytes": 4294967296,
+  "shared_stop_bytes": 16106127360,
+  "shared_max_bytes": 17179869184,
+  "shared_reserve_bytes": 1073741824,
+  "runtime": "NOT_RUN"
+}

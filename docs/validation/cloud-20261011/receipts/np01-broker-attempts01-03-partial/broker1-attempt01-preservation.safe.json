@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-12T07:30:03.452578+00:00",
+  "tracked7048_byte_mode_unchanged": true,
+  "clean": true,
+  "head": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "captured_host_PIDs_plus_guard": [
+    220276,
+    220277,
+    220278,
+    220318,
+    220425,
+    220239
+  ],
+  "remaining_owned_host_PIDs_including_Z": [],
+  "correction_made": false,
+  "Root_diagnostic_sublease": "RABBIT_DIAG1 granted; standalone synthetic provisioning only"
+}

@@ -2,10 +2,13 @@ package ru.rutcampustrack.auth.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.rutcampustrack.auth.dto.ConfirmSemesterDeletionRequest;
 import ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest;
+import ru.rutcampustrack.auth.dto.ConfirmSemesterDeletionRequest;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
@@ -15,20 +18,18 @@ import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-
 /** Rechecks one current ADMIN session and verifies its current account password. */
 @Service
 public class SemesterDeletionConfirmationService {
 
     private static final String RATE_LIMIT_IP = "internal-semester-deletion";
-    // Longer than the public login column's 32-character limit, so this bucket cannot collide with login.
+    // Longer than the public login column's 32-character limit, so this bucket cannot collide with
+    // login.
     private static final String RATE_LIMIT_ACTION = "__semester_delete_confirmation__:";
 
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.auth.security.AuthAdminAccess adminAccess;
+
     private final JwtService jwtService;
     private final AuthService authService;
     private final UserRepository userRepository;
@@ -42,8 +43,7 @@ public class SemesterDeletionConfirmationService {
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             LoginRateLimiter loginRateLimiter,
-            BcryptConcurrencyGuard bcryptGuard
-    ) {
+            BcryptConcurrencyGuard bcryptGuard) {
         this.jwtService = Objects.requireNonNull(jwtService, "jwtService");
         this.authService = Objects.requireNonNull(authService, "authService");
         this.userRepository = Objects.requireNonNull(userRepository, "userRepository");
@@ -53,13 +53,18 @@ public class SemesterDeletionConfirmationService {
     }
 
     /**
-     * Confirms only the password proof. The caller retains operation/preview binding;
-     * this method creates no session, ticket, or durable credential material.
+     * Confirms only the password proof. The caller retains operation/preview binding; this method
+     * creates no session, ticket, or durable credential material.
      */
     @org.springframework.transaction.annotation.Transactional
     public void confirm(ConfirmSemesterDeletionRequest request) {
         Objects.requireNonNull(request, "request");
-        confirmPassword(request.internalToken(), request.password(),null,"SEMESTERS_MANAGE","DATA_DELETE");
+        confirmPassword(
+                request.internalToken(),
+                request.password(),
+                null,
+                "SEMESTERS_MANAGE",
+                "DATA_DELETE");
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -67,18 +72,25 @@ public class SemesterDeletionConfirmationService {
         Objects.requireNonNull(request, "request");
         // Share the credential attempt budget with semester deletion so another
         // destructive-operation route cannot bypass a blocked ADMIN account.
-        confirmPassword(request.internalToken(), request.password(),null,"CAMPUS_MAP_MANAGE","DATA_DELETE");
+        confirmPassword(
+                request.internalToken(),
+                request.password(),
+                null,
+                "CAMPUS_MAP_MANAGE",
+                "DATA_DELETE");
     }
 
     @org.springframework.transaction.annotation.Transactional
     public void confirmUserArchive(ru.rutcampustrack.auth.dto.ConfirmUserArchiveRequest request) {
         Objects.requireNonNull(request, "request");
-        confirmPassword(request.internalToken(), request.password(),request.targetId(),"USERS_ARCHIVE");
+        confirmPassword(
+                request.internalToken(), request.password(), request.targetId(), "USERS_ARCHIVE");
     }
 
-    private void confirmPassword(String internalToken, String password,Long target,String... permissions) {
+    private void confirmPassword(
+            String internalToken, String password, Long target, String... permissions) {
         SessionPrincipal principal = parsePrincipal(internalToken);
-        adminAccess.authorize(principal,target,permissions);
+        adminAccess.authorize(principal, target, permissions);
         SessionSnapshot current = authService.admit(principal);
         if (current.activeRole() == null || current.activeRole().role() != AuthRole.ADMIN) {
             throw new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
@@ -89,7 +101,8 @@ public class SemesterDeletionConfirmationService {
 
         User user = loadCurrentUser(current.userId());
         String currentPasswordHash = user.getPasswordHash();
-        if (currentPasswordHash == null || currentPasswordHash.isBlank()
+        if (currentPasswordHash == null
+                || currentPasswordHash.isBlank()
                 || !matchesPassword(password, currentPasswordHash)) {
             recordFailure(rateKey);
             throw new AuthSessionException(AuthSessionException.Code.CURRENT_PASSWORD_INVALID);
@@ -121,8 +134,7 @@ public class SemesterDeletionConfirmationService {
                     RoleStatus.valueOf(claims.get("status", String.class)),
                     groupId,
                     claims.get("is_headman", Boolean.class),
-                    claims.get("readOnly", Boolean.class)
-            );
+                    claims.get("readOnly", Boolean.class));
         } catch (RuntimeException exception) {
             throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
         }

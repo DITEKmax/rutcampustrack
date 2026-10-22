@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-12T05:08:22.718649+00:00",
+  "phases": [
+    {
+      "phase": "boot8",
+      "phase_pid": 201154,
+      "phase_pid_absent": true,
+      "native_exit": 0,
+      "current_live_group_members": [],
+      "current_all_group_members": [],
+      "raw_private_log_SHA": "4ef25fbe44c3849c15a14ccd3913b87e6f10384409cfa48e541fda41041ff782",
+      "raw_bodies": "NOT_READ",
+      "original_group_receipt_scope": "source helper excludes zombies; live-only assertion"
+    },
+    {
+      "phase": "pwa",
+      "phase_pid": 201350,
+      "phase_pid_absent": true,
+      "native_exit": 0,
+      "current_live_group_members": [],
+      "current_all_group_members": [
+        {
+          "pid": 201385,
+          "state": "Z",
+          "ppid": 1,
+          "pgrp": 201350
+        }
+      ],
+      "raw_private_log_SHA": "e8e2adc88453412faf63bbe08e6b41f78ca9fa5e044910150c321dd8a91e2a31",
+      "raw_bodies": "NOT_READ",
+      "original_group_receipt_scope": "source helper excludes zombies; live-only assertion"
+    },
+    {
+      "phase": "tma",
+      "phase_pid": 201403,
+      "phase_pid_absent": true,
+      "native_exit": 0,
+      "current_live_group_members": [],
+      "current_all_group_members": [
+        {
+          "pid": 201430,
+          "state": "Z",
+          "ppid": 1,
+          "pgrp": 201403
+        }
+      ],
+      "raw_private_log_SHA": "6691cded53a2cf6c2698b1dd5d26dec66b113c67b8816628909c4ddb77e0dbc0",
+      "raw_bodies": "NOT_READ",
+      "original_group_receipt_scope": "source helper excludes zombies; live-only assertion"
+    }
+  ],
+  "no_live_process": true,
+  "all_owned_processes_reaped": false,
+  "qualification": "two npm-descendant PPID1 zombies observed; no kill/reap attempt; original sealed receipts unchanged"
+}

@@ -1,21 +1,5 @@
 package ru.rutcampustrack.academic.homework;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
-import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
-import ru.rutcampustrack.academic.entity.Homework;
-import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
-import ru.rutcampustrack.academic.event.LessonTransferParticipantAppliedEvent;
-import ru.rutcampustrack.academic.event.HomeworkUpdatedEvent;
-import ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent;
-import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.repository.HomeworkRepository;
-import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -26,6 +10,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
+import ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent;
+import ru.rutcampustrack.academic.event.HomeworkUpdatedEvent;
+import ru.rutcampustrack.academic.event.LessonTransferParticipantAppliedEvent;
+import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 
 /** Applies one bounded Academic batch under the established per-binding write locks. */
 @Service
@@ -38,12 +37,13 @@ public class HomeworkBindingTransferCoordinator {
     private final ApplicationEventPublisher eventPublisher;
     private final HomeworkEditHistory editHistory;
 
-    public HomeworkBindingTransferCoordinator(JdbcTemplate jdbc,
-                                              HomeworkRepository homeworkRepository,
-                                              HomeworkBindingArchiveCoordinator archiveCoordinator,
-                                              AcademicSemesterArchiveBarrierTransaction archiveBarrier,
-                                              ApplicationEventPublisher eventPublisher,
-                                              HomeworkEditHistory editHistory) {
+    public HomeworkBindingTransferCoordinator(
+            JdbcTemplate jdbc,
+            HomeworkRepository homeworkRepository,
+            HomeworkBindingArchiveCoordinator archiveCoordinator,
+            AcademicSemesterArchiveBarrierTransaction archiveBarrier,
+            ApplicationEventPublisher eventPublisher,
+            HomeworkEditHistory editHistory) {
         this.jdbc = jdbc;
         this.homeworkRepository = homeworkRepository;
         this.archiveCoordinator = archiveCoordinator;
@@ -62,8 +62,13 @@ public class HomeworkBindingTransferCoordinator {
             return;
         }
 
-        archiveBarrier.admitTransferBatch(batch.eventId(), batch.operationId(), batch.batchIndex(),
-                batch.operationHash(), batch.batchHash(), batch.semesterId());
+        archiveBarrier.admitTransferBatch(
+                batch.eventId(),
+                batch.operationId(),
+                batch.batchIndex(),
+                batch.operationHash(),
+                batch.batchHash(),
+                batch.semesterId());
 
         for (LessonTransferBatch.Binding binding : batch.bindings()) {
             archiveCoordinator.lock(binding.bindingId());
@@ -86,7 +91,8 @@ public class HomeworkBindingTransferCoordinator {
         }
 
         for (Plan plan : plans) {
-            archiveBarrier.selectTransferBinding(plan.binding().bindingId(), plan.binding().payloadHash());
+            archiveBarrier.selectTransferBinding(
+                    plan.binding().bindingId(), plan.binding().payloadHash());
             applyPlan(batch, plan);
         }
         homeworkRepository.flush();
@@ -95,24 +101,36 @@ public class HomeworkBindingTransferCoordinator {
     }
 
     /** Caller already holds the same binding advisory lock as publication and archive writers. */
-    public void applyPendingMarker(Homework homework, long bindingId,
-                                   long actorId, UUID requestKey, byte[] bindingPayloadHash) {
+    public void applyPendingMarker(
+            Homework homework,
+            long bindingId,
+            long actorId,
+            UUID requestKey,
+            byte[] bindingPayloadHash) {
         TransferMarker marker = findMarker(bindingId, true);
         if (marker == null) return;
-        validateMarkerIdentity(marker, actorId, requestKey, bindingPayloadHash,
-                homework.getGroupId(), homework.getSubjectId(), homework.getSemesterId());
+        validateMarkerIdentity(
+                marker,
+                actorId,
+                requestKey,
+                bindingPayloadHash,
+                homework.getGroupId(),
+                homework.getSubjectId(),
+                homework.getSemesterId());
         if (marker.state().equals("APPLIED")) {
             if (!Objects.equals(marker.homeworkId(), homework.getId())
                     || !marker.targetDate().equals(homework.getLessonDate())
                     || marker.targetLessonNumber() != homework.getLessonNumber()) {
-                throw new ConflictException("homework transfer marker points to different persisted content");
+                throw new ConflictException(
+                        "homework transfer marker points to different persisted content");
             }
             acceptMarkerPlacement(homework, marker);
             return;
         }
         if (!marker.sourceDate().equals(homework.getLessonDate())
                 || marker.sourceLessonNumber() != homework.getLessonNumber()) {
-            throw new ConflictException("pending homework transfer marker has a different source slot");
+            throw new ConflictException(
+                    "pending homework transfer marker has a different source slot");
         }
         if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
             throw new ConflictException("archived homework cannot apply a pending lesson transfer");
@@ -122,74 +140,111 @@ public class HomeworkBindingTransferCoordinator {
     }
 
     private void acceptMarkerPlacement(Homework homework, TransferMarker marker) {
-        Long sourceBindingRevision = jdbc.queryForObject("""
+        Long sourceBindingRevision =
+                jdbc.queryForObject(
+                        """
                 SELECT binding_revision FROM homework_binding_transfer_history WHERE operation_id = ? AND binding_id = ?
-                """, Long.class, marker.operationId(), marker.bindingId());
-        homework.acceptPlacementIdentity(marker.occurrenceId(), marker.targetLessonId(), sourceBindingRevision + 1);
+                """,
+                        Long.class,
+                        marker.operationId(),
+                        marker.bindingId());
+        homework.acceptPlacementIdentity(
+                marker.occurrenceId(), marker.targetLessonId(), sourceBindingRevision + 1);
     }
 
     /** Completes a pending-publication marker after the newly created content has an ID. */
-    public void associateMaterialized(long bindingId, long actorId, UUID requestKey,
-                                      byte[] bindingPayloadHash, long homeworkId,
-                                      long groupId, long subjectId, long semesterId) {
+    public void associateMaterialized(
+            long bindingId,
+            long actorId,
+            UUID requestKey,
+            byte[] bindingPayloadHash,
+            long homeworkId,
+            long groupId,
+            long subjectId,
+            long semesterId) {
         TransferMarker marker = findMarker(bindingId, true);
         if (marker == null) return;
-        validateMarkerIdentity(marker, actorId, requestKey, bindingPayloadHash,
-                groupId, subjectId, semesterId);
+        validateMarkerIdentity(
+                marker, actorId, requestKey, bindingPayloadHash, groupId, subjectId, semesterId);
         if (marker.state().equals("APPLIED")) {
             if (!Objects.equals(marker.homeworkId(), homeworkId)) {
-                throw new ConflictException("homework transfer marker already points to different content");
+                throw new ConflictException(
+                        "homework transfer marker already points to different content");
             }
             return;
         }
-        int updated = jdbc.update("""
+        int updated =
+                jdbc.update(
+                        """
                 UPDATE homework_binding_transfer_markers
                    SET state = 'APPLIED', homework_id = ?, updated_at = NOW()
                  WHERE binding_id = ? AND operation_id = ? AND state = 'PENDING'
-                """, homeworkId, bindingId, marker.operationId());
+                """,
+                        homeworkId,
+                        bindingId,
+                        marker.operationId());
         if (updated != 1) {
-            throw new ConflictException("pending homework transfer marker changed during publication");
+            throw new ConflictException(
+                    "pending homework transfer marker changed during publication");
         }
     }
 
     /**
-     * Marks an empty transfer binding terminal only after its immutable batch
-     * receipt and history row prove that the accepted transfer completed.
-     * Caller holds the Academic semester and binding locks in that order.
+     * Marks an empty transfer binding terminal only after its immutable batch receipt and history
+     * row prove that the accepted transfer completed. Caller holds the Academic semester and
+     * binding locks in that order.
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void cancelPendingUnpublished(long bindingId, long actorId, UUID requestKey,
-                                         long semesterId) {
+    public void cancelPendingUnpublished(
+            long bindingId, long actorId, UUID requestKey, long semesterId) {
         TransferMarker marker = findMarker(bindingId, true);
         if (marker == null) return;
-        if (marker.actorId() != actorId || !marker.requestKey().equals(requestKey)
+        if (marker.actorId() != actorId
+                || !marker.requestKey().equals(requestKey)
                 || marker.semesterId() != semesterId) {
-            throw new ConflictException("homework transfer marker identity does not match terminal cancellation");
+            throw new ConflictException(
+                    "homework transfer marker identity does not match terminal cancellation");
         }
         if ("CANCELLED_UNPUBLISHED".equals(marker.state())) {
             return;
         }
-        if (!"PENDING".equals(marker.state()) || marker.homeworkId() != null
-                || marker.sourceEventId() == null || marker.batchIndex() == null
+        if (!"PENDING".equals(marker.state())
+                || marker.homeworkId() != null
+                || marker.sourceEventId() == null
+                || marker.batchIndex() == null
                 || !hasExactCompletedEmptyTransfer(marker)) {
-            throw new ConflictException("empty homework transfer has no exact completed batch receipt");
+            throw new ConflictException(
+                    "empty homework transfer has no exact completed batch receipt");
         }
-        int updated = jdbc.update("""
+        int updated =
+                jdbc.update(
+                        """
                 UPDATE homework_binding_transfer_markers
                    SET state = 'CANCELLED_UNPUBLISHED', updated_at = now()
                  WHERE binding_id = ? AND actor_id = ? AND request_key = ?
                    AND binding_payload_hash = ? AND semester_id = ?
                    AND source_event_id = ? AND batch_index = ? AND operation_id = ?
                    AND operation_hash = ? AND state = 'PENDING' AND homework_id IS NULL
-                """, bindingId, actorId, requestKey, marker.bindingPayloadHash(), semesterId,
-                marker.sourceEventId(), marker.batchIndex(), marker.operationId(), marker.operationHash());
+                """,
+                        bindingId,
+                        actorId,
+                        requestKey,
+                        marker.bindingPayloadHash(),
+                        semesterId,
+                        marker.sourceEventId(),
+                        marker.batchIndex(),
+                        marker.operationId(),
+                        marker.operationHash());
         if (updated != 1) {
-            throw new ConflictException("empty homework transfer changed during terminal cancellation");
+            throw new ConflictException(
+                    "empty homework transfer changed during terminal cancellation");
         }
     }
 
     private boolean hasExactCompletedEmptyTransfer(TransferMarker marker) {
-        Boolean exact = jdbc.queryForObject("""
+        Boolean exact =
+                jdbc.queryForObject(
+                        """
                 SELECT EXISTS (
                     SELECT 1
                       FROM lesson_transfer_receipts receipt
@@ -206,21 +261,32 @@ public class HomeworkBindingTransferCoordinator {
                        AND history.semester_id = ? AND history.homework_id IS NULL
                        AND history.result_state = 'PENDING_PUBLICATION'
                 )
-                """, Boolean.class, marker.sourceEventId(), marker.operationId(),
-                marker.batchIndex(), marker.operationHash(), marker.bindingId(), marker.actorId(),
-                marker.requestKey(), marker.bindingPayloadHash(), marker.semesterId());
+                """,
+                        Boolean.class,
+                        marker.sourceEventId(),
+                        marker.operationId(),
+                        marker.batchIndex(),
+                        marker.operationHash(),
+                        marker.bindingId(),
+                        marker.actorId(),
+                        marker.requestKey(),
+                        marker.bindingPayloadHash(),
+                        marker.semesterId());
         return Boolean.TRUE.equals(exact);
     }
 
-    private PlanResult validateBinding(LessonTransferBatch batch,
-                                       LessonTransferBatch.Binding binding) {
+    private PlanResult validateBinding(
+            LessonTransferBatch batch, LessonTransferBatch.Binding binding) {
         if (!List.of("PENDING", "ACTIVE").contains(binding.state())) {
             return PlanResult.error("SOURCE_STATE_CONFLICT");
         }
         HomeworkBindingArchiveMarker archive;
         try {
-            archive = archiveCoordinator.findMarker(
-                    binding.bindingId(), binding.actorId(), binding.requestKey()).orElse(null);
+            archive =
+                    archiveCoordinator
+                            .findMarker(
+                                    binding.bindingId(), binding.actorId(), binding.requestKey())
+                            .orElse(null);
         } catch (ConflictException identityMismatch) {
             return PlanResult.error("SOURCE_STATE_CONFLICT");
         }
@@ -234,19 +300,23 @@ public class HomeworkBindingTransferCoordinator {
                 && (homework == null || !binding.homeworkId().equals(homework.getId()))) {
             return PlanResult.error("TARGET_DATA_CONFLICT");
         }
-        if (homework == null && (binding.homeworkId() != null || "ACTIVE".equals(binding.state()))) {
+        if (homework == null
+                && (binding.homeworkId() != null || "ACTIVE".equals(binding.state()))) {
             return PlanResult.error("SOURCE_STATE_CONFLICT");
         }
         if (homework != null) {
             if (homework.getPlacementBindingRevision() != null
                     && (homework.getPlacementBindingRevision() > binding.revision()
-                        || homework.getPlacementLessonId() != null && homework.getPlacementLessonId() != batch.sourceLessonId())) {
+                            || homework.getPlacementLessonId() != null
+                                    && homework.getPlacementLessonId() != batch.sourceLessonId())) {
                 return PlanResult.error("SOURCE_STATE_CONFLICT");
             }
             if (!Objects.equals(homework.getBindingId(), binding.bindingId())
                     || !Objects.equals(homework.getActorId(), binding.actorId())
                     || !Objects.equals(homework.getRequestKey(), binding.requestKey())
-                    || !Arrays.equals(homework.getPayloadHash(), HexFormat.of().parseHex(binding.payloadHash()))) {
+                    || !Arrays.equals(
+                            homework.getPayloadHash(),
+                            HexFormat.of().parseHex(binding.payloadHash()))) {
                 return PlanResult.error("TARGET_DATA_CONFLICT");
             }
             if (!Objects.equals(homework.getGroupId(), batch.groupId())
@@ -261,16 +331,21 @@ public class HomeworkBindingTransferCoordinator {
             }
         }
         if (marker != null) {
-            if (!marker.hasIdentity(binding.actorId(), binding.requestKey(),
-                    HexFormat.of().parseHex(binding.payloadHash()), batch.groupId(),
-                    batch.subjectId(), batch.semesterId())
+            if (!marker.hasIdentity(
+                            binding.actorId(),
+                            binding.requestKey(),
+                            HexFormat.of().parseHex(binding.payloadHash()),
+                            batch.groupId(),
+                            batch.subjectId(),
+                            batch.semesterId())
                     || marker.targetLessonId() != batch.sourceLessonId()
                     || !marker.targetDate().equals(batch.sourceDate())
                     || marker.targetLessonNumber() != batch.sourceLessonNumber()) {
                 return PlanResult.error("SOURCE_STATE_CONFLICT");
             }
             if (marker.state().equals("APPLIED")
-                    && (homework == null || !Objects.equals(marker.homeworkId(), homework.getId()))) {
+                    && (homework == null
+                            || !Objects.equals(marker.homeworkId(), homework.getId()))) {
                 return PlanResult.error("TARGET_DATA_CONFLICT");
             }
         }
@@ -282,36 +357,54 @@ public class HomeworkBindingTransferCoordinator {
         Homework homework = plan.homework();
         String resultState;
         if (homework == null) {
-            archiveBarrier.trackPendingTransferPublication(batch.semesterId(), binding.bindingId(),
-                    binding.actorId(), binding.requestKey(), HexFormat.of().parseHex(binding.payloadHash()),
+            archiveBarrier.trackPendingTransferPublication(
+                    batch.semesterId(),
+                    binding.bindingId(),
+                    binding.actorId(),
+                    binding.requestKey(),
+                    HexFormat.of().parseHex(binding.payloadHash()),
                     batch.eventId());
             upsertMarker(batch, binding, null, "PENDING");
             resultState = "PENDING_PUBLICATION";
         } else {
             var before = homework.snapshot();
             if (homework.getPlacementBindingRevision() == null) {
-                homework.acceptPlacementIdentity(batch.occurrenceId(), batch.sourceLessonId(), binding.revision());
+                homework.acceptPlacementIdentity(
+                        batch.occurrenceId(), batch.sourceLessonId(), binding.revision());
             }
             var actionBefore = HomeworkActionRecordedEvent.snapshot(homework);
-            boolean slotChanged = !batch.targetDate().equals(homework.getLessonDate())
-                    || batch.targetLessonNumber() != homework.getLessonNumber();
+            boolean slotChanged =
+                    !batch.targetDate().equals(homework.getLessonDate())
+                            || batch.targetLessonNumber() != homework.getLessonNumber();
             homework.transferLessonSlot(batch.targetDate(), batch.targetLessonNumber());
-            homework.acceptPlacementIdentity(batch.occurrenceId(), batch.targetLessonId(), binding.revision() + 1);
+            homework.acceptPlacementIdentity(
+                    batch.occurrenceId(), batch.targetLessonId(), binding.revision() + 1);
             homeworkRepository.save(homework);
             homeworkRepository.flush();
             upsertMarker(batch, binding, homework.getId(), "APPLIED");
             if (homework.getPublicationState() == HomeworkPublicationState.ACTIVE) {
-                HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_EDITED", homework, batch.actorId(),
-                        actionBefore, java.time.OffsetDateTime.now());
+                HomeworkActionRecordedEvent.publish(
+                        eventPublisher,
+                        "HOMEWORK_EDITED",
+                        homework,
+                        batch.actorId(),
+                        actionBefore,
+                        java.time.OffsetDateTime.now());
             }
             if (slotChanged && homework.getPublicationState() == HomeworkPublicationState.ACTIVE) {
-                editHistory.append(homework, batch.actorId(), before,
-                        java.time.OffsetDateTime.now(), "LESSON_TRANSFERRED");
-                eventPublisher.publishEvent(new HomeworkUpdatedEvent(this, homework, batch.actorId()));
+                editHistory.append(
+                        homework,
+                        batch.actorId(),
+                        before,
+                        java.time.OffsetDateTime.now(),
+                        "LESSON_TRANSFERRED");
+                eventPublisher.publishEvent(
+                        new HomeworkUpdatedEvent(this, homework, batch.actorId()));
             }
             resultState = "MOVED";
         }
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO homework_binding_transfer_history
                     (operation_id, binding_id, operation_hash, binding_payload_hash,
                      binding_revision, actor_id, request_key, homework_id, occurrence_id,
@@ -319,19 +412,41 @@ public class HomeworkBindingTransferCoordinator {
                      source_date, source_lesson_number, target_date, target_lesson_number,
                      result_state, source_event_id, batch_index)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, batch.operationId(), binding.bindingId(), hashBytes(batch.operationHash()),
-                hashBytes(binding.payloadHash()), binding.revision(), binding.actorId(),
-                binding.requestKey(), homework == null ? null : homework.getId(),
-                batch.occurrenceId(), batch.groupId(), batch.subjectId(), batch.semesterId(),
-                batch.sourceLessonId(), batch.targetLessonId(), batch.sourceDate(),
-                batch.sourceLessonNumber(), batch.targetDate(), batch.targetLessonNumber(), resultState,
-                batch.eventId(), batch.batchIndex());
+                """,
+                batch.operationId(),
+                binding.bindingId(),
+                hashBytes(batch.operationHash()),
+                hashBytes(binding.payloadHash()),
+                binding.revision(),
+                binding.actorId(),
+                binding.requestKey(),
+                homework == null ? null : homework.getId(),
+                batch.occurrenceId(),
+                batch.groupId(),
+                batch.subjectId(),
+                batch.semesterId(),
+                batch.sourceLessonId(),
+                batch.targetLessonId(),
+                batch.sourceDate(),
+                batch.sourceLessonNumber(),
+                batch.targetDate(),
+                batch.targetLessonNumber(),
+                resultState,
+                batch.eventId(),
+                batch.batchIndex());
     }
 
     public void requireNoPendingPublicationMarker(Homework homework) {
         TransferMarker marker = findMarker(homework.getBindingId(), true);
-        if (marker != null) validateMarkerIdentity(marker, homework.getActorId(), homework.getRequestKey(), homework.getPayloadHash(),
-                homework.getGroupId(), homework.getSubjectId(), homework.getSemesterId());
+        if (marker != null)
+            validateMarkerIdentity(
+                    marker,
+                    homework.getActorId(),
+                    homework.getRequestKey(),
+                    homework.getPayloadHash(),
+                    homework.getGroupId(),
+                    homework.getSubjectId(),
+                    homework.getSemesterId());
         if (marker != null && "PENDING".equals(marker.state())) {
             throw new ConflictException("Ожидается завершение публикации домашнего задания");
         }
@@ -339,7 +454,8 @@ public class HomeworkBindingTransferCoordinator {
 
     public void supersedeAppliedMarker(Homework homework, UUID editOperationId) {
         requireNoPendingPublicationMarker(homework);
-        jdbc.update("""
+        jdbc.update(
+                """
                 UPDATE homework_binding_transfer_markers marker
                    SET superseded_by_edit_operation_id = ?
                  WHERE marker.binding_id = ? AND marker.state = 'APPLIED'
@@ -347,14 +463,25 @@ public class HomeworkBindingTransferCoordinator {
                    AND marker.homework_id = ? AND marker.actor_id = ? AND marker.request_key = ?
                    AND marker.binding_payload_hash = ? AND marker.group_id = ?
                    AND marker.subject_id = ? AND marker.semester_id = ?
-                """, editOperationId, homework.getBindingId(), homework.getId(), homework.getActorId(),
-                homework.getRequestKey(), homework.getPayloadHash(), homework.getGroupId(),
-                homework.getSubjectId(), homework.getSemesterId());
+                """,
+                editOperationId,
+                homework.getBindingId(),
+                homework.getId(),
+                homework.getActorId(),
+                homework.getRequestKey(),
+                homework.getPayloadHash(),
+                homework.getGroupId(),
+                homework.getSubjectId(),
+                homework.getSemesterId());
     }
 
-    private void upsertMarker(LessonTransferBatch batch, LessonTransferBatch.Binding binding,
-                              Long homeworkId, String state) {
-        jdbc.update("""
+    private void upsertMarker(
+            LessonTransferBatch batch,
+            LessonTransferBatch.Binding binding,
+            Long homeworkId,
+            String state) {
+        jdbc.update(
+                """
                 INSERT INTO homework_binding_transfer_markers
                     (binding_id, actor_id, request_key, binding_payload_hash, homework_id,
                      operation_id, operation_hash, occurrence_id, group_id, subject_id, semester_id,
@@ -380,38 +507,76 @@ public class HomeworkBindingTransferCoordinator {
                     state = EXCLUDED.state,
                     superseded_by_edit_operation_id = NULL,
                     updated_at = NOW()
-                """, binding.bindingId(), binding.actorId(), binding.requestKey(),
-                hashBytes(binding.payloadHash()), homeworkId, batch.operationId(),
-                hashBytes(batch.operationHash()), batch.occurrenceId(), batch.groupId(),
-                batch.subjectId(), batch.semesterId(), batch.sourceLessonId(), batch.targetLessonId(),
-                batch.sourceDate(), batch.sourceLessonNumber(), batch.targetDate(),
-                batch.targetLessonNumber(), state, batch.eventId(), batch.batchIndex());
+                """,
+                binding.bindingId(),
+                binding.actorId(),
+                binding.requestKey(),
+                hashBytes(binding.payloadHash()),
+                homeworkId,
+                batch.operationId(),
+                hashBytes(batch.operationHash()),
+                batch.occurrenceId(),
+                batch.groupId(),
+                batch.subjectId(),
+                batch.semesterId(),
+                batch.sourceLessonId(),
+                batch.targetLessonId(),
+                batch.sourceDate(),
+                batch.sourceLessonNumber(),
+                batch.targetDate(),
+                batch.targetLessonNumber(),
+                state,
+                batch.eventId(),
+                batch.batchIndex());
     }
 
     private void writeReceipt(LessonTransferBatch batch, String result, String errorCode) {
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO lesson_transfer_receipts
                     (operation_id, batch_index, batch_count, batch_size, operation_hash,
                      batch_hash, source_lesson_id, target_lesson_id, result, error_code, source_event_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, batch.operationId(), batch.batchIndex(), batch.batchCount(),
-                batch.bindings().size(), hashBytes(batch.operationHash()), hashBytes(batch.batchHash()),
-                batch.sourceLessonId(), batch.targetLessonId(), result, errorCode, batch.eventId());
+                """,
+                batch.operationId(),
+                batch.batchIndex(),
+                batch.batchCount(),
+                batch.bindings().size(),
+                hashBytes(batch.operationHash()),
+                hashBytes(batch.batchHash()),
+                batch.sourceLessonId(),
+                batch.targetLessonId(),
+                result,
+                errorCode,
+                batch.eventId());
     }
 
-    private void publishAcknowledgement(LessonTransferBatch batch, String result, String errorCode) {
-        eventPublisher.publishEvent(new LessonTransferParticipantAppliedEvent(this,
-                batch.operationId().toString(), batch.batchIndex(), result, errorCode, false,
-                batch.operationHash(), batch.sourceLessonId(), batch.targetLessonId()));
+    private void publishAcknowledgement(
+            LessonTransferBatch batch, String result, String errorCode) {
+        eventPublisher.publishEvent(
+                new LessonTransferParticipantAppliedEvent(
+                        this,
+                        batch.operationId().toString(),
+                        batch.batchIndex(),
+                        result,
+                        errorCode,
+                        false,
+                        batch.operationHash(),
+                        batch.sourceLessonId(),
+                        batch.targetLessonId()));
     }
 
     private Map<String, Object> findReceipt(UUID operationId, int batchIndex) {
-        List<Map<String, Object>> rows = jdbc.queryForList("""
+        List<Map<String, Object>> rows =
+                jdbc.queryForList(
+                        """
                 SELECT batch_count, batch_size, operation_hash, batch_hash,
                        source_lesson_id, target_lesson_id, result, error_code
                   FROM lesson_transfer_receipts
                  WHERE operation_id = ? AND batch_index = ? FOR UPDATE
-                """, operationId, batchIndex);
+                """,
+                        operationId,
+                        batchIndex);
         return rows.isEmpty() ? null : rows.getFirst();
     }
 
@@ -420,54 +585,81 @@ public class HomeworkBindingTransferCoordinator {
                 || number(prior.get("batch_size")) != batch.bindings().size()
                 || number(prior.get("source_lesson_id")) != batch.sourceLessonId()
                 || number(prior.get("target_lesson_id")) != batch.targetLessonId()
-                || !Arrays.equals((byte[]) prior.get("operation_hash"), hashBytes(batch.operationHash()))
+                || !Arrays.equals(
+                        (byte[]) prior.get("operation_hash"), hashBytes(batch.operationHash()))
                 || !Arrays.equals((byte[]) prior.get("batch_hash"), hashBytes(batch.batchHash()))) {
-            throw new IllegalArgumentException("lesson transfer duplicate batch does not match its durable receipt");
+            throw new IllegalArgumentException(
+                    "lesson transfer duplicate batch does not match its durable receipt");
         }
     }
 
     private TransferMarker findMarker(long bindingId, boolean forUpdate) {
         String suffix = forUpdate ? " FOR UPDATE" : "";
-        List<TransferMarker> rows = jdbc.query("""
+        List<TransferMarker> rows =
+                jdbc.query(
+                        """
                 SELECT binding_id, actor_id, request_key, binding_payload_hash, homework_id,
                        operation_id, operation_hash, occurrence_id, group_id, subject_id, semester_id,
                        source_lesson_id, target_lesson_id, source_date, source_lesson_number,
                        target_date, target_lesson_number, state, source_event_id, batch_index
                   FROM homework_binding_transfer_markers WHERE binding_id = ?
                    AND superseded_by_edit_operation_id IS NULL
-                """ + suffix, HomeworkBindingTransferCoordinator::mapMarker, bindingId);
+                """
+                                + suffix,
+                        HomeworkBindingTransferCoordinator::mapMarker,
+                        bindingId);
         return rows.isEmpty() ? null : rows.getFirst();
     }
 
     private void lockBatch(UUID operationId, int batchIndex) {
-        jdbc.execute((ConnectionCallback<Void>) connection -> {
-            try (var statement = connection.prepareStatement(
-                    "SELECT pg_advisory_xact_lock(hashtextextended(?, 0))")) {
-                statement.setString(1, operationId + ":" + batchIndex);
-                statement.execute();
-            }
-            return null;
-        });
+        jdbc.execute(
+                (ConnectionCallback<Void>)
+                        connection -> {
+                            try (var statement =
+                                    connection.prepareStatement(
+                                            "SELECT pg_advisory_xact_lock(hashtextextended(?, 0))")) {
+                                statement.setString(1, operationId + ":" + batchIndex);
+                                statement.execute();
+                            }
+                            return null;
+                        });
     }
 
     private static TransferMarker mapMarker(ResultSet rs, int rowNum) throws SQLException {
-        return new TransferMarker(rs.getLong("binding_id"), rs.getLong("actor_id"),
-                rs.getObject("request_key", UUID.class), rs.getBytes("binding_payload_hash"),
-                rs.getObject("homework_id", Long.class), rs.getObject("operation_id", UUID.class),
-                rs.getBytes("operation_hash"), rs.getLong("occurrence_id"), rs.getLong("group_id"),
-                rs.getLong("subject_id"), rs.getLong("semester_id"),
-                rs.getLong("source_lesson_id"), rs.getLong("target_lesson_id"),
-                rs.getObject("source_date", LocalDate.class), rs.getInt("source_lesson_number"),
-                rs.getObject("target_date", LocalDate.class), rs.getInt("target_lesson_number"),
-                rs.getString("state"), rs.getObject("source_event_id", UUID.class),
+        return new TransferMarker(
+                rs.getLong("binding_id"),
+                rs.getLong("actor_id"),
+                rs.getObject("request_key", UUID.class),
+                rs.getBytes("binding_payload_hash"),
+                rs.getObject("homework_id", Long.class),
+                rs.getObject("operation_id", UUID.class),
+                rs.getBytes("operation_hash"),
+                rs.getLong("occurrence_id"),
+                rs.getLong("group_id"),
+                rs.getLong("subject_id"),
+                rs.getLong("semester_id"),
+                rs.getLong("source_lesson_id"),
+                rs.getLong("target_lesson_id"),
+                rs.getObject("source_date", LocalDate.class),
+                rs.getInt("source_lesson_number"),
+                rs.getObject("target_date", LocalDate.class),
+                rs.getInt("target_lesson_number"),
+                rs.getString("state"),
+                rs.getObject("source_event_id", UUID.class),
                 (Integer) rs.getObject("batch_index"));
     }
 
-    private void validateMarkerIdentity(TransferMarker marker, long actorId, UUID requestKey,
-                                        byte[] payloadHash, long groupId, long subjectId,
-                                        long semesterId) {
+    private void validateMarkerIdentity(
+            TransferMarker marker,
+            long actorId,
+            UUID requestKey,
+            byte[] payloadHash,
+            long groupId,
+            long subjectId,
+            long semesterId) {
         if (!marker.hasIdentity(actorId, requestKey, payloadHash, groupId, subjectId, semesterId)) {
-            throw new ConflictException("homework transfer marker identity does not match the binding");
+            throw new ConflictException(
+                    "homework transfer marker identity does not match the binding");
         }
     }
 
@@ -481,25 +673,52 @@ public class HomeworkBindingTransferCoordinator {
         return ((Number) value).longValue();
     }
 
-    private record Plan(LessonTransferBatch.Binding binding, Homework homework, TransferMarker marker) { }
+    private record Plan(
+            LessonTransferBatch.Binding binding, Homework homework, TransferMarker marker) {}
+
     private record PlanResult(Plan plan, String errorCode) {
-        static PlanResult plan(Plan plan) { return new PlanResult(plan, null); }
-        static PlanResult error(String errorCode) { return new PlanResult(null, errorCode); }
+        static PlanResult plan(Plan plan) {
+            return new PlanResult(plan, null);
+        }
+
+        static PlanResult error(String errorCode) {
+            return new PlanResult(null, errorCode);
+        }
     }
 
-    private record TransferMarker(long bindingId, long actorId, UUID requestKey,
-                                  byte[] bindingPayloadHash, Long homeworkId,
-                                  UUID operationId, byte[] operationHash,
-                                  long occurrenceId, long groupId, long subjectId, long semesterId,
-                                  long sourceLessonId, long targetLessonId,
-                                  LocalDate sourceDate, int sourceLessonNumber,
-                                  LocalDate targetDate, int targetLessonNumber, String state,
-                                  UUID sourceEventId, Integer batchIndex) {
-        boolean hasIdentity(long expectedActorId, UUID expectedRequestKey, byte[] expectedHash,
-                            long expectedGroupId, long expectedSubjectId, long expectedSemesterId) {
-            return actorId == expectedActorId && requestKey.equals(expectedRequestKey)
+    private record TransferMarker(
+            long bindingId,
+            long actorId,
+            UUID requestKey,
+            byte[] bindingPayloadHash,
+            Long homeworkId,
+            UUID operationId,
+            byte[] operationHash,
+            long occurrenceId,
+            long groupId,
+            long subjectId,
+            long semesterId,
+            long sourceLessonId,
+            long targetLessonId,
+            LocalDate sourceDate,
+            int sourceLessonNumber,
+            LocalDate targetDate,
+            int targetLessonNumber,
+            String state,
+            UUID sourceEventId,
+            Integer batchIndex) {
+        boolean hasIdentity(
+                long expectedActorId,
+                UUID expectedRequestKey,
+                byte[] expectedHash,
+                long expectedGroupId,
+                long expectedSubjectId,
+                long expectedSemesterId) {
+            return actorId == expectedActorId
+                    && requestKey.equals(expectedRequestKey)
                     && Arrays.equals(bindingPayloadHash, expectedHash)
-                    && groupId == expectedGroupId && subjectId == expectedSubjectId
+                    && groupId == expectedGroupId
+                    && subjectId == expectedSubjectId
                     && semesterId == expectedSemesterId;
         }
     }

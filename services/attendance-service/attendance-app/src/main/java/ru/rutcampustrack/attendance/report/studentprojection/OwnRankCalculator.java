@@ -1,29 +1,29 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
-import java.math.BigInteger;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Pure exact rank calculator for an authoritative active participant roster.
- * Only the current participant's rank summary is returned.
+ * Pure exact rank calculator for an authoritative active participant roster. Only the current
+ * participant's rank summary is returned.
  */
 public final class OwnRankCalculator {
 
     /** One roster member and their already-calculated read metrics. */
-    public record Participant(
-            Long participantId,
-            AttendanceMetricCalculator.Metrics metrics) {
+    public record Participant(Long participantId, AttendanceMetricCalculator.Metrics metrics) {
 
         public Participant(Long participantId, int heldCount, int presentCount) {
-            this(participantId,
+            this(
+                    participantId,
                     AttendanceMetricCalculator.Metrics.forRanking(heldCount, presentCount));
         }
 
         public static Participant withCounts(long participantId, int heldCount, int presentCount) {
-            return new Participant(participantId,
+            return new Participant(
+                    participantId,
                     AttendanceMetricCalculator.Metrics.forRanking(heldCount, presentCount));
         }
     }
@@ -51,27 +51,25 @@ public final class OwnRankCalculator {
     }
 
     /** One row in the authorized cohort ordering; unavailable metrics remain unranked. */
-    public record RankedParticipant(long participantId, Integer position, BigDecimal percentage) {
-    }
+    public record RankedParticipant(long participantId, Integer position, BigDecimal percentage) {}
 
     /**
-     * Calculates competition rank: one plus the number of peers with a
-     * strictly greater exact present/held fraction. The roster is never
-     * amended with an implicit self entry.
+     * Calculates competition rank: one plus the number of peers with a strictly greater exact
+     * present/held fraction. The roster is never amended with an implicit self entry.
      */
     public static Rank calculate(
-            Long ownParticipantId,
-            Collection<Participant> authoritativeActiveRoster) {
+            Long ownParticipantId, Collection<Participant> authoritativeActiveRoster) {
         validateOwnId(ownParticipantId);
         return summarize(ownParticipantId, rankAll(authoritativeActiveRoster));
     }
 
     /**
-     * Orders the same cohort used by {@link #calculate(Long, Collection)}.
-     * Ratios use exact cross multiplication; rounded percentages are only for
-     * display. Ties keep the same competition position and stable id ordering.
+     * Orders the same cohort used by {@link #calculate(Long, Collection)}. Ratios use exact cross
+     * multiplication; rounded percentages are only for display. Ties keep the same competition
+     * position and stable id ordering.
      */
-    public static List<RankedParticipant> rankAll(Collection<Participant> authoritativeActiveRoster) {
+    public static List<RankedParticipant> rankAll(
+            Collection<Participant> authoritativeActiveRoster) {
         if (authoritativeActiveRoster == null) {
             throw StudentProjectionException.invalidRoster("roster is null");
         }
@@ -91,18 +89,19 @@ public final class OwnRankCalculator {
             participants.add(participant);
         }
 
-        participants.sort((left, right) -> {
-            boolean leftAvailable = hasRatio(left.metrics());
-            boolean rightAvailable = hasRatio(right.metrics());
-            if (leftAvailable != rightAvailable) {
-                return leftAvailable ? -1 : 1;
-            }
-            if (leftAvailable) {
-                int byRatio = compareRatio(right.metrics(), left.metrics());
-                if (byRatio != 0) return byRatio;
-            }
-            return Long.compare(left.participantId(), right.participantId());
-        });
+        participants.sort(
+                (left, right) -> {
+                    boolean leftAvailable = hasRatio(left.metrics());
+                    boolean rightAvailable = hasRatio(right.metrics());
+                    if (leftAvailable != rightAvailable) {
+                        return leftAvailable ? -1 : 1;
+                    }
+                    if (leftAvailable) {
+                        int byRatio = compareRatio(right.metrics(), left.metrics());
+                        if (byRatio != 0) return byRatio;
+                    }
+                    return Long.compare(left.participantId(), right.participantId());
+                });
 
         List<RankedParticipant> result = new ArrayList<>(participants.size());
         int rankPosition = 0;
@@ -118,8 +117,9 @@ public final class OwnRankCalculator {
             if (previousRanked == null || compareRatio(previousRanked.metrics(), metrics) != 0) {
                 rankPosition = availableCount;
             }
-            result.add(new RankedParticipant(
-                    participant.participantId(), rankPosition, metrics.presentPercent()));
+            result.add(
+                    new RankedParticipant(
+                            participant.participantId(), rankPosition, metrics.presentPercent()));
             previousRanked = participant;
         }
         return List.copyOf(result);
@@ -131,10 +131,11 @@ public final class OwnRankCalculator {
         if (rankedRoster == null) {
             throw StudentProjectionException.invalidRoster("ranked roster is null");
         }
-        RankedParticipant own = rankedRoster.stream()
-                .filter(participant -> participant.participantId() == ownParticipantId)
-                .findFirst()
-                .orElse(null);
+        RankedParticipant own =
+                rankedRoster.stream()
+                        .filter(participant -> participant.participantId() == ownParticipantId)
+                        .findFirst()
+                        .orElse(null);
         if (own == null || own.position() == null) {
             return Rank.unavailable(rankedRoster.size());
         }
@@ -147,12 +148,13 @@ public final class OwnRankCalculator {
 
     /** Positive means left has the higher exact present/held fraction. */
     private static int compareRatio(
-            AttendanceMetricCalculator.Metrics left,
-            AttendanceMetricCalculator.Metrics right) {
-        BigInteger leftCross = BigInteger.valueOf(left.presentCount())
-                .multiply(BigInteger.valueOf(right.heldCount()));
-        BigInteger rightCross = BigInteger.valueOf(right.presentCount())
-                .multiply(BigInteger.valueOf(left.heldCount()));
+            AttendanceMetricCalculator.Metrics left, AttendanceMetricCalculator.Metrics right) {
+        BigInteger leftCross =
+                BigInteger.valueOf(left.presentCount())
+                        .multiply(BigInteger.valueOf(right.heldCount()));
+        BigInteger rightCross =
+                BigInteger.valueOf(right.presentCount())
+                        .multiply(BigInteger.valueOf(left.heldCount()));
         return leftCross.compareTo(rightCross);
     }
 
@@ -171,8 +173,7 @@ public final class OwnRankCalculator {
     }
 
     private static void validateMetrics(
-            Long participantId,
-            AttendanceMetricCalculator.Metrics metrics) {
+            Long participantId, AttendanceMetricCalculator.Metrics metrics) {
         if (metrics == null) {
             return;
         }
@@ -186,8 +187,11 @@ public final class OwnRankCalculator {
             int presentOrExcused = metrics.presentOrExcusedCount();
             int excused = metrics.excusedCount();
             int absent = metrics.absentCount();
-            if (held < 0 || present < 0 || presentOrExcused < 0
-                    || excused < 0 || absent < 0
+            if (held < 0
+                    || present < 0
+                    || presentOrExcused < 0
+                    || excused < 0
+                    || absent < 0
                     || present > held
                     || presentOrExcused > held
                     || excused > held

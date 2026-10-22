@@ -1,0 +1,66 @@
+{
+  "artifact_id": 11775937506,
+  "name": "safe-coverage-outcomes-notification-service-1",
+  "archive_bytes": 11854,
+  "archive_sha256": "aa51370168c5d23a08d952765e310fb6d9d23a00c79b1a3235917b3ef58d119a",
+  "producer": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+        "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+        "service": "notification-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38313867586",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 62,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    },
+    {
+      "metadata": {
+        "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+        "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+        "service": "notification-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38313867586",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 125,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

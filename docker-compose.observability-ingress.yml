@@ -1,0 +1,34 @@
+# Optional attachment to the separately running observer scope. No business
+# service depends_on telemetry, its health or its database.
+services:
+  nginx:
+    networks:
+      - private_net
+      - browser-errors
+  grafana:
+    networks:
+      - private_net
+      - java-profiles
+  attendance-service:
+    networks:
+      - private_net
+      - java-profiles
+      - browser-errors
+    environment:
+      SENTRY_DSN: ${RCT_JAVA_GLITCHTIP_DSN:-}
+      SENTRY_RELEASE: ${RCT_RELEASE:-0.1.0}
+      SENTRY_ENVIRONMENT: production
+      SENTRY_SEND_DEFAULT_PII: 'false'
+      SENTRY_ENABLE_TRACING: 'false'
+      SENTRY_MAX_BREADCRUMBS: '0'
+      SENTRY_MAX_QUEUE_SIZE: '16'
+      SENTRY_ENABLE_LOGS: 'false'
+      RCT_PROFILING_ENABLED: ${RCT_PROFILING_ENABLED:-false}
+      RCT_PROFILING_ADDRESS: http://pyroscope:4040
+networks:
+  browser-errors:
+    external: true
+    name: ${RCT_OBSERVER_PROJECT:-rct-observability-apps}_browser-ingest
+  java-profiles:
+    external: true
+    name: ${RCT_OBSERVER_PROJECT:-rct-observability-apps}_profiles

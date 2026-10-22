@@ -1,0 +1,709 @@
+[
+  {
+    "id": "CASE-SAQ-AUTH-ROLE-SELECTION",
+    "classes": [
+      "SessionAuthFlowIT"
+    ],
+    "methods": [
+      "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess"
+    ],
+    "families": [
+      "JS-SYSTEM-02",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-01"
+    ],
+    "role": "One account with durable ACTIVE STUDENT and TEACHER grants; selected own session",
+    "mode": "Actual random-port Auth HTTP + PostgreSQL/Redis",
+    "prestate": "Fresh account; two active durable grants; no prior selected session",
+    "action": "Password login then authoritative TEACHER role selection and session reread",
+    "oracles": [
+      "Login current session STUDENT; both grants in response",
+      "PUT expected session version succeeds; version becomes2 and new access token issued",
+      "New bearer reread is TEACHER; responses no-store"
+    ],
+    "limits": "Finite two-role server flow. Does not establish four-role/default HEADMAN/admin, wrong-role domain writes, two tabs, complete profile/semester or client role-operation acceptance.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-AUTH-NEUTRAL-SCOPE",
+    "classes": [
+      "SessionAuthFlowIT"
+    ],
+    "methods": [
+      "bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword"
+    ],
+    "families": [
+      "JS-SYSTEM-02",
+      "JS-SYSTEM-14"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-03"
+    ],
+    "role": "Visible synthetic active account with no durable role grants; neutral bootstrap bearer",
+    "mode": "Actual random-port Auth HTTP + PostgreSQL/Redis",
+    "prestate": "New neutral account and authenticated bootstrap session, no selectable grant",
+    "action": "Read own current/live sessions; request ungranted role, account history and password command",
+    "oracles": [
+      "Current session and sessions200/no-store",
+      "Role selection403 ROLE_NOT_GRANTED",
+      "History and password403 BOOTSTRAP_SCOPE_DENIED"
+    ],
+    "limits": "Neutral authorization scope only; terminal role read-only domain operations remain separate. No absence-of-all-DB-side-effects assertion for denied requests.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+    "classes": [
+      "SessionAuthFlowIT"
+    ],
+    "methods": [
+      "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry"
+    ],
+    "families": [
+      "JS-SYSTEM-14",
+      "RESEARCH-P06",
+      "RESEARCH-P08"
+    ],
+    "boundaries": [
+      "BOUNDARY-01",
+      "BOUNDARY-02"
+    ],
+    "role": "Own authenticated neutral account; refresh cookie authority, no implicit role grant",
+    "mode": "Two concurrent actual HTTP callers; real PostgreSQL durable CAS; Redis container present",
+    "prestate": "One current refresh JTI and recorded signed absolute expiry",
+    "action": "Barrier-race identical cookie; rotate winner again; replay original",
+    "oracles": [
+      "Exactly one200 and one409 REFRESH_ALREADY_ROTATED",
+      "Fresh tokens differ while absolute expiry remains identical across both rotations",
+      "Cookie Max-Age decreases; no-store on winner/loser",
+      "Older replay401 REFRESH_REJECTED"
+    ],
+    "limits": "Real refresh concurrency/absolute expiry only. Browser tab race, authority outage/restart and explicit session expiry path remain separately required.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-RESET-ATOMIC-PURPOSE",
+    "classes": [
+      "AuthOtpFlowIT"
+    ],
+    "methods": [
+      "passwordResetIsPurposeBoundAtomicAndRevokesEverySession"
+    ],
+    "families": [
+      "JS-SYSTEM-03",
+      "JS-SYSTEM-04",
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-04",
+      "BOUNDARY-07"
+    ],
+    "role": "Own linked STUDENT with two active sessions; anonymous recovery proof",
+    "mode": "Actual Auth HTTP/PostgreSQL/Redis and Rabbit event queue",
+    "prestate": "Two existing sessions; fresh reset-purpose challenge",
+    "action": "Request/verify reset; try login-purpose misuse; race identical completion; publish committed event",
+    "oracles": [
+      "Known and unknown accounts return same response shape and ttl120; HTTP omits code and attempt counter",
+      "Rabbit reset event contains purpose/challenge/ttl120/attempts3; alias request emits no second event",
+      "Reset code cannot login or add session",
+      "Two completions produce one204 and one410; one audit/security event and one pending outbox",
+      "Metadata-only password.changed v2 matches exact current UID/generations/binding; no password/ticket/code",
+      "All old sessions/bearers/refresh revoked; replacement login succeeds"
+    ],
+    "limits": "Does not prove Telegram provider delivery, every dangerous-action purpose, actual browser reset, or card invalidation cleanup; broker7 remain GAP.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-RESET-NATURAL-EXPIRY-REUSE",
+    "classes": [
+      "AuthOtpFlowIT"
+    ],
+    "methods": [
+      "passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation"
+    ],
+    "families": [
+      "JS-SYSTEM-03",
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-04",
+      "BOUNDARY-05"
+    ],
+    "role": "Own linked account, anonymous reset proof",
+    "mode": "Actual HTTP/PostgreSQL/Redis; production120s TTL wall clock",
+    "prestate": "Snapshot of credential/session/ticket state, real challenge",
+    "action": "Wait for real Redis expiration; verify expired; issue/consume fresh then repeat",
+    "oracles": [
+      "Real120-second challenge keys expire without DEL/EXPIRE override",
+      "Expired410 OTP_EXPIRED/no-store; no ticket/access/session fields; credential/session/ticket snapshots unchanged",
+      "Valid consume inserts exactly one ticket and removes code but retains owner metadata; repeat410 produces no state/ticket delta"
+    ],
+    "limits": "Reset challenge only; admin ticket expiry is artificially advanced in another test. No exact expiry instant race or concurrent challenge issue/completion linearization claim.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-RESET-ACCOUNT-ATTEMPT-WINDOW",
+    "classes": [
+      "AuthOtpFlowIT"
+    ],
+    "methods": [
+      "passwordResetFailedAttemptsSurviveANewChallenge"
+    ],
+    "families": [
+      "JS-SYSTEM-03"
+    ],
+    "boundaries": [
+      "BOUNDARY-04"
+    ],
+    "role": "Same account recovered via Telegram identifier and login alias",
+    "mode": "Actual HTTP/Redis/PostgreSQL/Rabbit",
+    "prestate": "Fresh reset challenge, no active session",
+    "action": "Submit three wrong codes; delete only request cooldown fixture key; request new challenge and retry",
+    "oracles": [
+      "Wrong tries400,400,429",
+      "New alias challenge does not reset verification-attempt window, emits no new event",
+      "Further wrong and originally valid code both429; active sessions stay zero"
+    ],
+    "limits": "Request cooldown keys deliberately deleted to reach next challenge; real five-minute verification-window expiry and login/dangerous-action budgets remain unproved.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-RECOVERY-DENIAL",
+    "classes": [
+      "AuthOtpFlowIT"
+    ],
+    "methods": [
+      "adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket"
+    ],
+    "families": [
+      "JS-SYSTEM-03",
+      "JS-ADMIN-20"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-07"
+    ],
+    "role": "STUDENT negative versus explicitly selected live ADMIN helper; own target",
+    "mode": "Actual Auth HTTP/PostgreSQL",
+    "prestate": "Live target session; issued admin recovery ticket",
+    "action": "Try STUDENT issuer, expire ticket through SQL fixture, revoke ADMIN session then issue again",
+    "oracles": [
+      "Student403 and zero ticket rows",
+      "Expired admin ticket410 preserves student's current session",
+      "Revoked admin issuer401/no-store"
+    ],
+    "limits": "Admin ticket time is advanced with SQL; does not prove one-hour wall-clock expiry, LIMITED grant catalogue or all target protections.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AdminPasswordResetService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-AUTH-LIVE-REVOKE",
+    "classes": [
+      "InternalSessionAdmissionIT"
+    ],
+    "methods": [
+      "liveAdmissionThenCommittedRevokeIsDenied"
+    ],
+    "families": [
+      "JS-ADMIN-02",
+      "JS-SYSTEM-04",
+      "RESEARCH-P06"
+    ],
+    "boundaries": [
+      "BOUNDARY-02"
+    ],
+    "role": "Own ACTIVE STUDENT durable grant and selected session",
+    "mode": "Direct production SessionAdmissionService + real PostgreSQL and signed token, fixed security clock",
+    "prestate": "Admitted current session",
+    "action": "Commit real revoke then re-admit identical retained bearer",
+    "oracles": [
+      "Initial admission returns own UID",
+      "Durable revoke succeeds",
+      "Old bearer raises exact SESSION_REVOKED"
+    ],
+    "limits": "Direct service seam, not HTTP/Gateway/browser; other role continuity, restart and outage routes remain separate.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "classes": [
+      "WsTicketConcurrencyBoundaryIT",
+      "WsTicketIT"
+    ],
+    "methods": [
+      "concurrentActualHttpConsumersHaveExactlyOneWinnerAndBurnTicket",
+      "actualRedisThirtySecondExpiryRejectsUnconsumedTicket",
+      "logoutBeforeConsumeInvalidatesOutstandingTicket",
+      "consumeTicket_revokedBeforeConsume_isRejectedAndBurned"
+    ],
+    "families": [
+      "JS-SYSTEM-09",
+      "RESEARCH-P09"
+    ],
+    "boundaries": [
+      "BOUNDARY-43"
+    ],
+    "role": "Current seeded selected STUDENT; own session; guarded internal ticket consumer",
+    "mode": "Actual Auth HTTP/PostgreSQL/Redis",
+    "prestate": "Live 30-second ticket and authenticated own session",
+    "action": "Race two consumers; wait actual TTL; logout before consume",
+    "oracles": [
+      "Exactly one200 and one404; key gone and replay404",
+      "Advertised and actual Redis TTL independently match30s; actual expiration then404",
+      "Post-logout consume404 and key absent after consume; does not separately establish proactive key deletion before consume",
+      "Durable STUDENT grant suspended without logout: first consume401, replay404; original grant restored in finally"
+    ],
+    "limits": "Does not establish Notification socket using actual Auth authority, Gateway/TLS/browser, or foreign-user socket subscription. Logout test checks key after consume, so omit proactive invalidation could survive it; actual live-grant denial is established by separate existing WsTicketIT method.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-WS-OUTBOUND-REVOKE-SEAM",
+    "classes": [
+      "PrivateWsTransportIT"
+    ],
+    "methods": [
+      "openSocketReceivesBeforeRevokeAndCannotReceiveNextPrivateMessageAfterRevoke"
+    ],
+    "families": [
+      "JS-SYSTEM-09",
+      "RESEARCH-P09"
+    ],
+    "boundaries": [
+      "BOUNDARY-43"
+    ],
+    "role": "Two synthetic STUDENT identities; one revoked and one live control",
+    "mode": "Real local Notification WebSocket/STOMP/socket broker and outbound HTTP; Auth authority controlled HttpServer stub",
+    "prestate": "Two connected/subscribed sockets with witnessed before delivery",
+    "action": "Revoke stub authority then send private message to both",
+    "oracles": [
+      "Both observe positive before delivery",
+      "Revoked socket causes fresh admission read, disconnects and receives no after message",
+      "Live control receives after and remains connected"
+    ],
+    "limits": "Auth stub, Mongo/Redis/Rabbit disabled; cannot combine with separate real ticket tests to claim real Auth-to-socket chain. Real authority/foreign subscription/export session boundaries remain required.",
+    "implementation": [
+      "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-LAST-FULL-AND-DOWNGRADE-RACE",
+    "classes": [
+      "AdminAccessAuthorityIT"
+    ],
+    "methods": [
+      "concurrentFullRevocationsSerializeAndCannotRemoveLastFull",
+      "actorDowngradeWhileWaitingForGlobalLockCannotUseOldFullAdmission"
+    ],
+    "families": [
+      "JS-ADMIN-02",
+      "JS-ADMIN-04",
+      "JS-ADMIN-19",
+      "JS-ADMIN-26"
+    ],
+    "boundaries": [
+      "BOUNDARY-09",
+      "BOUNDARY-10"
+    ],
+    "role": "Two selected FULL ADMINs with durable profiles/sessions; actor later LIMITED USERS_VIEW",
+    "mode": "Production service/JDBC with real owned PostgreSQL, manual RequestContext claims and V24/V51 schema pieces",
+    "prestate": "Two FULL administrators; competing revoke/downgrade and waiting command",
+    "action": "Race cross revocation; downgrade blocked actor while global lock is held",
+    "oracles": [
+      "Revoke outcomes exactly one success/one failure; one assignedFULL row remains",
+      "Waiting staleFULL actor denied after downgrade; target profile remains unassigned"
+    ],
+    "limits": "Server service race only; no real Auth/Gateway/HTTP, no archive/status form for every last-FULL route. Event publisher mocked, no delivery acceptance.",
+    "implementation": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-LIMITED-CATALOGUE",
+    "classes": [
+      "AdminAccessAuthorityIT"
+    ],
+    "methods": [
+      "limitedAssignmentRoundTripsValidatesDependenciesAndNeverDelegatesFull"
+    ],
+    "families": [
+      "JS-ADMIN-19",
+      "JS-ADMIN-26"
+    ],
+    "boundaries": [
+      "BOUNDARY-09"
+    ],
+    "role": "Selected FULL assigns LIMITED USERS_VIEW+USERS_MANAGE; LIMITED cannot delegateFULL",
+    "mode": "Production service/JDBC + real PostgreSQL; manual context; event publisher mock",
+    "prestate": "Teacher target with no ADMIN profile; full actor",
+    "action": "Assign/replay LIMITED; attempt delegation and invalid permission combinations",
+    "oracles": [
+      "Exact durable permissions/profile roundtrip, FULL false, existing teacher grant retained",
+      "Idempotent same assignment emits no second captured event",
+      "LIMITED delegatingFULL denied; missing dependency/duplicate/unknown/empty/mode-incompatible catalogues rejected"
+    ],
+    "limits": "Mock event assertions are not Rabbit/provider proof; invalid writes lack full DB/audit snapshot assertions; all12-grant actual HTTP/domain action matrix remains required.",
+    "implementation": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-USER-ARCHIVE-RESTORE-ROLLBACK",
+    "classes": [
+      "UserArchiveLifecycleIT"
+    ],
+    "methods": [
+      "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment"
+    ],
+    "families": [
+      "JS-ADMIN-04"
+    ],
+    "boundaries": [
+      "BOUNDARY-12",
+      "BOUNDARY-19"
+    ],
+    "role": "Manual FULL ADMIN context; target STUDENT+TEACHER+HEADMAN and active selected session",
+    "mode": "Actual Academic service/JPA/PostgreSQL; Auth confirmation and Attendance impact mocked",
+    "prestate": "Own current Moscow semester/group; durable grants/session/history",
+    "action": "Deny proof; inject receipt-write fault; archive and replay; restore and explicit fresh role assignment",
+    "oracles": [
+      "Denied proof leaves account active; injected receipt-write failure preserves active account, selected session and open group history",
+      "One exact archive receipt; retry rechecks confirmation",
+      "Restore has zero active grants, no group/headman/selected role; credential/login/binding values retained",
+      "Fresh STUDENT assignment creates current membership; old closed history and original grant IDs retained"
+    ],
+    "limits": "Preview attendance count is stubbed; cross-service proof/marks/tickets/homework/cache/network effects not established. No full UI archive/restore or every role's last-FULL protection.",
+    "implementation": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserArchiveService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-ASSIGNMENT-OVERLAP-AND-DATES",
+    "classes": [
+      "AssignmentAuthorityIT"
+    ],
+    "methods": [
+      "sameTeacherSameTypeOverlapRaceCommitsOneAndReturnsOne409",
+      "invalidAssignmentDateBoundsAreRejectedWithoutWrite"
+    ],
+    "families": [
+      "JS-HEADMAN-12",
+      "JS-HEADMAN-38",
+      "RESEARCH-P04"
+    ],
+    "boundaries": [
+      "BOUNDARY-22"
+    ],
+    "role": "Signed test HEADMAN own-group identity with real fixture roster/teacher grants; Schedule mock",
+    "mode": "In-process signed MockMvc REST + actual PostgreSQL; Schedule lifecycle receipts mocked",
+    "prestate": "Own semester/group/subject and ACTIVE teacher",
+    "action": "Race identical overlapping assignment; submit out-of-semester and zero-width dates",
+    "oracles": [
+      "Race exactly201/409 and one durable assignment",
+      "Before-semester and equal start/end400; zero assignments"
+    ],
+    "limits": "Synthetic signed internal identity does not prove actual Auth admission; mocked Schedule adoption not full cross-service state/history; client path separate.",
+    "implementation": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-ASSIGNMENT-PENDING-EXACT-REPLAY",
+    "classes": [
+      "AssignmentReplacementIT"
+    ],
+    "methods": [
+      "pendingActivationIsFencedAndExactReplayCompletesAfterScheduleCommit"
+    ],
+    "families": [
+      "JS-HEADMAN-12",
+      "JS-HEADMAN-38",
+      "RESEARCH-P05"
+    ],
+    "boundaries": [
+      "BOUNDARY-22"
+    ],
+    "role": "Signed HEADMAN own group, active vs ungranted teachers and foreign actor negative",
+    "mode": "Signed MockMvc + real PostgreSQL/JPA; Schedule close-cap/commit mocked",
+    "prestate": "Existing source assignment and deterministic pending target operation",
+    "action": "Replace to APPLIED; reject conflicting operation; replay same key until COMMITTED; reread/replay",
+    "oracles": [
+      "Database rejects invalid active zero-width row; ungranted teacher403",
+      "APPLIED operation retains exact source cap and target; illegal raw updates/conflicting target commands rejected",
+      "Replay returns same operation/target, exact source/target dates andCOMMITTED status; foreign read403",
+      "One durable COMMITTED operation; same operation retained across subsequent replay"
+    ],
+    "limits": "Moved/skipped counts are supplied by Schedule mock; actual lessons/homework/attendance/history cross-service effects not verified.",
+    "implementation": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-SEMESTER-RESTORE-NOT-ACTIVE",
+    "classes": [
+      "SemesterArchiveStateIT"
+    ],
+    "methods": [
+      "expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule"
+    ],
+    "families": [
+      "JS-ADMIN-09",
+      "RESEARCH-L02"
+    ],
+    "boundaries": [
+      "BOUNDARY-16"
+    ],
+    "role": "Direct SemesterService calls; no new administrator override grant",
+    "mode": "Actual PostgreSQL/JPA with fixed Europe/Moscow-day teaching Clock; Schedule mocked",
+    "prestate": "One active semester and future inactive fixture in year9991",
+    "action": "Schedule expired target; archive scheduled target; restore and tick scheduler",
+    "oracles": [
+      "Expired scheduled target unschedules and activation conflicts; original activeID unchanged",
+      "Archive cancels schedule; archived tick does not replace active",
+      "Restore clears schedule and does not reactivate on tick"
+    ],
+    "limits": "Direct service lifecycle; no Auth/ADMIN HTTP, cross-service archive saga/outage/recovery or client context. Existing archive/activation race CASE-DATA-L07 reused, not duplicated.",
+    "implementation": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-CLAIM-OUTAGE",
+    "classes": [
+      "DurableNotificationPreferencesIT"
+    ],
+    "methods": [
+      "concurrentSameEventClaimCommitsOneEffectAndLoserRetriesSafely",
+      "authorityOutageRollsBackEventClaimBeforeEnqueueAndReplayAdmitsOnce"
+    ],
+    "families": [
+      "JS-SYSTEM-10",
+      "JS-SYSTEM-11",
+      "RESEARCH-P12"
+    ],
+    "boundaries": [
+      "BOUNDARY-40",
+      "BOUNDARY-42"
+    ],
+    "role": "Classified own STUDENT audience supplied by controlled Academic mock",
+    "mode": "Actual Mongo replica-set transactions and Redis; direct EventConsumer; provider/messaging/audience mocked",
+    "prestate": "Same event claim race; preference read outage injected through real MongoTemplate spy",
+    "action": "Race two transaction snapshots; fault preferences read; recover and replay twice",
+    "oracles": [
+      "Claim race one winner/one loser with transaction retries, one claim/effect, duplicate false",
+      "Authority outage leaves zero durable claim and no staged provider/messages",
+      "Recovered replay commits one claim, one history row and one push intent"
+    ],
+    "limits": "No real Rabbit ACK/retry/DLQ/provider or live Academic audience; NOT broker7 proof. Spy injects outage rather than actual Mongo network loss.",
+    "implementation": [
+      "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesStore.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-BOT-TOGGLE-CAS",
+    "classes": [
+      "DurableNotificationPreferencesIT"
+    ],
+    "methods": [
+      "concurrentCallbackTogglesAndReplaysLinearizeWithoutLostUpdates"
+    ],
+    "families": [
+      "JS-SYSTEM-11"
+    ],
+    "boundaries": [
+      "BOUNDARY-42"
+    ],
+    "role": "Exact own user/Telegram facet; current binding controlled by mock",
+    "mode": "Direct production bot preference service; real Mongo transactions/Redis; Academic binding mocked",
+    "prestate": "Initial durable enabled facet",
+    "action": "Two distinct concurrent toggle commands then replay each",
+    "oracles": [
+      "Both commands complete and final globalEnabled true after two toggles",
+      "Replays preserve true; exactly two receipts"
+    ],
+    "limits": "Mock binding is not live Academic/real private bot HTTP admission. Provider messages, rebind and crash recovery require separate accepted evidence.",
+    "implementation": [
+      "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/preferences/BotNotificationPreferencesService.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-WHOLE-PROFILE-CAS",
+    "classes": [
+      "NotificationStateV2IT"
+    ],
+    "methods": [
+      "concurrentPreferenceSavesCommitOneWholeProfileAndLoserGets409"
+    ],
+    "families": [
+      "JS-SYSTEM-11"
+    ],
+    "boundaries": [
+      "BOUNDARY-42"
+    ],
+    "role": "Own preference profile; binding mock",
+    "mode": "Actual Mongo CAS via production V2 service; direct two threads",
+    "prestate": "One revision; two competing full-type profiles",
+    "action": "Barrier-race two saves using same expected revision",
+    "oracles": [
+      "One accepted DTO and one typed conflict",
+      "Committed entire types equals one winner's full profile; revision changes"
+    ],
+    "limits": "No actual HTTP status proof despite conflict class mapping; no partial provider/binding/carrier acceptance.",
+    "implementation": [
+      "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesV2Service.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-EXPORT-ENUM-DB-WIRE",
+    "classes": [
+      "ExportJobsIT"
+    ],
+    "methods": [
+      "threeGenerationFailuresTerminateAndWireAndDatabaseRejectUnknownOrOrdinalState"
+    ],
+    "families": [
+      "JS-ADMIN-13",
+      "RESEARCH-L04",
+      "RESEARCH-P18"
+    ],
+    "boundaries": [
+      "BOUNDARY-46",
+      "BOUNDARY-50"
+    ],
+    "role": "Own selected export actor fixture; three controlled generation failures",
+    "mode": "Real PostgreSQL export service/transactions + Jackson wire mapper; ticket authorization mocked and generation effects controlled",
+    "prestate": "Queued export with exact claim leases",
+    "action": "Fail three generation attempts; roundtrip canonical string, reject unknown/ordinal persisted code",
+    "oracles": [
+      "Three failed generations terminateERROR with attempts3",
+      "Wire PREPARING emits preparing; ready parsesREADY; unknown rejected",
+      "Database rejects ordinal-like state1; ERROR file read denied"
+    ],
+    "limits": "Not whole enum catalogue/history upgrade or true renderer generation; legacy schema compatibility separate. Contract producer schema unit covered as supplementary, not independent second runtime.",
+    "implementation": [
+      "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-EXPORT-HTTP-REVOKE-AUDIT",
+    "classes": [
+      "ExportJobHttpIT"
+    ],
+    "methods": [
+      "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation"
+    ],
+    "families": [
+      "JS-ADMIN-13",
+      "RESEARCH-P06",
+      "RESEARCH-P16"
+    ],
+    "boundaries": [
+      "BOUNDARY-02",
+      "BOUNDARY-46"
+    ],
+    "role": "Real logged-in explicitly selected ADMIN; TEACHER/anonymous negatives; guarded internal worker",
+    "mode": "Actual Auth HTTP/PostgreSQL; manually supplied synthetic HTML completion bytes, no renderer",
+    "prestate": "New queued job plus unrelated historical audit",
+    "action": "Queue/claim/complete twice/read/ticket/redeem; logout then read/redeem",
+    "oracles": [
+      "Anonymous403 and wrong internal secret401; teacher403",
+      "Queued202, pending-file409, guarded claim yields admittedADMIN; completionREADY twice",
+      "One per-job audit while older audit survives; exact saved bytes/no-store",
+      "Logout denies file/status and ticket redemption401"
+    ],
+    "limits": "Synthetic manually supplied file; no actual five-format renderer/model correctness/browser download. LIMITED server grants proven separately by existing export work, not inferred.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "classes": [
+      "QrLoginFlowIT"
+    ],
+    "methods": [
+      "browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry",
+      "sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery",
+      "rejectedExpiredAndSupersededChallengesCannotIssueAndRedisLimitsAreAuthoritative",
+      "receiptFailureRollsBackSessionAuditAndCleanupOnlyDeletesOwnedExpiredQrMetadata"
+    ],
+    "families": [
+      "JS-SYSTEM-13"
+    ],
+    "boundaries": [
+      "BOUNDARY-05"
+    ],
+    "role": "Anonymous browser issuer; own current STUDENT/TEACHER confirmer; bootstrap/revoked negatives",
+    "mode": "Actual Auth HTTP/PostgreSQL/Redis; configured QR TTL5s, cleanup disabled",
+    "prestate": "Two issuer/challenges and live own multi-role confirmer",
+    "action": "Approve/exchange race/exact replay; revoke or change source/target authority; expire/reject/supersede; wrong proof/purpose",
+    "oracles": [
+      "Concurrent exact exchange returns identical token pair; one session and login audit; replay after QR expiry stable until refresh/revoke",
+      "Wrong browser/approval token/purpose denied; pending cannot issue; source/target revoke and role drift deny without extra session",
+      "Reject/expired/superseded challenges cannot issue; wrong Redis type503 rather than authorization; unknown forwarding remains untrusted",
+      "Injected real PostgreSQL receipt trigger fault returns503 with zero new QR session/login audit and no receipt; after fault removal retry commits one; owned expired metadata cleanup preserves sessions/audit; bounded replay expiry410"
+    ],
+    "limits": "Existing CASE-L03-QR-REDACTION is reused for redaction only, not duplicated. TTL deliberately5s/cleanup off; production default expiry/cleanup not exercised. Mobile scan UI explicitly separate stage; do not invent required real phone.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/QrLoginService.java",
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginPersistence.java"
+    ]
+  },
+  {
+    "id": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "classes": [
+      "PasswordPolicyTest"
+    ],
+    "methods": [
+      "acceptsTwelveUnicodeScalarsWithNdAndPSpecial",
+      "symbolAloneSatisfiesSpecialCategoryWithoutPunctuation",
+      "supplementaryScalarsCountAsOneAndUnicodeNdIsAccepted",
+      "rejectsMissingDigitOrSpecialAndDoesNotTreatSpaceOrCombiningMarkAsSpecial",
+      "enforcesScalarMinimumAndUtf8ByteMaximumWithoutTruncation",
+      "rejectsUnpairedSurrogatesInsteadOfReplacingThem"
+    ],
+    "families": [
+      "JS-SYSTEM-04",
+      "RESEARCH-P10"
+    ],
+    "boundaries": [
+      "BOUNDARY-07"
+    ],
+    "role": "No role/grant; pure submitted-password validation",
+    "mode": "Production PasswordPolicy unit function; no HTTP/DB/bcrypt",
+    "prestate": "Independent Unicode scalar/UTF8/category fixtures",
+    "action": "Validate lower minimum, exact72-byte positive,73-byte negative, supplementary scalar and malformed surrogate cases",
+    "oracles": [
+      "Independent12-scalar and72-byte thresholds",
+      "UnicodeNd and punctuation/symbol accepted; space/combining mark do not substitute special",
+      "Unpaired high/low surrogate rejected; no replacement/truncation"
+    ],
+    "limits": "Validation rule only; no changed password value exported, API reflection, bcrypt behavior or browser workflow inferred. Existing actual password commit/clear case reused separately.",
+    "implementation": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java"
+    ]
+  }
+]

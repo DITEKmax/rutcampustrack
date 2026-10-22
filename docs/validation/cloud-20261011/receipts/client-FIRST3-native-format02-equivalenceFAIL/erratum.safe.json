@@ -1,0 +1,8 @@
+{
+  "field": "chat_runStringCount",
+  "incorrect": 19,
+  "actual": 28,
+  "authoritative": "candidate.safe.json",
+  "yamlTreeAndAllRunStringsEqual": true,
+  "semanticProofStillFailed": true
+}

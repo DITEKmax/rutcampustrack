@@ -1,0 +1,84 @@
+{
+  "at": "2026-10-11T22:14:16.828945+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "review_type": "INDEPENDENT_SOURCE_ONLY",
+  "target_sha": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+  "root_input_sha": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+  "frozen_worktree_clean": true,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "blocking_findings": [
+    {
+      "id": "CTR01",
+      "priority": "P2",
+      "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+      "start": 63,
+      "end": 64,
+      "description": "Past live teaching date2025-09-15 precedes sole history joinedAt2026-01-01; actual resolver currentGroupAt discards it and throws INCONSISTENT_SOURCE before positive isolation assertions.",
+      "source_counterexample": "session-fixture-counterexample.json",
+      "runtime": "NOT_RUN",
+      "required_correction": "Keep a valid synthetic authoritative history spanning both teaching dates; preserve domain guard and specific expired INVALID_SESSION oracle."
+    }
+  ],
+  "original_findings": {
+    "CC01": {
+      "architectural_source_root_cause": "CORRECTED",
+      "control_preparation": "BLOCKED_CTR01",
+      "actual_compiler_consumer_context_and_bad_clock_sensitivity": "NOT_RUN"
+    },
+    "CC02": {
+      "source_verdict": "APPROVE_SOURCE",
+      "existing_actual_function_structural_controls": "PASS6, preserved/reopened and hashes verified",
+      "known_bad_actual049ab_scanner": "EXPECTED_FAIL3 nested/uninspectable controls, log hash verified",
+      "actual_production_artifact_isolation": "UNKNOWN"
+    },
+    "CC03": {
+      "source_verdict": "APPROVE_SOURCE_PREPARED_ORACLE",
+      "distinguishing_case": "changedvalidpayload+samekey409 exactcode, unchanged public attendance+headman status/source/markRevision, originalack replay",
+      "actual_backend_browser_and_receipt_omission_sensitivity": "NOT_RUN"
+    }
+  },
+  "source_scope": {
+    "combined_clock_commit_unique_paths": 30,
+    "latest_correction_paths": 20,
+    "authorized_main_paths": 13,
+    "four_service_clock_mention_files": 58,
+    "explicit_typed_consumer_classes": 8
+  },
+  "reused_evidence": {
+    "author18Java_tree_sitter": "SYNTAX_ONLY, not rerun and not compiler proof",
+    "authorTS_Prettier_Ruff_AST": "PREPARATION receipts only",
+    "historical049abJava_context_and_dryrun": "Historical, not currenttyped proof",
+    "existing_CC02_sufficient_PASS": "Not repeated"
+  },
+  "stale_external_jar": {
+    "path": "/workspace/rct-worktrees/client-runtime/build/e2e-clock/clock-fixture.jar",
+    "sha256": "6a474b4f95e9bdde92acff655a2a7f0d3120e369a3f9ea240eb8a1908dcf6806",
+    "class_entries": [
+      "ru/rutcampustrack/e2e/ClockInitializer.class",
+      "ru/rutcampustrack/e2e/FileClock.class"
+    ],
+    "equals_historical049ab_artifact": true,
+    "current_typed_source_not_compiled": true,
+    "admission": "STALE_DO_NOT_LAUNCH"
+  },
+  "current_admission": {
+    "consumer_runtime": "BLOCKED pending CTR01 correction + independent scoped source acceptance + rootlease",
+    "apps_browser": "BLOCKED pending accepted actual mixed-consumer controls/fresh typed artifacts/separate rootlease",
+    "full_client_product": "NOT_ACCEPTED"
+  },
+  "pending_prerequisites": [
+    "Correct and independently recheck CTR01.",
+    "Compile current typed shared/consumer/fixture sources and run prepared11 mixed-consumer cases plus typed context controls under rootlease.",
+    "Prove relevant knownbad wrong-clock sensitivity and restore accepted source/green controls.",
+    "Build/check actual four current production BootJARs and fresh external fixtureJAR, verify ordinary build graph/default classpath absence.",
+    "After accepted prerequisites and separate lease run actual application/startup finitegeo/D005/CC03 browser/backend paths and meaningful receipt sensitivity.",
+    "Keep ordinary realDate expiry-sensitive securityUI/retention/archive/report/notification matrix separate; no fullproduct time-coverage claim."
+  ],
+  "reviewer_operations": {
+    "allowed": "read source/Git/receipts; pure Python SHA/source inventory/date comparison/ZIP read; write own scratch receipts",
+    "Java_Gradle_Docker_apps_browser_test_execution_product_mutations_children": "NONE",
+    "Python_import_cache_in_worktree": "NONE"
+  }
+}

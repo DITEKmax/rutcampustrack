@@ -1,0 +1,65 @@
+{
+  "current_SECURITY2_2C_commands": [
+    {
+      "at": "2026-10-11T20:56:46.024123+00:00",
+      "kind": "baseline-red-start",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "session": 84334,
+      "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2 :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.OtpIT.invalidOtpValidationDoesNotExposeRejectedProof",
+      "log": ".agent/evidence/security-boundaries/red-otp-01.log",
+      "command_source": "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson"
+    },
+    {
+      "at": "2026-10-11T21:04:33.584096+00:00",
+      "kind": "baseline-red-start",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "session": 86821,
+      "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2 --continue :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.integration.LessonApiIT.localeKeepsCanonicalStatusAtDatabaseAndHttpBoundary :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.integration.EnumSerializationIT.localeKeepsCanonicalAttendanceAndExcuseCodes",
+      "log": ".agent/evidence/security-boundaries/red-locale-01.log",
+      "command_source": "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson"
+    },
+    {
+      "at": "2026-10-11T21:07:56.982685+00:00",
+      "kind": "baseline-red-start",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "session": 19441,
+      "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2 --continue :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:mobile-bff:mobile-bff-app:integrationTest --tests ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+      "log": ".agent/evidence/security-boundaries/red-bff-report-01.log",
+      "command_source": "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson"
+    },
+    {
+      "at": "2026-10-11T21:14:56.553305+00:00",
+      "phase": "correction-green-start",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "session": 6268,
+      "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2 --continue :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.integration.LessonApiIT.localeKeepsCanonicalStatusAtDatabaseAndHttpBoundary :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT :services:attendance-service:attendance-app:compileTestJava :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.integration.EnumSerializationIT.unknownCodeFailsClosedAndOptionalNullKeepsItsMeaning :services:auth-service:auth-app:compileTestJava :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest.otpProofRepresentationsAreRedactedWithoutChangingJsonWire",
+      "wip_manifest_sha256": "855cb95cfc070b1a0b25a2a88aeecf918325266e63c14a53ac4c110b6e69873f",
+      "log": ".agent/evidence/security-boundaries/green-boundaries-02.log",
+      "command_source": "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson"
+    },
+    {
+      "at": "2026-10-11T21:26:33.922778+00:00",
+      "kind": "fixture-recheck-start",
+      "checkpoint": "dc3d95cf7388ba883e26e3d53c27c9a3bcd19b89",
+      "session": null,
+      "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=1 :services:academic-service:academic-app:compileTestJava :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+      "test_source_sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "log": ".agent/evidence/security-boundaries/green-academic-fixture-03.log",
+      "command_source": "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson"
+    },
+    {
+      "phase": "green01",
+      "session": 15476,
+      "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2 --continue :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.integration.LessonApiIT.localeKeepsCanonicalStatusAtDatabaseAndHttpBoundary :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.integration.EnumSerializationIT :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:mobile-bff:mobile-bff-app:integrationTest --tests ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.OtpIT --tests ru.rutcampustrack.auth.integration.ReportProofValidationIT --tests ru.rutcampustrack.auth.integration.SessionAuthFlowIT.passwordChangeCommitsClearRevokesBearerAndReplacesCredential :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+      "exit": 1,
+      "notes": "Remaining two confirmed defects; unaffectedgreen reused. One static BFF implementation typo fixed before BFFcompileJava; launchWIPmanifest superseded for that source by finalhash in green02manifest.",
+      "command_source": "/workspace/scratch/rct-validation/security_boundaries_developer/commands-supplement.json"
+    }
+  ],
+  "source_hashes": {
+    "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson": "274a9c7a6922012299354385f34678638fc3c04c54c6509e8a93cf146a5af1c2",
+    "/workspace/scratch/rct-validation/security_boundaries_developer/commands-supplement.json": "ca3948f144c03da2a2ee7c0d9b7f382a20b751dc40958ff915a067761ba98e95"
+  },
+  "old_8a9_exact_argv": "UNKNOWN; not reconstructed from current commands",
+  "WIP_provenance": "baseline revision labels identify clean parent; launch WIP manifests and stated precompile/final-fixture changes are retained in source-equivalence.json and review.md"
+}

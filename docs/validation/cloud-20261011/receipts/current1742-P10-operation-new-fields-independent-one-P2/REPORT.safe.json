@@ -1,0 +1,38 @@
+{
+  "schema": "P10_OPERATION_R1_NARROW_PRIVACY_REVIEW_V1",
+  "utc": "2026-10-13T12:56:58.012856+00:00",
+  "verdict": "FINDINGS",
+  "findings": [
+    {
+      "id": "P10-EXCEPTION-TYPE-LOOKUP-METACLASS-HOOKS",
+      "priority": 2,
+      "source": "logged-green-child.py:393",
+      "cause": "Dictionary lookup hashes/compares arbitrary exception class through metaclass hooks",
+      "counterexamples": [
+        "Unknown metaclass hash executes/raises before primary assignment",
+        "Unknown metaclass hash/equality falsely selects HTTP_ERROR"
+      ],
+      "correction": "Fixed sequence with exact is comparisons; unknown OTHER without class hashing/equality"
+    }
+  ],
+  "source_ready_sha256": "cfbd8290d826180e57e4607180641655bbc344ef26701a725c89f5425c347121",
+  "source_manifest_sha256": "270111f261d0fade23cb22e8281c735e3fdee1f1dbfa95fda927f6dbbfe242d8",
+  "source_zip_sha256": "57a9a5317fe236c87c25f0f29109ba462136d2738b6f5d5dcedc8233b7aa4208",
+  "child_sha256": "c5426d2230ba9b7ddafdb106684e045704e8882b909abb5a847c59788b8cbf7a",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "checks": {
+    "ordinary19": "PASS",
+    "status8": "PASS",
+    "static15": "PASS",
+    "source_pins": "PASS",
+    "metaclass_counterexamples": 2,
+    "old13_and_17plus6": "REUSED_NOT_RERUN"
+  },
+  "native": "NOT_RUN",
+  "actual02_stage_exception_body_reach_cause": "UNKNOWN",
+  "currentCI_P10_cause": "UNKNOWN",
+  "effects": "PublicSource/RAMsyntheticcatch only; no native/privatebody/env/network/Source edits",
+  "next": "Same-author minimal identity-only correction; narrow recheck before fresh Root grant"
+}

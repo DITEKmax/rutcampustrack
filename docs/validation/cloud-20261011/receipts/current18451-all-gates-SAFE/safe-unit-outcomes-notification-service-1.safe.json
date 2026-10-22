@@ -1,0 +1,37 @@
+{
+  "artifact_id": 11775887553,
+  "name": "safe-unit-outcomes-notification-service-1",
+  "archive_bytes": 7630,
+  "archive_sha256": "ef8b229daf10c8e170c443d52d7a038cbf094f16bc554f369c935a8d0407f9e7",
+  "producer": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+        "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+        "service": "notification-service",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38313867449",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 125,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

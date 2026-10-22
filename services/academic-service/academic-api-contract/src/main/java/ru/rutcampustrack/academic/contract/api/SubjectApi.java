@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -18,25 +19,21 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.AddSubjectTeacherRequest;
+import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.SubjectResponse;
 import ru.rutcampustrack.academic.contract.dto.subject.UpdateSubjectRequest;
 
-import java.time.LocalDate;
-
-/**
- * REST API contract for subject management.
- */
+/** REST API contract for subject management. */
 @Tag(name = "Subjects", description = "Управление предметами")
 @RequestMapping("/academic/subjects")
 public interface SubjectApi {
 
     @Operation(summary = "Создать предмет (HEADMAN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Предмет создан"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+        @ApiResponse(responseCode = "201", description = "Предмет создан"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа")
     })
     @PostMapping
     ResponseEntity<EntityModel<SubjectResponse>> createSubject(
@@ -44,8 +41,8 @@ public interface SubjectApi {
 
     @Operation(summary = "Получить предмет по ID")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Предмет найден"),
-            @ApiResponse(responseCode = "404", description = "Предмет не найден")
+        @ApiResponse(responseCode = "200", description = "Предмет найден"),
+        @ApiResponse(responseCode = "404", description = "Предмет не найден")
     })
     @GetMapping("/{id}")
     ResponseEntity<EntityModel<SubjectResponse>> getSubject(@PathVariable Long id);
@@ -54,32 +51,35 @@ public interface SubjectApi {
     @ApiResponse(responseCode = "200", description = "Список предметов")
     @GetMapping
     ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(
-            Pageable pageable,
-            PagedResourcesAssembler<SubjectResponse> assembler);
+            Pageable pageable, PagedResourcesAssembler<SubjectResponse> assembler);
 
     @Operation(summary = "Полное обновление предмета (PUT, HEADMAN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Предмет обновлён"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Предмет не найден")
+        @ApiResponse(responseCode = "200", description = "Предмет обновлён"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Предмет не найден")
     })
     @PutMapping("/{id}")
     ResponseEntity<EntityModel<SubjectResponse>> updateSubject(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateSubjectRequest request);
+            @PathVariable Long id, @Valid @RequestBody UpdateSubjectRequest request);
 
-    @Operation(summary = "Удалить предмет (HEADMAN)",
-            description = "Удаление отклоняется при наличии назначений или ссылок расписания; force не обходит историю.")
+    @Operation(
+            summary = "Удалить предмет (HEADMAN)",
+            description =
+                    "Удаление отклоняется при наличии назначений или ссылок расписания; force не обходит историю.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Предмет удалён"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Предмет не найден"),
-            @ApiResponse(responseCode = "409", description = "Предмет используется в расписании (есть посещаемость)")
+        @ApiResponse(responseCode = "204", description = "Предмет удалён"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Предмет не найден"),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Предмет используется в расписании (есть посещаемость)")
     })
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> deleteSubject(@PathVariable Long id,
-                                        @RequestParam(name = "force", defaultValue = "false") boolean force);
+    ResponseEntity<Void> deleteSubject(
+            @PathVariable Long id,
+            @RequestParam(name = "force", defaultValue = "false") boolean force);
 
     // =========================================================================
     // Phase 60-01 / D-19: управление преподавателями существующего предмета
@@ -87,32 +87,44 @@ public interface SubjectApi {
 
     @Operation(summary = "Добавить преподавателя к предмету (HEADMAN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Преподаватель добавлен"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Предмет не найден"),
-            @ApiResponse(responseCode = "409", description = "Преподаватель уже назначен")
+        @ApiResponse(responseCode = "201", description = "Преподаватель добавлен"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Предмет не найден"),
+        @ApiResponse(responseCode = "409", description = "Преподаватель уже назначен")
     })
     @PostMapping("/{id}/teachers/{teacherId}")
-    ResponseEntity<EntityModel<ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse>> addTeacher(
-            @PathVariable Long id,
-            @PathVariable Long teacherId,
-            @Valid @RequestBody AddSubjectTeacherRequest request);
+    ResponseEntity<
+                    EntityModel<
+                            ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse>>
+            addTeacher(
+                    @PathVariable Long id,
+                    @PathVariable Long teacherId,
+                    @Valid @RequestBody AddSubjectTeacherRequest request);
 
-    @Operation(summary = "Закрыть назначение преподавателя (HEADMAN)",
-            description = "Сохраняет историю и будущие пары без преподавателя с указанной даты; нужен UUID Idempotency-Key.")
+    @Operation(
+            summary = "Закрыть назначение преподавателя (HEADMAN)",
+            description =
+                    "Сохраняет историю и будущие пары без преподавателя с указанной даты; нужен UUID Idempotency-Key.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Закрытие подтверждено"),
-            @ApiResponse(responseCode = "503", description = "Ожидает повторения той же принятой команды"),
-            @ApiResponse(responseCode = "409", description = "Конфликт назначения или содержимого принятого ключа"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Назначение не найдено")
+        @ApiResponse(responseCode = "204", description = "Закрытие подтверждено"),
+        @ApiResponse(
+                responseCode = "503",
+                description = "Ожидает повторения той же принятой команды"),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Конфликт назначения или содержимого принятого ключа"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Назначение не найдено")
     })
     @DeleteMapping("/{id}/teachers/{teacherId}")
     ResponseEntity<Void> removeTeacher(
             @PathVariable Long id,
             @PathVariable Long teacherId,
             @RequestParam Long assignmentId,
-            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            LocalDate validUntilExclusive,
-            @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key") java.util.UUID requestKey);
+            @RequestParam
+                    @org.springframework.format.annotation.DateTimeFormat(
+                            iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+                    LocalDate validUntilExclusive,
+            @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key")
+                    java.util.UUID requestKey);
 }

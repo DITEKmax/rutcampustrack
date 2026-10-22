@@ -1,0 +1,15 @@
+{
+  "time": "2026-10-11T22:56:37.536940+00:00",
+  "revision": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+  "source_findings": [
+    "EBSR01",
+    "EBSR02",
+    "EBSR03",
+    "EBSR04"
+  ],
+  "author_plan": "Fresh signed worker capability expiry min(job expiry, now+60s); durable job10min preserved; legacyGateway60sverifier unchanged. Real AuthPGRedisRSAsigned->realGatewayobjects/worker->ownedHTTPfilebackend->actualAuthREADY/savebyte path; backendfileproducercontrolled notnative fullchain. Deterministic realPG expiry-afterfirstadmission, strictnarrowkinddecoder, existingpublicticket livegrantinitiation. Redbefore thennarrowfix/restoredgreen with prelaunchsourcebindings.",
+  "needed_config_scope": "frontendsoleconfigwriter independentWT onefile auth-app/build.gradle.kts testImplementation(project(:services:api-gateway)); mainGateway alreadyAuthAPIonly, no Authapp cycle/sourcecheckrequired.",
+  "heavy": "EXPORTS2 max1 secondslot afterconfig/testready; ownPGRedis randomports+ephemeralHTTPbackend0; noapps/browser/nativefullstack",
+  "backend_review": "CHANGES_REQUESTED, recheckrequired",
+  "client_frozen": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b27paths; freshreadonlyreviewactive"
+}

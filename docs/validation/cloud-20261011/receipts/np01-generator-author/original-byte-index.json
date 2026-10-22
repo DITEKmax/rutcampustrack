@@ -1,0 +1,87 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_config/generation-prep",
+  "manifest": "sealed-manifest.safe.json",
+  "files": [
+    {
+      "path": "verification.safe.json",
+      "original_sha256": "e8ddb27ba63679d9116c5caffecbad7bacf68e927cbefae06868dc074e759bb4",
+      "original_bytes": 1691,
+      "working_sha256": "e8ddb27ba63679d9116c5caffecbad7bacf68e927cbefae06868dc074e759bb4",
+      "working_bytes": 1691,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-generator.py",
+      "original_sha256": "b88c17183d47fd2a8f94f4357f874fc3a1a07212b5fc5fbf484f10be54709201",
+      "original_bytes": 5015,
+      "working_sha256": "b88c17183d47fd2a8f94f4357f874fc3a1a07212b5fc5fbf484f10be54709201",
+      "working_bytes": 5015,
+      "transformation": "byte equal; copied source losslessly wrapped",
+      "working_path": "verify-generator.py.readable.zip",
+      "working_archive_member": "verify-generator.py",
+      "working_container_sha256": "9bc92ad92a20b02c0e7d188d32074a95abd2879997aa443313f3e43241ef5f75",
+      "working_container_bytes": 1980
+    },
+    {
+      "path": "pinned-venv-freeze.safe.json",
+      "original_sha256": "b81dfc8b246c82138091f32db6079d9bcf18645bf34ce322e2480dceff27eea0",
+      "original_bytes": 5166,
+      "working_sha256": "b81dfc8b246c82138091f32db6079d9bcf18645bf34ce322e2480dceff27eea0",
+      "working_bytes": 5166,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "venv-file-integrity.safe.json",
+      "original_sha256": "13c0e3216c092650c6273ae1617175d76a1861d1e15a841df502b5b615551a5a",
+      "original_bytes": 575153,
+      "working_sha256": "13c0e3216c092650c6273ae1617175d76a1861d1e15a841df502b5b615551a5a",
+      "working_bytes": 575153,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "generator-verification.safe.json",
+      "original_sha256": "2fd3b95549870ea8b98dd6e3121d5ed80a083f8e12faebc872d3d90aeefbe2e7",
+      "original_bytes": 4914,
+      "working_sha256": "2fd3b95549870ea8b98dd6e3121d5ed80a083f8e12faebc872d3d90aeefbe2e7",
+      "working_bytes": 4914,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "commit-checks.safe.json",
+      "original_sha256": "15befb0db4a204ad660503a33e14a003cd370003c7e8375026e48247ca33b712",
+      "original_bytes": 203,
+      "working_sha256": "15befb0db4a204ad660503a33e14a003cd370003c7e8375026e48247ca33b712",
+      "working_bytes": 203,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-config-pinned.py",
+      "original_sha256": "bfc84753dc01d88cb5c053d238d9fe22ec25efe347262fb02c5de3bcd6fd93ea",
+      "original_bytes": 6142,
+      "working_sha256": "bfc84753dc01d88cb5c053d238d9fe22ec25efe347262fb02c5de3bcd6fd93ea",
+      "working_bytes": 6142,
+      "transformation": "byte equal; copied source losslessly wrapped",
+      "working_path": "verify-config-pinned.py.readable.zip",
+      "working_archive_member": "verify-config-pinned.py",
+      "working_container_sha256": "75881ea398487d411dacc8f81d6b7e2e4016d1b7f1be4a05bb69746c87882bcc",
+      "working_container_bytes": 2400
+    },
+    {
+      "path": "summary.safe.json",
+      "original_sha256": "95b25bacf10ef1c5ca4111b3c5981f07dc13791d029efe9393494bfcecb9deba",
+      "original_bytes": 1689,
+      "working_sha256": "95b25bacf10ef1c5ca4111b3c5981f07dc13791d029efe9393494bfcecb9deba",
+      "working_bytes": 1689,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-manifest.safe.json",
+      "original_sha256": "66c01d9c3e132a229773257c3612703b93078bb7aaf41d423746a52db556ebc4",
+      "original_bytes": 1101,
+      "working_sha256": "66c01d9c3e132a229773257c3612703b93078bb7aaf41d423746a52db556ebc4",
+      "working_bytes": 1101,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

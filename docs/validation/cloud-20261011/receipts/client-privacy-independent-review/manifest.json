@@ -1,0 +1,76 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "final": "97d79222ef3fa59b08806bd96512ec98b4f72497",
+  "semantic": "7b814d282f9a533a54a9f4ee54d6abe114df7bca",
+  "base": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+  "selectedModelEffort": "gpt-6.1-sol/xhigh",
+  "actualModelEffort": "UNKNOWN",
+  "members": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 423,
+      "sha256": "269ab40cbc86f4a40588565144c71979f3ba5b74855a11f457912b880d48a751"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 636,
+      "sha256": "d2a8f696fd9e82a51e27ff85dd2c73a692372d23f04667ea936f3e5327f49dcc"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 12078,
+      "sha256": "914ed0b8cf3df4eda4f4f103af267b1216c440bc0dce220dcbffe92c21baa0d2"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 646,
+      "sha256": "c9d0a6a2cb7b27063b7201eb61abbac5c828b35ab8abac8735cc01ff40315e3d"
+    },
+    {
+      "path": "author-archive-verification.safe.json",
+      "bytes": 3602,
+      "sha256": "7445b4fa3cb8a6750b8f300e9f61526630200e221c3e6b2b954945d03ebc62ad"
+    },
+    {
+      "path": "diagnosis-verification.safe.json",
+      "bytes": 593,
+      "sha256": "e77d12347c244eb79bc23cd6818217a8551c0fbc735d97ed3c8fe4781084ab8c"
+    },
+    {
+      "path": "evidence-reads.safe.json",
+      "bytes": 4524,
+      "sha256": "8f0c01035ba4461c1dfd741c2348717861908d0da9dec6c437a900ead9f377de"
+    },
+    {
+      "path": "findings.safe.json",
+      "bytes": 1800,
+      "sha256": "bd5982255fea6a6247914fdfb95b2f9bfc66170f03ca73a2bdab5c30237014e4"
+    },
+    {
+      "path": "preservation-boundaries.safe.json",
+      "bytes": 2897,
+      "sha256": "41ab6d374a4b7935765928160a6144a8b228da3198b005679b45ed0734ef13c7"
+    },
+    {
+      "path": "restoration.safe.json",
+      "bytes": 1526,
+      "sha256": "620628e96d6ad1717dfc57ab5e93b1062718d2757708cf2e661388576dc1b797"
+    },
+    {
+      "path": "semantic-final-bridge.safe.json",
+      "bytes": 8876,
+      "sha256": "dd51c8785534061c52e7c1a22d15cf8803f1e0e90f397162aea318bf0fa92737"
+    },
+    {
+      "path": "source-identity.safe.json",
+      "bytes": 2859,
+      "sha256": "a9eff74c1fd2e319783011d5e737b7e7454a804deefd974073495fc9390c631f"
+    },
+    {
+      "path": "vendor-ordering-review.safe.json",
+      "bytes": 3975,
+      "sha256": "fc63e39d0cd1bdf22057fba41b1c83729c3b368b36a63e8c7a96ef3ff2212063"
+    }
+  ],
+  "excluded": "PrivateENV/keys/rawcontexts/runtime/marker-values; old immutable reviews preserved"
+}

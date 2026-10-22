@@ -1,0 +1,37 @@
+# Explicit v1 local storage in the pinned 2.4 binary keeps this one-service scope.
+# v2 defaults require object storage; no new object store is justified here.
+target: all
+architecture_storage: v1
+api:
+  base-url: /pyroscope
+server:
+  http_listen_port: 4040
+analytics:
+  reporting_enabled: false
+self_profiling:
+  disable_push: true
+storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/blocks
+pyroscopedb:
+  data_path: /data/head
+  max_block_duration: 15m
+  row_group_target_size: 16777216
+  min_free_disk_gb: 4
+  min_disk_available_percentage: 10
+  enforcement_interval: 1m
+limits:
+  # The pinned binary defaults to segment-writer, which requires v2 storage.
+  write_path: ingester
+  ingestion_rate_mb: 1
+  ingestion_burst_size_mb: 2
+  ingestion_body_limit_mb: 2
+  max_global_series_per_tenant: 64
+  max_label_names_per_series: 10
+  max_label_value_length: 128
+  max_profile_size_bytes: 2097152
+  max_profile_stacktrace_depth: 256
+  max_query_length: 24h
+  max_query_parallelism: 1
+  compactor_blocks_retention_period: 24h

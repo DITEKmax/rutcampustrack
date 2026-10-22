@@ -1,0 +1,21 @@
+{
+  "scope": "EXACT_MAIN_ADMISSION_ASSIGNMENT_BEFORE_SEED_RAM_ONLY",
+  "cases": [
+    {
+      "case": "raced_historical_metadata_denied_before_seed",
+      "status": "PASS",
+      "native": false
+    },
+    {
+      "case": "raced_invalid_metadata_denied_before_seed",
+      "status": "PASS",
+      "native": false
+    },
+    {
+      "case": "fresh_creation_admitted_before_seed",
+      "status": "PASS",
+      "native": false
+    }
+  ],
+  "same_second_foreign_matching_label_ownership": "NOT_PROVEN_EXCLUDED_BY_NAMESPACE_COORDINATION_ONLY"
+}

@@ -1,0 +1,84 @@
+{
+  "toolOwner": "Root",
+  "toolSession": 44413,
+  "toolChunk": "a32306",
+  "nativeExit": 0,
+  "callerSHA256": "6b0bacd1ef831d897da567e2fe46b429e67275d7cbe829b56c3bd253933c9a19",
+  "helperSHA256": "4c4ad5626636b50d3183052ded3d4f342ce8bb15ab2b9645fd3b60d45cc997be",
+  "review": "71d0/f585 APPROVE_SOURCE_ONLY",
+  "rootCheckout": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "cohort": "restart-20261013-next04",
+  "endpointMethod": "GET",
+  "endpointRoute": "/api/attendance/reports/lesson/{id}",
+  "actualWitness": {
+    "stage": "CLASSIFIED",
+    "status": "503",
+    "boundary": "ATTENDANCE_DEPENDENCY",
+    "dependency": "ACADEMIC",
+    "rpc": "UNAUTHENTICATED",
+    "operationHint": "UNKNOWN",
+    "problemBodyState": "CLASSIFIED",
+    "actorRecovery": "SOURCE_QUALIFIED_FIRST_WORKER_CHRONOLOGY",
+    "singleRosterGet": true,
+    "noReseedOrDomainWrites": true,
+    "clientAcceptance": false,
+    "cleanup": [
+      {
+        "owner": "HEADMAN",
+        "logoutStatus": "204",
+        "logoutConfirmed": true,
+        "contextDisposed": true
+      },
+      {
+        "owner": "ADMIN",
+        "logoutStatus": "204",
+        "logoutConfirmed": true,
+        "contextDisposed": true
+      }
+    ],
+    "cleanupConfirmed": true
+  },
+  "exactMethodOrTrustCondition": "UNKNOWN",
+  "classificationQualification": "ActualHTTP503 and source-consistent closedAttendanceProblem/unambiguousAcademicStatuscode UNAUTHENTICATED. CommonAcademicprefix spans RPCs; operationUNKNOWN. No rawdetail/body/IDs/credentials/codehash retained, no borrowedidentity/policyweakening.",
+  "actorRecoveryQualification": "SOURCE_QUALIFIED_FIRST_WORKER_CHRONOLOGY; not equality to savedUIIDs. Exact retained oldRuninterval/completePage/unambiguouspositiveidentity+lesson guards passed.",
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 472730,
+      "start_ticks": 11726511,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 472734,
+      "start_ticks": 11726597,
+      "exactBirthAbsent": true
+    }
+  ],
+  "allReportedOwnedSettledReaped": true,
+  "ownedPrivateTempsRemoved": true,
+  "authCleanupConfirmed": true,
+  "sourcePinsUnchanged": {
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+    "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/READY.safe.json": "27a0ac41c0efdeadc574204c264f403dd46c10cb81a82b1d174af79c5b3a4289",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/witness-detail-lookup.cjs": "4c4ad5626636b50d3183052ded3d4f342ce8bb15ab2b9645fd3b60d45cc997be",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/before-r1-witness.cjs": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/cleanup-control.cjs": "4b676053d0064c0091bab226a400f6ae98851c7a1367de77107c6081d41c05c8",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/controls.cjs": "c533faac243b9af7b1742a6fca3901a1bbe80042e030fa1cb24709e3fdb01398",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/before-witness.cjs": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+    "/workspace/rutcampustrack/tests/e2e/fixtures/first3-observer.ts": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/package.json": "f5c873af32da3a56849a77a73eb4e6acf9629d58564ba420077feea88800225c",
+    "/workspace/rutcampustrack/tests/e2e/fixtures/users.ts": "fdf4def40cd28b9ffc0a3da661ce0042b46f5bf4eb9f6446cf3391a5e3b314a6",
+    "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/run-focus3.py": "e543aafe15317663dc14fd49cdd7bf9d927cbe2c999b4700c5121fcd2bd058b5",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/actual-controls01/REPORT.safe.json": "d8fc5081343fa79207523bc30918f8ec405bce571e6136905e1c63acf82d64e7"
+  },
+  "root19PinsUnchanged": true,
+  "standBindUnchanged": true,
+  "lease": "RELEASED",
+  "noAPIRepeat": true,
+  "clientAcceptance": false,
+  "currentCIcause": "UNKNOWN",
+  "limitsQualification": "512managedheap/RSS1GiB/TMP32MiB sampledsoft; body bounds postbuffer/Content-Length precheck not hardpreallocation. One60phase under200dispatchwindow, cleanup30.",
+  "priorAttempt01": "Normalwithadditionalnetworkcontext mask failedAPPROVED_CONTEXT beforemkdir/supervisor/Node/API; freshRoot02 SAMEcallerrequire_escalated normalVM approved. No bypass or oldgrant reuse.",
+  "observed_at": "2026-10-13T03:54:58.055007+00:00"
+}

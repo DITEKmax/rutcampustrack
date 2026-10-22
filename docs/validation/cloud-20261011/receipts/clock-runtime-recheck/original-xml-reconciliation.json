@@ -1,0 +1,464 @@
+{
+  "records": [
+    {
+      "phase": "compile-green-10a",
+      "module": "academic",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-TEST-ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest.xml",
+      "xml_sha256": "1909ca7daf480bb55626de731e4c26ca7014586e8712d480e05449880981bce3",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 4,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 3,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 4,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    },
+    {
+      "phase": "compile-green-10a",
+      "module": "attendance",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "xml_sha256": "f69c3d7033aec3e9036d4d0ef3ce0d7937b19cb66e706cbc2a9e8221b72adb82",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 6,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 3,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 4,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 5,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 6,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    },
+    {
+      "phase": "compile-green-10a",
+      "module": "bff",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-TEST-ru.rutcampustrack.mobilebff.error.EducationalProblemClockIsolationTest.xml",
+      "xml_sha256": "7672bf0cf574b6b12db13a247d01b696b7774bd9bd19d662271b374e037ba4a9",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": "retryAfterUsesDomainTimeAndProblemTimestampKeepsRealTime",
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    },
+    {
+      "phase": "negative-academic-10a",
+      "module": "academic",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-TEST-ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest.xml",
+      "xml_sha256": "07a0a7487e57ba1eff7152d3a7c01eccab11bf883f2c2daddf6efbe0bdf3b5be",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 2,
+        "skipped": 0,
+        "failures": 1,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "FAILED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": true,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": true,
+          "failure_type_is_assertion": true
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    },
+    {
+      "phase": "negative-academic-10a",
+      "module": "attendance",
+      "selected_by_exact_run": false,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "xml_sha256": "f69c3d7033aec3e9036d4d0ef3ce0d7937b19cb66e706cbc2a9e8221b72adb82",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 6,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 3,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 4,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 5,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 6,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": false,
+      "unselected_qualification": "Historical retained XML from previous initial phase; NOT credited as new run."
+    },
+    {
+      "phase": "negative-academic-10a",
+      "module": "bff",
+      "selected_by_exact_run": false,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-TEST-ru.rutcampustrack.mobilebff.error.EducationalProblemClockIsolationTest.xml",
+      "xml_sha256": "7672bf0cf574b6b12db13a247d01b696b7774bd9bd19d662271b374e037ba4a9",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": "retryAfterUsesDomainTimeAndProblemTimestampKeepsRealTime",
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": false,
+      "unselected_qualification": "Historical retained XML from previous initial phase; NOT credited as new run."
+    },
+    {
+      "phase": "negative-attendance-10a",
+      "module": "attendance",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/negative-attendance-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "xml_sha256": "5267770e7055547f7f508f44d7dea9519b4eeb49fa4126ab0df07a544d00ebc8",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 2,
+        "skipped": 0,
+        "failures": 1,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "FAILED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": true,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": true,
+          "failure_type_is_assertion": true
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    },
+    {
+      "phase": "restored-green-10a",
+      "module": "academic",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a-TEST-ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest.xml",
+      "xml_sha256": "16e14c96ac2dd1116cd9497e85b1c5bc4b5cc6a7d7df2577a571ef0fbfa4de13",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 4,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 3,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 4,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    },
+    {
+      "phase": "restored-green-10a",
+      "module": "attendance",
+      "selected_by_exact_run": true,
+      "preserved_original": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "xml_sha256": "cc3004619449953bcc74661e0d17d0a66f1c726bfce006826313e68980390db8",
+      "original_hash_matches_safe_summary": true,
+      "counts": {
+        "tests": 6,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "counts_match_nodes_and_safe_summary": true,
+      "cases": [
+        {
+          "ordinal": 1,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 2,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 3,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 4,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 5,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        },
+        {
+          "ordinal": 6,
+          "status": "PASSED",
+          "canonical_source_method": null,
+          "failure_stack_mentions_exact_selected_source_method": null,
+          "identity_qualification": "Parameterized display name omitted; ordinal only unless known source method directly matches.",
+          "failure_is_expected_no_throwable_assertion": null,
+          "failure_type_is_assertion": null
+        }
+      ],
+      "xml_timestamp_within_actual_phase": true,
+      "unselected_qualification": null
+    }
+  ],
+  "qualification": "Only exact selected module/class XML contributes to phase counts. Raw XML properties/streams/failure bodies and testcase parameter labels never exported."
+}

@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-14T02:58:39.460361+00:00",
+  "source_revision": "f27583dba73b05d8f20dce2752f75eb50423e2d6",
+  "published_revision": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+  "state": "PARTIAL_CHECKPOINT_NOT_DONE_NOT_FINAL_D009",
+  "transport_refs": {
+    "refs/heads/codex/server-validation-20261011": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+    "refs/heads/main": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+  },
+  "authenticated_PR": {
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+    "head": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+    "base": "main",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "advertised_merge_sha": "2b20df03bd8d094fe2444047135aea04a6b6a624"
+  },
+  "native_push": {
+    "direct_pid": 622813,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 622813,
+        "start_ticks": 20044199
+      },
+      {
+        "pid": 622814,
+        "start_ticks": 20044199
+      },
+      {
+        "pid": 622815,
+        "start_ticks": 20044200
+      },
+      {
+        "pid": 622817,
+        "start_ticks": 20044235
+      },
+      {
+        "pid": 622819,
+        "start_ticks": 20044235
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "new_current_checks": "PENDING",
+  "next": "ordinaryCI realadmin451 andcurrentrecovery326 closeddiagnostics; old8requiredgates retained"
+}

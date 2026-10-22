@@ -2,6 +2,7 @@ package ru.rutcampustrack.mobilebff.contract.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,15 +13,12 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.Assignment;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.CatalogResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.DayResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SearchResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
-import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SearchResponse;
-import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormat;
-import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
-
-import java.util.List;
 
 /** Additive read-only teacher PWA/TMA HTTP boundary. */
 @SecurityRequirement(name = "bearerAuth")
@@ -29,7 +27,6 @@ public interface TeacherApi {
     @Operation(summary = "Search current authorised teacher groups and students")
     @GetMapping("/search")
     ResponseEntity<SearchResponse> search(@RequestParam String semesterId, @RequestParam String q);
-
 
     @Operation(summary = "Teacher active semester bootstrap")
     @GetMapping("/semester")
@@ -44,15 +41,11 @@ public interface TeacherApi {
     ResponseEntity<List<Assignment>> assignments(
             @RequestParam String semesterId,
             @RequestParam String dateFrom,
-            @RequestParam String dateTo
-    );
+            @RequestParam String dateTo);
 
     @Operation(summary = "Teacher cross-group day schedule")
     @GetMapping("/day")
-    ResponseEntity<DayResponse> day(
-            @RequestParam String semesterId,
-            @RequestParam String date
-    );
+    ResponseEntity<DayResponse> day(@RequestParam String semesterId, @RequestParam String date);
 
     @Operation(summary = "Concrete lesson read-only roster")
     @GetMapping("/lessons/{lessonId}")
@@ -69,8 +62,34 @@ public interface TeacherApi {
             @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") String page,
             @RequestParam(defaultValue = "100") String pageSize,
-            @RequestParam(defaultValue = "false") boolean pastOnly
-    );
+            @RequestParam(defaultValue = "false") boolean pastOnly,
+            @RequestParam(defaultValue = "false") boolean includeMetrics,
+            @RequestParam(required = false) String metricsStudentId);
+
+    /** Source compatibility for existing Java callers; HTTP defaults remain unchanged. */
+    default ResponseEntity<JournalResponse> journal(
+            String semesterId,
+            String groupId,
+            String subjectId,
+            List<String> lessonTypes,
+            String dateFrom,
+            String dateTo,
+            String page,
+            String pageSize,
+            boolean pastOnly) {
+        return journal(
+                semesterId,
+                groupId,
+                subjectId,
+                lessonTypes,
+                dateFrom,
+                dateTo,
+                page,
+                pageSize,
+                pastOnly,
+                false,
+                null);
+    }
 
     @Operation(summary = "Server-supported teacher journal export formats")
     @GetMapping("/journal/export/formats")
@@ -87,8 +106,7 @@ public interface TeacherApi {
             @RequestParam(required = false) String dateTo,
             @RequestParam String format,
             @RequestParam(defaultValue = "false") boolean pastOnly,
-            @RequestParam(required = false) String lessonId
-    );
+            @RequestParam(required = false) String lessonId);
 
     @Operation(summary = "Teacher server-side attendance statistics")
     @GetMapping("/stats")
@@ -99,8 +117,7 @@ public interface TeacherApi {
             @RequestParam(required = false) String subjectId,
             @RequestParam(required = false, name = "lessonType") List<String> lessonTypes,
             @RequestParam(required = false, name = "sort") List<String> sorts,
-            @RequestParam(required = false, name = "filter") List<String> filters
-    );
+            @RequestParam(required = false, name = "filter") List<String> filters);
 
     @Operation(summary = "Server-supported teacher statistics export formats")
     @GetMapping("/stats/export/formats")
@@ -116,16 +133,16 @@ public interface TeacherApi {
             @RequestParam(required = false, name = "lessonType") List<String> lessonTypes,
             @RequestParam(required = false, name = "sort") List<String> sorts,
             @RequestParam(required = false, name = "filter") List<String> filters,
-            @RequestParam String format
-    );
+            @RequestParam String format);
 
     @Operation(summary = "Server-scoped excuse detail")
     @GetMapping("/excuses/{requestId}")
     ResponseEntity<ExcuseResponse> excuse(@PathVariable String requestId);
 
     @Operation(summary = "Server-scoped excuse attachment")
-    @GetMapping(value = "/excuses/{requestId}/attachments/{attachmentId}",
+    @GetMapping(
+            value = "/excuses/{requestId}/attachments/{attachmentId}",
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    ResponseEntity<byte[]> excuseAttachment(@PathVariable String requestId,
-                                             @PathVariable String attachmentId);
+    ResponseEntity<byte[]> excuseAttachment(
+            @PathVariable String requestId, @PathVariable String attachmentId);
 }

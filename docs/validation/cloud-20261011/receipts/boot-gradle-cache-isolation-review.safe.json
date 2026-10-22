@@ -1,0 +1,29 @@
+{
+  "schema": "EIGHT_BACKEND_GRADLE_CACHE_SOURCE_REVIEW_V1",
+  "verdict": "APPROVE_SOURCE",
+  "findings": [],
+  "base": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
+  "manifest_sha256": "e265b61ee99bf114f4af2fadbd1833d190f1dfb663af73e4c233ab75f172e55d",
+  "patch_sha256": "af369b677dd6ca021c4ed5d12c4c2ca35294d7b5df1893f00a33d1ccfebae506",
+  "scope": "Exactly eight Dockerfile cache mount options/comments",
+  "checks": {
+    "four_package_member_pins": "PASS",
+    "actual_diff_equals_packet_patch": "PASS",
+    "eight_path_scope_no_untracked": "PASS",
+    "all_eight_before_after_SHA": "PASS",
+    "eight_fixed_unique_cache_IDs_locked_frontend17": "PASS",
+    "inverse_noncomment_instructions_equal": "PASS",
+    "extractor_runtime_stages_byteexact": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "observed_failure": "Current1742 Schedule Docker bootJar Gradle daemon connection timeout/exit1 before browser",
+  "historical_shared_cache_mechanism": "HYPOTHESIS_NOT_PROVEN",
+  "runtime_build_test_native_SDK_API_privatevalues": "NOT_RUN",
+  "tradeoff": "Cold service caches and duplicated dependency storage; warm cache contingent on same builder cache retention",
+  "semantics_qualification": "BuildKit local ID/exclusive cache sharing; no global cross-builder lock or no-timeout guarantee",
+  "acceptance": "Root exact8paths integration/coherent designated push/current normal mandatory CI; all backend builds and Boot then real smoke/FIRST3 SAFE results; no timeout/gate weakening or client promotion from Source",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "effects": "Read-only Git and public Source; own two concise receipts only; no product/Source/common docs edits, heavy lease, SDK/network/private values, children, archives/copies or B013 action"
+}

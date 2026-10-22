@@ -3,29 +3,46 @@ package ru.rutcampustrack.academic.security;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
 /**
- * Request-scoped bean that holds the authenticated user context injected by
- * API Gateway via the validated Internal JWT (or the temporary legacy headers
- * during the configured migration window).
+ * Request-scoped bean that holds the authenticated user context injected by API Gateway via the
+ * validated Internal JWT (or the temporary legacy headers during the configured migration window).
  *
- * CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that
- * singleton beans (e.g. RoleCheckAspect) receive a properly scoped proxy
- * instead of a stale instance captured at startup.
+ * <p>CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that singleton beans (e.g.
+ * RoleCheckAspect) receive a properly scoped proxy instead of a stale instance captured at startup.
  */
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RequestContext {
 
     private ru.rutcampustrack.shared.security.InternalJwtClaims claims;
-    public ru.rutcampustrack.shared.security.InternalJwtClaims getClaims() { return claims; }
-    public void setClaims(ru.rutcampustrack.shared.security.InternalJwtClaims claims) { this.claims=claims; }
+
+    public ru.rutcampustrack.shared.security.InternalJwtClaims getClaims() {
+        return claims;
+    }
+
+    public void setClaims(ru.rutcampustrack.shared.security.InternalJwtClaims claims) {
+        this.claims = claims;
+    }
+
     private Long userId;
     private UserRole role;
     private Long groupId;
     private boolean headman;
     private String internalToken;
+    private ru.rutcampustrack.shared.security.admin.AdminAccessProfile admittedAdminProfile;
+
+    public ru.rutcampustrack.shared.security.admin.AdminAccessProfile getAdmittedAdminProfile() {
+        return admittedAdminProfile;
+    }
+
+    /** Transient profile returned by Auth's current ordinary/report admission for this request. */
+    public void setAdmittedAdminProfile(
+            ru.rutcampustrack.shared.security.admin.AdminAccessProfile profile) {
+        this.admittedAdminProfile = profile;
+    }
 
     public Long getUserId() {
         return userId;
@@ -60,9 +77,8 @@ public class RequestContext {
     }
 
     /**
-     * The exact signed token accepted by the HTTP boundary.  It is forwarded
-     * unchanged to Schedule for binding RPCs, where Schedule validates the
-     * signature and all frozen claims again.
+     * The exact signed token accepted by the HTTP boundary. It is forwarded unchanged to Schedule
+     * for binding RPCs, where Schedule validates the signature and all frozen claims again.
      */
     public String getInternalToken() {
         return internalToken;

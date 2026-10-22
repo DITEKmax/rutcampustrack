@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "runtime": "NOT_RUN_BY_SOURCE_RESOLVER",
+  "producerSource": "d5510a2cd94349fb534197e0aead2d2e12ab8c55",
+  "cases": [
+    {
+      "id": "NP01-P01",
+      "criterion": "Active own STUDENT private start",
+      "fixture_or_control": "Fresh binding +active own grant +initial present/unchanged; TLS realPG\u2192Python\u2192provider",
+      "observable_oracle": "One exact own credential card; generic profileinitial blank",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-P02",
+      "criterion": "Teacher/Headman/FULL/LIMITED own variants",
+      "fixture_or_control": "Each currently valid own active durable grant, ownUID; admin-only default=null",
+      "observable_oracle": "Own allowed credentials; no administrativetarget capability/sessionroleactivation",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-P03",
+      "criterion": "Both start/credentials privacy negatives",
+      "fixture_or_control": "Group/supergroup/channel/missing sender/negative IDs/sender-chat mismatch beforelookup",
+      "observable_oracle": "No protectedlookup, no plaintextprovider call",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-P04",
+      "criterion": "Foreign/stale/rebound identity",
+      "fixture_or_control": "Old redactedUID vsfreshbinding; TelegramA\u2192B\u2192A; samechatnowbounddifferentUID",
+      "observable_oracle": "No arbitrarytarget/stalebindingcredential; lateraccount/card unaffected",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-P05",
+      "criterion": "Grant/lifecycle negatives",
+      "fixture_or_control": "Revoked/suspended-only/archive/restore-no-grants, readonlyclaims",
+      "observable_oracle": "Initial blank or typeddenial; nocachedauthorityfallback",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-P06",
+      "criterion": "Initial provenance negatives",
+      "fixture_or_control": "password_changed=true withleftoverinitial; initialnull; changedhashneverreturned",
+      "observable_oracle": "Initial blank; safe flags notpasswordcontent",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-T01",
+      "criterion": "Directed transport controls",
+      "fixture_or_control": "RealTLS positive; plaintext/noidentity/wrongcaller/target/method/authority/duplicate/malformedtoken/missingserverpolicy",
+      "observable_oracle": "Failclosed; tokennotemittedoutside2exactmethods; sharedsecretalonecannotgrant",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-D01",
+      "criterion": "Monotonic generations",
+      "fixture_or_control": "ActualPG: grantchange vscredentialtuplechange vsbindingchange; rollback credentialoutbox failure",
+      "observable_oracle": "Onlyintendedgenerationincrements; no timestamp/roles/session surrogate",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-D02",
+      "criterion": "Tracker registration fence",
+      "fixture_or_control": "Samecardretry, foreignUID, stalebinding/credential version, providercardknownID beforeplaintext",
+      "observable_oracle": "Metadataidempotent; no plaintextedit ifregistrationfails",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-D03",
+      "criterion": "Transactional invalidation",
+      "fixture_or_control": "ActualAuthchange/reset underuserlock; failedlocal/outboxstep",
+      "observable_oracle": "InitialSQLclear+version+trackerinvalidation+outbox allcommit/rollback",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C01",
+      "criterion": "Actual cleanup existing card",
+      "fixture_or_control": "Track realprovider placeholder thenrendercredentials; actualAuthpasswordchange\u2192outbox\u2192Botconsumer",
+      "observable_oracle": "Exactoldcardlogin/initial removed; subsequentowncredentialinitialblank",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C02",
+      "criterion": "Event ordering",
+      "fixture_or_control": "Eventbeforecardregister/duringrender/afterrender; duplicateeventIDs; olderchange afternewinitialgeneration",
+      "observable_oracle": "Current/latergeneration card untouched; oldregisteredcards eventually sanitized",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C03",
+      "criterion": "Rebind/unlink/archive/delete cleanup",
+      "fixture_or_control": "Changedbinding/UID/newaccount onoldTelegram; no currentTelegram atchange; oldoriginalmessage tracked",
+      "observable_oracle": "Onlyknownoriginalcard sanitized; no freshnotice redirected; oldUIDmetadata retained",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C04",
+      "criterion": "Provider partial failure/restart",
+      "fixture_or_control": "Placeholderresponse lost; metadataDBdown; editresponse lost; botrestart afterregister/beforeedit/afteredit/duringcleanup",
+      "observable_oracle": "Unknowncardcontainsnosecret; knownIDretained; nofalsecleanupACK",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C05",
+      "criterion": "Storage/retry security",
+      "fixture_or_control": "BotRedisdown/eviction; PG unavailable; durableconsumerrelease/requeue; temporaryprovider429/unavailable",
+      "observable_oracle": "Noexpired/evictedsoletracker; retryonlyknownversion/card; no silentloss",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C06",
+      "criterion": "Legacyv1/version compatibility",
+      "fixture_or_control": "passwordchangedv1telegram-only; explicitv2schema UID/versions; missing/badsource/eventversion",
+      "observable_oracle": "NevermaplegacyTelegramto newowner forcleanup; validatev2schema; recordunresolvedlegacy",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-C07",
+      "criterion": "Cleanupcard batches",
+      "fixture_or_control": "More200 knownoldcards, mixedversions, concurrent replay/completion",
+      "observable_oracle": "Allpagesiterated; no silentcap; idempotentexactmessageID completion",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-S01",
+      "criterion": "Sensitive-output controls",
+      "fixture_or_control": "Synthetic markers throughdomainresponse/provider but inspect only booleans/hashes",
+      "observable_oracle": "No plaintext/hash/secret/token/rawbody inlogs/artifacts/tracker/events/exports",
+      "required": true,
+      "status": "PLANNED"
+    },
+    {
+      "id": "NP01-S02",
+      "criterion": "Meaningful sensitivity",
+      "fixture_or_control": "Preserved oldactual30637 red; controlledforeignbound/delayedoldgeneration fixture and knownoldtelegram-onlycleanup behavior",
+      "observable_oracle": "Redforactualacceptedviolation; restoreguard sourcehash +actualgreen; noempty/skipped/mocksasfullproof",
+      "required": true,
+      "status": "PLANNED"
+    }
+  ],
+  "layers": "Domain/providerpositive requiresrealPG+TLScall+productionPythonDispatcher/aiogramloopback; transport/sourceunitcontrols prove separatesecurityrisk. ExternalTelegram notclaimed."
+}

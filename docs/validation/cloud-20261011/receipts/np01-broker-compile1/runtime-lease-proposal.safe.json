@@ -1,0 +1,77 @@
+{
+  "utc": "2026-10-12T06:39:27.171546+00:00",
+  "state": "PROPOSED_NO_RUNTIME_GRANT",
+  "lease": "NP01_BROKER1",
+  "worktree": "/workspace/rct-worktrees/np01-domain-bot",
+  "baseline_sha": "b4a95a6d4ab11c77733e8e5eaa311d55f8a47aa5",
+  "new_correction_pending_commit": true,
+  "images": [
+    {
+      "image": "postgres:16-alpine",
+      "id": "sha256:81bd698b4594e751a3269e4dcd3e03a4a0ec0daf7b72e7aa1abd43cce9887542",
+      "logical_image_bytes": 294292520
+    },
+    {
+      "image": "rabbitmq:3.13-management-alpine",
+      "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "logical_image_bytes": 176465533
+    },
+    {
+      "image": "redis:7-alpine",
+      "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+      "logical_image_bytes": 39061364
+    }
+  ],
+  "image_logical_sum": 509819417,
+  "VFS_copy_budget": 805306368,
+  "VFS_copy_qualification": "Native image Size exact; GraphDriver.Data null and layerdb OS permission denied. Allocation cap includes ~295MB rounding/metadata margin. Actual per-container free-disk deltas must be measured immediately; not claimed exact allocated copy size.",
+  "disk_growth_max_bytes": 2147483648,
+  "disk_subbudgets": {
+    "rootcopies": 805306368,
+    "own_data_volumes": 268435456,
+    "build_cache": 536870912,
+    "evidence": 100663296,
+    "metadata": 100663296,
+    "remaining_growth_reserve": 335544320
+  },
+  "disk_floor_bytes": 4294967296,
+  "required_prelaunch_free_bytes": 6442450944,
+  "current_disk": {
+    "total": 33770192896,
+    "used": 23430918144,
+    "free": 8604512256
+  },
+  "shared_memory_floor_bytes": 1073741824,
+  "shared_memory_stop_bytes": 16106127360,
+  "proposed_shared_growth_max_bytes": 4294967296,
+  "jvm": "one Gradle heap768MiB/metaspace256MiB; one current Academic testfork heap1GiB/maxParallelForks1; no hard per-process cgroup claim",
+  "cpu": "cgroup4CPU; maxworker1/no parallel; 3 containers only",
+  "argv": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:jar",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+  ],
+  "normal_resource_namespace": "Random np01_<UUID> from reviewed Java, label rct.validation.owner; capture exact IDs live before each acceptance; initial Docker ps empty",
+  "ports": "PG5432/Rabbit5672+15672/Redis6379 explicit HostIp127.0.0.1 ephemeral; every actual native binding asserted by reviewed Java; external safe Docker port receipt also captured",
+  "python": "pinned /workspace/rct-cloud-setup/bot-venv/bin/python3.12.14; one supervisor/provider+one consumer at a time; 3 lifetimes/2 replacements, minimal explicit own environments",
+  "deadlines": "main supervisor600s; outer guarded compile+run900s, tool yield<=60s; mutation/restore sensitivity only after main green and explicit Root designation",
+  "process_supervision": "reuse reviewed exact f539f126 bounded-child.py read-only API in own foreground runner; explicit env, pidfd+birthticks, subreaper, true wait/reap/adopted receipts; all known owned PIDs includingZ required absent. Closed Gradle wrapper stdout private log, no process/env dump.",
+  "root_separate_grant_required": true,
+  "current_owned_runtime_resources": [],
+  "preflight_cache": "JDK21 Temurin21.0.12.1+1/Gradle8.12/pinned venv present; referenced main-only plainAuth81d666 read-only verified, own jar absent and normal jar task planned",
+  "immutable_fence": "32 NP docs/archive frozen paths no overlap with source/build/harness; no COW or edits to these paths",
+  "source3852_before_equal_Root": true,
+  "known_existing_foreign_zombies": "observed only; untouched, not counted as own cleanup",
+  "additional_permission": "supported additional network for local Docker socket/Gradle localhost IPC, no bypass"
+}

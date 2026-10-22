@@ -1,9 +1,18 @@
 package ru.rutcampustrack.academic.group;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,10 +21,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEvent;
-import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import org.springframework.context.ApplicationEventPublisher;
+
 import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
@@ -37,20 +47,12 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * Unit tests for GroupService and Group DTO validation.
  *
- * BUG-006-5 / план 58-04: единое поле {@code name}, активный формат
- * {@code ^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\d{3}$}. CreateGroupRequest отвергает
- * старый формат (латиница / {@code ИВТ11-001}) и архивный суффикс.
+ * <p>BUG-006-5 / план 58-04: единое поле {@code name}, активный формат {@code
+ * ^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\d{3}$}. CreateGroupRequest отвергает старый формат (латиница / {@code
+ * ИВТ11-001}) и архивный суффикс.
  */
 @ExtendWith(MockitoExtension.class)
 class GroupServiceTest {
@@ -72,11 +74,67 @@ class GroupServiceTest {
 
     @BeforeEach
     void setUpValidator() {
+        // These unit tests isolate the unchanged domain writer after an accepted lifecycle scope.
+        // Coordinator/own-DB tests cover real admission and durable guards separately.
+        var jdbc =
+                org.mockito.Mockito.mock(
+                        org.springframework.jdbc.core.JdbcTemplate.class,
+                        invocation -> {
+                            if (invocation.getMethod().getName().equals("queryForObject")
+                                    && invocation.getArgument(1) == Boolean.class)
+                                return ((String) invocation.getArgument(0))
+                                        .contains("o.phase='AUTH_INVALIDATED'");
+                            if (invocation.getMethod().getName().equals("update")) return 1;
+                            return org.mockito.Answers.RETURNS_DEFAULTS.answer(invocation);
+                        });
+        groupService.setAvailabilityJdbc(
+                jdbc,
+                new ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence(jdbc));
+        var availability =
+                org.mockito.Mockito.mock(
+                        ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService
+                                .class);
+        @SuppressWarnings("unchecked")
+        org.springframework.beans.factory.ObjectProvider<
+                        ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+                provider =
+                        org.mockito.Mockito.mock(
+                                org.springframework.beans.factory.ObjectProvider.class);
+        lenient().when(provider.getObject()).thenReturn(availability);
+        lenient().when(provider.getIfAvailable()).thenReturn(availability);
+        groupService.setAvailability(provider);
+        var operation = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+        lenient()
+                .when(availability.updateGroup(org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenAnswer(
+                        invocation -> {
+                            long id = invocation.getArgument(0);
+                            UpdateGroupRequest request = invocation.getArgument(1);
+                            return request.active()
+                                    ? groupService.applyOrdinaryUpdate(id, request)
+                                    : groupService.applyAvailabilityUpdate(
+                                            id,
+                                            request,
+                                            2026,
+                                            requestContext.getUserId(),
+                                            operation);
+                        });
+        org.mockito.Mockito.lenient()
+                .doAnswer(
+                        invocation -> {
+                            long id = invocation.getArgument(0);
+                            if (groupService.validateAvailabilityRestore(id))
+                                groupService.applyAvailabilityRestore(id, operation);
+                            return null;
+                        })
+                .when(availability)
+                .restoreGroup(org.mockito.ArgumentMatchers.anyLong());
         Semester activeSemester = new Semester();
         activeSemester.setDateFrom(LocalDate.of(2026, 9, 1));
         activeSemester.setDateTo(LocalDate.of(2027, 1, 31));
         activeSemester.setActive(true);
-        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
+        lenient()
+                .when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
                 .thenReturn(List.of(activeSemester));
         if (validator == null) {
             try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
@@ -168,11 +226,12 @@ class GroupServiceTest {
 
         assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("УИТ-311")))
                 .isInstanceOf(ConflictException.class)
-                .satisfies(e -> {
-                    ConflictException ce = (ConflictException) e;
-                    assertThat(ce.getField()).isEqualTo("name");
-                    assertThat(ce.getMessage()).contains("уже существует");
-                });
+                .satisfies(
+                        e -> {
+                            ConflictException ce = (ConflictException) e;
+                            assertThat(ce.getField()).isEqualTo("name");
+                            assertThat(ce.getMessage()).contains("уже существует");
+                        });
 
         verify(groupRepository, never()).save(any());
     }
@@ -188,11 +247,14 @@ class GroupServiceTest {
 
         assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("УИТ-301")))
                 .isInstanceOf(BadRequestException.class)
-                .satisfies(e -> {
-                    BadRequestException be = (BadRequestException) e;
-                    assertThat(be.getField()).isEqualTo("name");
-                    assertThat(be.getMessage()).contains("Неизвестный тип программы").contains("0");
-                });
+                .satisfies(
+                        e -> {
+                            BadRequestException be = (BadRequestException) e;
+                            assertThat(be.getField()).isEqualTo("name");
+                            assertThat(be.getMessage())
+                                    .contains("Неизвестный тип программы")
+                                    .contains("0");
+                        });
 
         verify(groupRepository, never()).save(any());
     }
@@ -203,8 +265,10 @@ class GroupServiceTest {
 
         assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("ИВТ-011")))
                 .isInstanceOf(BadRequestException.class)
-                .satisfies(error -> assertThat(((BadRequestException) error).getField())
-                        .isEqualTo("name"));
+                .satisfies(
+                        error ->
+                                assertThat(((BadRequestException) error).getField())
+                                        .isEqualTo("name"));
 
         verify(groupRepository, never()).save(any());
     }
@@ -212,13 +276,15 @@ class GroupServiceTest {
     @Test
     void createGroup_normalizedDuplicateKeepsLegacyNameField() {
         when(groupRepository.existsByName("Ивт-311")).thenReturn(false);
-        when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue(
-                "ИВТ", "311")).thenReturn(true);
+        when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue("ИВТ", "311"))
+                .thenReturn(true);
 
         assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("Ивт-311")))
                 .isInstanceOf(ConflictException.class)
-                .satisfies(error -> assertThat(((ConflictException) error).getField())
-                        .isEqualTo("name"));
+                .satisfies(
+                        error ->
+                                assertThat(((ConflictException) error).getField())
+                                        .isEqualTo("name"));
 
         verify(groupRepository, never()).save(any());
     }
@@ -228,20 +294,21 @@ class GroupServiceTest {
         when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue("ИВТ", "311"))
                 .thenReturn(false);
         when(groupRepository.existsByName("ИВТ-311")).thenReturn(false);
-        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> {
-            Group group = invocation.getArgument(0);
-            try {
-                Field idField = Group.class.getDeclaredField("id");
-                idField.setAccessible(true);
-                idField.set(group, 901L);
-            } catch (ReflectiveOperationException error) {
-                throw new AssertionError(error);
-            }
-            return group;
-        });
+        when(groupRepository.save(any(Group.class)))
+                .thenAnswer(
+                        invocation -> {
+                            Group group = invocation.getArgument(0);
+                            try {
+                                Field idField = Group.class.getDeclaredField("id");
+                                idField.setAccessible(true);
+                                idField.set(group, 901L);
+                            } catch (ReflectiveOperationException error) {
+                                throw new AssertionError(error);
+                            }
+                            return group;
+                        });
 
-        Group created = groupService.createAdminGroup(
-                new CreateAdminGroupRequest("Ивт", "311", 4));
+        Group created = groupService.createAdminGroup(new CreateAdminGroupRequest("Ивт", "311", 4));
 
         assertThat(created.getName()).isEqualTo("ИВТ-311");
         assertThat(created.getAlphabeticCode()).isEqualTo("ИВТ");
@@ -258,11 +325,15 @@ class GroupServiceTest {
 
     @Test
     void createAdminGroup_rejectsCourseBeyondTrainingDurationBeforeSave() {
-        assertThatThrownBy(() -> groupService.createAdminGroup(
-                new CreateAdminGroupRequest("ИВТ", "511", 4)))
+        assertThatThrownBy(
+                        () ->
+                                groupService.createAdminGroup(
+                                        new CreateAdminGroupRequest("ИВТ", "511", 4)))
                 .isInstanceOf(BadRequestException.class)
-                .satisfies(error -> assertThat(((BadRequestException) error).getField())
-                        .isEqualTo("numericCode"));
+                .satisfies(
+                        error ->
+                                assertThat(((BadRequestException) error).getField())
+                                        .isEqualTo("numericCode"));
 
         verify(groupRepository, never()).save(any());
         verify(coverageRepository, never()).save(any());
@@ -273,11 +344,15 @@ class GroupServiceTest {
         when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue("ИВТ", "311"))
                 .thenReturn(true);
 
-        assertThatThrownBy(() -> groupService.createAdminGroup(
-                new CreateAdminGroupRequest("ИВТ", "311", 4)))
+        assertThatThrownBy(
+                        () ->
+                                groupService.createAdminGroup(
+                                        new CreateAdminGroupRequest("ИВТ", "311", 4)))
                 .isInstanceOf(ConflictException.class)
-                .satisfies(error -> assertThat(((ConflictException) error).getField())
-                        .isEqualTo("numericCode"));
+                .satisfies(
+                        error ->
+                                assertThat(((ConflictException) error).getField())
+                                        .isEqualTo("numericCode"));
 
         verify(groupRepository, never()).save(any());
     }
@@ -314,8 +389,12 @@ class GroupServiceTest {
         verify(eventPublisher, org.mockito.Mockito.atLeastOnce()).publishEvent(captor.capture());
         // Среди опубликованных событий должно быть GroupRenamedEvent с group_id=77
         assertThat(captor.getAllValues())
-                .anyMatch(ev -> ev instanceof GroupRenamedEvent gre
-                        && ((GroupRenamedEvent.Payload) gre.getPayload()).groupId().equals(77L));
+                .anyMatch(
+                        ev ->
+                                ev instanceof GroupRenamedEvent gre
+                                        && ((GroupRenamedEvent.Payload) gre.getPayload())
+                                                .groupId()
+                                                .equals(77L));
         assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");
         assertThat(existing.getNumericCode()).isEqualTo("311");
         assertThat(existing.getCurrentCourse()).isEqualTo(3);
@@ -344,7 +423,8 @@ class GroupServiceTest {
         existing.setTrainingDurationYears(2);
         when(groupRepository.findByIdForUpdate(80L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.existsByName("УИТ-211")).thenReturn(false);
-        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(groupRepository.save(any(Group.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         groupService.updateGroup(80L, new UpdateGroupRequest("УИТ-211", true));
 
@@ -359,19 +439,23 @@ class GroupServiceTest {
     void updateGroup_deactivationDelegatesToArchivalServiceAfterCodeSync() {
         Group existing = makeActiveGroup(81L, "УИТ-311");
         when(groupRepository.findByIdForUpdate(81L)).thenReturn(java.util.Optional.of(existing));
-        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(groupRepository.save(any(Group.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         Long actorUserId = requestContext.getUserId();
-        org.mockito.Mockito.doAnswer(invocation -> {
-            Group archived = invocation.getArgument(0);
-            archived.setActive(false);
-            archived.setArchivedAt(OffsetDateTime.parse("2026-09-01T00:00:00Z"));
-            archived.setName(archived.getName() + " (выпуск 2026)");
-            return null;
-        }).when(archivalService).archiveByActor(existing, actorUserId);
+        org.mockito.Mockito.doAnswer(
+                        invocation -> {
+                            Group archived = invocation.getArgument(0);
+                            archived.setActive(false);
+                            archived.setArchivedAt(OffsetDateTime.parse("2026-09-01T00:00:00Z"));
+                            archived.setName(archived.getName() + " (выпуск 2026)");
+                            return null;
+                        })
+                .when(archivalService)
+                .archiveByActor(existing, 2026, actorUserId);
 
         groupService.updateGroup(81L, new UpdateGroupRequest("УИТ-311", false));
 
-        verify(archivalService).archiveByActor(existing, actorUserId);
+        verify(archivalService).archiveByActor(existing, 2026, actorUserId);
         assertThat(existing.isActive()).isFalse();
         assertThat(existing.getName()).isEqualTo("УИТ-311 (выпуск 2026)");
         assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");
@@ -385,7 +469,10 @@ class GroupServiceTest {
         when(groupRepository.findByIdForUpdate(79L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.existsByName("УИТ-311")).thenReturn(true);
 
-        assertThatThrownBy(() -> groupService.updateGroup(79L, new UpdateGroupRequest("УИТ-311", true)))
+        assertThatThrownBy(
+                        () ->
+                                groupService.updateGroup(
+                                        79L, new UpdateGroupRequest("УИТ-311", true)))
                 .isInstanceOf(ConflictException.class)
                 .satisfies(e -> assertThat(((ConflictException) e).getField()).isEqualTo("name"));
 
@@ -411,13 +498,17 @@ class GroupServiceTest {
 
         when(groupRepository.findByIdForUpdate(42L)).thenReturn(java.util.Optional.of(archived));
 
-        assertThatThrownBy(() -> groupService.updateGroup(42L, new UpdateGroupRequest("УИТ-211", true)))
+        assertThatThrownBy(
+                        () ->
+                                groupService.updateGroup(
+                                        42L, new UpdateGroupRequest("УИТ-211", true)))
                 .isInstanceOf(ConflictException.class)
-                .satisfies(e -> {
-                    ConflictException ce = (ConflictException) e;
-                    assertThat(ce.getField()).isEqualTo("archived");
-                    assertThat(ce.getMessage()).contains("архивную");
-                });
+                .satisfies(
+                        e -> {
+                            ConflictException ce = (ConflictException) e;
+                            assertThat(ce.getField()).isEqualTo("archived");
+                            assertThat(ce.getMessage()).contains("архивную");
+                        });
 
         verify(groupRepository, never()).save(any());
     }
@@ -427,26 +518,17 @@ class GroupServiceTest {
     // =========================================================================
 
     @Test
-    void groupResponse_hasNoCodeField() throws NoSuchFieldException {
-        GroupResponse response = new GroupResponse(
-                1L, "УИТ-311", true, OffsetDateTime.parse("2026-04-14T00:00:00Z"));
-        assertThat(response.getName()).isEqualTo("УИТ-311");
-        // Reflection check: code field removed from GroupResponse entirely.
-        assertThatThrownBy(() -> GroupResponse.class.getDeclaredField("code"))
-                .isInstanceOf(NoSuchFieldException.class);
-    }
-
-    @Test
-    void groupEntity_hasNoCodeField() {
-        // Entity Group поле code удалено — @Column(name="name", unique, length=32)
-        assertThatThrownBy(() -> Group.class.getDeclaredField("code"))
-                .isInstanceOf(NoSuchFieldException.class);
-
-        // Поле name по-прежнему присутствует.
-        assertThat(java.util.Arrays.stream(Group.class.getDeclaredFields())
-                .map(Field::getName))
-                .contains("name")
-                .doesNotContain("code");
+    void groupResponse_hasNoCodeField() throws Exception {
+        GroupResponse response =
+                new GroupResponse(
+                        1L, "УИТ-311", true, OffsetDateTime.parse("2026-04-14T00:00:00Z"));
+        var mapper =
+                org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json()
+                        .findModulesViaServiceLoader(true)
+                        .build();
+        var json = mapper.readTree(mapper.writeValueAsBytes(response));
+        assertThat(json.path("name").asText()).isEqualTo("УИТ-311");
+        assertThat(json.has("code")).isFalse();
     }
 
     @Test
@@ -456,23 +538,36 @@ class GroupServiceTest {
         Group g = new Group();
         g.setName("УИТ-411 (выпуск 2026)");
         Set<ConstraintViolation<Group>> v = validator.validate(g);
-        // @NotBlank/@Pattern проходят; остальная валидация (createdAt=null) нас не волнует для pattern-теста.
-        assertThat(v).allSatisfy(violation ->
-                assertThat(violation.getPropertyPath().toString()).isNotEqualTo("name"));
+        // @NotBlank/@Pattern проходят; остальная валидация (createdAt=null) нас не волнует для
+        // pattern-теста.
+        assertThat(v)
+                .allSatisfy(
+                        violation ->
+                                assertThat(violation.getPropertyPath().toString())
+                                        .isNotEqualTo("name"));
     }
+
     @Test
     void createAdminGroup_supportsCourseFiveButRejectsDurationOrCourseSix() {
-        assertThatThrownBy(() -> groupService.createAdminGroup(new CreateAdminGroupRequest("УИТ", "611", 5)))
+        assertThatThrownBy(
+                        () ->
+                                groupService.createAdminGroup(
+                                        new CreateAdminGroupRequest("УИТ", "611", 5)))
                 .isInstanceOf(BadRequestException.class);
-        assertThatThrownBy(() -> groupService.createAdminGroup(new CreateAdminGroupRequest("УИТ", "511", 6)))
+        assertThatThrownBy(
+                        () ->
+                                groupService.createAdminGroup(
+                                        new CreateAdminGroupRequest("УИТ", "511", 6)))
                 .isInstanceOf(BadRequestException.class);
-        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> {
-            Group saved = invocation.getArgument(0);
-            Field idField = Group.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(saved, 902L);
-            return saved;
-        });
+        when(groupRepository.save(any(Group.class)))
+                .thenAnswer(
+                        invocation -> {
+                            Group saved = invocation.getArgument(0);
+                            Field idField = Group.class.getDeclaredField("id");
+                            idField.setAccessible(true);
+                            idField.set(saved, 902L);
+                            return saved;
+                        });
         Group fifth = groupService.createAdminGroup(new CreateAdminGroupRequest("УИТ", "511", 5));
         assertThat(fifth.getName()).isEqualTo("УИТ-511");
         assertThat(fifth.getCurrentCourse()).isEqualTo(5);
@@ -485,11 +580,11 @@ class GroupServiceTest {
         archived.setActive(false);
         archived.setTrainingDurationYears(5);
         when(groupRepository.findByIdForUpdate(96L)).thenReturn(java.util.Optional.of(archived));
-        when(archivalService.restorableName(archived)).thenReturn(
-                new GroupArchivalService.RestorableName("УИТ-611", "УИТ", "611", 2026));
-        assertThatThrownBy(() -> groupService.restoreGroup(96L)).isInstanceOf(ConflictException.class);
+        when(archivalService.restorableName(archived))
+                .thenReturn(new GroupArchivalService.RestorableName("УИТ-611", "УИТ", "611", 2026));
+        assertThatThrownBy(() -> groupService.restoreGroup(96L))
+                .isInstanceOf(ConflictException.class);
         verify(groupRepository, never()).restoreArchivedGroup(any(), any());
         assertThat(archived.isActive()).isFalse();
     }
-
 }

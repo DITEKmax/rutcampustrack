@@ -1,0 +1,77 @@
+{
+  "status": "SOURCE_READY_FOR_INDEPENDENT_RECHECK",
+  "at": "2026-10-11T20:38:59.097027+00:00",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "reviewed_before": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+  "final_source_sha": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+  "correction_commits": {
+    "formatter": "01a65ecc4e4ae9c762ab16ce66c601bf91253460",
+    "harness": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1"
+  },
+  "findings": {
+    "CT01": "STUDENT helper UI, real positive permission read/effect before revocation; same token denied and durable effect unchanged after revoke",
+    "CT02": "200 neutral bootstrap is valid; activeRole null/SUSPENDED grant/nonselectable, denied TEACHER role selection/read/write with exact codes",
+    "CT03": "JSON array shape mapped by code; before-positive and after-empty assertions; leaked-code counterexample rejects same exact empty-array expectation",
+    "CT04": "explicit byte-payload exclusions, handwritten E2E helpers included",
+    "CT05": "default Spotless enforceCheck intentionally preserved and documented; pre-format root check prerequisite explicit",
+    "CT06": "allowlist reporter and pre-seed capture/debug/reporter guard; sanitize errors before automatic contexts; replace attached contexts with safe metadata; pinned metadata leak reproduced and all-emitted-artifact marker scan passes"
+  },
+  "checks": {
+    "scoped_typescript": {
+      "status": "PASS",
+      "command": "node ../../frontends/node_modules/typescript/bin/tsc --noEmit -p tsconfig.real-mobile.json"
+    },
+    "prettier_new_changed_sources": "PASS",
+    "node_syntax_runner_control": "PASS",
+    "list": {
+      "status": "PASS",
+      "command": "node node_modules/playwright/cli.js test --config playwright.real-mobile.config.ts --list --reporter=list",
+      "count": 16,
+      "credential_dataset_created": false
+    },
+    "artifact_privacy_control": {
+      "status": "PASS",
+      "command": "node check-artifact-privacy.mjs",
+      "originalMetadataLeakReproduced": true,
+      "markerAbsent": true,
+      "expectedFailureRetained": true,
+      "successRetained": true,
+      "emittedArtifactCount": 5,
+      "browser": "NOT_STARTED"
+    },
+    "inventory": {
+      "status": "PASS",
+      "command": "node scripts/format-authored.mjs inventory",
+      "tracked": 6313,
+      "prettier": 954,
+      "java": 1517,
+      "python": 105,
+      "sql": 6,
+      "authoredTSHelperTargets": 9,
+      "historicalFlywayTargets": 0,
+      "canonicalLandingDistTargets": 6,
+      "receipt": "corrected-format-summary.json"
+    },
+    "git_diff_check": "PASS",
+    "worktree": "CLEAN"
+  },
+  "runtime": {
+    "browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "gradle": "NOT_RUN",
+    "containers": "NOT_RUN",
+    "native_telegram": "NOT_RUN"
+  },
+  "constraints": {
+    "heavy_lease": false,
+    "processes_owned": [],
+    "ui_edits": false,
+    "mass_formatting": false,
+    "push": false,
+    "production_auth_change": false
+  },
+  "remaining": "Independent source/privacy recheck; root integrates reviewed semantic changes and grants isolated runtime lease; clock proposal review/assignment before test-only implementation; mass format after frozen semantic assignment only",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_metadata": "UNKNOWN"
+}

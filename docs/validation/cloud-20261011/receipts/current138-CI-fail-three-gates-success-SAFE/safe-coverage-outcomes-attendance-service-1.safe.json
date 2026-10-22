@@ -1,0 +1,66 @@
+{
+  "artifact_id": 11781391509,
+  "name": "safe-coverage-outcomes-attendance-service-1",
+  "archive_bytes": 27725,
+  "archive_sha256": "dc2dbd771249ee7dfec358f824ffb0b135102eace2ec1d8b984913929d8e0a86",
+  "producer": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "32ad1b78964b627a9da0227865e5669019e0c6e2",
+        "prHeadSha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+        "service": "attendance-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38327779184",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 220,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    },
+    {
+      "metadata": {
+        "checkoutSha": "32ad1b78964b627a9da0227865e5669019e0c6e2",
+        "prHeadSha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+        "service": "attendance-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38327779184",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 315,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

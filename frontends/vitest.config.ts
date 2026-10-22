@@ -22,15 +22,25 @@ export default defineConfig({
     __RCT_FORCE_UPDATE__: true,
   },
   resolve: {
-    alias: { '@rct/mobile-core': fileURLToPath(new URL('./mobile-core/src/index.ts', import.meta.url)) },
+    alias: {
+      '@rct/mobile-core': fileURLToPath(new URL('./mobile-core/src/index.ts', import.meta.url)),
+    },
   },
   test: {
     environment: 'node',
-    include: ['mobile-core/src/**/*.test.ts', 'pwa-vue/src/**/*.test.ts', 'tma-vue/src/**/*.test.ts'],
+    include: [
+      'mobile-core/src/**/*.test.ts',
+      'pwa-vue/src/**/*.test.ts',
+      'tma-vue/src/**/*.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'lcov', 'html'],
-      include: ['mobile-core/src/**/*.{ts,vue}', 'pwa-vue/src/**/*.{ts,vue}', 'tma-vue/src/**/*.{ts,vue}'],
+      include: [
+        'mobile-core/src/**/*.{ts,vue}',
+        'pwa-vue/src/**/*.{ts,vue}',
+        'tma-vue/src/**/*.{ts,vue}',
+      ],
       exclude: ['**/*.test.ts', '**/api/generated/**', '**/*.d.ts'],
     },
   },

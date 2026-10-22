@@ -1,0 +1,42 @@
+{
+  "schema": "RCT_CI_FIRST3_NODE_ACTUAL_01",
+  "toolSession": 66037,
+  "nativeExit": 1,
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "completedPhases": 1,
+  "formatCheck": "FAILED_STYLE_DIFFERENCE",
+  "types": "NOT_RUN",
+  "discovery": "NOT_RUN",
+  "clientAcceptance": false,
+  "noSourceWrite": true,
+  "gitClean": true,
+  "source4Preserved": true,
+  "root19Preserved": true,
+  "thirdParty7PinsAndOwnIndividualLinksPreserved": true,
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 396539,
+      "start_ticks": 9839972,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 396535,
+      "start_ticks": 9839945,
+      "exact_birth_absent": true
+    }
+  ],
+  "allOwnedSettledAndReaped": true,
+  "signals": 0,
+  "peaks": {
+    "owned_rss_bytes": 112635904,
+    "run_allocated_bytes": 1413120,
+    "shared_memory_bytes": 4760190976
+  },
+  "privateTmpAndCacheRemoved": true,
+  "privateDiagnosticRemoved": true,
+  "rawDiagnosticNotArchived": true,
+  "lease": "RELEASED",
+  "resourceScope": "Node512MiB/ownedRSS1GiB/owncache32MiB/180s",
+  "actualApiBrowserServiceSeed": "NOT_RUN",
+  "qualification": "Runtime metadata/code-style failure only; frozen source and package pins preserved, no whole unobserved cache-tree claim."
+}

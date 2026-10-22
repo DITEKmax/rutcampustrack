@@ -2,11 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { getByRole } from '@testing-library/dom';
+import userEvent from '@testing-library/user-event';
 import { HeadmanExcusesComponent } from './headman-excuses.component';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -83,6 +85,7 @@ describe('HeadmanExcusesComponent', () => {
         { provide: MatSnackBar, useValue: snackBar },
       ],
     });
+    TestBed.overrideComponent(HeadmanExcusesComponent, { add: { providers: [{ provide: MatSnackBar, useValue: snackBar }] } });
     fixture = TestBed.createComponent(HeadmanExcusesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -95,25 +98,27 @@ describe('HeadmanExcusesComponent', () => {
 
   it('splits tickets into pending (submitted) and resolved sections (D-24)', () => {
     setup();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Иванов Иван');
-    expect(compiled.textContent).toContain('Петров Пётр');
-    // Pending section heading present
-    expect(compiled.textContent).toMatch(/На рассмотрении/);
-    // Russian excuse type label present
-    expect(compiled.textContent).toContain('Болезнь');
-    // Pending tickets expose Approve/Reject buttons; resolved do not
-    const buttons = Array.from(compiled.querySelectorAll('button'));
-    const approveCount = buttons.filter(b => /Одобрить/.test(b.textContent ?? '')).length;
-    expect(approveCount).toBeGreaterThanOrEqual(1);
+    const cards = Array.from(fixture.nativeElement.querySelectorAll('article') as NodeListOf<HTMLElement>);
+    const pending = cards.find(card => card.textContent?.includes('Иванов Иван'))!;
+    const resolved = cards.find(card => card.textContent?.includes('Петров Пётр'))!;
+    expect(getByRole(pending, 'button', { name: 'Одобрить' })).toBeTruthy();
+    expect(getByRole(pending, 'button', { name: 'Отклонить' })).toBeTruthy();
+    expect(resolved.querySelectorAll('button')).toHaveLength(0);
   });
 
-  it('approve() calls approveExcuse and reloads list (AC-10 approve)', () => {
-    setup();
-    component.approve('mongo-1');
+  it('approve() calls approveExcuse and reloads list (AC-10 approve)', async () => {
+    const changed = { ...MOCK_PENDING, status: 'approved' as const };
+    const read = vi.fn().mockReturnValueOnce(of([MOCK_PENDING, MOCK_APPROVED])).mockReturnValue(of([changed, MOCK_APPROVED]));
+    setup({ getGroupExcuses: read });
+    const root = fixture.nativeElement as HTMLElement;
+    const user = userEvent.setup();
+    await user.click(getByRole(root, 'button', { name: 'Одобрить' }));
     expect(api.approveExcuse).toHaveBeenCalledWith('mongo-1', null);
-    // loadTickets triggered: initial call + reload
-    expect((api.getGroupExcuses as any).mock.calls.length).toBeGreaterThanOrEqual(2);
+    fixture.detectChanges();
+    expect(component.pendingTickets()).toEqual([]);
+    const decided = Array.from(root.querySelectorAll('article')).find(card => card.textContent?.includes('Иванов Иван'))!;
+    expect(decided).toBeTruthy();
+    expect(decided.querySelectorAll('button')).toHaveLength(0);
   });
 
   it('reject() with empty comment sets validationError and does NOT call API (D-24)', () => {
@@ -125,26 +130,44 @@ describe('HeadmanExcusesComponent', () => {
     expect(api.rejectExcuse).not.toHaveBeenCalled();
   });
 
-  it('reject() with non-empty comment calls rejectExcuse and reloads (AC-10 reject)', () => {
-    setup();
-    component.startReject('mongo-1');
-    component.rejectComment.set('Нет подтверждающих документов');
-    component.confirmReject('mongo-1');
+  it('reject() with non-empty comment calls rejectExcuse and reloads (AC-10 reject)', async () => {
+    const changed = { ...MOCK_PENDING, status: 'rejected' as const };
+    const read = vi.fn().mockReturnValueOnce(of([MOCK_PENDING, MOCK_APPROVED])).mockReturnValue(of([changed, MOCK_APPROVED]));
+    setup({ getGroupExcuses: read });
+    const root = fixture.nativeElement as HTMLElement;
+    const user = userEvent.setup();
+    await user.click(getByRole(root, 'button', { name: 'Отклонить' }));
+    fixture.detectChanges();
+    await user.type(getByRole(root, 'textbox', { name: 'Комментарий к отклонению' }), 'Нет подтверждающих документов');
+    await user.click(getByRole(root, 'button', { name: 'Подтвердить отклонение' }));
     expect(api.rejectExcuse).toHaveBeenCalledWith('mongo-1', 'Нет подтверждающих документов');
-    expect((api.getGroupExcuses as any).mock.calls.length).toBeGreaterThanOrEqual(2);
+    fixture.detectChanges();
+    expect(component.pendingTickets()).toEqual([]);
+    const decided = Array.from(root.querySelectorAll('article')).find(card => card.textContent?.includes('Иванов Иван'))!;
+    expect(decided).toBeTruthy();
+    expect(decided.querySelectorAll('button')).toHaveLength(0);
   });
 
-  it('maps 409 on approve to a friendly message (own ticket / already decided)', () => {
-    // Exercise the private error mapper directly — subscribing to throwError()
-    // inside zone.js + vitest raises an async unhandled-rejection warning that
-    // swallows the synchronous snackBar call; we validate the user-facing
-    // contract (friendly message) without the observable wiring.
-    setup();
-    const err = new HttpErrorResponse({ status: 409, statusText: 'Conflict' });
-    const msg = (component as any).errorMessage(err, 'approve') as string;
-    expect(msg).toMatch(/решение уже принято|нельзя одобрить|Невозможно/i);
-    const rejectMsg = (component as any).errorMessage(err, 'reject') as string;
-    expect(rejectMsg).toMatch(/решение уже принято|Невозможно/i);
+  it.each(['approve', 'reject'] as const)('keeps pending ticket and clears busy after %s conflicts', async action => {
+    const decision = new Subject<void>();
+    setup({ [action === 'approve' ? 'approveExcuse' : 'rejectExcuse']: vi.fn(() => decision) });
+    const root = fixture.nativeElement as HTMLElement;
+    const user = userEvent.setup();
+    if (action === 'approve') await user.click(getByRole(root, 'button', { name: 'Одобрить' }));
+    else {
+      await user.click(getByRole(root, 'button', { name: 'Отклонить' }));
+      fixture.detectChanges();
+      await user.type(getByRole(root, 'textbox', { name: 'Комментарий к отклонению' }), 'synthetic reason');
+      await user.click(getByRole(root, 'button', { name: 'Подтвердить отклонение' }));
+    }
+    fixture.detectChanges();
+    expect(component.busyId()).toBe('mongo-1');
+    decision.error(new HttpErrorResponse({ status: 409, statusText: 'Conflict' }));
+    fixture.detectChanges();
+    expect(component.busyId()).toBeNull();
+    expect(component.pendingTickets().map(ticket => ticket.id)).toEqual(['mongo-1']);
+    expect(component.resolvedTickets().map(ticket => ticket.id)).toEqual(['mongo-2']);
+    expect(snackBar.open).toHaveBeenCalledWith(expect.stringMatching(/уже|Невозможно|нельзя/i), 'OK', expect.any(Object));
   });
 
   it('surfaces friendly load error when getGroupExcuses fails', () => {

@@ -1,0 +1,249 @@
+{
+  "status": "FROZEN_FOR_READ_ONLY_CONSUMERS; no further install/mutation authorized",
+  "python": "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+  "python_version": "3.12.14",
+  "packages": [
+    {
+      "name": "aio-pika",
+      "version": "9.5.3"
+    },
+    {
+      "name": "aiofiles",
+      "version": "25.1.0"
+    },
+    {
+      "name": "aiogram",
+      "version": "3.29.1"
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1"
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.3"
+    },
+    {
+      "name": "aiormq",
+      "version": "6.8.1"
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22"
+    },
+    {
+      "name": "coverage",
+      "version": "7.16.2"
+    },
+    {
+      "name": "exceptiongroup",
+      "version": "1.3.1"
+    },
+    {
+      "name": "fakeredis",
+      "version": "2.39.0"
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0"
+    },
+    {
+      "name": "googleapis-common-protos",
+      "version": "1.75.0"
+    },
+    {
+      "name": "grpcio",
+      "version": "1.73.0"
+    },
+    {
+      "name": "grpcio-tools",
+      "version": "1.73.0"
+    },
+    {
+      "name": "hiredis",
+      "version": "3.4.2"
+    },
+    {
+      "name": "idna",
+      "version": "3.20"
+    },
+    {
+      "name": "importlib_metadata",
+      "version": "8.7.1"
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.1"
+    },
+    {
+      "name": "magic-filter",
+      "version": "1.0.12"
+    },
+    {
+      "name": "multidict",
+      "version": "6.9.1"
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.41.0"
+    },
+    {
+      "name": "opentelemetry-exporter-otlp-proto-common",
+      "version": "1.41.0"
+    },
+    {
+      "name": "opentelemetry-exporter-otlp-proto-grpc",
+      "version": "1.41.0"
+    },
+    {
+      "name": "opentelemetry-instrumentation",
+      "version": "0.62b0"
+    },
+    {
+      "name": "opentelemetry-instrumentation-aio-pika",
+      "version": "0.62b0"
+    },
+    {
+      "name": "opentelemetry-instrumentation-aiohttp-client",
+      "version": "0.62b0"
+    },
+    {
+      "name": "opentelemetry-instrumentation-grpc",
+      "version": "0.62b0"
+    },
+    {
+      "name": "opentelemetry-instrumentation-redis",
+      "version": "0.62b0"
+    },
+    {
+      "name": "opentelemetry-proto",
+      "version": "1.41.0"
+    },
+    {
+      "name": "opentelemetry-sdk",
+      "version": "1.41.0"
+    },
+    {
+      "name": "opentelemetry-semantic-conventions",
+      "version": "0.62b0"
+    },
+    {
+      "name": "opentelemetry-util-http",
+      "version": "0.62b0"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3"
+    },
+    {
+      "name": "pamqp",
+      "version": "3.3.0"
+    },
+    {
+      "name": "pluggy",
+      "version": "1.6.0"
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.4"
+    },
+    {
+      "name": "protobuf",
+      "version": "6.31.0"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.9.2"
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.6.1"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.23.4"
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0"
+    },
+    {
+      "name": "pytest",
+      "version": "9.1.1"
+    },
+    {
+      "name": "pytest-asyncio",
+      "version": "1.4.0"
+    },
+    {
+      "name": "pytest-cov",
+      "version": "7.1.0"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3"
+    },
+    {
+      "name": "redis",
+      "version": "5.2.1"
+    },
+    {
+      "name": "setuptools",
+      "version": "84.0.0"
+    },
+    {
+      "name": "sortedcontainers",
+      "version": "2.4.0"
+    },
+    {
+      "name": "structlog",
+      "version": "24.4.0"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0"
+    },
+    {
+      "name": "wrapt",
+      "version": "2.5.0"
+    },
+    {
+      "name": "yarl",
+      "version": "1.25.1"
+    },
+    {
+      "name": "zipp",
+      "version": "4.1.1"
+    }
+  ],
+  "requirement_inputs": {
+    "/workspace/rct-worktrees/np01-config/services/notification-bot/requirements.txt": "e6ec6e3dc67a6c81be7001ffae06bfa7b1a6fe3e5991a47082ada1fbe29308d4",
+    "/workspace/rct-worktrees/np01-config/services/notification-bot/requirements-test.txt": "010cbb5b128197a89181f84dfafd070d5678585d14920d61964b02998a7e1a55"
+  },
+  "additional_test_only_dependency": "PyYAML==6.0.3 for existing controlled YAML config assertions; no requirements/lock edits",
+  "controls": "verification.safe.json",
+  "pip_check": "PASS 57 installed packages compatible",
+  "consumer_env": {
+    "NP01_PYTHON_EXECUTABLE": "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "limits": "Full bot/secure RPC/provider runtime not started; common/domain consumer leases remain root controlled.",
+  "read_only_regular_files": 3272,
+  "read_only_directories": true
+}

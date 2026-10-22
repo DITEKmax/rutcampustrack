@@ -1,0 +1,32 @@
+# Goal
+Resolve independent HOST-G01/G02/G03 before any real runtime grant. These are guard corrections for prepared synthetic verification resources, not product changes or application acceptance.
+
+# Context/evidence
+FULL TASK-CONTRACT/CURRENT/decisions/questions/resources and `packet-host-runtime-corrections.md` restored. Packet root revision2a23969a69fee28bb5adc51ee7d4c0ef6baf6362/remote25668, baseline3908. Domain heavy lease remains separate; no JVM/service/container/client grant here. Requested Sol6.1/high; actual UNKNOWN. Original29 seal fac7 and Renderer6 seal8159 and every listed file remain byte-exact.
+
+# Relevant scope
+Sole NEW writer directory `/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections`. Created corrected `safe-child-status.py`, guard controls, harmless child, safe receipts, false root-grant template and this handoff. No modified/deleted product, active-writer, shared-document, original29 or Renderer6 file. Full created inventory is the separate manifest.
+
+# Required behavior
+HOST-G01: reject absolute paths containing `..` before any owned cwd/artifact/environment access; reject symlinks in every component including OWN ancestors; prove resolved containment and return the resolved path. The old helper accepts OWN/../foreign when it has a lexical OWN prefix; the corrected helper rejects that same counterexample, including existing/nested symlinks. Positive owned resolved paths remain accepted. Frozen sole-writer staging remains necessary; this path check does not claim hostile same-UID filesystem isolation.
+
+HOST-G02: SIGINT/SIGTERM handlers now set a bounded stop request and never raise during child settlement. Repeated signals cannot abort terminate/wait/kill/wait. `settle_child` is bounded and idempotent; actual Popen.poll()/wait exit is required for settled=true. Terminal event is emitted only for confirmed settlement, otherwise CHILD_SETTLEMENT_FAILED with exit=null and nonzero runner outcome. A pending external KeyboardInterrupt produces an UNKNOWN status, never a false child-settled claim. SIGKILL of the parent cannot be settled by a handler and is not covered by this guarantee. No daemon/process group/control plane.
+
+HOST-G03: remove parent `os.environ.copy()`. Environment consists of fixed minimal PATH/LANG/LC_ALL, only root-sealed selected HTTP(S)_PROXY/NO_PROXY or SSL_CERT_FILE/DIR names, and exact reviewed own public/private maps. Lookup only that selected subset after a true runtime grant; unrelated parent credentials and Java/Spring override channels are not forwarded. Reject unreviewed Java/Spring configuration channels, dynamic-loader/interpreter hooks, duplicate public/private names, proxy/OS override attempts, unsupported JAVA_TOOL_OPTIONS, private JAVA_TOOL_OPTIONS and non-prod profile. Preserve only supported source JVM RAM/G1/entropy flags in the sealed public map. Map counts/value lengths/total bytes are bounded. Private environment file must have own private permissions, current approved file SHA and exact required private names; the new false grant template requires an explicit environment_policy. No real environment values were read to implement or verify this change.
+
+# Constraints
+Original exact current-source/artifact/JDK SHA, production profile, TLS authority/method identity, loopback/bridge readiness URL, disk4GiB floor, RSS/shared-memory soft guards, DEVNULL application output and no-body/no-redirect probes remain. The corrected runner requires a NEW reviewed spec/root grant including exact environment policy and new runner SHA. No older template or original false grant becomes runtime authorization. Host shared UID/JDK/cgroup qualifications and Renderer current full/app addendum stay in force. All current artifact, TLS/key, native conversion and client checks remain NOT_RUN.
+
+# Existing patterns
+One ordinary direct Java child in future authorized use. For SOURCE-only verification the packet explicitly allowed a short own stdlib child: `python -I -S -B harmless-child.py <own marker>`, env PATH/LANG only, no network/subprocesses/parent credentials. It ignores TERM, writes its own PID marker and sleeps4s; test controller sends two real signals to itself, and only kills/reaps its own direct child. No JVM, app or browser substitute.
+
+# Acceptance criteria
+Author corrections and meaningful safe counterexamples PASS; independent recheck remains pending. Before-source SHA178b194097865cd682ed60fed0ab7ee1e1720da7552c4f22e58eaa56cd8f5b09; after-source SHA8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a. Historical code and receipts are preserved. No full host runtime PASS is claimed.
+
+# Verification
+Actual `python3 -I -S -B guard-controls.py` native0, all3 source AST parse PASS. G01 exact old helper accepts lexical escape; corrected rejects traversal and inside/outside symlinks, with positive resolved own path. G03 executes exact old env-copy/update AST against an entirely synthetic os.environ map: inherited Java/Spring/unrelated credential remain in old output; corrected explicit policy removes them, retains approved proxy/own dummy credential, rejects configuration channels/key overlap. No real parent environment lookup or credential output.
+
+G02 executes the EXACT original finally/KeyboardInterrupt-except AST with two real signals and a harmless child: old native130 claims INTERRUPTED_CHILD_SETTLED while the actual child is alive. Controller then kills/reaps that owned child. The corrected settlement receives both SIGINT and SIGTERM during its TERM wait, kills/reaps the actual own child (native-9), verifies PID absent and returns the same result on repeated settlement. A synthetic never-terminal object produces settled=false/exit=null. Both actual child PIDs were absent on separate readback after the controller exited. False-grant corrected CLI exits native2 with one safe BLOCKED status, no child and no private-env/artifact access. Safe scalar results, source hashes and PID readbacks are in controls-result/verification; no raw child/environment/argv/provider bodies.
+
+# Do not
+No JVM/build/extraction/keys/new container/network/browser/app/production/private-bot/deploy/global configuration/root-document edits. No rewrite of either old seal or any original35 source/evidence file. No child agents/model fallback. Root integrates the safe receipts and assigns independent guard recheck; source-safe readiness does not waive the later semantic-freeze/resource/TLS/artifact/runtime grants.

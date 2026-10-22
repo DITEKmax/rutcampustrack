@@ -1,5 +1,7 @@
 package ru.rutcampustrack.notification.alert;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,6 +20,7 @@ import java.util.Map;
  * M04 Группа 9 — webhook endpoint для Alertmanager (D2=(a)).
  *
  * <p>Alertmanager шлёт POST /internal/alert с телом в формате v4:
+ *
  * <pre>
  * {
  *   "alerts": [
@@ -33,17 +36,17 @@ import java.util.Map;
  * }
  * </pre>
  *
- * <p>Каждый alert превращается в отдельное событие {@code alert.fired}
- * в RabbitMQ, которое ловит notification-bot и форвардит в Telegram.
+ * <p>Каждый alert превращается в отдельное событие {@code alert.fired} в RabbitMQ, которое ловит
+ * notification-bot и форвардит в Telegram.
  *
- * <p>Аутентификация: header {@code Authorization: Bearer <secret>}
- * (shared secret из .env). В M06 заменится на mTLS.
+ * <p>Аутентификация: header {@code Authorization: Bearer <secret>} (shared secret из .env). В M06
+ * заменится на mTLS.
  *
- * <p>Endpoint исключён из security filter (см.
- * {@code NotificationUserContextFilter.isExcludedPath}) — Alertmanager
- * не умеет носить Internal JWT.
+ * <p>Endpoint исключён из security filter (см. {@code
+ * NotificationUserContextFilter.isExcludedPath}) — Alertmanager не умеет носить Internal JWT.
  */
 @RestController
+@Hidden
 @RequestMapping("/internal/alert")
 @EnableConfigurationProperties(AlertProperties.class)
 public class AlertController {
@@ -59,8 +62,9 @@ public class AlertController {
     }
 
     @PostMapping
-    public ResponseEntity<?> receive(@RequestHeader(value = "Authorization", required = false) String auth,
-                                     @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> receive(
+            @RequestHeader(value = "Authorization", required = false) String auth,
+            @RequestBody Map<String, Object> body) {
         if (!isAuthorized(auth)) {
             log.warn("Unauthorized alert webhook attempt — missing/invalid Bearer token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -112,8 +116,7 @@ public class AlertController {
                 String.valueOf(alert.get("status")),
                 annotations.get("summary"),
                 annotations.get("description"),
-                labels
-        );
+                labels);
     }
 
     private static Map<String, String> coerceStringMap(Object raw) {

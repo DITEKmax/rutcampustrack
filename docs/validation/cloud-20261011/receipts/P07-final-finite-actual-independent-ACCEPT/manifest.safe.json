@@ -1,0 +1,23 @@
+{
+  "schema": "rct-independent-review-seal-v1",
+  "files": {
+    "OUTCOME.safe.json": {
+      "sha256": "886760cad0740e5d814ab20759ea5e78b1d0cbb02d8ad9e11d4709232c577267",
+      "bytes": 1288
+    },
+    "REPORT.md": {
+      "sha256": "bd919dde5f63b18d7e74ac50af994f752adb1ca29f5666e79bfc03c915d16001",
+      "bytes": 7154
+    },
+    "review-checking-erratum.safe.json": {
+      "sha256": "af3d60096327dd6acc9b23a27819fd3e64822dd55d17d70904841fa85f672590",
+      "bytes": 321
+    },
+    "verification.safe.json": {
+      "sha256": "e4e57079cb819e368c8eba88f9fe60da8d3f1b93959afe509d14581c835c2349",
+      "bytes": 1732
+    }
+  },
+  "disposition": "QUALIFIED_FINITE_ACTUAL_ACCEPT",
+  "no_new_application_native": true
+}

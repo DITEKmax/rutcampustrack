@@ -1,0 +1,23 @@
+{
+  "kind": "pure-real-guard-known-defective-revision-control",
+  "beforeRevision": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+  "afterRevision": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+  "alternateFileExisted": true,
+  "alternateFileImported": false,
+  "before": {
+    "canonicalReporterAccepted": true,
+    "sameBasenameAlternateRejected": false,
+    "extraReporterRejected": true,
+    "traceRejected": true
+  },
+  "after": {
+    "canonicalReporterAccepted": true,
+    "sameBasenameAlternateRejected": true,
+    "extraReporterRejected": true,
+    "traceRejected": true
+  },
+  "oldGuardFailsRelevantAssertion": true,
+  "currentPassesRelevantAssertions": true,
+  "browser": "NOT_STARTED",
+  "credentialsCreated": false
+}

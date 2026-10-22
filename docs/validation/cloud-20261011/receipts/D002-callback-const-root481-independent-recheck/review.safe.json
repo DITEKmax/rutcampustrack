@@ -1,0 +1,12 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "author_manifest_sha256": "313752d737978daa04d8c95e66e7124dd3c179690892e08a598dd75371bc5811",
+  "author_zip_sha256": "21ab6d3fff3fb9e0b50803b782d0a375c2c86631edc8c840c70b58de39d7718d",
+  "author_zip_bytes": 39533,
+  "READY_sha256": "abf70b9342cb033e6f26f1759c59f51c1067b0cdc165cd0037416c3730e13acc",
+  "observer_sha256": "cf11c5268fdbfd839be408cbeb37cbef2f7ae713c56ba755dc9c1e0cc064c076",
+  "prior_review_preserved": "6d57eb0a759dbfdec1b39aeabd848eff4541c74298268d0bb88919498aedcacf",
+  "runtime_types_list_API": "NOT_RUN",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

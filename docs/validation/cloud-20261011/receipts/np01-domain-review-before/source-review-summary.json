@@ -1,0 +1,17 @@
+{
+  "domain_revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "domain_files": 22,
+  "config_revision": "5d564870e631a276d88ac5a4b97463929f9b6687",
+  "config_files": 2,
+  "common_revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "common_semantics_consulted": 3,
+  "generic_profile_exact_and_blank": true,
+  "old_OTP_consumer_unchanged": true,
+  "runtime": "NOT_RUN",
+  "source_writes": 0,
+  "children": 0,
+  "future_bridge_harness": "NOT_PART_OF_THIS_FROZEN22_VERDICT",
+  "verdict": "CHANGES_REQUESTED",
+  "finding": "NP01-COMPAT01 P2",
+  "current_source_equality": "verified_at_initial_freeze_only"
+}

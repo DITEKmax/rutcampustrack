@@ -9,6 +9,7 @@ import pytest
 from bot.config import Settings
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.services.send_queue import TelegramSendQueue
+from tests.business_delivery import BusinessDelivery, assert_business_delivery, assert_terminal_cards, fact_event
 
 
 def _make_dispatcher(handlers_override=None):
@@ -36,62 +37,23 @@ def _make_dispatcher(handlers_override=None):
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_started(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"lesson.started": mock_handler})
-
-    event = {"event_type": "lesson.started", "payload": {"lesson_id": 1}}
-    await dispatcher.dispatch(event)
-
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_lesson_started(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.started", expected=("Занятие началось",))
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_reminder(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"lesson.reminder": mock_handler})
-
-    event = {"event_type": "lesson.reminder", "payload": {"lesson_id": 7, "group_id": 3, "phase": "midpoint"}}
-    await dispatcher.dispatch(event)
-
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_lesson_reminder(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.reminder", expected=("Напоминание",))
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_cancelled(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"lesson.cancelled": mock_handler})
-
-    event = {"event_type": "lesson.cancelled", "payload": {"lesson_id": 2}}
-    await dispatcher.dispatch(event)
-
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_lesson_cancelled(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.cancelled", expected=("Занятие отменено",))
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_blocked(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"lesson.blocked": mock_handler})
-
-    event = {"event_type": "lesson.blocked", "payload": {"lesson_id": 2}}
-    await dispatcher.dispatch(event)
-
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
-
-
-@pytest.mark.asyncio
-async def test_dispatch_unknown_event_type_does_not_raise():
-    dispatcher = _make_dispatcher()
-    event = {"event_type": "totally.unknown.event", "payload": {}}
-    await dispatcher.dispatch(event)
+async def test_dispatch_routes_lesson_blocked(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.blocked", expected=("Самостоятельная отметка закрыта",))
 
 
 @pytest.mark.asyncio
@@ -100,7 +62,8 @@ async def test_dispatch_unknown_event_type_logs_debug(caplog):
     event = {"event_type": "unknown.thing", "payload": {}}
     with caplog.at_level(logging.DEBUG, logger="bot.consumers.event_dispatcher"):
         await dispatcher.dispatch(event)
-    assert any("unknown.thing" in record.message for record in caplog.records)
+    assert any(record.getMessage() == "Unhandled event type: unknown" for record in caplog.records)
+    assert all(event["event_type"] not in record.getMessage() for record in caplog.records)
 
 
 @pytest.mark.asyncio
@@ -124,149 +87,90 @@ def test_config_mini_app_url_has_default():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_closed(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"lesson.closed": mock_handler})
-
-    event = {"event_type": "lesson.closed", "payload": {"lesson_id": 101, "group_id": 5}}
-    await dispatcher.dispatch(event)
-
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_lesson_closed(fake_redis):
+    await assert_business_delivery(fake_redis, "lesson.closed", expected=("Занятие завершено",))
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_attendance_marked(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"attendance.marked": mock_handler})
-
-    event = {
-        "event_type": "attendance.marked",
-        "payload": {"lesson_id": 101, "user_id": 10, "group_id": 5, "status": "present"},
-    }
-    await dispatcher.dispatch(event)
-
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_attendance_marked(fake_redis):
+    await assert_business_delivery(fake_redis, "attendance.marked", expected=("Отметка", "Автор: староста"))
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_has_all_event_types():
-    """EventDispatcher._handlers contains all registered event types."""
-    dispatcher = _make_dispatcher()
-    expected_types = {
-        "lesson.started",
-        "lesson.reminder",
-        "lesson.blocked",
-        "lesson.cancelled",
-        "homework.published",
-        "homework.updated",
-        "homework.weekly_digest",
-        "homework.due_reminder",
-        "excuse.requested",
-        "excuse.decided",
-        "late_checkin.requested",
-        "late_checkin.decided",
-        "lesson.closed",
-        "attendance.marked",
-        "group.renamed",
-        "group.archived",
-        "otp.requested",
-        "otp.verified",
-        "password.changed",
-        "lesson.one_off.created",
-        "lesson.one_off.cancelled",
-        "alert.fired",
-    }
-    assert set(dispatcher._handlers.keys()) == expected_types
-
-
-@pytest.mark.asyncio
-async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
-    dispatcher = _make_dispatcher()
-    tracker = MagicMock()
-    tracker.get_all = AsyncMock(return_value=[{"chat_id": 10, "message_id": 20, "user_id": 101}])
-    tracker.delete_entry = AsyncMock()
-    dispatcher._request_tracker = tracker
-    from bot.grpc_client import attendance_pb2 as pb
-
-    dispatcher._attendance_client = SimpleNamespace(
-        resolve_request_notification=AsyncMock(
-            return_value=pb.ResolveRequestNotificationResponse(
-                group_id=7,
-                student_id=100,
-                student_name="Студент",
-                detail=pb.StudentRequestDetail(
-                    summary=pb.StudentRequestSummary(
-                        id="req-1",
-                        kind=pb.STUDENT_REQUEST_KIND_LATE_CHECKIN,
-                        status=pb.STUDENT_REQUEST_STATUS_CANCELLED,
-                    )
-                ),
-            )
+async def test_dispatcher_has_all_event_types(fake_redis):
+    # Independent accepted meanings; private registry shape is not an oracle.
+    meanings = [
+        ("lesson.transferred", None, "Занятие перенесено"),
+        ("lesson.restored", None, "Занятие восстановлено"),
+        ("lesson.updated", None, "Занятие изменено"),
+        ("homework.withdrawn", None, "снято с публикации"),
+        ("group.membership.changed", None, "Участие в группе изменено"),
+        ("headman.access.changed", None, "Права старосты изменены"),
+        ("assistant.access.changed", None, "Права помощника изменены"),
+        ("admin.access.changed", None, "Права администратора изменены"),
+        ("semester.activated", None, "Семестр активирован"),
+        ("semester.operation.completed", None, "Операция с семестром завершена"),
+        ("group.promotion.completed", None, "партия перевода групп"),
+        ("lesson.started", None, "Занятие началось"),
+        ("lesson.closed", None, "Занятие завершено"),
+        ("lesson.cancelled", None, "Занятие отменено"),
+        ("lesson.reminder", None, "Напоминание об отметке"),
+        ("lesson.blocked", None, "Самостоятельная отметка закрыта"),
+        ("lesson.one_off.created", None, "Добавлено разовое занятие"),
+        ("homework.published", None, "Новое домашнее задание"),
+        ("homework.updated", None, "Домашнее задание изменено"),
+        ("homework.weekly_digest", None, "Домашние задания на неделю"),
+        ("homework.due_reminder", None, "Скоро срок домашнего задания"),
+        ("excuse.requested", None, "Новая заявка на уважительную причину"),
+        ("late_checkin.requested", None, "Новая заявка на отметку"),
+        ("attendance.marked", None, "Отметка посещаемости изменена"),
+        ("group.renamed", None, "Название группы изменено"),
+        ("group.archived", None, "Группа архивирована"),
+        ("excuse.decided", "approved", "Уважительная причина одобрена"),
+        ("excuse.decided", "rejected", "Уважительная причина отклонена"),
+        ("excuse.decided", "cancelled", "отменена"),
+        ("late_checkin.decided", "approved", "Заявка на отметку одобрена"),
+        ("late_checkin.decided", "rejected", "Заявка на отметку отклонена"),
+        ("late_checkin.decided", "cancelled", "отменена"),
+    ]
+    scope = fact_event("lesson.cancelled")["payload"]
+    for kind, status, fact in meanings:
+        await fake_redis.flushdb()
+        await assert_business_delivery(
+            fake_redis,
+            kind,
+            status=status,
+            expected=(fact,),
+            extra={"actor_user_id": 99, "source": scope, "target": {**scope, "lesson_id": 12}},
         )
-    )
-    dispatcher._academic_client.get_current_group_members = AsyncMock(
-        return_value=[SimpleNamespace(user_id=101, telegram_id=10, is_headman=True)]
-    )
-    dispatcher._bot.edit_message_reply_markup = AsyncMock()
-    dispatcher._bot.send_message = AsyncMock()
-
-    await dispatcher._handle_late_checkin_decided(
-        {
-            "event_type": "late_checkin.decided",
-            "payload": {
-                "request_id": "req-1",
-                "user_id": 100,
-                "status": "cancelled",
-                "resolution_reason": "geo_confirmed",
-            },
-        }
-    )
-
-    task = dispatcher._send_queue._queue.get_nowait()[0]
-    assert (task.user_id, task.chat_id, task.category) == (101, 10, "tickets")
-    result = await task.coroutine_factory()
-    await task.on_sent(result)
-    dispatcher._send_queue._queue.task_done()
-
-    dispatcher._bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=10, message_id=20, reply_markup=None)
-    dispatcher._bot.send_message.assert_awaited_once()
-    assert "подтверждено по геолокации" in dispatcher._bot.send_message.await_args.kwargs["text"]
-    assert "Отклонено" not in dispatcher._bot.send_message.await_args.kwargs["text"]
-    tracker.delete_entry.assert_awaited_once_with(
-        "late_checkin", "req-1", {"chat_id": 10, "message_id": 20, "user_id": 101}
-    )
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_otp_verified():
-    mock_handler = AsyncMock()
-    dispatcher = _make_dispatcher(handlers_override={"otp.verified": mock_handler})
-    event = {"event_type": "otp.verified", "payload": {"telegram_id": 42}}
-    await dispatcher.dispatch(event)
-    mock_handler.assert_called_once_with(event)
+async def test_cancelled_late_checkin_closes_actions_without_false_rejection(fake_redis):
+    await assert_terminal_cards(fake_redis, cancelled=True)
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_group_renamed(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"group.renamed": mock_handler})
-    event = {"event_type": "group.renamed", "payload": {"group_id": 42}}
-    await dispatcher.dispatch(event)
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_otp_verified(fake_redis):
+    h = BusinessDelivery(fake_redis)
+    await h.otp.store(101, 101, 11, 12)
+    event = {"event_type": "otp.verified", "payload": {"telegram_id": 101}}
+    assert await h.dispatcher.prepare(event) is None
+    h.queue.start()
+    try:
+        batch = await h.dispatcher.dispatch(event)
+        await batch.wait()
+        assert set(h.deleted) == {(101, 11), (101, 12)}
+        assert await h.otp.pop(101) is None
+    finally:
+        await h.queue.shutdown()
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_group_archived(monkeypatch):
-    mock_handler = AsyncMock()
-    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
-    dispatcher = _make_dispatcher(handlers_override={"group.archived": mock_handler})
-    event = {"event_type": "group.archived", "payload": {"group_id": 77}}
-    await dispatcher.dispatch(event)
-    mock_handler.assert_awaited_once()
-    assert mock_handler.await_args.args == (event,)
+async def test_dispatch_routes_group_renamed(fake_redis):
+    await assert_business_delivery(fake_redis, "group.renamed", expected=("Название группы изменено",))
+
+
+@pytest.mark.asyncio
+async def test_dispatch_routes_group_archived(fake_redis):
+    await assert_business_delivery(fake_redis, "group.archived", expected=("Группа архивирована",))

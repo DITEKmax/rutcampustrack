@@ -1,0 +1,187 @@
+{
+  "at": "2026-10-13T22:35:11.400701+00:00",
+  "automatic_review_native": "ACCEPTED",
+  "cleanup": "ownership-checked docker stop only; no removal/prune/deletion; originalforeign11volumes preserved",
+  "command_argv": [
+    "python3",
+    "scripts/test-recovery.py",
+    "--work-dir",
+    "/workspace/scratch/rct-validation/q15-native-actual",
+    "--project-base",
+    "rct-recovery-q15-native",
+    "--pg-image",
+    "postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d",
+    "--mongo-image",
+    "mongo@sha256:1f995ad6fdb93244a1addab1b58f934a0bc2f5643c38e02f5e9d7f0c7d227a7b"
+  ],
+  "command_cwd": "/workspace/rutcampustrack",
+  "ended_at": "2026-10-13T22:39:22.129564+00:00",
+  "execution_count": 1,
+  "exit_code": 1,
+  "final_shared_memory_bytes": 7155924992,
+  "final_workspace_free_bytes": 2897055744,
+  "foreign_retention": {
+    "containers_unchanged": true,
+    "foreign_containers": 0,
+    "foreign_network_count": 3,
+    "network_ids_exact": true,
+    "safe_network_labels_inventory_sha256": "d6f5b900f579c9017ebe226601e00acebf08212241cf9ed3daf57f559e62946f",
+    "safe_volume_labels_inventory_sha256": "c8e72fb3eac080ab9d4cee57675e232a57392e1cde51be2ca16e92bc40df396a",
+    "volume_count": 11,
+    "volume_names_exact": true
+  },
+  "grant": "/workspace/scratch/rct-validation/root_clock_next5_grants/native-recovery.safe.json",
+  "images": {
+    "mongo": "mongo@sha256:1f995ad6fdb93244a1addab1b58f934a0bc2f5643c38e02f5e9d7f0c7d227a7b",
+    "postgres": "postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d"
+  },
+  "limits": {
+    "host_ports": 0,
+    "kill_after_seconds": 10,
+    "max_active_containers": 3,
+    "persistent_db_volumes": 0,
+    "source_stopped_before_target": true,
+    "timeout_seconds": 420,
+    "total_memory_limit_bytes": 1073741824
+  },
+  "log_closed_markers": [
+    "FAIL synthetic recovery: docker operation failed (exit 1); owned resources/artifacts retained"
+  ],
+  "log_contains_unprojected_lines": false,
+  "native_outcome": {
+    "all_owned_source_processes_stopped": true,
+    "backup": false,
+    "growth_cap_breach_observed": true,
+    "required_fresh_restore_criterion": "NOT_PROVED: failed before synthetic seeding/backup/target restore",
+    "restore_pass": false,
+    "startup_mongo_exit_cause": "UNKNOWN; no container raw log read",
+    "startup_mongo_observation": "Docker State.OOMKilled=true, exit_code1 under512MiB; exact inner init cause UNKNOWN; no raw container log read",
+    "target_created": false,
+    "workspace_floor_breach_observed": true,
+    "workspace_free_breach_bytes": 2896875520
+  },
+  "owned_resources": [
+    {
+      "exit_code": 0,
+      "id": "c0ff5f94e2f2cd9fad2e3330449472720ae99736cf8ca215ffbbbf4c2e80e932",
+      "memory_limit": 268435456,
+      "mount_count": 0,
+      "name": "/rct-recovery-q15-native-src-postgres-academic-1",
+      "oom_killed": false,
+      "port_bindings": {},
+      "project": "rct-recovery-q15-native-src",
+      "recovery": "disposable",
+      "state": "exited",
+      "tmpfs": {
+        "/var/lib/postgresql/data": ""
+      }
+    },
+    {
+      "exit_code": 0,
+      "id": "06ceb788ab56d0bae35b09163acb7d193b29c7bcfb5142a803a23b5edc0d1c42",
+      "memory_limit": 268435456,
+      "mount_count": 0,
+      "name": "/rct-recovery-q15-native-src-postgres-schedule-1",
+      "oom_killed": false,
+      "port_bindings": {},
+      "project": "rct-recovery-q15-native-src",
+      "recovery": "disposable",
+      "state": "exited",
+      "tmpfs": {
+        "/var/lib/postgresql/data": ""
+      }
+    },
+    {
+      "exit_code": 1,
+      "id": "8bb24ce9f9a7054fe9af02ee6bc54ffeef3012a5f5812604ad1d2168daeebf07",
+      "memory_limit": 536870912,
+      "mount_count": 0,
+      "name": "/rct-recovery-q15-native-src-mongo-attendance-1",
+      "oom_killed": true,
+      "port_bindings": {},
+      "project": "rct-recovery-q15-native-src",
+      "recovery": "disposable",
+      "state": "exited",
+      "tmpfs": {
+        "/data/configdb": "",
+        "/data/db": ""
+      }
+    }
+  ],
+  "phase_attempts": 1,
+  "phase_resource_status": "RELEASED; all own source DB processes exited; no retry",
+  "preflight": {
+    "active_runtime_writers": 0,
+    "arch": "x86_64; images linux/amd64",
+    "automatic_review_readonly": "ACCEPTED",
+    "available_ram_bytes": 15570137088,
+    "avx": true,
+    "avx2": true,
+    "docker_version": "28.4.0",
+    "foreign_counts": {
+      "containers": 0,
+      "networks": 3,
+      "volumes": 11
+    },
+    "free_disk_bytes": 6530875392,
+    "normal_sandbox_socket": "EPERM; same supported escalation accepted",
+    "old_java_zombies": 6,
+    "project_namespaces_absent": true,
+    "work_dir_absent": true
+  },
+  "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/native.private.log",
+  "projects": [
+    "rct-recovery-q15-native-src",
+    "rct-recovery-q15-native-dst"
+  ],
+  "retained_workdir_safe_inventory": [
+    {
+      "directory": false,
+      "mode": "0o600",
+      "path": "owned-projects.json",
+      "size": 69
+    },
+    {
+      "directory": false,
+      "mode": "0o600",
+      "path": "rct-recovery-q15-native-dst.env",
+      "size": 412
+    },
+    {
+      "directory": false,
+      "mode": "0o600",
+      "path": "rct-recovery-q15-native-src.env",
+      "size": 412
+    }
+  ],
+  "retention": "Three stopped owned source containers and own network; private synthetic env files/ownership marker; zero bundle/target/PASS; foreign resources preserved",
+  "revision": "82fce657471980b710d50b50a80187ac6c5215d3",
+  "revision_after": "82fce657471980b710d50b50a80187ac6c5215d3",
+  "scope": "P20 existing synthetic native recovery only; application/P19/full Q15 unproved",
+  "session_closed": true,
+  "session_id": 65900,
+  "source_pins_unchanged": true,
+  "source_sha256": {
+    "docker-compose.test-restore.yml": "be94ca9b2120e6bc6b084ea933a45d253d5da984037aed89a321c5e725ac5eec",
+    "scripts/recovery.py": "1d5dc8d93a8f2aaf4ecf1c65aaae94776e57c582986c2178786df417fb926296",
+    "scripts/test-recovery.py": "e8ce6ea778699354701a5786b6b619975719f4bcda6a23f63400caed86b54b23"
+  },
+  "source_sha256_final": {
+    "docker-compose.test-restore.yml": "be94ca9b2120e6bc6b084ea933a45d253d5da984037aed89a321c5e725ac5eec",
+    "scripts/recovery.py": "1d5dc8d93a8f2aaf4ecf1c65aaae94776e57c582986c2178786df417fb926296",
+    "scripts/test-recovery.py": "e8ce6ea778699354701a5786b6b619975719f4bcda6a23f63400caed86b54b23"
+  },
+  "started_at": "2026-10-13T22:37:19.654968+00:00",
+  "status": "FAIL_INFRA_STARTUP",
+  "work_dir": "/workspace/scratch/rct-validation/q15-native-actual",
+  "root_cleanup": {
+    "native_exit": 0,
+    "command": "Existing test-recovery.py --cleanup exactrct-recovery-q15-native projectmarker",
+    "reason": "All3ownedSOURCEcontainers stopped/tmpfs-only/mount_count0; script failedcomposeup beforeseed/backup/target; no testpayload orhistory/bundle existed",
+    "marker_and_disposable_label_check": "ENFORCED_BY_EXISTING_TOOL",
+    "artifacts_env_log_preserved": true,
+    "foreign_images_volumes_data_prune": "NONE",
+    "free_workspace_after": 6530764800,
+    "new_policy_or_approval_bypass": false
+  }
+}

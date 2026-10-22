@@ -15,6 +15,7 @@ const ADMIN_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', is_headman: false, group_
 const STUDENT_TOKEN = makeJwt({ sub: '3', role: 'STUDENT', is_headman: false, group_id: 5, exp: 9999999999 });
 const HEADMAN_TOKEN = makeJwt({ sub: '4', role: 'STUDENT', is_headman: true, group_id: 5, exp: 9999999999 });
 const REFRESH_TOKEN = 'refresh-token-abc';
+const REDIRECT = new UrlTree();
 
 describe('guestGuard', () => {
   let authService: AuthService;
@@ -27,7 +28,7 @@ describe('guestGuard', () => {
         {
           provide: Router,
           useValue: {
-            createUrlTree: vi.fn((commands: string[]) => ({ commands }) as unknown as UrlTree),
+            createUrlTree: vi.fn(() => REDIRECT),
             navigate: vi.fn(),
           },
         },
@@ -49,7 +50,7 @@ describe('guestGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       guestGuard({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/admin/dashboard']);
   });
 
@@ -58,7 +59,7 @@ describe('guestGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       guestGuard({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/teacher/dashboard']);
   });
 
@@ -67,7 +68,7 @@ describe('guestGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       guestGuard({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/student/dashboard']);
   });
 
@@ -76,7 +77,7 @@ describe('guestGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       guestGuard({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/headman/dashboard']);
   });
 });

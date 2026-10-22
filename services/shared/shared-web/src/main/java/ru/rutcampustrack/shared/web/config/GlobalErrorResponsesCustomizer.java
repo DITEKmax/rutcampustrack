@@ -7,6 +7,8 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
@@ -15,27 +17,22 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
- * M11 G1 (P2-2/1): единый OpenAPI customizer для всех сервисов —
- * добавляет 7 стандартных error responses (400/401/403/404/409/429/500)
- * ко всем operations с ссылкой на shared {@link ErrorResponse} schema
- * и media type {@code application/problem+json}.
+ * M11 G1 (P2-2/1): единый OpenAPI customizer для всех сервисов — добавляет 7 стандартных error
+ * responses (400/401/403/404/409/429/500) ко всем operations с ссылкой на shared {@link
+ * ErrorResponse} schema и media type {@code application/problem+json}.
  *
  * <p>Поведение:
+ *
  * <ul>
- *   <li>Операции без {@code @ApiResponses(...)} — получают все 7
- *       стандартных responses</li>
- *   <li>Операции с существующими @ApiResponse (например
- *       {@code 404 "Пользователь не найден"}) — сохраняют описание,
- *       но получают content schema + остальные стандартные responses</li>
- *   <li>Success responses (200/201/204) — не трогаются</li>
+ *   <li>Операции без {@code @ApiResponses(...)} — получают все 7 стандартных responses
+ *   <li>Операции с существующими @ApiResponse (например {@code 404 "Пользователь не найден"}) —
+ *       сохраняют описание, но получают content schema + остальные стандартные responses
+ *   <li>Success responses (200/201/204) — не трогаются
  * </ul>
  *
- * <p>Регистрируется автоматически через {@link SharedOpenApiCustomizer}
- * когда springdoc-openapi-starter-common на classpath.
+ * <p>Регистрируется автоматически через {@link SharedOpenApiCustomizer} когда
+ * springdoc-openapi-starter-common на classpath.
  *
  * @see SharedOpenApiCustomizer
  */
@@ -50,9 +47,8 @@ public class GlobalErrorResponsesCustomizer {
     public static final String ERROR_RESPONSE_SCHEMA = "ErrorResponse";
 
     /**
-     * Стандартные HTTP статусы ошибок + дефолтные descriptions (если
-     * operation не переопределила свой description).
-     * LinkedHashMap сохраняет порядок в generated OpenAPI spec.
+     * Стандартные HTTP статусы ошибок + дефолтные descriptions (если operation не переопределила
+     * свой description). LinkedHashMap сохраняет порядок в generated OpenAPI spec.
      */
     private static final Map<String, String> DEFAULT_ERROR_RESPONSES = new LinkedHashMap<>();
 
@@ -67,9 +63,8 @@ public class GlobalErrorResponsesCustomizer {
     }
 
     /**
-     * Customizer применяется ПОСЛЕ per-endpoint annotations (
-     * {@link Ordered#LOWEST_PRECEDENCE}), но ДО user-defined customizers
-     * с более высоким приоритетом. Существующие responses не
+     * Customizer применяется ПОСЛЕ per-endpoint annotations ( {@link Ordered#LOWEST_PRECEDENCE}),
+     * но ДО user-defined customizers с более высоким приоритетом. Существующие responses не
      * перезаписываются; добавляются только недостающие + content schema.
      */
     @Bean
@@ -81,10 +76,11 @@ public class GlobalErrorResponsesCustomizer {
         };
     }
 
-    /** Регистрирует shared {@link ErrorResponse} + referenced schemas
-     *  (включая {@link ru.rutcampustrack.shared.web.api.exception.FieldError})
-     *  в components.schemas. Без этого $ref в fieldErrors[].items указывает
-     *  на несуществующий component → openapi-typescript ломается. */
+    /**
+     * Регистрирует shared {@link ErrorResponse} + referenced schemas (включая {@link
+     * ru.rutcampustrack.shared.web.api.exception.FieldError}) в components.schemas. Без этого $ref
+     * в fieldErrors[].items указывает на несуществующий component → openapi-typescript ломается.
+     */
     private static void registerErrorResponseSchema(OpenAPI openApi) {
         if (openApi.getComponents() == null) {
             openApi.setComponents(new Components());
@@ -101,11 +97,12 @@ public class GlobalErrorResponsesCustomizer {
         // shared-web-api) — springdoc controller-scan не добирается до
         // модуля api, поэтому ручная регистрация обязательна.
         if (resolved.referencedSchemas != null) {
-            resolved.referencedSchemas.forEach((name, schema) -> {
-                if (!components.getSchemas().containsKey(name)) {
-                    components.addSchemas(name, schema);
-                }
-            });
+            resolved.referencedSchemas.forEach(
+                    (name, schema) -> {
+                        if (!components.getSchemas().containsKey(name)) {
+                            components.addSchemas(name, schema);
+                        }
+                    });
         }
     }
 
@@ -114,36 +111,44 @@ public class GlobalErrorResponsesCustomizer {
         if (openApi.getPaths() == null) {
             return;
         }
-        openApi.getPaths().values().forEach(pathItem ->
-                pathItem.readOperations().forEach(operation -> {
-                    ApiResponses responses = operation.getResponses();
-                    if (responses == null) {
-                        responses = new ApiResponses();
-                        operation.setResponses(responses);
-                    }
-                    for (Map.Entry<String, String> entry : DEFAULT_ERROR_RESPONSES.entrySet()) {
-                        mergeErrorResponse(responses, entry.getKey(), entry.getValue());
-                    }
-                })
-        );
+        openApi.getPaths()
+                .values()
+                .forEach(
+                        pathItem ->
+                                pathItem.readOperations()
+                                        .forEach(
+                                                operation -> {
+                                                    ApiResponses responses =
+                                                            operation.getResponses();
+                                                    if (responses == null) {
+                                                        responses = new ApiResponses();
+                                                        operation.setResponses(responses);
+                                                    }
+                                                    for (Map.Entry<String, String> entry :
+                                                            DEFAULT_ERROR_RESPONSES.entrySet()) {
+                                                        mergeErrorResponse(
+                                                                responses,
+                                                                entry.getKey(),
+                                                                entry.getValue());
+                                                    }
+                                                }));
     }
 
     /**
      * Merge правило:
+     *
      * <ul>
-     *   <li>Статус отсутствует → создать с default description + content</li>
-     *   <li>Статус существует, но без content → обогатить content (schema)</li>
-     *   <li>Статус существует с content → не трогать (per-endpoint override)</li>
+     *   <li>Статус отсутствует → создать с default description + content
+     *   <li>Статус существует, но без content → обогатить content (schema)
+     *   <li>Статус существует с content → не трогать (per-endpoint override)
      * </ul>
      */
-    private static void mergeErrorResponse(ApiResponses responses,
-                                           String status,
-                                           String defaultDescription) {
+    private static void mergeErrorResponse(
+            ApiResponses responses, String status, String defaultDescription) {
         ApiResponse existing = responses.get(status);
         if (existing == null) {
-            ApiResponse created = new ApiResponse()
-                    .description(defaultDescription)
-                    .content(problemJsonContent());
+            ApiResponse created =
+                    new ApiResponse().description(defaultDescription).content(problemJsonContent());
             responses.addApiResponse(status, created);
             return;
         }
@@ -152,11 +157,16 @@ public class GlobalErrorResponsesCustomizer {
         }
     }
 
-    /** Строит {@code Content} с media-type {@value #PROBLEM_JSON} +
-     *  {@code $ref: #/components/schemas/ErrorResponse}. */
+    /**
+     * Строит {@code Content} с media-type {@value #PROBLEM_JSON} + {@code $ref:
+     * #/components/schemas/ErrorResponse}.
+     */
     private static Content problemJsonContent() {
-        MediaType mediaType = new MediaType().schema(
-                new Schema<>().$ref("#/components/schemas/" + ERROR_RESPONSE_SCHEMA));
+        MediaType mediaType =
+                new MediaType()
+                        .schema(
+                                new Schema<>()
+                                        .$ref("#/components/schemas/" + ERROR_RESPONSE_SCHEMA));
         return new Content().addMediaType(PROBLEM_JSON, mediaType);
     }
 }

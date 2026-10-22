@@ -1,0 +1,16 @@
+{
+  "disposition": "APPROVE",
+  "scope": "ci-final",
+  "files": [
+    {
+      "path": "ci-review.safe.json",
+      "sha256": "afb8b4f25dfb596b70a4de7d00c6717ccfa591f311e137bab3d0456b797a15e3",
+      "bytes": 2647
+    },
+    {
+      "path": "ci-independent-check.safe.json",
+      "sha256": "ae909ada405e5d33be62b759fc0252cece1115e2872e4026cb9abc41f5f44c08",
+      "bytes": 1787
+    }
+  ]
+}

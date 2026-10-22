@@ -1,0 +1,26 @@
+{
+  "target_sha": "db9e1a1fcf9bd50db2e6f2e81286c08cc9ff1dfe",
+  "verdict": "APPROVE_SOURCE",
+  "source_directory": "/workspace/scratch/rct-validation/client_clock_typed_recheck",
+  "safe_for_root_transfer": true,
+  "scope": "Immutable CTR01 independent source recheck receipts only",
+  "no_secrets_runtime_bodies_or_product_files": true,
+  "files": [
+    {
+      "name": "review.json",
+      "bytes": 2711,
+      "sha256": "8e7106755889bcd3cbbc8d6f15f932988380bc4cb224824650b55e1f485143cc"
+    },
+    {
+      "name": "review.md",
+      "bytes": 3875,
+      "sha256": "19b866a14b87b1e951b7e3df03042d173b5672189641974849cb3c9baa6bd214"
+    },
+    {
+      "name": "source-verification.json",
+      "bytes": 11102,
+      "sha256": "7cb08f61d3a3e3e6ec44be1fadf215f70bd6cc714603d6d1dfebb69118792df1"
+    }
+  ],
+  "manifest_self_excluded": true
+}

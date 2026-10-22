@@ -1,0 +1,79 @@
+{
+  "revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "verdict": "CHANGES_REQUESTED",
+  "scope": "SOURCE_ONLY frozen22 plus config2; common3 consulted",
+  "runtime": "NOT_RUN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 491,
+      "sha256": "e199206159dce6e23a22ce31934dc3d5fa1fcc89fb23e4841804d79ec0da4319"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 17638,
+      "sha256": "7afe5d6898215b77b4e59cc5625f9ab7e50f8e14a1721d051e14ec46e3acf7a7"
+    },
+    {
+      "path": "config2-inputs.json",
+      "bytes": 485,
+      "sha256": "4c8ed1b44db5f9974b03ad6eabeb591945d7d9d16abbaa9416b472912f532f26"
+    },
+    {
+      "path": "consulted-common-inputs.json",
+      "bytes": 1068,
+      "sha256": "34c5ec966a7577c1c215f540c0a81a64ed97cf072341359287e407d7b1f1d267"
+    },
+    {
+      "path": "dependency-inputs.json",
+      "bytes": 2592,
+      "sha256": "9cdd98f12f4f6f17310b885b1329f21424e511915618f04770c64b38507d3d5e"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 1028,
+      "sha256": "760912f5cf4a58c4d1203f2cfce6e04417873f2dc8f3ddcda4747824dd4971d5"
+    },
+    {
+      "path": "frozen22-inventory.json",
+      "bytes": 5756,
+      "sha256": "e20e917eb142ca6615298ff2e6a8b67db31dfe79dc4a8b0ca259e5206cf22068"
+    },
+    {
+      "path": "generic-profile-byte-proof.json",
+      "bytes": 452,
+      "sha256": "364e34d4bd543869af877899ef3d3081f7f5cc47c2a9976c33ef484fff3d42bd"
+    },
+    {
+      "path": "governing-acceptance-inputs.json",
+      "bytes": 3083,
+      "sha256": "e1e24029f8ab03eb641b42c3be7ab4dfc928b9392e07842a7eac0e04069d5caa"
+    },
+    {
+      "path": "previous-seals-unchanged.json",
+      "bytes": 353,
+      "sha256": "4c2d0b2807c80a19df8e8254f55a2fe11b788c0303c9c19255c91b82c858304e"
+    },
+    {
+      "path": "python-static-syntax.json",
+      "bytes": 1631,
+      "sha256": "672b81ce7c0d20c8640e103d8a4dd892d0b9460cf22e7c9a1b6b5aba02758192"
+    },
+    {
+      "path": "source-proof.py",
+      "bytes": 6998,
+      "sha256": "34dd422d6c7e99c3455c79b2ff494fff595b79cc00d4491fa54ae6ffefd0131e"
+    },
+    {
+      "path": "source-review-summary.json",
+      "bytes": 615,
+      "sha256": "7188e841cc0b0e1c9bfd6176428bdfab19fc10c34d1b7a118200776a91f9e093"
+    },
+    {
+      "path": "verification-dependencies.json",
+      "bytes": 1736,
+      "sha256": "b82675957a74cdc0ae8a056c9276cba0900e28845474fa161d84fde946c96471"
+    }
+  ],
+  "excluded": "private-frozen-source; no raw source or runtime logs bundled"
+}

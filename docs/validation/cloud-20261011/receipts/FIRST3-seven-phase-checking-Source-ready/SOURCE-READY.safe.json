@@ -1,0 +1,104 @@
+{
+  "schema": "RCT_FIRST3_DATASET_CHECKING_SOURCE_READY_V1",
+  "utc": "2026-10-13 09:35:32 UTC",
+  "state": "SOURCE_READY_ROOT_EFFECTS_REVIEW_AND_FRESH_GRANT_PENDING_NATIVE_NOT_RUN",
+  "producer_head": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "producer_source_unchanged": true,
+  "independent_producer_consumer_review": "APPROVE_f52c2eec51fb48e009058e8e8b1b1091c9fbd7f1df8c27c7516cf02df63b29f3",
+  "consumer_scope": "Root517b/111e UNBOUND future/author read only",
+  "plan": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/native-plan/PLAN.safe.json",
+    "sha256": "3f8a6867fd7ae61980e819e535331e009c3b9f588fad7db757db1a56734c2f9f"
+  },
+  "caller": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/native-plan/run-approved-node.py",
+    "sha256": "d2f628e4613df94ebb3f4c803d4de73fae8aaee100c7f74dd5039862cdde65aa",
+    "derived_from": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/native-plan/run-approved-node.module-binding-r2.py",
+    "unchanged_boundaries": {
+      "statusCallbackByteExact": true,
+      "resourceObserverByteExact": true,
+      "sourcePinValidationByteExact": true,
+      "freshInitialFloorsMemoryUtcLastByteExact": true,
+      "typecheckSafeCheckerByteExact": true,
+      "guardB78Unchanged": true
+    }
+  },
+  "false_grant": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/native-plan/grant.template.safe.json",
+    "sha256": "69676cc63dbc15829bce874aa883f787b67b2a293cdb7073303264b19e3937ea",
+    "authorized_by_root": false,
+    "allow_format_write": false,
+    "live_utc_parameters": "UNBOUND_FRESH_ROOT_UTC",
+    "interpretation": "Caller rejects false authorization before effects; template is no execution grant."
+  },
+  "exact_launch_schema": {
+    "argv": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/native-plan/run-approved-node.py",
+      "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/private/root-node-grant01.json"
+    ],
+    "cwd": "/workspace/rct-worktrees/first3-dataset-correction-20261013",
+    "scope_new_own_run": "/tmp/rct-first3-dataset-check-20261013-attempt01",
+    "network": false,
+    "dispatch": "NOT_RUN_REQUIRE_NORMAL_APPROVAL_FRESH_ROOT_GRANT"
+  },
+  "targeted_phases": [
+    "dataset-red",
+    "dataset-green",
+    "worker",
+    "privacy",
+    "format-write",
+    "format-check",
+    "types"
+  ],
+  "oracles": {
+    "red": "Only old0/100/200 actualgenerator code invalid and oldactualActor400 lacksclosedtuple fail; failure retention/private wipe pass; native1 mustjoin exact4 false controls/6rows/parser0, not mereexit1.",
+    "green": "40 fixed controls; actualinitialize firstgroup intercepted/all256 valid/exact90oldacceptedcodevalues; actualActor.stub11×13 status tuples; no errorbody reads; wrong/private/accessor/prototype/core8/first32/statusasserts intact.",
+    "worker": "One actual Playwright worker expectedFAIL beforebody, same producer helper400 marker; synthetic private stackcanary notexported; actualActor400 SourceVM stub separately. No real HTTP/auth/cause proof.",
+    "privacy": "Unchanged source59fff/e018/5e7c3 producer/interruption/missingguard tests; browserNOT_STARTED.",
+    "format_type": "Canonical only2TS apply/check + unchanged safe1125checker strictTS5.9.3; same compiler policy, original4FIRST3entrypoints/currentimports."
+  },
+  "changed_effects": {
+    "dependency_link": {
+      "path": "/workspace/rct-worktrees/first3-dataset-correction-20261013/tests/e2e/node_modules",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules"
+    },
+    "creation": "Known absent link only; explicitRootgrantmatchesplan; canonicalnofollowparent/target/UID; cheapfreshresourceobserver plus UTC-last before creation. No install/targetwrites/foreignreplacement.",
+    "cleanup": "Only after all ownedchildren settled/reaped; parentcanonical+parentinode/linkinode/UID/type/exacttarget match before exactunlink. Unknown/foreign replacement failsclosed; no wholesale node_modules removal.",
+    "namespace": "Run exactly plan fixed NEW /tmp namespace; existing directory refused.",
+    "numeric": "Same existing180phase/900active+60cleanup/512heap/1GiBRSS/32MiBTMP/floors4GiB/sharedstop15GiB/reserve1GiB. Added equality assertions bind granted numericcaps to unchanged plan intent; fresh active UTC span bounded<=900. No capraise."
+  },
+  "static_checks": {
+    "immutable_pins": {
+      "expected": 26,
+      "observed": 26,
+      "pass": true,
+      "badPaths": []
+    },
+    "whole_two_CJS_grammar_parse_V8": "PASS_NO_BODIES_EXECUTED",
+    "caller_syntax": "SOURCE_READ_ONLY_NO_PYTHON_OR_NATIVE_CHECKING_EXECUTED",
+    "old_status_observer_pin_validation_UTC_first_effect_bytes": "EXACT",
+    "producer_worktree_clean_at8ca6": true,
+    "source_payload_bytes": 71988
+  },
+  "dependencies": {
+    "existing_cached_directory": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules",
+    "own_link_currently": "ABSENT_NOT_CREATED",
+    "canonical_TSVM_loader": "Existing pattern/canonical__dirname binding; TEST_USERS dependency stub empty inVM. Worker imports producer helper only; no credential fixture values import.",
+    "typecheck": "Static current publicTypeScript program imports originalusers source for types as before; no private runtime credentials/body/stand input read/output."
+  },
+  "resource_estimate": {
+    "active_seconds": "60-180 ESTIMATE_ACTUAL_UNKNOWN",
+    "source_bytes": 71988,
+    "tmp_increment": "EXPECTED_SMALL_UNCHANGED32MiB_SAMPLED_STOP_ACTUAL_UNKNOWN",
+    "peak_RSS": "ACTUAL_UNKNOWN_UNCHANGED1GiB_SAMPLED_STOP",
+    "isolated_runtime": "No server/browser/DB/Docker/API/network; one cacheddep symlink metadata; all new TMP/cache/output scoped own namespace"
+  },
+  "residual": [
+    "Actual checking NOT_RUN, no current CI/threecase cause promotion.",
+    "Root reviews only new link/use-time/numeric binding/targeted oracle risk; unchanged infrastructure not re-researched.",
+    "Any canonical formatter delta is mechanical-only owncommit; originalsemantic2ffd stays separate.",
+    "No B013 action/rephrase/othermodel/nativeRoot changes.",
+    "All raw marker/error/source/body texts stay RAM/private; only closed booleans/counts/codes leave checking children."
+  ]
+}

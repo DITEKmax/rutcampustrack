@@ -1,0 +1,107 @@
+{
+  "state": "MECHANICAL_NEW7_FROZEN_SOURCE_ONLY",
+  "authorRevision": "57e31683c9e8f5bd7cc9a2e485c8da09a4a1067c",
+  "parentAuthorRevision": "cf067a008d732ca77f385a3eb1f53e0a79234687",
+  "RootConfigRevision": "f99fde0bf19b65cefb816ff2f140acd218e8b474",
+  "RootConfigSha256": "a669c7ed8678df8c09a2c3818eecca73d149dc4ddb8598cc38daf77b8dc457cd",
+  "paths": [
+    {
+      "file": "tests/e2e/fixtures/cloud-accepted-playwright.ts",
+      "sha256": "32fba7245c7f097ed726063980756e37c06b72c54975e1d5cc03af5005c82b04",
+      "bytes": 842,
+      "gitMode": "100644",
+      "beforeSha256": "a59c5fee38e468268fea21f23a47c8f2c3220a4dfa3cc6919bb04fdb02e83b05",
+      "canonicalAstSha256": "d7561975145a5ce618174a91a8b9e7a07545583f44848c239a3c04f0d6fddf12",
+      "emittedJsSha256": "3ecf87f1d9510e3c957fafe1f169a5a295880d1698d0c97b8b15b703e84b0a5c"
+    },
+    {
+      "file": "tests/e2e/fixtures/cloud-accepted-support.ts",
+      "sha256": "e149a131837211c8addd48187a0b7bc4834f32319d7efed82101c441d1aa170c",
+      "bytes": 7988,
+      "gitMode": "100644",
+      "beforeSha256": "737c8b7cbed5c74adbdaf5fc806b6766c20a5620bc9e7ce380cb774730b785f6",
+      "canonicalAstSha256": "7efae314e10bcf05ae7bad734eb81cbc88547f14e00ab63c6c72015a3537c973",
+      "emittedJsSha256": "9dc203a3ef5c2275ba450415401a2f46dc7180e84dcc77ac0fd2c789d49510bf"
+    },
+    {
+      "file": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+      "sha256": "10149b671cde2972711723fbee197a4a4c015ec5fe1ebe1cc13d942280dd1801",
+      "bytes": 4400,
+      "gitMode": "100644",
+      "beforeSha256": "9afb5c7809b21c5d7af895261c20aca5c6aca16160603dac6fc69161f0d15d6d",
+      "canonicalAstSha256": "f7ca519f3be6d8adbb041593ffeab1245d68eb770021566eb46fedb960b4ecee",
+      "emittedJsSha256": "d2807a8916f192e0e1963870d8e9e74532d323c4f7982afe4a4eefa6ab4e6db1"
+    },
+    {
+      "file": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "d949111c6b4c13ae246d72281b4a815406bc053b1beed6a05bde7fd78045cf6f",
+      "bytes": 11991,
+      "gitMode": "100644",
+      "beforeSha256": "e26258c392df42754e9f39e4b2f283a5a3603309351a41f9abf900870c29000e",
+      "canonicalAstSha256": "8f0870a482e6b78a298243c3378dbb06cc3019a647949cfc0936d170975e008d",
+      "emittedJsSha256": "4c16ef3717f284ac6910731d2b98fff9203df18411bc9f8e8d3ab718595b039c"
+    },
+    {
+      "file": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "1234259498aaf21712891d4a542c7beebf92ea3f6d447194013b96f1beb88ce4",
+      "bytes": 6794,
+      "gitMode": "100644",
+      "beforeSha256": "dc6bdea1febd81de6ce9e20177929ee6ce5ad3c464412e6a035a64182acad0c2",
+      "canonicalAstSha256": "a5d480757f0b21240a796ffc969531d7bb2d57a6b2c1e9ed948a8e3be272b57f",
+      "emittedJsSha256": "4c9fd9e645e0c2d00d29cf3531b1a872ebac24c06ab5b71481688717f3c52969"
+    },
+    {
+      "file": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+      "sha256": "73f7689baa70bcddd717d453bbca6db7960c1be82fdb742b8f8bc80f6a4de753",
+      "bytes": 3442,
+      "gitMode": "100644",
+      "beforeSha256": "b24d93b05de11ae6c6f41e2da5be0e5f3fd58c45a66ff16d0717aacd1f34e3e2",
+      "canonicalAstSha256": "d7e6ce81a9e89e4bbfc73f49a5747255c18075834fdb5360c9eef95fd9193a06",
+      "emittedJsSha256": "976ea101be95932b8fea0adce9ae146896596474641d77e9cd3fc86231583088"
+    },
+    {
+      "file": "tests/e2e/specs/cloud-accepted-tma-proof.spec.ts",
+      "sha256": "16e0cb7e2c242a8761ee79c4dbb17c049f85f0e2cbb5d9047f52082c61388c76",
+      "bytes": 3970,
+      "gitMode": "100644",
+      "beforeSha256": "c38ce6dc83d6bd155ca7acb01b52eb59becc97e5aad497f682f0546a50eb7b17",
+      "canonicalAstSha256": "38b4fd2fb6c993379e6054c92557fc0c643d6f43b3ff483f937d3effda6e31e3",
+      "emittedJsSha256": "cf1c61c718514a72b53031c36c48027bd8c6f73d08b168b5d61b6c8e94c54fb9"
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --max-old-space-size=512 /workspace/scratch/rct-validation/client_real_acceptance/mechanical-new7/format-and-prove.mjs",
+      "nativeExit": 0,
+      "log": "native-format-proof.log",
+      "result": "pinnedPrettier3.6.2/root logical options;7beforefail\u21927afterPASS;7AST/comment/JS equality/parser0"
+    },
+    {
+      "command": "node --max-old-space-size=512 /workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc --noEmit --project /workspace/scratch/rct-validation/client_real_acceptance/tsconfig.current.json",
+      "nativeExit": 0,
+      "log": "native-typecheck.log",
+      "result": "TypeScript5.9.3/currentown7/strictinheritedNodeNext diagnostics0"
+    },
+    {
+      "command": "git diff --cached --check",
+      "nativeExit": 0,
+      "result": "OWN7 only staged, foreign default context retained unstaged"
+    }
+  ],
+  "preservation": {
+    "all7CanonicalASTEqual": true,
+    "all7CommentsByteEqual": true,
+    "all7EmittedES2022CommonJSRemoveCommentsEqual": true,
+    "privateHooksAnd14OraclesAnd390x844TwoProjects": "FULLAST_AND_EMITTEDJS_EQUAL",
+    "20export5TMAControls": "Priorcf067 source-qualified control receipts reused by exactfullAST/oracle/callsite/JS semantic equivalence; no controlsrerun",
+    "literalQuoteSourcePositionIgnoredOnlyForAST": true,
+    "actualOldNewLocationBridge": "semantic-location-bridge.safe.json"
+  },
+  "RootOldConfigIgnoreFixturesProductAPILocksAngularMutations": 0,
+  "commonForeignDefaultContext": "onlyunstaged tests/e2e/playwright.config.ts exact1b4/a4625; NOTauthored/committed",
+  "newUIProductTests": 0,
+  "browserAPIAppNetworkJVMDocker": "NOT_RUN",
+  "all11CLIENTGroups": "UNKNOWN",
+  "repeatReason": "CurrentRootf99 merged formatter NativeFAIL7NEW only after accepted E2Esemi:true rule; assignedauthor mechanical alignment. No broad retry or product-rule change.",
+  "sourceReviewQualification": "Priorcf067 APPROVE_SOURCE semantics preserved; separate mechanical proof, Rootimport and mergedformatcheck/push next"
+}

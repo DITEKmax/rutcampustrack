@@ -4,11 +4,7 @@ import { environmentManager } from '@tanstack/query-core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { StudentApi } from '../../api/student-client'
 import type { StudentCheckinCommand, StudentToday } from '../../api/types'
-import {
-  TodayReadOnlyError,
-  useToday,
-  type StudentTodayQueryScope,
-} from './use-today'
+import { TodayReadOnlyError, useToday, type StudentTodayQueryScope } from './use-today'
 
 const renderer = createRenderer({
   patchProp: () => undefined,
@@ -67,7 +63,9 @@ function mountToday(
     },
   })
   app.use(VueQueryPlugin, {
-    queryClient: new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }),
+    queryClient: new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    }),
   })
   app.mount({})
   mountedApps.push(app)
@@ -81,12 +79,14 @@ describe('useToday mutation boundaries', () => {
     const api = { checkin } as unknown as StudentApi
     const state = mountToday(api, ref(readOnlyScope))
 
-    await expect(state.mutation.mutateAsync({
-      lessonId: 'lesson-1',
-      command,
-      key: 'command-key',
-      scope: readOnlyScope,
-    })).rejects.toBeInstanceOf(TodayReadOnlyError)
+    await expect(
+      state.mutation.mutateAsync({
+        lessonId: 'lesson-1',
+        command,
+        key: 'command-key',
+        scope: readOnlyScope,
+      }),
+    ).rejects.toBeInstanceOf(TodayReadOnlyError)
     expect(checkin).not.toHaveBeenCalled()
   })
 
@@ -98,19 +98,24 @@ describe('useToday mutation boundaries', () => {
       serverNow: '2026-09-30T08:30:00Z',
       timeZone: 'Europe/Moscow',
       _links: {},
-      lessons: [{
-        request: { status: 'PENDING' },
-        checkinEligibility: { allowed: false, reason: 'PENDING_CONFIRMATION', retryAt: null },
-      }],
+      lessons: [
+        {
+          request: { status: 'PENDING' },
+          checkinEligibility: { allowed: false, reason: 'PENDING_CONFIRMATION', retryAt: null },
+        },
+      ],
     } as unknown as StudentToday
     const eligibleToday = {
       ...pendingToday,
-      lessons: [{
-        request: null,
-        checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
-      }],
+      lessons: [
+        {
+          request: null,
+          checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
+        },
+      ],
     } as unknown as StudentToday
-    const getToday = vi.fn()
+    const getToday = vi
+      .fn()
       .mockResolvedValueOnce(pendingToday)
       .mockResolvedValueOnce(pendingToday)
       .mockResolvedValue(eligibleToday)

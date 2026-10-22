@@ -1,0 +1,282 @@
+[
+  {
+    "path": "proto/academic.proto",
+    "recorded_sha256": "33d15cb27f4812b16ff1bca9a1dd73acf1d18af4c595c5507f5989c766abcc49",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+    "recorded_sha256": "fea33cfe019f9cedc2e89715ce57a1648ef64954df167761ae2fd45970301f7f",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+    "recorded_sha256": "6cf3dec75b798ec2c6bdfd9985f7fbac87e76ecf54d5888be2d181fda0ecfa7b",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java",
+    "recorded_sha256": "440053c8767b61ef20fefe5108c40fef71967def0a7f24f87d067339b3dae9f8",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadBackendProperties.java",
+    "recorded_sha256": "b63e54d169f72877d84845782b3b211a57a374783067696d8d53e0825f0f6684",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+    "recorded_sha256": "34c9a1926dda55dcf8d68bec2585902f74365640b2b44bf10528d4db27beb2aa",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/ReportApi.java",
+    "recorded_sha256": "583028f3ad89780110c625388478de4f3fadce5fa39bf1825003ae6197b043fb",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+    "recorded_sha256": "50b58f7423aa1e4996b89555a1c637369dd45c5a125c24a300351e0fa4d5d995",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+    "recorded_sha256": "c27551f1380e6ae801ed205c8f88b03d5eef6767e36f29bbb2fbd89cf0b30e71",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTabularRenderer.java",
+    "recorded_sha256": "c8ae0c8d6362347b499cbe88df5647cac59d8f47ad6dde2b5e8450599086ceac",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+    "recorded_sha256": "46ebffcd5756fd91eef23ab5b78f361bdd3d995cf1f92c2e25450dd763c9b28f",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRenderer.java",
+    "recorded_sha256": "1aa3567499e5378775b24a3e0c99cc1848a0d3a33879256de9c908abb6491d9f",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportModel.java",
+    "recorded_sha256": "64db3464613992815ac434a400e23224ab9a82cbd960967bb51acb6117985964",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+    "recorded_sha256": "8c4eef5cc79ca0b7e94be2a6c8335bdce8ab9b87a73a599845c75071c95a6832",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+    "recorded_sha256": "b1c94cc315352dd80a80d512fd8ab253bc6f526ae69d1bfb67a8396e71582066",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketRedemptionResponse.java",
+    "recorded_sha256": "aa6964059d43a68d34ca0eee88ee5344d03d91a4221ad8e102436513733813cc",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+    "recorded_sha256": "ab1a99daec0207c50f8cd9ccb7b2a7d428c86194dee96121e91b530393257062",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+    "recorded_sha256": "ecda9eae2f9f0f619f7cf63ef412332767b408a13f29855b33e0166b02e64b6d",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+    "recorded_sha256": "d163fed7f2c018466027dbe6c5fd091677b74e86a0288e7940f4e864e773ac96",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsTicketClient.java",
+    "recorded_sha256": "e745c7de279d71836733100abc5e4c0aad57ec1f22d57ecc52493e3925bf12a5",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/RegistryExportApi.java",
+    "recorded_sha256": "5bd173ad0e7ac3677a50be89d90ebe5135bef4aac874ff00e35de90eb96ec0d6",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/RegistryExportModels.java",
+    "recorded_sha256": "0aac62de2080479a0f8682b3801a558267704c5349f4ec199a4a77fa521fed42",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/AdminRegistryExportService.java",
+    "recorded_sha256": "7acb713e9ff19ed2307add574289f9527f1ea34e0cd3b7e0b0b00cf8b69dcb2c",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryDocumentClient.java",
+    "recorded_sha256": "a61d4bab9c4938ba03360362c37c085ee53b4fc49873d4295a6f6f583587141f",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportController.java",
+    "recorded_sha256": "76e287f74df6d5c73072320015d38a06ec2ba7bf535cf8cfccc81be8f65b2789",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportFormat.java",
+    "recorded_sha256": "d7cecdaae9488678a42eba08fe3e9b9cc8066f289b96fb61014b43f4abb39810",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryTableRenderer.java",
+    "recorded_sha256": "327fa2ea938eaed9cb7fdc39de0b73a4fa0565e2a14ef152f3f9f106bb98c3f9",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/resources/db/migration/V56__durable_export_jobs.sql",
+    "recorded_sha256": "7122e81ef30143e1b98749817d10251ab019289d87743852c980b83693575d3b",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
+    "recorded_sha256": "878b6b6115dadfd3c48f9ec9c0510604d6f54a62a18aea0e41278ef6771afca7",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanSubjectJournalExportRequest.java",
+    "recorded_sha256": "8f4b14620eba9820cf09bdee39fa8840c32b4f9845c0651034dcad9f34c93b1f",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanSubjectJournalServiceTest.java",
+    "recorded_sha256": "fe3b5a818c8c802e075a95b602ee8eb956ffd6ae52febc49db38c3b129e06eb2",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/ExportJobApi.java",
+    "recorded_sha256": "59dca00e57c0944d110807ae8378edb36dcc113525494e0868033d08a742abb1",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalExportJobApi.java",
+    "recorded_sha256": "cc5351d1366675ef75ed78998c332da8aaa5f3e3e892b8af2e84f89dfd9c09e8",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+    "recorded_sha256": "879568631e02b924818ff4b8f1dafb6230316840af7bc7920976333e0f8053c2",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobController.java",
+    "recorded_sha256": "1534c6cb51816ba1301b9e0a1700ec4e0fe00ddac2c5b4366e4325485f3dc354",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+    "recorded_sha256": "9288d5dfb3b8e6a2adb3f210bf796f523369d263260a5f4d7d2abb9379cabb3c",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+    "recorded_sha256": "912be81b9e1e9dfbe3764f81d95f7f85534b6df2c8af6a85af8612ea1a9e268d",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": false
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportStateEvent.java",
+    "recorded_sha256": "64ccc230bf508b159cab13311b5123170f5b79b305fdcc2faca509ffba5274f4",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/InternalExportJobController.java",
+    "recorded_sha256": "f43b6feafd9acf47920ea6478257415dc73cd91d37bae5d975a8a28d9b38c651",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumer.java",
+    "recorded_sha256": "f7aef1ad5022c224c21619c135e02870ac8294b7b4d00c65227af2d28ff343df",
+    "original_exists": true,
+    "original_manifest_match": true,
+    "frozen_final_matches_early_record": true
+  }
+]

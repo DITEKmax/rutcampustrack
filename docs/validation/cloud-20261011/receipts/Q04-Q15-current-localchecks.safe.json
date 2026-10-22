@@ -1,0 +1,1142 @@
+{
+  "state": "SOURCE_LOCAL_APPROVED_ACTUAL_NEW_CASES_NOT_RUN",
+  "Q04_author_outcome": {
+    "goal": "One real Vue ADMIN create STUDENT/add TEACHER/replacement+helper revoke/protected archive/restore without old authority, preserved prior-date attendance mark.",
+    "context": {
+      "base": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+      "branch": "codex/q04-vue-admin-lifecycle-20261014",
+      "contract_sha256": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+      "input": "docs/validation/cloud-20261011/receipts/Q04-existing-finite-proof-reuse.safe.json",
+      "reused": "Eight-row finite PG race/CAS/rollback/ordering mapping, current897 named Academic PASS qualifications; no whole-family promotion.",
+      "commit": "1fdf956f2bbdc09c33dca61cea4862bbb144fb88",
+      "final_commit": "3eaf4c1f1f49d9a8199f12299a9f1931cc2fea29"
+    },
+    "scope": {
+      "files": [
+        "tests/e2e/specs/mobile-real-server.spec.ts",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts"
+      ],
+      "source_pins_before_format": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "48cd04cf95efc4ec7307e3ac24e8167808ba6ada475b12964c645ce5ef2b885f",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "3a2bdf38f11afbfeb240cdcccc19a68d0c636bf5b3b6004fd4f7143bec2b7000"
+      },
+      "old_cases_unchanged_lines": [
+        14,
+        61,
+        160,
+        230,
+        257,
+        298,
+        316,
+        405
+      ],
+      "new_case_line": 451,
+      "production_effective_linecount": 822,
+      "privacy_negative_bound": 823,
+      "source_pins_final": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "67444c7dec0464e38ddf6cccc2b1e61aaeabf824e99aa27096788c5d4c202c0b",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "1919febde7299ac2da8c947a947ed600983b0025fe7f07c057bbb6d064897755"
+      },
+      "appended_lines": 346,
+      "old_eight_cases_byte_equal": true
+    },
+    "required_behavior": "Actual UI create and role add preserve account ID/login/name/group/Telegram; past covered one-off mark succeeds through live helper; actual UI replacement preview count1/reload, helper403 and old-headman denial no mark effect; protected archive with actual admin password/impact counts, old bearer denied; UI restore no selectable ACTIVE grants/group/headman, old bearer still denied, historical teacher row studentID/status/source/revision unchanged; real draft registry/UI reason/count and zero helpers.",
+    "constraints": "Only existing spec append and one existing public-frame fixture literal. No product/UI/shared config/workflow/API/guards/reporter/schema/lock changes, no standalone headman-removal Q012 assertion, B013/B014 frozen. Credentials RAM only, existing private artifact guard and safe reporter.",
+    "existing_patterns": "MobileDataset/Actor/admit/PWA helpers and accepted current Vue controls. New case establishes one real current MARK-capable helper by list/reuse-or-assign/re-read before admission; handles retained fresh grant and prior worker revocation. No duplicate assign, no extra-capability prohibition. Prior covered lesson date and observed mark CAS tuple preserve honest historical readback.",
+    "acceptance": {
+      "state": "Q04_R1_COMMITTED_FINAL_LOCAL_CHECKS_PASS_ADDRESSED_REVIEW_AND_GENUINE_CI_PENDING",
+      "user_result": "NOT_RUN",
+      "limits": [
+        "Attachment bytes/history beyond one real attendance row",
+        "Login collision and invalid role-specific inputs",
+        "Explicit role reassignment after restore",
+        "Dated transfer/late-member backfill/Notification audience",
+        "Promotion concurrency/whole registry filter-export family",
+        "Standalone headman removal Q012"
+      ],
+      "independent_review": "Q04-R1 fixed; SAME_REVIEWER_ADDRESSSED_RECHECK_PENDING"
+    },
+    "verification": {
+      "native_runs": 5,
+      "git_diff_check": 0,
+      "planned": "Fresh bounded cached Prettier apply/exact idempotency/check for two files, existing real-mobile TSC, existing browser-free privacy controls; after formatter source effective+1 fixture only. Independent meaningful review then Root existing CI one-case selection, serial1worker/retries0/fresh dataset/backend. No local browser/backend/native heavy.",
+      "grant": {
+        "issued": "2026-10-14T02:29:25.697823+00:00",
+        "stop": "2026-10-14T02:31:25.697830+00:00",
+        "seconds_per_phase": 120,
+        "cleanup_seconds": 30,
+        "own_RSS_sampled_max": 2147483648,
+        "workspace_floor": 4294967296,
+        "growth_max": 268435456,
+        "shared_stop": 16106127360,
+        "reserve": 1073741824,
+        "authorization": "Root direct same cached5phase caller fresh120s at actualclockstart"
+      },
+      "source_pins_final": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "43f20c82e771ad6c431d8e708f3b40ea696ee7940d87285884b3ca798c462986",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "49c864bc2c9272ae1c83bd82b700f7157f2bd6ca9978f64102dfb27b4fdae121"
+      },
+      "checks": [
+        {
+          "phase": "format_apply",
+          "command": [
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            "--single-quote",
+            "specs/mobile-real-server.spec.ts",
+            "artifact-controls/privacy.control.spec.ts"
+          ],
+          "terminal": {
+            "direct_pid": 618959,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 618959,
+                "start_ticks": 19875863
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "format_exact_idempotency",
+          "command": [
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            "--single-quote",
+            "specs/mobile-real-server.spec.ts",
+            "artifact-controls/privacy.control.spec.ts"
+          ],
+          "terminal": {
+            "direct_pid": 618970,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 618970,
+                "start_ticks": 19875957
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "format_check",
+          "command": [
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--check",
+            "--single-quote",
+            "specs/mobile-real-server.spec.ts",
+            "artifact-controls/privacy.control.spec.ts"
+          ],
+          "terminal": {
+            "direct_pid": 618981,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 618981,
+                "start_ticks": 19876020
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "types",
+          "command": [
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+            "--noEmit",
+            "--project",
+            "tsconfig.real-mobile.json"
+          ],
+          "terminal": {
+            "direct_pid": 618992,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 618992,
+                "start_ticks": 19876082
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "privacy_controls",
+          "command": [
+            "check-artifact-privacy.mjs"
+          ],
+          "terminal": {
+            "direct_pid": 619000,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 619000,
+                "start_ticks": 19876335
+              },
+              {
+                "pid": 619007,
+                "start_ticks": 19876344
+              },
+              {
+                "pid": 619044,
+                "start_ticks": 19876526
+              },
+              {
+                "pid": 619057,
+                "start_ticks": 19876659
+              },
+              {
+                "pid": 619070,
+                "start_ticks": 19876755
+              },
+              {
+                "pid": 619170,
+                "start_ticks": 19879833
+              },
+              {
+                "pid": 619183,
+                "start_ticks": 19879912
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        }
+      ],
+      "native_seconds": 41.34,
+      "formatter_exact_idempotency": true,
+      "old_eight_case_prefix_byte_equal": true,
+      "privacy_control": {
+        "state": "PRIVACY_BOUNDARIES_PASSED",
+        "normalChildStatus": 0,
+        "markerAbsent": true,
+        "producerBoundary": {
+          "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+          "markerAbsent": true,
+          "failureRetained": true,
+          "attachmentNotYetCreated": true,
+          "interrupted": false
+        },
+        "originalMetadataLeakReproduced": true,
+        "expectedFailureRetained": true,
+        "successRetained": true,
+        "guardControl": {
+          "canonicalReporterAccepted": true,
+          "sameBasenameAlternateRejected": true,
+          "extraReporterRejected": true,
+          "traceRejected": true,
+          "videoRejected": true,
+          "screenshotRejected": true,
+          "missingSnapshotGuardRejected": true,
+          "wrongSnapshotGuardRejected": true
+        },
+        "interruptedChildStatus": 0,
+        "interruptedChildSignal": null,
+        "interruptionBoundary": {
+          "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+          "markerAbsent": true,
+          "failureRetained": true,
+          "attachmentNotYetCreated": true,
+          "interrupted": true
+        },
+        "interruptionPassed": true,
+        "missingGuardRejectedBeforeOperation": true,
+        "browser": "NOT_STARTED"
+      },
+      "production_effective_linecount": 792,
+      "privacy_negative_bound": 793,
+      "case_lines_final": [
+        {
+          "line": 14,
+          "title": "STUDENT completion persists and another group cannot mutate the homework"
+        },
+        {
+          "line": 61,
+          "title": "HEADMAN marks the real roster and TEACHER reads without acquiring write permission"
+        },
+        {
+          "line": 160,
+          "title": "STUDENT helper marks with its capability and revocation denies the same effect"
+        },
+        {
+          "line": 230,
+          "title": "LIMITED ADMIN views accounts while creation is denied by UI and server"
+        },
+        {
+          "line": 257,
+          "title": "empty foreign-group homework and transport failure provide a real retry path"
+        },
+        {
+          "line": 298,
+          "title": "another live session revokes the browser session and recovery exposes login only"
+        },
+        {
+          "line": 316,
+          "title": "D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials"
+        },
+        {
+          "line": 405,
+          "title": "warm offline reload remains read-only; revoked session reconnect clears the cached user"
+        },
+        {
+          "line": 451,
+          "title": "ADMIN creates a multirole headman and restores the archived account without old authority"
+        }
+      ],
+      "peaks": {
+        "rss": 396083200,
+        "shared": 5921366016
+      },
+      "births": [
+        {
+          "pid": 618959,
+          "start_ticks": 19875863
+        },
+        {
+          "pid": 618970,
+          "start_ticks": 19875957
+        },
+        {
+          "pid": 618981,
+          "start_ticks": 19876020
+        },
+        {
+          "pid": 618992,
+          "start_ticks": 19876082
+        },
+        {
+          "pid": 619000,
+          "start_ticks": 19876335
+        },
+        {
+          "pid": 619007,
+          "start_ticks": 19876344
+        },
+        {
+          "pid": 619044,
+          "start_ticks": 19876526
+        },
+        {
+          "pid": 619057,
+          "start_ticks": 19876659
+        },
+        {
+          "pid": 619070,
+          "start_ticks": 19876755
+        },
+        {
+          "pid": 619170,
+          "start_ticks": 19879833
+        },
+        {
+          "pid": 619183,
+          "start_ticks": 19879912
+        }
+      ],
+      "known_births_absent": true,
+      "dependency_link_absent": true,
+      "private_tmp_absent": true,
+      "local_check_failure_class": null,
+      "count_ui_correction": {
+        "reason": "Correct new final UI count oracle: collapsed draft shows reason, expanded detail exposes student count in dd; no product change.",
+        "grant": {
+          "issued": "2026-10-14T02:32:03.861096+00:00",
+          "stop": "2026-10-14T02:34:03.861104+00:00",
+          "authorization": "Root same bounded caller standing120s;minimum refresh after new Source correction"
+        },
+        "checks": [
+          {
+            "phase": "format_apply",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "--single-quote",
+              "specs/mobile-real-server.spec.ts",
+              "artifact-controls/privacy.control.spec.ts"
+            ],
+            "terminal": {
+              "direct_pid": 619414,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 619414,
+                  "start_ticks": 19891679
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          },
+          {
+            "phase": "format_exact_idempotency",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "--single-quote",
+              "specs/mobile-real-server.spec.ts",
+              "artifact-controls/privacy.control.spec.ts"
+            ],
+            "terminal": {
+              "direct_pid": 619425,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 619425,
+                  "start_ticks": 19891778
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          },
+          {
+            "phase": "format_check",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--check",
+              "--single-quote",
+              "specs/mobile-real-server.spec.ts",
+              "artifact-controls/privacy.control.spec.ts"
+            ],
+            "terminal": {
+              "direct_pid": 619436,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 619436,
+                  "start_ticks": 19891847
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          },
+          {
+            "phase": "types",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+              "--noEmit",
+              "--project",
+              "tsconfig.real-mobile.json"
+            ],
+            "terminal": {
+              "direct_pid": 619447,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 619447,
+                  "start_ticks": 19891914
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          }
+        ],
+        "native_runs": 4,
+        "native_seconds": 5.22,
+        "formatter_exact_idempotency": true,
+        "old_eight_case_prefix_byte_equal": true,
+        "source_pins_final": {
+          "tests/e2e/specs/mobile-real-server.spec.ts": "de6b4fe46dc160f701d2a31ed09398cde3a7d40eb6328df3f3d2b29a4e4b8b14",
+          "tests/e2e/artifact-controls/privacy.control.spec.ts": "de0e8b67053a0bbdb28c6bd54f943ef00187be27ee81c3734a52e0eca1a8278f"
+        },
+        "effective_linecount": 795,
+        "privacy_bound": 796,
+        "prior_privacy_PASS_reused": true,
+        "privacy_guard_reporter_unchanged": true,
+        "peaks": {
+          "rss": 322981888,
+          "shared": 5896679424
+        },
+        "births": [
+          {
+            "pid": 619414,
+            "start_ticks": 19891679
+          },
+          {
+            "pid": 619425,
+            "start_ticks": 19891778
+          },
+          {
+            "pid": 619436,
+            "start_ticks": 19891847
+          },
+          {
+            "pid": 619447,
+            "start_ticks": 19891914
+          }
+        ],
+        "known_births_absent": true,
+        "dependency_link_absent": true,
+        "private_tmp_absent": true,
+        "local_check_failure_class": null
+      },
+      "total_native_phases": 15,
+      "total_native_seconds": 55.58,
+      "all_known_births_absent": 21,
+      "normal_commit_native_exit": 0,
+      "active_hooks": [],
+      "hooks_bypassed": false,
+      "worktree_clean": true,
+      "addressed_Q04_R1": {
+        "finding": "Q04-R1",
+        "before_commit": "1fdf956f2bbdc09c33dca61cea4862bbb144fb88",
+        "reason": "Worker earlier case160 revoked the default helper; use actual active list to reuse one owned MARK-capable helper or assign after revocation, then verify real current count1/student/MARK inclusion before admission. Extra accepted capabilities are not prohibited.",
+        "states_source_qualified": [
+          "Fresh active helper: reuse without duplicate assignment, require MARK included",
+          "Earlier revoked helper: real POST201 and verified active list1/MARK included"
+        ],
+        "grant": {
+          "issued": "2026-10-14T02:42:18.825720+00:00",
+          "stop": "2026-10-14T02:44:18.825729+00:00",
+          "authorization": "Root direct same bounded caller fresh120s/resourcescaps/localonly"
+        },
+        "checks": [
+          {
+            "phase": "format_apply",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "--single-quote",
+              "specs/mobile-real-server.spec.ts",
+              "artifact-controls/privacy.control.spec.ts"
+            ],
+            "terminal": {
+              "direct_pid": 620927,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 620927,
+                  "start_ticks": 19953177
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          },
+          {
+            "phase": "format_exact_idempotency",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "--single-quote",
+              "specs/mobile-real-server.spec.ts",
+              "artifact-controls/privacy.control.spec.ts"
+            ],
+            "terminal": {
+              "direct_pid": 620938,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 620938,
+                  "start_ticks": 19953279
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          },
+          {
+            "phase": "format_check",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--check",
+              "--single-quote",
+              "specs/mobile-real-server.spec.ts",
+              "artifact-controls/privacy.control.spec.ts"
+            ],
+            "terminal": {
+              "direct_pid": 620949,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 620949,
+                  "start_ticks": 19953347
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          },
+          {
+            "phase": "types",
+            "command": [
+              "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+              "--noEmit",
+              "--project",
+              "tsconfig.real-mobile.json"
+            ],
+            "terminal": {
+              "direct_pid": 620960,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 620960,
+                  "start_ticks": 19953447
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            }
+          }
+        ],
+        "native_runs": 4,
+        "native_seconds": 5.32,
+        "formatter_exact_idempotency": true,
+        "old_eight_case_prefix_byte_equal": true,
+        "source_pins_final": {
+          "tests/e2e/specs/mobile-real-server.spec.ts": "96d390921578e9f240e7ca3b062ee8237f2b4973dba5a2ce400c9ffef9c036a5",
+          "tests/e2e/artifact-controls/privacy.control.spec.ts": "1919febde7299ac2da8c947a947ed600983b0025fe7f07c057bbb6d064897755"
+        },
+        "effective_linecount": 822,
+        "privacy_bound": 823,
+        "prior_privacy_PASS_reused": true,
+        "privacy_guard_reporter_unchanged": true,
+        "peaks": {
+          "rss": 339767296,
+          "shared": 5917880320
+        },
+        "births": [
+          {
+            "pid": 620927,
+            "start_ticks": 19953177
+          },
+          {
+            "pid": 620938,
+            "start_ticks": 19953279
+          },
+          {
+            "pid": 620949,
+            "start_ticks": 19953347
+          },
+          {
+            "pid": 620960,
+            "start_ticks": 19953447
+          }
+        ],
+        "known_births_absent": true,
+        "dependency_link_absent": true,
+        "private_tmp_absent": true,
+        "local_check_failure_class": null,
+        "capability_inclusion_refinement": {
+          "grant": {
+            "issued": "2026-10-14T02:43:52.311016+00:00",
+            "stop": "2026-10-14T02:45:52.311023+00:00"
+          },
+          "checks": [
+            {
+              "phase": "format_check",
+              "command": [
+                "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+                "--check",
+                "--single-quote",
+                "specs/mobile-real-server.spec.ts",
+                "artifact-controls/privacy.control.spec.ts"
+              ],
+              "terminal": {
+                "direct_pid": 621317,
+                "native_exit": 0,
+                "terminal_reason": "NATIVE_TERMINAL",
+                "signal_count": 0,
+                "settled": true,
+                "all_owned_processes_reaped": true,
+                "all_members_including_Z_after": [],
+                "known_owned_identities": [
+                  {
+                    "pid": 621317,
+                    "start_ticks": 19962524
+                  }
+                ],
+                "adopted_waitpid_receipts": [],
+                "supervision_error_type": null,
+                "phase_success": true
+              }
+            },
+            {
+              "phase": "types",
+              "command": [
+                "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+                "--noEmit",
+                "--project",
+                "tsconfig.real-mobile.json"
+              ],
+              "terminal": {
+                "direct_pid": 621328,
+                "native_exit": 0,
+                "terminal_reason": "NATIVE_TERMINAL",
+                "signal_count": 0,
+                "settled": true,
+                "all_owned_processes_reaped": true,
+                "all_members_including_Z_after": [],
+                "known_owned_identities": [
+                  {
+                    "pid": 621328,
+                    "start_ticks": 19962619
+                  }
+                ],
+                "adopted_waitpid_receipts": [],
+                "supervision_error_type": null,
+                "phase_success": true
+              }
+            }
+          ],
+          "native_runs": 2,
+          "native_seconds": 3.7,
+          "source_pins_final": {
+            "tests/e2e/specs/mobile-real-server.spec.ts": "67444c7dec0464e38ddf6cccc2b1e61aaeabf824e99aa27096788c5d4c202c0b",
+            "tests/e2e/artifact-controls/privacy.control.spec.ts": "1919febde7299ac2da8c947a947ed600983b0025fe7f07c057bbb6d064897755"
+          },
+          "effective_linecount": 822,
+          "privacy_bound": 823,
+          "old_eight_case_prefix_byte_equal": true,
+          "prior_formatter_idempotency_and_privacy_PASS_reused": true,
+          "peaks": {
+            "rss": 326021120,
+            "shared": 5915402240
+          },
+          "births": [
+            {
+              "pid": 621317,
+              "start_ticks": 19962524
+            },
+            {
+              "pid": 621328,
+              "start_ticks": 19962619
+            }
+          ],
+          "known_births_absent": true,
+          "dependency_link_absent": true,
+          "private_tmp_absent": true,
+          "local_check_failure_class": null
+        },
+        "commit": "3eaf4c1f1f49d9a8199f12299a9f1931cc2fea29",
+        "normal_commit_native_exit": 0,
+        "active_hooks": [],
+        "hooks_bypassed": false,
+        "worktree_clean": true,
+        "review": "SAME_REVIEWER_ADDRESSED_SECTION_RECHECK_PENDING"
+      }
+    },
+    "do_not": "No Source/local result as runtime PASS; no old unchanged browser replay or synthetic server responses; no new framework/launcher/packets; no production/main/merge/deploy/Angular/network/Docker; preserve existing Q02/Q15 current sources and foreign WIP."
+  },
+  "Q15_author_outcome_path": "/workspace/scratch/rct-validation/native_recovery_actual/outcome.safe.json",
+  "Root_workflow_diagnostic_localchecks": {
+    "source": "Root common CI diagnostic only",
+    "workflow_sha256": "27978608c91d8c9ff13c9353a6a84990719c76b8a44f71965cd7da2f4334dd9d",
+    "checks": [
+      {
+        "phase": "format_apply",
+        "terminal": {
+          "direct_pid": 621343,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 621343,
+              "start_ticks": 19963159
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format_check",
+        "terminal": {
+          "direct_pid": 621354,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 621354,
+              "start_ticks": 19963201
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      }
+    ],
+    "elapsed_seconds": 0.85,
+    "prior_parser_closed_projection_controls": "PASS positive+syntheticsecret exclusion+foreignenum+boolIDnegative",
+    "runtimeDocker_DB_logs": "NOT_RUN"
+  },
+  "actual_current_failure": "current-f8b-application-recovery.safe.json",
+  "Q15_author_diagnostic_checks": {
+    "records": [
+      {
+        "phase": "format-apply",
+        "result": {
+          "direct_pid": 620849,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 620849,
+              "start_ticks": 19949776
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format-idempotency",
+        "result": {
+          "direct_pid": 620975,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 620975,
+              "start_ticks": 19953923
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format-check",
+        "result": {
+          "direct_pid": 620986,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 620986,
+              "start_ticks": 19953993
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "targeted-tsc",
+        "result": {
+          "direct_pid": 620997,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 620997,
+              "start_ticks": 19954053
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "closed-controls",
+        "result": {
+          "direct_pid": 621004,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 621004,
+              "start_ticks": 19954230
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      }
+    ],
+    "peak_owned_sampled_rss": 318640128,
+    "source_sha256": "602c5911faf3a1d4c19a5dfb46c6a5e06e701240edecf0e5b5495f309161befc",
+    "tmp_removed": true,
+    "owned_link_removed": true,
+    "grant_total_elapsed_seconds": 0.752,
+    "caller_result_key_corrected": "phase_success AND native_exit==0; format-apply already PASS not repeated",
+    "remaining_grant_elapsed_seconds": 3.836
+  },
+  "Q15_source_diagnosis_limits": {
+    "producer": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+    "run": "38499807565",
+    "reported_outcome": "SEED_FAIL_91206MS_RESTORE_NOT_STARTED",
+    "runtime_cause": "UNKNOWN",
+    "lifecycle_wait": "CANDIDATE_ONLY_90S_NOT_CAUSAL_PROOF",
+    "source_findings": [
+      "FileClock dynamically rereads directory-mounted atomic current-instant replacement; educational zone Moscow; Auth clocks untouched.",
+      "Lifecycle SQL uses lesson start/end snapshots, includes one-off rows, and permits planned->active->closed in one transaction.",
+      "List API includes closed; returned id is physical lesson id; status enum serializes CLOSED.",
+      "Job considers all due lessons and semester authorities in one transaction: unrelated authority or event failure can roll back target transition; hypothesis only.",
+      "Existing sanitizer allowlists mobile-real-server only; application recovery failure falls back to static testcase location235; source stage/cause cannot be inferred."
+    ],
+    "proposed_minimal_next": "One finite closed diagnostic at existing wait: private target identity checkpoint, bounded API target-status/clock projection, owned readonly SQL target eligibility/barrier/lock tick facts. Existing recovery.py pg_query available; Root owns shared workflow. No timeout increase, new runner, raw logs, or native local rerun.",
+    "source_edits": "NONE_Q15; Q05_WIP_PRESERVED",
+    "local_runtime": "NOT_RUN",
+    "shared_workflow": "ROOT_ONLY",
+    "diagnostic_commit": "5f20c273544913a8625822f8c73cdfce72a5514c",
+    "diagnostic_branch": "codex/rct-validation-recovery-lifecycle-diagnostic-20261014",
+    "fixture_sha256": "602c5911faf3a1d4c19a5dfb46c6a5e06e701240edecf0e5b5495f309161befc",
+    "private_input_schema": {
+      "lessonId": "positive safe integer",
+      "semesterId": "positive safe integer",
+      "expectedInstant": "YYYY-MM-DDT09:00:00.000Z",
+      "clockSha256": "64 lowercase hex"
+    },
+    "public_fixture_schema": {
+      "clockMatchesExpected": "boolean",
+      "apiReadHttp": "0|200|400|401|403|404|409|410|422|423|429|500|502|503|504",
+      "targetPresent": "boolean",
+      "targetStatus": "UNKNOWN|PLANNED|ACTIVE|CLOSED|CANCELLED",
+      "current": "boolean",
+      "endPlus5IsDue": "boolean"
+    },
+    "source_sql_fields": {
+      "target": "lessons.id, semester_id, occurrence_id, status::text, date, start_time, end_time",
+      "transfer": "lesson_transfer_operations.occurrence_id, state; unfinished iff state<>COMPLETED",
+      "barrier": "schedule_semester_archive_barriers.semester_id, participant_state; absent NONE; source blocked PENDING|READY|PREPARED_RESTORE|DELETE_PREPARING|DELETE_SEALED|DELETED",
+      "shedlock": "shedlock.name exact lesson-status-transition, locked_at, lock_until; compare timestamps in RAM/SQL only; never output locked_by"
+    },
+    "target_due_sql": "(lesson.date+lesson.start_time)<=CAST(expectedInstant AS timestamptz) AT TIME ZONE Europe/Moscow; closure (lesson.date+lesson.end_time+INTERVAL 5 minutes)<=same Moscow timestamp. Validate exact lessonId AND semesterId, return only closed status/booleans.",
+    "lock_interpretation": "locked_at advanced proves lock acquisition only; does not prove successful tick/commit. lock_until>DB clock_timestamp proves held/not-yet-expired, no scheduler cause by itself.",
+    "root_recommendation": "Run one existing CI diagnostic package with unchanged poll after addressed source review. Correlate fixture API/clock and exact-owned DB/lock/log-class facts; keep cause UNKNOWN unless evidence identifies failure. No broad all-semester inventory, raw logs, or local runtime.",
+    "checking_status": "FORMAT3_PASS_TARGETED_TSC_PASS_CLOSED_PROJECTION_CONTROLS_PASS_ALL_REAPED",
+    "q05_wip": "ONLY_UNTRACKED_semester-lifecycle.spec.ts_PRESERVED_EXCLUDED",
+    "actual_runtime": "NOT_RUN_DIAGNOSTIC_SOURCE_ONLY"
+  },
+  "Root_Q04_selection": {
+    "scope": "actual pinned Playwright config discovery only",
+    "result": "PASS admin1 + originalremaining5 unchanged5",
+    "checks": [
+      {
+        "mode": "admin",
+        "terminal": {
+          "direct_pid": 622119,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 622119,
+              "start_ticks": 20011850
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "expected_count": 1,
+        "exact_count": true,
+        "sourceLines": [
+          451
+        ]
+      },
+      {
+        "mode": "remaining5",
+        "terminal": {
+          "direct_pid": 622132,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 622132,
+              "start_ticks": 20012027
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "expected_count": 5,
+        "exact_count": true,
+        "sourceLines": [
+          230,
+          257,
+          298,
+          316,
+          405
+        ]
+      }
+    ],
+    "prior_fail": "CLI --grep intersects configgrep, so newcase was not selected; exactclosedfailed0results/runner1 and --list no-tests preserved; explicit privateadmin modecorrected",
+    "runtime": "NOT_RUN-no workers/browser/credentialseed/network; runtimeSafeReporter unchanged",
+    "temp_cleanup": "PASS",
+    "elapsed_seconds": 3.2
+  },
+  "Root_coherent_format_check": {
+    "phase": "coherent-format-check",
+    "terminal": {
+      "direct_pid": 622222,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 622222,
+          "start_ticks": 20019037
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "elapsed_seconds": 0.8
+  },
+  "Root_coherent_TSC": {
+    "phase": "coherent-tsc",
+    "terminal": {
+      "direct_pid": 622221,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 622221,
+          "start_ticks": 20019036
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "elapsed_seconds": 3.12
+  },
+  "source_pins": {
+    ".github/workflows/ci.yml": "96cdf7fbfe2d61ef573d8adb601d2671212e3e3e27038fedf4e21a6ca9f03d87",
+    "tests/e2e/playwright.real-mobile.config.ts": "36249138be7b4c1214c98128ee82759a8af211f9541db28cb152383c19223576",
+    "tests/e2e/specs/mobile-real-server.spec.ts": "67444c7dec0464e38ddf6cccc2b1e61aaeabf824e99aa27096788c5d4c202c0b",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "1919febde7299ac2da8c947a947ed600983b0025fe7f07c057bbb6d064897755",
+    "tests/e2e/fixtures/application-recovery.spec.ts": "602c5911faf3a1d4c19a5dfb46c6a5e06e701240edecf0e5b5495f309161befc"
+  },
+  "reviews": {
+    "Q04": "whole+R1addressed+privateconfigselectionAPPROVE_SOURCE_LOCAL",
+    "Q15": "targetedcloseddiagnosticAPPROVE_SOURCE_LOCAL-originalFAILretained"
+  }
+}

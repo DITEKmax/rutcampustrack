@@ -1,0 +1,36 @@
+{
+  "source_commit": "9facae408c73ba230308dd9425de068642168f3e",
+  "base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "source_sha256": {
+    "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue": "ab62be1b4bfea9819f7ffbccc3ba7d2fa5dd370cc1cab9e8849a038ad6276670",
+    "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts": "145abc94cee11b4af6ebc4d4aa9994daf4d77bf426840fde14f8358dee0c12f5"
+  },
+  "accepted_requirement": "JS-HEADMAN-40/DF-PWA-BUILDER-REMOVE-001; TASK-JS-HEADMAN-40-REMOVAL-CURRENT-SCOPE",
+  "change": "Minimumexistingdesign ordinaryconfirm selectedtemplateDELETE viaexistingpreview/CAS/key/readback; preservepast/gap/seriesreturn; no newAPI/hardAcademicdelete/styles/grants",
+  "new_tests": "Two independent per-test existingMobileDataset scopes; realbuilderremove/cancel-return-parity/history/currentgeneration/negativegrants; warmBFFsemester200/304/foreignETag-roomCAS/newETag/Todayrefresh",
+  "checks": "exactVueformatter/ESLint/SPECformatter/selectedstrictVueTSC+E2ETSC/PWA+TMAactualbuild/hooks/normalcommitPASS",
+  "checking_correction": "firstselectedVueTSC omittedexistingvite/client ambient for ?url import; TMPtypes prerequisite corrected only, Source unchanged and passedformatter/lint not repeated",
+  "timing": {
+    "active_seconds": 68.353,
+    "first_to_last_child_launch_wall_seconds": 201.87,
+    "total_wall_limit180_result": "NOT_MET: includes fully stopped Source/model/tool gap",
+    "per_phase_resource_reap_guards": "held; no hardOSisolationclaim"
+  },
+  "cleanup": "20617+4229closed0/reaped/ownTMP+2linksremoved; nativeNONE",
+  "independent_review": {
+    "reviewer": "q07_client_review",
+    "verdict": "APPROVE_SOURCE/no blockingfindings",
+    "whole_exact_source": true,
+    "scope": "design/currentAPI/DTO/clientstates/actualassertions/history+authority/workerisolation/confirmationkeyboard+focus"
+  },
+  "actual_browser": "NOT_RUN; existinghistoricalPGproofs separatelyreused, not newbrowserPASS",
+  "current4065_finite_acceptance_join": {
+    "conclusion": "JS-HEADMAN-40: real builder operation + past canonical identity/attendance + series return/across elapsed gap are now finite PASS; remove obsolete generic unexecuted-builder/gap UNKNOWN. Whole exact all-data story still has ONE concrete residual below. No wholeQ07/BOUNDARY21 promotion.",
+    "currentActual": "ci_4065_closed_read/lesson/lesson-lifecycle-safe-1.safe.json: producer4065cda44239af33cd9716273dc8e61d569b5261/run38552691508/artifact11889746396/digestsha256:3aba515e20783abd58046c33e1c698dfbd976bb0c0ff7cef08d85b6487c3cb1d; named mobile-schedule-lifecycle.spec.ts109 HEADMAN removes and returns a recurring slot without losing past identity or marks PASSED52311ms/error0. current-4065-real-push-readback.safe.json officially joins checkoutf98305086724ec89abd4d1bf5c9131967832eca1/tree25c906abb1bc4fd917118e30009f866bf432b17c to3908+4065.",
+    "actualCoverage": "Opened current case109–410: actual Vue create201→real preview/cancelEscape+focus/noeffect→DELETE204 with key→sameitem inactive/futurephysical CANCELLED→Vue re-add201 sameitem/new current physical generations→parity remove+return; all past physical identities stable and actual saved nonempty attendance entry byte-equivalent afterreturn. Helper/foreignHEADMAN403 and revokedHEADMAN after valid preview403/noeffects. Source-review receipt Q07-current-builder-client-Source-review supplies accepted JS40/UI/API provenance; its historic browserNOT_RUN is superseded for THIS named case only.",
+    "elapsedGapReuse": "Q07-existing-finite-proof-reuse.safe.json / S1aa realPG named RecurringScheduleItemIT.deletingAndReturningSameSeriesNeverBackfillsAbsenceAndRoomIsNotIdentity PASSED23/1/5, producer1aa6c6451dba5cd39decfdce80a615e26bb65f77/run38467301679/checkoutc13da959f25559a709608c8dea6c9ac4cab8b60d. Opened actual method1402–1473: DELETE+exactreplay, advance owned mock clock toFeb17, re-addsame subject/type/assignment with changedroom, sameitemID/one series, Feb16 absent physical stayscancelled/count1, originalpastroom unchanged and two laterplannedrows NEW-ROOM; create replay stable. This explicitly proves elapsed gap/no backfill and room is not identity; browser intentionally does not claim elapsed absence.",
+    "otherNamedReuse": "Same exact receipt RecurringScheduleItemIT.parityRemovalArchivesFutureHomeworkAndRestoresAsNewPhysicalGeneration PASSED23/1/23: actual future binding902 ARCHIVED, one exact futurelesson cancel/outbox fact, old cancelledphysical retained and new current generation; archived futurebinding not resurrected. Opened method and named receipt row, not inferred from aggregate. Academic peer mocked: not direct past-publication/content retention proof. Current testSHA1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9 matches receipt; recurring production package and Academic homework package byte-identical1aa6→4065 (targeted gitdiff only). Root current13path N/Q03 integration does not touch these paths.",
+    "oneAcceptedResidual": "JS40 says past lessons AND ALL THEIR DATA survive. Existing builder witness seeds a past attendance entry, but no nonempty past lesson-bound homework publication/completion/content/history snapshot; linked PG case only preserves past lesson room and tests FUTURE binding archival. HomeworkBindingArchiveIT.cancellationArchivesExistingContentAndIdentityMismatchRollsBackClaim proves an explicitly cancelled binding is archived and wrong identity rolls back; it does not prove a past publication unaffected by builder removal/return. Therefore do not infer this nonempty-data clause from stableIDs/Sourcepresence/empty rows. One finite missing assertion: with a preexisting actual past lesson-bound homework (and its completion/history), remove+return the recurring slot, then read the same publication/binding/content/completion/history unchanged and still tied to the same past physical lesson. Existing accepted gap PG proof need not rerun; no new full suite/framework required. This is missing evidence, not a demonstrated defect or a new product requirement.",
+    "bounds": "Readonly existing proof reconciliation only; Root sole matrix writer. No new execution/network/CI/source/docs/credentials/agents. SelectedSol6.1high actualUNKNOWN; B013B014 frozen/Q012 pending unchanged."
+  }
+}

@@ -1,14 +1,14 @@
 package ru.rutcampustrack.shared.observability;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * AssertJ-friendly хелперы для тестов сервисов, которые проверяют что
- * {@link BusinessMetrics} счётчик инкрементирован.
+ * AssertJ-friendly хелперы для тестов сервисов, которые проверяют что {@link BusinessMetrics}
+ * счётчик инкрементирован.
  *
  * <pre>{@code
  * MetricsTestSupport.assertCounter(registry, MetricNames.AUTH_LOGIN, "role", "student", 1);
@@ -16,18 +16,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public final class MetricsTestSupport {
 
-    private MetricsTestSupport() {
-    }
+    private MetricsTestSupport() {}
 
     /**
-     * Проверяет что counter с указанными tag-key/value инкрементирован
-     * ровно {@code expectedCount} раз.
+     * Проверяет что counter с указанными tag-key/value инкрементирован ровно {@code expectedCount}
+     * раз.
      */
-    public static void assertCounter(MeterRegistry registry,
-                                     String name,
-                                     String tagKey,
-                                     String tagValue,
-                                     double expectedCount) {
+    public static void assertCounter(
+            MeterRegistry registry,
+            String name,
+            String tagKey,
+            String tagValue,
+            double expectedCount) {
         Counter counter = registry.find(name).tags(Tags.of(tagKey, tagValue)).counter();
         assertThat(counter)
                 .as("counter %s{%s=%s} not registered", name, tagKey, tagValue)

@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-12T07:00:52.198222+00:00",
+  "status": "PASS",
+  "schema_sha256": "360c6f6c0754c177170551b4d36eff9212f95a0d8831b2da2233d627b7058533",
+  "filled_manifest_sha256": "5b56f132b0a9bb90b93d6298951278df458557636e664a299b2165bdbcc83f5a",
+  "method": "stdlib closed-schema type/required/const/pattern/minimum plus independent fullactual stage path/SHA/mode proof",
+  "runtime": "NOT_RUN"
+}

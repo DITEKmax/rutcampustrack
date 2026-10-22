@@ -1,0 +1,83 @@
+{
+  "faults": [
+    {
+      "phase": "fault-permission01",
+      "exact_one_edit_hash_matches_prelaunch": true,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "type": "java.lang.AssertionError",
+      "missing_expected_throw_observed": true,
+      "intended_frames": [
+        [
+          "denied",
+          "329"
+        ],
+        [
+          "privateForeignAndUnknownReadModesFailClosed",
+          "91"
+        ]
+      ],
+      "runtime_or_compile_failure": false
+    },
+    {
+      "phase": "fault-enum01",
+      "exact_one_edit_hash_matches_prelaunch": true,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "type": "java.lang.AssertionError",
+      "missing_expected_throw_observed": true,
+      "intended_frames": [
+        [
+          "denied",
+          "329"
+        ],
+        [
+          "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup",
+          "242"
+        ]
+      ],
+      "runtime_or_compile_failure": false
+    },
+    {
+      "phase": "fault-cas01",
+      "exact_one_edit_hash_matches_prelaunch": true,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "type": "java.lang.AssertionError",
+      "missing_expected_throw_observed": true,
+      "intended_frames": [
+        [
+          "denied",
+          "329"
+        ],
+        [
+          "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle",
+          "171"
+        ]
+      ],
+      "runtime_or_compile_failure": false
+    }
+  ],
+  "restored_same3": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "restored7046_exact_verified_separately": true
+}

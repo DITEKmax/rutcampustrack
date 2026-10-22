@@ -23,8 +23,23 @@ grpc:
       certificate-chain: ${ACADEMIC_GRPC_CERTIFICATE_CHAIN}
       private-key: ${ACADEMIC_GRPC_PRIVATE_KEY}
   client:
+    auth-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${AUTH_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${AUTH_GRPC_TLS_AUTHORITY:auth-service}
     schedule-service:
       negotiation-type: TLS
       security:
         trust-cert-collection: ${SCHEDULE_GRPC_TRUST_CERT_COLLECTION}
         authority-override: ${SCHEDULE_GRPC_TLS_AUTHORITY:schedule-service}
+    attendance-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${ATTENDANCE_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}
+    report-render-attendance:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${ATTENDANCE_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}

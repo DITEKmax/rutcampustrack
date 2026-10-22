@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "Python": "3.12.14",
+  "grpcio": "1.73.0",
+  "grpcio-tools": "1.73.0",
+  "protobuf": "6.31.0",
+  "actual_generated_package_import": "PASS",
+  "logical_descriptor": "academic.proto/rutcampustrack.academic",
+  "actual_generated_stub_two_method_paths": "PASS",
+  "closed_oneof_generated_API": "PASS",
+  "limits": "Stubinspection uses inert channel; not actualTLS/protectedRPC/serviceauthority/provider proof."
+}

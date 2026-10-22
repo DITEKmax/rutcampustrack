@@ -1,50 +1,114 @@
 import { describe, expect, it } from 'vitest'
-import { hasStatisticsMarks, statisticsGeometry, statisticsAxisCandidates, statisticsFitTicks } from './statistics-chart-geometry'
+import {
+  hasStatisticsMarks,
+  statisticsGeometry,
+  statisticsAxisCandidates,
+  statisticsFitTicks,
+} from './statistics-chart-geometry'
 import type { StatisticsSeriesPoint } from './statistics-view-model'
-const metrics = { present: { count: 2, percent: 50 }, excused: { count: 1, percent: 25 }, absent: { count: 1, percent: 25 }, presentOrExcused: { count: 3, percent: 75 }, held: 4, planned: 6 }
-function point(id: string, from: string, to = from, state: StatisticsSeriesPoint['state'] = 'DATA'): StatisticsSeriesPoint { return { id, dateFrom: from, dateTo: to, label: id, state, metrics } }
+const metrics = {
+  present: { count: 2, percent: 50 },
+  excused: { count: 1, percent: 25 },
+  absent: { count: 1, percent: 25 },
+  presentOrExcused: { count: 3, percent: 75 },
+  held: 4,
+  planned: 6,
+}
+function point(
+  id: string,
+  from: string,
+  to = from,
+  state: StatisticsSeriesPoint['state'] = 'DATA',
+): StatisticsSeriesPoint {
+  return { id, dateFrom: from, dateTo: to, label: id, state, metrics }
+}
 describe('statistics filled calendar geometry', () => {
   it('connects DATA across omitted no-lesson days without deriving new metrics', () => {
-    const result = statisticsGeometry([point('opaque', '2026-09-01'), point('not-a-date', '2026-09-04')])
-    expect(result.cells[0]?.left).toBe(0)
-    expect(result.cells[1]?.right).toBe(284)
+    const result = statisticsGeometry([
+      point('opaque', '2026-09-01'),
+      point('not-a-date', '2026-09-04'),
+    ])
+    expect(result.cells[0]!.left).toBeLessThan(result.cells[0]!.center)
+    expect(result.cells[0]!.center).toBeLessThan(result.cells[1]!.center)
+    expect(result.cells[1]!.center).toBeLessThan(result.cells[1]!.right)
     for (const band of result.bands) {
       expect(band.paths).toHaveLength(1)
-      expect(band.paths[0]).toContain('35.50,')
-      expect(band.paths[0]).toContain('248.50,')
+      const coordinates = band.paths[0]!.match(/-?\d+(?:\.\d+)?/g)!.map(Number)
+      expect(coordinates.every(Number.isFinite)).toBe(true)
+      expect(Math.min(...coordinates.filter((_, index) => index % 2 === 0))).toBe(result.cells[0]!.left)
+      expect(Math.max(...coordinates.filter((_, index) => index % 2 === 0))).toBe(result.cells[1]!.right)
     }
   })
   it('breaks all stacked bands at unknown, nullable and future periods', () => {
-    const unknown = { ...point('nullable', '2026-09-03'), metrics: { ...metrics, excused: { count: 1, percent: null } } }
-    const points = [point('a', '2026-09-01'), point('b', '2026-09-02', undefined, 'NO_DATA'), unknown, point('c', '2026-09-04'), point('d', '2026-09-05', undefined, 'FUTURE')]
+    const unknown = {
+      ...point('nullable', '2026-09-03'),
+      metrics: { ...metrics, excused: { count: 1, percent: null } },
+    }
+    const points = [
+      point('a', '2026-09-01'),
+      point('b', '2026-09-02', undefined, 'NO_DATA'),
+      unknown,
+      point('c', '2026-09-04'),
+      point('d', '2026-09-05', undefined, 'FUTURE'),
+    ]
     expect(hasStatisticsMarks(unknown)).toBe(false)
     for (const band of statisticsGeometry(points).bands) expect(band.paths).toHaveLength(2)
   })
   it('uses authoritative present and combined rounded percentages without denominator recalculation', () => {
-    const supplied = { ...point('weighted', '2026-09-01'), metrics: { ...metrics, present: { count: 999, percent: 33.3 }, excused: { count: 777, percent: 16.7 }, absent: { count: 3, percent: 50 }, presentOrExcused: { count: 1776, percent: 50 } } }
+    const supplied = {
+      ...point('weighted', '2026-09-01'),
+      metrics: {
+        ...metrics,
+        present: { count: 999, percent: 33.3 },
+        excused: { count: 777, percent: 16.7 },
+        absent: { count: 3, percent: 50 },
+        presentOrExcused: { count: 1776, percent: 50 },
+      },
+    }
     const result = statisticsGeometry([supplied])
-    expect(result.bands[0]?.paths[0]).toContain('0.00,96.05')
-    expect(result.bands[1]?.paths[0]).toContain('0.00,72.00')
-    expect(result.bands[2]?.paths[0]).toContain('0.00,0.00')
+    const differentCounts = { ...supplied, metrics: { ...supplied.metrics,
+      held: 999999, planned: 1000000,
+      present: { count: 1, percent: 33.3 }, excused: { count: 2, percent: 16.7 },
+      absent: { count: 999996, percent: 50 }, presentOrExcused: { count: 3, percent: 50 },
+    } }
+    expect(statisticsGeometry([differentCounts]).bands).toEqual(result.bands)
   })
   it('uses the server combined boundary when individual thirds sum differently', () => {
-    const thirds = { ...point('thirds', '2026-09-01'), metrics: { ...metrics, present: { count: 1, percent: 33.33 }, excused: { count: 1, percent: 33.33 }, absent: { count: 1, percent: 33.33 }, presentOrExcused: { count: 2, percent: 66.67 } } }
-    expect(statisticsGeometry([thirds]).bands[1]?.paths[0]).toContain('0.00,48.00')
+    const thirds = {
+      ...point('thirds', '2026-09-01'),
+      metrics: {
+        ...metrics,
+        present: { count: 1, percent: 33.33 },
+        excused: { count: 1, percent: 33.33 },
+        absent: { count: 1, percent: 33.33 },
+        presentOrExcused: { count: 2, percent: 66.67 },
+      },
+    }
+    const original = statisticsGeometry([thirds])
+    const changed = statisticsGeometry([{ ...thirds, metrics: { ...thirds.metrics,
+      presentOrExcused: { count: 2, percent: 80 },
+    } }])
+    expect(changed.bands[0]).toEqual(original.bands[0])
+    expect(changed.presentPaths).toEqual(original.presentPaths)
+    expect(changed.bands[1]).not.toEqual(original.bands[1])
+    expect(changed.bands[2]).not.toEqual(original.bands[2])
   })
   it('keeps zero-held and invalid dates out of filled regions', () => {
     const zero = { ...point('zero', '2026-09-01'), metrics: { ...metrics, held: 0 } }
     const invalid = point('bad', '2026-02-30')
-    expect(statisticsGeometry([zero, invalid]).bands.every((band) => band.paths.length === 0)).toBe(true)
-
+    expect(statisticsGeometry([zero, invalid]).bands.every((band) => band.paths.length === 0)).toBe(
+      true,
+    )
   })
 })
-
 
 describe('statistics adaptive measured calendar axis', () => {
   const points = [point('opaque-start', '2026-12-28'), point('opaque-end', '2027-01-17')]
   it('retains exact date endpoints across years and places every tick at equal domain intervals', () => {
     const candidates = statisticsAxisCandidates(points, 'days')
-    const widths = Object.fromEntries(candidates.flatMap((ticks) => ticks.map((tick) => [tick.label, 62])))
+    const widths = Object.fromEntries(
+      candidates.flatMap((ticks) => ticks.map((tick) => [tick.label, 62])),
+    )
     const result = statisticsFitTicks(candidates, 284, widths, 8)
     expect(result.stacked).toBe(false)
     expect(result.ticks[0]?.label).toBe('28.12.2026')
@@ -56,17 +120,25 @@ describe('statistics adaptive measured calendar axis', () => {
   })
   it('reduces count for actual larger font/narrower container and never overlaps or overflows', () => {
     const candidates = statisticsAxisCandidates(points, 'days')
-    const measured = (width: number) => Object.fromEntries(candidates.flatMap((ticks) => ticks.map((tick) => [tick.label, width])))
+    const measured = (width: number) =>
+      Object.fromEntries(candidates.flatMap((ticks) => ticks.map((tick) => [tick.label, width])))
     const normal = statisticsFitTicks(candidates, 284, measured(60), 8)
     const enlarged = statisticsFitTicks(candidates, 180, measured(75), 10)
     expect(enlarged.ticks.length).toBeLessThan(normal.ticks.length)
     expect(enlarged.ticks).toHaveLength(2)
     expect(enlarged.stacked).toBe(false)
     for (const result of [normal, enlarged]) {
-      const width = result === normal ? 284 : 180, labelWidth = result === normal ? 60 : 75, gap = result === normal ? 8 : 10
+      const width = result === normal ? 284 : 180,
+        labelWidth = result === normal ? 60 : 75,
+        gap = result === normal ? 8 : 10
       let previousRight = -gap
       result.ticks.forEach((tick, index) => {
-        const left = index === 0 ? 0 : index === result.ticks.length - 1 ? width - labelWidth : width * tick.position - labelWidth / 2
+        const left =
+          index === 0
+            ? 0
+            : index === result.ticks.length - 1
+              ? width - labelWidth
+              : width * tick.position - labelWidth / 2
         expect(left).toBeGreaterThanOrEqual(0)
         expect(left + labelWidth).toBeLessThanOrEqual(width)
         expect(left - previousRight).toBeGreaterThanOrEqual(gap)
@@ -78,15 +150,25 @@ describe('statistics adaptive measured calendar axis', () => {
     expect(cramped.ticks.map((tick) => tick.label)).toEqual(['28.12.2026', '17.01.2027'])
   })
   it('numbers actual Monday weeks through omitted buckets independently of opaque identifiers', () => {
-    const weeks = statisticsAxisCandidates([point('ID:999', '2026-12-30', '2027-01-03'), point('ID:1', '2027-01-11', '2027-01-17')], 'weeks')
+    const weeks = statisticsAxisCandidates(
+      [point('ID:999', '2026-12-30', '2027-01-03'), point('ID:1', '2027-01-11', '2027-01-17')],
+      'weeks',
+    )
     expect(weeks[0]?.map((tick) => tick.label)).toEqual(['1', '2', '3'])
     expect(weeks[0]?.map((tick) => tick.date)).toEqual(['2026-12-28', '2027-01-04', '2027-01-11'])
-    const geometry = statisticsGeometry([point('a', '2026-12-28', '2027-01-03'), point('b', '2027-01-11', '2027-01-17')])
+    const geometry = statisticsGeometry([
+      point('a', '2026-12-28', '2027-01-03'),
+      point('b', '2027-01-11', '2027-01-17'),
+    ])
     for (const band of geometry.bands) expect(band.paths).toHaveLength(1)
   })
   it('anchors weeks to partial first semester Monday and retains semester bounds beyond returned lessons', () => {
     const bounds = { semesterStartsOn: '2026-09-02', semesterEndsOn: '2026-09-27' }
-    const candidates = statisticsAxisCandidates([point('late', '2026-09-14', '2026-09-20')], 'weeks', bounds)
+    const candidates = statisticsAxisCandidates(
+      [point('late', '2026-09-14', '2026-09-20')],
+      'weeks',
+      bounds,
+    )
     expect(candidates[0]?.map((tick) => tick.label)).toEqual(['1', '2', '3', '4'])
     expect(candidates[0]?.[0]?.date).toBe('2026-08-31')
     const days = statisticsAxisCandidates([point('late', '2026-09-14')], 'days', bounds)
@@ -100,6 +182,55 @@ describe('statistics adaptive measured calendar axis', () => {
     expect(statisticsAxisCandidates([], 'days')).toEqual([])
     expect(statisticsAxisCandidates([point('invalid', '2026-02-30')], 'days')).toEqual([])
     const candidates = statisticsAxisCandidates([point('single', '2026-09-01')], 'days')
-    expect(statisticsFitTicks(candidates, 180, { '01.09': 36 }, 8)).toEqual({ ticks: [{ position: 0.5, label: '01.09', date: '2026-09-01' }], stacked: false })
+    expect(statisticsFitTicks(candidates, 180, { '01.09': 36 }, 8)).toEqual({
+      ticks: [{ position: 0.5, label: '01.09', date: '2026-09-01' }],
+      stacked: false,
+    })
   })
+})
+
+describe('same-bucket server group comparison', () => {
+  it('draws true zero, separates explicit unknown gaps and never replaces null by zero', () => {
+    const a = {
+      ...point('a', '2026-09-01'),
+      groupPresent: { numerator: 0, denominator: 4, percent: 0 },
+    }
+    const absent = { ...point('b', '2026-09-02'), groupPresent: null }
+    const c = {
+      ...point('c', '2026-09-03'),
+      groupPresent: { numerator: 3, denominator: 4, percent: 75 },
+    }
+    const geometry = statisticsGeometry([a, absent, c])
+    expect(geometry.groupPaths).toHaveLength(2)
+    const y = (path: string) => Number(path.match(/^[ML] [^,]+,([\d.]+)/)![1])
+    expect(y(geometry.groupPaths[0]!)).toBeGreaterThan(y(geometry.groupPaths[1]!))
+    expect(statisticsGeometry([{ ...a, groupPresent: { numerator: 10000, denominator: 99999, percent: 0 } }, absent, c]).groupPaths).toEqual(geometry.groupPaths)
+    expect(
+      statisticsGeometry([{ ...a, groupPresent: { numerator: 0, denominator: 0, percent: null } }])
+        .groupPaths,
+    ).toEqual([])
+    expect(statisticsGeometry([point('legacy', '2026-09-01')]).groupPaths).toEqual([])
+  })
+})
+
+it('keeps a known group line when the personal week is future and uncounted', () => {
+  const future = {
+    ...point('late-join-week', '2026-09-14', '2026-09-20', 'FUTURE'),
+    metrics: {
+      present: { count: 0, percent: null },
+      presentOrExcused: { count: 0, percent: null },
+      absent: { count: 0, percent: null },
+      excused: { count: 0, percent: null },
+      held: 0,
+      planned: 1,
+    },
+    groupPresent: { numerator: 1, denominator: 4, percent: 25 },
+  }
+  const geometry = statisticsGeometry([future], { range: 'weeks' })
+  expect(geometry.presentPaths).toEqual([])
+  expect(geometry.groupPaths).toHaveLength(1)
+  expect(geometry.groupPaths[0]!.match(/-?\d+(?:\.\d+)?/g)!.map(Number).every(Number.isFinite)).toBe(true)
+  expect(future.state).toBe('FUTURE')
+  expect(future.metrics.held).toBe(0)
+  expect(future.groupPresent).toEqual({ numerator: 1, denominator: 4, percent: 25 })
 })

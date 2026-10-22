@@ -19,7 +19,8 @@ public class LessonTransferRecoveryJob {
     }
 
     @Scheduled(fixedDelay = 30_000)
-    @SchedulerLock(name = "lesson-transfer-recovery",
+    @SchedulerLock(
+            name = "lesson-transfer-recovery",
             lockAtMostFor = "PT2M",
             lockAtLeastFor = "PT5S")
     public void republishIncompleteTransfers() {

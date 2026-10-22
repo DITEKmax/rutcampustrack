@@ -1,0 +1,923 @@
+{
+  "recorded_utc": "2026-10-11T21:38:51.323708+00:00",
+  "reviewer_requested_model": "gpt-6.1-sol",
+  "reviewer_requested_effort": "xhigh",
+  "actual_runtime_metadata": "UNKNOWN (owner exception)",
+  "stable_author_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+  "opened_sources": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "bytes": 82004,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.original.txt",
+      "sha256": "7dfce6556081ad6bf0cea32176f00f2fa517505d6f3c7315cb0bedb9c615a488",
+      "bytes": 76877,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "045ed50760533257255d9763559b25b44982ed63df1f0cc2ed3cf1cb1046326e",
+      "bytes": 9260,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+      "bytes": 7182,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "3e4a0b297be4ae895394119b94d25899eb0cbd244202ab938cb8db90dc613929",
+      "bytes": 6335,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "d46af61710005e7f4c55f3c1495e92526690778199304562a2ceb55c1bea9593",
+      "bytes": 4822,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-security-boundaries-review.md",
+      "sha256": "bcc498514a2177b1f2576c229e2510f856aa76d61fe09afa413fbcb31e550591",
+      "bytes": 3912,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/scenarios.csv",
+      "sha256": "e653e98d52b4fb80ab6c6496479204d0c3c2b9569c908b3791ebe84595a48fe7",
+      "bytes": 344746,
+      "scope": "task authority",
+      "opened_coverage": "full text except scenarios relevant L03/L04 rows; original proven exact prefix of fully read current contract"
+    },
+    {
+      "path": "/workspace/rutcampustrack/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "bytes": 4327,
+      "scope": "process authority",
+      "opened_coverage": "full applicable text"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "bytes": 24809,
+      "scope": "process authority",
+      "opened_coverage": "full applicable text"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/CURRENT.md",
+      "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b",
+      "bytes": 1799,
+      "scope": "process authority",
+      "opened_coverage": "full applicable text"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "bytes": 7916,
+      "scope": "process authority",
+      "opened_coverage": "full applicable text"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/READINESS.md",
+      "sha256": "2ceb491f46df6d830be9c70d01df92756c1547db3eb631652da50a7700cfb836",
+      "bytes": 11120,
+      "scope": "process authority",
+      "opened_coverage": "full applicable text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "bytes": 4327,
+      "scope": "applicable process instructions",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "bytes": 2914,
+      "scope": "applicable process instructions",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "bytes": 5464,
+      "scope": "applicable process instructions",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/frontends/AGENTS.md",
+      "sha256": "165680e3eeb6476af0099a70bc96bc58c5492b851393381c63071677a04f1d8f",
+      "bytes": 3840,
+      "scope": "applicable process instructions",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-cloud-skills-20261011/project/rct-source-resolution/SKILL.md",
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d",
+      "bytes": 1557,
+      "scope": "project skill",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-cloud-skills-20261011/project/rct-verification/SKILL.md",
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa",
+      "bytes": 1733,
+      "scope": "project skill",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "bytes": 198036,
+      "scope": "scenario authority/provenance",
+      "opened_coverage": "targeted SB01-SB06 story and mapping fragments; stale metadata not used as acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/job-stories.yaml",
+      "sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+      "bytes": 2351328,
+      "scope": "scenario authority/provenance",
+      "opened_coverage": "targeted SB01-SB06 story and mapping fragments; stale metadata not used as acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/implementation/story-backend-map.yaml",
+      "sha256": "5008dbaae1ca78d8570698d6ec0a64ae78cb9cbfc17cb2483097b80dde29da05",
+      "bytes": 75628,
+      "scope": "scenario authority/provenance",
+      "opened_coverage": "targeted SB01-SB06 story and mapping fragments; stale metadata not used as acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/implementation/backend-delta.yaml",
+      "sha256": "b32d0cbf83da5ec8b478b132e08302e7f88379905052d7290ff38d95237b4e6a",
+      "bytes": 726798,
+      "scope": "scenario authority/provenance",
+      "opened_coverage": "targeted SB01-SB06 story and mapping fragments; stale metadata not used as acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/sources/manifest.yaml",
+      "sha256": "62f1e377fedc5c8d9da9a5f0b2f457f6dc970806416759437fe482bcdc6553a2",
+      "bytes": 4487092,
+      "scope": "scenario authority/provenance",
+      "opened_coverage": "targeted SB01-SB06 story and mapping fragments; stale metadata not used as acceptance"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-08-limited-administrators.md",
+      "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+      "bytes": 4490,
+      "scope": "owner decision",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+      "sha256": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+      "bytes": 1836,
+      "scope": "owner decision",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserController.java",
+      "sha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "bytes": 9451,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+      "sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "bytes": 5064,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConvertersConfig.java",
+      "sha256": "10992340a10b1f936429f32684b618493e55afb3faafb11d0505f50fecbed257",
+      "bytes": 3887,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "sha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+      "bytes": 8023,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyByCodeRequest.java",
+      "sha256": "1415ec63286a44421a3c681b3ca76316e52920d1846deaaa7573fae1a5269429",
+      "bytes": 406,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyRequest.java",
+      "sha256": "d1d7686ce25a7297b4469afb106506c5a7cdc2c4d5025b6d6bda7d5b0098231e",
+      "bytes": 543,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/AuthInputValidationExceptionHandler.java",
+      "sha256": "6ceac8f4c8f3b070d4a985758059270005b49c8110872a2a8497caac1c8ab0c7",
+      "bytes": 2252,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/ReportProofValidationExceptionHandler.java",
+      "sha256": "1a95066f5b4c975acf95ab789a543234d0e850af9ef0760805b7c54e9993473b",
+      "bytes": 2300,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "sha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+      "bytes": 8027,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+      "sha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+      "bytes": 14376,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+      "sha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+      "bytes": 2792,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "sha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+      "bytes": 23800,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "sha256": "4bccd8d1445ffd904b93602eb064ef360159f8ce597f817d0927d56ac9a1be56",
+      "bytes": 30338,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java",
+      "sha256": "cc45f7e0444e961c079453dc96518147a8cfe96a18e6fa91967bd0f42caaff4f",
+      "bytes": 9890,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java",
+      "sha256": "f8b06eeae24eee07cd63b6fdca7fe202d0415e5a3e9272aadc0a57c497a0fd8d",
+      "bytes": 1287,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/WebConfig.java",
+      "sha256": "6d6cf0948edaff0500d82cf270e1f74c59876505ddef6662e30bf3a00fb7b95c",
+      "bytes": 2052,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "sha256": "912320fe398b0c35170b60145f4ebab3d00bfb35218384c6d7a998876915b4da",
+      "bytes": 22987,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+      "bytes": 42836,
+      "scope": "stable changed source/test",
+      "opened_coverage": "changed functions and relevant test/fixture assertions directly opened; full bytes independently hashed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java",
+      "sha256": "7fb6a294b33c9d895ca65f6e038bcd5a4e206da2901b93207f9159beac3d99e1",
+      "bytes": 4596,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalReportDownloadTicketController.java",
+      "sha256": "09f3efe94ff6f5af8a363a0f0c9dc69680a24e1d05e2872187f07cf82f8fc209",
+      "bytes": 1540,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java",
+      "sha256": "d8ae422756f4a9035c7a52fed380d86948b2e98bf21608636799f7569847aa24",
+      "bytes": 5848,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalReportDownloadTicketApi.java",
+      "sha256": "96b20860a4fe7d44e16e56e06fa602129eb6c4a5dd299e2985325799c83a0ebc",
+      "bytes": 1381,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RedeemReportDownloadTicketRequest.java",
+      "sha256": "d1603f8cfec3bdb344df01d6fcdd9b04281ae6d6ddd54fb59aebaba34045e803",
+      "bytes": 462,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java",
+      "sha256": "61b1b4d397bcd761b5c72ee07c4e6c70c06d28ead0cafe34dbb62461ece1a266",
+      "bytes": 3711,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/InternalIssuerSecretFilter.java",
+      "sha256": "64c3e91e99366bde711a8eb9f68be1ab69341041481e33c8fb85f27bfce9f47b",
+      "bytes": 4050,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/PasswordResetValidationExceptionHandler.java",
+      "sha256": "d9e103c17b6dfcca8bcd8063335c653789add20add4533b2a8972b342ff3b69e",
+      "bytes": 2267,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java",
+      "sha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+      "bytes": 13872,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserAssembler.java",
+      "sha256": "22fc694489a55b2a973ddcb983846d5f9d441676ca9263ae6bf841b9c627e4ca",
+      "bytes": 5783,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "sha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+      "bytes": 73195,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AcademicAdminAccess.java",
+      "sha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "bytes": 1821,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessConfiguration.java",
+      "sha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+      "bytes": 405,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessJdbcAuthority.java",
+      "sha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+      "bytes": 5855,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/RoleCheckAspect.java",
+      "sha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "bytes": 2660,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java",
+      "sha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "bytes": 1885,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "bytes": 8149,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "bytes": 2655,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f",
+      "bytes": 2614,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java",
+      "sha256": "498202d3d9fa6ab98e1f3a9485d17f66faa60a49d6ae2f110742961d26a24963",
+      "bytes": 8229,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java",
+      "sha256": "42f172690d797ef64f71a7fcdec3ec2ad5d2b4027102e3eaef682093a7fa79d8",
+      "bytes": 5044,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileBffException.java",
+      "sha256": "8e88892293d4f574f4a91acb50628f16823d942efb349fdc2de703b44a28e301",
+      "bytes": 874,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+      "sha256": "27c6740a6bcf83c3fd0b27bd1a3f96512527bfc8a8396ad3b50e54a799590001",
+      "bytes": 6130,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "sha256": "78bcda8caf9c129ed31556d177d34873df070898a81f0ac935babad6f8318a8e",
+      "bytes": 19787,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java",
+      "sha256": "6ddf3765480b2c5ea959ea61d41bac57fdb21ed66c03614373bc918f69a21d6f",
+      "bytes": 5335,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java",
+      "sha256": "b3dc3d820a952062c71f1c546674250be05ad5d2e0dbb1de8a6f7a821cd9ce8c",
+      "bytes": 20576,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "sha256": "70ae6d3f2b5f25f86d3a46783a1a2408d1fd31ad551bab940d00935ff634d86f",
+      "bytes": 36238,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "bytes": 40223,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/proto/schedule.proto",
+      "sha256": "999061dd421e32ceb9afa538411a1f33093de404a05917eab55e7fc6958bd085",
+      "bytes": 13221,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/proto/attendance.proto",
+      "sha256": "04a29b6dc3fd3c23a47700b7ffc179d68e46c59f11710b78747386937c58016b",
+      "bytes": 18737,
+      "scope": "reachability/authority/enum/fixture context",
+      "opened_coverage": "relevant symbols/fragments opened; not claiming unrelated full-file review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/LessonStatus.java",
+      "sha256": "c289a221c6b3f1a7d6fc863de60ef00de09e4d8a05f7af37babd3f386ea0be7e",
+      "bytes": 150,
+      "scope": "enum domain",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/WeekType.java",
+      "sha256": "1d856df697c2cfc8015b3935137b274a5983c57bd2e6f8e44edd0fb8f069a8d0",
+      "bytes": 105,
+      "scope": "enum domain",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/AttendanceStatus.java",
+      "sha256": "e3822281127c0f56bbecc89fef1a10a87bdee064bce0a86c3f21d10fdab0cadd",
+      "bytes": 161,
+      "scope": "enum domain",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/AttendanceSource.java",
+      "sha256": "fc74ee8ff27edc34412c230b27f2b6ea6248591c563f6be542d6d53f3b9269c7",
+      "bytes": 175,
+      "scope": "enum domain",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+      "sha256": "708368d582b131c6d0bb355cd1cf70a9623678dec02bccf5ed5dc5d90305ebb2",
+      "bytes": 258,
+      "scope": "enum domain",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+      "sha256": "b65d1bf43a4aca5d83085ddbd3d3d045bdfce1fb46c86ed98ed78b456e5707f3",
+      "bytes": 158,
+      "scope": "enum domain",
+      "opened_coverage": "full text"
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/run-gradle.py",
+      "sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+      "bytes": 1242,
+      "scope": "verification harness",
+      "opened_coverage": "full text; not executed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/review-packet.md",
+      "sha256": "524c78d480ba0f7d08f2d1bb45c6c3e00c31d42dfa773b5e0f258072d7d7f233",
+      "bytes": 4554,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/findings.md",
+      "sha256": "8b1c82ed85809971754a2916781173d1362a99f41da5c9998f14abc7e01e3ff4",
+      "bytes": 5810,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/CURRENT.md",
+      "sha256": "7fc8d64d672c69cc7fc99827772741db492ab38482b16b3ceccfaf8df1ab82b3",
+      "bytes": 875,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/source-ledger.json",
+      "sha256": "8b7cdc1a25edb1fd1078eb5320254f3a080b9755edc383760c775c02dd5b4bb2",
+      "bytes": 1661,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/inventory.json",
+      "sha256": "d9fa665c4498927e3e3933be289e988e41af0a862d8dc50a9882eac0dd26bd2e",
+      "bytes": 2287,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/tested-final-source-manifest.json",
+      "sha256": "c0028fe72ea5eb55a4d6d9e83f49d7d2a893d75f32c5c42611547c4d78ad7d8e",
+      "bytes": 3793,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/red-otp-01.json",
+      "sha256": "a4d485bf7f46cb68a15ea33ce1e641cdc9d148f5c734ad6203c10d2f1aa4a267",
+      "bytes": 651,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/red-locale-01.json",
+      "sha256": "3dffa439923f8e11dca539c5aad6eedc05da9984e4552d76ce49b85b00896eca",
+      "bytes": 1640,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/red-bff-report-01.json",
+      "sha256": "57cf5dd56dddca4b1b13c0c26a19eee7631fef7ef3bd3ea29333dd8ed260a682",
+      "bytes": 1406,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/green-SB02-partial.json",
+      "sha256": "1c5ed5544be9bc4a9ce373e7d8532fd3d6a2c824c44ea48d94cdd7f16fb8f87e",
+      "bytes": 631,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/green-boundaries-01.json",
+      "sha256": "e152acd62b3ac68c1fdc669d7238867485b599e6ed3bf88a848fe7a6867c12c8",
+      "bytes": 1189,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/green-boundaries-02.json",
+      "sha256": "cd1938a2f8393e4f901cff4df8ae76db0c72c03b0abc8d107072ed9ffda3d04f",
+      "bytes": 908,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/green-academic-fixture-03.json",
+      "sha256": "3338a775fa8b71bf7d86f01d6fb933f750df7e4b364ad053d7e09ce194ca972c",
+      "bytes": 675,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/green-boundaries-01-wip.json",
+      "sha256": "3d47f1e287bfeb165be6008df80417adb6c90cf048711efb10317ea296a9afa9",
+      "bytes": 2768,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/green-boundaries-02-wip.json",
+      "sha256": "5332b7eda425d8fdd5d82061e5b07db8363eb09d3b3b64b8dd66b9063f85208a",
+      "bytes": 3306,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/commands-supplement.json",
+      "sha256": "ca3948f144c03da2a2ee7c0d9b7f382a20b751dc40958ff915a067761ba98e95",
+      "bytes": 1755,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/attempts.ndjson",
+      "sha256": "274a9c7a6922012299354385f34678638fc3c04c54c6509e8a93cf146a5af1c2",
+      "bytes": 17872,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/artifact-scan-final.json",
+      "sha256": "d821f00daa05ae229ce3fa5e6a625730af7685fb03cfce5e6535fbad9b1f41f4",
+      "bytes": 7701,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/resource-cleanup.json",
+      "sha256": "2138ecec1f8639bbd63c6ba07d9c2e06e6172e9dc50d73460dbebd1abf8224e4",
+      "bytes": 763,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/resource-cleanup-final.json",
+      "sha256": "5436865e4cc46a45d988a2962fa0a43a783453937f38c24e4dc233116276ffbf",
+      "bytes": 749,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_boundaries_developer/historic-8a9-command-recovery.json",
+      "sha256": "75a853d27409d4e43ba5ca10f7217c11370fafc92b7ce8f6a3234ae01fe27ab6",
+      "bytes": 1949,
+      "scope": "author receipt",
+      "opened_coverage": "full structured content read/parsed; author assertions reconciled against actual sources and XML"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green-SB02-partial.xml",
+      "sha256": "3f21de7f10828201b2d2c93a72cefad11e70e534d21f51ee706e2fe5f0005e48",
+      "bytes": 33784,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green-academic-fixture-03.log",
+      "sha256": "7f5184656ff2f254481be0a5aaf7d4018992b3118da2f5082d1a83c8259dcf2e",
+      "bytes": 7117,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green-boundaries-01.log",
+      "sha256": "d313eb03146108ea8d46d2fbc72b7045d39f2160dcf42b043af0d27ff4ad2cde",
+      "bytes": 22496,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green-boundaries-02.log",
+      "sha256": "e9f7caeaf5822a4b9e8db67d07a0bafe2c5b34b9c16181e4a97342a61e5c28ad",
+      "bytes": 16534,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB01.xml",
+      "sha256": "f6fdc836e5bf92e71d672549962b0ea38c774b969366f0651d1e4dadea1b06f7",
+      "bytes": 7668,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB02.xml",
+      "sha256": "3f21de7f10828201b2d2c93a72cefad11e70e534d21f51ee706e2fe5f0005e48",
+      "bytes": 33784,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB03.xml",
+      "sha256": "7a1b8c3b271efc0b908ec5367a3639d64361a07e0d4413f96c78beb7099c1dc0",
+      "bytes": 22810,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB04.xml",
+      "sha256": "fc4018f84aa2b9c22a29b8ce7c143418f10121327c5d7947bb453d379c7818b3",
+      "bytes": 13705,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB05.xml",
+      "sha256": "1c279cc63b1da84f77a8757ba6973e9188e7fca708dfaa071ddad81dc23061fd",
+      "bytes": 33571,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB06-ACADEMIC.xml",
+      "sha256": "a1b8d138a154e1f79f39e7466a8a0215410689ad0a97a00c7f2c56552ce8b111",
+      "bytes": 32125,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB06-AUTH-CLEAR.xml",
+      "sha256": "368f1b375ca847d01795988345488a48c281990dfa1dd073cd234c4203dd0088",
+      "bytes": 1266,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB01-DTO.xml",
+      "sha256": "48220ba3fc235e248fd3fa94a31a65749173ea0b6d3bdf0e569770aa26221f83",
+      "bytes": 504,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB02.xml",
+      "sha256": "7c42c3c8cfc7586c87e2a993720ce919a9295880db71a120a4ad0e7b4eda4810",
+      "bytes": 29613,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB03-UNKNOWN-NULL.xml",
+      "sha256": "800fcf62bd41ced8a84735d8e7f480bb0a6c959b9c1565c4608f228ddbca9b09",
+      "bytes": 22416,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB06-ACADEMIC.xml",
+      "sha256": "5a65448792b32d5ce6a21cc2dbb3bcaabcccc1f02dd87956ee36cf6392602f44",
+      "bytes": 30932,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green03-SB06-ACADEMIC.xml",
+      "sha256": "6f32a402388e380d5a616d4a4ae1ac97c8b38e58d8c484783002696db058a2b6",
+      "bytes": 30937,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB02.xml",
+      "sha256": "29fd3db95725ca0579a023ad6ea15167a11a8d98fcf40d30879308749a3aa18c",
+      "bytes": 50328,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB03.xml",
+      "sha256": "3d8dc21666c80a0a7e6c0d8ed7f272f5452e32a96791f95aa08bbe1079fe9198",
+      "bytes": 54845,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB04.xml",
+      "sha256": "b6614d45e995ac9f04bae92aaac30812d1d6ebe33da6c8f2f7b691aefe88c390",
+      "bytes": 44958,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB05.xml",
+      "sha256": "2d0528a40a00227be8dbdaffde22de60f0078f51b26452b35314cb8d47e96ffc",
+      "bytes": 34290,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-bff-report-01.log",
+      "sha256": "7a7b6c6aa1b9a5514f126d6316a49b06eed99b3849e4fb3fdb188d6e6e89f9ea",
+      "bytes": 10285,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-locale-01.log",
+      "sha256": "d9e712dc3c01852410dc6c807d7db2bd7d211175cdbecda7fe0d8be0b7dbfb16",
+      "bytes": 22199,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-otp-01.log",
+      "sha256": "4e94902f2180e770acda9462b6ae3a9aded6373384a51804a6c0a633a9f2b188",
+      "bytes": 6208,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-otp-01.xml",
+      "sha256": "c5f7ff3df46df43fb0f1715ce024a69ce8be14685cd94caf2d12b29f7d40493c",
+      "bytes": 40846,
+      "scope": "actual archived evidence",
+      "opened_coverage": "full bytes independently scanned and parsed; failure type/case/stack location and build terminal checked; redacted artifacts remain redacted"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/security-boundaries-developer/root-transfer.json",
+      "sha256": "17af60ac8e85475476a9650c048817798c4a0c0855f600582cfa2f25ea6bacc0",
+      "bytes": 1616,
+      "scope": "durable transfer",
+      "opened_coverage": "full text; all nine source/root copies checked byte-for-byte"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/QrLoginExceptionHandler.java",
+      "sha256": "05efed922ad8c795ed07893c316e4cdac791c52bcbb422fdc7be02932e8c7159",
+      "bytes": 2608,
+      "scope": "adjacent advice precedence",
+      "opened_coverage": "annotation/controller/type/order fragments directly read, no QR re-review claimed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+      "sha256": "b9d29e4a17a6250f445050067db8b76c23d0f2a5ade6bd31441884c933483bf8",
+      "bytes": 10122,
+      "scope": "adjacent advice precedence",
+      "opened_coverage": "annotation/controller/type/order fragments directly read, no QR re-review claimed"
+    }
+  ],
+  "explicit_missing_sources": [
+    {
+      "path": "/workspace/rutcampustrack/.agent/evidence/admin-permissions-20261008/CONTRACT.md",
+      "disposition": "historical R1 receipt referenced by dated decision absent; no new rule inferred; current owner decision and durable authority source directly reopened"
+    }
+  ],
+  "nonfilesystem_skill": {
+    "uri": "skill://plugin_connector_1p_c5b7d5df5d7081918f2c4be5a633ed5d/cloud-environment-runtime/SKILL.md",
+    "coverage": "full text via skills.read; cloud environment status connected/running, no secrets or identity bindings",
+    "content_hash": "UNKNOWN; not substituted with local recovered skill"
+  }
+}

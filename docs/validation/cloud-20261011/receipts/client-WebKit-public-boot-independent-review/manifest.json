@@ -1,0 +1,33 @@
+{
+  "utc": "2026-10-12T18:52:28.195838+00:00",
+  "outcome": "CHANGES_REQUESTED",
+  "finding": "WEBKIT-PUBLIC-GRANT-USE-TIME",
+  "severity": "P2",
+  "scope": "Small public WebKitboot source only",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_boot_review/REVIEW.md",
+      "relative_path": "REVIEW.md",
+      "size": 4210,
+      "mode": "0o400",
+      "sha256": "6c52dd9ca82e3a804abdd3af29b0c518571c2426951c141985cbeb326782fb30"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_boot_review/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "size": 2117,
+      "mode": "0o400",
+      "sha256": "0467c3ed0dc379f3509392241d19ceb881278a901998c057b8bb562821a5d8f9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_boot_review/check.py",
+      "relative_path": "check.py",
+      "size": 5627,
+      "mode": "0o400",
+      "sha256": "8e31fbb0358c1ddef908f17a4bcbdd77e244d52d2595dd9cd650d3ca6f394674"
+    }
+  ],
+  "runtime": "NOT_RUN"
+}

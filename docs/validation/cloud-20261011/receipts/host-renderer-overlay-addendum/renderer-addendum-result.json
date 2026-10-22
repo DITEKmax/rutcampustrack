@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-12T02:33:20.807288+00:00",
+  "root_revision": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "original29_seal_sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+  "all29_original_files_byte_exact": true,
+  "source_conclusion": "SUPPORTED_FULL_CURRENT_APP_OVERLAY_WITH_EXISTING_NATIVE_IMAGE_AND_TEMP_MAPPING",
+  "schema_validation": "PASS_DRAFT202012_CHECK_SCHEMA",
+  "compose_overlay_yaml_and_invariants": "PASS_SOURCE_ONLY",
+  "old_jar_structural_proof": "EXACT_SHA_READ_ZIP_ONLY_EEC3_NOT_CURRENT",
+  "numeric_image_uid_gid": "UNKNOWN_USER_APP_ONLY_NO_HELPER_ALLOCATION",
+  "current_artifact_producer": "PENDING_COHESIVE_NP01_FREEZE_NEW8JAR_ROOT_PRODUCER",
+  "current_payload_extraction": "NOT_RUN",
+  "actual_mount_readability_tmp_native_readiness": "NOT_RUN",
+  "JAR_app_browser": "NOT_RUN",
+  "keys_generated": false,
+  "new_docker_allocations": false,
+  "source_writes": false,
+  "source_receipts": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+      "bytes": 86218,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "54826f24f55a4abf96155082c57441caff9699363bd6fba0bfdf03924eb2659b",
+      "bytes": 5584,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+      "bytes": 16719,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+      "bytes": 9948,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "ddc2e2dee145f14d94f4f671432f07b50d8e0faf76eb09638a5916251b80b272",
+      "bytes": 2210,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/Dockerfile",
+      "sha256": "2d67dc84d7130478e6b7490be5d5e6d215384bea379b657a487b90cd4444cbbd",
+      "bytes": 1767,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/build.gradle.kts",
+      "sha256": "d0c8e2abf940530d1616a5c4a930aaefd0057210663196e95d4eccedd7665aae",
+      "bytes": 1770,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/resources/application.yml",
+      "sha256": "2477cffa6e4ac496f72e065e31bb25f877ab20dcdee5994dff0262c3f32c1bc9",
+      "bytes": 899,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+      "sha256": "fec83613e9ceec752a7082997662daec3566bc558c19f140203d8ff377e51455",
+      "bytes": 12196,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+      "sha256": "b2c01956d5fd3dc00c64ac5d42efcdc3a1c693b9702ec504ca3b2e2a7c4f7da8",
+      "bytes": 4455,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/GrpcAuthInterceptor.java",
+      "sha256": "9a292e9793f6a3c4b544b8f0e0793fda4b7f4d26c3d861a559ef22d5aadf3dc5",
+      "bytes": 1287,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/real_client_runtime/retained-runtime-dockerfiles/document-renderer-service.Dockerfile",
+      "sha256": "ef85208644faa04bf6a49ef38eaf7f0ee661c86a124ff9c9fdeaf6530178be65",
+      "bytes": 868,
+      "status": "SOURCE_OR_METADATA_READ_ONLY_NO_CURRENT_RUNTIME_CLAIM"
+    }
+  ],
+  "command_template": [
+    "docker --host=unix:///var/run/docker.sock compose --env-file <NEW-own-private-synthetic-env600> -f /workspace/scratch/rct-validation/host_runtime_prepare/data-renderer-edge.compose.template.yml -f /workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum.compose.template.yml --project-name rct-client-host-current up --no-build --pull never document-renderer-service",
+    "Template only; root approved current8JAR/source/staging/resource/exclusive-runtime grant required. Do not emit expanded compose/env/raw logs/health log bodies."
+  ]
+}

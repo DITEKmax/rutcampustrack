@@ -1,0 +1,2518 @@
+{
+  "timestamp": "2026-10-11T23:00:22.498732+00:00",
+  "reviewer": "notification_recovery_review",
+  "requested": "gpt-6.1-sol/xhigh",
+  "actual_metadata": "UNKNOWN",
+  "method": "LIGHT static read/hash/AST/XML/Git; no test replay, native runtime or mutation",
+  "git": [
+    {
+      "tree": "/workspace/rct-worktrees/notification-provider",
+      "base": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+      "commit": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+      "observed_head": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+      "status_porcelain": "",
+      "diff_name_status": [
+        "A\tservices/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+        "M\tservices/notification-bot/bot/notifications/otp_requested.py",
+        "A\tservices/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+        "M\tservices/notification-bot/tests/test_otp_requested.py",
+        "A\tservices/notification-bot/tests/test_provider_http_boundaries.py",
+        "A\tservices/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java"
+      ]
+    },
+    {
+      "tree": "/workspace/rct-worktrees/recovery",
+      "base": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "commit": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+      "observed_head": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+      "status_porcelain": "",
+      "diff_name_status": [
+        "A\tscripts/test-recovery-failure-boundaries.py"
+      ]
+    }
+  ],
+  "bounded_sources": [
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+      "member": "sources/notification/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+      "category": "bounded-source",
+      "bytes": 5654,
+      "sha256": "2ef39d5d4530854c738de0a7b3eda244a1b8f4497afbb34f9b1a50ad027d5f3a",
+      "change": "Created",
+      "author_manifest_match": true,
+      "committed_sha256": "2ef39d5d4530854c738de0a7b3eda244a1b8f4497afbb34f9b1a50ad027d5f3a",
+      "commit_match": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/notifications/otp_requested.py",
+      "member": "sources/notification/services/notification-bot/bot/notifications/otp_requested.py",
+      "category": "bounded-source",
+      "bytes": 4698,
+      "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+      "change": "Modified",
+      "author_manifest_match": true,
+      "committed_sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+      "commit_match": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "member": "sources/notification/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "category": "bounded-source",
+      "bytes": 11218,
+      "sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2",
+      "change": "Created",
+      "author_manifest_match": true,
+      "committed_sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2",
+      "commit_match": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_otp_requested.py",
+      "member": "sources/notification/services/notification-bot/tests/test_otp_requested.py",
+      "category": "bounded-source",
+      "bytes": 4697,
+      "sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88",
+      "change": "Modified",
+      "author_manifest_match": true,
+      "committed_sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88",
+      "commit_match": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_provider_http_boundaries.py",
+      "member": "sources/notification/services/notification-bot/tests/test_provider_http_boundaries.py",
+      "category": "bounded-source",
+      "bytes": 6897,
+      "sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b",
+      "change": "Created",
+      "author_manifest_match": true,
+      "committed_sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b",
+      "commit_match": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+      "member": "sources/notification/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+      "category": "bounded-source",
+      "bytes": 10048,
+      "sha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953",
+      "change": "Created",
+      "author_manifest_match": true,
+      "committed_sha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953",
+      "commit_match": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/scripts/test-recovery-failure-boundaries.py",
+      "member": "sources/recovery/scripts/test-recovery-failure-boundaries.py",
+      "category": "bounded-source",
+      "bytes": 8561,
+      "sha256": "2b6096ac265b66bd2f59b5b2bb2c4926f90175164735f42eac1b816c78b0c1f5",
+      "change": "Created",
+      "committed_sha256": "2b6096ac265b66bd2f59b5b2bb2c4926f90175164735f42eac1b816c78b0c1f5",
+      "commit_match": true
+    }
+  ],
+  "dependency_sources": [
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/consumers/event_consumer.py",
+      "member": "dependencies/notification/services/notification-bot/bot/consumers/event_consumer.py",
+      "category": "production-or-test-dependency",
+      "bytes": 13106,
+      "sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315",
+      "frozen_sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/consumers/event_dispatcher.py",
+      "member": "dependencies/notification/services/notification-bot/bot/consumers/event_dispatcher.py",
+      "category": "production-or-test-dependency",
+      "bytes": 21875,
+      "sha256": "f458b7ffc2b5d0fc10156383833694f81c16c8aa51514ab632efb6ca60349cde",
+      "frozen_sha256": "f458b7ffc2b5d0fc10156383833694f81c16c8aa51514ab632efb6ca60349cde",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/idempotency_guard.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/idempotency_guard.py",
+      "category": "production-or-test-dependency",
+      "bytes": 7346,
+      "sha256": "63b4d07d1f205b9aed4acf9abcd4f5a611801f519a3fa6e9b814a873623ef8a1",
+      "frozen_sha256": "63b4d07d1f205b9aed4acf9abcd4f5a611801f519a3fa6e9b814a873623ef8a1",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/send_queue.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/send_queue.py",
+      "category": "production-or-test-dependency",
+      "bytes": 11940,
+      "sha256": "59700af6ee0bfd06d2cd82b6016ffb4bbd4621fcb958ddc17994d15cbb897f26",
+      "frozen_sha256": "59700af6ee0bfd06d2cd82b6016ffb4bbd4621fcb958ddc17994d15cbb897f26",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/notification_prefs.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/notification_prefs.py",
+      "category": "production-or-test-dependency",
+      "bytes": 12063,
+      "sha256": "637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796",
+      "frozen_sha256": "637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/otp_message_tracker.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/otp_message_tracker.py",
+      "category": "production-or-test-dependency",
+      "bytes": 6301,
+      "sha256": "7501b01be4b82909c14f72a8fcc4a4130b500ff2ea439b836d63e7f2ace0a853",
+      "frozen_sha256": "7501b01be4b82909c14f72a8fcc4a4130b500ff2ea439b836d63e7f2ace0a853",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/handlers/start.py",
+      "member": "dependencies/notification/services/notification-bot/bot/handlers/start.py",
+      "category": "production-or-test-dependency",
+      "bytes": 6795,
+      "sha256": "bc7e81bfab13be25169a44f0bc0a798fc78f93ed7c0d04480fb4cd3b9fcf422b",
+      "frozen_sha256": "bc7e81bfab13be25169a44f0bc0a798fc78f93ed7c0d04480fb4cd3b9fcf422b",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "member": "dependencies/notification/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "category": "production-or-test-dependency",
+      "bytes": 76650,
+      "sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "frozen_sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java",
+      "member": "dependencies/notification/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java",
+      "category": "production-or-test-dependency",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4",
+      "frozen_sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "member": "dependencies/notification/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "category": "production-or-test-dependency",
+      "bytes": 2614,
+      "sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f",
+      "frozen_sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+      "member": "dependencies/notification/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+      "category": "production-or-test-dependency",
+      "bytes": 10265,
+      "sha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+      "frozen_sha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+      "member": "dependencies/notification/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+      "category": "production-or-test-dependency",
+      "bytes": 1406,
+      "sha256": "6c85d71986d68185fa0cb2578de4ddd495b88c5c9e6ab88af2841dd3bad60f81",
+      "frozen_sha256": "6c85d71986d68185fa0cb2578de4ddd495b88c5c9e6ab88af2841dd3bad60f81",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistry.java",
+      "member": "dependencies/notification/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistry.java",
+      "category": "production-or-test-dependency",
+      "bytes": 9240,
+      "sha256": "64d3eb8371a34762df8dd25bdc9e09c52b8e3a04ad6f204c5100390fcb64d0a4",
+      "frozen_sha256": "64d3eb8371a34762df8dd25bdc9e09c52b8e3a04ad6f204c5100390fcb64d0a4",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WebSocketConfig.java",
+      "member": "dependencies/notification/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WebSocketConfig.java",
+      "category": "production-or-test-dependency",
+      "bytes": 5396,
+      "sha256": "ad335092375f8fe361dd679765aff9794d71f373ae2a9b76f5b8812b8a16b3d8",
+      "frozen_sha256": "ad335092375f8fe361dd679765aff9794d71f373ae2a9b76f5b8812b8a16b3d8",
+      "unchanged_from_frozen": true
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/scripts/recovery.py",
+      "member": "dependencies/recovery/scripts/recovery.py",
+      "category": "production-or-test-dependency",
+      "bytes": 21267,
+      "sha256": "289df762c439a4f10c428f9ceb53b48b6424d3ed926754a6195618c4ccaab9c2",
+      "frozen_sha256": "289df762c439a4f10c428f9ceb53b48b6424d3ed926754a6195618c4ccaab9c2",
+      "unchanged_from_frozen": true
+    }
+  ],
+  "governing_inputs": [
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-notification-recovery-review.md",
+      "member": "governing/root/docs/validation/cloud-20261011/packet-notification-recovery-review.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 3872,
+      "sha256": "8b48d37ed85174ba48eba29e1ea6b7456385ec00472f9cf63843953103831920"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "member": "governing/root/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 84076,
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "member": "governing/root/docs/validation/cloud-20261011/CURRENT.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 8865,
+      "sha256": "d6f8894facec95c8ccb27d2da7c0548682a811c08d372d9836daa53c1f929444"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "member": "governing/root/docs/validation/cloud-20261011/decisions.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 9514,
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "member": "governing/root/docs/validation/cloud-20261011/questions.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 8152,
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "member": "governing/root/docs/validation/cloud-20261011/resources.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 5794,
+      "sha256": "910c7421d1ae29f35ec1d758ee99508318df3b96d1418da23c8d0dedac17fa22"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/AGENTS.md",
+      "member": "governing/root/AGENTS.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 4327,
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "member": "governing/root/.agent/orchestration-v2/RULES.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 24809,
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "member": "governing/root/docs/agent-workflow.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 7916,
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "member": "governing/notification/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 198036,
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "member": "governing/notification/docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 1230,
+      "sha256": "03e6c248c5009cd6fa693eb68e908cfb5edd71c66b76d8a4157e0be41e40ff50"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "member": "governing/notification/docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 2462,
+      "sha256": "13467ee1997662c85c6b5203e2060a4994430204eaefc9e95983673e9716f06c"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/operations/runbooks/dlq-triage.md",
+      "member": "governing/notification/docs/operations/runbooks/dlq-triage.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 6592,
+      "sha256": "5b356d95b6b95c1fe0ce6f6a48b5aba468c04857a36af5d94f25a6c22a43b042"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md",
+      "member": "governing/notification/docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 8412,
+      "sha256": "ab2069f5fd1af75b2fb10f079ea0bfd1cba71edf365de34edd56eddf0d84bdb1"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/architecture/websocket-flow.md",
+      "member": "governing/notification/docs/architecture/websocket-flow.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 11710,
+      "sha256": "2d6d086ed3c6fd580f1d3f2694ad1246fcca25f54b851b4e1592f81d543a46f7"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/docs/operations/runbooks/backup-restore.md",
+      "member": "governing/recovery/docs/operations/runbooks/backup-restore.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 32630,
+      "sha256": "cd59f3e287dd98908e588d56ebc6d69a1295946f43a937a22a2a526902af529b"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "member": "governing/recovery/docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 1923,
+      "sha256": "32a28e7539cb95ca6060428441d4d9afd6fd785756a043c3a586aeb0dba81741"
+    }
+  ],
+  "format_bridges": [
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/notifications/otp_requested.py",
+      "pre_format_sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+      "current_sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+      "exact_bytes_equal": true,
+      "AST_body_and_import_multiset_equal": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "pre_format_sha256": "e65afca6292f52be70147f35d8fd83578bcae17d0a138e447a71904c215c7101",
+      "current_sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2",
+      "exact_bytes_equal": false,
+      "AST_body_and_import_multiset_equal": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_otp_requested.py",
+      "pre_format_sha256": "e206f3510176a96a8271433e241788ff61ee46d89545ff04b895ca59ccce1a36",
+      "current_sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88",
+      "exact_bytes_equal": false,
+      "AST_body_and_import_multiset_equal": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_provider_http_boundaries.py",
+      "pre_format_sha256": "b023ef02a838b12891cc5d320040ed88b703cf115cdf112170274377ebeb4097",
+      "current_sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b",
+      "exact_bytes_equal": false,
+      "AST_body_and_import_multiset_equal": true
+    }
+  ],
+  "notification_receipts": [
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/CURRENT.md",
+      "sha256": "f5782514fa984796af7f8a57d970a5bbad6659a380d1f4649d18bc20fc291653",
+      "bytes": 1285,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-before-safe.xml",
+      "sha256": "b56e8363d277834dad178496b2e95e213ed5e82fae15a44ade2439ff8037d9ff",
+      "bytes": 1240,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-command.json",
+      "sha256": "65a3a75021c7cdbc82b1819de96cca60805b63d2246a1b494ec80d62c06dd434",
+      "bytes": 3621,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-pending-files.json",
+      "sha256": "4cb265c31450e330dd816062d8cd0adca24d8c46ca80f49a8f26543e1460f169",
+      "bytes": 1139,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-pending-source/BotAdmissionProviderBridgeIT.java",
+      "sha256": "57349c01277849d352d97e17dfffe219ed2963aed5560de881d28bbd51ed709e",
+      "bytes": 5349,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-pending-source/bot_admission_provider_probe.py",
+      "sha256": "850119d0691da62c43a4f95c5dea69f6d02290417aad34ef1be46fbe14bea498",
+      "bytes": 3533,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-result.json",
+      "sha256": "29507938bdf8ed3f7bae22009b082aebb1a2b7c015117eab5549f993941f2c77",
+      "bytes": 1303,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-safe-transport-proposal.md",
+      "sha256": "e11d56803ed73e3c0dbc2205a71d4297c53180899c0e8fac3d0534cbaa42f139",
+      "bytes": 8427,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final-command.json",
+      "sha256": "fc482cdf93c9c6b1662fb95d6128b3f41d394d03b9fc1ae882de37735a348a93",
+      "bytes": 754,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final-result.json",
+      "sha256": "0cc9d6d6df37c0c007f1b47e110bfb279dd78e9f7fd9942b5b347a9356e701d1",
+      "bytes": 561,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final.log",
+      "sha256": "e57fdd5d4def9a316d344c82ff29f1cd897afb96c0a204a71c86192570e9cb97",
+      "bytes": 99,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final.xml",
+      "sha256": "01a105471ca4692f7584ce9f9321678d295b2c892641a1eecdbdb901b37cce4d",
+      "bytes": 1534,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-cleanup.json",
+      "sha256": "0034657f6ba0b79f23b8bb4b8aa85ec68b725e52317e870802228a71adce5864",
+      "bytes": 219,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-command.json",
+      "sha256": "31a89733245b130a9bd421640e146d00e0721279b642f62c19d81f549d1deb94",
+      "bytes": 700,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-result.json",
+      "sha256": "2f32ea994674bcab81d922b6a488dc00a70a5539674d199aae09ddd0b12c7792",
+      "bytes": 106,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-wrapper-command.json",
+      "sha256": "e56f7f3c7b03f5870178638a26f7e8c4c2ba0deb3f4a9e28cd3f1100e4df98d5",
+      "bytes": 383,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1.log",
+      "sha256": "429f775f3fbfacc728786a76319e43e8f899630e0b8343b2e7bab76f1cfd6c1c",
+      "bytes": 96,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-actual-cleanup.json",
+      "sha256": "202af8745d19e2a69a16102daf0e99a8cdb68debf54106e6128936b7f7ecc134",
+      "bytes": 219,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-actual-command.json",
+      "sha256": "2b640fddf03e2c7b09d2e2615e119ff63ae793b79a35179a479c422db05b0e14",
+      "bytes": 700,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-actual-result.json",
+      "sha256": "b0a1e4eb7ac5280a5ea62037063a4c17f875fd05ae33487893272f052c285d1c",
+      "bytes": 392,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-counterexample.log",
+      "sha256": "01c6f1dce021acef8802ea47b3a8a9f0a0ab27ed4cd10cdeb11dfb04b3b3b1e8",
+      "bytes": 338,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-probe.py",
+      "sha256": "663545dfb3324aa0f4216809230556b37c3782c83025c8f25022c090fe8e659d",
+      "bytes": 6944,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-product.py",
+      "sha256": "02b00a9c71bb7852d238e84184e5c53fca0cdf828cefe0934a4c998a0d2c824d",
+      "bytes": 4469,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-cleanup.json",
+      "sha256": "04cd3b198a5fecbe56b1624a9eab8c1997addfa67af66cdf2d3f806c414b27ee",
+      "bytes": 219,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-command.json",
+      "sha256": "6b4a86e19d68098d455d6d19f780f64eec3b7fbd4dbbfd9446e9e046d17c851d",
+      "bytes": 717,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-green-command.json",
+      "sha256": "d12af95094ee3555463421f0c765ce54f414eecfd6fbd893709e5c3cfadd1a04",
+      "bytes": 930,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-green-result.json",
+      "sha256": "33fe3c1f24fdc00f6e5ed74c168dcd8591c143ba4ea51928a22b61c66d627c8e",
+      "bytes": 508,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-otp-unit.xml",
+      "sha256": "c6a253916cfaa0cd97ed449d8dbadf6e4e15b9bc035271b2904d5908aa07e8d3",
+      "bytes": 908,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-recovery-green.log",
+      "sha256": "87a080d57b877a3ed38ae072a9466e99a0b998b714f92b4f8fbab6378b4835a7",
+      "bytes": 698,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-result.json",
+      "sha256": "56bc4276c82677cb89ca4ae7925ed26275c5552ba6a79914a4dc18a438f8309f",
+      "bytes": 840,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-unit-command.json",
+      "sha256": "73ab849c66b3f9b1b711eb7bfbcad180ae39bba61aa333566a6a5d0e34426aba",
+      "bytes": 455,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-unit-result.json",
+      "sha256": "0b68ce4b73e9f05d4db48149c805b056576f7d7a5c8f5e419f9e45d8188296ea",
+      "bytes": 605,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-wrapper-command.json",
+      "sha256": "e56f7f3c7b03f5870178638a26f7e8c4c2ba0deb3f4a9e28cd3f1100e4df98d5",
+      "bytes": 383,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-command.json",
+      "sha256": "2b90b11612fb374b657ddcb6eb04ebd82f92c189895a7dd7551cffa220ef8078",
+      "bytes": 648,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-http.log",
+      "sha256": "e6361b04f288338e87de9c8563de634c81b7831afcc15680c1ba441112586527",
+      "bytes": 99,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-http.xml",
+      "sha256": "5cf4978946680d3ca5f1d7dfe75c60307d5244b8fa79b520396b7fea11e90968",
+      "bytes": 874,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-result.json",
+      "sha256": "3eb62bcdfd37367e954e6ed902e623ac8c28da7bfa2c7095a0255eb0751d241f",
+      "bytes": 598,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-auth-safe.xml",
+      "sha256": "ec1a201521e4bd5dfc6bddd45811b6e6be015d1ac7a1802655677bcc3325e53d",
+      "bytes": 777,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-command.json",
+      "sha256": "4f0dcb519adc1f247fd8306d19aedc20568042eb00fb9587b1a2886195c80848",
+      "bytes": 1239,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-result.json",
+      "sha256": "93f6498e179b794f7e6bec2a1fe67e99daa7d389144f50edc5f564f755ffcfdf",
+      "bytes": 1530,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-before-safe.xml",
+      "sha256": "4112aab95c178a94c12b2f8392f38cdf3369d51a224f9f10fab535a7030c5e98",
+      "bytes": 864,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-green-safe.xml",
+      "sha256": "abcfc1bab6a8e33e1668ad9b76a7746e664f07888cf3c9f2c8f7c3b92110eade",
+      "bytes": 447,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-result.json",
+      "sha256": "88a145ec600c0656e46f594b2eb179c582686779fb696089933bb43ac7e2fc7d",
+      "bytes": 773,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-retry-command.json",
+      "sha256": "ba586301c712cdaac334c6509b1d179905f583b97898a19ccb17c0fabfd915d5",
+      "bytes": 624,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/attempts.ndjson",
+      "sha256": "655077e793ccc226d373cfe9479fbd5a3c028638df860fc6e3a7d682215920ed",
+      "bytes": 24464,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/cleanup.json",
+      "sha256": "ecb20d9824143a36bd4552ecb6aeea5937c18e0fdf77688b1c7c7060651d6c5b",
+      "bytes": 286,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/commit.log",
+      "sha256": "3b9b3eb38a9f31ca5daeeef21c2103e65d082fde334db694bd6c191f6cb05f82",
+      "bytes": 618,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/completion.json",
+      "sha256": "223a3694b1d01354d3d5df61b24ee548f21eb0cd6dbdb937d1f84d91a1385047",
+      "bytes": 766,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/inventory.json",
+      "sha256": "16c47e4a92b00771a3ee868aa959f72c604b6c866e31b7e7df1dc196ebc9c3f5",
+      "bytes": 2801,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/plan.md",
+      "sha256": "965a5fde9ee03a8c39ad03113e97f474209b42be95ef2ce20d6c21a4554a317d",
+      "bytes": 8530,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-bot_admission_provider_probe.py",
+      "sha256": "01711b765d6855cf76acc3971ad8837aea8dd426216d552f6b6da18bea0cb035",
+      "bytes": 3533,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-otp_delivery_ack_probe.py",
+      "sha256": "e65afca6292f52be70147f35d8fd83578bcae17d0a138e447a71904c215c7101",
+      "bytes": 10588,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-otp_requested.py",
+      "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+      "bytes": 4698,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-test_otp_requested.py",
+      "sha256": "e206f3510176a96a8271433e241788ff61ee46d89545ff04b895ca59ccce1a36",
+      "bytes": 4697,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-test_provider_http_boundaries.py",
+      "sha256": "b023ef02a838b12891cc5d320040ed88b703cf115cdf112170274377ebeb4097",
+      "bytes": 6911,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/prepared-files.json",
+      "sha256": "ac8c418a462cf097059bffaf3c14a7f87ba9c2616e68a308a27e0c26ab23d059",
+      "bytes": 2663,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/python-format-equivalence.json",
+      "sha256": "fb5653586aecda3fe2bee4abd5b3f9778415fe915c0782f16954d47460802c67",
+      "bytes": 1548,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/python-pre-format-hashes.json",
+      "sha256": "374e8a8f59cd2021fd4baafda3cfd104e18604cbbb4d6e314ae7ce35781e276c",
+      "bytes": 716,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/review-packet.md",
+      "sha256": "eff1a87db0bfd95e5d50f5808a3e827917bae826b189af0165296b3b11dfa7d2",
+      "bytes": 7675,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/ruff-fix.log",
+      "sha256": "3889c5a06c96082b58aa325b39c61d839e3409f2c59447a2666f2692f1adbe81",
+      "bytes": 83,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/run_np02.py",
+      "sha256": "b5fe432ce2cdae343a9fe84a506b358847a5c7e8607ccb3696f84d707086eb95",
+      "bytes": 4584,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/source-ledger.json",
+      "sha256": "5a3a2da5df71d7235b11a2011cd6bffcda578c910898f9d93b418d0afe5a9929",
+      "bytes": 10544,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/test-prep.json",
+      "sha256": "15211d01475027a407029310c3ca5704136c797497c5afdbd0408374e0d28a3b",
+      "bytes": 484,
+      "author_manifest_match": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/tested-final-manifest.json",
+      "sha256": "6055b97e2f2c984608d4fdd818219232ffa3bfa1b5e78ddd8ec7a9b592e35ffd",
+      "bytes": 2968,
+      "author_manifest_match": true
+    }
+  ],
+  "recovery_artifacts": [
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-aclkxodg/partial/partial-bundle/academic.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-aclkxodg/partial/partial-bundle/manifest.json",
+      "sha256": "4ae3f0c00241cb6269312ab8e0c5a39ef219ff0c9df43821a958cb78ea5d5287",
+      "bytes": 18,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-aclkxodg/partial/partial-bundle/schedule.dump",
+      "sha256": "7929cd5e493e652c59ccd06eb0ff44c84c23e8614470391a141c668774e3409b",
+      "bytes": 38,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-label/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-notification-mongo/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-dq9t1gsy/preflight-schedule/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/academic.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/attendance.archive",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/manifest.json",
+      "sha256": "8d9fbf4bab4ea1028c930c7dd890515632863c69d8f0dcd3ca75d7c0d22058f1",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/notification.archive",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/new-output-bundle/schedule.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/partial-bundle/academic.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/partial/partial-bundle/schedule.dump",
+      "sha256": "7929cd5e493e652c59ccd06eb0ff44c84c23e8614470391a141c668774e3409b",
+      "bytes": 38,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-label/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-notification-mongo/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-g19cwp02/preflight-schedule/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-label/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-notification-mongo/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-ktr7p9p0/preflight-schedule/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-label/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-notification-mongo/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-mjveddsj/preflight-schedule/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/academic.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/attendance.archive",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/manifest.json",
+      "sha256": "8d9fbf4bab4ea1028c930c7dd890515632863c69d8f0dcd3ca75d7c0d22058f1",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/notification.archive",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/new-output-bundle/schedule.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/partial-bundle/academic.dump",
+      "sha256": "986aaef7703e1b1cf1ab31ae4ccca4b90d905d62e11d43ced8527c7c42682dbf",
+      "bytes": 32,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/partial/partial-bundle/schedule.dump",
+      "sha256": "7929cd5e493e652c59ccd06eb0ff44c84c23e8614470391a141c668774e3409b",
+      "bytes": 38,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-label/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-notification-mongo/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/academic.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/attendance.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/files.tar",
+      "sha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "bytes": 10240,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/inventory.json",
+      "sha256": "c21856ee57443f6a47d77f29d2d2538d0e3a72eeeced943d04e7958100c87d06",
+      "bytes": 241,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/manifest.json",
+      "sha256": "d690741519a60022f6b1599bb514562fd785173e566762bc2c755fcfd715b000",
+      "bytes": 612,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/notification.archive",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/recovery/.agent/evidence/recovery-validation/guard-unit-xesuhg4a/preflight-schedule/valid-fixture-bundle/schedule.dump",
+      "sha256": "958dfebf077b0bda87b2e9d4b602039d58b6e5a37d25bc65652aed94c4a62820",
+      "bytes": 49,
+      "author_ledger_match": true
+    }
+  ],
+  "xml_summaries": [
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-before-safe.xml",
+      "sha256": "b56e8363d277834dad178496b2e95e213ed5e82fae15a44ade2439ff8037d9ff",
+      "suites": [
+        {
+          "attributes": {
+            "name": "ru.rutcampustrack.academic.integration.BotAdmissionProviderBridgeIT",
+            "tests": "1",
+            "skipped": "0",
+            "failures": "1",
+            "errors": "0",
+            "timestamp": "2026-10-11T22:24:01",
+            "hostname": "993a1bc854c1",
+            "time": "11.882"
+          },
+          "testcases": [
+            {
+              "name": "currentBoundStudentReceivesAcceptedInitialCredentialAtPrivateFirstStart()",
+              "classname": "ru.rutcampustrack.academic.integration.BotAdmissionProviderBridgeIT",
+              "time": "11.882"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-otp-unit.xml",
+      "sha256": "c6a253916cfaa0cd97ed449d8dbadf6e4e15b9bc035271b2904d5908aa07e8d3",
+      "suites": [
+        {
+          "attributes": {
+            "name": "pytest",
+            "errors": "0",
+            "failures": "0",
+            "skipped": "0",
+            "tests": "5",
+            "time": "5.587",
+            "timestamp": "2026-10-11T22:35:40.367331+00:00",
+            "hostname": "993a1bc854c1"
+          },
+          "testcases": [
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_sends_code_and_finalizes_tracker",
+              "time": "0.250"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_password_reset_otp_includes_fragment_link_and_server_metadata",
+              "time": "0.002"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_malformed_event_is_noop",
+              "time": "0.001"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_custom_ttl_rounds_to_minutes",
+              "time": "0.002"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_send_failure_is_safe_and_does_not_finalize_tracker",
+              "time": "0.002"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-http.xml",
+      "sha256": "5cf4978946680d3ca5f1d7dfe75c60307d5244b8fa79b520396b7fea11e90968",
+      "suites": [
+        {
+          "attributes": {
+            "name": "pytest",
+            "errors": "0",
+            "failures": "0",
+            "skipped": "0",
+            "tests": "4",
+            "time": "10.925",
+            "timestamp": "2026-10-11T22:27:58.571549+00:00",
+            "hostname": "993a1bc854c1"
+          },
+          "testcases": [
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_actual_aiogram_http_failure_retries_then_records_one_success",
+              "time": "1.312"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_actual_aiogram_429_rechecks_binding_and_headman_before_retry[binding]",
+              "time": "1.266"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_actual_aiogram_429_rechecks_binding_and_headman_before_retry[headman]",
+              "time": "1.274"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_private_preference_http_unknown_defers_then_disabled_suppresses_then_recovery_sends",
+              "time": "0.567"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-auth-safe.xml",
+      "sha256": "ec1a201521e4bd5dfc6bddd45811b6e6be015d1ac7a1802655677bcc3325e53d",
+      "suites": [
+        {
+          "attributes": {
+            "name": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+            "tests": "3",
+            "skipped": "0",
+            "failures": "0",
+            "errors": "0",
+            "timestamp": "2026-10-11T22:30:47",
+            "hostname": "993a1bc854c1",
+            "time": "33.377"
+          },
+          "testcases": [
+            {
+              "name": "logoutBeforeConsumeInvalidatesOutstandingTicket()",
+              "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+              "time": "2.458"
+            },
+            {
+              "name": "concurrentActualHttpConsumersHaveExactlyOneWinnerAndBurnTicket()",
+              "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+              "time": "0.447"
+            },
+            {
+              "name": "actualRedisThirtySecondExpiryRejectsUnconsumedTicket()",
+              "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+              "time": "30.461"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-before-safe.xml",
+      "sha256": "4112aab95c178a94c12b2f8392f38cdf3369d51a224f9f10fab535a7030c5e98",
+      "suites": [
+        {
+          "attributes": {
+            "name": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+            "tests": "1",
+            "skipped": "0",
+            "failures": "1",
+            "errors": "0",
+            "timestamp": "2026-10-11T22:31:39",
+            "hostname": "993a1bc854c1",
+            "time": "0.014"
+          },
+          "testcases": [
+            {
+              "name": "openSocketReceivesBeforeRevokeAndCannotReceiveNextPrivateMessageAfterRevoke()",
+              "classname": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+              "time": "0.014"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-green-safe.xml",
+      "sha256": "abcfc1bab6a8e33e1668ad9b76a7746e664f07888cf3c9f2c8f7c3b92110eade",
+      "suites": [
+        {
+          "attributes": {
+            "name": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+            "tests": "1",
+            "skipped": "0",
+            "failures": "0",
+            "errors": "0",
+            "timestamp": "2026-10-11T22:33:23",
+            "hostname": "993a1bc854c1",
+            "time": "1.838"
+          },
+          "testcases": [
+            {
+              "name": "openSocketReceivesBeforeRevokeAndCannotReceiveNextPrivateMessageAfterRevoke()",
+              "classname": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+              "time": "1.838"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final.xml",
+      "sha256": "01a105471ca4692f7584ce9f9321678d295b2c892641a1eecdbdb901b37cce4d",
+      "suites": [
+        {
+          "attributes": {
+            "name": "pytest",
+            "errors": "0",
+            "failures": "0",
+            "skipped": "0",
+            "tests": "9",
+            "time": "10.736",
+            "timestamp": "2026-10-11T22:38:31.706136+00:00",
+            "hostname": "993a1bc854c1"
+          },
+          "testcases": [
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_sends_code_and_finalizes_tracker",
+              "time": "0.003"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_password_reset_otp_includes_fragment_link_and_server_metadata",
+              "time": "0.002"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_malformed_event_is_noop",
+              "time": "0.001"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_custom_ttl_rounds_to_minutes",
+              "time": "0.001"
+            },
+            {
+              "classname": "tests.test_otp_requested",
+              "name": "test_handle_otp_requested_send_failure_is_safe_and_does_not_finalize_tracker",
+              "time": "0.002"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_actual_aiogram_http_failure_retries_then_records_one_success",
+              "time": "1.375"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_actual_aiogram_429_rechecks_binding_and_headman_before_retry[binding]",
+              "time": "1.277"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_actual_aiogram_429_rechecks_binding_and_headman_before_retry[headman]",
+              "time": "1.309"
+            },
+            {
+              "classname": "tests.test_provider_http_boundaries",
+              "name": "test_private_preference_http_unknown_defers_then_disabled_suppresses_then_recovery_sends",
+              "time": "0.574"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "safe_archive_inputs": [
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+      "member": "sources/notification/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+      "category": "bounded-source",
+      "bytes": 5654,
+      "sha256": "2ef39d5d4530854c738de0a7b3eda244a1b8f4497afbb34f9b1a50ad027d5f3a"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/notifications/otp_requested.py",
+      "member": "sources/notification/services/notification-bot/bot/notifications/otp_requested.py",
+      "category": "bounded-source",
+      "bytes": 4698,
+      "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "member": "sources/notification/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "category": "bounded-source",
+      "bytes": 11218,
+      "sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_otp_requested.py",
+      "member": "sources/notification/services/notification-bot/tests/test_otp_requested.py",
+      "category": "bounded-source",
+      "bytes": 4697,
+      "sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/tests/test_provider_http_boundaries.py",
+      "member": "sources/notification/services/notification-bot/tests/test_provider_http_boundaries.py",
+      "category": "bounded-source",
+      "bytes": 6897,
+      "sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+      "member": "sources/notification/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+      "category": "bounded-source",
+      "bytes": 10048,
+      "sha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/scripts/test-recovery-failure-boundaries.py",
+      "member": "sources/recovery/scripts/test-recovery-failure-boundaries.py",
+      "category": "bounded-source",
+      "bytes": 8561,
+      "sha256": "2b6096ac265b66bd2f59b5b2bb2c4926f90175164735f42eac1b816c78b0c1f5"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/consumers/event_consumer.py",
+      "member": "dependencies/notification/services/notification-bot/bot/consumers/event_consumer.py",
+      "category": "production-or-test-dependency",
+      "bytes": 13106,
+      "sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/consumers/event_dispatcher.py",
+      "member": "dependencies/notification/services/notification-bot/bot/consumers/event_dispatcher.py",
+      "category": "production-or-test-dependency",
+      "bytes": 21875,
+      "sha256": "f458b7ffc2b5d0fc10156383833694f81c16c8aa51514ab632efb6ca60349cde"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/idempotency_guard.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/idempotency_guard.py",
+      "category": "production-or-test-dependency",
+      "bytes": 7346,
+      "sha256": "63b4d07d1f205b9aed4acf9abcd4f5a611801f519a3fa6e9b814a873623ef8a1"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/send_queue.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/send_queue.py",
+      "category": "production-or-test-dependency",
+      "bytes": 11940,
+      "sha256": "59700af6ee0bfd06d2cd82b6016ffb4bbd4621fcb958ddc17994d15cbb897f26"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/notification_prefs.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/notification_prefs.py",
+      "category": "production-or-test-dependency",
+      "bytes": 12063,
+      "sha256": "637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/services/otp_message_tracker.py",
+      "member": "dependencies/notification/services/notification-bot/bot/services/otp_message_tracker.py",
+      "category": "production-or-test-dependency",
+      "bytes": 6301,
+      "sha256": "7501b01be4b82909c14f72a8fcc4a4130b500ff2ea439b836d63e7f2ace0a853"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-bot/bot/handlers/start.py",
+      "member": "dependencies/notification/services/notification-bot/bot/handlers/start.py",
+      "category": "production-or-test-dependency",
+      "bytes": 6795,
+      "sha256": "bc7e81bfab13be25169a44f0bc0a798fc78f93ed7c0d04480fb4cd3b9fcf422b"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "member": "dependencies/notification/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "category": "production-or-test-dependency",
+      "bytes": 76650,
+      "sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java",
+      "member": "dependencies/notification/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/WsTicketService.java",
+      "category": "production-or-test-dependency",
+      "bytes": 7762,
+      "sha256": "596a0f1c0dc592519dbc454926b0c62cebe10bd150b6cb2208fc2203a25084d4"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "member": "dependencies/notification/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "category": "production-or-test-dependency",
+      "bytes": 2614,
+      "sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+      "member": "dependencies/notification/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+      "category": "production-or-test-dependency",
+      "bytes": 10265,
+      "sha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+      "member": "dependencies/notification/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+      "category": "production-or-test-dependency",
+      "bytes": 1406,
+      "sha256": "6c85d71986d68185fa0cb2578de4ddd495b88c5c9e6ab88af2841dd3bad60f81"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistry.java",
+      "member": "dependencies/notification/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistry.java",
+      "category": "production-or-test-dependency",
+      "bytes": 9240,
+      "sha256": "64d3eb8371a34762df8dd25bdc9e09c52b8e3a04ad6f204c5100390fcb64d0a4"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WebSocketConfig.java",
+      "member": "dependencies/notification/services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WebSocketConfig.java",
+      "category": "production-or-test-dependency",
+      "bytes": 5396,
+      "sha256": "ad335092375f8fe361dd679765aff9794d71f373ae2a9b76f5b8812b8a16b3d8"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/scripts/recovery.py",
+      "member": "dependencies/recovery/scripts/recovery.py",
+      "category": "production-or-test-dependency",
+      "bytes": 21267,
+      "sha256": "289df762c439a4f10c428f9ceb53b48b6424d3ed926754a6195618c4ccaab9c2"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-notification-recovery-review.md",
+      "member": "governing/root/docs/validation/cloud-20261011/packet-notification-recovery-review.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 3872,
+      "sha256": "8b48d37ed85174ba48eba29e1ea6b7456385ec00472f9cf63843953103831920"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "member": "governing/root/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 84076,
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "member": "governing/root/docs/validation/cloud-20261011/CURRENT.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 8865,
+      "sha256": "d6f8894facec95c8ccb27d2da7c0548682a811c08d372d9836daa53c1f929444"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "member": "governing/root/docs/validation/cloud-20261011/decisions.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 9514,
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "member": "governing/root/docs/validation/cloud-20261011/questions.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 8152,
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "member": "governing/root/docs/validation/cloud-20261011/resources.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 5794,
+      "sha256": "910c7421d1ae29f35ec1d758ee99508318df3b96d1418da23c8d0dedac17fa22"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/AGENTS.md",
+      "member": "governing/root/AGENTS.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 4327,
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "member": "governing/root/.agent/orchestration-v2/RULES.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 24809,
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+    },
+    {
+      "original_path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "member": "governing/root/docs/agent-workflow.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 7916,
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "member": "governing/notification/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 198036,
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "member": "governing/notification/docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 1230,
+      "sha256": "03e6c248c5009cd6fa693eb68e908cfb5edd71c66b76d8a4157e0be41e40ff50"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "member": "governing/notification/docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 2462,
+      "sha256": "13467ee1997662c85c6b5203e2060a4994430204eaefc9e95983673e9716f06c"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/operations/runbooks/dlq-triage.md",
+      "member": "governing/notification/docs/operations/runbooks/dlq-triage.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 6592,
+      "sha256": "5b356d95b6b95c1fe0ce6f6a48b5aba468c04857a36af5d94f25a6c22a43b042"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md",
+      "member": "governing/notification/docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 8412,
+      "sha256": "ab2069f5fd1af75b2fb10f079ea0bfd1cba71edf365de34edd56eddf0d84bdb1"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/notification-provider/docs/architecture/websocket-flow.md",
+      "member": "governing/notification/docs/architecture/websocket-flow.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 11710,
+      "sha256": "2d6d086ed3c6fd580f1d3f2694ad1246fcca25f54b851b4e1592f81d543a46f7"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/docs/operations/runbooks/backup-restore.md",
+      "member": "governing/recovery/docs/operations/runbooks/backup-restore.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 32630,
+      "sha256": "cd59f3e287dd98908e588d56ebc6d69a1295946f43a937a22a2a526902af529b"
+    },
+    {
+      "original_path": "/workspace/rct-worktrees/recovery/docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "member": "governing/recovery/docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "category": "governing-or-accepted-source",
+      "bytes": 1923,
+      "sha256": "32a28e7539cb95ca6060428441d4d9afd6fd785756a043c3a586aeb0dba81741"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-otp_requested.py",
+      "member": "receipts/notification/pre-format-otp_requested.py",
+      "category": "executed-source-snapshot",
+      "bytes": 4698,
+      "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-otp_delivery_ack_probe.py",
+      "member": "receipts/notification/pre-format-otp_delivery_ack_probe.py",
+      "category": "executed-source-snapshot",
+      "bytes": 10588,
+      "sha256": "e65afca6292f52be70147f35d8fd83578bcae17d0a138e447a71904c215c7101"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-test_otp_requested.py",
+      "member": "receipts/notification/pre-format-test_otp_requested.py",
+      "category": "executed-source-snapshot",
+      "bytes": 4697,
+      "sha256": "e206f3510176a96a8271433e241788ff61ee46d89545ff04b895ca59ccce1a36"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/pre-format-test_provider_http_boundaries.py",
+      "member": "receipts/notification/pre-format-test_provider_http_boundaries.py",
+      "category": "executed-source-snapshot",
+      "bytes": 6911,
+      "sha256": "b023ef02a838b12891cc5d320040ed88b703cf115cdf112170274377ebeb4097"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/review-packet.md",
+      "member": "receipts/notification/review-packet.md",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 7675,
+      "sha256": "eff1a87db0bfd95e5d50f5808a3e827917bae826b189af0165296b3b11dfa7d2"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/inventory.json",
+      "member": "receipts/notification/inventory.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 2801,
+      "sha256": "16c47e4a92b00771a3ee868aa959f72c604b6c866e31b7e7df1dc196ebc9c3f5"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/tested-final-manifest.json",
+      "member": "receipts/notification/tested-final-manifest.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 2968,
+      "sha256": "6055b97e2f2c984608d4fdd818219232ffa3bfa1b5e78ddd8ec7a9b592e35ffd"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/receipt-manifest.json",
+      "member": "receipts/notification/receipt-manifest.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 16213,
+      "sha256": "5ea7504e20e9e7b428ff0d5eeedb809e79eed9149cfac6f1dcdc6ea80dbc1313"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/source-ledger.json",
+      "member": "receipts/notification/source-ledger.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 10544,
+      "sha256": "5a3a2da5df71d7235b11a2011cd6bffcda578c910898f9d93b418d0afe5a9929"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/CURRENT.md",
+      "member": "receipts/notification/CURRENT.md",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1285,
+      "sha256": "f5782514fa984796af7f8a57d970a5bbad6659a380d1f4649d18bc20fc291653"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-result.json",
+      "member": "receipts/notification/NP01-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1303,
+      "sha256": "29507938bdf8ed3f7bae22009b082aebb1a2b7c015117eab5549f993941f2c77"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-before-safe.xml",
+      "member": "receipts/notification/NP01-before-safe.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1240,
+      "sha256": "b56e8363d277834dad178496b2e95e213ed5e82fae15a44ade2439ff8037d9ff"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-pending-files.json",
+      "member": "receipts/notification/NP01-pending-files.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1139,
+      "sha256": "4cb265c31450e330dd816062d8cd0adca24d8c46ca80f49a8f26543e1460f169"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-safe-transport-proposal.md",
+      "member": "receipts/notification/NP01-safe-transport-proposal.md",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 8427,
+      "sha256": "e11d56803ed73e3c0dbc2205a71d4297c53180899c0e8fac3d0534cbaa42f139"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-product.py",
+      "member": "receipts/notification/NP02-before-product.py",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 4469,
+      "sha256": "02b00a9c71bb7852d238e84184e5c53fca0cdf828cefe0934a4c998a0d2c824d"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-probe.py",
+      "member": "receipts/notification/NP02-before-probe.py",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 6944,
+      "sha256": "663545dfb3324aa0f4216809230556b37c3782c83025c8f25022c090fe8e659d"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-command.json",
+      "member": "receipts/notification/NP02-attempt1-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 700,
+      "sha256": "31a89733245b130a9bd421640e146d00e0721279b642f62c19d81f549d1deb94"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-result.json",
+      "member": "receipts/notification/NP02-attempt1-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 106,
+      "sha256": "2f32ea994674bcab81d922b6a488dc00a70a5539674d199aae09ddd0b12c7792"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-attempt1-cleanup.json",
+      "member": "receipts/notification/NP02-attempt1-cleanup.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 219,
+      "sha256": "0034657f6ba0b79f23b8bb4b8aa85ec68b725e52317e870802228a71adce5864"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-actual-command.json",
+      "member": "receipts/notification/NP02-before-actual-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 700,
+      "sha256": "2b640fddf03e2c7b09d2e2615e119ff63ae793b79a35179a479c422db05b0e14"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-actual-result.json",
+      "member": "receipts/notification/NP02-before-actual-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 392,
+      "sha256": "b0a1e4eb7ac5280a5ea62037063a4c17f875fd05ae33487893272f052c285d1c"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-before-actual-cleanup.json",
+      "member": "receipts/notification/NP02-before-actual-cleanup.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 219,
+      "sha256": "202af8745d19e2a69a16102daf0e99a8cdb68debf54106e6128936b7f7ecc134"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-green-command.json",
+      "member": "receipts/notification/NP02-green-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 930,
+      "sha256": "d12af95094ee3555463421f0c765ce54f414eecfd6fbd893709e5c3cfadd1a04"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-green-result.json",
+      "member": "receipts/notification/NP02-green-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 508,
+      "sha256": "33fe3c1f24fdc00f6e5ed74c168dcd8591c143ba4ea51928a22b61c66d627c8e"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-command.json",
+      "member": "receipts/notification/NP02-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 717,
+      "sha256": "6b4a86e19d68098d455d6d19f780f64eec3b7fbd4dbbfd9446e9e046d17c851d"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-result.json",
+      "member": "receipts/notification/NP02-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 840,
+      "sha256": "56bc4276c82677cb89ca4ae7925ed26275c5552ba6a79914a4dc18a438f8309f"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-cleanup.json",
+      "member": "receipts/notification/NP02-cleanup.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 219,
+      "sha256": "04cd3b198a5fecbe56b1624a9eab8c1997addfa67af66cdf2d3f806c414b27ee"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-unit-command.json",
+      "member": "receipts/notification/NP02-unit-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 455,
+      "sha256": "73ab849c66b3f9b1b711eb7bfbcad180ae39bba61aa333566a6a5d0e34426aba"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-unit-result.json",
+      "member": "receipts/notification/NP02-unit-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 605,
+      "sha256": "0b68ce4b73e9f05d4db48149c805b056576f7d7a5c8f5e419f9e45d8188296ea"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-otp-unit.xml",
+      "member": "receipts/notification/NP02-otp-unit.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 908,
+      "sha256": "c6a253916cfaa0cd97ed449d8dbadf6e4e15b9bc035271b2904d5908aa07e8d3"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-command.json",
+      "member": "receipts/notification/NP03-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 648,
+      "sha256": "2b90b11612fb374b657ddcb6eb04ebd82f92c189895a7dd7551cffa220ef8078"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-result.json",
+      "member": "receipts/notification/NP03-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 598,
+      "sha256": "3eb62bcdfd37367e954e6ed902e623ac8c28da7bfa2c7095a0255eb0751d241f"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP03-http.xml",
+      "member": "receipts/notification/NP03-http.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 874,
+      "sha256": "5cf4978946680d3ca5f1d7dfe75c60307d5244b8fa79b520396b7fea11e90968"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-command.json",
+      "member": "receipts/notification/NP04-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1239,
+      "sha256": "4f0dcb519adc1f247fd8306d19aedc20568042eb00fb9587b1a2886195c80848"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-result.json",
+      "member": "receipts/notification/NP04-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1530,
+      "sha256": "93f6498e179b794f7e6bec2a1fe67e99daa7d389144f50edc5f564f755ffcfdf"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-auth-safe.xml",
+      "member": "receipts/notification/NP04-auth-safe.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 777,
+      "sha256": "ec1a201521e4bd5dfc6bddd45811b6e6be015d1ac7a1802655677bcc3325e53d"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-before-safe.xml",
+      "member": "receipts/notification/NP04-socket-before-safe.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 864,
+      "sha256": "4112aab95c178a94c12b2f8392f38cdf3369d51a224f9f10fab535a7030c5e98"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-retry-command.json",
+      "member": "receipts/notification/NP04-socket-retry-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 624,
+      "sha256": "ba586301c712cdaac334c6509b1d179905f583b97898a19ccb17c0fabfd915d5"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-result.json",
+      "member": "receipts/notification/NP04-socket-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 773,
+      "sha256": "88a145ec600c0656e46f594b2eb179c582686779fb696089933bb43ac7e2fc7d"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP04-socket-green-safe.xml",
+      "member": "receipts/notification/NP04-socket-green-safe.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 447,
+      "sha256": "abcfc1bab6a8e33e1668ad9b76a7746e664f07888cf3c9f2c8f7c3b92110eade"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final-command.json",
+      "member": "receipts/notification/NP02-NP03-final-command.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 754,
+      "sha256": "fc482cdf93c9c6b1662fb95d6128b3f41d394d03b9fc1ae882de37735a348a93"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final-result.json",
+      "member": "receipts/notification/NP02-NP03-final-result.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 561,
+      "sha256": "0cc9d6d6df37c0c007f1b47e110bfb279dd78e9f7fd9942b5b347a9356e701d1"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP02-NP03-final.xml",
+      "member": "receipts/notification/NP02-NP03-final.xml",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1534,
+      "sha256": "01a105471ca4692f7584ce9f9321678d295b2c892641a1eecdbdb901b37cce4d"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/python-format-equivalence.json",
+      "member": "receipts/notification/python-format-equivalence.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1548,
+      "sha256": "fb5653586aecda3fe2bee4abd5b3f9778415fe915c0782f16954d47460802c67"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/cleanup.json",
+      "member": "receipts/notification/cleanup.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 286,
+      "sha256": "ecb20d9824143a36bd4552ecb6aeea5937c18e0fdf77688b1c7c7060651d6c5b"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/run_np02.py",
+      "member": "receipts/notification/run_np02.py",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 4584,
+      "sha256": "b5fe432ce2cdae343a9fe84a506b358847a5c7e8607ccb3696f84d707086eb95"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-pending-source/BotAdmissionProviderBridgeIT.java",
+      "member": "receipts/notification/NP01-pending-source/BotAdmissionProviderBridgeIT.java",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 5349,
+      "sha256": "57349c01277849d352d97e17dfffe219ed2963aed5560de881d28bbd51ed709e"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/notification_provider_developer/NP01-pending-source/bot_admission_provider_probe.py",
+      "member": "receipts/notification/NP01-pending-source/bot_admission_provider_probe.py",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 3533,
+      "sha256": "850119d0691da62c43a4f95c5dea69f6d02290417aad34ef1be46fbe14bea498"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/review-packet.json",
+      "member": "receipts/recovery/review-packet.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 7679,
+      "sha256": "732dcaeb0d6b6f403dc071e69229d9e658d51738614c3a81098a46e72fb4205e"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/CURRENT.md",
+      "member": "receipts/recovery/CURRENT.md",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 2468,
+      "sha256": "3d3e3969e97b99a1e22c0cc96d80572ca4e3e705e50380417eee0bb1dec294bb"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/source-ledger.json",
+      "member": "receipts/recovery/source-ledger.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 3018,
+      "sha256": "56d5cc8663f2c8db0145d5903268cf2615a55e87d162deb013c53f83c547f230"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/source-equivalence.json",
+      "member": "receipts/recovery/source-equivalence.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 1604,
+      "sha256": "ec0d79a3c33d22be521cf7e44c03c2f6711525c7a76145f55ed8075ed30b7f64"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/controlled-artifacts.json",
+      "member": "receipts/recovery/controlled-artifacts.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 27030,
+      "sha256": "bbdbe62c3d5b755f8162e6989278ed50236c463a70229242cb42d5041122d788"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/changed-consumers.json",
+      "member": "receipts/recovery/changed-consumers.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 2088,
+      "sha256": "60c76bc5cf541a858a0e6b72fa30d14b839a8f2a59e710053f485a076dd9eed7"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/run-sensitivity.py",
+      "member": "receipts/recovery/run-sensitivity.py",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 3946,
+      "sha256": "ca9d6cc99e8cd5f9dc2eb5159363b57ff89776618c46b5db619078a85f493ae3"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/light-run-1/run.json",
+      "member": "receipts/recovery/light-run-1/run.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 679,
+      "sha256": "a189ef65d7be534edd6b21358a35739eee8005137a1fc16dc61a5345d29dda9a"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/light-final-1/run.json",
+      "member": "receipts/recovery/light-final-1/run.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 762,
+      "sha256": "bcde17c07e8cbe1abf6ee76c7fac33e4af626e0d8255398d06bab5ee8c65a163"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/light-sensitivity-1/run.json",
+      "member": "receipts/recovery/light-sensitivity-1/run.json",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 3926,
+      "sha256": "a19822006fa4d1d6dbccf5e6d93f281fd4d53c7598af8b3e69435c4210e113b7"
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/recovery_developer/attempts.ndjson",
+      "member": "receipts/recovery/attempts.ndjson",
+      "category": "safe-author-receipt-or-harness",
+      "bytes": 2989,
+      "sha256": "514a6082608196633524db9d45a3befdf4c6c3d8fff3684c7c0f080931ffcc21"
+    }
+  ],
+  "np02_before_source_bridge": {
+    "snapshot_sha256": "02b00a9c71bb7852d238e84184e5c53fca0cdf828cefe0934a4c998a0d2c824d",
+    "equals_frozen_product": true,
+    "prelaunch_hash_proof": "UNKNOWN: before actual command has HEAD/argv/resources but no product/probe hash timestamped before launch",
+    "terminal": "author original bounded counts and process exit preserved; not reviewer replay"
+  },
+  "source_timing_limits": {
+    "notification_final_source_current_vs_git": "exact all six files",
+    "notification_np02_green": "prelaunch fixed product/probe/wrapper hashes preserved; current product exact, probe AST/import-order bridge independently verified",
+    "notification_np03_and_np04": "new test prelaunch hashes preserved; all production dependencies independently unchanged from frozen; full per-phase dependency hash set not captured in supplied launch receipts",
+    "notification_np02_final_python": "exact final two test prelaunch hashes and terminal zero-skip XML; not duplicate unique coverage",
+    "recovery_first_control": "test hash timestamped 22:23:25.923882 before 22:23:26.310982 launch; product current and frozen equal; terminal run receipt carries product hash",
+    "recovery_final_control": "restored terminal exit0 and matching hashes supplied; separate immediate final prelaunch hash record UNKNOWN",
+    "raw_sensitive_application_log_review": "NOT_TRANSFERRED; static suppression/test marker proof only, not full secret-free production logging acceptance",
+    "reviewer_runtime": "NOT_RUN"
+  },
+  "archive": {
+    "path": "/workspace/scratch/rct-validation/notification_recovery_review/immutable-original-review-inputs.zip",
+    "sha256": "f00b64476e12fa4dec1b1e5f9f9a7f47232a232f55ba4e38e00a9dfdd2414994",
+    "bytes": 278863,
+    "members": 98,
+    "CRC_and_original_bytes": "PASS",
+    "exclusions": "no raw app XML/stdout/stderr/logs, credentials, request bodies, tool caches, native backup payloads"
+  }
+}

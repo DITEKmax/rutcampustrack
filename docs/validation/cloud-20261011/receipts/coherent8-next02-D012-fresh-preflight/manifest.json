@@ -1,0 +1,25 @@
+{
+  "scope": "D012_ACTUAL_FRESH_READONLY_READY",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight02/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 700,
+      "sha256": "0bb251548eb279720a3d9596adac14383d32b627f1672f6f2161b27373118a22"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight02/collect-readonly.py",
+      "name": "collect-readonly.py",
+      "bytes": 9780,
+      "sha256": "be8cdc23c1fe166b0c02287e473dc1d090c81fce9b0a0b3af6ee8898d2937778"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight02/preflight.safe.json",
+      "name": "preflight.safe.json",
+      "bytes": 13054,
+      "sha256": "ceeb4647d25f35c0a244b336f25eb292f38eb89d30a5001052501b79c62be2cd"
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "private_excluded": true
+}

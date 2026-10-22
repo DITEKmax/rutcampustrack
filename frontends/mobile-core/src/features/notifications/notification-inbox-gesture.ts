@@ -3,7 +3,10 @@ export class NotificationInboxHold {
   private pointer: { id: number; x: number; y: number } | null = null
   private timer: ReturnType<typeof setTimeout> | null = null
   private suppressClick = false
-  constructor(private readonly showMenu: () => void, private readonly delay = 550) {}
+  constructor(
+    private readonly showMenu: () => void,
+    private readonly delay = 550,
+  ) {}
   start(id: number, x: number, y: number): void {
     this.cancel()
     this.suppressClick = false

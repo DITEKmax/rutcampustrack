@@ -1,0 +1,161 @@
+{
+  "schema": "P10_ORIGINAL_CI_FAILURE_FRAME_SOURCE_READY_V1",
+  "state": "SOURCE_READY_PENDING_INDEPENDENT_PRIVACY_REVIEW_FRESH_ROOT_GRANT",
+  "utc": "2026-10-13T11:36:49.127559+00:00",
+  "nine_fields": {
+    "Goal": "Locate currentsoleP10 Auth failure using existingoriginalCIclassJUnit XML: finiteknownexceptionclass and FIRSTexactAuthOtpFlowIT numericframe/helperEnum only; no message parser/causeclaim.",
+    "Context_evidence": {
+      "producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+      "checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+      "AuthCI_safe_artifact": 11806699175,
+      "CI_run": 38387263916,
+      "original_artifact": {
+        "run_id": 38387263916,
+        "artifact_id": 11806374316,
+        "name": "integration-test-reports-auth-service",
+        "size_bytes": 192040,
+        "expired": false,
+        "head_sha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "qualification": "Artifactmetadataonly/noarchiveURL/body/log/XMLread"
+      },
+      "actual_each_CI_Cov": "170PASS1FAIL0E-S; P10onlyAuthFAIL/Source104e, P06source0669PASS",
+      "case_status": "FAILED",
+      "cause": "UNKNOWN",
+      "metadata_only_original_pointer": "/workspace/scratch/rct-validation/P10-current1742-original-auth-artifact-metadata.safe.json"
+    },
+    "Relevant_scope": "OWNcheckingSource only; read-onlyown5dac/104eAuth Java andRootproduct. Nativefutureoneoriginalartifact/oneclassXML, no otherdecompressedmembers/extract/testreplay/compiler/runtime/productfix.",
+    "Required_behavior": {
+      "selected_identity": [
+        "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+        "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries"
+      ],
+      "XML_counts": "AuthOtpclass9tests/1failure/0error-skip/selectedexact1failure; no otherfailure/error/skip inclass",
+      "closed_output_keys": [
+        "schema",
+        "selected_xml_valid",
+        "counts",
+        "selected_failed_cases",
+        "exception_code",
+        "known_exception_class",
+        "first_auth_frame_found",
+        "source_line",
+        "helper",
+        "source_sha256",
+        "message_body_stack_or_private_hash_export",
+        "cause_acceptance",
+        "artifact_id",
+        "run_id",
+        "producer_head",
+        "actual_checkout",
+        "selected_class",
+        "selected_method",
+        "case_status",
+        "private_selected_xml_retained_unhashed",
+        "other_members_read_or_extracted"
+      ],
+      "exception_whitelist": "Exact11publicknowncanonical classes \u2192finitecodes; allothersUNKNOWN, arbitrarytype neverexported",
+      "frame": "Firstwholeline exactFQCN/AuthOtpFlowIT.java/numericline withinpinnedSource; exact12knownmethod\u2192helper enums, 2knownsource-lambdahelperpatterns, unknownhelper staysUNKNOWN; no method/title/body/stack export",
+      "validity": "Thisis observedfailure location only/NOT_ASSESSED; no testcasePASS/parentpromotion. Invalid/missing/capped inputorunsettlednativefailclosed."
+    },
+    "Constraints": {
+      "requested": "gpt-6.1-sol/high",
+      "actual": "UNKNOWN",
+      "own_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+      "source_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+      "Source_effects": {
+        "product_source_changes": 0,
+        "network_or_rawartifact_reads": 0,
+        "Java_Node_Gradle_tests_PG": 0
+      },
+      "native_authorized": false,
+      "B013_reuse": false
+    },
+    "Existing_patterns": {
+      "parent": "Byte-identicalP06run-green-owned.py/c5af; b78+direct-parent/privategrant/clock/floor/RSS/reap unchanged",
+      "admission": "AlloldP06childadmissionfunctions exact; narrowchildadds explicitoriginal_artifact_observation_authorized/artifact-head-checkout/projection grants",
+      "encoding": "ReviewedP06strictUTF8-sig/exactJUnit1.0-UTF8declaration/NUL/DOCTYPE/ENTITY gate beforeET; noDtd/Utf16loophole",
+      "download": "Existingdownload-safe.py boundedurllib30seconds/readcaps pattern, HTTPSurl fromprivatenormalconnectorresultonly; no privatearchive/XMLhash compute-export"
+    },
+    "Acceptance": {
+      "Source_controls": "17targetedsyntheticRAM checksPASS; known/unknown/privatecanary/malformedUTF8-UTF16-DTD-NUL/declaration/foreigncase/linecap/Source-range/ZIP traversal-duplicate-prefix/no-othermemberread; oneinitialsyntheticfixtureconcatcheckingFAIL retained/controlfixturecorrected/noobserverSourcechange",
+      "bounds": {
+        "compressed_archive": 1048576,
+        "known_metadata_bytes": 192040,
+        "XML": 1048576,
+        "ZIP_members": 512,
+        "ZIP_total_declared_uncompressed": 33554432,
+        "ZIP_name_chars": 512,
+        "failure_type_chars": 256,
+        "stack_chars": 65536,
+        "stack_lines": 256,
+        "stack_line_chars": 2048,
+        "private_request_bytes": 16384
+      },
+      "caps": {
+        "phase_seconds": 60,
+        "cleanup_margin_seconds": 60,
+        "workspace_floor_bytes": 4294967296,
+        "disk_growth_cap_bytes": 2147483648,
+        "shared_stop_bytes": 16106127360,
+        "shared_reserve_bytes": 1073741824,
+        "shared_growth_cap_bytes": 4294967296,
+        "owned_rss_cap_bytes": 4294967296,
+        "private_log_cap_bytes": 8388608
+      },
+      "resource_qualification": "OldP06numericcaps unchanged exceptphase60<=old300; totalproposal120includingcleanup60. ZIP/XML/URLworkbounded; sampledRSS/workspace/shared controls nothardOSisolation. No currentenvironmentwalk/Resourcecapacityclaim. Privatecapture<=1MiB mode600/nlink1 exactownrun700; request mode600/nlink1/UIDsame/no-follow/duplicatedJSONkeysrefused/inodeguardedcleanup; rawZIP neverpersisted."
+    },
+    "Verification": {
+      "Source_only_checks": "Parentbytes/admissionfunctions exact; source5dac104e/WTclean/source-manifest/metadata pins; targetedRAM17controls. OriginalrawZIP/XML notread. ExistingP06wholecontrols notreplayed. FreshindependentprivacyreviewthenfreshRootdiagnosticgrant required.",
+      "connector_step": {
+        "tool": "mcp__codex_apps__github_download_workflow_artifact",
+        "arguments": {
+          "artifact_id": 11806374316,
+          "repo_full_name": "DITEKmax/rutcampustrack",
+          "file_name": "p10-original-auth-11806374316.zip"
+        },
+        "authorization": "FUTURE_ROOT_FRESH_ORIGINAL_ARTIFACT_GRANT_ONLY",
+        "handling": "Do nottext/notify/fullprintconnectorresult/privateURLs. ReuseRootexistingprivatefile-reference\u2192download-requestwriter normaladapter; bindexactmetadata/checkout andURL inmode600request privately."
+      },
+      "dispatch_argv": [
+        "/usr/bin/python3",
+        "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source/run-green-owned.py",
+        "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source/root-diagnostic-grant01.private.json",
+        "<FRESH_ROOT_GRANT_SHA256>"
+      ],
+      "private_request_schema": {
+        "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source/.download-request.private.json",
+        "keys": [
+          "artifact_id",
+          "run_id",
+          "name",
+          "size_bytes",
+          "head_sha",
+          "actual_checkout",
+          "private_url"
+        ],
+        "producer": "Onlyexactapprovedconnectorresult11806374316 plusauthenticatedRootmetadata/SAFEcheckout; no otherURL/data source."
+      },
+      "ZIP_member_selection": "FullprefixUNKNOWN beforecapture. Exactlyone of publicworkflowLCA relative auth-service/auth-app/build/test-results/integrationTest/TEST-CLASS.xml orrepository-relative services/auth-service/auth-app/build/...; traversal/absolute/noncanonical/duplicate/symlink/encrypted/NUL/oversize rejected. Otherentries metadataonly, neverread/testzip/extract; no XML/HTML outside selectedclass.",
+      "capture_outputs": {
+        "run": "/tmp/rct-p10-current1742-failure-observer-20261013-attempt01",
+        "private_raw": "selected-auth.raw.private.xml (excluded/unhashed)",
+        "safe": "case-observation.safe.json +oldb78terminal/process/supervisor/dispatchreceipt. Safe projectionstdout only; no private/logXMLbodyhash. Rootmust join toolterminal0+actualclass/case/source/metadata/counts/caps +allbirthreap/requestcleanup/TMPauthoritycleanup."
+      }
+    },
+    "Do_not": "No messages/status-pattern extraction initially; no arbitraryclass/method/path/text/hash/privateURL/credentials output. No Java/compiler/tests/PGRedisRabbit/Docker/API/browser/network beforefreshgrant, no raworiginalartifact operation underSAFEcollectorgrant, no testcase/productSourcefix/replay/newworkflow/framework/alternateendpoint/B013retry orprivatestand."
+  },
+  "source_files": {
+    "run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "logged-green-child.py": "968ee798682f195e9dfbbdfd52817dc5bd6a10930cf318466277f1639d85023f",
+    "green-plan.safe.json": "ee3ff02b4ea2d054dca16e43bb7c1acdceb80cba46b5d3fb55b0e8b872bf448c",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "grant-template.private.json": "35093e61fcf120305c49da877182916b1a3faddbb620b804bd30eb4df6ad16fe",
+    "controls.safe.json": "0f3c882415239b765a54e73e78d4ac8f02e68a79a9f4374e04b6ef3805d9bf17",
+    "controls-attempt01.safe.json": "83238e7a6153c17fa14ad8098e38bbcc5332683157dc4774cf2ccdfb61f9b2af"
+  },
+  "source_head_frozen": true,
+  "case_cause": "UNKNOWN",
+  "no_native_original_artifact_authority": true,
+  "next": "IndependentSourceprivacyreview \u2192freshseparateRootoriginalartifactgrant+normalconnectorcapture/sameb78caller \u2192observedlocation \u2192preciseRootacceptedcorrectiononlyifconfirmed."
+}

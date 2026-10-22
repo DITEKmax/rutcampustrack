@@ -2,9 +2,7 @@ package ru.rutcampustrack.auth.session;
 
 import java.util.Objects;
 
-/**
- * Typed, bearer-free failure from the internal session-admission boundary.
- */
+/** Typed, bearer-free failure from the internal session-admission boundary. */
 public final class SessionAdmissionException extends RuntimeException {
 
     public enum Code {

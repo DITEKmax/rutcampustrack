@@ -1,0 +1,80 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_NODE01_ACTUAL_CHECKS",
+  "state": "PASS_FORMAT_TYPES_EXACT2_DISCOVERY_ONLY",
+  "utc": "2026-10-13T01:36:22.294560+00:00",
+  "source_revision": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "tool_session": 5615,
+  "tool_native_exit": 0,
+  "supervisor": {
+    "pid": 431067,
+    "birth_ticks": 10911978,
+    "source": "SESSION_OFFLINE_NODE_ONLY",
+    "stop_utc": "2026-10-13T01:42:20.148636+00:00"
+  },
+  "all_known_births": [
+    {
+      "pid": 431067,
+      "start_ticks": 10911978
+    },
+    {
+      "pid": 431070,
+      "start_ticks": 10912007
+    },
+    {
+      "pid": 431081,
+      "start_ticks": 10912063
+    },
+    {
+      "pid": 431088,
+      "start_ticks": 10912321
+    }
+  ],
+  "all_known_births_absent_or_replaced": true,
+  "no_signals": true,
+  "types": {
+    "phase": "SCOPED_TYPES_ONLY",
+    "typescript_version": "5.9.3",
+    "error_count": 0,
+    "diagnostic_codes": [],
+    "root_file_count": 2,
+    "pass": true
+  },
+  "discovery": {
+    "phase": "SOURCE_DISCOVERY_ONLY",
+    "case_count": 2,
+    "unexpected_case_count": 0,
+    "rows": [
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 260,
+        "project": "chromium"
+      },
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 367,
+        "project": "chromium"
+      }
+    ],
+    "pass": true
+  },
+  "terminal": {
+    "state": "PASS_SOURCE_CHECKS",
+    "settled": true,
+    "completed_phase_count": 3,
+    "pass": true,
+    "browser_api_network_started": false,
+    "private_tmp_transform_removed": true,
+    "source_intact": true,
+    "peaks": {
+      "owned_rss_bytes": 350703616,
+      "run_allocated_bytes": 1757184,
+      "shared_memory_bytes": 5297401856
+    }
+  },
+  "adapter": {
+    "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/run-node-checks01.py",
+    "sha256": "1f41a9b9ab27feff008b2fcd47023188dbd773be558ca0fee3cdf2adfc4f95a1",
+    "r1_status_observe_callbacks_exact": true
+  },
+  "qualification": "Node-only formatter/types/--list. No fixtures/API/browser/seed/service/Docker/credentials. Sampled RSS/TMP not hard limit proof. Original TS2/Root19/own6 preserved. Discovery reporter native exit failclose finding pending minimum correction; JSON pass was explicitly enforced by adapter, current actual exact2 discovery valid."
+}

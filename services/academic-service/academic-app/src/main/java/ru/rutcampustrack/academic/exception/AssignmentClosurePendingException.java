@@ -6,10 +6,18 @@ import java.util.UUID;
 public final class AssignmentClosurePendingException extends RuntimeException {
     private final Long assignmentId;
     private final UUID requestKey;
+
     public AssignmentClosurePendingException(Long assignmentId, UUID requestKey) {
         super("Assignment closure is pending");
-        this.assignmentId = assignmentId; this.requestKey = requestKey;
+        this.assignmentId = assignmentId;
+        this.requestKey = requestKey;
     }
-    public Long assignmentId() { return assignmentId; }
-    public UUID requestKey() { return requestKey; }
+
+    public Long assignmentId() {
+        return assignmentId;
+    }
+
+    public UUID requestKey() {
+        return requestKey;
+    }
 }

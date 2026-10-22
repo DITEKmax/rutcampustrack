@@ -1,0 +1,6524 @@
+import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+import { createServer } from 'node:http';
+import { execFileSync, spawn } from 'node:child_process';
+import { lstatSync } from 'node:fs';
+import { resolve } from 'node:path';
+import type { BrowserContext, Download, Page, Request, Response, TestInfo } from '@playwright/test';
+import {
+  test as mobileTest,
+  expect,
+  admit,
+  selectPwaRole,
+  type MobileDataset,
+} from '../fixtures/mobile-dataset';
+import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
+import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
+import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
+import {
+  datasetHttpFailure,
+  createD002ReconnectObserver,
+  retainD002ReconnectObservation,
+  classifySafeFailure,
+  retainHeadmanCleanupFailure,
+  retainNativePrimaryFailure,
+  type HeadmanCleanupCause,
+} from '../fixtures/safe-reporter';
+import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
+
+// This opt-in fixture gets Playwright's independent teardown budget even when its body times out.
+const test = mobileTest.extend<{
+  directCacheControl: {
+    context: BrowserContext;
+    server: ReturnType<typeof createServer> | undefined;
+  };
+}>({
+  directCacheControl: [
+    async ({ browser }, use) => {
+      const owned = {
+        context: await browser.newContext({ serviceWorkers: 'allow' }),
+        server: undefined as ReturnType<typeof createServer> | undefined,
+      };
+      try {
+        await use(owned);
+      } finally {
+        const failures: unknown[] = [];
+        if (owned.server?.listening) {
+          owned.server.closeAllConnections();
+          try {
+            await new Promise<void>((resolve, reject) =>
+              owned.server!.close((error) => (error ? reject(error) : resolve())),
+            );
+          } catch (error) {
+            failures.push(error);
+          }
+        }
+        try {
+          await owned.context.close();
+        } catch (error) {
+          failures.push(error);
+        }
+        if (failures.length) throw failures[0];
+      }
+    },
+    { timeout: 10000 },
+  ],
+});
+
+// Generated credentials stay in memory; browser traces can capture login POSTs.
+// Existing mandatory auth-smoke artifact policy remains unchanged.
+test.use({ trace: 'off', video: 'off', screenshot: 'off' });
+test.describe.configure({ mode: 'default' });
+test.afterEach(async ({}, info) => sanitizeTestErrors(info));
+
+// Charge requested fixtures and body setup to this caller's monotonic budget.
+// Earlier runner/auto-fixture overhead is unmeasured; the original timeout applies.
+const retryStartedAt = new WeakMap<TestInfo, number>();
+test.beforeEach(async ({}, info) => {
+  retryStartedAt.set(info, performance.now());
+});
+
+// Only the existing HEADMAN/TEACHER case needs completed journal data. Preparation
+// has the dataset's existing 180s fixture budget; its original 60s body stays intact.
+const it = test.extend<{
+  teacherJournalSeed: {
+    lessonId: number;
+    date: string;
+    png: Buffer;
+    foreignLessonId: number;
+    foreignRequestId: string;
+    foreignAttachmentId: string;
+    assistantActor: Awaited<ReturnType<typeof admit>>;
+  };
+  teacherGroupsSeed: {
+    groupId: number;
+    groupName: string;
+    subjectId: number;
+    lessonId: number;
+    headmanId: number;
+    headmanName: string;
+  };
+}>({
+  teacherJournalSeed: [
+    async ({ activeHeadmanDataset: dataset }, use) => {
+      const date = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+        .toISOString()
+        .slice(0, 10);
+      const assignment = dataset.subject.assignments[0];
+      expect(
+        dataset.semester.dateFrom <= date &&
+          date <= dataset.semester.dateTo &&
+          assignment.validFrom <= date &&
+          (assignment.validUntilExclusive == null || date < assignment.validUntilExclusive),
+      ).toBe(true);
+      const past = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: dataset.subject.id,
+          assignmentId: assignment.id,
+          date,
+          lessonNumber: 1,
+          classroom: 'Синтетический журнал',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      const assistantActor = await admit(dataset.request, dataset.assistant, 'STUDENT');
+      const png = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+        'base64',
+      );
+      // A genuine foreign ticket needs its own headman and a different teacher;
+      // the existing foreign student remains the requester and has no own-group grant.
+      const foreignHeadman = await dataset.user('STUDENT', dataset.otherGroup.id);
+      const foreignTeacher = await dataset.user('TEACHER');
+      await dataset.admin.call('PUT', `/api/academic/groups/${dataset.otherGroup.id}/headman`, {
+        studentId: foreignHeadman.id,
+        expectedHeadmanId: null,
+      });
+      const foreignHeadmanActor = await admit(dataset.request, foreignHeadman, 'HEADMAN');
+      let foreignSubject = await foreignHeadmanActor.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: `foreign-journal-${dataset.otherGroup.id}`,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [
+            {
+              teacherId: foreignTeacher.id,
+              semesterId: dataset.semester.id,
+              lessonType: 'LECTURE',
+              validFrom: dataset.semester.dateFrom,
+              validUntilExclusive: null,
+            },
+          ],
+        },
+        [201],
+      );
+      await expect
+        .poll(
+          async () => {
+            foreignSubject = await foreignHeadmanActor.call(
+              'GET',
+              `/api/academic/subjects/${foreignSubject.id}`,
+            );
+            return foreignSubject.assignments?.length ?? 0;
+          },
+          { timeout: 60000, message: 'Foreign assignment adoption becomes published' },
+        )
+        .toBeGreaterThan(0);
+      const foreignLesson = await foreignHeadmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.otherGroup.id,
+          subjectId: foreignSubject.id,
+          assignmentId: foreignSubject.assignments[0].id,
+          date: dataset.tomorrow,
+          lessonNumber: 1,
+          classroom: 'Синтетическая чужая группа',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      const foreignStudent = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+      const foreignCreated = await dataset.request.post('/api/v1/student/requests/excuse', {
+        headers: { ...foreignStudent.headers(), 'Idempotency-Key': randomUUID() },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(foreignLesson.physicalLessonId)],
+                reason: 'ILLNESS',
+                comment: `foreign-ticket-${dataset.otherGroup.id}`,
+              }),
+            ),
+          },
+          files: { name: 'foreign-journal.png', mimeType: 'image/png', buffer: png },
+        },
+      });
+      expect(foreignCreated.status()).toBe(200);
+      const foreignRequest = await foreignCreated.json();
+      expect(foreignRequest.attachments).toHaveLength(1);
+      expect(foreignRequest.attachments[0].state).toBe('ACTIVE');
+      // PLANNED -> ACTIVE -> CLOSED takes two real scheduler ticks. No SQL or clock writes.
+      let report: {
+        lessonStatus: string;
+        entries: { userId: number; status: string; markRevision: string }[];
+      };
+      await expect
+        .poll(
+          async () => {
+            report = (await dataset.headmanActor.call(
+              'GET',
+              `/api/attendance/reports/lesson/${past.physicalLessonId}`,
+            )) as typeof report;
+            return (
+              report.lessonStatus === 'CLOSED' &&
+              [dataset.student.id, dataset.headman.id, dataset.assistant.id].every((userId) => {
+                const row = report.entries.find((entry) => Number(entry.userId) === userId);
+                return (
+                  row?.status === 'absent' &&
+                  typeof row.markRevision === 'string' &&
+                  row.markRevision.length > 0
+                );
+              })
+            );
+          },
+          { timeout: 150000, intervals: [1000], message: 'Own journal lesson closes with absence' },
+        )
+        .toBe(true);
+      const manual = report!.entries.find((row) => Number(row.userId) === dataset.headman.id)!;
+      await dataset.headmanActor.call(
+        'PUT',
+        `/api/attendance/lessons/${past.physicalLessonId}/students/${dataset.headman.id}`,
+        {
+          status: 'EXCUSED',
+          excuseType: 'ILLNESS',
+          comment: 'Синтетическая ручная причина',
+          expectedStatus: 'ABSENT',
+          expectedRevision: manual.markRevision,
+        },
+      );
+      await use({
+        lessonId: Number(past.physicalLessonId),
+        date,
+        png,
+        foreignLessonId: Number(foreignLesson.physicalLessonId),
+        foreignRequestId: foreignRequest.summary.id,
+        foreignAttachmentId: foreignRequest.attachments[0].id,
+        assistantActor,
+      });
+    },
+    { timeout: 180000 },
+  ],
+  teacherGroupsSeed: [
+    async ({ dataset }, use, info) => {
+      const setupDeadline = performance.now() + 170000;
+      const setupRemaining = (cap: number) =>
+        Math.max(1, Math.min(cap, setupDeadline - performance.now()));
+      const teacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
+      const catalogPath = `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`;
+      const scope = (catalog: Record<string, any>) =>
+        JSON.stringify({
+          groups: catalog.groups.map((row: { id: string }) => row.id).sort(),
+          pairs: [
+            ...new Set(
+              [...catalog.taughtSubjectOptions, ...catalog.subjectOptions].map(
+                (row: { groupId: string; subjectId: string }) => `${row.groupId}:${row.subjectId}`,
+              ),
+            ),
+          ].sort(),
+        });
+      const beforeScope = scope(await teacher.call('GET', catalogPath));
+      const alphabeticCode = String(dataset.group.alphabeticCode);
+      const numericCode = '311';
+      const name = `${alphabeticCode}-${numericCode}`;
+      for (const status of ['ACTIVE', 'DRAFT', 'ARCHIVED']) {
+        const registry = await dataset.admin.call(
+          'GET',
+          `/api/academic/groups/registry?status=${status}&search=${encodeURIComponent(alphabeticCode)}&size=100`,
+        );
+        expect(registry.totalPages <= 1 && registry.items.length === registry.totalElements).toBe(
+          true,
+        );
+        expect(
+          registry.items.some(
+            (row: { alphabeticCode: string; numericCode: string; name: string }) =>
+              (row.alphabeticCode === alphabeticCode && row.numericCode === numericCode) ||
+              row.name === name ||
+              row.name.startsWith(`${name} (`),
+          ),
+        ).toBe(false);
+      }
+      const group = await dataset.admin.call(
+        'POST',
+        '/api/academic/groups/registry',
+        { alphabeticCode, numericCode, trainingDurationYears: 4 },
+        [201],
+      );
+      expect(group.id !== dataset.group.id && group.id !== dataset.otherGroup.id).toBe(true);
+      const headman = await dataset.user('STUDENT', group.id);
+      await dataset.admin.call('PUT', `/api/academic/groups/${group.id}/headman`, {
+        studentId: headman.id,
+        expectedHeadmanId: null,
+      });
+      const headmanActor = await admit(dataset.request, headman, 'HEADMAN');
+      // Capture the subject before any shared teacher scope can change, including a lost response.
+      const subject = await headmanActor.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: dataset.subject.name,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [],
+        },
+        [201],
+      );
+      expect(subject.id !== dataset.subject.id).toBe(true);
+      const date = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+        .toISOString()
+        .slice(0, 10);
+      expect(dataset.semester.dateFrom <= date && date <= dataset.semester.dateTo).toBe(true);
+      let assignmentAttempted = false;
+      let failed = false;
+      let assignmentId: number | undefined;
+      const assignmentForSubject = async () => {
+        const current = await headmanActor.call('GET', `/api/academic/subjects/${subject.id}`);
+        return current.assignments?.find(
+          (row: { teacherId: number; semesterId: number; lessonType: string }) =>
+            Number(row.teacherId) === dataset.teacher.id &&
+            Number(row.semesterId) === dataset.semester.id &&
+            row.lessonType === 'LECTURE',
+        );
+      };
+      try {
+        assignmentAttempted = true;
+        await headmanActor.call(
+          'POST',
+          `/api/academic/subjects/${subject.id}/teachers/${dataset.teacher.id}`,
+          {
+            semesterId: dataset.semester.id,
+            lessonType: 'LECTURE',
+            validFrom: dataset.semester.dateFrom,
+            validUntilExclusive: null,
+          },
+          [201],
+        );
+        await expect
+          .poll(
+            async () => {
+              const assignment = await assignmentForSubject();
+              if (assignment) {
+                assignmentId = Number(assignment.id);
+                expect(
+                  assignment.validFrom <= date &&
+                    (assignment.validUntilExclusive == null ||
+                      date < assignment.validUntilExclusive),
+                ).toBe(true);
+              }
+              return assignmentId != null;
+            },
+            {
+              timeout: setupRemaining(60000),
+              message: 'Second own group assignment becomes published',
+            },
+          )
+          .toBe(true);
+        const lesson = await headmanActor.call(
+          'POST',
+          '/api/schedule/one-off-lessons',
+          {
+            groupId: group.id,
+            subjectId: subject.id,
+            assignmentId,
+            date,
+            lessonNumber: 2,
+            classroom: 'Синтетическая вторая группа',
+          },
+          [201, 200],
+          { 'Idempotency-Key': randomUUID() },
+        );
+        await expect
+          .poll(
+            async () => {
+              const report = await headmanActor.call(
+                'GET',
+                `/api/attendance/reports/lesson/${lesson.physicalLessonId}`,
+              );
+              return (
+                report.lessonStatus === 'CLOSED' &&
+                report.entries.length === 1 &&
+                Number(report.entries[0].userId) === headman.id &&
+                report.entries[0].status === 'absent'
+              );
+            },
+            {
+              timeout: setupRemaining(150000),
+              intervals: [1000],
+              message: 'Second own group lesson closes with its sole roster member',
+            },
+          )
+          .toBe(true);
+        await use({
+          groupId: Number(group.id),
+          groupName: group.name,
+          subjectId: Number(subject.id),
+          lessonId: Number(lesson.physicalLessonId),
+          headmanId: headman.id,
+          headmanName: headman.displayName,
+        });
+      } catch (error) {
+        failed = true;
+        throw error;
+      } finally {
+        try {
+          if (assignmentAttempted) {
+            // Recover only this known owned subject after an accepted/lost assignment response.
+            if (assignmentId == null)
+              await expect
+                .poll(
+                  async () => {
+                    const assignment = await assignmentForSubject();
+                    assignmentId = assignment == null ? undefined : Number(assignment.id);
+                    return assignmentId != null;
+                  },
+                  { timeout: 30000, message: 'Recover only the second own assignment for cleanup' },
+                )
+                .toBe(true);
+            const parts = new Intl.DateTimeFormat('en-CA', {
+              timeZone: 'Europe/Moscow',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            }).formatToParts(new Date());
+            const part = (key: string) => parts.find((value) => value.type === key)!.value;
+            const cutoff = `${part('year')}-${part('month')}-${part('day')}`;
+            expect(dataset.semester.dateFrom <= cutoff && cutoff <= dataset.semester.dateTo).toBe(
+              true,
+            );
+            const closeKey = randomUUID();
+            await expect
+              .poll(
+                async () => {
+                  const response = await dataset.request.delete(
+                    `/api/academic/assignments/${assignmentId}?validUntilExclusive=${cutoff}`,
+                    {
+                      headers: { ...headmanActor.headers(), 'Idempotency-Key': closeKey },
+                      timeout: 10000,
+                    },
+                  );
+                  try {
+                    expect([204, 503]).toContain(response.status());
+                    return response.status() === 204;
+                  } finally {
+                    await response.dispose();
+                  }
+                },
+                {
+                  timeout: 30000,
+                  message: 'Close only the second own assignment with its original command',
+                },
+              )
+              .toBe(true);
+          }
+          // Original suspension/reactivation can invalidate the earlier token; admit afresh.
+          const currentTeacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
+          await expect
+            .poll(
+              async () => scope(await currentTeacher.call('GET', catalogPath)) === beforeScope,
+              { timeout: 10000, message: 'Original teacher group and subject scope is restored' },
+            )
+            .toBe(true);
+          // Retain the new group's legitimate member, lesson and closed assignment history.
+        } catch (cleanupError) {
+          if (failed || info.status !== info.expectedStatus)
+            expect.soft(false, 'TEACHER_OWN_GROUP_SCOPE_RESTORE_FAILED').toBe(true);
+          else throw cleanupError;
+        }
+      }
+    },
+    { timeout: 180000 },
+  ],
+});
+
+async function selectTomorrowHomework(page: Page, dataset: MobileDataset): Promise<void> {
+  await expect(page.getByRole('tab', { name: 'День', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  const next = page.getByRole('button', { name: 'Следующий период', exact: true });
+  await expect(next).toBeEnabled();
+  const read = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === '/api/v1/student/homework' &&
+      response.request().method() === 'GET' &&
+      url.searchParams.get('from') === dataset.tomorrow &&
+      url.searchParams.get('to') === dataset.tomorrow
+    );
+  });
+  await next.click();
+  const response = await read;
+  expect(response.status()).toBe(200);
+  const feed = await response.json();
+  expect(feed.from === dataset.tomorrow && feed.to === dataset.tomorrow).toBe(true);
+}
+
+async function publishOfflineHomework(dataset: MobileDataset, title: string): Promise<void> {
+  const requestKey = randomUUID();
+  await expect
+    .poll(async () => {
+      const result = await dataset.headmanActor.call(
+        'POST',
+        '/api/academic/homeworks',
+        {
+          title,
+          description: 'Синтетическое задание для проверки границы офлайн-доступа',
+          link: null,
+          subjectId: dataset.subject.id,
+          groupId: dataset.group.id,
+          semesterId: dataset.semester.id,
+          lessonDate: dataset.today,
+          lessonNumber: null,
+          bindingMode: 'DATE',
+          lessonType: 'LECTURE',
+          requestKey,
+        },
+        [201, 200, 202],
+      );
+      return result.state !== 'PENDING' && result.id != null;
+    })
+    .toBe(true);
+}
+
+async function requireProductionWorker(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect
+    .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null), {
+      timeout: 15000,
+    })
+    .toBe(true);
+}
+
+// Only the CI-owned static container participates; no backend, source tree or volume is changed.
+function productionWorkerFixture() {
+  if (
+    process.env.RCT_E2E_SW_LIFECYCLE !== 'true' ||
+    process.env.RCT_E2E_REMAINING5 !== 'true' ||
+    process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
+    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+    process.env.CI !== 'true' ||
+    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+    !process.env.GITHUB_WORKSPACE
+  ) {
+    throw new Error('Production worker fixture requires the owned disposable CI stack');
+  }
+  function docker(args: string[], input?: Buffer): Buffer {
+    try {
+      return execFileSync('docker', args, {
+        input,
+        timeout: 10000,
+        maxBuffer: 65536,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+    } catch {
+      // Child-process errors include captured arguments/stdout; never forward them to reporters.
+      throw new Error('Owned production worker fixture operation failed');
+    }
+  }
+  const target = JSON.parse(
+    docker([
+      'inspect',
+      '--format',
+      '{"id":{{json .Id}},"labels":{{json .Config.Labels}},"networks":{{json .NetworkSettings.Networks}},"mounts":{{json .Mounts}},"readonly":{{json .HostConfig.ReadonlyRootfs}},"running":{{json .State.Running}}}',
+      'rct-e2e-pwa-nginx-1',
+    ]).toString('utf8'),
+  );
+  const network = JSON.parse(
+    docker([
+      'network',
+      'inspect',
+      '--format',
+      '{"id":{{json .Id}},"labels":{{json .Labels}}}',
+      'rct-e2e_private_net',
+    ]).toString('utf8'),
+  );
+  if (
+    !/^[a-f0-9]{64}$/.test(target.id) ||
+    target.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    target.labels?.['com.docker.compose.service'] !== 'pwa-nginx' ||
+    target.labels?.['com.docker.compose.project.working_dir'] !== process.env.GITHUB_WORKSPACE ||
+    target.running !== true ||
+    target.readonly !== false ||
+    !Array.isArray(target.mounts) ||
+    target.mounts.length !== 0 ||
+    Object.keys(target.networks).join() !== 'rct-e2e_private_net' ||
+    target.networks['rct-e2e_private_net'].NetworkID !== network.id ||
+    network.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    network.labels?.['com.docker.compose.network'] !== 'private_net'
+  ) {
+    throw new Error('Production worker fixture ownership or writable-layer mismatch');
+  }
+  const regularFiles = `
+    for directory in /usr /usr/share /usr/share/nginx /usr/share/nginx/html; do
+      test -d "$directory" && test ! -L "$directory"
+    done
+    path="/usr/share/nginx/html/$1"
+    test -f "$path" && test ! -L "$path"
+    test "$(stat -c %a "$path")" = 644
+    test "$(wc -c < "$path")" -le 32768
+  `;
+  function read(name: 'sw.js' | 'version.json'): Buffer {
+    return docker([
+      'exec',
+      target.id,
+      'sh',
+      '-eu',
+      '-c',
+      `${regularFiles}\ncat "$path"`,
+      'sh',
+      name,
+    ]);
+  }
+  function write(name: 'sw.js' | 'version.json', bytes: Buffer): void {
+    if (bytes.length === 0 || bytes.length > 32768)
+      throw new Error('Invalid bounded static fixture');
+    docker(
+      [
+        'exec',
+        '-i',
+        target.id,
+        'sh',
+        '-eu',
+        '-c',
+        `${regularFiles}
+          temporary="$path.rct-e2e-fixture"
+          # Exclusive creation and rename avoid following a destination link when writing.
+          (set -C; cat > "$temporary")
+          trap 'rm -f -- "$temporary"' EXIT
+          chmod 644 "$temporary"
+          mv -f -- "$temporary" "$path"
+        `,
+        'sh',
+        name,
+      ],
+      bytes,
+    );
+    if (!read(name).equals(bytes)) throw new Error('Static fixture byte verification failed');
+  }
+  const worker = read('sw.js');
+  const policy = read('version.json');
+  const marker = 'const releaseVersion = "0.0.0"';
+  const source = worker.toString('utf8');
+  const version = JSON.parse(policy.toString('utf8'));
+  if (source.split(marker).length !== 2 || version.latest !== '0.0.0') {
+    throw new Error('Unexpected production worker or policy release');
+  }
+  return {
+    update() {
+      write('sw.js', Buffer.from(source.replace(marker, 'const releaseVersion = "0.0.1"')));
+      write(
+        'version.json',
+        Buffer.from(JSON.stringify({ ...version, latest: '0.0.1', force: true })),
+      );
+    },
+    restorePolicy() {
+      write('version.json', policy);
+    },
+    restore() {
+      const errors: unknown[] = [];
+      for (const [name, bytes] of [
+        ['sw.js', worker],
+        ['version.json', policy],
+      ] as const) {
+        try {
+          write(name, bytes);
+        } catch (error) {
+          errors.push(error);
+        }
+      }
+      if (errors.length)
+        throw new AggregateError(errors, 'Production static fixture restoration failed');
+    },
+  };
+}
+
+test.describe('Current Vue roles with real synthetic domain @real-mobile', () => {
+  test('STUDENT completion persists and another group cannot mutate the homework', async ({
+    page,
+    dataset,
+  }) => {
+    const { accessToken } = await loginPwa(page, dataset.student);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectTomorrowHomework(page, dataset);
+    await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+    const completion = page.getByRole('slider', {
+      name: `Выполнить: ${dataset.marker}`,
+      exact: true,
+    });
+    await completion.focus();
+    for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
+    const saved = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          `/api/v1/student/homework/${dataset.homework.id}/completion` &&
+        response.request().method() === 'PUT',
+    );
+    await completion.press('Enter');
+    expect((await saved).status()).toBe(200);
+    await expect(
+      page.getByRole('slider', { name: `Снять отметку: ${dataset.marker}`, exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectTomorrowHomework(page, dataset);
+    await expect(
+      page.getByRole('slider', { name: `Снять отметку: ${dataset.marker}`, exact: true }),
+    ).toBeVisible();
+    const foreign = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+    const denied = await dataset.request.put(
+      `/api/v1/student/homework/${dataset.homework.id}/completion`,
+      { headers: foreign.headers(), data: { completed: true } },
+    );
+    expect([403, 404]).toContain(denied.status());
+    const read = await page.request.get(
+      `/api/v1/student/homework?from=${dataset.today}&to=${dataset.tomorrow}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    expect(read.status()).toBe(200);
+    expect(
+      (await read.json()).items.find(
+        (item: { id: string }) => String(item.id) === String(dataset.homework.id),
+      ).completed,
+    ).toBe(true);
+  });
+
+  it('HEADMAN marks the real roster and TEACHER reads without acquiring write permission', async ({
+    page,
+    activeHeadmanDataset: dataset,
+    ignoreHTTPSErrors,
+    teacherJournalSeed: journalSeed,
+  }, info) => {
+    let approvedRequest: { id: string; attachmentId: string };
+    await loginPwa(page, dataset.headman);
+    await selectPwaRole(page, 'Староста');
+    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    const marked = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.student.id}` &&
+        response.request().method() === 'PUT',
+    );
+    await page
+      .getByRole('button', { name: `Был: ${dataset.student.displayName}`, exact: true })
+      .click();
+    expect((await marked).status()).toBe(200);
+    await expect(
+      page.getByRole('button', {
+        name: `Был: ${dataset.student.displayName}. Открыть выбор отметки`,
+        exact: true,
+      }),
+    ).toBeVisible();
+    const id = dataset.lesson.physicalLessonId;
+    const markPath = `/api/attendance/lessons/${id}/students/${dataset.student.id}`;
+    const reportPath = `/api/attendance/reports/lesson/${id}`;
+    const studentRow = () =>
+      page.locator(`.headman-journal__roster-list [data-user-id="${dataset.student.id}"]`);
+    const storedStudent = async () => {
+      const report = await dataset.headmanActor.call('GET', reportPath);
+      return report.entries.find(
+        (row: { userId: number }) => Number(row.userId) === dataset.student.id,
+      );
+    };
+    const choose = async (label: string, method: 'PUT' | 'DELETE') => {
+      const response = page.waitForResponse(
+        (item) => new URL(item.url()).pathname === markPath && item.request().method() === method,
+      );
+      await studentRow()
+        .getByRole('button', { name: `${label}: ${dataset.student.displayName}`, exact: true })
+        .click();
+      expect((await response).status()).toBe(method === 'DELETE' ? 204 : 200);
+    };
+    const openChoices = async () => {
+      const before = await storedStudent();
+      await studentRow()
+        .getByRole('button', {
+          name: `Изменить отметку: ${dataset.student.displayName}`,
+          exact: true,
+        })
+        .click();
+      for (const label of ['Был', 'Уважительная причина', 'Не был']) {
+        await expect(
+          studentRow().getByRole('button', {
+            name: `${label}: ${dataset.student.displayName}`,
+            exact: true,
+          }),
+        ).toBeVisible();
+      }
+      expect(await storedStudent()).toEqual(before);
+    };
+    await openChoices();
+    await expect(
+      studentRow().getByRole('button', {
+        name: `Был: ${dataset.student.displayName}`,
+        exact: true,
+      }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await choose('Был', 'DELETE');
+    await expect(studentRow()).toHaveAttribute('data-status', 'empty');
+    expect((await storedStudent()).status).toBeNull();
+    await choose('Не был', 'PUT');
+    await expect(studentRow()).toHaveAttribute('data-status', 'absent');
+    expect(await storedStudent()).toMatchObject({ status: 'absent', source: 'headman' });
+    await openChoices();
+    await choose('Не был', 'DELETE');
+    await expect(studentRow()).toHaveAttribute('data-status', 'empty');
+
+    // The existing student's blank row is a genuine geo witness; a headman remains
+    // HEADMAN_USES_JOURNAL even after choosing its STUDENT role.
+    await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }),
+    ).toBeVisible();
+    const blockTrigger = page.getByRole('button', {
+      name: 'Заблокировать геоотметки',
+      exact: true,
+    });
+    await blockTrigger.focus();
+    await blockTrigger.press('Enter');
+    const confirmation = page.getByRole('group', {
+      name: 'Подтвердить блокировку геоотметок',
+      exact: true,
+    });
+    await expect(confirmation).toBeVisible();
+    const cancelBlock = confirmation.getByRole('button', { name: 'Отмена', exact: true });
+    await expect(cancelBlock).toBeFocused();
+    await cancelBlock.press('Escape');
+    await expect(confirmation).toHaveCount(0);
+    await expect(blockTrigger).toBeFocused();
+    await blockTrigger.press('Enter');
+    await expect(cancelBlock).toBeFocused();
+    await cancelBlock.click();
+    await expect(confirmation).toHaveCount(0);
+    await expect(blockTrigger).toBeFocused();
+    await expect(
+      page.getByRole('button', { name: 'Заблокировать геоотметки', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Заблокировать геоотметки', exact: true }).click();
+    const blocked = page.waitForResponse(
+      (item) =>
+        new URL(item.url()).pathname === `/api/schedule/lessons/${id}/blockage` &&
+        item.request().method() === 'POST',
+    );
+    await confirmation
+      .getByRole('button', { name: 'Подтвердить блокировку геоотметок', exact: true })
+      .click();
+    const blockAck = await blocked;
+    expect(blockAck.status()).toBe(200);
+    expect((await blockAck.json()).blockedByHeadman).toBe(true);
+    const browser = page.context().browser();
+    if (!browser) throw new Error('Synthetic student browser context is required');
+    requirePrivateArtifacts(info);
+    // Match the existing disposable stand's TLS setting; do not enable capture.
+    const studentContext = await browser.newContext({
+      baseURL: new URL(page.url()).origin,
+      ...(ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors }),
+    });
+    try {
+      const studentPage = await studentContext.newPage();
+      const studentLogin = await loginPwa(studentPage, dataset.student);
+      const headers = { Authorization: `Bearer ${studentLogin.accessToken}` };
+      const snapshot = async () => {
+        const response = await studentPage.request.get('/api/v1/student/today', { headers });
+        expect(response.status()).toBe(200);
+        return (await response.json()).lessons.find(
+          (row: { schedule: { id: string } }) => row.schedule.id === String(id),
+        );
+      };
+      const budget = async () => {
+        const response = await studentPage.request.get('/api/v1/student/requests/options', {
+          headers,
+        });
+        expect(response.status()).toBe(200);
+        return (await response.json()).budget;
+      };
+      const beforeBudget = await budget();
+      expect((await snapshot()).checkinEligibility).toMatchObject({
+        allowed: false,
+        reason: 'GEO_BLOCKED',
+      });
+      await expect(
+        studentPage.getByRole('button', { name: 'Отметка по геолокации недоступна', exact: true }),
+      ).toBeDisabled();
+      const denied = await studentPage.request.post(`/api/v1/student/lessons/${id}/checkin`, {
+        headers: { ...headers, 'Idempotency-Key': randomUUID() },
+        data: { geo: { kind: 'COORDINATES', latitude: 0, longitude: 0 } },
+      });
+      expect(denied.status()).toBe(409);
+      expect((await snapshot()).request).toBeNull();
+      expect(await budget()).toEqual(beforeBudget);
+      await page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }).click();
+      await choose('Был', 'PUT');
+      expect(await storedStudent()).toMatchObject({ status: 'present', source: 'headman' });
+      await openChoices();
+      await choose('Был', 'DELETE');
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+      const unblocked = page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === `/api/schedule/lessons/${id}/blockage` &&
+          item.request().method() === 'DELETE',
+      );
+      await page.getByRole('button', { name: 'Разблокировать геоотметки', exact: true }).click();
+      const unblockAck = await unblocked;
+      expect(unblockAck.status()).toBe(200);
+      expect((await unblockAck.json()).blockedByHeadman).toBe(false);
+      await expect(confirmation).toHaveCount(0);
+      await studentPage.reload();
+      await expect(
+        studentPage.getByRole('button', { name: 'Отметиться', exact: true }),
+      ).toBeEnabled();
+      expect((await snapshot()).checkinEligibility).toMatchObject({
+        allowed: true,
+        reason: 'ELIGIBLE',
+      });
+      expect(await budget()).toEqual(beforeBudget);
+      const created = await studentPage.request.post('/api/v1/student/requests/excuse', {
+        headers: { ...headers, 'Idempotency-Key': randomUUID() },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(journalSeed.lessonId)],
+                reason: 'ILLNESS',
+                comment: 'Синтетическое заявление для журнала преподавателя',
+              }),
+            ),
+          },
+          files: { name: 'teacher-journal.png', mimeType: 'image/png', buffer: journalSeed.png },
+        },
+      });
+      expect(created.status()).toBe(200);
+      const request = await created.json();
+      expect(request.attachments).toHaveLength(1);
+      expect(request.attachments[0].state).toBe('ACTIVE');
+      const path = `/api/attendance/requests/${request.summary.id}`;
+      const pending = await dataset.headmanActor.call('GET', path);
+      const approved = await dataset.headmanActor.call('POST', `${path}/decision`, {
+        decision: 'APPROVED',
+        reason: null,
+        expectedRevision: pending.decisionRevision,
+        excludedOccurrenceIds: [],
+        requestKey: randomUUID(),
+      });
+      expect(approved.summary.status).toBe('APPROVED');
+      approvedRequest = { id: request.summary.id, attachmentId: request.attachments[0].id };
+    } finally {
+      await studentContext.close();
+    }
+    await page.getByRole('button', { name: 'Открыть учёт выбранной пары', exact: true }).click();
+    await choose('Был', 'PUT');
+    await expect(studentRow()).toHaveAttribute('data-status', 'present');
+    const future = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: dataset.tomorrow,
+        lessonNumber: 1,
+        classroom: 'Синтетическая аудитория',
+      },
+      [201, 200],
+      { 'Idempotency-Key': randomUUID() },
+    );
+    const futureReport = page.waitForResponse(
+      (item) =>
+        new URL(item.url()).pathname ===
+          `/api/attendance/reports/lesson/${future.physicalLessonId}` &&
+        item.request().method() === 'GET',
+    );
+    await page.getByRole('button', { name: 'Следующая пара или день', exact: true }).click();
+    const futureRead = await futureReport;
+    expect(futureRead.status()).toBe(200);
+    expect(await futureRead.json()).toMatchObject({
+      editable: false,
+      lessonDate: dataset.tomorrow,
+    });
+    await expect(page.getByText('Пара ещё не началась', { exact: true }).first()).toBeVisible();
+    await expect(page.locator('.headman-journal__picker')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Предыдущая пара или день', exact: true }).click();
+    await expect(studentRow()).toHaveAttribute('data-status', 'present');
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+    await page
+      .getByRole('button', {
+        name: `Уважительная причина: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    await page.locator('.headman-journal__excuse-form select').selectOption('ILLNESS');
+    await page.getByLabel('Комментарий', { exact: true }).fill('Синтетическая причина');
+    const expectedPng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+      'base64',
+    );
+    await page.locator('.headman-journal__excuse-form input[type="file"]').setInputFiles({
+      name: 'синтетическая-справка.png',
+      mimeType: 'image/png',
+      buffer: expectedPng,
+    });
+    const attachmentSaved = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.headman.id}` &&
+        response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    expect((await attachmentSaved).status()).toBe(200);
+    // HEADMAN06: change the existing own EXCUSED mark, then restore its original file and reason.
+    const headmanRow = page.locator(
+      `.headman-journal__roster-list [data-user-id="${dataset.headman.id}"]`,
+    );
+    const ownMarkPath = `/api/attendance/lessons/${id}/students/${dataset.headman.id}`;
+    const ownHeadmanMark = async () =>
+      (await dataset.headmanActor.call('GET', reportPath)).entries.find(
+        (row: { userId: number }) => Number(row.userId) === dataset.headman.id,
+      );
+    await expect(headmanRow).toHaveAttribute('data-status', 'excused');
+    const originalExcused = await ownHeadmanMark();
+    expect(originalExcused).toMatchObject({
+      status: 'excused',
+      source: 'headman',
+      excuseType: 'ILLNESS',
+      comment: 'Синтетическая причина',
+      attachmentContentType: 'image/png',
+      attachmentSize: expectedPng.length,
+    });
+    expect(
+      typeof originalExcused.markRevision === 'string' && originalExcused.markRevision.length > 0,
+    ).toBe(true);
+    await headmanRow
+      .getByRole('button', {
+        name: `Изменить отметку: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    const ownAbsentSaved = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === ownMarkPath && response.request().method() === 'PUT',
+    );
+    await headmanRow
+      .getByRole('button', {
+        name: `Не был: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    const ownAbsentResponse = await ownAbsentSaved;
+    expect(ownAbsentResponse.status()).toBe(200);
+    expect(ownAbsentResponse.request().postDataJSON()).toMatchObject({
+      status: 'ABSENT',
+      expectedStatus: 'EXCUSED',
+      expectedRevision: originalExcused.markRevision,
+    });
+    await expect(headmanRow).toHaveAttribute('data-status', 'absent');
+    const ownAbsent = await ownHeadmanMark();
+    expect(ownAbsent).toMatchObject({
+      userId: dataset.headman.id,
+      status: 'absent',
+      source: 'headman',
+    });
+    expect(
+      typeof ownAbsent.markRevision === 'string' &&
+        ownAbsent.markRevision.length > 0 &&
+        ownAbsent.markRevision !== originalExcused.markRevision,
+    ).toBe(true);
+    await headmanRow
+      .getByRole('button', {
+        name: `Изменить отметку: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    await headmanRow
+      .getByRole('button', {
+        name: `Уважительная причина: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    await page.locator('.headman-journal__excuse-form select').selectOption('ILLNESS');
+    await page.getByLabel('Комментарий', { exact: true }).fill('Синтетическая причина');
+    await page.locator('.headman-journal__excuse-form input[type="file"]').setInputFiles({
+      name: 'синтетическая-справка.png',
+      mimeType: 'image/png',
+      buffer: expectedPng,
+    });
+    const ownExcusedRestored = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === ownMarkPath && response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    expect((await ownExcusedRestored).status()).toBe(200);
+    await expect(headmanRow).toHaveAttribute('data-status', 'excused');
+    const restoredExcused = await ownHeadmanMark();
+    expect(restoredExcused).toMatchObject({
+      userId: dataset.headman.id,
+      status: 'excused',
+      source: 'headman',
+      excuseType: 'ILLNESS',
+      comment: 'Синтетическая причина',
+      attachmentContentType: 'image/png',
+      attachmentSize: expectedPng.length,
+    });
+    expect(
+      typeof restoredExcused.markRevision === 'string' &&
+        restoredExcused.markRevision.length > 0 &&
+        restoredExcused.markRevision !== ownAbsent.markRevision,
+    ).toBe(true);
+    // The unchanged popup-byte oracle below now verifies the restored SAME PNG before TEACHER admission.
+    const attachmentPath = `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.headman.id}/attachment`;
+    const opened = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === attachmentPath &&
+        response.request().method() === 'GET',
+    );
+    // The client severs popup.opener, so observe the owning context's new page.
+    const openedPopup = page.context().waitForEvent('page');
+    await page.getByRole('button', { name: 'Открыть файл', exact: true }).click();
+    const file = await opened;
+    expect(file.status()).toBe(200);
+    expect(file.headers()['content-type']).toContain('image/png');
+    const popup = await openedPopup;
+    try {
+      await popup.waitForURL(/^blob:/);
+      const openedBytesEqual = await popup.evaluate(async (expected) => {
+        const response = await fetch(location.href);
+        // Inspect only the fixture-sized Blob already obtained by the real client.
+        if (Number(response.headers.get('content-length')) !== expected.length) return false;
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        return (
+          bytes.length === expected.length && bytes.every((byte, index) => byte === expected[index])
+        );
+      }, Array.from(expectedPng));
+      expect(openedBytesEqual).toBe(true);
+    } finally {
+      await popup.close();
+    }
+    const foreign = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+    expect([403, 404]).toContain(
+      (await dataset.request.get(attachmentPath, { headers: foreign.headers() })).status(),
+    );
+    await logoutPwa(page);
+    const teacherDay = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/teacher/day' &&
+        url.searchParams.get('date') === dataset.today &&
+        response.request().method() === 'GET'
+      );
+    });
+    const { accessToken } = await loginPwa(page, dataset.teacher);
+    await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+    const lesson = await page.request.get(
+      `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    expect(lesson.status()).toBe(200);
+    expect(JSON.stringify(await lesson.json())).toContain(dataset.subject.name);
+    const beforeTeacherWrite = await dataset.headmanActor.call('GET', reportPath);
+    const denied = await page.request.put(
+      `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        data: { status: 'PRESENT', expectedStatus: 'EMPTY', expectedRevision: 'EMPTY' },
+      },
+    );
+    expect(denied.status()).toBe(403);
+    expect(await dataset.headmanActor.call('GET', reportPath)).toEqual(beforeTeacherWrite);
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const dayResponse = await teacherDay;
+    expect(dayResponse.status()).toBe(200);
+    const day = await dayResponse.json();
+    expect(day.date).toBe(dataset.today);
+    const ownDayLesson = day.lessons.find((row: { id: string }) => row.id === String(id));
+    expect(ownDayLesson).toMatchObject({
+      groupId: String(dataset.group.id),
+      subjectId: String(dataset.subject.id),
+      date: dataset.today,
+      oneOff: true,
+      room: 'Синтетическая аудитория',
+    });
+    const todayCard = page
+      .locator(`[data-teacher-action="lesson-open"][data-lesson-id="${id}"]`)
+      .first();
+    await expect(todayCard).toContainText(dataset.subject.name);
+    await expect(todayCard).toContainText(ownDayLesson.groupName);
+    await expect(todayCard).toContainText('Синтетическая аудитория');
+    await expect(todayCard).toContainText(
+      `${ownDayLesson.startsAt.slice(0, 5)}–${ownDayLesson.endsAt.slice(0, 5)}`,
+    );
+    const detailRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === `/api/v1/teacher/lessons/${id}` &&
+        response.request().method() === 'GET',
+    );
+    await todayCard.click();
+    expect((await detailRead).status()).toBe(200);
+    await expect(page.getByRole('heading', { name: 'Пара', exact: true })).toBeVisible();
+    await expect(page.locator('.teacher-roster')).toContainText(dataset.student.displayName);
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    const catalogRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/teacher/catalog' &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        response.request().method() === 'GET'
+      );
+    });
+    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    const catalogResponse = await catalogRead;
+    expect(catalogResponse.status()).toBe(200);
+    const catalog = await catalogResponse.json();
+    expect(catalog.groups.map((group: { id: string }) => group.id)).toEqual([
+      String(dataset.group.id),
+    ]);
+    const groupName = catalog.groups[0].name;
+    await page.getByRole('button', { name: 'Группа', exact: true }).click();
+    await expect(page.getByRole('option')).toHaveCount(1);
+    await expect(page.getByRole('option', { name: groupName, exact: true })).toBeVisible();
+    expect(
+      catalog.groups.some((group: { id: string }) => group.id === String(dataset.otherGroup.id)),
+    ).toBe(false);
+    await page.getByRole('option', { name: groupName, exact: true }).click();
+    await page.getByRole('button', { name: 'Предмет', exact: true }).click();
+    await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
+    const journalRead = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === '/api/v1/teacher/journal' &&
+        url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+        url.searchParams.get('groupId') === String(dataset.group.id) &&
+        url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+        url.searchParams.get('pastOnly') === 'true' &&
+        response.request().method() === 'GET'
+      );
+    });
+    await page.getByRole('button', { name: 'Открыть журнал и выгрузку', exact: true }).click();
+    await page
+      .locator('.teacher-journal')
+      .getByRole('button', { name: 'Лекция', exact: true })
+      .click();
+    const journalResponse = await journalRead;
+    expect(journalResponse.status()).toBe(200);
+    expect(
+      new URL(journalResponse.url()).searchParams
+        .getAll('lessonType')
+        .map((type) => type.toUpperCase()),
+    ).toEqual(['LECTURE']);
+    const journal = await journalResponse.json();
+    expect(journal.lessons).toHaveLength(1);
+    expect(journal.lessons[0]).toMatchObject({
+      id: String(journalSeed.lessonId),
+      date: journalSeed.date,
+      groupId: String(dataset.group.id),
+      subjectId: String(dataset.subject.id),
+      status: 'closed',
+    });
+    const expectedNames = [dataset.student, dataset.headman, dataset.assistant]
+      .map((user) => user.displayName)
+      .sort((a, b) => a.localeCompare(b, 'ru'));
+    expect(journal.students.map((student: { displayName: string }) => student.displayName)).toEqual(
+      expectedNames,
+    );
+    const table = page.locator('.teacher-journal__table');
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+    await expect(table.locator('thead time')).toHaveAttribute('datetime', journalSeed.date);
+    const journalStudent = journal.students.find(
+      (row: { studentId: string }) => row.studentId === String(dataset.student.id),
+    );
+    expect(journalStudent.cells).toEqual([
+      expect.objectContaining({
+        lessonId: String(journalSeed.lessonId),
+        status: 'excused',
+        ticketId: approvedRequest!.id,
+      }),
+    ]);
+    const journalManual = journal.students.find(
+      (row: { studentId: string }) => row.studentId === String(dataset.headman.id),
+    );
+    expect(journalManual.cells).toEqual([
+      expect.objectContaining({
+        lessonId: String(journalSeed.lessonId),
+        status: 'excused',
+        ticketId: null,
+        excuseType: 'ILLNESS',
+      }),
+    ]);
+    const journalAbsent = journal.students.find(
+      (row: { studentId: string }) => row.studentId === String(dataset.assistant.id),
+    );
+    expect(journalAbsent.cells).toEqual([
+      expect.objectContaining({ lessonId: String(journalSeed.lessonId), status: 'absent' }),
+    ]);
+    await expect(
+      table
+        .getByRole('row')
+        .filter({ hasText: dataset.assistant.displayName })
+        .getByLabel('Отсутствовал', { exact: true }),
+    ).toBeVisible();
+    expect(new URL(journalResponse.url()).searchParams.get('includeMetrics')).toBe('true');
+    expect(journal.metrics).toMatchObject({ selectedStudentId: null });
+    expect(journal.metrics.students).toHaveLength(expectedNames.length);
+    const zeroJournalMetric = { numerator: 0, denominator: 1, percent: 0 };
+    const fullJournalMetric = { numerator: 1, denominator: 1, percent: 100 };
+    expect(journal.metrics.students.map((row: { studentId: string }) => row.studentId)).toEqual(
+      expect.arrayContaining(
+        [dataset.student, dataset.headman, dataset.assistant].map((user) => String(user.id)),
+      ),
+    );
+    const expectedMetrics = {
+      studentId: String(dataset.student.id),
+      displayName: dataset.student.displayName,
+      present: zeroJournalMetric,
+      presentOrExcused: fullJournalMetric,
+      excused: fullJournalMetric,
+      absent: zeroJournalMetric,
+    };
+    expect(
+      journal.metrics.students.find(
+        (row: { studentId: string }) => row.studentId === String(dataset.student.id),
+      ),
+    ).toEqual(expectedMetrics);
+    const metricRow = table.getByRole('row').filter({ hasText: dataset.student.displayName });
+    for (const [label, key] of [
+      ['Присутствия', 'present'],
+      ['Присутствия и уважительные причины', 'presentOrExcused'],
+      ['Уважительные причины', 'excused'],
+      ['Отсутствия', 'absent'],
+    ] as const) {
+      const metric = expectedMetrics[key];
+      await expect(
+        metricRow.getByLabel(`${label}: ${metric.numerator} из ${metric.denominator}`, {
+          exact: true,
+        }),
+      ).toContainText(`${metric.percent} %`);
+    }
+    await page.getByRole('button', { name: 'Показать график', exact: true }).click();
+    await page.getByRole('button', { name: 'Студент', exact: true }).click();
+    const [selectedJournalResponse] = await Promise.all([
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          url.pathname === '/api/v1/teacher/journal' &&
+          url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+          url.searchParams.get('groupId') === String(dataset.group.id) &&
+          url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+          url.searchParams
+            .getAll('lessonType')
+            .map((type) => type.toUpperCase())
+            .join() === 'LECTURE' &&
+          url.searchParams.get('pastOnly') === 'true' &&
+          url.searchParams.get('page') === '0' &&
+          url.searchParams.get('pageSize') === '1' &&
+          url.searchParams.get('includeMetrics') === 'true' &&
+          url.searchParams.get('metricsStudentId') === String(dataset.student.id) &&
+          response.request().method() === 'GET'
+        );
+      }),
+      page.getByRole('option', { name: dataset.student.displayName, exact: true }).click(),
+    ]);
+    expect(selectedJournalResponse.status()).toBe(200);
+    const selectedJournal = await selectedJournalResponse.json();
+    expect(selectedJournal.metrics).toMatchObject({
+      selectedStudentId: String(dataset.student.id),
+    });
+    expect(selectedJournal.metrics.series).toEqual([
+      {
+        lessonId: String(journalSeed.lessonId),
+        present: zeroJournalMetric,
+        presentOrExcused: fullJournalMetric,
+        excused: fullJournalMetric,
+        absent: zeroJournalMetric,
+      },
+    ]);
+    await expect(
+      page.locator('.teacher-journal__chart').getByRole('img', {
+        name: /присутствия 0 %, присутствия и уважительные причины 100 %/,
+      }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Показать таблицу', exact: true }).click();
+    const excusePath = `/api/v1/teacher/excuses/${approvedRequest!.id}`;
+    const teacherAttachmentPath = `${excusePath}/attachments/${approvedRequest!.attachmentId}`;
+    const excuseRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === excusePath && response.request().method() === 'GET',
+    );
+    const teacherFileRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === teacherAttachmentPath &&
+        response.request().method() === 'GET',
+    );
+    await table
+      .getByRole('row')
+      .filter({ hasText: dataset.student.displayName })
+      .getByRole('button', { name: /Уважительная причина/ })
+      .click();
+    const excuseResponse = await excuseRead;
+    expect(excuseResponse.status()).toBe(200);
+    const excuse = await excuseResponse.json();
+    expect(excuse).toMatchObject({
+      id: approvedRequest!.id,
+      studentId: String(dataset.student.id),
+      studentName: dataset.student.displayName,
+      groupId: String(dataset.group.id),
+      status: 'approved',
+      excuseType: 'illness',
+      decisionBy: String(dataset.headman.id),
+      comment: 'Синтетическое заявление для журнала преподавателя',
+    });
+    expect(excuse.lessons.map((row: { id: string }) => row.id)).toEqual([
+      String(journalSeed.lessonId),
+    ]);
+    expect(
+      Number.isFinite(Date.parse(excuse.createdAt)) &&
+        Number.isFinite(Date.parse(excuse.decisionAt)),
+    ).toBe(true);
+    const excuseMain = page.getByRole('main', { name: 'Причина отсутствия', exact: true });
+    await expect(excuseMain).toContainText(dataset.student.displayName);
+    await expect(excuseMain).toContainText('Уважительная причина · Одобрена');
+    await expect(excuseMain).toContainText('Болезнь');
+    await expect(excuseMain).toContainText(excuse.comment);
+    const instants = await page.evaluate(
+      (values: string[]) =>
+        values.map((value) =>
+          new Intl.DateTimeFormat('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+          }).format(new Date(value)),
+        ),
+      [excuse.createdAt, excuse.decisionAt],
+    );
+    const details = excuseMain.locator('.teacher-screen__details > div');
+    await expect(
+      details.filter({ has: page.getByText('Подана', { exact: true }) }).locator('dd'),
+    ).toHaveText(instants[0]);
+    await expect(
+      details.filter({ has: page.getByText('Решение старосты', { exact: true }) }).locator('dd'),
+    ).toContainText(instants[1]);
+    await expect(
+      excuseMain.getByRole('button', { name: /Одобрить|Отклонить|Изменить отметку|Сохранить/ }),
+    ).toHaveCount(0);
+    const teacherFile = await teacherFileRead;
+    expect(teacherFile.status()).toBe(200);
+    expect(teacherFile.headers()['content-type']).toContain('image/png');
+    // The opened app Blob and direct API below verify bytes; Playwright captured this fetch empty.
+    const preview = excuseMain.getByRole('img', { name: 'teacher-journal.png', exact: true });
+    await expect(preview).toBeVisible();
+    await expect
+      .poll(() =>
+        preview.evaluate(
+          (element) =>
+            element instanceof HTMLImageElement &&
+            element.complete &&
+            element.naturalWidth === 1 &&
+            element.naturalHeight === 1,
+        ),
+      )
+      .toBe(true);
+    const teacherPopupOpened = page.context().waitForEvent('page');
+    await excuseMain
+      .getByRole('button', { name: 'Открыть teacher-journal.png', exact: true })
+      .click();
+    const teacherPopup = await teacherPopupOpened;
+    try {
+      await teacherPopup.waitForURL(/^blob:/);
+      expect(
+        await teacherPopup.evaluate(async (expected) => {
+          const response = await fetch(location.href);
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          return (
+            bytes.length === expected.length &&
+            bytes.every((byte, index) => byte === expected[index])
+          );
+        }, Array.from(journalSeed.png)),
+      ).toBe(true);
+    } finally {
+      await teacherPopup.close();
+    }
+    await excuseMain.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+    await expect(
+      page.locator('.teacher-journal').getByRole('button', { name: 'Предмет', exact: true }),
+    ).toContainText(dataset.subject.name);
+    const manualRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === `/api/v1/teacher/lessons/${journalSeed.lessonId}` &&
+        response.request().method() === 'GET',
+    );
+    await table
+      .getByRole('row')
+      .filter({ hasText: dataset.headman.displayName })
+      .getByRole('button', { name: /Уважительная причина/ })
+      .click();
+    const manualResponse = await manualRead;
+    expect(manualResponse.status()).toBe(200);
+    expect(
+      (await manualResponse.json()).roster.find(
+        (row: { studentId: string }) => row.studentId === String(dataset.headman.id),
+      ),
+    ).toMatchObject({
+      ticketId: null,
+      status: 'excused',
+      source: 'NO_TICKET',
+      excuseType: 'ILLNESS',
+    });
+    const manualMain = page.getByRole('main', { name: 'Причина отсутствия', exact: true });
+    await expect(manualMain).toContainText(dataset.headman.displayName);
+    await expect(manualMain).toContainText('Болезнь');
+    await expect(manualMain).toContainText('Синтетическая ручная причина');
+    await expect(
+      manualMain.getByText(/^(Автор|Подана|Решение старосты|Комментарий к решению)$/),
+    ).toHaveCount(0);
+    await expect(
+      manualMain.getByRole('button', { name: /Одобрить|Отклонить|Изменить отметку|Сохранить/ }),
+    ).toHaveCount(0);
+    // Keep the accepted no-ticket explanation oracle even if it exposes the current UI gap.
+    // Soft failure retains the remaining real isolation and return-context observations.
+    await expect
+      .soft(manualMain)
+      .toContainText(
+        /(?:заявк[аи]|заявлени[ея])\s+(?:нет|не существует)|без\s+(?:заявки|заявления)/i,
+      );
+    await manualMain.getByRole('button', { name: 'Назад', exact: true }).click();
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+    await expect(
+      page.getByRole('heading', { name: new RegExp(`Журнал.*${groupName}`) }),
+    ).toBeVisible();
+    for (const path of [
+      `/api/v1/teacher/lessons/${journalSeed.foreignLessonId}`,
+      `/api/v1/teacher/excuses/${journalSeed.foreignRequestId}`,
+      `/api/v1/teacher/excuses/${journalSeed.foreignRequestId}/attachments/${journalSeed.foreignAttachmentId}`,
+    ]) {
+      const forbidden = await page.request.get(path, { headers });
+      expect([403, 404]).toContain(forbidden.status());
+      expect(forbidden.headers()['content-type'] ?? '').not.toContain('image/png');
+      const forbiddenBody = await forbidden.body();
+      expect(forbiddenBody.includes(journalSeed.png)).toBe(false);
+      expect(forbiddenBody.includes(Buffer.from(dataset.foreignStudent.displayName))).toBe(false);
+      expect(forbiddenBody.includes(Buffer.from(`foreign-ticket-${dataset.otherGroup.id}`))).toBe(
+        false,
+      );
+    }
+    const ownStillReadable = await page.request.get(excusePath, { headers });
+    expect(ownStillReadable.status()).toBe(200);
+    expect((await ownStillReadable.json()).id).toBe(approvedRequest!.id);
+    const ownFileStillReadable = await page.request.get(teacherAttachmentPath, { headers });
+    expect(ownFileStillReadable.status()).toBe(200);
+    expect((await ownFileStillReadable.body()).equals(journalSeed.png)).toBe(true);
+
+    // These additional reads run only after every original teacher/attachment/rights oracle.
+    const assistantRow = table.locator('tbody tr').filter({
+      has: page.getByRole('rowheader', { name: dataset.assistant.displayName, exact: true }),
+    });
+    const automatic = assistantRow.getByLabel('Отсутствовал', { exact: true });
+    await expect(automatic).toHaveAttribute('data-auto-absent', 'true');
+    await expect(automatic).toHaveAttribute(
+      'aria-description',
+      'Отсутствие отмечено автоматически при закрытии пары',
+    );
+    const pendingKey = randomUUID();
+    let pendingId: string | undefined;
+    let contrastLessonId: number | undefined;
+    let originalCancelAttempted = false;
+    let pastCancelAttempted = false;
+    let shortcutSubjectId: number | undefined;
+    const shortcutCloseKey = randomUUID();
+    const currentSubjectScope = (value: {
+      taughtSubjectOptions: { groupId: string; subjectId: string; lessonTypes: string[] }[];
+    }) =>
+      value.taughtSubjectOptions
+        .flatMap((option) =>
+          option.lessonTypes.map(
+            (type) => `${option.groupId}:${option.subjectId}:${type.toUpperCase()}`,
+          ),
+        )
+        .sort();
+    try {
+      const submitted = await dataset.request.post('/api/v1/student/requests/excuse', {
+        headers: { ...journalSeed.assistantActor.headers(), 'Idempotency-Key': pendingKey },
+        multipart: {
+          request: {
+            name: 'request.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(
+              JSON.stringify({
+                lessonIds: [String(journalSeed.lessonId)],
+                reason: 'OTHER',
+                comment: 'Синтетическое заявление ожидает решения',
+              }),
+            ),
+          },
+        },
+      });
+      expect(submitted.status()).toBe(200);
+      const pending = await submitted.json();
+      pendingId = pending.summary.id;
+      expect(typeof pendingId).toBe('string');
+      expect(pending.summary.status).toBe('PENDING');
+
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'Итоги', exact: true }).click();
+      await expect(
+        page.getByRole('status').filter({ hasText: 'У тебя одна группа — сравнивать не с чем.' }),
+      ).toBeVisible();
+      await expect(page.locator('.teacher-stats__card')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Перейти к студентам', exact: true }).click();
+      await page.getByRole('button', { name: 'По студентам', exact: true }).click();
+      await page.getByRole('button', { name: 'Группа', exact: true }).click();
+      await page.getByRole('option', { name: groupName, exact: true }).click();
+      await page.getByRole('button', { name: 'Предмет', exact: true }).click();
+      await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
+      const statsRead = (sort: string) =>
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/stats' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(dataset.group.id) &&
+            url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+            url.searchParams.get('scope') === 'students' &&
+            url.searchParams
+              .getAll('lessonType')
+              .map((type) => type.toUpperCase())
+              .join() === 'LECTURE' &&
+            url.searchParams.getAll('sort').join() === sort
+          );
+        });
+      const [statsResponse] = await Promise.all([
+        statsRead('present'),
+        page.getByRole('button', { name: 'Лекция', exact: true }).click(),
+      ]);
+      expect(statsResponse.status()).toBe(200);
+      const stats = await statsResponse.json();
+      expect(stats.lessonsCount).toBe(1);
+      expect(stats.students).toHaveLength(expectedNames.length);
+      expect(
+        stats.students
+          .map((row: { displayName: string }) => row.displayName)
+          .sort((a: string, b: string) => a.localeCompare(b, 'ru')),
+      ).toEqual(expectedNames);
+      await expect(
+        page.getByRole('heading', { name: 'Студенты · Пар учтено: 1', exact: true }),
+      ).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Сортировка', exact: true })).toContainText(
+        'Присутствия: сначала ниже',
+      );
+      const cards = page.locator('.teacher-stats__card');
+      for (const row of stats.students) {
+        const isAbsent = row.studentId === String(dataset.assistant.id);
+        expect(row.present).toEqual({ numerator: 0, denominator: 1, percent: 0 });
+        expect(row.presentOrExcused).toEqual({
+          numerator: isAbsent ? 0 : 1,
+          denominator: 1,
+          percent: isAbsent ? 0 : 100,
+        });
+        expect(row.excused).toEqual(row.presentOrExcused);
+        expect(row.absent).toEqual({
+          numerator: isAbsent ? 1 : 0,
+          denominator: 1,
+          percent: isAbsent ? 100 : 0,
+        });
+        const card = cards.filter({
+          has: page.getByRole('heading', { name: row.displayName, exact: true }),
+        });
+        for (const [index, metric] of [
+          row.present,
+          row.presentOrExcused,
+          row.excused,
+          row.absent,
+        ].entries()) {
+          await expect(card.locator('dd').nth(index)).toHaveText(
+            `${metric.percent} % · ${metric.numerator}/${metric.denominator}`,
+          );
+        }
+      }
+      await page.getByRole('button', { name: 'Сортировка', exact: true }).click();
+      const [sortedResponse] = await Promise.all([
+        statsRead('-absent'),
+        page.getByRole('option', { name: 'Отсутствия: сначала выше', exact: true }).click(),
+      ]);
+      expect(sortedResponse.status()).toBe(200);
+      const sorted = await sortedResponse.json();
+      expect(sorted.students[0].studentId).toBe(String(dataset.assistant.id));
+      expect(
+        sorted.students.map((row: { absent: { percent: number } }) => row.absent.percent),
+      ).toEqual([100, 0, 0]);
+      await expect(cards.getByRole('heading')).toHaveText(
+        sorted.students.map((row: { displayName: string }) => row.displayName),
+      );
+
+      await page.getByRole('button', { name: 'Открыть журнал', exact: true }).click();
+      const [pendingJournal] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/v1/teacher/journal' &&
+            response.request().method() === 'GET',
+        ),
+        page
+          .locator('.teacher-journal')
+          .getByRole('button', { name: 'Лекция', exact: true })
+          .click(),
+      ]);
+      expect(pendingJournal.status()).toBe(200);
+      const pendingCell = (await pendingJournal.json()).students
+        .find((row: { studentId: string }) => row.studentId === String(dataset.assistant.id))
+        .cells.find((cell: { lessonId: string }) => cell.lessonId === String(journalSeed.lessonId));
+      expect(pendingCell).toMatchObject({
+        status: 'absent',
+        autoAbsent: true,
+        pendingTicket: true,
+        ticketId: pendingId,
+      });
+      const pendingMark = assistantRow.getByLabel('Отсутствовал; заявление ожидает решения', {
+        exact: true,
+      });
+      await expect(pendingMark).toHaveAttribute('data-auto-absent', 'true');
+      await expect(pendingMark).toContainText('Ожидает решения');
+      await expect(assistantRow.getByRole('button')).toHaveCount(0);
+      const cancelledRequest = await journalSeed.assistantActor.call(
+        'POST',
+        `/api/v1/student/requests/${pendingId}/cancel`,
+      );
+      expect(cancelledRequest.summary.status).toBe('CANCELLED');
+      pendingId = undefined;
+
+      const ownPastLessons = await dataset.headmanActor.call(
+        'GET',
+        `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${journalSeed.date}&dateTo=${journalSeed.date}&size=100`,
+      );
+      const pastBefore = (
+        ownPastLessons._embedded?.lessonResponseList ?? ownPastLessons.content
+      ).find((lesson: { id: number }) => Number(lesson.id) === journalSeed.lessonId);
+      expect(pastBefore).toMatchObject({
+        id: journalSeed.lessonId,
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        status: 'CLOSED',
+        current: true,
+      });
+      expect(pastBefore.revision).toBeGreaterThan(0);
+      pastCancelAttempted = true;
+      // The native cancellation DTO is reason-only; the server locks and validates current ownership.
+      const pastCancelled = await dataset.headmanActor.call(
+        'PATCH',
+        `/api/schedule/lessons/${journalSeed.lessonId}/cancel`,
+        { reason: 'Синтетическая отмена прошедшей пары' },
+      );
+      expect(pastCancelled).toMatchObject({ id: journalSeed.lessonId, status: 'CANCELLED' });
+      expect(pastCancelled.revision).toBeGreaterThan(pastBefore.revision);
+      await page
+        .locator('.teacher-journal')
+        .getByRole('button', { name: 'Лекция', exact: true })
+        .click();
+      const [cancelledJournal] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/journal' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(dataset.group.id) &&
+            url.searchParams.get('subjectId') === String(dataset.subject.id) &&
+            url.searchParams.get('pastOnly') === 'true'
+          );
+        }),
+        page
+          .locator('.teacher-journal')
+          .getByRole('button', { name: 'Лекция', exact: true })
+          .click(),
+      ]);
+      expect(cancelledJournal.status()).toBe(200);
+      const cancelledJournalData = await cancelledJournal.json();
+      expect(cancelledJournalData.lessons).toHaveLength(1);
+      expect(cancelledJournalData.lessons[0]).toMatchObject({
+        id: String(journalSeed.lessonId),
+        status: 'cancelled',
+        cancelled: true,
+        date: journalSeed.date,
+      });
+      await expect(table.locator('thead th[data-cancelled="true"]')).toContainText('Отменена');
+      await expect(table.locator('tbody th[scope="row"]')).toHaveText(expectedNames);
+      await expect(table.getByLabel('Отменена', { exact: true })).toHaveCount(expectedNames.length);
+      await expect(table.getByRole('button')).toHaveCount(0);
+      for (const metric of ['Присутствия', 'Уважительные причины', 'Отсутствия']) {
+        await expect(table.getByLabel(`${metric}: 0 из 0`, { exact: true })).toHaveCount(
+          expectedNames.length,
+        );
+      }
+      await expect(table.getByLabel('Отсутствовал', { exact: true })).toHaveCount(0);
+
+      const contrast = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: dataset.subject.id,
+          assignmentId: dataset.subject.assignments[0].id,
+          date: dataset.tomorrow,
+          lessonNumber: 2,
+          classroom: 'Синтетическая следующая пара',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      contrastLessonId = Number(contrast.physicalLessonId);
+      originalCancelAttempted = true;
+      await dataset.headmanActor.call(
+        'PATCH',
+        `/api/schedule/lessons/${future.physicalLessonId}/cancel`,
+        { reason: 'Синтетическая отмена для просмотра преподавателем' },
+      );
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+      const dayRead = (date: string) =>
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/day' &&
+            url.searchParams.get('date') === date &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id)
+          );
+        });
+      const [tomorrowResponse] = await Promise.all([
+        dayRead(dataset.tomorrow),
+        page.getByRole('button', { name: 'Следующий день', exact: true }).click(),
+      ]);
+      expect(tomorrowResponse.status()).toBe(200);
+      const tomorrow = await tomorrowResponse.json();
+      expect(tomorrow.date).toBe(dataset.tomorrow);
+      expect(tomorrow.lessons.map((lesson: { id: string }) => lesson.id)).toEqual([
+        String(future.physicalLessonId),
+        String(contrastLessonId),
+      ]);
+      expect(tomorrow.lessons[0].cancelled).toBe(true);
+      expect(tomorrow.lessons[1].cancelled).toBe(false);
+      expect(tomorrow.lessons[0].startsAt < tomorrow.lessons[1].startsAt).toBe(true);
+      const home = page.getByRole('main', { name: 'Сегодня у преподавателя', exact: true });
+      await expect(home.locator('[data-lesson-id]')).toHaveCount(2);
+      expect(
+        await home
+          .locator('[data-lesson-id]')
+          .evaluateAll((elements) =>
+            elements.map((element) => element.getAttribute('data-lesson-id')),
+          ),
+      ).toEqual([String(future.physicalLessonId), String(contrastLessonId)]);
+      const cancelledCard = home.locator(`article[data-lesson-id="${future.physicalLessonId}"]`);
+      await expect(cancelledCard).toContainText('Отменена');
+      await expect(cancelledCard).toContainText(
+        'Синтетическая отмена для просмотра преподавателем',
+      );
+      await expect(cancelledCard).not.toHaveAttribute('data-teacher-action');
+      await expect(cancelledCard.getByRole('button')).toHaveCount(0);
+      await cancelledCard.click();
+      await expect(home).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Пара', exact: true })).toHaveCount(0);
+      await expect(
+        home.locator(`[data-teacher-action="lesson-open"][data-lesson-id="${contrastLessonId}"]`),
+      ).toBeVisible();
+      const [todayAgain] = await Promise.all([
+        dayRead(dataset.today),
+        page.getByRole('button', { name: 'Предыдущий день', exact: true }).click(),
+      ]);
+      expect(todayAgain.status()).toBe(200);
+      expect((await todayAgain.json()).lessons.map((lesson: { id: string }) => lesson.id)).toEqual([
+        String(id),
+      ]);
+      const [yesterdayResponse] = await Promise.all([
+        dayRead(journalSeed.date),
+        page.getByRole('button', { name: 'Предыдущий день', exact: true }).click(),
+      ]);
+      expect(yesterdayResponse.status()).toBe(200);
+      expect(
+        (await yesterdayResponse.json()).lessons.map((lesson: { id: string }) => lesson.id),
+      ).toEqual([String(journalSeed.lessonId)]);
+      await expect(home.locator(`[data-lesson-id="${journalSeed.lessonId}"]`)).toBeVisible();
+
+      // An owned unscheduled subject exposes the accepted subject/type shortcut without changing dates.
+      const shortcutName = `Teacher shortcut ${randomUUID()}`;
+      const shortcutSubject = await dataset.headmanActor.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: shortcutName,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [
+            {
+              teacherId: dataset.teacher.id,
+              semesterId: dataset.semester.id,
+              lessonType: 'LECTURE',
+              validFrom: dataset.semester.dateFrom,
+              validUntilExclusive: null,
+            },
+          ],
+        },
+        [201],
+      );
+      shortcutSubjectId = Number(shortcutSubject.id);
+      expect(Number.isSafeInteger(shortcutSubjectId) && shortcutSubjectId > 0).toBe(true);
+      await expect
+        .poll(
+          async () => {
+            const response = await page.request.get(
+              `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`,
+              { headers },
+            );
+            try {
+              if (response.status() !== 200)
+                throw datasetHttpFailure('GET', '/api/v1/teacher/catalog', response.status());
+              const current = await response.json();
+              return current.taughtSubjectOptions.some(
+                (option: { groupId: string; subjectId: string; lessonTypes: string[] }) =>
+                  option.groupId === String(dataset.group.id) &&
+                  option.subjectId === String(shortcutSubjectId) &&
+                  option.lessonTypes.some((type) => type.toUpperCase() === 'LECTURE'),
+              );
+            } finally {
+              await response.dispose();
+            }
+          },
+          { timeout: 5000, message: 'Owned shortcut assignment becomes authoritative' },
+        )
+        .toBe(true);
+      const [freshCatalog] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/catalog' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id)
+          );
+        }),
+        page.reload(),
+      ]);
+      expect(freshCatalog.status()).toBe(200);
+      const shortcut = page
+        .locator('[data-teacher-action="journal-open"]')
+        .filter({ hasText: shortcutName });
+      await expect(shortcut).toHaveCount(1);
+      await expect(shortcut).toContainText(groupName);
+      await expect(shortcut).toContainText('Лекция');
+      const [shortcutResponse] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === '/api/v1/teacher/journal' &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(dataset.group.id) &&
+            url.searchParams.get('subjectId') === String(shortcutSubjectId) &&
+            url.searchParams
+              .getAll('lessonType')
+              .map((type) => type.toUpperCase())
+              .join() === 'LECTURE' &&
+            url.searchParams.get('pastOnly') === 'true' &&
+            url.searchParams.get('page') === '0' &&
+            url.searchParams.get('pageSize') === '100'
+          );
+        }),
+        shortcut.click(),
+      ]);
+      expect(shortcutResponse.status()).toBe(200);
+      const shortcutJournal = await shortcutResponse.json();
+      expect(shortcutJournal.lessons).toEqual([]);
+      expect(shortcutJournal.students).toEqual([]);
+      await expect(page.locator('.teacher-journal')).toBeVisible();
+      await expect(
+        page.locator('.teacher-journal').getByRole('button', { name: 'Лекция', exact: true }),
+      ).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      // APIRequestContext calls do not emit page response events. Retain only a closed
+      // rejected-operation witness; the original rejection still reaches allSettled.
+      const observeCleanup = async <T>(
+        initialCause: HeadmanCleanupCause,
+        run: (phase: (cause: HeadmanCleanupCause, status?: number) => void) => Promise<T>,
+      ): Promise<T> => {
+        let cause = initialCause;
+        let status = 0;
+        try {
+          return await run((nextCause, nextStatus = 0) => {
+            cause = nextCause;
+            status = nextStatus;
+          });
+        } catch (error) {
+          retainHeadmanCleanupFailure(
+            info.annotations,
+            cause,
+            status || classifySafeFailure(error).httpStatus,
+          );
+          throw error;
+        }
+      };
+      const cleanup = await Promise.allSettled([
+        ...(shortcutSubjectId
+          ? [
+              observeCleanup('HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ', async (phase) => {
+                const subject = await dataset.headmanActor.call(
+                  'GET',
+                  `/api/academic/subjects/${shortcutSubjectId}`,
+                );
+                phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY');
+                const assignment = subject.assignments.find(
+                  (row: { teacherId: number; semesterId: number; lessonType: string }) =>
+                    Number(row.teacherId) === dataset.teacher.id &&
+                    Number(row.semesterId) === dataset.semester.id &&
+                    row.lessonType.toUpperCase() === 'LECTURE',
+                );
+                expect(
+                  Number.isSafeInteger(Number(assignment?.id)) && Number(assignment.id) > 0,
+                ).toBe(true);
+                const closePath = `/api/academic/subjects/${shortcutSubjectId}/teachers/${dataset.teacher.id}?assignmentId=${assignment.id}&validUntilExclusive=${dataset.today}`;
+                phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE');
+                await expect
+                  .poll(
+                    async () => {
+                      phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE');
+                      const closed = await dataset.request.delete(closePath, {
+                        headers: {
+                          ...dataset.headmanActor.headers(),
+                          'Idempotency-Key': shortcutCloseKey,
+                        },
+                      });
+                      try {
+                        phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE', closed.status());
+                        if (![204, 503].includes(closed.status()))
+                          throw datasetHttpFailure('DELETE', closePath, closed.status());
+                        return closed.status();
+                      } finally {
+                        await closed.dispose();
+                      }
+                    },
+                    { timeout: 5000, message: 'Owned shortcut assignment closure completes' },
+                  )
+                  .toBe(204);
+                phase('HEADMAN_CLEANUP_SHORTCUT_CATALOG_READ');
+                const restoredScope = await page.request.get(
+                  `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`,
+                  { headers },
+                );
+                try {
+                  phase('HEADMAN_CLEANUP_SHORTCUT_CATALOG_READ', restoredScope.status());
+                  expect(restoredScope.status()).toBe(200);
+                  const current = await restoredScope.json();
+                  phase('HEADMAN_CLEANUP_SHORTCUT_CATALOG_SCOPE', restoredScope.status());
+                  expect(currentSubjectScope(current)).toEqual(currentSubjectScope(catalog));
+                  expect(current.groups.map((row: { id: string }) => row.id)).toEqual(
+                    catalog.groups.map((row: { id: string }) => row.id),
+                  );
+                } finally {
+                  await restoredScope.dispose();
+                }
+                // Retain the closed assignment and empty synthetic subject with their immutable history.
+              }),
+            ]
+          : []),
+        ...(pendingId
+          ? [
+              observeCleanup('HEADMAN_CLEANUP_PENDING_REQUEST_CANCEL', async () =>
+                journalSeed.assistantActor.call(
+                  'POST',
+                  `/api/v1/student/requests/${pendingId}/cancel`,
+                ),
+              ),
+            ]
+          : []),
+        ...(originalCancelAttempted
+          ? [
+              observeCleanup('HEADMAN_CLEANUP_FUTURE_LESSON_RESTORE', async () =>
+                dataset.headmanActor.call(
+                  'PATCH',
+                  `/api/schedule/lessons/${future.physicalLessonId}/restore`,
+                ),
+              ),
+            ]
+          : []),
+        ...(contrastLessonId
+          ? [
+              observeCleanup('HEADMAN_CLEANUP_CONTRAST_LESSON_CANCEL', async () =>
+                dataset.headmanActor.call(
+                  'PATCH',
+                  `/api/schedule/lessons/${contrastLessonId}/cancel`,
+                  { reason: 'Синтетическая завершённая проверка дня' },
+                ),
+              ),
+            ]
+          : []),
+      ]);
+      // Restoration keeps physical identity and history; cancelled attendance/tickets are not resurrected.
+      if (pastCancelAttempted) {
+        try {
+          const restored = await dataset.headmanActor.call(
+            'PATCH',
+            `/api/schedule/lessons/${journalSeed.lessonId}/restore`,
+          );
+          expect(restored).toMatchObject({
+            id: journalSeed.lessonId,
+            groupId: dataset.group.id,
+            subjectId: dataset.subject.id,
+            current: true,
+          });
+          expect(restored.status).not.toBe('CANCELLED');
+          await expect
+            .poll(
+              async () => {
+                const report = await dataset.headmanActor.call(
+                  'GET',
+                  `/api/attendance/reports/lesson/${journalSeed.lessonId}`,
+                );
+                return [dataset.student.id, dataset.headman.id, dataset.assistant.id].every(
+                  (studentId) => {
+                    const row = report.entries.find(
+                      (entry: { userId: number }) => Number(entry.userId) === studentId,
+                    );
+                    return (
+                      row &&
+                      !['present', 'excused'].includes(row.status) &&
+                      row.excuseType == null &&
+                      row.attachmentId == null
+                    );
+                  },
+                );
+              },
+              {
+                timeout: 5000,
+                message: 'Owned cancelled marks are not resurrected by physical restore',
+              },
+            )
+            .toBe(true);
+        } catch {
+          expect
+            .soft(false, 'Owned past lesson physical restore and no-resurrection check completed')
+            .toBe(true);
+        }
+      }
+      expect
+        .soft(
+          cleanup.every((result) => result.status === 'fulfilled'),
+          'Owned teacher witness cleanup completed',
+        )
+        .toBe(true);
+    }
+  });
+
+  test('STUDENT helper marks with its capability and revocation denies the same effect', async ({
+    page,
+    dataset,
+  }) => {
+    const { accessToken, session } = await loginPwa(page, dataset.assistant);
+    expect(session.activeRole).toBe('STUDENT');
+    expect(session.roles.some((grant) => grant.role === 'HEADMAN' && grant.selectable)).toBe(false);
+    const before = await page.request.get('/api/academic/assistants/me/permissions', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    expect(before.status()).toBe(200);
+    expect(assistantPermissionCodes(await before.json())).toContain('MARK_ATTENDANCE');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Действия помощника', exact: true }).click();
+    await page.getByRole('button', { name: 'Посещаемость и журнал', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: `Был: ${dataset.assistant.displayName}`, exact: true }),
+    ).toBeEnabled();
+    const markPath = `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`;
+    const marked = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === markPath && response.request().method() === 'PUT',
+    );
+    await page
+      .getByRole('button', { name: `Был: ${dataset.assistant.displayName}`, exact: true })
+      .click();
+    expect((await marked).status()).toBe(200);
+    await expect(
+      page.getByRole('button', {
+        name: `Был: ${dataset.assistant.displayName}. Открыть выбор отметки`,
+        exact: true,
+      }),
+    ).toBeVisible();
+    const reportPath = `/api/attendance/reports/lesson/${dataset.lesson.physicalLessonId}`;
+    const report = await dataset.headmanActor.call('GET', reportPath);
+    const entry = report.entries.find(
+      (row: { userId: number }) => Number(row.userId) === dataset.assistant.id,
+    );
+    expect(String(entry.status).toUpperCase()).toBe('PRESENT');
+    expect(typeof entry.markRevision).toBe('string');
+    await dataset.headmanActor.call(
+      'DELETE',
+      `/api/academic/assistants/${dataset.assistantGrant.id}`,
+      undefined,
+      [204],
+    );
+    const denied = await dataset.request.put(markPath, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data: { status: 'ABSENT', expectedStatus: 'PRESENT', expectedRevision: entry.markRevision },
+    });
+    expect(denied.status()).toBe(403);
+    const after = await dataset.headmanActor.call('GET', reportPath);
+    expect(
+      String(
+        after.entries.find((row: { userId: number }) => Number(row.userId) === dataset.assistant.id)
+          .status,
+      ).toUpperCase(),
+    ).toBe('PRESENT');
+    await page.reload();
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Действия помощника', exact: true })).toHaveCount(
+      0,
+    );
+    const stale = await page.request.get('/api/academic/assistants/me/permissions', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    expect(stale.status()).toBe(200);
+    expect(assistantPermissionCodes(await stale.json())).toEqual([]);
+  });
+
+  test('LIMITED ADMIN views accounts while creation is denied by UI and server', async ({
+    page,
+    dataset,
+  }) => {
+    await loginPwa(page, dataset.limitedAdmin);
+    await selectPwaRole(page, 'Администратор');
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await expect(
+      page.getByRole('searchbox', { name: 'Найти пользователя', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Создать пользователя', exact: true }),
+    ).toHaveCount(0);
+    const limited = await admit(dataset.request, dataset.limitedAdmin, 'ADMIN');
+    const denied = await dataset.request.post('/api/academic/users', {
+      headers: limited.headers(),
+      data: {
+        lastName: 'Запрещённый',
+        firstName: 'Синтетика',
+        role: 'STUDENT',
+        groupId: dataset.group.id,
+        telegramId: 999999999999,
+      },
+    });
+    expect(denied.status()).toBe(403);
+  });
+
+  test('empty foreign-group homework and transport failure provide a real retry path', async ({
+    page,
+    dataset,
+  }) => {
+    const emptyRead = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/v1/student/homework' &&
+        response.request().method() === 'GET',
+    );
+    await loginPwa(page, dataset.foreignStudent);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    expect((await emptyRead).status()).toBe(200);
+    await expect(page.getByText('На этот день заданий нет.', { exact: true })).toBeVisible();
+    await expect(page.locator('.homework-card')).toHaveCount(0);
+    await logoutPwa(page);
+    // The owner loads homework during login and retries failed reads automatically.
+    // Keep the real transport unavailable until its manual-retry state is visible.
+    const homeworkRoute = (url: URL) => url.pathname === '/api/v1/student/homework';
+    const abortHomework: Parameters<typeof page.route>[1] = (route) =>
+      route.request().method() === 'GET' ? route.abort('failed') : route.continue();
+    await page.route(homeworkRoute, abortHomework);
+    try {
+      const failed = page.waitForEvent(
+        'requestfailed',
+        (request) =>
+          new URL(request.url()).pathname === '/api/v1/student/homework' &&
+          request.method() === 'GET',
+      );
+      await Promise.all([failed, loginPwa(page, dataset.student)]);
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Повторить', exact: true })).toBeVisible();
+    } finally {
+      await page.unroute(homeworkRoute, abortHomework);
+    }
+    const [retried] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/v1/student/homework' &&
+          response.request().method() === 'GET',
+      ),
+      page.getByRole('button', { name: 'Повторить', exact: true }).click(),
+    ]);
+    expect(retried.status()).toBe(200);
+    await selectTomorrowHomework(page, dataset);
+    await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+  });
+
+  test('another live session revokes the browser session and recovery exposes login only', async ({
+    page,
+    dataset,
+  }) => {
+    const { accessToken, session } = await loginPwa(page, dataset.foreignStudent);
+    const other = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+    await other.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+    const denied = await page.request.get('/api/auth/session', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    expect(denied.status()).toBe(401);
+  });
+
+  it('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', async ({
+    page,
+    dataset,
+    teacherGroupsSeed: secondGroup,
+  }) => {
+    const proof = syntheticInitData(dataset.teacher.telegramId);
+    await installTelegramHost(page, proof, { observeDownloads: true });
+    const lessonPath = `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`;
+    const launch = Buffer.from(
+      JSON.stringify({
+        v: 2,
+        action: {
+          kind: 'lesson',
+          role: 'TEACHER',
+          lessonId: String(dataset.lesson.physicalLessonId),
+        },
+      }),
+    ).toString('base64url');
+    expect(launch.length <= 384).toBe(true);
+    let activeToken = '';
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const target =
+        attempt === 1
+          ? page.waitForResponse(
+              (response) =>
+                new URL(response.url()).pathname === lessonPath &&
+                response.request().method() === 'GET',
+            )
+          : null;
+      const admission = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/tma' &&
+          response.request().method() === 'POST',
+      );
+      const current = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      );
+      await page.goto(attempt === 1 ? `/mini-app/?tgWebAppStartParam=n2_${launch}` : '/mini-app/');
+      const authenticated = await admission;
+      expect(authenticated.status()).toBe(200);
+      const { accessToken } = await authenticated.json();
+      expect(typeof accessToken === 'string' && accessToken.length > 0).toBe(true);
+      activeToken = accessToken;
+      const actual = await current;
+      expect(actual.status()).toBe(200);
+      const session = await actual.json();
+      expect(String(session.userId)).toBe(String(dataset.teacher.id));
+      expect(session.activeRole).toBe('TEACHER');
+      await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+      expect(
+        await page.evaluate(
+          ({ token, proof }) => {
+            const stored = JSON.stringify([
+              Object.entries(localStorage),
+              Object.entries(sessionStorage),
+            ]);
+            return !stored.includes(token) && !stored.includes(proof);
+          },
+          { token: accessToken, proof },
+        ),
+      ).toBe(true);
+      if (target) {
+        expect((await target).status()).toBe(200);
+        await expect(page.getByRole('heading', { name: 'Пара', exact: true })).toBeVisible();
+      }
+    }
+
+    // D015/H1: the host is synthetic; admission, target authorization and the
+    // selected HTML job/ticket/file are genuine. Observe only the native API
+    // handoff in RAM, never claim that Telegram or the OS saved a file.
+    // Job/ticket expiry follows real security time, independently of teaching dates.
+    await page.clock.setFixedTime(new Date());
+    await page.getByRole('button', { name: 'Скачать посещаемость этой пары', exact: true }).click();
+    const created = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/auth/export-jobs' &&
+        response.request().method() === 'POST',
+    );
+    const issued = page.waitForResponse(
+      (response) =>
+        /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(response.url()).pathname) &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'HTML (.html)', exact: true }).click();
+    const jobResponse = await created;
+    expect(jobResponse.status()).toBe(202);
+    const report = jobResponse.request().postDataJSON().report;
+    expect(
+      report?.kind === 'TEACHER_JOURNAL' &&
+        report.teacherJournal?.lessonId === String(dataset.lesson.physicalLessonId) &&
+        report.teacherJournal.groupId === dataset.group.id &&
+        report.teacherJournal.format === 'html',
+    ).toBe(true);
+    const jobId: unknown = (await jobResponse.json()).jobId;
+    expect(
+      typeof jobId === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(jobId),
+    ).toBe(true);
+    const ticketResponse = await issued;
+    expect(ticketResponse.status()).toBe(200);
+    expect(new URL(ticketResponse.url()).pathname === `/api/auth/export-jobs/${jobId}/ticket`).toBe(
+      true,
+    );
+    const ticket = await ticketResponse.json();
+    expect(
+      typeof ticket.downloadPath === 'string' &&
+        /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(ticket.downloadPath),
+    ).toBe(true);
+    await expect(
+      page.getByRole('status').filter({
+        hasText: 'Telegram принял запрос на скачивание; проверь завершение в Telegram.',
+      }),
+    ).toBeVisible();
+    const downloads = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __tmaEntryState: { downloads: { url: string; file_name: string }[] };
+          }
+        ).__tmaEntryState.downloads,
+    );
+    expect(downloads.length).toBe(1);
+    const download = downloads[0]!;
+    expect(
+      new URL(download.url).protocol === 'https:' &&
+        download.url === new URL(ticket.downloadPath, new URL(page.url()).origin).href,
+    ).toBe(true);
+    expect(
+      download.file_name === ticket.suggestedFilename &&
+        /^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(download.file_name) &&
+        download.file_name.endsWith('.html'),
+    ).toBe(true);
+    const job = await page.request.get(`/api/auth/export-jobs/${jobId}`, {
+      headers: { Authorization: `Bearer ${activeToken}` },
+    });
+    try {
+      expect(job.status()).toBe(200);
+      const currentJob = await job.json();
+      expect(currentJob.jobId === jobId && currentJob.state === 'ready').toBe(true);
+    } finally {
+      await job.dispose();
+    }
+    const file = await page.request.get(download.url);
+    try {
+      if (file.status() !== 200)
+        throw datasetHttpFailure('GET', ticket.downloadPath, file.status());
+      expect(file.headers()['content-type']?.split(';')[0] === 'text/html').toBe(true);
+      const content = await file.text();
+      expect(/<!doctype html/i.test(content) && /<table\b/i.test(content)).toBe(true);
+    } finally {
+      await file.dispose();
+    }
+    // D023/JS-TEACHER-02: same genuine TMA owner, two currently authorized groups.
+    for (const student of [dataset.student, dataset.headman, dataset.assistant]) {
+      await expect(page.locator('.teacher-roster')).toContainText(student.displayName);
+    }
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Итоги', exact: true }).click();
+    const groupsRead = (sort: string) =>
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === '/api/v1/teacher/stats' &&
+          url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+          url.searchParams.get('scope') === 'groups' &&
+          !url.searchParams.has('groupId') &&
+          !url.searchParams.has('subjectId') &&
+          url.searchParams.getAll('lessonType').join().toUpperCase() === 'LECTURE' &&
+          url.searchParams.getAll('sort').join() === sort
+        );
+      });
+    const [groupsResponse] = await Promise.all([
+      groupsRead('present'),
+      page.getByRole('button', { name: 'Лекция', exact: true }).click(),
+    ]);
+    expect(groupsResponse.status()).toBe(200);
+    const groupsStats = await groupsResponse.json();
+    expect(groupsStats.groups.map((row: { groupId: string }) => row.groupId).sort()).toEqual(
+      [String(dataset.group.id), String(secondGroup.groupId)].sort(),
+    );
+    expect(
+      groupsStats.groups.some(
+        (row: { groupId: string }) => row.groupId === String(dataset.otherGroup.id),
+      ),
+    ).toBe(false);
+    expect(
+      groupsStats.groups.find(
+        (row: { groupId: string }) => row.groupId === String(secondGroup.groupId),
+      ),
+    ).toMatchObject({ lessonsCount: 1, absent: { numerator: 1, denominator: 1, percent: 100 } });
+    const cards = page.locator('.teacher-stats__card');
+    const assertGroupMetrics = async (data: typeof groupsStats) => {
+      await expect(cards.locator('.teacher-stats__row-name')).toHaveText(
+        data.groups.map((row: { groupName: string }) => row.groupName),
+      );
+      await expect(cards.locator('.teacher-stats__lesson-count')).toHaveText(
+        data.groups.map((row: { lessonsCount: number }) => `${row.lessonsCount} пар`),
+      );
+      for (const row of data.groups) {
+        const card = cards.filter({ has: page.getByText(row.groupName, { exact: true }) });
+        for (const [key, label] of [
+          ['present', 'Присутствия'],
+          ['presentOrExcused', 'Присутствия и уважительные причины'],
+          ['excused', 'Уважительные причины'],
+          ['absent', 'Отсутствия'],
+        ] as const) {
+          const metric = row[key];
+          await expect(
+            card
+              .locator('dl > div')
+              .filter({ has: page.getByLabel(label, { exact: true }) })
+              .locator('dd'),
+          ).toHaveText(
+            metric.denominator === 0
+              ? 'нет данных'
+              : `${new Intl.NumberFormat('ru', { maximumFractionDigits: 1 }).format(metric.percent)} % · ${metric.numerator}/${metric.denominator}`,
+          );
+        }
+      }
+    };
+    await assertGroupMetrics(groupsStats);
+    await page.getByRole('button', { name: 'Сортировка', exact: true }).click();
+    const [sortedGroups] = await Promise.all([
+      groupsRead('-absent'),
+      page.getByRole('option', { name: 'Отсутствия: сначала выше', exact: true }).click(),
+    ]);
+    expect(sortedGroups.status()).toBe(200);
+    await assertGroupMetrics(await sortedGroups.json());
+    for (const selected of [
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        groupName: groupsStats.groups.find(
+          (row: { groupId: string }) => row.groupId === String(dataset.group.id),
+        ).groupName,
+        studentIds: [dataset.student.id, dataset.headman.id, dataset.assistant.id],
+        lessonId: null,
+      },
+      { ...secondGroup, studentIds: [secondGroup.headmanId] },
+    ]) {
+      const card = cards.filter({ has: page.getByText(selected.groupName, { exact: true }) });
+      await card.getByRole('button').click();
+      await expect(page.getByRole('button', { name: 'Предмет', exact: true })).toContainText(
+        'Выбери предмет',
+      );
+      await expect(page.locator('.teacher-stats__card')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Предмет', exact: true }).click();
+      await page.getByRole('option', { name: dataset.subject.name, exact: true }).click();
+      const selectedRead = (pathname: string) =>
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === pathname &&
+            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+            url.searchParams.get('groupId') === String(selected.groupId) &&
+            url.searchParams.get('subjectId') === String(selected.subjectId)
+          );
+        });
+      const [studentResponse] = await Promise.all([
+        selectedRead('/api/v1/teacher/stats'),
+        page.getByRole('button', { name: 'Лекция', exact: true }).click(),
+      ]);
+      expect(studentResponse.status()).toBe(200);
+      const studentStats = await studentResponse.json();
+      expect(studentStats.scope).toBe('students');
+      if (studentStats.lessonsCount > 0)
+        expect(
+          studentStats.students.map((row: { studentId: string }) => row.studentId).sort(),
+        ).toEqual(selected.studentIds.map(String).sort());
+      else expect(selected.groupId).toBe(dataset.group.id);
+      await page.getByRole('button', { name: 'Открыть журнал', exact: true }).click();
+      const [journalResponse] = await Promise.all([
+        selectedRead('/api/v1/teacher/journal'),
+        page
+          .locator('.teacher-journal')
+          .getByRole('button', { name: 'Лекция', exact: true })
+          .click(),
+      ]);
+      expect(journalResponse.status()).toBe(200);
+      const journal = await journalResponse.json();
+      expect(
+        journal.lessons.every(
+          (row: { groupId: string; subjectId: string }) =>
+            row.groupId === String(selected.groupId) &&
+            row.subjectId === String(selected.subjectId),
+        ),
+      ).toBe(true);
+      if (selected.lessonId != null) {
+        expect(journal.lessons.map((row: { id: string }) => row.id)).toEqual([
+          String(selected.lessonId),
+        ]);
+        expect(journal.students.map((row: { studentId: string }) => row.studentId)).toEqual(
+          selected.studentIds.map(String),
+        );
+        expect(journal.students[0].cells[0]).toMatchObject({ status: 'absent', autoAbsent: true });
+        await expect(page.locator('.teacher-journal__table tbody th[scope="row"]')).toHaveText([
+          secondGroup.headmanName,
+        ]);
+      } else if (journal.lessons.length === 0) {
+        expect(journal.students).toEqual([]);
+        await expect(
+          page
+            .getByRole('status')
+            .filter({ hasText: 'В выбранном периоде прошедших занятий нет.' }),
+        ).toBeVisible();
+      } else {
+        expect(journal.students.map((row: { studentId: string }) => row.studentId).sort()).toEqual(
+          selected.studentIds.map(String).sort(),
+        );
+      }
+      await page.getByRole('button', { name: 'Назад', exact: true }).click();
+      await page.getByRole('button', { name: 'По моим группам', exact: true }).click();
+      await expect(cards).toHaveCount(2);
+    }
+    await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
+      status: 'SUSPENDED',
+    });
+    try {
+      const neutralAdmission = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/tma' &&
+          response.request().method() === 'POST',
+      );
+      const current = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      );
+      await page.reload();
+      const admitted = await neutralAdmission;
+      expect(admitted.status()).toBe(200);
+      const { accessToken } = await admitted.json();
+      const response = await current;
+      expect(response.status()).toBe(200);
+      const neutral = await response.json();
+      expect(neutral.activeRole ?? null).toBeNull();
+      expect(
+        neutral.roles.some(
+          (grant: { role: string; selectable: boolean; status: string }) =>
+            grant.role === 'TEACHER' && grant.status === 'SUSPENDED' && !grant.selectable,
+        ),
+      ).toBe(true);
+      await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+      await expect(page.locator('.teacher-feature-owner')).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      const headers = { Authorization: `Bearer ${accessToken}` };
+      const deniedRole = await page.request.put('/api/auth/session/active-role', {
+        headers,
+        data: { role: 'TEACHER', expectedSessionVersion: neutral.sessionVersion },
+      });
+      expect(deniedRole.status()).toBe(403);
+      expect((await deniedRole.json()).extras.code).toBe('ROLE_NOT_SELECTABLE');
+      const deniedRead = await page.request.get(
+        `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`,
+        { headers },
+      );
+      expect(deniedRead.status()).toBe(403);
+      expect((await deniedRead.json()).code).toBe('BOOTSTRAP_SCOPE_DENIED');
+      const deniedWrite = await page.request.put(
+        `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`,
+        {
+          headers,
+          data: { status: 'PRESENT', expectedStatus: 'EMPTY', expectedRevision: 'EMPTY' },
+        },
+      );
+      expect(deniedWrite.status()).toBe(403);
+      expect((await deniedWrite.json()).code).toBe('BOOTSTRAP_SCOPE_DENIED');
+    } finally {
+      await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
+        status: 'ACTIVE',
+      });
+    }
+  });
+});
+
+test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
+  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', async ({
+    page,
+    request: issuer,
+    activeHeadmanDataset: dataset,
+  }) => {
+    // QR deadlines use Auth's real clock; keep advancing time before mounting any UI.
+    await page.clock.setSystemTime(new Date());
+    // The worker owns this disposable group; this case adds its own member and
+    // never changes a known student's mark or another browser's selected role.
+    const student = await dataset.user('STUDENT', dataset.group.id);
+    const reportPath = `/api/attendance/reports/lesson/${dataset.lesson.physicalLessonId}`;
+    const before = await dataset.headmanActor.call('GET', reportPath);
+    expect(
+      before.entries.some(
+        (row: { userId: number; status: string | null }) =>
+          Number(row.userId) === student.id && row.status === null,
+      ),
+    ).toBe(true);
+    const knownMarks = (
+      entries: { userId: number; status: string | null; source: string | null }[],
+    ) =>
+      entries
+        .filter((row) => Number(row.userId) !== student.id)
+        .map((row) => ({ userId: Number(row.userId), status: row.status, source: row.source }))
+        .sort((left, right) => left.userId - right.userId);
+
+    await installTelegramHost(page, syntheticInitData(dataset.headman.telegramId));
+    const [admitted, current] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/tma' &&
+          response.request().method() === 'POST',
+      ),
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      ),
+      page.goto('/mini-app/'),
+    ]);
+    expect(admitted.status()).toBe(200);
+    let sourceAccessToken: string = (await admitted.json()).accessToken;
+    expect(current.status()).toBe(200);
+    let session = await current.json();
+    expect(String(session.userId) === String(dataset.headman.id)).toBe(true);
+    expect(
+      session.roles.some(
+        (grant: { role: string; selectable: boolean }) =>
+          grant.role === 'HEADMAN' && grant.selectable,
+      ),
+    ).toBe(true);
+    if (session.activeRole !== 'HEADMAN') {
+      // Admission responses arrive before the corresponding Vue owner is ready.
+      if ((session.activeRole ?? null) === null) {
+        await expect(
+          page.getByRole('heading', { name: 'Сменить роль', exact: true }),
+        ).toBeVisible();
+        await expect(page.getByRole('button', { name: /Староста/ })).toBeEnabled();
+      } else {
+        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+      }
+      const selected = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session/active-role' &&
+          response.request().method() === 'PUT',
+      );
+      await selectPwaRole(page, 'Староста');
+      const response = await selected;
+      expect(response.status()).toBe(200);
+      const selection = await response.json();
+      session = selection.session;
+      sourceAccessToken = selection.accessToken;
+    }
+    expect(
+      String(session.userId) === String(dataset.headman.id) && session.activeRole === 'HEADMAN',
+    ).toBe(true);
+    const journalPath = `/api/schedule/groups/${dataset.group.id}/lessons`;
+    const [initialDay] = await Promise.all([
+      page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === journalPath &&
+          url.searchParams.get('dateFrom') === url.searchParams.get('dateTo')
+        );
+      }),
+      page.getByRole('button', { name: 'Посещаемость', exact: true }).click(),
+    ]);
+    expect(initialDay.status()).toBe(200);
+    let selectedDate = new URL(initialDay.url()).searchParams.get('dateFrom')!;
+    const dayDistance =
+      (Date.parse(`${dataset.today}T12:00:00Z`) - Date.parse(`${selectedDate}T12:00:00Z`)) /
+      86400000;
+    expect(Number.isInteger(dayDistance)).toBe(true);
+    // Security time keeps advancing; choose the owned lesson's educational date in the real UI.
+    const direction = Math.sign(dayDistance);
+    for (let remaining = Math.abs(dayDistance); remaining > 0; remaining--) {
+      const nextDate = new Date(Date.parse(`${selectedDate}T12:00:00Z`) + direction * 86400000)
+        .toISOString()
+        .slice(0, 10);
+      const [nextDay] = await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === 'GET' &&
+            url.pathname === journalPath &&
+            url.searchParams.get('dateFrom') === nextDate &&
+            url.searchParams.get('dateTo') === nextDate
+          );
+        }),
+        page
+          .getByRole('navigation', { name: 'Выбор даты', exact: true })
+          .getByRole('button', {
+            name: direction < 0 ? 'Предыдущая пара или день' : 'Следующая пара или день',
+            exact: true,
+          })
+          .click(),
+      ]);
+      expect(nextDay.status()).toBe(200);
+      selectedDate = nextDate;
+    }
+    expect(selectedDate).toBe(dataset.today);
+    const marked = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${student.id}` &&
+        response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: `Был: ${student.displayName}`, exact: true }).click();
+    expect((await marked).status()).toBe(200);
+    await expect(
+      page.locator(`.headman-journal__roster-list [data-user-id="${student.id}"]`),
+    ).toHaveAttribute('data-status', 'present');
+    const after = await dataset.headmanActor.call('GET', reportPath);
+    expect(
+      after.entries.some(
+        (row: { userId: number; status: string; source: string }) =>
+          Number(row.userId) === student.id && row.status === 'present' && row.source === 'headman',
+      ),
+    ).toBe(true);
+    expect(knownMarks(after.entries)).toEqual(knownMarks(before.entries));
+
+    // D024: the same signed mobile owner explicitly rejects a browser LOGIN proof.
+    await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+    await page.getByRole('button', { name: 'Вход в браузере', exact: true }).click();
+    try {
+      const issued = await issuer.post('/api/auth/qr/challenges', { data: { purpose: 'LOGIN' } });
+      let challenge;
+      try {
+        expect(issued.status()).toBe(200);
+        challenge = await issued.json();
+      } finally {
+        await issued.dispose();
+      }
+      expect(
+        typeof challenge.qrPayload === 'string',
+        'Owned browser receives an opaque LOGIN proof',
+      ).toBe(true);
+      await page.getByLabel('Данные QR для входа', { exact: true }).fill(challenge.qrPayload);
+      const [preview] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/qr/preview' &&
+            response.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'Проверить вход', exact: true }).click(),
+      ]);
+      expect(preview.status()).toBe(200);
+      const previewed = await preview.json();
+      expect(
+        previewed.challengeId === challenge.challengeId &&
+          previewed.purpose === 'LOGIN' &&
+          previewed.status === 'pending',
+        'TMA previews the exact pending browser proof',
+      ).toBe(true);
+      const [decision] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/qr/decision' &&
+            response.request().method() === 'POST',
+        ),
+        page.getByRole('button', { name: 'Отклонить вход', exact: true }).click(),
+      ]);
+      expect(decision.status()).toBe(200);
+      expect((await decision.json()).status === 'rejected').toBe(true);
+      await expect(page.getByRole('status')).toHaveText('Вход в браузере отклонён');
+      const denied = await issuer.post('/api/auth/qr/exchange', {
+        data: {
+          purpose: 'LOGIN',
+          issuerId: challenge.issuerId,
+          issuerSecret: challenge.issuerSecret,
+          challengeId: challenge.challengeId,
+        },
+      });
+      try {
+        expect(denied.status(), 'Rejected browser cannot exchange the proof').toBe(410);
+      } finally {
+        await denied.dispose();
+      }
+      const source = await page.request.get('/api/auth/session', {
+        headers: { Authorization: `Bearer ${sourceAccessToken}` },
+      });
+      try {
+        expect(source.status()).toBe(200);
+        const currentOwner = await source.json();
+        expect(
+          String(currentOwner.userId) === String(dataset.headman.id) &&
+            currentOwner.sessionId === session.sessionId &&
+            currentOwner.activeRole === 'HEADMAN',
+          'Original signed owner remains current',
+        ).toBe(true);
+      } finally {
+        await source.dispose();
+      }
+    } finally {
+      await issuer.dispose();
+    }
+  });
+});
+
+test.describe('Production PWA service worker D002 @real-mobile', () => {
+  test.use({ serviceWorkers: 'allow' });
+  test('production worker update activates through the update gate and retains a warm launch', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    test.skip(process.env.RCT_E2E_SW_LIFECYCLE !== 'true', 'Requires the owned CI static fixture');
+    test.setTimeout(120000);
+    const fixture = productionWorkerFixture();
+    const failures: unknown[] = [];
+    try {
+      await publishOfflineHomework(dataset, dataset.marker);
+      await loginPwa(page, dataset.student);
+      await requireProductionWorker(page);
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+      const original = await page.evaluate(async () => {
+        Object.defineProperty(window, '__rctWorkerUpdateOldWindow', { value: true });
+        const registration = await navigator.serviceWorker.ready;
+        return {
+          scope: registration.scope,
+          script: registration.active?.scriptURL,
+          active: registration.active?.state,
+          waiting: registration.waiting !== null,
+          caches: await caches.keys(),
+        };
+      });
+      expect(original.scope).toBe(new URL('/app/', page.url()).href);
+      expect(original.script).toBe(new URL('/app/sw.js', page.url()).href);
+      expect(original.active).toBe('activated');
+      expect(original.waiting).toBe(false);
+      expect(original.caches).toContain('rct-student-pwa-v3-0.0.0');
+      const preserved = await page.evaluate(async () => {
+        const names = [
+          'rct-e2e-other-application',
+          `workbox-precache-v2-${new URL('/another-app/', location.origin).href}`,
+        ];
+        for (const name of [
+          ...names,
+          'rct-student-pwa-retired-fixture',
+          'headman-api-cache-v1',
+          `workbox-precache-v2-${new URL('/app/', location.origin).href}`,
+        ]) {
+          const cache = await caches.open(name);
+          await cache.put('/app/lifecycle-fixture', new Response('synthetic cache ownership'));
+        }
+        return names;
+      });
+
+      fixture.update();
+      await page.evaluate(async () => {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.update();
+      });
+      await expect
+        .poll(() =>
+          page.evaluate(async () => {
+            const registration = await navigator.serviceWorker.ready;
+            return registration.waiting?.state;
+          }),
+        )
+        .toBe('installed');
+      expect(await page.evaluate(() => navigator.serviceWorker.controller?.state)).toBe(
+        'activated',
+      );
+      expect(await page.evaluate(() => caches.keys())).toContain('rct-student-pwa-v3-0.0.0');
+      const policyOrigin = new URL(page.url()).origin;
+      let firstPolicyWorkerRequest: Request | undefined;
+      let policyWorkerRequests = 0;
+      let restoringPolicyNetwork = false;
+      let workerDisconnectedDuringRestore = false;
+      const onPolicyWorkerRequest = (request: Request) => {
+        try {
+          const url = new URL(request.url());
+          if (
+            request.method() === 'GET' &&
+            request.serviceWorker() !== null &&
+            url.origin === policyOrigin &&
+            url.pathname === '/app/version.json'
+          ) {
+            policyWorkerRequests++;
+            firstPolicyWorkerRequest ??= request;
+          }
+        } catch {
+          // Observation must not change the native request or its failure.
+        }
+      };
+      const onPolicyWorkerFailure = (request: Request) => {
+        try {
+          if (
+            request === firstPolicyWorkerRequest &&
+            restoringPolicyNetwork &&
+            request.failure()?.errorText === 'net::ERR_INTERNET_DISCONNECTED'
+          ) {
+            // Callback ordering is observed here, not an engine failure timestamp.
+            workerDisconnectedDuringRestore = true;
+          }
+        } catch {
+          // Keep unknown diagnostics from replacing the original error.
+        }
+      };
+      const policyObserver = await page.evaluateHandle(() => {
+        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable) {
+          return { read: () => null, matchesFirstRead: () => false, restore: () => {} };
+        }
+        const originalFetch = descriptor.value as typeof fetch;
+        let offlineSeen = false;
+        let onlineSeen = false;
+        let visibleAtOnline = false;
+        let policyCalls = 0;
+        let firstPolicyUrl: string | undefined;
+        let outcome: 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED' = 'NOT_CALLED';
+        const offline = () => {
+          offlineSeen = true;
+        };
+        const online = () => {
+          if (!onlineSeen) visibleAtOnline = document.visibilityState === 'visible';
+          onlineSeen = true;
+        };
+        const observed: typeof fetch = function (this: unknown, ...args) {
+          let firstMatch = false;
+          try {
+            const [input, init] = args;
+            const request = input instanceof globalThis.Request ? input : null;
+            const method = init?.method ?? request?.method ?? 'GET';
+            const address =
+              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+            if (method.toUpperCase() === 'GET' && typeof address === 'string') {
+              const url = new URL(address, location.href);
+              if (url.origin === location.origin && url.pathname === '/app/version.json') {
+                policyCalls++;
+                if (outcome === 'NOT_CALLED') {
+                  firstMatch = true;
+                  firstPolicyUrl = url.href;
+                  outcome = 'PENDING';
+                }
+              }
+            }
+          } catch {
+            // Only observation may fail; native fetch retains its own result or error.
+          }
+          const promise = Reflect.apply(originalFetch, this, args) as ReturnType<typeof fetch>;
+          if (firstMatch) {
+            try {
+              void promise
+                .then(
+                  () => {
+                    outcome = 'FULFILLED';
+                  },
+                  () => {
+                    outcome = 'REJECTED';
+                  },
+                )
+                .catch(() => {});
+            } catch {
+              // Side-observation failure must not replace the original promise.
+            }
+          }
+          return promise;
+        };
+        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: observed });
+        addEventListener('offline', offline);
+        addEventListener('online', online);
+        return {
+          read: () => ({ offlineSeen, onlineSeen, visibleAtOnline, outcome }),
+          matchesFirstRead: (address: string) => policyCalls === 1 && firstPolicyUrl === address,
+          restore: () => {
+            removeEventListener('offline', offline);
+            removeEventListener('online', online);
+            Object.defineProperty(globalThis, 'fetch', descriptor);
+          },
+        };
+      });
+      context.on('request', onPolicyWorkerRequest);
+      context.on('requestfailed', onPolicyWorkerFailure);
+      let policyObserverRestored = false;
+      let policyRead!: ReturnType<Page['waitForResponse']>;
+      try {
+        // Playwright restores page targets before worker targets; await the full network barrier.
+        await context.setOffline(true);
+        restoringPolicyNetwork = true;
+        try {
+          await context.setOffline(false);
+        } finally {
+          restoringPolicyNetwork = false;
+        }
+        expect(await page.evaluate(() => document.visibilityState)).toBe('visible');
+        policyRead = page.waitForResponse(
+          (response) => new URL(response.url()).pathname === '/app/version.json',
+        );
+        // Synthetic host signal; the existing visible-policy listener performs the real fetch.
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        try {
+          await policyRead;
+        } catch (error) {
+          const observed = await policyObserver.evaluate((value) => value.read()).catch(() => null);
+          if (observed === null) expect.soft(false, 'PWA policy observer UNAVAILABLE').toBe(true);
+          else {
+            if (!observed.onlineSeen && !observed.offlineSeen)
+              expect.soft(false, 'PWA policy NO_OFFLINE_NO_ONLINE').toBe(true);
+            else if (!observed.onlineSeen)
+              expect.soft(false, 'PWA policy OFFLINE_SEEN_NO_ONLINE').toBe(true);
+            else if (!observed.offlineSeen && observed.visibleAtOnline)
+              expect.soft(false, 'PWA policy NO_OFFLINE_ONLINE_VISIBLE').toBe(true);
+            else if (!observed.offlineSeen)
+              expect.soft(false, 'PWA policy NO_OFFLINE_ONLINE_HIDDEN').toBe(true);
+            else if (observed.visibleAtOnline)
+              expect.soft(false, 'PWA policy OFFLINE_SEEN_ONLINE_VISIBLE').toBe(true);
+            else expect.soft(false, 'PWA policy OFFLINE_SEEN_ONLINE_HIDDEN').toBe(true);
+            if (observed.outcome === 'NOT_CALLED')
+              expect.soft(false, 'PWA policy FETCH_NOT_CALLED').toBe(true);
+            else if (observed.outcome === 'PENDING')
+              expect.soft(false, 'PWA policy FETCH_PENDING').toBe(true);
+            else if (observed.outcome === 'FULFILLED')
+              expect.soft(false, 'PWA policy FETCH_FULFILLED').toBe(true);
+            else {
+              expect.soft(false, 'PWA policy FETCH_REJECTED').toBe(true);
+              // Exact single page read + single SW request; duplicate reads remain unknown.
+              let sameFirstRead = false;
+              try {
+                sameFirstRead =
+                  workerDisconnectedDuringRestore &&
+                  policyWorkerRequests === 1 &&
+                  firstPolicyWorkerRequest !== undefined &&
+                  (await policyObserver
+                    .evaluate(
+                      (value, address) => value.matchesFirstRead(address),
+                      firstPolicyWorkerRequest.url(),
+                    )
+                    .catch(() => false));
+              } catch {
+                // Even an observation access failure preserves the original timeout below.
+              }
+              if (sameFirstRead)
+                expect.soft(false, 'PWA policy SW_DISCONNECTED_WHILE_RESTORE_PENDING').toBe(true);
+              else expect.soft(false, 'PWA policy SW_DISCONNECT_NOT_CONFIRMED').toBe(true);
+            }
+          }
+          throw error;
+        }
+      } finally {
+        context.off('request', onPolicyWorkerRequest);
+        context.off('requestfailed', onPolicyWorkerFailure);
+        try {
+          await policyObserver.evaluate((value) => value.restore());
+          policyObserverRestored = true;
+        } catch {
+          expect.soft(false, 'PWA policy observer RESTORE_UNAVAILABLE').toBe(true);
+        } finally {
+          await policyObserver.dispose().catch(() => {});
+        }
+      }
+      expect(policyObserverRestored, 'PWA policy observer NOT_RESTORED').toBe(true);
+      expect((await (await policyRead).json()).latest).toBe('0.0.1');
+      const gate = page.getByRole('dialog', { name: 'Нужно обновить RutTrack', exact: true });
+      await expect(gate).toBeVisible();
+      await expect(gate).toContainText('0.0.1');
+      // No second JS bundle is claimed: restore its compatible policy before the real UI reload.
+      // The existing gate retains required.value until it unmounts on reload.
+      fixture.restorePolicy();
+      const skipWaitingObserver = await page
+        .evaluateHandle(async () => {
+          const unavailable = { read: () => 'UNAVAILABLE' as const, restore: () => {} };
+          try {
+            const registration = await navigator.serviceWorker.getRegistration();
+            const candidate = registration?.waiting;
+            const prototype = ServiceWorker.prototype;
+            const descriptor = Object.getOwnPropertyDescriptor(prototype, 'postMessage');
+            if (
+              !registration ||
+              candidate?.state !== 'installed' ||
+              !descriptor ||
+              typeof descriptor.value !== 'function' ||
+              !descriptor.configurable
+            )
+              return unavailable;
+            const nativePostMessage = descriptor.value as ServiceWorker['postMessage'];
+            let sentToCandidate = false;
+            let observationAvailable = true;
+            let candidateControlled = false;
+            let candidateActivated = false;
+            let candidateRedundant = false;
+            let restored = false;
+            // These page-side events do not evaluate or wake the waiting worker.
+            const onStateChange = (event: Event) => {
+              try {
+                if (event.target !== candidate) return;
+                candidateActivated ||= candidate.state === 'activated';
+                candidateRedundant ||= candidate.state === 'redundant';
+              } catch {
+                observationAvailable = false;
+              }
+            };
+            const onControllerChange = () => {
+              try {
+                candidateControlled ||= navigator.serviceWorker.controller === candidate;
+              } catch {
+                observationAvailable = false;
+              }
+            };
+            const observed: ServiceWorker['postMessage'] = function (this: ServiceWorker, ...args) {
+              const result = Reflect.apply(nativePostMessage, this, args);
+              try {
+                const message = args[0];
+                if (
+                  this === candidate &&
+                  message !== null &&
+                  typeof message === 'object' &&
+                  Object.getOwnPropertyDescriptor(message, 'type')?.value === 'SKIP_WAITING'
+                )
+                  sentToCandidate = true;
+              } catch {
+                observationAvailable = false;
+                // Observation cannot replace the native call's return or exception.
+              }
+              return result;
+            };
+            const restore = () => {
+              restored = true;
+              try {
+                candidate.removeEventListener('statechange', onStateChange);
+              } finally {
+                try {
+                  navigator.serviceWorker.removeEventListener(
+                    'controllerchange',
+                    onControllerChange,
+                  );
+                } finally {
+                  if (Object.getOwnPropertyDescriptor(prototype, 'postMessage')?.value === observed)
+                    Object.defineProperty(prototype, 'postMessage', descriptor);
+                }
+              }
+            };
+            try {
+              candidate.addEventListener('statechange', onStateChange);
+              navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+              Object.defineProperty(prototype, 'postMessage', { ...descriptor, value: observed });
+            } catch {
+              restore();
+              return unavailable;
+            }
+            return {
+              read: () => {
+                try {
+                  if (
+                    restored ||
+                    !observationAvailable ||
+                    Object.getOwnPropertyDescriptor(prototype, 'postMessage')?.value !== observed
+                  )
+                    return 'UNAVAILABLE' as const;
+                  if (!sentToCandidate) return 'NOT_OBSERVED' as const;
+                  if (navigator.serviceWorker.controller === candidate)
+                    return 'CANDIDATE_CONTROLLER_CURRENT' as const;
+                  if (candidateControlled) return 'CANDIDATE_CONTROLLER_OBSERVED' as const;
+                  if (candidateRedundant || candidate.state === 'redundant')
+                    return 'CANDIDATE_REDUNDANT' as const;
+                  if (candidateActivated || candidate.state === 'activated')
+                    return 'CANDIDATE_ACTIVATED' as const;
+                  if (candidate.state === 'activating') return 'CANDIDATE_ACTIVATING' as const;
+                  if (registration.waiting !== candidate) return 'CANDIDATE_REPLACED' as const;
+                  if (candidate.state === 'installed') return 'CANDIDATE_INSTALLED' as const;
+                  return 'UNAVAILABLE' as const;
+                } catch {
+                  return 'UNAVAILABLE' as const;
+                }
+              },
+              restore,
+            };
+          } catch {
+            return unavailable;
+          }
+        })
+        .catch(() => null);
+      try {
+        const reloaded = page.waitForEvent('load').then(
+          () => true,
+          () => false,
+        );
+        await gate.getByRole('button', { name: 'Обновить приложение', exact: true }).click();
+        if (!(await reloaded)) {
+          expect.soft(false, 'PWA update LOAD_NOT_OBSERVED').toBe(true);
+          const observed = await page
+            .evaluate(async () => {
+              const registration = await navigator.serviceWorker.getRegistration();
+              return {
+                oldDocument:
+                  Object.getOwnPropertyDescriptor(window, '__rctWorkerUpdateOldWindow')?.value ===
+                  true,
+                readyState: document.readyState,
+                active: registration?.active?.state === 'activated',
+                waiting: registration?.waiting?.state === 'installed',
+                updating: Boolean(registration?.installing),
+              };
+            })
+            .catch(() => null);
+          if (observed === null)
+            expect.soft(false, 'PWA update OBSERVATION_UNAVAILABLE').toBe(true);
+          else {
+            if (observed.oldDocument) expect.soft(false, 'PWA update OLD_DOCUMENT').toBe(true);
+            else expect.soft(false, 'PWA update NEW_DOCUMENT').toBe(true);
+            if (observed.readyState === 'loading')
+              expect.soft(false, 'PWA update DOCUMENT_LOADING').toBe(true);
+            else if (observed.readyState === 'interactive')
+              expect.soft(false, 'PWA update DOCUMENT_INTERACTIVE').toBe(true);
+            else expect.soft(false, 'PWA update DOCUMENT_COMPLETE').toBe(true);
+            if (observed.active) expect.soft(false, 'PWA update ACTIVE_ACTIVATED').toBe(true);
+            else expect.soft(false, 'PWA update ACTIVE_NOT_ACTIVATED').toBe(true);
+            if (observed.waiting) expect.soft(false, 'PWA update WAITING_INSTALLED').toBe(true);
+            else expect.soft(false, 'PWA update WAITING_NOT_INSTALLED').toBe(true);
+            if (observed.updating) expect.soft(false, 'PWA update INSTALLING_PRESENT').toBe(true);
+            else expect.soft(false, 'PWA update INSTALLING_ABSENT').toBe(true);
+          }
+          const skipWaiting = await skipWaitingObserver
+            ?.evaluate((value) => value.read())
+            .catch(() => 'UNAVAILABLE' as const);
+          if (skipWaiting === 'CANDIDATE_CONTROLLER_CURRENT')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_CONTROLLER_CURRENT').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_CONTROLLER_OBSERVED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_CONTROLLER_OBSERVED').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_REDUNDANT')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_REDUNDANT').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_ACTIVATED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_ACTIVATED').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_ACTIVATING')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_ACTIVATING').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_REPLACED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_REPLACED').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_INSTALLED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_INSTALLED').toBe(true);
+          else if (skipWaiting === 'NOT_OBSERVED')
+            expect.soft(false, 'PWA update SKIP_WAITING_NOT_OBSERVED').toBe(true);
+          else expect.soft(false, 'PWA update SKIP_WAITING_UNAVAILABLE').toBe(true);
+        }
+      } finally {
+        // A completed navigation destroys the old prototype; otherwise restore it exactly.
+        await skipWaitingObserver?.evaluate((value) => value.restore()).catch(() => {});
+        await skipWaitingObserver?.dispose().catch(() => {});
+      }
+      await expect(gate).toHaveCount(0);
+      await requireProductionWorker(page);
+      await expect
+        .poll(() =>
+          page.evaluate(async () => {
+            const registration = await navigator.serviceWorker.ready;
+            const names = await caches.keys();
+            return (
+              registration.active?.state === 'activated' &&
+              registration.waiting === null &&
+              names.includes('rct-student-pwa-v3-0.0.1') &&
+              !names.some(
+                (name) =>
+                  name.startsWith('rct-student-pwa-') && name !== 'rct-student-pwa-v3-0.0.1',
+              )
+            );
+          }),
+        )
+        .toBe(true);
+      const updated = await page.evaluate(async () => {
+        const names = await caches.keys();
+        const cache = await caches.open('rct-student-pwa-v3-0.0.1');
+        return {
+          names,
+          assets: (await cache.keys()).map((request) => new URL(request.url).pathname),
+          controller: navigator.serviceWorker.controller?.scriptURL,
+        };
+      });
+      expect(updated.controller).toBe(original.script);
+      expect(updated.names).toEqual(expect.arrayContaining(preserved));
+      expect(updated.names).not.toContain('headman-api-cache-v1');
+      expect(updated.names).not.toContain(`workbox-precache-v2-${original.scope}`);
+      expect(updated.assets).toEqual(
+        expect.arrayContaining(['/app/', '/app/manifest.webmanifest']),
+      );
+      expect(
+        updated.assets.some((path) => path.startsWith('/app/assets/') && path.endsWith('.js')),
+      ).toBe(true);
+      expect(updated.assets.every((path) => !path.includes('/api/'))).toBe(true);
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+      await context.setOffline(true);
+      try {
+        await page.reload();
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+        await expect(page.getByRole('slider', { name: new RegExp(dataset.marker) })).toBeDisabled();
+      } finally {
+        await context.setOffline(false);
+      }
+    } catch (error) {
+      failures.push(error);
+    } finally {
+      try {
+        fixture.restore();
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+    if (failures.length === 1) throw failures[0];
+    if (failures.length)
+      throw new AggregateError(failures, 'Worker lifecycle and restoration failed');
+  });
+
+  test('synthetic installation prompt handles dismissed unavailable and accepted outcomes', async ({
+    page,
+    dataset,
+  }) => {
+    test.skip(process.env.RCT_E2E_SW_LIFECYCLE !== 'true', 'Explicit synthetic install logic lane');
+    await loginPwa(page, dataset.student);
+    const offer = page.getByRole('complementary', {
+      name: 'Установка RutCampusTrack',
+      exact: true,
+    });
+    for (const outcome of ['dismissed', 'unavailable', 'accepted'] as const) {
+      // These events exercise controller logic only; they are never OS installation evidence.
+      await page.evaluate((choice) => {
+        const event = new Event('beforeinstallprompt', { cancelable: true });
+        Object.assign(event, {
+          prompt: async () => {
+            if (choice === 'unavailable') throw new Error('Synthetic install API unavailable');
+          },
+          userChoice: Promise.resolve({
+            outcome: choice === 'accepted' ? 'accepted' : 'dismissed',
+          }),
+        });
+        window.dispatchEvent(event);
+      }, outcome);
+      await expect(offer).toHaveAttribute('data-install-mode', 'native');
+      await offer.getByRole('button', { name: 'Установить', exact: true }).click();
+      await expect(offer).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+    }
+    // A repeated prompt cannot re-offer installation after the accepted controller outcome.
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt', { cancelable: true });
+      Object.assign(event, {
+        prompt: async () => undefined,
+        userChoice: Promise.resolve({ outcome: 'dismissed' }),
+      });
+      window.dispatchEvent(event);
+    });
+    await expect(offer).toHaveCount(0);
+  });
+
+  test('synthetic iOS installation instructions dismiss persistently without a native prompt', async ({
+    browser,
+    dataset,
+  }) => {
+    test.skip(process.env.RCT_E2E_SW_LIFECYCLE !== 'true', 'Explicit synthetic install logic lane');
+    const ios = await browser.newContext({
+      baseURL: process.env.E2E_BASE_URL,
+      ignoreHTTPSErrors: true,
+      serviceWorkers: 'block',
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
+    });
+    try {
+      const page = await ios.newPage();
+      await loginPwa(page, dataset.student);
+      const offer = page.getByRole('complementary', {
+        name: 'Установка RutCampusTrack',
+        exact: true,
+      });
+      await expect(offer).toHaveAttribute('data-install-mode', 'ios');
+      await expect(offer).toContainText('Открой эту страницу в Safari');
+      await expect(offer).toContainText('Поделиться');
+      await expect(offer.getByRole('button', { name: 'Установить', exact: true })).toHaveCount(0);
+      await offer
+        .getByRole('button', { name: 'Скрыть предложение установки навсегда', exact: true })
+        .click();
+      await expect(offer).toHaveCount(0);
+      await page.reload();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+      await expect(offer).toHaveCount(0);
+    } finally {
+      await ios.close();
+    }
+  });
+
+  test('warm offline reload remains read-only; revoked session reconnect clears the cached user', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    // Offline reload opens Today; keep the original tomorrow seed unchanged.
+    const todayHomework = {
+      title: dataset.marker,
+      description: 'Синтетическое задание для сегодняшнего офлайн-снимка',
+      link: null,
+      subjectId: dataset.subject.id,
+      groupId: dataset.group.id,
+      semesterId: dataset.semester.id,
+      lessonDate: dataset.today,
+      lessonNumber: null,
+      bindingMode: 'DATE',
+      lessonType: 'LECTURE',
+      requestKey: randomUUID(),
+    };
+    await expect
+      .poll(async () => {
+        const published = await dataset.headmanActor.call(
+          'POST',
+          '/api/academic/homeworks',
+          todayHomework,
+          [201, 200, 202],
+        );
+        return published.state !== 'PENDING' && published.id != null;
+      })
+      .toBe(true);
+    const tomorrowRoom = `offline-next-day-${dataset.group.id}`;
+    const tomorrowLesson = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: dataset.tomorrow,
+        lessonNumber: 2,
+        classroom: tomorrowRoom,
+      },
+      [201, 200],
+      { 'Idempotency-Key': randomUUID() },
+    );
+    const { accessToken, session } = await loginPwa(page, dataset.student);
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const schedule = await page.request.get(
+      `/api/v1/student/schedule?semesterId=${dataset.semester.id}`,
+      { headers },
+    );
+    expect(schedule.status()).toBe(200);
+    const lessons = (await schedule.json()).lessons;
+    expect(
+      lessons.some(
+        (lesson: { id: string; date: string }) =>
+          String(lesson.id) === String(dataset.lesson.physicalLessonId) &&
+          lesson.date === dataset.today,
+      ),
+    ).toBe(true);
+    expect(
+      lessons.some(
+        (lesson: { id: string; date: string }) =>
+          String(lesson.id) === String(tomorrowLesson.physicalLessonId) &&
+          lesson.date === dataset.tomorrow,
+      ),
+    ).toBe(true);
+    // A real active attachment is available online, but acquiring it offline is forbidden.
+    const fileName = 'offline-boundary.png';
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGP4/x8AAwAB//wl3FEAAAAASUVORK5CYII=',
+      'base64',
+    );
+    const created = await dataset.request.post('/api/v1/student/requests/excuse', {
+      headers: { ...headers, 'Idempotency-Key': randomUUID() },
+      multipart: {
+        request: {
+          name: 'request.json',
+          mimeType: 'application/json',
+          buffer: Buffer.from(
+            JSON.stringify({
+              lessonIds: [String(tomorrowLesson.physicalLessonId)],
+              reason: 'ILLNESS',
+              comment: dataset.marker,
+            }),
+          ),
+        },
+        files: { name: fileName, mimeType: 'image/png', buffer: png },
+      },
+    });
+    expect(created.status()).toBe(200);
+    const request = await created.json();
+    expect(request.attachments.length === 1 && request.attachments[0].state === 'ACTIVE').toBe(
+      true,
+    );
+    const attachmentPath = `/api/v1/student/requests/${request.summary.id}/attachments/${request.attachments[0].id}`;
+    const downloaded = await dataset.request.get(attachmentPath, { headers });
+    expect(downloaded.status()).toBe(200);
+    expect((await downloaded.body()).equals(png)).toBe(true);
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Заявки', exact: true }).click();
+    const attachment = page.getByRole('button', { name: `Открыть ${fileName}`, exact: true });
+    await expect(attachment).toBeEnabled();
+    let offlineAttachmentReads = 0;
+    const countAttachment = (item: Request) => {
+      if (new URL(item.url()).pathname === attachmentPath) offlineAttachmentReads += 1;
+    };
+    const pagesBefore = context.pages().length;
+    page.on('request', countAttachment);
+    await context.setOffline(true);
+    try {
+      await expect(attachment).toBeDisabled();
+      await attachment.press('Enter');
+      expect(offlineAttachmentReads).toBe(0);
+      expect(context.pages().length).toBe(pagesBefore);
+    } finally {
+      page.off('request', countAttachment);
+      const admitted = page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === '/api/auth/session' && item.request().method() === 'GET',
+      );
+      await context.setOffline(false);
+      expect((await admitted).status()).toBe(200);
+    }
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await expect
+      .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null), {
+        timeout: 15000,
+      })
+      .toBe(true);
+    const another = await admit(dataset.request, dataset.student, 'STUDENT');
+    await another.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
+    let completionCommands = 0;
+    const countCompletion = (item: Request) => {
+      if (new URL(item.url()).pathname.endsWith('/completion') && item.method() === 'PUT')
+        completionCommands += 1;
+    };
+    const browserTime = await page.evaluate(() => Date.now());
+    page.on('request', countCompletion);
+    try {
+      await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
+      await context.setOffline(true);
+      try {
+        await page.evaluate(() => {
+          Object.defineProperty(window, '__rctD002WarmOfflineReloadOldWindow', { value: true });
+        });
+        const cachedFallback = await page
+          .evaluate(async () => {
+            try {
+              const worker = navigator.serviceWorker.controller;
+              if (!worker) return 'UNAVAILABLE';
+              return (await caches.match(new URL('./', worker.scriptURL).href))
+                ? 'PRESENT'
+                : 'ABSENT';
+            } catch {
+              return 'UNAVAILABLE';
+            }
+          })
+          .catch(() => 'UNAVAILABLE');
+        let mainDocumentRequestSeen = false;
+        let mainDocumentResponse = 'NONE' as
+          | 'NONE'
+          | 'SW_200'
+          | 'SW_OTHER'
+          | 'NETWORK_200'
+          | 'NETWORK_OTHER'
+          | 'UNAVAILABLE';
+        const observeDocumentRequest = (item: Request) => {
+          try {
+            if (item.isNavigationRequest() && item.frame() === page.mainFrame())
+              mainDocumentRequestSeen = true;
+          } catch {
+            // Missing protocol observations remain unknown.
+          }
+        };
+        const observeDocumentResponse = (item: Response) => {
+          try {
+            const request = item.request();
+            if (!request.isNavigationRequest() || request.frame() !== page.mainFrame()) return;
+            mainDocumentResponse = item.fromServiceWorker()
+              ? item.status() === 200
+                ? 'SW_200'
+                : 'SW_OTHER'
+              : item.status() === 200
+                ? 'NETWORK_200'
+                : 'NETWORK_OTHER';
+          } catch {
+            mainDocumentResponse = 'UNAVAILABLE';
+          }
+        };
+        const reloadLocation = new URL(page.url());
+        let mainDocumentFailureObserved = false;
+        let mainDocumentFailure = 'UNOBSERVED' as 'UNOBSERVED' | 'NETWORK' | 'INTERNAL' | 'OTHER';
+        const observeDocumentFailure = (item: Request) => {
+          if (mainDocumentFailureObserved) return;
+          try {
+            if (!item.isNavigationRequest() || item.frame() !== page.mainFrame()) return;
+            const location = new URL(item.url());
+            if (
+              location.origin !== reloadLocation.origin ||
+              location.pathname !== reloadLocation.pathname ||
+              location.search !== reloadLocation.search
+            )
+              return;
+            mainDocumentFailureObserved = true;
+            const errorText = item.failure()?.errorText;
+            if (typeof errorText !== 'string' || errorText.length > 512) return;
+            mainDocumentFailure =
+              /ERR_INTERNET_DISCONNECTED|NS_ERROR_OFFLINE|NetworkError|network (?:error|connection)|Could not connect|Connection refused|The Internet connection appears to be offline/i.test(
+                errorText,
+              )
+                ? 'NETWORK'
+                : /internal error/i.test(errorText)
+                  ? 'INTERNAL'
+                  : 'OTHER';
+          } catch {
+            // Missing or unsafe protocol failure text remains unknown.
+          }
+        };
+        page.on('request', observeDocumentRequest);
+        page.on('response', observeDocumentResponse);
+        page.on('requestfailed', observeDocumentFailure);
+        try {
+          await page.reload();
+        } catch (error) {
+          // Two closed, static-frame hints retain the original navigation error below.
+          const descriptor =
+            error !== null && typeof error === 'object'
+              ? Object.getOwnPropertyDescriptor(error, 'message')
+              : undefined;
+          const message =
+            descriptor &&
+            'value' in descriptor &&
+            typeof descriptor.value === 'string' &&
+            descriptor.value.length <= 512
+              ? descriptor.value
+              : '';
+          const category =
+            /ERR_INTERNET_DISCONNECTED|NS_ERROR_OFFLINE|network (?:error|connection)|Could not connect|Connection refused/i.test(
+              message,
+            )
+              ? 'NETWORK'
+              : /ERR_ABORTED|NS_BINDING_ABORTED|navigation (?:was )?(?:aborted|interrupted)/i.test(
+                    message,
+                  )
+                ? 'ABORT'
+                : /ERR_CERT|SSL|TLS|certificate/i.test(message)
+                  ? 'TLS'
+                  : /timeout|timed out/i.test(message)
+                    ? 'TIMEOUT'
+                    : /internal error/i.test(message)
+                      ? 'INTERNAL'
+                      : /(?:page|context|browser|target).*(?:closed|crashed)/i.test(message)
+                        ? 'CLOSED'
+                        : 'OTHER';
+          expect.soft(false, 'D002 offline reload rejected').toBe(true);
+          switch (category) {
+            case 'NETWORK':
+              expect.soft(false, 'D002 reload NETWORK').toBe(true);
+              break;
+            case 'ABORT':
+              expect.soft(false, 'D002 reload ABORT').toBe(true);
+              break;
+            case 'TLS':
+              expect.soft(false, 'D002 reload TLS').toBe(true);
+              break;
+            case 'TIMEOUT':
+              expect.soft(false, 'D002 reload TIMEOUT').toBe(true);
+              break;
+            case 'INTERNAL':
+              expect.soft(false, 'D002 reload INTERNAL').toBe(true);
+              break;
+            case 'CLOSED':
+              expect.soft(false, 'D002 reload CLOSED').toBe(true);
+              break;
+            case 'OTHER':
+              expect.soft(false, 'D002 reload OTHER').toBe(true);
+              break;
+          }
+          const oldDocument = await page
+            .evaluate(
+              () =>
+                Object.getOwnPropertyDescriptor(window, '__rctD002WarmOfflineReloadOldWindow')
+                  ?.value === true,
+            )
+            .catch(() => null);
+          if (oldDocument === true) expect.soft(false, 'D002 reload OLD_DOCUMENT').toBe(true);
+          else if (oldDocument === false) expect.soft(false, 'D002 reload NEW_DOCUMENT').toBe(true);
+          else expect.soft(false, 'D002 reload DOCUMENT_UNAVAILABLE').toBe(true);
+          switch (cachedFallback) {
+            case 'PRESENT':
+              expect.soft(false, 'D002 reload FALLBACK_PRESENT').toBe(true);
+              break;
+            case 'ABSENT':
+              expect.soft(false, 'D002 reload FALLBACK_ABSENT').toBe(true);
+              break;
+            default:
+              expect.soft(false, 'D002 reload FALLBACK_UNAVAILABLE').toBe(true);
+          }
+          if (mainDocumentRequestSeen) {
+            switch (mainDocumentResponse) {
+              case 'SW_200':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_SW_200').toBe(true);
+                break;
+              case 'SW_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_SW_OTHER').toBe(true);
+                break;
+              case 'NETWORK_200':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_NETWORK_200').toBe(true);
+                break;
+              case 'NETWORK_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_NETWORK_OTHER').toBe(true);
+                break;
+              case 'NONE':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_RESPONSE_UNOBSERVED').toBe(true);
+                break;
+              case 'UNAVAILABLE':
+                expect.soft(false, 'D002 reload REQUEST_SEEN_RESPONSE_UNAVAILABLE').toBe(true);
+                break;
+            }
+          } else {
+            switch (mainDocumentResponse) {
+              case 'SW_200':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_SW_200').toBe(true);
+                break;
+              case 'SW_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_SW_OTHER').toBe(true);
+                break;
+              case 'NETWORK_200':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_NETWORK_200').toBe(true);
+                break;
+              case 'NETWORK_OTHER':
+                expect.soft(false, 'D002 reload REQUEST_UNOBSERVED_NETWORK_OTHER').toBe(true);
+                break;
+              case 'NONE':
+                expect.soft(false, 'D002 reload REQUEST_AND_RESPONSE_UNOBSERVED').toBe(true);
+                break;
+              case 'UNAVAILABLE':
+                expect
+                  .soft(false, 'D002 reload REQUEST_UNOBSERVED_RESPONSE_UNAVAILABLE')
+                  .toBe(true);
+                break;
+            }
+          }
+          switch (mainDocumentFailure) {
+            case 'NETWORK':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_NETWORK').toBe(true);
+              break;
+            case 'INTERNAL':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_INTERNAL').toBe(true);
+              break;
+            case 'OTHER':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_OTHER').toBe(true);
+              break;
+            case 'UNOBSERVED':
+              expect.soft(false, 'D002 reload REQUEST_FAILED_UNOBSERVED').toBe(true);
+              break;
+          }
+          throw error;
+        } finally {
+          page.off('request', observeDocumentRequest);
+          page.off('response', observeDocumentResponse);
+          page.off('requestfailed', observeDocumentFailure);
+        }
+        await expect(
+          page.locator('.today-list').getByText('Синтетическая аудитория', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.today-list .student-lesson')).toHaveCount(
+          lessons.filter((lesson: { date: string }) => lesson.date === dataset.today).length,
+        );
+        await expect(
+          page.locator('.today-list').getByText(tomorrowRoom, { exact: true }),
+        ).toHaveCount(0);
+        await expect(
+          page.getByRole('button', { name: 'Сменить роль, активная роль: студент', exact: true }),
+        ).toBeDisabled();
+        await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+        await page.getByRole('button', { name: 'Расписание семестра', exact: true }).click();
+        await expect(page.getByText('Сохранённое расписание', { exact: true })).toBeVisible();
+        const dates = page.getByRole('combobox', { name: 'Дата', exact: true });
+        await dates.selectOption(dataset.tomorrow);
+        await expect(
+          page.getByRole('heading', { name: dataset.marker, exact: true }).first(),
+        ).toBeVisible();
+        await expect(dates).toHaveValue(dataset.tomorrow);
+        await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+        // Moscow crosses midnight while UTC is still on the same calendar day.
+        await page.clock.setFixedTime(new Date(`${dataset.today}T21:00:01Z`));
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        await expect(
+          page.locator('.today-list').getByText(tomorrowRoom, { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.today-list .student-lesson')).toHaveCount(
+          lessons.filter((lesson: { date: string }) => lesson.date === dataset.tomorrow).length,
+        );
+        await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+        await expect(page.getByRole('slider', { name: new RegExp(dataset.marker) })).toBeDisabled();
+        const completion = page.getByRole('slider', { name: new RegExp(dataset.marker) });
+        for (let index = 0; index < 4; index++) await completion.press('ArrowRight');
+        await completion.press('Enter');
+        expect(completionCommands).toBe(0);
+      } finally {
+        await page.clock.setFixedTime(new Date(browserTime));
+        const admission = page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/refresh' &&
+            item.request().method() === 'POST',
+        );
+        await context.setOffline(false);
+        expect(await (await admission).finished()).toBeNull();
+      }
+      await expect(
+        page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+      ).toBeVisible();
+      // Observe through admission denial: an offline queue must not replay on reconnect.
+      expect(completionCommands).toBe(0);
+      const saved = await another.call(
+        'GET',
+        `/api/v1/student/homework?from=${dataset.today}&to=${dataset.today}`,
+      );
+      const own = saved.items.find((item: { title: string }) => item.title === dataset.marker);
+      expect(own !== undefined && own.completed === false).toBe(true);
+      expect(completionCommands).toBe(0);
+    } finally {
+      page.off('request', countCompletion);
+    }
+    await loginPwa(page, dataset.foreignStudent);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+    await logoutPwa(page);
+    await context.setOffline(true);
+    try {
+      await page.reload();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+    } finally {
+      await context.setOffline(false);
+    }
+  });
+
+  test('D002 reconnect rechecks changed grants and a late old feed cannot replace the new account', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    const marker = `${dataset.marker}-offline-owner`;
+    await publishOfflineHomework(dataset, marker);
+    const multirole = await dataset.user('TEACHER');
+    const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
+    await dataset.admin.call('PUT', rolePath, {
+      status: 'ACTIVE',
+      groupId: dataset.group.id,
+      telegramId: multirole.telegramId,
+    });
+    type ReconnectKind = 'refresh' | 'current';
+    const pendingAuth = new Map<Request, ReconnectKind>();
+    const authHttp = {
+      refresh: { requested: false, responded: false, failed: false },
+      current: { requested: false, responded: false, failed: false },
+    };
+    let httpObservationUnknown = false;
+    let observingReconnect = false;
+    const priorAuth = new Set<Request>();
+    const authKind = (request: Request): ReconnectKind | undefined => {
+      const url = new URL(request.url());
+      if (url.origin !== new URL(page.url()).origin) return;
+      if (url.pathname === '/api/auth/refresh' && request.method() === 'POST') return 'refresh';
+      if (url.pathname === '/api/auth/session' && request.method() === 'GET') return 'current';
+    };
+    const observeAuthRequest = (request: Request) => {
+      try {
+        const kind = authKind(request);
+        if (!kind) return;
+        // A bounded identity set observes old HTTP work without retaining its contents.
+        if (pendingAuth.size < 16) pendingAuth.set(request, kind);
+        else httpObservationUnknown = true;
+        if (observingReconnect) authHttp[kind].requested = true;
+      } catch {
+        httpObservationUnknown = true;
+      }
+    };
+    const observeAuthResponse = (response: Response) => {
+      const kind = pendingAuth.get(response.request());
+      if (observingReconnect && kind) authHttp[kind].responded = true;
+    };
+    const finishAuthRequest = (request: Request) => {
+      pendingAuth.delete(request);
+      priorAuth.delete(request);
+    };
+    const failAuthRequest = (request: Request) => {
+      const kind = pendingAuth.get(request);
+      if (observingReconnect && kind) authHttp[kind].failed = true;
+      finishAuthRequest(request);
+    };
+    const detachAuthObservation = () => {
+      page.off('request', observeAuthRequest);
+      page.off('response', observeAuthResponse);
+      page.off('requestfinished', finishAuthRequest);
+      page.off('requestfailed', failAuthRequest);
+      pendingAuth.clear();
+      priorAuth.clear();
+    };
+    // Include requests already in flight when the native page wrapper is installed.
+    page.on('request', observeAuthRequest);
+    page.on('response', observeAuthResponse);
+    page.on('requestfinished', finishAuthRequest);
+    page.on('requestfailed', failAuthRequest);
+    let rolePrimary: { error: unknown } | undefined;
+    try {
+      const logged = await loginPwa(page, multirole);
+      expect(logged.session.activeRole).toBe('STUDENT');
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText(marker, { exact: true })).toBeVisible();
+      await requireProductionWorker(page);
+      await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+      await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
+      const teacher = page.getByRole('button', { name: /Преподаватель/ });
+      await expect(teacher).toBeEnabled();
+      let roleCommands = 0;
+      const countRole = (item: Request) => {
+        if (
+          new URL(item.url()).pathname === '/api/auth/session/active-role' &&
+          item.method() === 'PUT'
+        )
+          roleCommands += 1;
+      };
+      const reconnectOrigin = new URL(page.url()).origin;
+      let refreshStatus: number | undefined;
+      let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+      let cancelCurrent: ((error: Error) => void) | undefined;
+      let resolveCurrent: ((response: Response) => void) | undefined;
+      let currentObserved = false;
+      let currentTimedOut = false;
+      let onlineRestored = false;
+      let offlinePrimary: { error: unknown } | undefined;
+      const observeReconnect = (response: Response) => {
+        const url = new URL(response.url());
+        if (url.origin !== reconnectOrigin) return;
+        if (url.pathname === '/api/auth/refresh' && response.request().method() === 'POST')
+          refreshStatus = response.status();
+        if (url.pathname === '/api/auth/session' && response.request().method() === 'GET') {
+          currentObserved = true;
+          resolveCurrent?.(response);
+        }
+      };
+      for (const request of pendingAuth.keys()) priorAuth.add(request);
+      observingReconnect = true;
+      const reconnectObserver = await page.evaluateHandle(createD002ReconnectObserver);
+      page.on('request', countRole);
+      try {
+        await context.setOffline(true);
+        await expect(teacher).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+        await teacher.press('Enter');
+        expect(roleCommands).toBe(0);
+        await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
+        const reconnectTimeout = test.info().project.use.actionTimeout ?? 30000;
+        if (!Number.isSafeInteger(reconnectTimeout) || reconnectTimeout <= 0)
+          throw new Error('D002 existing action timeout must be finite');
+        const current = new Promise<Response>((resolve, reject) => {
+          resolveCurrent = resolve;
+          cancelCurrent = reject;
+          reconnectTimer = setTimeout(() => {
+            currentTimedOut = true;
+            reject(new Error('D002 reconnect current session response deadline'));
+          }, reconnectTimeout);
+        });
+        void current.catch(() => undefined);
+        page.on('response', observeReconnect);
+        page.off('request', countRole);
+        await context.setOffline(false);
+        onlineRestored = true;
+        let response: Response;
+        try {
+          response = await current;
+        } catch (error) {
+          if (currentTimedOut) {
+            const timedOutRefreshStatus = refreshStatus;
+            const observed = await reconnectObserver
+              .evaluate((value) => value.read())
+              .catch(() => null);
+            if (observed !== null)
+              retainD002ReconnectObservation(test.info().annotations, {
+                offlineSeen: observed.offlineSeen,
+                onlineSeen: observed.onlineSeen,
+                online: observed.online,
+                observationUnknown: httpObservationUnknown || observed.observationUnknown,
+                native: observed.native,
+                pageHttp: authHttp,
+                priorPending: {
+                  refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),
+                  current: [...priorAuth].some((request) => pendingAuth.get(request) === 'current'),
+                },
+                refreshHttpStatus:
+                  timedOutRefreshStatus === undefined
+                    ? 'UNOBSERVED'
+                    : [200, 401, 403, 429, 503].includes(timedOutRefreshStatus)
+                      ? timedOutRefreshStatus
+                      : 'OTHER',
+              });
+            if (timedOutRefreshStatus === undefined) {
+              if (observed === null)
+                expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
+              else if (httpObservationUnknown || observed.observationUnknown)
+                expect.soft(false, 'D002_RECONNECT_HTTP_OBSERVATION_UNKNOWN').toBe(true);
+              else if (!observed.offlineSeen)
+                expect.soft(false, 'D002_RECONNECT_OFFLINE_UNOBSERVED').toBe(true);
+              else if (!observed.onlineSeen && observed.online)
+                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_ONLINE').toBe(true);
+              else if (!observed.onlineSeen)
+                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_OFFLINE').toBe(true);
+              else if (!observed.online)
+                expect.soft(false, 'D002_RECONNECT_ONLINE_SEEN_NAVIGATOR_OFFLINE').toBe(true);
+              else if ([...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'))
+                expect.soft(false, 'D002_RECONNECT_PRIOR_REFRESH_HTTP_PENDING').toBe(true);
+              else if (priorAuth.size > 0)
+                expect.soft(false, 'D002_RECONNECT_PRIOR_CURRENT_HTTP_PENDING').toBe(true);
+              else if (observed.refresh.multiple || observed.current.multiple)
+                expect.soft(false, 'D002_RECONNECT_MULTIPLE_NATIVE_CALLS_UNKNOWN').toBe(true);
+              else if (observed.refresh.beforeOnline || observed.current.beforeOnline)
+                expect.soft(false, 'D002_RECONNECT_PREONLINE_NATIVE_CALL_UNKNOWN').toBe(true);
+              else if (observed.current.phase === 'REJECTED')
+                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_REJECTED').toBe(true);
+              else if (observed.current.phase === 'PENDING')
+                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_PENDING').toBe(true);
+              else if (observed.current.phase === 'FULFILLED')
+                expect
+                  .soft(false, 'D002_RECONNECT_CURRENT_NATIVE_FULFILLED_RESPONSE_GAP')
+                  .toBe(true);
+              else if (authHttp.current.responded)
+                expect
+                  .soft(false, 'D002_RECONNECT_CURRENT_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                  .toBe(true);
+              else if (authHttp.current.failed)
+                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+              else if (authHttp.current.requested)
+                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+              else if (observed.refresh.phase === 'REJECTED')
+                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_REJECTED').toBe(true);
+              else if (observed.refresh.phase === 'PENDING')
+                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_PENDING').toBe(true);
+              else if (observed.refresh.phase === 'FULFILLED')
+                expect
+                  .soft(false, 'D002_RECONNECT_REFRESH_NATIVE_FULFILLED_RESPONSE_GAP')
+                  .toBe(true);
+              else if (authHttp.refresh.responded)
+                expect
+                  .soft(false, 'D002_RECONNECT_REFRESH_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                  .toBe(true);
+              else if (authHttp.refresh.failed)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+              else if (authHttp.refresh.requested)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+              else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
+            } else if (timedOutRefreshStatus === 200)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
+            else if (timedOutRefreshStatus === 401)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
+            else if (timedOutRefreshStatus === 403)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
+            else if (timedOutRefreshStatus === 429)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
+            else if (timedOutRefreshStatus === 503)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
+            else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
+          }
+          throw error;
+        } finally {
+          if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+        }
+        expect(response.status()).toBe(200);
+        const neutral = await response.json();
+        expect(neutral.activeRole ?? null).toBeNull();
+        expect(
+          neutral.roles.some(
+            (grant: { role: string; selectable: boolean }) =>
+              grant.role === 'STUDENT' && !grant.selectable,
+          ),
+        ).toBe(true);
+        expect(
+          neutral.roles.some(
+            (grant: { role: string; selectable: boolean }) =>
+              grant.role === 'TEACHER' && grant.selectable,
+          ),
+        ).toBe(true);
+      } catch (error) {
+        offlinePrimary = { error };
+        throw error;
+      } finally {
+        page.off('request', countRole);
+        page.off('response', observeReconnect);
+        detachAuthObservation();
+        let observerCleanup: { error: unknown } | undefined;
+        try {
+          await reconnectObserver.evaluate((value) => value.restore());
+        } catch (error) {
+          observerCleanup = { error };
+        }
+        try {
+          await reconnectObserver.dispose();
+        } catch (error) {
+          observerCleanup ??= { error };
+        }
+        if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+        if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
+        if (!onlineRestored) {
+          try {
+            await context.setOffline(false);
+          } catch (error) {
+            if (!offlinePrimary) throw error;
+          }
+        }
+        if (!offlinePrimary && observerCleanup) throw observerCleanup.error;
+      }
+      await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+      await selectPwaRole(page, 'Преподаватель');
+      await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+      await logoutPwa(page);
+    } catch (error) {
+      rolePrimary = { error };
+      throw error;
+    } finally {
+      detachAuthObservation();
+      let cleanupFailure: { error: unknown } | undefined;
+      try {
+        await context.setOffline(false);
+      } catch (error) {
+        cleanupFailure = { error };
+      }
+      try {
+        await dataset.admin.call('PUT', rolePath, {
+          status: 'ACTIVE',
+          groupId: dataset.group.id,
+        });
+      } catch (error) {
+        cleanupFailure ??= { error };
+      }
+      if (!rolePrimary && cleanupFailure) throw cleanupFailure.error;
+    }
+
+    await loginPwa(page, dataset.student);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(marker, { exact: true })).toBeVisible();
+    const heldFetch = await page.evaluateHandle(
+      ({ tomorrow, homeworkId }) => {
+        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
+          throw new Error('D002 native fetch descriptor unavailable');
+        const original = descriptor.value as typeof fetch;
+        let held = false;
+        let fetchedOwnResponse = false;
+        let nativeRejected = false;
+        let inspectionFailed = false;
+        let ownerReady = false;
+        let releasedToNewOwner = false;
+        let delivered = false;
+        let released = false;
+        let releaseGate!: () => void;
+        const gate = new Promise<void>((resolve) => {
+          releaseGate = resolve;
+        });
+        let releaseTimer: ReturnType<typeof setTimeout> | undefined;
+        const release = () => {
+          if (released) return;
+          released = true;
+          if (releaseTimer !== undefined) clearTimeout(releaseTimer);
+          releaseGate();
+        };
+        const delayed: typeof fetch = function (this: unknown, ...args) {
+          let matches = false;
+          try {
+            const [input, init] = args;
+            const request = input instanceof globalThis.Request ? input : null;
+            const method = init?.method ?? request?.method ?? 'GET';
+            const address =
+              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+            if (!held && method.toUpperCase() === 'GET' && typeof address === 'string') {
+              const url = new URL(address, location.href);
+              matches =
+                url.origin === location.origin &&
+                url.pathname === '/api/v1/student/homework' &&
+                url.searchParams.get('from') === tomorrow &&
+                url.searchParams.get('to') === tomorrow;
+            }
+          } catch {
+            // Matching never changes the native call's arguments, result or error.
+          }
+          if (matches) held = true;
+          const nativePromise: ReturnType<typeof fetch> = Reflect.apply(original, this, args);
+          if (!matches) return nativePromise;
+          return nativePromise.then(
+            async (response) => {
+              try {
+                const feed = await response.clone().json();
+                fetchedOwnResponse =
+                  response.status === 200 &&
+                  Array.isArray(feed.items) &&
+                  feed.items.some((item: { id: string }) => String(item.id) === homeworkId);
+              } catch {
+                inspectionFailed = true;
+              }
+              if (!released) releaseTimer = setTimeout(release, 15000);
+              await gate;
+              releasedToNewOwner = ownerReady;
+              delivered = true;
+              return response;
+            },
+            (error) => {
+              nativeRejected = true;
+              throw error;
+            },
+          );
+        };
+        const restore = () => Object.defineProperty(globalThis, 'fetch', descriptor);
+        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: delayed });
+        return {
+          read: () => ({
+            held,
+            fetchedOwnResponse,
+            nativeRejected,
+            inspectionFailed,
+            delivered,
+            releasedToNewOwner,
+          }),
+          restore: () => {
+            restore();
+          },
+          releaseToNewOwner: () => {
+            ownerReady = true;
+            release();
+          },
+          cleanup: () => {
+            release();
+            restore();
+          },
+        };
+      },
+      { tomorrow: dataset.tomorrow, homeworkId: String(dataset.homework.id) },
+    );
+    let fetchRestored = false;
+    let gateDisposed = false;
+    try {
+      try {
+        await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
+        try {
+          await expect
+            .poll(
+              async () => (await heldFetch.evaluate((value) => value.read())).fetchedOwnResponse,
+            )
+            .toBe(true);
+        } catch (error) {
+          const state = await heldFetch.evaluate((value) => value.read()).catch(() => null);
+          if (state === null) expect.soft(false, 'D002 old feed GATE_UNAVAILABLE').toBe(true);
+          else if (!state.held) expect.soft(false, 'D002 old feed GATE_NOT_CLAIMED').toBe(true);
+          else if (state.nativeRejected)
+            expect.soft(false, 'D002 old feed NATIVE_REJECTED').toBe(true);
+          else if (state.inspectionFailed)
+            expect.soft(false, 'D002 old feed INSPECTION_FAILED').toBe(true);
+          else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
+          throw error;
+        }
+      } finally {
+        try {
+          await heldFetch.evaluate((value) => value.restore());
+          fetchRestored = true;
+        } catch {
+          expect.soft(false, 'D002 old feed FETCH_GATE_RESTORE_UNAVAILABLE').toBe(true);
+        }
+      }
+      expect(fetchRestored, 'D002 old feed FETCH_GATE_NOT_RESTORED').toBe(true);
+      await logoutPwa(page);
+      // Keep this document alive: loginPwa.goto would destroy the delayed callback.
+      await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
+      await page
+        .getByLabel('Пароль', { exact: true })
+        .and(page.locator('input[name="password"]'))
+        .fill(dataset.foreignStudent.password);
+      const [login, current] = await Promise.all([
+        page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/login' &&
+            item.request().method() === 'POST',
+        ),
+        page.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/session' &&
+            item.request().method() === 'GET',
+        ),
+        page.getByRole('button', { name: 'Войти', exact: true }).click(),
+      ]);
+      expect(login.status()).toBe(200);
+      expect(current.status()).toBe(200);
+      expect(String((await current.json()).userId) === String(dataset.foreignStudent.id)).toBe(
+        true,
+      );
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      const emptyDay = page.locator('.homework-empty-day');
+      await expect(emptyDay).toHaveText('На этот день заданий нет.');
+      await expect(emptyDay).toBeVisible();
+      await expect(page.locator('.homework-card')).toHaveCount(0);
+      await heldFetch.evaluate((value) => value.releaseToNewOwner());
+      await expect
+        .poll(async () => (await heldFetch.evaluate((value) => value.read())).delivered)
+        .toBe(true);
+      expect((await heldFetch.evaluate((value) => value.read())).releasedToNewOwner).toBe(true);
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+      await expect
+        .poll(() =>
+          page.evaluate(
+            (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+            String(dataset.foreignStudent.id),
+          ),
+        )
+        .toBe(true);
+      await heldFetch.evaluate((value) => value.cleanup());
+      await heldFetch.dispose().catch(() => {});
+      gateDisposed = true;
+      await context.setOffline(true);
+      await page.reload();
+      await page.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+          String(dataset.foreignStudent.id),
+        ),
+      ).toBe(true);
+    } finally {
+      if (!gateDisposed) {
+        try {
+          await heldFetch.evaluate((value) => value.cleanup());
+        } catch {
+          expect.soft(false, 'D002 old feed FETCH_GATE_CLEANUP_UNAVAILABLE').toBe(true);
+        } finally {
+          await heldFetch.dispose().catch(() => {});
+        }
+      }
+      await context.setOffline(false);
+    }
+  });
+
+  test('D002 TMA stays online-only beside a warm PWA snapshot', async ({
+    page,
+    context,
+    dataset,
+  }) => {
+    const marker = `${dataset.marker}-tma-offline`;
+    await publishOfflineHomework(dataset, marker);
+    await loginPwa(page, dataset.student);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await expect(page.getByText(marker, { exact: true })).toBeVisible();
+    await requireProductionWorker(page);
+    const tma = await context.newPage();
+    try {
+      // The page fixture fixes educational Date only for its own page.
+      await tma.clock.setFixedTime(new Date(await page.evaluate(() => Date.now())));
+      await installTelegramHost(tma, syntheticInitData(dataset.student.telegramId));
+      const [admitted, current] = await Promise.all([
+        tma.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/tma' && item.request().method() === 'POST',
+        ),
+        tma.waitForResponse(
+          (item) =>
+            new URL(item.url()).pathname === '/api/auth/session' &&
+            item.request().method() === 'GET',
+        ),
+        tma.goto('/mini-app/'),
+      ]);
+      expect(admitted.status()).toBe(200);
+      expect(current.status()).toBe(200);
+      expect(String((await current.json()).userId) === String(dataset.student.id)).toBe(true);
+      expect(await tma.evaluate(() => navigator.serviceWorker.controller === null)).toBe(true);
+      expect(
+        await tma.evaluate(
+          (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+          String(dataset.student.id),
+        ),
+      ).toBe(true);
+      await tma.getByRole('button', { name: 'Задания', exact: true }).click();
+      await expect(tma.getByText(marker, { exact: true })).toBeVisible();
+      const completion = tma
+        .getByRole('article')
+        .filter({ has: tma.getByText(marker, { exact: true }) })
+        .getByRole('slider');
+      await expect(completion).toBeEnabled();
+      let commands = 0;
+      const countCommand = (item: Request) => {
+        const path = new URL(item.url()).pathname;
+        if (
+          item.method() !== 'GET' &&
+          (path.startsWith('/api/v1/student/') || path === '/api/auth/session/active-role')
+        )
+          commands += 1;
+      };
+      tma.on('request', countCommand);
+      await context.setOffline(true);
+      try {
+        await expect(
+          tma.getByText('TMA работает только при подключении к интернету', { exact: true }),
+        ).toBeVisible();
+        await expect(tma.getByText(marker, { exact: true })).toHaveCount(0);
+        await expect(
+          tma.getByRole('article').filter({ has: tma.getByText(marker, { exact: true }) }),
+        ).toHaveCount(0);
+        await expect(completion).toHaveCount(0);
+        expect(commands).toBe(0);
+        // The production TMA shell is no-store and has no offline service worker.
+        // A network-denied reload proves no hydration, not native Telegram behavior.
+        let disconnected = false;
+        try {
+          await tma.reload({ waitUntil: 'domcontentloaded' });
+        } catch (error) {
+          disconnected =
+            error instanceof Error && error.message.includes('net::ERR_INTERNET_DISCONNECTED');
+        }
+        expect(disconnected).toBe(true);
+        await expect(tma.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+        await expect(tma.getByText(marker, { exact: true })).toHaveCount(0);
+        expect(commands).toBe(0);
+      } finally {
+        tma.off('request', countCommand);
+      }
+    } finally {
+      await tma.close();
+      await context.setOffline(false);
+    }
+  });
+
+  // Q04 / JS-ADMIN-01,04,07: one real account, group authority and retained history.
+  test('ADMIN creates a multirole headman and restores the archived account without old authority', async ({
+    page,
+    dataset,
+  }) => {
+    const administrator = await dataset.user('ADMIN');
+    const assistantPath = `/api/academic/assistants?groupId=${dataset.group.id}`;
+    const existing = await dataset.headmanActor.call('GET', assistantPath);
+    const active = existing._embedded?.assistantResponseList ?? existing.content ?? [];
+    expect(
+      active.length <= 1 &&
+        active.every(
+          (grant: { studentId: number }) => Number(grant.studentId) === dataset.assistant.id,
+        ),
+    ).toBe(true);
+    // The worker's earlier revocation case leaves no active grant; a fresh lane has one.
+    if (active.length === 0) {
+      await dataset.headmanActor.call(
+        'POST',
+        '/api/academic/assistants',
+        {
+          groupId: dataset.group.id,
+          studentId: dataset.assistant.id,
+          permissions: ['MARK_ATTENDANCE'],
+        },
+        [201],
+      );
+    }
+    const confirmed = await dataset.headmanActor.call('GET', assistantPath);
+    const currentHelpers = confirmed._embedded?.assistantResponseList ?? confirmed.content ?? [];
+    expect(currentHelpers.length).toBe(1);
+    expect(Number(currentHelpers[0].studentId)).toBe(dataset.assistant.id);
+    expect(currentHelpers[0].permissions).toContain('MARK_ATTENDANCE');
+    const helper = await admit(dataset.request, dataset.assistant, 'STUDENT');
+    const teacher = await admit(dataset.request, dataset.teacher, 'TEACHER');
+    const archiveDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Moscow',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const part = (name: string) => archiveDate.find((value) => value.type === name)!.value;
+    const realToday = `${part('year')}-${part('month')}-${part('day')}`;
+    const realYesterday = new Date(Date.parse(`${realToday}T12:00:00Z`) - 86400000)
+      .toISOString()
+      .slice(0, 10);
+    const teachingYesterday = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000)
+      .toISOString()
+      .slice(0, 10);
+    const yesterday = realYesterday < teachingYesterday ? realYesterday : teachingYesterday;
+    // Retained history precedes both account archival's real cutoff and the owned seed date.
+    expect(
+      yesterday >= dataset.semester.dateFrom && yesterday < dataset.today && yesterday < realToday,
+    ).toBe(true);
+    await loginPwa(page, administrator);
+    await selectPwaRole(page, 'Администратор');
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    const users = page.locator('.admin-users-screen');
+    await users.getByRole('button', { name: 'Создать пользователя', exact: true }).click();
+    const lastName = `${dataset.student.displayName.split(' ')[0]}Новый`;
+    const telegramId = dataset.student.telegramId + 20_000_000_000;
+    await users.getByLabel('Фамилия', { exact: true }).fill(lastName);
+    await users.getByLabel('Имя', { exact: true }).fill('Проверка');
+    await users.getByLabel('Отчество', { exact: true }).fill('Синтетическая');
+    const picker = users.locator('[data-picker="group"]');
+    await picker.locator('summary').click();
+    await picker
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await picker.getByRole('button', { name: dataset.group.name, exact: true }).click();
+    await users.getByLabel('Telegram ID', { exact: true }).fill(String(telegramId));
+    const [createdResponse] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/academic/users' &&
+          response.request().method() === 'POST',
+      ),
+      users.getByRole('button', { name: 'Создать пользователя', exact: true }).click(),
+    ]);
+    expect(createdResponse.status()).toBe(201);
+    const created = await createdResponse.json();
+    expect(typeof created.login).toBe('string');
+    expect(typeof created.initialPassword).toBe('string');
+    const userPath = `/api/academic/users/${created.id}`;
+    const original = await dataset.admin.call('GET', userPath);
+    expect(typeof original.fullName === 'string' && original.fullName.trim().length > 0).toBe(true);
+    expect(
+      original.lastName === lastName &&
+        original.firstName === 'Проверка' &&
+        original.middleName === 'Синтетическая' &&
+        Number(original.groupId) === dataset.group.id &&
+        Number(original.telegramId) === telegramId,
+    ).toBe(true);
+    await users.getByRole('button', { name: 'Готово', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(created.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${created.id}"]`).click();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users.getByRole('button', { name: 'Добавить роль', exact: true }).click();
+    await users.getByRole('button', { name: 'Преподаватель', exact: true }).click();
+    const employeeNumber = `E2E-${dataset.group.id}-${created.id}`;
+    await users.getByLabel('Табельный номер', { exact: true }).fill(employeeNumber);
+    const [roleSaved] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/roles/TEACHER` &&
+          response.request().method() === 'PUT',
+      ),
+      users.getByRole('button', { name: 'Назначить роль', exact: true }).click(),
+    ]);
+    expect(roleSaved.status()).toBe(200);
+    const multirole = await dataset.admin.call('GET', userPath);
+    expect(
+      ['id', 'login', 'lastName', 'firstName', 'middleName', 'groupId', 'telegramId'].every(
+        (field) => multirole[field] === original[field],
+      ),
+    ).toBe(true);
+    expect(multirole.employeeNumber === employeeNumber).toBe(true);
+    expect(
+      multirole.roles
+        .filter((grant: { status: string }) => grant.status === 'ACTIVE')
+        .map((grant: { role: string }) => grant.role)
+        .sort(),
+    ).toEqual(['STUDENT', 'TEACHER']);
+
+    const historical = await dataset.headmanActor.call(
+      'POST',
+      '/api/schedule/one-off-lessons',
+      {
+        groupId: dataset.group.id,
+        subjectId: dataset.subject.id,
+        assignmentId: dataset.subject.assignments[0].id,
+        date: yesterday,
+        lessonNumber: 1,
+        classroom: 'Синтетическая история',
+      },
+      [201, 200],
+      { 'Idempotency-Key': dataset.marker.slice(-36) },
+    );
+    const reportPath = `/api/attendance/reports/lesson/${historical.physicalLessonId}`;
+    const markPath = `/api/attendance/lessons/${historical.physicalLessonId}/students/${created.id}`;
+    const initial = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(initial !== undefined).toBe(true);
+    // The same helper bearer succeeds before replacement and is refused afterwards.
+    await helper.call('PUT', markPath, {
+      status: 'PRESENT',
+      expectedStatus: String(initial.status ?? 'EMPTY').toUpperCase(),
+      expectedRevision: initial.markRevision ?? 'EMPTY',
+    });
+    const before = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(before !== undefined).toBe(true);
+    expect(String(before.status).toUpperCase()).toBe('PRESENT');
+    expect(typeof before.markRevision).toBe('string');
+
+    await users.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.getByRole('button', { name: 'Группы', exact: true }).click();
+    const groups = page.locator('.admin-groups-screen');
+    await groups
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+    const group = groups.locator(`[data-group-id="${dataset.group.id}"]`);
+    await group.locator('.admin-groups-item__trigger').click();
+    await group.getByRole('button', { name: 'Изменить старосту', exact: true }).click();
+    const replacement = groups.locator('.admin-groups-headman');
+    const [headmanPreview] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname ===
+            `/api/academic/groups/${dataset.group.id}/headman/preview` &&
+          new URL(response.url()).searchParams.get('studentId') === String(created.id) &&
+          response.request().method() === 'GET',
+      ),
+      replacement.getByLabel('Выбери старосту', { exact: true }).selectOption(String(created.id)),
+    ]);
+    expect(headmanPreview.status()).toBe(200);
+    const replacementImpact = await headmanPreview.json();
+    expect(Number(replacementImpact.currentHeadmanId)).toBe(dataset.headman.id);
+    expect(Number(replacementImpact.candidateId)).toBe(Number(created.id));
+    expect(replacementImpact.assistantsToRevoke).toBe(1);
+    await expect(replacement.getByRole('status')).toContainText('Помощников к отзыву: 1.');
+    const [replaced] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `/api/academic/groups/${dataset.group.id}/headman` &&
+          response.request().method() === 'PUT',
+      ),
+      replacement.getByRole('button', { name: 'Подтвердить назначение', exact: true }).click(),
+    ]);
+    expect(replaced.status()).toBe(200);
+    const replacedBody = await replaced.json();
+    expect(Number(replacedBody.headmanId)).toBe(Number(created.id));
+    expect(replacedBody.assistantsRevoked).toBe(1);
+    const rosterPath = `/api/academic/groups/${dataset.group.id}/headman/roster`;
+    const assignedRoster = await dataset.admin.call('GET', rosterPath);
+    expect(Number(assignedRoster.currentHeadmanId)).toBe(Number(created.id));
+    expect(assignedRoster.activeAssistantCount).toBe(0);
+    const oldHeadman = await dataset.admin.call('GET', `/api/academic/users/${dataset.headman.id}`);
+    expect(
+      oldHeadman.roles.some(
+        (grant: { role: string; status: string }) =>
+          grant.role === 'HEADMAN' && grant.status === 'ACTIVE',
+      ),
+    ).toBe(false);
+    for (const actor of [helper, dataset.headmanActor]) {
+      const denied = await dataset.request.put(markPath, {
+        headers: actor.headers(),
+        data: {
+          status: 'ABSENT',
+          expectedStatus: 'PRESENT',
+          expectedRevision: before.markRevision,
+        },
+      });
+      if (actor === helper) expect(denied.status()).toBe(403);
+      else expect([401, 403]).toContain(denied.status());
+    }
+    const afterReplacement = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(afterReplacement !== undefined).toBe(true);
+    expect(
+      afterReplacement.status === before.status &&
+        afterReplacement.markRevision === before.markRevision,
+    ).toBe(true);
+    await page.reload();
+    await page.getByRole('button', { name: 'Группы', exact: true }).click();
+    await groups
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+    await group.locator('.admin-groups-item__trigger').click();
+    await expect(group.getByText(original.fullName, { exact: true })).toBeVisible();
+
+    const currentHeadman = await admit(
+      dataset.request,
+      {
+        login: created.login,
+        password: created.initialPassword,
+        role: 'STUDENT',
+        expectedLandingPath: '/app/',
+      },
+      'HEADMAN',
+    );
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(created.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${created.id}"]`).click();
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    const [archivePreview] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/archive-preview` &&
+          response.request().method() === 'GET',
+      ),
+      users.getByRole('button', { name: 'Архивировать аккаунт', exact: true }).click(),
+    ]);
+    expect(archivePreview.status()).toBe(200);
+    const archiveImpact = await archivePreview.json();
+    expect(Number(archiveImpact.userId)).toBe(Number(created.id));
+    expect(archiveImpact.attendanceMarksCount).toBe(1);
+    expect(archiveImpact.activeHeadmanGroupCount).toBe(1);
+    expect(archiveImpact.requiresPassword).toBe(true);
+    await expect(users.locator('.admin-users-data')).toContainText('Отметки посещаемости');
+    await users.getByLabel('Твой текущий пароль', { exact: true }).fill(administrator.password);
+    await users.getByRole('checkbox', { name: 'Подтверждаю', exact: true }).check();
+    const [archived] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/archive` &&
+          response.request().method() === 'POST',
+      ),
+      users.getByRole('button', { name: 'Архивировать аккаунт', exact: true }).click(),
+    ]);
+    if (archived.status() !== 204) {
+      throw datasetHttpFailure('POST', `${userPath}/archive`, archived.status());
+    }
+    expect(archived.status()).toBe(204);
+    await expect(
+      users.getByText('Аккаунт архивирован. История сохранена.', { exact: true }),
+    ).toBeVisible();
+    const archivedAccount = await dataset.admin.call('GET', userPath);
+    expect(archivedAccount.status).toBe('ARCHIVED');
+    expect(
+      archivedAccount.roles.some((grant: { status: string }) => grant.status === 'ACTIVE'),
+    ).toBe(false);
+    const archiveDenial = await dataset.request.put(markPath, {
+      headers: currentHeadman.headers(),
+      data: { status: 'ABSENT', expectedStatus: 'PRESENT', expectedRevision: before.markRevision },
+    });
+    expect([401, 403]).toContain(archiveDenial.status());
+    const afterArchive = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(afterArchive !== undefined).toBe(true);
+    expect(
+      afterArchive.status === before.status && afterArchive.markRevision === before.markRevision,
+    ).toBe(true);
+    await page.reload();
+    await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
+    await users.getByRole('button', { name: 'Фильтры и сортировка', exact: true }).click();
+    const archivedRoleFilter = users.locator('[data-picker="filter-role"]');
+    await archivedRoleFilter.locator('summary').click();
+    await archivedRoleFilter.getByRole('button', { name: 'Студенты', exact: true }).click();
+    const archivedStatusFilter = users.locator('[data-picker="filter-status"]');
+    await archivedStatusFilter.locator('summary').click();
+    await archivedStatusFilter.getByRole('button', { name: 'Архивная', exact: true }).click();
+    await users.getByRole('button', { name: 'Применить', exact: true }).click();
+    await users
+      .getByRole('searchbox', { name: 'Найти пользователя', exact: true })
+      .fill(created.login);
+    await users.getByRole('button', { name: 'Найти', exact: true }).click();
+    await users.locator(`[data-user-id="${created.id}"]`).click();
+    const accountStatus = users
+      .locator('.admin-users-data > div')
+      .filter({ has: page.locator('dt', { hasText: /^Статус аккаунта$/ }) })
+      .locator('dd');
+    await expect(accountStatus).toBeVisible();
+    await expect(accountStatus).toHaveText(/^\s*●?\s*Аккаунт в архиве\s*$/);
+    await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
+    await users.getByRole('button', { name: 'Восстановить аккаунт', exact: true }).click();
+    await expect(users.getByText(/Аккаунт восстановится без активных прав/)).toBeVisible();
+    await users.getByRole('checkbox', { name: 'Подтверждаю', exact: true }).check();
+    const [restored] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === `${userPath}/restore` &&
+          response.request().method() === 'POST',
+      ),
+      users.getByRole('button', { name: 'Восстановить аккаунт', exact: true }).click(),
+    ]);
+    expect(restored.status()).toBe(204);
+    await expect(
+      users.getByText('Аккаунт восстановлен без активных прав. Назначь нужные роли заново.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    const restoredAccount = await dataset.admin.call('GET', userPath);
+    expect(restoredAccount.status).toBe('ACTIVE');
+    expect(restoredAccount.groupId).toBeNull();
+    expect(restoredAccount.headman).toBe(false);
+    expect(
+      ['id', 'login', 'lastName', 'firstName', 'middleName', 'telegramId', 'employeeNumber'].every(
+        (field) => restoredAccount[field] === multirole[field],
+      ),
+    ).toBe(true);
+    expect(
+      restoredAccount.roles.some(
+        (grant: { status: string; selectable: boolean }) =>
+          grant.status === 'ACTIVE' || grant.selectable,
+      ),
+    ).toBe(false);
+    const restoreDenial = await dataset.request.put(markPath, {
+      headers: currentHeadman.headers(),
+      data: { status: 'ABSENT', expectedStatus: 'PRESENT', expectedRevision: before.markRevision },
+    });
+    expect([401, 403]).toContain(restoreDenial.status());
+    const afterRestore = (await teacher.call('GET', reportPath)).entries.find(
+      (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
+    );
+    expect(afterRestore !== undefined).toBe(true);
+    expect(
+      afterRestore.userId === before.userId &&
+        afterRestore.status === before.status &&
+        afterRestore.source === before.source &&
+        afterRestore.markRevision === before.markRevision,
+    ).toBe(true);
+    const vacant = await dataset.admin.call('GET', rosterPath);
+    expect(vacant.currentHeadmanId).toBeNull();
+    expect(vacant.activeAssistantCount).toBe(0);
+    expect(vacant.candidates.length).toBe(assignedRoster.candidates.length - 1);
+    expect(
+      vacant.candidates.some(
+        (candidate: { id: number }) => Number(candidate.id) === Number(created.id),
+      ),
+    ).toBe(false);
+    const draftRegistry = await dataset.admin.call(
+      'GET',
+      `/api/academic/groups/registry?status=DRAFT&search=${encodeURIComponent(dataset.group.name)}&size=100`,
+    );
+    const draft = draftRegistry.items.find(
+      (entry: { id: number }) => entry.id === dataset.group.id,
+    );
+    expect(draft !== undefined).toBe(true);
+    expect(draft.headmanFio).toBeNull();
+    expect(draft.studentCount).toBe(vacant.candidates.length);
+    expect(typeof draft.draftReason === 'string' && draft.draftReason.trim().length > 0).toBe(true);
+    await page.getByRole('button', { name: 'Группы', exact: true }).click();
+    await groups.getByRole('tab', { name: /^Черновики/ }).click();
+    await groups
+      .getByRole('searchbox', { name: 'Найти группу', exact: true })
+      .fill(dataset.group.name);
+    await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+    await group.locator('.admin-groups-item__trigger').click();
+    const draftHeadman = group
+      .locator('dl > div')
+      .filter({ has: page.locator('dt', { hasText: /^Староста$/ }) })
+      .locator('dd');
+    await expect(draftHeadman).toBeVisible();
+    await expect(draftHeadman).toHaveText('Не назначен');
+    await expect(group).toContainText(draft.draftReason);
+    await expect(
+      group.locator('dl > div').filter({ hasText: 'Студентов' }).locator('dd'),
+    ).toHaveText(String(draft.studentCount));
+
+    // One ready-client group creation; the existing domain checks cover all nine programme codes.
+    const ownAlphabeticCode = String(dataset.group.alphabeticCode);
+    const ownNumericCode = '211';
+    const ownGroupName = `${ownAlphabeticCode}-${ownNumericCode}`;
+    expect(/^[А-ЯЁ]{2,4}$/.test(ownAlphabeticCode)).toBe(true);
+    const ownRegistryFields = {
+      name: ownGroupName,
+      alphabeticCode: ownAlphabeticCode,
+      numericCode: ownNumericCode,
+      currentCourse: 2,
+      programTypeDigit: 1,
+      studyMode: 'FULL_TIME',
+      educationLevel: 'BACHELOR',
+      trainingDurationYears: 4,
+      durationStatus: 'KNOWN',
+      status: 'DRAFT',
+      studentCount: 0,
+      headmanFio: null,
+    };
+    const ownRegistry = async (status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED') => {
+      const result = await dataset.admin.call(
+        'GET',
+        `/api/academic/groups/registry?status=${status}&search=${encodeURIComponent(ownAlphabeticCode)}&size=100`,
+      );
+      expect(result.totalPages <= 1 && result.items.length === result.totalElements).toBe(true);
+      return result.items.filter(
+        (row: { alphabeticCode: string | null; numericCode: string | null; name: string }) =>
+          (row.alphabeticCode === ownAlphabeticCode && row.numericCode === ownNumericCode) ||
+          row.name === ownGroupName ||
+          row.name.startsWith(`${ownGroupName} (`),
+      );
+    };
+    for (const status of ['ACTIVE', 'DRAFT', 'ARCHIVED'] as const) {
+      const absent = await ownRegistry(status);
+      // Search includes archived names and split codes, so retained history is not ours to clean.
+      expect(absent.length === 0).toBe(true);
+    }
+    const assertOwnRegistry = (row: Record<string, unknown>, knownId: number | null) => {
+      expect(
+        Number.isSafeInteger(row.id) &&
+          Number(row.id) > 0 &&
+          Number(row.id) !== dataset.group.id &&
+          Number(row.id) !== dataset.otherGroup.id &&
+          (knownId === null || row.id === knownId),
+      ).toBe(true);
+      expect(Object.entries(ownRegistryFields).every(([key, value]) => row[key] === value)).toBe(
+        true,
+      );
+    };
+    let ownCreatedGroupId: number | null = null;
+    let ownGroupCreateAttempted = false;
+    let ownGroupFlowFailed = false;
+    try {
+      await groups.getByRole('button', { name: 'Создать группу', exact: true }).click();
+      const createForm = groups.getByRole('form', { name: 'Новая группа', exact: true });
+      await createForm.getByLabel('Буквенный код', { exact: true }).fill(ownAlphabeticCode);
+      await createForm.getByLabel('Цифровой код', { exact: true }).fill(ownNumericCode);
+      await createForm.getByLabel('Срок обучения, лет', { exact: true }).fill('4');
+      ownGroupCreateAttempted = true;
+      const [groupCreated] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/academic/groups/registry' &&
+            response.request().method() === 'POST',
+        ),
+        createForm.getByRole('button', { name: 'Создать группу', exact: true }).click(),
+      ]);
+      expect(groupCreated.status()).toBe(201);
+      const nativeCreatedGroup = await groupCreated.json();
+      if (Number.isSafeInteger(nativeCreatedGroup.id) && nativeCreatedGroup.id > 0)
+        ownCreatedGroupId = nativeCreatedGroup.id;
+      assertOwnRegistry(nativeCreatedGroup, ownCreatedGroupId);
+      expect(ownCreatedGroupId !== null).toBe(true);
+      await expect(
+        groups.getByText('Группа создана и добавлена в черновики.', { exact: true }),
+      ).toBeVisible();
+      await expect(groups.getByRole('tab', { name: /^Черновики/ })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      const nativeReadback = await dataset.admin.call(
+        'GET',
+        `/api/academic/groups/${ownCreatedGroupId}`,
+      );
+      expect(
+        nativeReadback.id === ownCreatedGroupId &&
+          nativeReadback.name === ownGroupName &&
+          nativeReadback.alphabeticCode === ownAlphabeticCode &&
+          nativeReadback.numericCode === ownNumericCode &&
+          nativeReadback.currentCourse === 2 &&
+          nativeReadback.trainingDurationYears === 4 &&
+          nativeReadback.durationStatus === 'KNOWN' &&
+          nativeReadback.active === true,
+      ).toBe(true);
+      const registryReadback = await ownRegistry('DRAFT');
+      expect(registryReadback.length === 1).toBe(true);
+      assertOwnRegistry(registryReadback[0], ownCreatedGroupId);
+      await groups.getByRole('searchbox', { name: 'Найти группу', exact: true }).fill(ownGroupName);
+      await groups.getByRole('button', { name: 'Найти группу', exact: true }).click();
+      const ownGroupRow = groups.locator(`[data-group-id="${ownCreatedGroupId}"]`);
+      await ownGroupRow.locator('.admin-groups-item__trigger').click();
+      await expect(ownGroupRow.locator('strong')).toHaveText(ownGroupName);
+      for (const [label, value] of [
+        ['Курс', '2'],
+        ['Срок обучения', '4 лет'],
+        ['Студентов', '0'],
+        ['Староста', 'Не назначен'],
+      ] as const) {
+        await expect(
+          ownGroupRow
+            .locator('dl > div')
+            .filter({ has: page.getByText(label, { exact: true }) })
+            .locator('dd'),
+        ).toHaveText(value);
+      }
+    } catch (error) {
+      ownGroupFlowFailed = true;
+      throw error;
+    } finally {
+      if (ownGroupCreateAttempted) {
+        try {
+          const candidates = await ownRegistry('DRAFT');
+          expect(candidates.length <= 1).toBe(true);
+          if (candidates.length === 1) {
+            const candidate = candidates[0];
+            assertOwnRegistry(candidate, ownCreatedGroupId);
+            ownCreatedGroupId = candidate.id;
+            const ownPath = `/api/academic/groups/${ownCreatedGroupId}`;
+            const fresh = await dataset.admin.call('GET', ownPath);
+            expect(
+              fresh.id === ownCreatedGroupId &&
+                fresh.name === ownGroupName &&
+                fresh.alphabeticCode === ownAlphabeticCode &&
+                fresh.numericCode === ownNumericCode &&
+                fresh.currentCourse === 2 &&
+                fresh.trainingDurationYears === 4 &&
+                fresh.durationStatus === 'KNOWN' &&
+                fresh.active === true,
+            ).toBe(true);
+            const emptyRoster = await dataset.admin.call('GET', `${ownPath}/headman/roster`);
+            expect(
+              emptyRoster.currentHeadmanId === null &&
+                emptyRoster.activeAssistantCount === 0 &&
+                emptyRoster.candidates.length === 0,
+            ).toBe(true);
+            // Managed group history forbids DELETE, including for a newly created empty group.
+            await dataset.admin.call('PUT', ownPath, { name: ownGroupName, active: false });
+            const archivedOwnGroup = await dataset.admin.call('GET', ownPath);
+            expect(
+              archivedOwnGroup.id === ownCreatedGroupId &&
+                archivedOwnGroup.active === false &&
+                archivedOwnGroup.alphabeticCode === ownAlphabeticCode &&
+                archivedOwnGroup.numericCode === ownNumericCode &&
+                archivedOwnGroup.currentCourse === 2 &&
+                archivedOwnGroup.trainingDurationYears === 4 &&
+                archivedOwnGroup.durationStatus === 'KNOWN',
+            ).toBe(true);
+          } else {
+            expect(ownCreatedGroupId === null).toBe(true);
+          }
+        } catch (error) {
+          if (ownGroupFlowFailed)
+            expect.soft(false, 'ADMIN_OWN_GROUP_ARCHIVE_CLEANUP_FAILED').toBe(true);
+          else throw error;
+        }
+      }
+    }
+  });
+
+  // Q03: one live multirole authority transition and the ready client's logout-all.
+  test('SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions', async ({
+    page,
+    activeHeadmanDataset: dataset,
+    playwright,
+  }, info) => {
+    const retryCutoffMs =
+      (retryStartedAt.get(info) ?? Number.NEGATIVE_INFINITY) +
+      Math.max(0, Math.min(info.timeout, 120000) - 30000);
+    const studentRole = `/api/academic/users/${dataset.teacher.id}/roles/STUDENT`;
+    await dataset.admin.call('PUT', studentRole, {
+      status: 'ACTIVE',
+      groupId: dataset.group.id,
+      telegramId: dataset.teacher.telegramId,
+    });
+    const retryRemainingMs = Math.floor(retryCutoffMs - performance.now());
+    expect(retryRemainingMs, 'Synthetic teacher login retry budget remains').toBeGreaterThan(0);
+    const logged = await loginPwa(page, dataset.teacher, {
+      retryUntilMs: Date.now() + Math.min(65000, retryRemainingMs),
+    });
+    expect(logged.session.activeRole).toBe('STUDENT');
+    expect(
+      ['STUDENT', 'TEACHER'].every((role) =>
+        logged.session.roles.some((grant) => grant.role === role && grant.selectable),
+      ),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    await selectTomorrowHomework(page, dataset);
+    await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
+    const homeworkPath = '/api/v1/student/homework';
+    expect(
+      (
+        await page.request.get(homeworkPath, {
+          headers: { Authorization: `Bearer ${logged.accessToken}` },
+        })
+      ).status(),
+    ).toBe(200);
+
+    await dataset.admin.call('PUT', studentRole, { status: 'SUSPENDED' });
+    // Live admission rejects the unselectable role before checking the old JWT version.
+    const deniedStudent = await page.request.get(homeworkPath, {
+      headers: { Authorization: `Bearer ${logged.accessToken}` },
+    });
+    expect(deniedStudent.status()).toBe(403);
+    expect((await deniedStudent.json()).code).toBe('WRONG_ROLE');
+    const [refreshed, current] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/refresh' &&
+          response.request().method() === 'POST',
+      ),
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      ),
+      page.reload(),
+    ]);
+    expect(refreshed.status()).toBe(200);
+    expect(current.status()).toBe(200);
+    const neutral = await current.json();
+    expect(neutral.activeRole ?? null).toBeNull();
+    expect(
+      neutral.roles.some(
+        (grant: { role: string; status: string; selectable: boolean }) =>
+          grant.role === 'STUDENT' && grant.status === 'SUSPENDED' && !grant.selectable,
+      ),
+    ).toBe(true);
+    expect(
+      neutral.roles.some(
+        (grant: { role: string; status: string; selectable: boolean }) =>
+          grant.role === 'TEACHER' && grant.status === 'ACTIVE' && grant.selectable,
+      ),
+    ).toBe(true);
+    await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+    const [selected] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session/active-role' &&
+          response.request().method() === 'PUT',
+      ),
+      selectPwaRole(page, 'Преподаватель'),
+    ]);
+    expect(selected.status()).toBe(200);
+    const teacherAdmission = await selected.json();
+    expect(teacherAdmission.session.activeRole).toBe('TEACHER');
+    await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+    const lessonPath = `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`;
+    const teacherHeaders = { Authorization: `Bearer ${teacherAdmission.accessToken}` };
+    const assigned = await page.request.get(lessonPath, { headers: teacherHeaders });
+    expect(assigned.status()).toBe(200);
+    const beforeLogout = await assigned.json();
+    expect(JSON.stringify(beforeLogout).includes(dataset.subject.name)).toBe(true);
+
+    // A separate cookie jar keeps this login from replacing the browser's refresh authority.
+    const origin = new URL(page.url()).origin;
+    const second = await playwright.request.newContext({
+      baseURL: origin,
+      ignoreHTTPSErrors: true,
+    });
+    try {
+      const other = await admit(second, dataset.teacher, 'TEACHER');
+      expect(other.session.sessionId !== teacherAdmission.session.sessionId).toBe(true);
+      expect((await second.get(lessonPath, { headers: other.headers() })).status()).toBe(200);
+      await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+      const profile = page.getByRole('main', { name: 'Профиль', exact: true });
+      const [listed] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/sessions' &&
+            response.request().method() === 'GET',
+        ),
+        profile.getByRole('button', { name: 'Активные сеансы', exact: true }).click(),
+      ]);
+      expect(listed.status()).toBe(200);
+      const sessions = await listed.json();
+      expect(
+        [teacherAdmission.session.sessionId, other.session.sessionId].every((sessionId) =>
+          sessions.items.some((item: { sessionId: string }) => item.sessionId === sessionId),
+        ),
+      ).toBe(true);
+      const screen = page.getByRole('main', { name: 'Активные сеансы', exact: true });
+      await expect(screen.getByRole('list', { name: 'Список активных сеансов' })).toBeVisible();
+      // Retain both actual current refresh proofs before the UI clears its own cookie.
+      const browserCookie = (await page.context().cookies(`${origin}/api/auth/refresh`)).find(
+        (cookie) => cookie.name === 'rct_refresh',
+      );
+      const secondCookie = (await second.storageState()).cookies.find(
+        (cookie) => cookie.name === 'rct_refresh',
+      );
+      expect(Boolean(browserCookie?.value && secondCookie?.value)).toBe(true);
+      expect(browserCookie?.value !== secondCookie?.value).toBe(true);
+      const [loggedOut] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/auth/logout-all' &&
+            response.request().method() === 'POST',
+        ),
+        screen.getByRole('button', { name: 'Выйти на всех устройствах', exact: true }).click(),
+      ]);
+      expect(loggedOut.status()).toBe(204);
+      await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      for (const headers of [teacherHeaders, other.headers()]) {
+        expect((await second.get(lessonPath, { headers })).status()).toBe(401);
+      }
+      for (const cookie of [browserCookie, secondCookie]) {
+        const deniedRefresh = await second.post('/api/auth/refresh', {
+          headers: { Cookie: `rct_refresh=${cookie!.value}`, Origin: origin },
+        });
+        expect(deniedRefresh.status()).toBe(401);
+      }
+      // Fresh admission can still read the same assignment; revocation did not alter its data.
+      const fresh = await admit(second, dataset.teacher, 'TEACHER');
+      const retained = await fresh.call('GET', lessonPath);
+      expect
+        .soft(
+          isDeepStrictEqual(
+            { lesson: retained.lesson, roster: retained.roster },
+            { lesson: beforeLogout.lesson, roster: beforeLogout.roster },
+          ),
+          'Retained lesson and ordered roster preserve structural data',
+        )
+        .toBe(true);
+      await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+    } finally {
+      await second.dispose();
+    }
+  });
+});
+
+// Engine/emulation control only; this cannot replace production PWA offline acceptance.
+test('WebKit direct cached document survives emulated offline reload control', async ({
+  directCacheControl,
+}) => {
+  const shellPath = '/rct-offline-control/';
+  const workerPath = `${shellPath}sw.js`;
+  const cacheName = 'rct-direct-cache-control-v1';
+  const shell =
+    '<!DOCTYPE html><html><head></head><body><main>Direct cached offline control</main></body></html>';
+  const worker = `
+const cacheName = ${JSON.stringify(cacheName)};
+const shellURL = new URL('./', self.location.href).href;
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(cacheName)
+    .then(cache => cache.put(shellURL, new Response(${JSON.stringify(shell)}, {
+      status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    })))
+    .then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', event => {
+  if (event.request.mode !== 'navigate' || event.request.url !== shellURL) return;
+  event.respondWith(caches.open(cacheName).then(cache => cache.match(shellURL)).then(cached => {
+    if (!cached) throw new Error('Control cached document missing');
+    return cached;
+  }));
+});
+`;
+  let handlerFailed = false;
+  const server = createServer((request, response) => {
+    try {
+      if (request.method === 'GET' && request.url === shellPath) {
+        response.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        response.end(shell);
+      } else if (request.method === 'GET' && request.url === workerPath) {
+        response.writeHead(200, {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        response.end(worker);
+      } else {
+        response.writeHead(404);
+        response.end();
+      }
+    } catch {
+      handlerFailed = true;
+      response.destroy();
+    }
+  });
+  server.on('error', () => {
+    handlerFailed = true;
+  });
+  directCacheControl.server = server;
+  const context = directCacheControl.context;
+  let controlPage: Page | undefined;
+  let bodyFailed = false;
+  let bodyError: unknown;
+  const cleanupErrors: unknown[] = [];
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const address = server.address();
+    expect(address !== null && typeof address !== 'string').toBe(true);
+    if (address === null || typeof address === 'string') throw new Error('Control address missing');
+    const origin = `http://127.0.0.1:${address.port}`;
+    const shellURL = `${origin}${shellPath}`;
+    controlPage = await context.newPage();
+    const initial = await controlPage.goto(shellURL, { waitUntil: 'load', timeout: 10000 });
+    expect(initial?.status()).toBe(200);
+    expect(await controlPage.evaluate(() => window.isSecureContext)).toBe(true);
+    await controlPage.evaluate(
+      async ({ workerPath, shellPath }) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            navigator.serviceWorker
+              .register(workerPath, { scope: shellPath })
+              .then(() => navigator.serviceWorker.ready),
+            new Promise<never>((_, reject) => {
+              timer = setTimeout(
+                () => reject(new Error('Control worker admission timed out')),
+                5000,
+              );
+            }),
+          ]);
+        } finally {
+          clearTimeout(timer);
+        }
+      },
+      { workerPath, shellPath },
+    );
+    await expect
+      .poll(() => controlPage!.evaluate(() => navigator.serviceWorker.controller?.state), {
+        timeout: 10000,
+      })
+      .toBe('activated');
+    expect(
+      await controlPage.evaluate(
+        async ({ cacheName, shellURL, shell }) => {
+          const cached = await (await caches.open(cacheName)).match(shellURL);
+          return cached?.status === 200 && (await cached.text()) === shell;
+        },
+        { cacheName, shellURL, shell },
+      ),
+    ).toBe(true);
+    const online = await controlPage.reload({ waitUntil: 'load', timeout: 10000 });
+    expect(online?.status()).toBe(200);
+    expect(online?.fromServiceWorker()).toBe(true);
+    await expect(controlPage.getByRole('main')).toHaveText('Direct cached offline control');
+    expect(await controlPage.content()).toBe(shell);
+    await controlPage.evaluate(() => {
+      Object.defineProperty(window, '__rctDirectCacheOldDocument', {
+        value: true,
+        configurable: true,
+      });
+    });
+    await context.setOffline(true);
+    const offline = await controlPage.reload({ waitUntil: 'load', timeout: 10000 });
+    expect(offline?.status()).toBe(200);
+    expect(offline?.fromServiceWorker()).toBe(true);
+    expect(
+      await controlPage.evaluate(
+        () =>
+          !Object.prototype.hasOwnProperty.call(window, '__rctDirectCacheOldDocument') &&
+          document.readyState === 'complete',
+      ),
+    ).toBe(true);
+    await expect(controlPage.getByRole('main')).toHaveText('Direct cached offline control');
+    expect(await controlPage.content()).toBe(shell);
+  } catch (error) {
+    bodyFailed = true;
+    bodyError = error;
+  } finally {
+    if (context) {
+      try {
+        await context.setOffline(false);
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+      if (controlPage && !controlPage.isClosed()) {
+        try {
+          await controlPage.evaluate(
+            async ({ shellPath, cacheName }) => {
+              const ownScope = new URL(shellPath, location.origin).href;
+              const registration = await navigator.serviceWorker.getRegistration(ownScope);
+              if (registration?.scope === ownScope) await registration.unregister();
+              await caches.delete(cacheName);
+            },
+            { shellPath, cacheName },
+          );
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      }
+    }
+    if (server.listening) {
+      server.closeAllConnections();
+      try {
+        await new Promise<void>((resolve, reject) =>
+          server.close((error) => (error ? reject(error) : resolve())),
+        );
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+    }
+  }
+  expect.soft(handlerFailed, 'DIRECT_CACHE_CONTROL_HTTP_HANDLER_FAILED').toBe(false);
+  expect.soft(cleanupErrors.length === 0, 'DIRECT_CACHE_CONTROL_CLEANUP_FAILED').toBe(true);
+  if (bodyFailed) throw bodyError;
+});
+
+// This opt-in reuses the ordinary serial/private mobile lane and real API fixture.
+// Run it before other dataset fixtures if the initial active semester needs widening.
+const asyncExportTest = test.extend<{ weeklyExportSeed: { weeks: string[] } }>({
+  weeklyExportSeed: [
+    async ({ dataset }, use) => {
+      const options = await dataset.headmanActor.call(
+        'GET',
+        '/api/attendance/reports/headman-weekly/weeks',
+      );
+      expect(options.weeks.length >= 18).toBe(true);
+      const weeks: string[] = options.weeks
+        .slice(-18)
+        .map((week: { weekStart: string }) => week.weekStart);
+      const first = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: dataset.subject.id,
+          assignmentId: dataset.subject.assignments[0].id,
+          date: weeks[0],
+          lessonNumber: 2,
+          classroom: 'Синтетическое начало 18 недель',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      const ends = [
+        { lessonId: first.physicalLessonId, status: 'PRESENT', expected: 'CLOSED' },
+        { lessonId: dataset.lesson.physicalLessonId, status: 'EXCUSED', expected: 'ACTIVE' },
+      ];
+      for (const endpoint of ends) {
+        let report: any;
+        await expect
+          .poll(
+            async () => {
+              report = await dataset.headmanActor.call(
+                'GET',
+                `/api/attendance/reports/lesson/${endpoint.lessonId}`,
+              );
+              const row = report.entries.find(
+                (entry: any) => Number(entry.userId) === dataset.student.id,
+              );
+              return (
+                (report.lessonStatus === endpoint.expected || report.lessonStatus === 'CLOSED') &&
+                row != null &&
+                (endpoint.expected !== 'CLOSED' || typeof row.markRevision === 'string')
+              );
+            },
+            {
+              timeout: 150000,
+              intervals: [1000],
+              message: 'Synthetic boundary lesson reaches markable journal state',
+            },
+          )
+          .toBe(true);
+        const row = report.entries.find(
+          (entry: any) => Number(entry.userId) === dataset.student.id,
+        );
+        await dataset.headmanActor.call(
+          'PUT',
+          `/api/attendance/lessons/${endpoint.lessonId}/students/${dataset.student.id}`,
+          {
+            status: endpoint.status,
+            expectedStatus: row.status?.toUpperCase() ?? 'EMPTY',
+            expectedRevision: row.markRevision ?? 'EMPTY',
+            ...(endpoint.status === 'EXCUSED'
+              ? { excuseType: 'ILLNESS', comment: 'Синтетический конец 18 недель' }
+              : {}),
+          },
+        );
+        const stored = await dataset.headmanActor.call(
+          'GET',
+          `/api/attendance/reports/lesson/${endpoint.lessonId}`,
+        );
+        expect(
+          stored.entries
+            .find((entry: any) => Number(entry.userId) === dataset.student.id)
+            .status.toUpperCase(),
+        ).toBe(endpoint.status);
+      }
+      await use({ weeks });
+    },
+    { timeout: 180000 },
+  ],
+});
+
+async function assertWeeklyDocx(
+  download: Download,
+  weeks: string[],
+  student: string,
+  group: string,
+  invocation: 'NAVIGATION' | 'LOST_ACCEPTANCE',
+): Promise<void> {
+  expect(download.suggestedFilename().endsWith('.docx')).toBe(true);
+  const stream = await download.createReadStream();
+  if (!stream) throw new Error('Async DOCX download stream unavailable');
+  const chunks: Buffer[] = [];
+  let length = 0;
+  for await (const chunk of stream) {
+    const bytes = Buffer.from(chunk);
+    length += bytes.length;
+    expect(length > 0 && length <= 20 * 1024 * 1024).toBe(true);
+    chunks.push(bytes);
+  }
+  expect(length > 0).toBe(true);
+  // Same bounded in-memory Python stdlib ZIP pattern used by registry export.
+  // Assert real rows/marks in both boundary weeks; never print XML or file bytes.
+  const script = String.raw`import base64, datetime, io, json, sys, zipfile, xml.etree.ElementTree as ET
+stage=20
+try:
+ v=json.load(sys.stdin)
+ data=base64.b64decode(v['docx'], validate=True)
+ assert 0<len(data)<=20*1024*1024
+ stage=21
+ with zipfile.ZipFile(io.BytesIO(data)) as z:
+  stage=22
+  info=z.getinfo('word/document.xml')
+  assert 0<info.file_size<=20*1024*1024 and not info.flag_bits&1
+  stage=23
+  root=ET.fromstring(z.read(info))
+ w='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+ segments=[]; current=[]
+ for node in root.find(w+'body'):
+  if any(br.get(w+'type')=='page' for br in node.iter(w+'br')):
+   segments.append(current); current=[]
+  else: current.append(node)
+ segments.append(current)
+ stage=24
+ assert len(segments)==18
+ for i,(week,segment) in enumerate(zip(v['weeks'],segments)):
+  stage=25
+  start=datetime.date.fromisoformat(week); end=start+datetime.timedelta(days=6)
+  text=''.join(t.text or '' for n in segment for t in n.iter(w+'t'))
+  assert start.strftime('%d.%m.%Y')+'–'+end.strftime('%d.%m.%Y') in text
+  stage=26
+  assert v['group'] in text
+  if i in (0,17):
+   stage=27 if i==0 else 28
+   rows=[[''.join(t.text or '' for t in cell.iter(w+'t')) for cell in row.findall(w+'tc')] for n in segment for row in n.iter(w+'tr')]
+   assert any(v['student'] in cells and ('+' if i==0 else 'у') in cells for cells in rows)
+ print('OK')
+except Exception:
+ sys.exit(stage)`;
+  try {
+    const result = execFileSync('python3', ['-I', '-c', script], {
+      input: JSON.stringify({
+        docx: Buffer.concat(chunks).toString('base64'),
+        weeks,
+        student,
+        group,
+      }),
+      timeout: 10000,
+      maxBuffer: 1024,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    expect(result.toString('utf8').trim()).toBe('OK');
+  } catch (error) {
+    // Child stderr/stdout can contain private document text. Read only own finite status/code.
+    let status: unknown;
+    let code: unknown;
+    if (error !== null && typeof error === 'object') {
+      try {
+        status = Object.getOwnPropertyDescriptor(error, 'status')?.value;
+        code = Object.getOwnPropertyDescriptor(error, 'code')?.value;
+      } catch {
+        // Uninspectable failures stay unknown.
+      }
+    }
+    if (invocation === 'NAVIGATION') expect.soft(false, 'ASYNC_DOCX_NAVIGATION').toBe(true);
+    else expect.soft(false, 'ASYNC_DOCX_LOST_ACCEPTANCE').toBe(true);
+    switch (status) {
+      case 20:
+        expect.soft(false, 'ASYNC_DOCX_INPUT').toBe(true);
+        break;
+      case 21:
+        expect.soft(false, 'ASYNC_DOCX_ZIP_OPEN').toBe(true);
+        break;
+      case 22:
+        expect.soft(false, 'ASYNC_DOCX_DOCUMENT_ENTRY').toBe(true);
+        break;
+      case 23:
+        expect.soft(false, 'ASYNC_DOCX_XML_BODY').toBe(true);
+        break;
+      case 24:
+        expect.soft(false, 'ASYNC_DOCX_EIGHTEEN_SEGMENTS').toBe(true);
+        break;
+      case 25:
+        expect.soft(false, 'ASYNC_DOCX_WEEK_DATES').toBe(true);
+        break;
+      case 26:
+        expect.soft(false, 'ASYNC_DOCX_GROUP').toBe(true);
+        break;
+      case 27:
+        expect.soft(false, 'ASYNC_DOCX_FIRST_STUDENT_MARK').toBe(true);
+        break;
+      case 28:
+        expect.soft(false, 'ASYNC_DOCX_LAST_STUDENT_MARK').toBe(true);
+        break;
+      default:
+        if (code === 'ENOENT') expect.soft(false, 'ASYNC_DOCX_PYTHON_ABSENT').toBe(true);
+        else if (code === 'ETIMEDOUT') expect.soft(false, 'ASYNC_DOCX_PYTHON_TIMEOUT').toBe(true);
+        else if (code === 'ENOBUFS') expect.soft(false, 'ASYNC_DOCX_OUTPUT_BOUND').toBe(true);
+        else expect.soft(false, 'ASYNC_DOCX_UNKNOWN').toBe(true);
+    }
+    throw new Error('Async DOCX boundary content verification failed');
+  }
+}
+
+asyncExportTest.describe('stage17 durable weekly export', () => {
+  asyncExportTest.skip(
+    process.env.RCT_E2E_ASYNC_REPORT !== 'true',
+    'Explicit disposable async report lane only',
+  );
+  asyncExportTest(
+    'HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async',
+    async ({ page, dataset, weeklyExportSeed }, info) => {
+      requirePrivateArtifacts(info);
+      const { weeks } = weeklyExportSeed;
+      await loginPwa(page, dataset.headman);
+      const roleSelected = page.waitForResponse(
+        (r) =>
+          new URL(r.url()).pathname === '/api/auth/session/active-role' &&
+          r.request().method() === 'PUT',
+      );
+      await selectPwaRole(page, 'Староста');
+      const browserToken: string = (await (await roleSelected).json()).accessToken;
+      await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+      await page.clock.setFixedTime(new Date());
+      const creations: { requestId: string; report: unknown }[] = [];
+      let dropAcceptance = false;
+      let droppedJobId = '';
+      let releaseFirstHandoff!: () => void;
+      const firstHandoff = new Promise<void>((resolve) => {
+        releaseFirstHandoff = resolve;
+      });
+      let holdFirstHandoff = true;
+      await page.route('**/api/auth/export-jobs/*/ticket', async (route) => {
+        if (holdFirstHandoff) await firstHandoff;
+        await route.continue();
+      });
+      await page.route('**/api/auth/export-jobs', async (route) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        creations.push(route.request().postDataJSON());
+        if (!dropAcceptance) return route.continue();
+        dropAcceptance = false;
+        const actual = await route.fetch();
+        if (actual.status() !== 202)
+          throw new Error('Async acceptance failed before response loss');
+        droppedJobId = (await actual.json()).jobId;
+        await route.abort('failed');
+      });
+      const open = async () => {
+        await page.getByRole('button', { name: 'Скачать журнал', exact: true }).click();
+        const sheet = page.getByRole('dialog', { name: 'Скачать недельный журнал', exact: true });
+        await sheet.locator('summary').click();
+        const boxes = sheet.getByRole('checkbox');
+        for (const box of await boxes.all()) await box.uncheck();
+        for (let index = (await boxes.count()) - 18; index < (await boxes.count()); index++)
+          await boxes.nth(index).check();
+        await sheet
+          .locator('.headman-journal__weekly-format')
+          .getByRole('combobox')
+          .selectOption('docx');
+        return sheet;
+      };
+      const openSchedule = async () => {
+        await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+        await expect(page.locator('.headman-more')).toBeVisible();
+        const [schedule] = await Promise.all([
+          page.waitForResponse(
+            (r) =>
+              new URL(r.url()).pathname === '/api/schedule/items' && r.request().method() === 'GET',
+          ),
+          page.getByRole('button', { name: 'Конструктор расписания', exact: true }).click(),
+        ]);
+        expect(schedule.status()).toBe(200);
+        const screen = page.locator('.headman-schedule');
+        await expect(
+          screen.getByRole('heading', { name: 'Конструктор расписания', exact: true }),
+        ).toBeVisible();
+        await expect(screen).toHaveAttribute('data-constructor-view', 'list');
+        await expect(screen).toHaveAttribute('aria-busy', 'false');
+        await expect(page.locator('.headman-journal')).toHaveCount(0);
+      };
+      let firstJob = '';
+      let lastJobStatus: { state?: unknown; errorCode?: unknown } | undefined;
+      let statusRevision = 0;
+      const observeJobStatus = async (response: Response): Promise<void> => {
+        if (
+          !firstJob ||
+          response.status() !== 200 ||
+          response.request().method() !== 'GET' ||
+          new URL(response.url()).pathname !== `/api/auth/export-jobs/${firstJob}`
+        )
+          return;
+        const revision = ++statusRevision;
+        lastJobStatus = undefined;
+        try {
+          const status: unknown = await response.json();
+          if (revision === statusRevision && status && typeof status === 'object') {
+            const value = status as { state?: unknown; errorCode?: unknown };
+            lastJobStatus = { state: value.state, errorCode: value.errorCode };
+          }
+        } catch {
+          // A missing or malformed existing response leaves its status unknown.
+        }
+      };
+      page.on('response', observeJobStatus);
+      try {
+        const sheet = await open();
+        const accepted = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === '/api/auth/export-jobs' &&
+            r.request().method() === 'POST',
+        );
+        await sheet.getByRole('button', { name: 'Скачать', exact: true }).click();
+        const created = await accepted;
+        expect(created.status()).toBe(202);
+        firstJob = (await created.json()).jobId as string;
+        expect(created.request().postDataJSON().report).toEqual({
+          kind: 'HEADMAN_WEEKLY_SELECTED',
+          headmanWeeklySelected: { weekStarts: weeks, format: 'docx' },
+        });
+        await expect
+          .poll(() =>
+            page.evaluate(
+              (jobId) =>
+                Object.entries(sessionStorage).some(
+                  ([key, raw]) =>
+                    key.startsWith('rct:weekly-export:') &&
+                    JSON.parse(raw).some((entry: { jobId: string }) => entry.jobId === jobId),
+                ),
+              firstJob,
+            ),
+          )
+          .toBe(true);
+        await sheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
+        await expect(page.locator('.headman-journal')).toHaveAttribute('aria-busy', 'false');
+        await openSchedule();
+        holdFirstHandoff = false;
+        releaseFirstHandoff();
+        const restored = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === `/api/auth/export-jobs/${firstJob}` &&
+            r.request().method() === 'GET',
+        );
+        const firstDownload = page.waitForEvent('download');
+        void firstDownload.catch((error: unknown) => {
+          retainNativePrimaryFailure(
+            info.annotations,
+            'ASYNC_REPORT',
+            'WAIT_DOWNLOAD',
+            error,
+            lastJobStatus,
+          );
+        });
+        await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+        expect((await restored).status()).toBe(200);
+        await assertWeeklyDocx(
+          await firstDownload,
+          weeks,
+          dataset.student.displayName,
+          dataset.group.name,
+          'NAVIGATION',
+        );
+        expect(creations).toHaveLength(1);
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () =>
+                Object.keys(sessionStorage).filter((key) => key.startsWith('rct:weekly-export:'))
+                  .length,
+            ),
+          )
+          .toBe(0);
+
+        const retrySheet = await open();
+        dropAcceptance = true;
+        await retrySheet.getByRole('button', { name: 'Скачать', exact: true }).click();
+        await expect.poll(() => droppedJobId.length > 0).toBe(true);
+        await expect(retrySheet.getByRole('alert')).toBeVisible();
+        await retrySheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
+        await openSchedule();
+        const previousOwner = await page.locator('.mobile-shell').elementHandle();
+        expect(previousOwner).not.toBeNull();
+        await page.context().setOffline(true);
+        const revalidated = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === '/api/auth/session' && r.request().method() === 'GET',
+        );
+        const replay = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === '/api/auth/export-jobs' &&
+            r.request().method() === 'POST',
+        );
+        const recoveredDownload = page.waitForEvent('download');
+        await page.context().setOffline(false);
+        expect((await revalidated).status()).toBe(200);
+        await expect.poll(() => previousOwner!.evaluate((owner) => owner.isConnected)).toBe(false);
+        await previousOwner!.dispose();
+        await expect(page.locator('.headman-home')).toBeVisible();
+        await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+        const replayed = await replay;
+        expect(replayed.status()).toBe(202);
+        expect((await replayed.json()).jobId).toBe(droppedJobId);
+        expect(creations).toHaveLength(3);
+        expect(creations[2]).toEqual(creations[1]);
+        expect(creations[1].requestId === creations[0].requestId).toBe(false);
+        await assertWeeklyDocx(
+          await recoveredDownload,
+          weeks,
+          dataset.student.displayName,
+          dataset.group.name,
+          'LOST_ACCEPTANCE',
+        );
+        const foreign = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+        for (const suffix of ['', '/file', '/ticket']) {
+          const denied = await dataset.request.fetch(
+            `/api/auth/export-jobs/${droppedJobId}${suffix}`,
+            {
+              method: suffix === '/ticket' ? 'POST' : 'GET',
+              headers: foreign.headers(),
+            },
+          );
+          expect([403, 404].includes(denied.status())).toBe(true);
+        }
+        await dataset.admin.call('PUT', `/api/academic/groups/${dataset.group.id}/headman`, {
+          studentId: dataset.assistant.id,
+          expectedHeadmanId: dataset.headman.id,
+        });
+        for (const suffix of ['', '/file', '/ticket']) {
+          const denied = await dataset.request.fetch(
+            `/api/auth/export-jobs/${droppedJobId}${suffix}`,
+            {
+              method: suffix === '/ticket' ? 'POST' : 'GET',
+              headers: { Authorization: `Bearer ${browserToken}` },
+            },
+          );
+          expect([401, 403, 404].includes(denied.status())).toBe(true);
+        }
+      } finally {
+        page.off('response', observeJobStatus);
+        holdFirstHandoff = false;
+        releaseFirstHandoff();
+        await page.unroute('**/api/auth/export-jobs/*/ticket');
+        await page.unroute('**/api/auth/export-jobs');
+      }
+    },
+  );
+});
+
+// Native bot acceptance uses the same owned services and genuine dataset commands as the clients.
+// Only the fixture holds user/admin bearers; the Python process receives two directed bot capabilities.
+test('actual private bot menu roster and teacher Today use hosted current authority', async ({
+  activeHeadmanDataset: dataset,
+}, info) => {
+  const run = process.env.GITHUB_RUN_ID;
+  const attempt = process.env.GITHUB_RUN_ATTEMPT;
+  const root = resolve(__dirname, '../../..');
+  if (
+    process.env.RCT_E2E_BOT_ROLE_MENU !== 'true' ||
+    process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
+    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+    process.env.CI !== 'true' ||
+    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+    root !== process.env.GITHUB_WORKSPACE ||
+    !run ||
+    !/^[1-9][0-9]*$/.test(run) ||
+    !attempt ||
+    !/^[1-9][0-9]*$/.test(attempt) ||
+    process.getuid?.() === undefined ||
+    process.getgid?.() === undefined
+  )
+    throw new Error('Hosted bot acceptance requires the owned disposable client lane');
+
+  function docker(args: string[]): Buffer {
+    try {
+      return execFileSync('docker', args, {
+        timeout: 5000,
+        maxBuffer: 65536,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      throw new Error('Owned bot fixture Docker operation failed');
+    }
+  }
+  const networkName = 'rct-e2e_private_net';
+  const network = JSON.parse(docker(['network', 'inspect', networkName]).toString('utf8'))[0];
+  const gateway = network.IPAM?.Config?.[0]?.Gateway;
+  if (
+    network.Name !== networkName ||
+    network.Labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    network.Labels?.['com.docker.compose.network'] !== 'private_net' ||
+    typeof gateway !== 'string' ||
+    !/^(?:10|172|192)\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}$/.test(gateway)
+  )
+    throw new Error('Owned bot fixture network identity unavailable');
+  const image = `rct/notification-bot:u20-${run}-${attempt}`;
+  const containerName = `rct-u20-bot-${run}-${attempt}`;
+  const mounts = [
+    ['auth-server.crt', '/run/u20/auth.crt'],
+    ['mobile-bff-server.crt', '/run/u20/read.crt'],
+    ['auth-secrets/bot-to-auth-token', '/run/u20/auth-token'],
+    ['auth-secrets/bot-to-read-token', '/run/u20/read-token'],
+  ]
+    .map(([file, target]) => {
+      const source = resolve(root, 'tests/e2e/infra/certs', file);
+      const info = lstatSync(source);
+      if (!info.isFile() || info.isSymbolicLink() || info.size <= 0 || info.size > 8192)
+        throw new Error('Owned bot fixture capability file unavailable');
+      return ['--mount', `type=bind,source=${source},target=${target},readonly`];
+    })
+    .flat();
+  const runnerSource = resolve(root, 'services/notification-bot/tests/np01_bridge_runner.py');
+  const runnerFile = lstatSync(runnerSource);
+  if (
+    !runnerFile.isFile() ||
+    runnerFile.isSymbolicLink() ||
+    runnerFile.size <= 0 ||
+    runnerFile.size > 65536
+  )
+    throw new Error('Owned bot fixture runner source unavailable');
+
+  // Every mutation below targets only IDs created by this dataset. Unknown outcomes fail the lane;
+  // they are never retried as a new command or compensated through SQL.
+  const emptyTeacher = await dataset.user('TEACHER');
+  const emptyHeadman = await dataset.user('STUDENT', dataset.otherGroup.id);
+  await dataset.admin.call('PUT', `/api/academic/groups/${dataset.otherGroup.id}/headman`, {
+    studentId: emptyHeadman.id,
+    expectedHeadmanId: null,
+  });
+  const mixedGroup = await dataset.admin.call(
+    'POST',
+    '/api/academic/groups/registry',
+    {
+      alphabeticCode: [...randomBytes(4)]
+        .map((byte) => 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ'[byte % 27])
+        .join(''),
+      numericCode: `1${10 + (randomBytes(1)[0] % 90)}`,
+      trainingDurationYears: 4,
+    },
+    [201],
+  );
+  const mixed = await dataset.user('STUDENT', mixedGroup.id);
+  await dataset.admin.call('PUT', `/api/academic/groups/${mixedGroup.id}/headman`, {
+    studentId: mixed.id,
+    expectedHeadmanId: null,
+  });
+  await dataset.admin.call('PUT', `/api/academic/users/${mixed.id}/roles/TEACHER`, {
+    status: 'ACTIVE',
+    employeeNumber: `E2E-${randomUUID().slice(0, 20)}`,
+  });
+  const mixedProfile = await dataset.admin.call(
+    'GET',
+    `/api/academic/users/${mixed.id}/admin-access`,
+  );
+  await dataset.admin.call('PUT', `/api/academic/users/${mixed.id}/admin-access`, {
+    mode: 'LIMITED',
+    permissions: ['USERS_VIEW'],
+    expectedVersion: mixedProfile.version,
+  });
+  await dataset.admin.call('PATCH', `/api/academic/users/${dataset.limitedAdmin.id}`, {
+    telegramId: dataset.limitedAdmin.telegramId,
+  });
+  const lessonId = Number(dataset.lesson.physicalLessonId);
+  const reportPath = `/api/attendance/reports/lesson/${lessonId}`;
+  let report = await dataset.headmanActor.call('GET', reportPath);
+  for (const [userId, status] of [
+    [dataset.student.id, 'ABSENT'],
+    [dataset.assistant.id, 'PRESENT'],
+  ] as const) {
+    const entry = report.entries.find((row: { userId: number }) => Number(row.userId) === userId);
+    if (!entry || entry.status !== null || entry.markRevision !== null)
+      throw new Error('Hosted bot fixture requires initially unmarked owned rows');
+    await dataset.headmanActor.call(
+      'PUT',
+      `/api/attendance/lessons/${lessonId}/students/${userId}`,
+      {
+        status,
+        expectedStatus: 'EMPTY',
+        expectedRevision: 'EMPTY',
+      },
+    );
+  }
+  report = await dataset.headmanActor.call('GET', reportPath);
+  const ownUsers = [dataset.student, dataset.headman, dataset.assistant];
+  const roster = report.entries.map((entry: { userId: number; status: string | null }) => {
+    const user = ownUsers.find((value) => value.id === Number(entry.userId));
+    if (!user) throw new Error('Hosted bot fixture returned a foreign roster row');
+    return {
+      uid: user.id,
+      display_name: user.displayName,
+      status: entry.status?.toUpperCase() ?? '',
+      record_present: entry.status !== null,
+    };
+  });
+  expect(roster.length).toBe(ownUsers.length);
+  const snapshot = (
+    entries: { userId: number; status: string | null; markRevision: string | null }[],
+  ) =>
+    entries
+      .map((row) => [Number(row.userId), row.status, row.markRevision])
+      .sort((left, right) => Number(left[0]) - Number(right[0]));
+  const beforeAttendance = snapshot(report.entries);
+  const own = (user: { id: number; telegramId: number }) => ({
+    uid: user.id,
+    chat: user.telegramId,
+  });
+  const fixtures = {
+    student: own(dataset.student),
+    headman: own(dataset.headman),
+    teacher: own(dataset.teacher),
+    empty_teacher: own(emptyTeacher),
+    empty_headman: own(emptyHeadman),
+    mixed: own(mixed),
+    admin: own(dataset.limitedAdmin),
+    lesson_id: lessonId,
+    roster,
+    group_name: dataset.group.name,
+    subject_name: dataset.subject.name,
+  };
+  const controlToken = randomBytes(32).toString('base64url');
+  const actions = ['fixtures', 'rebind_teacher', 'revoke_headman', 'finish'] as const;
+  let nextAction = 0;
+  let busy = false;
+  let controlFailed = false;
+  let child: ReturnType<typeof spawn> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let cleanupFailed = false;
+  let primaryFailure: unknown;
+  let controlSettled = Promise.resolve();
+  let finishControl: (() => void) | undefined;
+  const control = createServer({ maxHeaderSize: 4096 }, async (request, response) => {
+    const supplied = request.headers['x-np01-control'];
+    const authenticated =
+      typeof supplied === 'string' &&
+      /^[A-Za-z0-9_-]{43}$/.test(supplied) &&
+      timingSafeEqual(Buffer.from(supplied), Buffer.from(controlToken));
+    if (
+      !authenticated ||
+      request.method !== 'POST' ||
+      busy ||
+      controlFailed ||
+      nextAction >= actions.length ||
+      request.url !== `/control/${actions[nextAction]}` ||
+      request.headers['transfer-encoding'] ||
+      (request.headers['content-length'] !== undefined && request.headers['content-length'] !== '0')
+    ) {
+      response.writeHead(403);
+      response.end();
+      return;
+    }
+    busy = true;
+    controlSettled = new Promise<void>((ready) => {
+      finishControl = ready;
+    });
+    try {
+      const action = actions[nextAction];
+      let result: unknown;
+      if (action === 'fixtures') result = fixtures;
+      else if (action === 'rebind_teacher') {
+        const chat = 8_000_000_000 + randomBytes(4).readUInt32BE(0);
+        await dataset.admin.call('PATCH', `/api/academic/users/${dataset.teacher.id}`, {
+          telegramId: chat,
+        });
+        const actual = await dataset.admin.call('GET', `/api/academic/users/${dataset.teacher.id}`);
+        if (actual.telegramId !== chat) throw new Error('Owned binding outcome unavailable');
+        result = { chat };
+      } else if (action === 'revoke_headman') {
+        await dataset.admin.call('PUT', `/api/academic/groups/${dataset.group.id}/headman`, {
+          studentId: dataset.assistant.id,
+          expectedHeadmanId: dataset.headman.id,
+        });
+        result = { completed: true };
+      } else {
+        const replacement = await admit(dataset.request, dataset.assistant, 'HEADMAN');
+        const after = await replacement.call('GET', reportPath);
+        if (!isDeepStrictEqual(snapshot(after.entries), beforeAttendance))
+          throw new Error('Bot reads changed owned attendance');
+        result = { attendance_unchanged: true };
+      }
+      nextAction++;
+      response.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify(result));
+    } catch {
+      controlFailed = true;
+      response.writeHead(503, { 'Cache-Control': 'no-store' });
+      response.end();
+    } finally {
+      busy = false;
+      finishControl?.();
+      finishControl = undefined;
+    }
+  });
+  control.requestTimeout = 5000;
+  control.headersTimeout = 5000;
+  control.maxRequestsPerSocket = 8;
+  try {
+    await new Promise<void>((ready, reject) => {
+      control.once('error', reject);
+      control.listen(0, gateway, ready);
+    });
+    const address = control.address();
+    if (!address || typeof address === 'string')
+      throw new Error('Owned control address unavailable');
+    const args = [
+      'run',
+      '--rm',
+      '--name',
+      containerName,
+      '--label',
+      `rct.u20.owner=${run}-${attempt}`,
+      '--pull=never',
+      '--network',
+      networkName,
+      '--read-only',
+      '--cap-drop',
+      'ALL',
+      '--security-opt',
+      'no-new-privileges:true',
+      '--log-driver',
+      'none',
+      '--cpus',
+      '1',
+      '--memory',
+      '256m',
+      '--pids-limit',
+      '64',
+      '--user',
+      `${process.getuid!()}:${process.getgid!()}`,
+      '--tmpfs',
+      '/tmp:rw,noexec,nosuid,size=16m',
+      ...mounts,
+      '--mount',
+      `type=bind,source=${runnerSource},target=/run/u20/runner.py,readonly`,
+      '--env',
+      'PYTHONPATH=/app',
+      '--env',
+      'PYTHONDONTWRITEBYTECODE=1',
+      '--env',
+      'NP01_AUTH_SERVICE_CA=/run/u20/auth.crt',
+      '--env',
+      'NP01_READ_SERVICE_CA=/run/u20/read.crt',
+      '--env',
+      'NP01_AUTH_SERVICE_TOKEN_FILE=/run/u20/auth-token',
+      '--env',
+      'NP01_READ_SERVICE_TOKEN_FILE=/run/u20/read-token',
+      '--env',
+      `NP01_CONTROL_URL=http://${gateway}:${address.port}`,
+      '--env',
+      'NP01_CONTROL_TOKEN',
+      '--entrypoint',
+      'python',
+      image,
+      '/run/u20/runner.py',
+      '--hosted-role-menu',
+    ];
+    const output: Buffer[] = [];
+    let bytes = 0;
+    const childResult = new Promise<number | null>((ready, reject) => {
+      child = spawn('docker', args, {
+        env: { PATH: process.env.PATH, NP01_CONTROL_TOKEN: controlToken },
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      child.stdout!.on('data', (chunk: Buffer) => {
+        bytes += chunk.length;
+        if (bytes > 8192) child!.kill('SIGKILL');
+        else output.push(chunk);
+      });
+      child.once('error', () => reject(new Error('Hosted bot child could not start')));
+      child.once('close', ready);
+      timer = setTimeout(() => {
+        child!.kill('SIGKILL');
+      }, 50000);
+    });
+    const exit = await childResult;
+    clearTimeout(timer);
+    let facts: Record<string, unknown>;
+    try {
+      facts = JSON.parse(Buffer.concat(output).toString('utf8'));
+    } catch {
+      throw new Error('Hosted bot child omitted safe outcomes');
+    }
+    if (exit !== 0)
+      retainNativePrimaryFailure(
+        info.annotations,
+        'BOT_ROLE_MENU',
+        'CHILD_EXIT',
+        { status: exit },
+        facts,
+      );
+    expect(exit).toBe(0);
+    expect(
+      facts.qualified === true &&
+        facts.actual_auth_tls === true &&
+        facts.failures === 0 &&
+        facts.phase === 'hosted_role_menu_complete' &&
+        facts.native_choice === 'NOT_APPLICABLE',
+    ).toBe(true);
+    expect(nextAction === actions.length && !controlFailed && !busy).toBe(true);
+    // Canonical nonoverlapping LessonSlot times + unique physical group/day/slot + one own
+    // headman group make CHOOSE unreachable here. Existing defensive choice/revoke units remain.
+  } catch (error) {
+    primaryFailure = error;
+    throw error;
+  } finally {
+    if (timer) clearTimeout(timer);
+    if (child && child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+    try {
+      const remaining = docker(['ps', '-aq', '--filter', `name=^/${containerName}$`])
+        .toString('utf8')
+        .trim();
+      if (remaining) {
+        const target = JSON.parse(
+          docker(['inspect', '--format', '{{json .Config.Labels}}', remaining]).toString('utf8'),
+        );
+        if (target['rct.u20.owner'] !== `${run}-${attempt}`)
+          throw new Error('Owned bot cleanup refused');
+        docker(['rm', '-f', remaining]);
+      }
+    } catch {
+      cleanupFailed = true;
+    }
+    control.closeAllConnections();
+    await new Promise<void>((ready) => control.close(() => ready()));
+    if (busy) {
+      let wait: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          controlSettled,
+          new Promise<never>((_, reject) => {
+            wait = setTimeout(
+              () => reject(new Error('Owned control outcome remains unknown')),
+              5000,
+            );
+          }),
+        ]);
+      } catch {
+        cleanupFailed = true;
+      } finally {
+        if (wait) clearTimeout(wait);
+      }
+    }
+    if (cleanupFailed) {
+      const failure = new Error('Owned bot fixture cleanup failed');
+      if (primaryFailure)
+        throw new AggregateError(
+          [primaryFailure, failure],
+          'Hosted bot acceptance and cleanup failed',
+        );
+      throw failure;
+    }
+  }
+});
+
+for (const suspended of [false, true]) {
+  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, async ({
+    page,
+    dataset,
+  }) => {
+    const user = await dataset.user('TEACHER');
+    const rolePath = `/api/academic/users/${user.id}/roles/STUDENT`;
+    await dataset.admin.call('PUT', rolePath, {
+      status: 'ACTIVE',
+      groupId: dataset.group.id,
+      telegramId: user.telegramId,
+    });
+    await loginPwa(page, user);
+    // A return-to-Today refetch can join its initial pending read. Wait for
+    // actual Today data before installing the later 401/refresh transport gate.
+    await expect(
+      page.getByRole('heading', { name: /^(На сегодня пар нет|Пары на сегодня)$/ }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Задания', exact: true }).click();
+    // Control only the transport failure/order. The mounted production owner,
+    // StudentApi 401 callback, App handlers, retry button and subsequent backend
+    // admission are real; no copied application control flow runs in this test.
+    await page.evaluate(() => {
+      const key = '__rctN2Recovery';
+      if (Object.prototype.hasOwnProperty.call(window, key)) throw new Error('N2 gate occupied');
+      const original = Object.getOwnPropertyDescriptor(window, 'fetch');
+      if (!original || typeof original.value !== 'function')
+        throw new Error('N2 fetch unavailable');
+      const native = original.value as typeof fetch;
+      let rejectRefresh: (() => void) | undefined;
+      const state = {
+        held: false,
+        rejected: false,
+        denyToday: true,
+        refreshCalls: 0,
+        roleCommands: 0,
+        reject: () => {
+          if (!rejectRefresh) throw new Error('N2 refresh not pending');
+          rejectRefresh();
+        },
+        restore: () => {
+          Object.defineProperty(window, 'fetch', original);
+          Reflect.deleteProperty(window, key);
+        },
+      };
+      Object.defineProperty(window, key, { configurable: true, value: state });
+      Object.defineProperty(window, 'fetch', {
+        ...original,
+        value: ((input: RequestInfo | URL, init?: RequestInit) => {
+          const url = new URL(input instanceof Request ? input.url : String(input), location.href);
+          const method = init?.method ?? (input instanceof Request ? input.method : 'GET');
+          if (
+            url.origin === location.origin &&
+            url.pathname === '/api/auth/session/active-role' &&
+            method === 'PUT'
+          )
+            state.roleCommands += 1;
+          if (
+            url.origin === location.origin &&
+            url.pathname === '/api/v1/student/today' &&
+            state.denyToday
+          )
+            return Promise.resolve(
+              new Response('{}', { status: 401, headers: { 'Content-Type': 'application/json' } }),
+            );
+          if (
+            url.origin === location.origin &&
+            url.pathname === '/api/auth/refresh' &&
+            method === 'POST'
+          ) {
+            state.refreshCalls += 1;
+            if (!state.held) {
+              state.held = true;
+              return new Promise<Response>((_resolve, reject) => {
+                rejectRefresh = () => {
+                  state.rejected = true;
+                  reject(new TypeError('Synthetic N2 transport failure'));
+                };
+              });
+            }
+          }
+          return native(input, init);
+        }) as typeof fetch,
+      });
+    });
+    try {
+      await page.getByRole('button', { name: 'Сегодня', exact: true }).click();
+      await expect
+        .poll(() => page.evaluate(() => Reflect.get(window, '__rctN2Recovery')?.held === true))
+        .toBe(true);
+      await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+      if (suspended)
+        await dataset.admin.call('PUT', rolePath, {
+          status: 'SUSPENDED',
+          groupId: dataset.group.id,
+          telegramId: user.telegramId,
+        });
+      await page.evaluate(() => {
+        // Synchronous dispatch ensures bootstrap joins the still-pending refresh
+        // before its NETWORK rejection; this is the N2 order, not the R2 order.
+        window.dispatchEvent(new Event('online'));
+        Reflect.get(window, '__rctN2Recovery').reject();
+      });
+      const reconnect = page.getByRole('button', { name: 'Перезагрузить', exact: true });
+      await expect(reconnect).toBeEnabled();
+      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+      const current = page.waitForResponse(
+        (item) =>
+          new URL(item.url()).pathname === '/api/auth/session' && item.request().method() === 'GET',
+      );
+      await page.evaluate(() => {
+        Reflect.get(window, '__rctN2Recovery').denyToday = false;
+      });
+      await reconnect.click();
+      const admission = await current;
+      try {
+        expect(await admission.finished()).toBeNull();
+        if (suspended) {
+          // Bind the expected UI to the actual authoritative server outcome, not
+          // to a permissive "some closed view appeared" assertion.
+          expect([200, 401, 403, 409]).toContain(admission.status());
+          if (admission.status() === 200) {
+            const session = await admission.json();
+            expect(
+              session.activeRole === null &&
+                session.roles.some(
+                  (role: { role: string; status: string; selectable: boolean }) =>
+                    role.role === 'STUDENT' && role.status === 'SUSPENDED' && !role.selectable,
+                ),
+            ).toBe(true);
+            await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+            await expect(page.getByRole('button', { name: /Преподаватель/ })).toBeEnabled();
+          } else {
+            if (admission.status() === 403) {
+              // Gateway admission rejects an unselectable selected grant before
+              // forwarding current-session to auth; this is its exact public code.
+              const problem = await admission.json();
+              expect(problem?.status === 403 && problem?.code === 'WRONG_ROLE').toBe(true);
+            }
+            if (admission.status() === 409) {
+              // The authoritative snapshot clears the suspended active grant and
+              // increments session_version; the old bearer is SESSION_STATE_STALE.
+              const problem = await admission.json();
+              expect(problem?.extras?.code === 'SESSION_STATE_STALE').toBe(true);
+            }
+            await expect(
+              page.getByRole('heading', { name: 'Войти в приложение', exact: true }),
+            ).toBeVisible();
+          }
+          await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+        } else {
+          expect(admission.status()).toBe(200);
+          await expect(page.getByText('Ты офлайн', { exact: true })).toHaveCount(0);
+          await expect(page.getByText('Только просмотр', { exact: true })).toHaveCount(0);
+          await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
+        }
+        const observation = await page.evaluate(() => {
+          const state = Reflect.get(window, '__rctN2Recovery');
+          return {
+            refreshCalls: state.refreshCalls,
+            roleCommands: state.roleCommands,
+            rejected: state.rejected,
+          };
+        });
+        expect(observation).toEqual({ refreshCalls: 1, roleCommands: 0, rejected: true });
+      } catch (error) {
+        retainNativePrimaryFailure(
+          test.info().annotations,
+          'SESSION_RELOAD',
+          'HTTP_STATUS',
+          error,
+          { httpStatus: admission.status() },
+        );
+        throw error;
+      }
+    } finally {
+      await page.evaluate(() => Reflect.get(window, '__rctN2Recovery')?.restore());
+    }
+  });
+}

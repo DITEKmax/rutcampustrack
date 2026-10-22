@@ -1,13 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
 import { publicPasswordRecoveryUrl } from '../../../../tma-vue/src/password-recovery-link'
 import { createPasswordRecoveryClient } from './password-recovery-client'
-import { consumePasswordResetFragment, isPasswordResetEntryPath, passwordRecoveryLoginPath } from './password-recovery-link'
+import {
+  consumePasswordResetFragment,
+  isPasswordResetEntryPath,
+  passwordRecoveryLoginPath,
+} from './password-recovery-link'
 import { createPasswordRecoveryOperationGate } from './password-recovery-operation'
 import { APP_UPDATE_REQUIRED_EVENT, APP_VERSION, createPwaFetcher } from '../../pwa-version'
 
 describe('PWA password recovery contract', () => {
   it('opens the same-origin public mount without copying TMA query, fragment or proof', () => {
-    const current = new URL('https://fixture.test:18514/mini-app/?tgWebAppData=synthetic#resetTicket=synthetic')
+    const current = new URL(
+      'https://fixture.test:18514/mini-app/?tgWebAppData=synthetic#resetTicket=synthetic',
+    )
     const target = new URL(publicPasswordRecoveryUrl(current.origin))
     expect(target.origin).toBe(current.origin)
     expect(target.pathname).toBe('/app/password-reset')
@@ -18,7 +24,9 @@ describe('PWA password recovery contract', () => {
   })
   it('clears bot proof from the fragment before exposing it to the caller', () => {
     const events: string[] = []
-    const proof = consumePasswordResetFragment('#challengeId=challenge-1&code=731904', () => events.push('cleared'))
+    const proof = consumePasswordResetFragment('#challengeId=challenge-1&code=731904', () =>
+      events.push('cleared'),
+    )
 
     expect(events).toEqual(['cleared'])
     expect(proof).toEqual({ challengeId: 'challenge-1', code: '731904' })
@@ -33,7 +41,9 @@ describe('PWA password recovery contract', () => {
   it('rejects duplicate or unrelated fragment parameters after clearing them', () => {
     const replaceUrl = vi.fn()
 
-    expect(consumePasswordResetFragment('#challengeId=a&challengeId=b&code=1', replaceUrl)).toBeNull()
+    expect(
+      consumePasswordResetFragment('#challengeId=a&challengeId=b&code=1', replaceUrl),
+    ).toBeNull()
     expect(consumePasswordResetFragment('#challengeId=a&code=1&next=/login', replaceUrl)).toBeNull()
     expect(replaceUrl).toHaveBeenCalledTimes(2)
   })
@@ -52,27 +62,38 @@ describe('PWA password recovery contract', () => {
     const ticket = 'a'.repeat(43)
     const expiresAt = '2030-10-01T12:00:00.123456Z'
     const clear = vi.fn()
-    expect(consumePasswordResetFragment(`#resetTicket=${ticket}&expiresAt=${expiresAt}`, clear))
-      .toEqual({ resetTicket: ticket, expiresAt })
+    expect(
+      consumePasswordResetFragment(`#resetTicket=${ticket}&expiresAt=${expiresAt}`, clear),
+    ).toEqual({ resetTicket: ticket, expiresAt })
     for (const fragment of [
       `#resetTicket=${ticket}&resetTicket=${ticket}&expiresAt=${expiresAt}`,
       `#resetTicket=${ticket}&expiresAt=2030-02-30T12:00:00Z`,
       `#resetTicket=${ticket}&expiresAt=${expiresAt}&code=731904`,
       '#resetTicket=short&expiresAt=2030-10-01T12:00:00Z',
-    ]) expect(consumePasswordResetFragment(fragment, clear)).toBeNull()
+    ])
+      expect(consumePasswordResetFragment(fragment, clear)).toBeNull()
     expect(clear).toHaveBeenCalledTimes(5)
-    expect(() => consumePasswordResetFragment(`#resetTicket=${ticket}&expiresAt=${expiresAt}`, () => {
-      throw new Error('history unavailable')
-    })).toThrow('history unavailable')
+    expect(() =>
+      consumePasswordResetFragment(`#resetTicket=${ticket}&expiresAt=${expiresAt}`, () => {
+        throw new Error('history unavailable')
+      }),
+    ).toThrow('history unavailable')
   })
 
   it('uses server counters for an invalid code', async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
-      extras: { code: 'OTP_INVALID', attemptsRemaining: 2 },
-    }), { status: 400, headers: { 'Content-Type': 'application/json' } }))
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          extras: { code: 'OTP_INVALID', attemptsRemaining: 2 },
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
     const client = createPasswordRecoveryClient(fetcher)
 
-    await expect(client.verify({ challengeId: 'challenge-1', code: '731904' })).rejects.toMatchObject({
+    await expect(
+      client.verify({ challengeId: 'challenge-1', code: '731904' }),
+    ).rejects.toMatchObject({
       status: 400,
       code: 'OTP_INVALID',
       problem: { attemptsRemaining: 2 },
@@ -80,16 +101,27 @@ describe('PWA password recovery contract', () => {
   })
 
   it('keeps all recovery credentials in no-store request bodies without the current session', async () => {
-    const fetcher = vi.fn<typeof fetch>()
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        challengeId: 'challenge-1',
-        ttlSeconds: 300,
-      }), { status: 202, headers: { 'Content-Type': 'application/json' } }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        resetTicket: 'opaque-ticket',
-        expiresInSeconds: 180,
-        attemptsRemaining: 3,
-      }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            challengeId: 'challenge-1',
+            ttlSeconds: 300,
+          }),
+          { status: 202, headers: { 'Content-Type': 'application/json' } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            resetTicket: 'opaque-ticket',
+            expiresInSeconds: 180,
+            attemptsRemaining: 3,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      )
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
     const client = createPasswordRecoveryClient(fetcher)
 
@@ -102,7 +134,9 @@ describe('PWA password recovery contract', () => {
       expiresInSeconds: 180,
       attemptsRemaining: 3,
     })
-    await expect(client.complete({ resetTicket: 'opaque-ticket', newPassword: 'long-new-password' })).resolves.toBeUndefined()
+    await expect(
+      client.complete({ resetTicket: 'opaque-ticket', newPassword: 'long-new-password' }),
+    ).resolves.toBeUndefined()
 
     const expectedBodies = [
       { login: 'student-login' },
@@ -128,7 +162,9 @@ describe('PWA password recovery contract', () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
     const client = createPasswordRecoveryClient(createPwaFetcher(fetcher))
 
-    await expect(client.complete({ resetTicket: 'ticket', newPassword: 'new-password' })).resolves.toBeUndefined()
+    await expect(
+      client.complete({ resetTicket: 'ticket', newPassword: 'new-password' }),
+    ).resolves.toBeUndefined()
 
     const [, init] = fetcher.mock.calls[0] ?? []
     const headers = new Headers(init?.headers)
@@ -152,7 +188,10 @@ describe('PWA password recovery contract', () => {
       await expect(client.request('student-login')).rejects.toMatchObject({ status: 426 })
       await vi.waitFor(() => expect(dispatchEvent).toHaveBeenCalledOnce())
 
-      const event = dispatchEvent.mock.calls[0]?.[0] as CustomEvent<{ reason: string; message: string }>
+      const event = dispatchEvent.mock.calls[0]?.[0] as CustomEvent<{
+        reason: string
+        message: string
+      }>
       expect(event.type).toBe(APP_UPDATE_REQUIRED_EVENT)
       expect(event.detail).toMatchObject({ reason: 'api', message: 'Обнови приложение.' })
     } finally {

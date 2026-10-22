@@ -1,0 +1,32 @@
+[
+  {
+    "job": 114711154749,
+    "safe_observed_fields": [
+      "﻿2026-10-12T07:44:33.2049269Z Current runner version: '2.337.0'",
+      "Version: 20261002.596",
+      "Image: ubuntu-24.04",
+      "Version: 20261004.327.1",
+      "  Version: 21.0.12+1",
+      "Successfully set up CPython (3.12.15)"
+    ],
+    "exact_broker_test_duration": "UNKNOWN; safe collector omits time",
+    "exact_held_lease_numbers": "UNKNOWN; successful test STDOUT not in native logs",
+    "workflow_build_elapsed": "13m 1s",
+    "qualification": "Whole Gradle build duration, not individual broker testcase duration"
+  },
+  {
+    "job": 114711154058,
+    "safe_observed_fields": [
+      "﻿2026-10-12T07:44:08.6757892Z Current runner version: '2.337.0'",
+      "Version: 20261002.596",
+      "Image: ubuntu-24.04",
+      "Version: 20261004.327.1",
+      "  Version: 21.0.12+1",
+      "Successfully set up CPython (3.12.15)"
+    ],
+    "exact_broker_test_duration": "UNKNOWN; safe collector omits time",
+    "exact_held_lease_numbers": "UNKNOWN; successful test STDOUT not in native logs",
+    "workflow_build_elapsed": "11m 18s",
+    "qualification": "Whole Gradle build duration, not individual broker testcase duration"
+  }
+]

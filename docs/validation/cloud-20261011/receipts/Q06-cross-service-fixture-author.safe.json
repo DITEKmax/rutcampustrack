@@ -1,0 +1,493 @@
+{
+  "goal": "One real cross-service terminal closure outage/replay, unassigned adoption and normal next-date teacher replacement, retaining physical history/attendance/homework.",
+  "context": {
+    "base": "fd864eb028f271537d24d7b6c065b553c56d6440",
+    "branch": "codex/q06-assignment-lifecycle-20261014",
+    "model_selected": "gpt-6.1-sol/high",
+    "actual": "UNKNOWN",
+    "finite_proof_reuse": "docs/validation/cloud-20261011/receipts/Q06-existing-finite-proof-reuse.safe.json"
+  },
+  "scope": {
+    "new_file": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+    "source_before_checks_sha256": "cd2b265a44cf949b4e64eba5f3408c0e2c23d504ad082a72644638adab835edf",
+    "shared_changes": []
+  },
+  "required_behavior": "prepare own previous-day/current-day CLOSED marked lessons, real current/future lesson-bound homework and future PLANNED physical snapshot; pending real503 typed closure with exactkey/source identity and unchanged Academic publication; resume identicalclose204/replay204, retainedfutureID/nullauthority, newB adoption\u2192samefuture B, POSTreplaceB\u2192C futuredate\u2192samefuture C/COMMITTED/status/exactreplay; B active full-group past200, oldA/foreign/Cfuture groupjournal404 OUT_OF_SCOPE, unchanged past marks/HW.",
+  "constraints": "Only new fixture; private0700 phase dirs/0600 bounded own checkpoint; initial/generated credentials remain private, no raw data diagnostics; no TS Docker/new runner/shared framework/product/config writes. Root owns stop-start/readiness/config.",
+  "existing_patterns": "MobileDataset/Actor/admit/private artifact guard/SafeReporter, existing application-recovery API phase pattern; Sep23 and Oct06 decisions/current API DTOs; APPLIED/internal durable identity reuse namedPG proof, not claimed by PREPARED outage.",
+  "acceptance": "SOURCE_LOCAL_PASS_INDEPENDENT_RECHECK_APPROVE; actual API NOT_RUN; Root reviewedphasewiring/format/type/parser PASS; ordinaryCI next",
+  "verification": {
+    "updated_utc": "2026-10-14T03:59:10.820334+00:00",
+    "status": "SOURCE_LOCAL_PASS",
+    "plan": "Cached SAME b78 Node scoped Prettier apply/exact idempotency/check and strict selected-file TSC using current e2e compiler options; fresh120s, heap512MiB, RSS512MiB/newtaskcap, shared15GiB/reserve1GiB/floor4GiB/growth256MiB; ownlink/TMPcleanup. Existing privacy guards/control PASS reused unchanged; fresh independent source/privacy review then Root normal actualCI.",
+    "runtime": "NOT_RUN",
+    "source_observations": "Current report/journal status is lowercase present; Schedule status uppercase CLOSED/PLANNED. Public closure error URI/extras confirmed. Future LESSON date after existing dataset tomorrow DATE binding mirrors accepted recovery fixture. Current B remains live; future C group journal404. Public clock temp explicitly chmod0644 under private umask; own temp finally cleanup. Root steering applied: prepare finally restores exact original public clock bytes via own wx/chmod0644/rename; private files remain0600. Current actual clock failure UNKNOWN; fcb60 Source fix approved, no runtime claim.",
+    "issued_utc": "2026-10-14T03:58:15.801925+00:00",
+    "stop_utc": "2026-10-14T04:00:15.801925+00:00",
+    "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "source_before_sha256": "cd2b265a44cf949b4e64eba5f3408c0e2c23d504ad082a72644638adab835edf",
+    "own_RSS_cap": 536870912,
+    "node_heap_MiB": 512,
+    "checks": [
+      {
+        "phase": "FORMAT_APPLY",
+        "seconds": 0.73,
+        "direct_pid": 633633,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633633,
+            "start_ticks": 20408873
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "FORMAT_IDEMPOTENCY",
+        "seconds": 0.47,
+        "direct_pid": 633644,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633644,
+            "start_ticks": 20408946
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "FORMAT_CHECK",
+        "seconds": 0.68,
+        "direct_pid": 633655,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633655,
+            "start_ticks": 20408994
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "STRICT_SELECTED_FILE_TSC",
+        "seconds": 2.25,
+        "direct_pid": 633666,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 633666,
+            "start_ticks": 20409063
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tsc_scope": "Selected new fixture + actual imports with exact compilerOptions of existing tests/e2e/tsconfig.json, no config edits.",
+    "native_runs": 4,
+    "native_seconds": 4.13,
+    "failure_class": null,
+    "peaks": {
+      "rss": 319262720,
+      "shared": 5730197504
+    },
+    "births": [
+      {
+        "pid": 633633,
+        "start_ticks": 20408873
+      },
+      {
+        "pid": 633644,
+        "start_ticks": 20408946
+      },
+      {
+        "pid": 633655,
+        "start_ticks": 20408994
+      },
+      {
+        "pid": 633666,
+        "start_ticks": 20409063
+      }
+    ],
+    "known_births_absent": true,
+    "dependency_link_absent": true,
+    "private_tmp_absent": true,
+    "source_sha256_final": "71b7f4724642d9e140c3e9e3f74032c63378dd06f31fc464ba7bed11160130ae",
+    "source_lines_final": 614,
+    "privacy_control": "Existing PASS reused; no guard/reporter/config/control edits. New private checkpoint risk requires independent whole source review.",
+    "active_hooks": [],
+    "hooks_bypassed": false,
+    "independent_review": "PENDING_ROOT_FRESH_WHOLE_REVIEW",
+    "commit": "3367450387919ea268e2cc3bb0b67c805c4f7481",
+    "normal_commit_native_exit": 0,
+    "worktree_clean": true,
+    "review_correction": {
+      "goal": "Finish preserved Q06 F1/F2 corrections in the existing one-file fixture; real cross-service execution remains Root-owned.",
+      "context": {
+        "started_utc": "2026-10-14T04:24:06.269417+00:00",
+        "worktree": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+        "branch": "codex/q06-assignment-lifecycle-20261014",
+        "head": "3367450387919ea268e2cc3bb0b67c805c4f7481",
+        "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "selected": "gpt-6.1-sol/high",
+        "actual": "UNKNOWN",
+        "root_published": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5"
+      },
+      "scope": {
+        "sole_source": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+        "preserved_current_sha256": "1539a127bb2802d4ce1b9cfa70b689c4ce4fc0aebc28a53678da22f395697c14",
+        "preserved_current_git_blob": "d3f1f824381fac33b3686ce55bd0fe53dee899b8",
+        "preserved_lines": 633,
+        "old_correction_pids_absent": [
+          635483,
+          635494,
+          635505,
+          635518
+        ]
+      },
+      "required_behavior": "No clock writes; genuine own past CLOSED history and separately retained today ACTIVE snapshots; B\u2192C effective tomorrow independently of later physical future date; exact pending closure/replay, adoption, journal rights and immutable history.",
+      "constraints": "One fixture only; Root shared docs/config/product/guards/contracts untouched; own compact scratch receipt. Existing privacy controls reused. No browser/server/DB/Docker/network/subagents.",
+      "existing_patterns": {
+        "review": "/workspace/scratch/rct-validation/q06_assignment_api_review/review.safe.md",
+        "old_outcome": "/workspace/scratch/rct-validation/first3_editability_current_diagnosis/outcome.safe.json#q06_assignment_lifecycle.verification.review_correction",
+        "frozen_source_sha256": "71b7f4724642d9e140c3e9e3f74032c63378dd06f31fc464ba7bed11160130ae",
+        "critical_q04": "1ac2ea47a5bbeb90ccf5beeef29fa0ecd007f6e6",
+        "local_guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "source_pins": {
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md": "a271a22f323bf5a9c09f7ef40dfd5b11d3390484b6bf5a2b18a9376a8167d7b8",
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md": "ab7df88d0ffe2b65113bc810cb6c94dd6b6c9d19d69bd979a9e9478337ed070c",
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md": "452cf6e86d15aba055bf61a3646561f9cc643315ce54c9feea273ea1679f6e01",
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md": "b140568e732c4985c7fd64daf3fb7396bad7f34407db9b85febb2a70fb6b40d0",
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/Q06-cross-service-fixture-author.safe.json": "5c07572e522c8f226ec2c69c1c3544842301a8a12eee874727533f09fc22a68e",
+          "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/Q06-existing-finite-proof-reuse.safe.json": "80ea88d9d13c3ce4e8d6c7b1bf21b5bbf6e5111bde1c5fb4a2c9aa218b0178a9",
+          "/workspace/scratch/rct-validation/q06_assignment_api_review/review.safe.md": "0f4a81daab97ac7943d11fae91c504c7cd991bc079a7433dce49d237b7468717",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java": "910f2fd70474175ff8cdae8a4158fb9545e48749c8a70a3755e8dfa81591e20c",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java": "cf13ed2e36f58ee84327b49731df86b50f5bd25507de771a4103736c6a9424fb",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/mobile-dataset.ts": "ef2ed0e40e0f5251046d073f75b938cea2160f935846ba2a10f6070266e65a0f",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/artifact-privacy.ts": "12c5c0cb6b8a49c815c763812177a76aa4d186e1873f6fa0ef341066a1dbaa67",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/teaching-clock.ts": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/tsconfig.json": "0577bd9290da4c2570f24a69ce7cc005709d5ef364d80b87357977677718cdaa"
+        }
+      },
+      "acceptance": "SOURCE_LOCAL_PASS_EXACT_REUSE_AND_COMMITTED; targeted independent recheck/real backend remain pending.",
+      "verification": {
+        "active_native": null,
+        "active_session": null,
+        "local_checks_reused": [
+          {
+            "phase": "FORMAT_APPLY",
+            "seconds": 1.03,
+            "direct_pid": 635483,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 635483,
+                "start_ticks": 20499351
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "FORMAT_IDEMPOTENCY",
+            "seconds": 0.8,
+            "direct_pid": 635494,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 635494,
+                "start_ticks": 20499452
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "FORMAT_CHECK",
+            "seconds": 0.9,
+            "direct_pid": 635505,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 635505,
+                "start_ticks": 20499532
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "STRICT_SELECTED_FILE_TSC",
+            "seconds": 2.62,
+            "direct_pid": 635518,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 635518,
+                "start_ticks": 20499625
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        ],
+        "native_runs_reused": 4,
+        "native_seconds_reused": 5.35,
+        "source_exact_match": true,
+        "backend": "NOT_RUN",
+        "commands_this_resume": [
+          "git status --short",
+          "git diff -- tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+          "sha256sum fixture; git hash-object -w fixture",
+          "old correction PID /proc absence check"
+        ],
+        "next": "Root independent targeted F1/F2 recheck against stable commit, then Root phase config/real owned CI execution; actual backend remains NOT_RUN.",
+        "updated_utc": "2026-10-14T04:25:04.577254+00:00",
+        "source_inspection": "P1: all clock-write code and chmod/rename/rm imports removed; clock bytes only read/asserted. historyIds contains only covered previous study-day one-off; today ACTIVE physical/mark/homework retained separately. Normal job catches past PLANNED\u2192ACTIVE\u2192CLOSED within one tick; mark API uses live expected status/revision. P2: independent replacementEffectiveFrom=tomorrow; command and response effectiveFrom/source exclusive end and final B end/C start exact tomorrow. Physical future date >= cutoff. Existing current B200 and former/foreign/future C404 OUT_OF_SCOPE journal calls preserved.",
+        "diff_check": "PASS; one assigned tracked file changed; base and Q04 refs retained",
+        "check_reuse_reason": "Current SHA1539a127 exactly equals old completed correction final SHA; every other tracked input remains unchanged at336745. Existing formatter apply/idempotency/check and strict selected-file TSC all exited0; no new source change warrants repeat.",
+        "review_recheck": "PENDING_ROOT_TARGETED_F1_F2",
+        "normal_commit_exit": 0,
+        "normal_commit_output": "[codex/q06-assignment-lifecycle-20261014 f96a3029] test(e2e): isolate assignment history and next-day replacement\n 1 file changed, 65 insertions(+), 46 deletions(-)\n",
+        "commit_hooks_bypassed": false,
+        "commit": "f96a30296693389d52f9e7cff1e5b321fdd60df7",
+        "worktree_clean": true,
+        "final_source_sha256": "1539a127bb2802d4ce1b9cfa70b689c4ce4fc0aebc28a53678da22f395697c14",
+        "final_source_git_blob": "d3f1f824381fac33b3686ce55bd0fe53dee899b8"
+      },
+      "do_not": "No Root ledgers/foreign WIP/history rewrites/main/push/Ready/deploy/Angular/web/credentials/new rules/B013/B014 retries/Q012/subagents."
+    },
+    "past_materialization_correction": {
+      "started_utc": "2026-10-14T04:40:45.956337+00:00",
+      "base": "f96a30296693389d52f9e7cff1e5b321fdd60df7",
+      "branch": "codex/q06-assignment-lifecycle-20261014",
+      "preserved_q04": "490bac73bce08e220f08ecd71f9b66a6474e28d7",
+      "scope": "Only assignment-lifecycle.spec.ts past one-off preparation CAS; no other writer",
+      "finding": "P2 legal lesson.closed consumer AUTOABSENT insertion between reportEMPTY and EMPTYCAS causes correct409. Await pastCLOSED then ownabsent/nonemptyrevision before exactABSENTCAS. TodayEMPTYcapableCAS stays separate.",
+      "review": "/workspace/scratch/rct-validation/q06_targeted_recheck/review.safe.md",
+      "active_native": null,
+      "active_session": null,
+      "status": "COMMITTED_SOURCE_LOCAL_PASS_PENDING_TARGETED_RECHECK_AND_REAL_CI",
+      "backend": "NOT_RUN",
+      "source_before_checks_sha256": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18",
+      "plan": "Four cached Node checks under unchanged b78; fresh120s/heap512/treeRSS512MiB/shared15GiB/reserve1GiB/floor4GiB/growth256MiB. Only own temporary dependency symlink/TMP removed finally. No browser/server/network/DB. Existing privacy PASS reused, no guards changed.",
+      "issued_utc": "2026-10-14T04:41:31.746464+00:00",
+      "stop_utc": "2026-10-14T04:43:31.746479+00:00",
+      "commands": [
+        {
+          "phase": "FORMAT_APPLY",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            "--single-quote",
+            "fixtures/assignment-lifecycle.spec.ts"
+          ]
+        },
+        {
+          "phase": "FORMAT_IDEMPOTENCY",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--write",
+            "--single-quote",
+            "fixtures/assignment-lifecycle.spec.ts"
+          ]
+        },
+        {
+          "phase": "FORMAT_CHECK",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+            "--check",
+            "--single-quote",
+            "fixtures/assignment-lifecycle.spec.ts"
+          ]
+        },
+        {
+          "phase": "STRICT_SELECTED_FILE_TSC",
+          "argv": [
+            "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+            "--max-old-space-size=512",
+            "-e",
+            "const ts=require(process.argv[1]);const config=ts.readConfigFile('tsconfig.json',ts.sys.readFile);if(config.error)process.exit(1);const parsed=ts.parseJsonConfigFileContent(config.config,ts.sys,process.cwd());if(parsed.errors.length)process.exit(1);const program=ts.createProgram(['fixtures/assignment-lifecycle.spec.ts'],{...parsed.options,noEmit:true});process.exit(ts.getPreEmitDiagnostics(program).length?1:0);",
+            "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js"
+          ]
+        }
+      ],
+      "command_cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e",
+      "check_results": [
+        {
+          "phase": "FORMAT_APPLY",
+          "seconds": 0.844,
+          "result": {
+            "direct_pid": 640962,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 640962,
+                "start_ticks": 20668471
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "FORMAT_IDEMPOTENCY",
+          "seconds": 0.717,
+          "result": {
+            "direct_pid": 640973,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 640973,
+                "start_ticks": 20668555
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "FORMAT_CHECK",
+          "seconds": 0.543,
+          "result": {
+            "direct_pid": 640984,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 640984,
+                "start_ticks": 20668626
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        },
+        {
+          "phase": "STRICT_SELECTED_FILE_TSC",
+          "seconds": 2.838,
+          "result": {
+            "direct_pid": 640995,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 640995,
+                "start_ticks": 20668681
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          }
+        }
+      ],
+      "peaks": {
+        "rss": 348319744,
+        "shared": 5773434880
+      },
+      "native_seconds": 4.942,
+      "native_runs": 4,
+      "source_after_sha256": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18",
+      "source_lines": 666,
+      "all_recorded_births_absent": true,
+      "dependency_link_absent": true,
+      "private_tmp_absent": true,
+      "today_cas_body_byte_identical": true,
+      "entire_after_initial_marks_byte_identical": true,
+      "source_after_blob": "c134e7f3da7b1bbe284558bdd654c256c8853529",
+      "independent_review": "PENDING_ROOT_TARGETED_PAST_ONLY_CAS_RECHECK",
+      "next": "Normal one-file commit then targeted reviewer; Root only integrates reviewed source; actual API NOT_RUN.",
+      "source_pins": {
+        "/workspace/scratch/rct-validation/q06_targeted_recheck/review.safe.md": "a3c3ac36c40ac2c5f4c5da47ab367fe7756e3a35b43ec2621c23ca39e5fc5d92",
+        "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/assignment-lifecycle.spec.ts": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18",
+        "/workspace/rct-worktrees/first3-spec-frame-20261013/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java": "1ede2a9f96a32483697ea13096385d4ae5b4bf057dd6396ddc6559908f751253"
+      },
+      "normal_commit_exit": 0,
+      "normal_commit_output": "[codex/q06-assignment-lifecycle-20261014 2b048c2d] test(e2e): await closed attendance before assignment history CAS\n 1 file changed, 34 insertions(+), 1 deletion(-)\n",
+      "hooks_bypassed": false,
+      "commit": "2b048c2d8fa71e616c378c1f04a2a1b528213f29",
+      "worktree_clean": true
+    }
+  },
+  "do_not": "No API/product/clock-policy edits, no DBpaststatus writes, no known90s failed real retry, no fake503/200; B013/B014 frozen/Q012 excluded/Angular untouched/no production/secrets/subagents/newpacket campaign."
+}

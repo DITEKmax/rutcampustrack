@@ -1,0 +1,85 @@
+{
+  "schema": "P10_GH_ORIGINAL_ARCHIVE_ACTUAL01_V1",
+  "utc": "2026-10-13T16:00:16.109114+00:00",
+  "tool_session": 58626,
+  "start_chunk": "294019",
+  "final_chunk": "3d94b9",
+  "grant_sha256": "1c223839ffc617ef99d0830c8f34d655e84b957e9dbab64ed2761d948db5ab6f",
+  "artifact_id": 11806374316,
+  "run_id": 38387263916,
+  "producer_head": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "actual_checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+  "terminal": {
+    "direct_pid": 530653,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 530653,
+        "start_ticks": 16093232
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false,
+    "utc": "2026-10-13T15:59:03.217956+00:00",
+    "peaks": {
+      "memory": 5387776000,
+      "min_workspace_free": 7018016768,
+      "owned_rss": 25612288,
+      "log_bytes": 0
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": false,
+    "diagnostic_pass": false,
+    "qualification": "Original failed-case location only; no test replay or case PASS"
+  },
+  "lifecycle": {
+    "schema": "P10_GITHUB_ARCHIVE_LIFECYCLE_V1",
+    "operation_stage": "GITHUB_ARCHIVE_GET",
+    "exception_code": "DIAGNOSTIC_BLOCKED",
+    "http_status": 0,
+    "primary_rejection": "GH_ARCHIVE_CAPTURE_FAILED",
+    "cleanup_rejection": "NONE",
+    "cleanup_outcome": "REMOVED",
+    "fd_close_failed": false,
+    "diagnostic_valid": false,
+    "capture_native_exit": 1,
+    "request_reconciliation_required": false,
+    "no_private_message_context_or_values_export": true
+  },
+  "selected_case_observation_present": false,
+  "owned_births": [
+    {
+      "pid": 530649,
+      "start_ticks": 16092989,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 530653,
+      "start_ticks": 16093232,
+      "same_birth_absent": true
+    }
+  ],
+  "all_births_fresh_absent": true,
+  "private_leaf_absence": {
+    "original-auth.archive.private.zip": true,
+    "selected-auth.raw.private.xml": true,
+    "private-tmp": true,
+    "parent-authority.private.json": true
+  },
+  "source_inputs": 18,
+  "all_source_inputs_match": true,
+  "all_checking_source_pins_match": true,
+  "worktree_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "worktree_clean": true,
+  "final_before_cleanup_margin": true,
+  "final_before_hard_stop": true,
+  "cleanup_margin_remaining_seconds": 177.188888,
+  "hard_stop_remaining_seconds": 237.188888,
+  "qualification": "Normal approved GH archive API native1 before accepted selected ZIP/XML. HTTP/auth/network/root cause UNKNOWN; stderr not read/captured. No SDK/test replay/private XML/archive/log/body/URI/env/auth/private-content hash export. No retry."
+}

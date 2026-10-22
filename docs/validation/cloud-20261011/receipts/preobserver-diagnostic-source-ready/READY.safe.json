@@ -1,0 +1,41 @@
+{
+  "state": "SOURCE_ONLY_REVIEW_AND_FRESH_NODE_GRANT_REQUIRED",
+  "scope": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "baseCommit": "b2b3b0f30c27b2e128dbd03677a21ceb57ed5593",
+  "currentPublishedRoot": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "requested": "gpt-6.1-sol/xhigh",
+  "actual": "UNKNOWN",
+  "native": "NOT_RUN",
+  "sourceHashes": {
+    "artifact-privacy.ts": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db",
+    "safe-reporter.ts": "7db6e044a9b462d608aca467729f37d60ff5c3a1e8a11b5851015aeb0b217ebe"
+  },
+  "beforeHashes": {
+    "artifact-privacy.ts": "a682b63534c6dfdba54843df8a412f08a020b76734de1fa6546805076d82b8d0",
+    "safe-reporter.ts": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e"
+  },
+  "ownControlHashes": {
+    "diagnostic-controls.cjs": "5a2711c8017f9b8481eae23f522b0835eabbbb3f5174b1ed6fd3aa05d05c9570",
+    "worker-control.cjs": "e94edd23e718ebcea130048cfd72924ec9ad66aac4b477869c26b704a4ede0c6",
+    "worker-control.config.ts": "fa4f479b9e96e619dd4a1b3414dd3322328d286a26d98d4058a93d0b8c341633",
+    "controls/preobserver.control.spec.ts": "f8d308086f7226246da7a921204f3e35604124d97bdad04b62ff980aca6a943b"
+  },
+  "causeQualification": "Current657 fastfailed preobserver cause UNKNOWN. Closed Sourceknown enum/status and generic intrinsic hint only; no operation guessed from name/stack/URL.",
+  "transportSource": "Pinned1.59.1 workerMain.buildTestEndPayload annotations line508 -> dispatcher._onTestEnd result.annotations258. Nativeworker proof planned, NOT_RUN.",
+  "sourcePrivacy": "own data descriptor only, message<=512 andsingleline/exactSource map orSyntheticactorHTTP closedstatus; annotation<=96/first32/max8 uniqueclosedfacts; allunknownfallback; no errors/name/stack/path/body/credential/getter/toString/hash emitted.",
+  "preserved": "old sanitizer wipe/rethrow/failure counts/guard predicates/flag/offcaptures/APIcalls/assertions/otherfixtures/config/locks/product/Angular unchanged",
+  "reportSchemaDelta": "EachSafeResult gains diagnostics:[{stage,cause,httpStatus}] only. Existingfields remain. Collector safe-schema addition Root-owned ifneeded.",
+  "nativePlan": [
+    "samepinnedNode512 diagnostic-controls.cjs --red expectednative1 OLD_SOURCE_DIAGNOSTIC_MISSING only",
+    "samehelper green expectednative0 allpubliccontrols parser0",
+    "worker-control.cjs actualbrowserfree earlyworker+latefixture+unknown secret: expectedchild0/3failedtests retained andclosedcause transport/markerfree",
+    "UNCHANGED ownWT check-artifact-privacy.mjs normalGreen/interruption/missingguard (sourceunchanged) proves existing actual producer protection remains",
+    "pinnedPrettier ownTWO files formatting/check ifgrantallows; existing scopedTS5.9.3 closure (includesprivacy/reporterviaoriginal5entries), no original3browser rerun/no browser/service/API/network"
+  ],
+  "resourceProposal": "existingb78/r1 callbacks;512managedheap/1GiB sampledsoftRSS/32MiB ownedTMP, eachphase180;publicworkerchild60/noAPI/browser. FreshRootgrant source/pins/capacity/clock beforeeffects.",
+  "diffCheckExit": 0,
+  "commit": "NOT_CREATED_PENDING_REVIEW_AND_NATIVE"
+}

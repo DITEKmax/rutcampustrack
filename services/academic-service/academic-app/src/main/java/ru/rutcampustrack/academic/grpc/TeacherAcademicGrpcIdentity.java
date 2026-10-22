@@ -8,8 +8,7 @@ final class TeacherAcademicGrpcIdentity {
     static final Context.Key<InternalJwtClaims> CLAIMS =
             Context.key("teacher-academic-internal-jwt-claims");
 
-    private TeacherAcademicGrpcIdentity() {
-    }
+    private TeacherAcademicGrpcIdentity() {}
 
     static InternalJwtClaims requireClaims() {
         InternalJwtClaims claims = CLAIMS.get();

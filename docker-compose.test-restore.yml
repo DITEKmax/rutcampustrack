@@ -8,13 +8,28 @@ services:
     environment:
       TZ: Europe/Moscow
       POSTGRES_DB: academic_db
-      POSTGRES_USER: rct_user
-      POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      POSTGRES_USER: rct_bootstrap
+      POSTGRES_PASSWORD: ${POSTGRES_RECOVERY_ADMIN_PASSWORD:?required}
+      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      POSTGRES_AUTH_PASSWORD: ${POSTGRES_AUTH_PASSWORD:?required}
+      POSTGRES_RUNTIME_PASSWORD: ${POSTGRES_ACADEMIC_LEGACY_RUNTIME_PASSWORD:?required}
+      POSTGRES_ACADEMIC_RUNTIME_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_ACADEMIC_MIGRATION_PASSWORD:?required}
+      POSTGRES_MONITOR_PASSWORD: ${POSTGRES_ACADEMIC_MONITOR_PASSWORD:?required}
+      POSTGRES_AUTH_MIGRATION_PASSWORD: ${POSTGRES_AUTH_MIGRATION_PASSWORD:?required}
+    volumes:
+      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
     tmpfs:
       - /var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
+      test:
+        - CMD-SHELL
+        - >-
+          [ "$$(cat /proc/1/comm)" = postgres ] &&
+          PGPASSWORD="$${POSTGRES_PASSWORD}" psql -X -h 127.0.0.1
+          -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+          -v ON_ERROR_STOP=1 -Atqc 'SELECT 1' >/dev/null 2>&1
       interval: 2s
       timeout: 3s
       retries: 40
@@ -26,13 +41,24 @@ services:
     environment:
       TZ: Europe/Moscow
       POSTGRES_DB: schedule_db
-      POSTGRES_USER: rct_user
-      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}
+      POSTGRES_USER: rct_bootstrap
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_RECOVERY_ADMIN_PASSWORD:?required}
+      POSTGRES_RUNTIME_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}
+      POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_SCHEDULE_MIGRATION_PASSWORD:?required}
+      POSTGRES_MONITOR_PASSWORD: ${POSTGRES_SCHEDULE_MONITOR_PASSWORD:?required}
+    volumes:
+      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
     tmpfs:
       - /var/lib/postgresql/data
     mem_limit: 256m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
+      test:
+        - CMD-SHELL
+        - >-
+          [ "$$(cat /proc/1/comm)" = postgres ] &&
+          PGPASSWORD="$${POSTGRES_PASSWORD}" psql -X -h 127.0.0.1
+          -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+          -v ON_ERROR_STOP=1 -Atqc 'SELECT 1' >/dev/null 2>&1
       interval: 2s
       timeout: 3s
       retries: 40
@@ -46,9 +72,22 @@ services:
     tmpfs:
       - /data/db
       - /data/configdb
-    mem_limit: 512m
+    # Bootstrap includes WiredTiger files on tmpfs and the health-check shell.
+    # The previous 512 MiB disposable MongoDB was OOM-killed before seeding.
+    mem_limit: 1g
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ping:1}).ok ? 0 : 1)"]
+      test:
+        - CMD-SHELL
+        - >-
+          [ "$$(cat /proc/1/comm)" = mongod ] &&
+          mongosh --quiet --host 127.0.0.1 --port 27017 --eval '
+          try {
+            const admin = db.getSiblingDB("admin");
+            const auth = admin.auth({user: process.env.MONGO_INITDB_ROOT_USERNAME,
+              pwd: process.env.MONGO_INITDB_ROOT_PASSWORD});
+            quit((auth === 1 || auth.ok === 1) && admin.runCommand({ping: 1}).ok === 1 ? 0 : 1);
+          } catch (error) { quit(1); }
+          ' >/dev/null 2>&1
       interval: 2s
       timeout: 5s
       retries: 40

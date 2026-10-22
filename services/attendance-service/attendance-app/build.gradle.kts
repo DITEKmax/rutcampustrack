@@ -17,6 +17,8 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.61.0")
+    implementation("io.pyroscope:agent:2.9.2")
     implementation(project(":services:attendance-service:attendance-api-contract"))
 
     // M11 G0.6: shared-web Spring Boot starter (catch-all Spring MVC handler
@@ -132,6 +134,23 @@ afterEvaluate {
                     minimum = "0.70".toBigDecimal()
                 }
             }
+        }
+    }
+}
+
+// Disposable CI probe uses the actual report operation and production SDK configuration.
+// It is not a production source set and never participates in bootJar/assemble.
+val observabilityProbe = sourceSets.create("observabilityProbe") {
+    java.srcDir(rootProject.file("infra/observability-apps/java"))
+    compileClasspath += sourceSets.main.get().output + configurations.runtimeClasspath.get()
+    runtimeClasspath += output + compileClasspath
+}
+tasks.register("observabilityProbeClasspath") {
+    dependsOn(tasks.named(observabilityProbe.classesTaskName))
+    doLast {
+        layout.buildDirectory.file("observability-probe-classpath.txt").get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(observabilityProbe.runtimeClasspath.asPath)
         }
     }
 }

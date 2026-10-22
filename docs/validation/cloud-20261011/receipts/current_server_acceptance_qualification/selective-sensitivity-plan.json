@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "execution": "NOT_RUN_READ_ONLY_REVIEW",
+  "requirements": "Relevant new/changed critical methods need exact existing faulty revision/control receipt or authorized isolated meaningful mutation; no syntax/infra failure credit",
+  "entries": [
+    {
+      "methods": [
+        "passwordResetIsPurposeBoundAtomicAndRevokesEverySession"
+      ],
+      "candidate": "Omit v2 credentials_version/user_id from PasswordChangedOutbox payload OR skip durable session revocation in exact reset transaction; select the one whose risk is not already covered by accepted DOMAIN1/red-green receipts.",
+      "expected_failure": "Exact metadata field/UID/generation comparison or old bearer/refresh/active-session assertions, not Rabbit provisioning/compile failure.",
+      "limit": "Historical expected payload size1→4 correction is a test-contract update, not proof of product-regression sensitivity by itself."
+    },
+    {
+      "methods": [
+        "concurrentActualHttpConsumersHaveExactlyOneWinnerAndBurnTicket"
+      ],
+      "candidate": "In isolated WsTicketService consume Lua omit DEL while retaining returned claims.",
+      "expected_failure": "Two200 rather than200/404 and/or remaining/replay ticket assertion.",
+      "limit": "No actual mutation performed."
+    },
+    {
+      "methods": [
+        "actualRedisThirtySecondExpiryRejectsUnconsumedTicket"
+      ],
+      "candidate": "Change isolated TICKET_TTL30s→45s without changing independent test expectation.",
+      "expected_failure": "Advertised/Redis30-second upper-bound assertion; observation budget5s separates scheduling variance.",
+      "limit": "No whole long expiry waiting campaign required."
+    },
+    {
+      "methods": [
+        "logoutBeforeConsumeInvalidatesOutstandingTicket"
+      ],
+      "candidate": "Source counterexample: omitting proactive logout key deletion may survive because key is checked after consume. Preserve finite denied-consume credit; do not claim independent proactive-deletion sensitivity.",
+      "expected_failure": "Not guaranteed by current assertion order. Existing WsTicketIT durable-grant suspend first401/replay404 proves fresh denial independently.",
+      "limit": "Only add a before-consume key oracle if proactive deletion is an accepted required observable; do not invent new cleanup requirement or weaken admission."
+    },
+    {
+      "methods": [
+        "openSocketReceivesBeforeRevokeAndCannotReceiveNextPrivateMessageAfterRevoke"
+      ],
+      "candidate": "Bypass registry.admit in ordinary outbound MESSAGE path in isolated WsSessionAdmissionOutboundInterceptor.",
+      "expected_failure": "Revoked socket receives after/stays connected or fails fresh-read assertion while live control remains witnessed.",
+      "limit": "Tests socket wiring with controlled Auth stub; real Auth-to-socket acceptance is separate."
+    },
+    {
+      "methods": [
+        "threeGenerationFailuresTerminateAndWireAndDatabaseRejectUnknownOrOrdinalState"
+      ],
+      "candidate": "Emit ordinal-like strings instead of stable State.code in isolated contract mapping.",
+      "expected_failure": "preparing/ready/unknown wire roundtrip assertions; independent schema supplementary guard catches noncanonical code.",
+      "limit": "Never edit sealed historical migrations or weaken productionDBconstraints. One meaningful changed mapping control, not exhaustive enum mutation."
+    },
+    {
+      "methods": [
+        "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation"
+      ],
+      "candidate": "Omit per-job audit insertion or erase unrelated historical audit in isolated completion service; choose exact relevant control not already accepted by export audit red/green.",
+      "expected_failure": "Own job audit count1 or historical audit ID preservation assertion; file/status/ticket forbidden after logout remain additional observed guards.",
+      "limit": "Existing arbitrary total-audit fixture failure is not itself a data-loss mutation. Reuse exact accepted sensitive control if already recorded."
+    }
+  ]
+}

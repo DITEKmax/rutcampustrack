@@ -114,6 +114,10 @@ def render(event, *, facts=None):
         payload.update(facts)
     heading = HEADINGS[notification_type]
     lines = lesson_context(payload)
+    if notification_type == "GROUP_RENAMED":
+        name = _text(payload.get("new_name"), 80)
+        if name:
+            lines = [f"Группа: {name}"]
     if notification_type in {"LESSON_TRANSFERRED", "LESSON_UPDATED"}:
         lines = []
         for key, label in (("source", "Было"), ("target", "Стало")):
@@ -276,7 +280,7 @@ def notification_action(event, *, facts=None, role="STUDENT"):
             "kind": "request",
             "role": role,
             "requestKind": "EXCUSE" if notification_type.startswith("EXCUSE_") else "LATE_CHECKIN",
-            "requestId": payload.get("ticket_id") or payload.get("request_id"),
+            "requestId": payload.get("ticket_id" if notification_type.startswith("EXCUSE_") else "request_id"),
         }
     elif notification_type == "HOMEWORK_WEEKLY_DIGEST":
         action = {"kind": "homework-week", "role": role, "weekStart": payload.get("week_start")}

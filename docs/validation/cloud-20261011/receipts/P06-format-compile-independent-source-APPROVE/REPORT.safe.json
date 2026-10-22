@@ -1,0 +1,46 @@
+{
+  "schema": "RCT_P06_FORMAT_COMPILE_INDEPENDENT_SOURCE_REVIEW_V1",
+  "verdict": "APPROVE_FORMAT_SOURCE_COMPILE_TEMPLATE_UNBOUND",
+  "findings": [],
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "scope": "Narrow one-file canonical formatter and separate Auth compile Source plan; prior critical test and cleanup reviews reused.",
+  "author_ready": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p06-format-compile-source/READY.safe.json",
+  "author_ready_sha256": "4117f1c4f9e1467381081ec95a7404adb32173262fd9ae39024a06fa39c366e3",
+  "author_manifest_sha256": "73589c357f9a5b73ae5a8e1f6e93aceba9308fdb24929b940e40d01d49cf0a71",
+  "author_archive_sha256": "071b55944c94dd5342be56be8df6233dc4e686e8392c90ebf40f2e0808340229",
+  "worktree": "/workspace/rct-worktrees/shared-validator-execution-20261013",
+  "semantic_commit": "478204ab9fad28d145b1424de20bcd629ff71c0e",
+  "test_sha256": "64df4a761c29e99870e49400b67bd07c0497e285ca54861c32e25982a0598c3d",
+  "governing_contract_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "source_checks": {
+    "ready_public_pins12_match": true,
+    "semantic_source16_pins_match": true,
+    "compile_protected_inputs_including_absolute_init_match": true,
+    "source_head_and_clean_worktree_match": true,
+    "four_callbacks_byte_identical_to_reviewed_backend": true,
+    "four_callbacks_python_ast_valid": true,
+    "format_exact_one_AuthIT": true,
+    "format_initial_source_and_manifest_and_init_hash_match": true,
+    "compile_base_test_hash_manifest_hash_null": true,
+    "compile_manifest_source_commit_and_target_hash_null": true,
+    "compile_tasks_exact_auth_main_and_test_compile": true,
+    "compile_required_xml_classes_empty": true,
+    "format_and_compile_tmp_namespaces_absent": true,
+    "native_executed": false
+  },
+  "assessment": {
+    "format": "format01/format-journal.init.gradle:3-15 overrides only the exact one AuthIT target set and validates actual targets before execution; canonical root Spotless7.0.4/googleJavaFormat1.25.2/AOSP steps remain unchanged. Plan dispatches formatJava then formatJavaCheck serially offline/no parallel/one worker. Parent/child pin semantic source, manifest, formatter init, guard, plan and grant. Child permits only this target's diff and verifies protected source before check; separate fresh check-dispatch grant/deadline/parent-source guards retained.",
+    "post_format": "Native0 and exact fixed target marker count2 require settled owned births plus protected-source/target proof. Author must retain before64df, prove existing Java token/string/char/text-block/import-set equivalence and filemode/foreign diff, record actual mechanical commit or zero-delta fact, and preserve both commit/hash identities. These are pending post-run proofs, not performed by this Source review.",
+    "compile": "Exactly :services:auth-service:auth-app:compileJava and compileTestJava with --rerun-tasks/offline/no parallel/one worker. Normal needed compile/codegen dependencies may run; no Test/integrationTest task, fixture initialization, PG pause or application task is selected. Init adds only fixed doLast completion markers; no compiler rule or assertion change. Compile init is protected as an absolute manifest key and both parent and child Path(worktree)/absolute correctly retain that absolute path.",
+    "unbound": "Current compile base/test_sha256/source_manifest_sha256 and formatted source_commit/target hash are null. Even a structurally authorized hypothetical grant cannot pass parent actual HEAD != null (run-green-owned.py:51-52) or child actual target/manifest digest != null (logged-green-child.py:61-70). No caller was invoked. Bind only after actual format/mechanical evidence and issue separate fresh Root grant; this review is not compile execution authority.",
+    "privacy": "No actual logs/XML/bodies read. PLAN describes existing bounded private mode600/no-follow log byte-line counting only for fixed whole markers, no raw lines/messages/hashes; inherited green XML wording is explicitly not test evidence. Missing/duplicate/nonzero/unsettled/changed-source inputs deny PASS. Source readiness is not actual native success.",
+    "resource": "Reviewed callback guards remain byte-identical; new owned TMP namespaces, live exact direct-parent/birth witness, current issued/stop UTC with cleanup margin and b78 sampled caps/reap/TMP cleanup retained. New fresh grant required after exclusive Root WIRE lease ends; sampled caps/sameUID do not establish hard isolation."
+  },
+  "reused_review_reports": [
+    "/workspace/scratch/rct-validation/p06_one_test_independent_review/REPORT.safe.json",
+    "/workspace/scratch/rct-validation/p06_one_test_independent_review/cleanup-r1-recheck/REPORT.safe.json"
+  ],
+  "remaining": "Actual format/check/mechanical-equivalence/Auth compile/real PG/outage/recovery/mutation NOT_RUN. Fresh bound compile parameter review and Root resource grant remain required. ParentP06 UNKNOWN.",
+  "effects": "Created only own safe review receipt/manifest/archive; no shared docs/product/test/config/private artifacts/Java/Gradle/Node/Docker/PG/API effects, no children."
+}

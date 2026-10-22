@@ -1,0 +1,29 @@
+{
+  "scope": "INDEPENDENT_PORTABLE_CI_FIRST3_SOURCE_REVIEW",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "CI-F3-CLOCK-MODE-001 P2",
+    "CI-F3-DATE-COHERENCE-002 P2"
+  ],
+  "source_manifest_sha256": "cb7cc19e14d52ece50ba2cb515e0f0f0b376c2479e7e59255968ac41ac11dc8d",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 10626,
+      "sha256": "b1b9c30e8523e58b2d327a2bf2de07cf4bcab5aa7ce62c66f8916c4145cd4d55",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 1783,
+      "sha256": "c1e5b1c46b45c6e505d2c2b6a42f5bfe914ea9743812b4fa6adfa8c37ac14f78",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 8731,
+      "sha256": "78b9d118baefc9175d24a726c465137dba207417a62b4e21ff2f94cecfab15db",
+      "mode": "0o400"
+    }
+  ]
+}

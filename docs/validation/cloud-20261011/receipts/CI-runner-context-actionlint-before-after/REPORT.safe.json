@@ -1,0 +1,125 @@
+{
+  "scope": "ONLYOWNCI_WORKFLOW_CONTEXT_CORRECTION",
+  "baseCommit": "390f6a4431c4d02a3ef15459f06afdb7b69e888f",
+  "currentPublishedRoot": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+  "actualCI": {
+    "run": 38327774818,
+    "first3": "NOT_RUN",
+    "annotation": "UNAVAILABLE",
+    "sourceReproductionNotActualGitHubErrorText": true
+  },
+  "before": {
+    "phase": "before",
+    "nativeExit": 1,
+    "errors": [
+      {
+        "line": 322,
+        "column": 39,
+        "kind": "expression",
+        "runnerContextUnavailable": true,
+        "sourceMessage": "context \"runner\" is not allowed here. available contexts are \"github\", \"inputs\", \"matrix\", \"needs\", \"secrets\", \"strategy\", \"vars\". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details"
+      },
+      {
+        "line": 323,
+        "column": 27,
+        "kind": "expression",
+        "runnerContextUnavailable": true,
+        "sourceMessage": "context \"runner\" is not allowed here. available contexts are \"github\", \"inputs\", \"matrix\", \"needs\", \"secrets\", \"strategy\", \"vars\". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details"
+      },
+      {
+        "line": 324,
+        "column": 36,
+        "kind": "expression",
+        "runnerContextUnavailable": true,
+        "sourceMessage": "context \"runner\" is not allowed here. available contexts are \"github\", \"inputs\", \"matrix\", \"needs\", \"secrets\", \"strategy\", \"vars\". see https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability for more details"
+      }
+    ],
+    "diagnosticBytes": 852,
+    "allOwnedReaped": true,
+    "settled": true,
+    "peaks": {
+      "owned_rss_bytes": 25550848,
+      "run_allocated_bytes": 7254016,
+      "shared_memory_bytes": 4978458624
+    },
+    "noProductRuntime": true
+  },
+  "after": {
+    "phase": "after",
+    "nativeExit": 0,
+    "errors": [],
+    "diagnosticBytes": 0,
+    "allOwnedReaped": true,
+    "settled": true,
+    "peaks": {
+      "owned_rss_bytes": 13221888,
+      "run_allocated_bytes": 7270400,
+      "shared_memory_bytes": 4969287680
+    },
+    "noProductRuntime": true
+  },
+  "dependency": {
+    "officialVersion": "v1.7.7",
+    "archiveSHA": "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757",
+    "binarySHA": "9f7dedb4e23f89f2922073d1a6720405b7b520d4f5832ebb96f0d55a2958886c",
+    "binaryBytes": 5132440,
+    "officialChecksumVerifiedBeforeExecution": true
+  },
+  "beforeSourceSHA": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+  "afterSourceSHA": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+  "yamlPreservation": {
+    "parserAvailable": true,
+    "remainingWholeWorkflowParsedTreeEqual": true,
+    "movedThreePathValuesExact": true,
+    "remainingAllRunStringsExact": true,
+    "public022Private077Preserved": true,
+    "exportBeforeMkdirAndConsumers": true
+  },
+  "otherThreeSourceBytesPreserved": {
+    "tests/e2e/playwright.first3.config.ts": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+    "tests/e2e/first3-specs/mobile-first3.spec.ts": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+    "tests/e2e/fixtures/first3-observer.ts": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718"
+  },
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 428021,
+      "start_ticks": 10601305,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 428025,
+      "start_ticks": 10601324,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 428027,
+      "start_ticks": 10601380,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 428029,
+      "start_ticks": 10601452,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 428084,
+      "start_ticks": 10604841,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 428088,
+      "start_ticks": 10604861,
+      "exactBirthAbsent": true
+    }
+  ],
+  "privateTmpRemoved": true,
+  "sourceWriteOnly": ".github/workflows/ci.yml",
+  "sourceMode": "0600",
+  "sourceNlink": 1,
+  "diffCheckExit": 0,
+  "nodeFormatter": "NOT_RUN",
+  "commit": "NOT_CREATED_PENDING_INDEPENDENT_REVIEW",
+  "lease": "RELEASED",
+  "noProductRuntime": true,
+  "limitsQualifier": "512MiB RSS sampledsoft monitoring;32MiB allocated own run monitoring; no hard cap claim."
+}

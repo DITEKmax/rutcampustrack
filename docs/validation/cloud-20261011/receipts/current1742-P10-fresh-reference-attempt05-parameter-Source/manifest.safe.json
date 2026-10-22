@@ -1,0 +1,16 @@
+{
+  "schema": "P10_ATTEMPT05_PARAMETER_SOURCE_MANIFEST_V1",
+  "files": {
+    "PLAN.md": "d1ea25b7d4cfc6ba5cd600dfe2da2cc131788fed8e2753d685c86ebbd4e89002",
+    "READY.safe.json": "d110e1d7132827e8645a28b4e084eeecfbc50cd015d855f4860e5a57274157b0",
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "grant-template.private.json": "9c8a702017031ec01768007d2f3b47a9e46860f0c846cf3a427a83a906933145",
+    "green-plan.safe.json": "bf852c5b5147c31933fbd403e2148276ab57f395a2474f943ec311f8423c2bbd",
+    "logged-green-child.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "parameter-proof.safe.json": "fca310d3483d89ee22d0b9a1ae0d20bb09aedbcc5a613d80d98669bc54e0f1c8",
+    "run-green-owned.py": "4611344f9af8a48b0e695545c4053994c1f72591929553b3336df4e2a8d311c9",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780"
+  },
+  "private_runtime_data_excluded": true
+}

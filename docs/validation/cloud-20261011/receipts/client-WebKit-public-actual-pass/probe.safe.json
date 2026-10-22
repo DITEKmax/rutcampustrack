@@ -1,0 +1,53 @@
+{
+  "schema": "RCT_WEBKIT_PUBLIC_BOOT_V1",
+  "scope": "PUBLIC_BROWSER_ONLY",
+  "passed": true,
+  "stages": [
+    {
+      "stage": "BROWSER_LAUNCH",
+      "passed": true,
+      "facts": null,
+      "errorClass": null,
+      "launchCause": null
+    },
+    {
+      "stage": "ABOUT_BLANK",
+      "passed": true,
+      "facts": null,
+      "errorClass": null,
+      "launchCause": null
+    },
+    {
+      "stage": "PUBLIC_HEADING",
+      "passed": true,
+      "facts": {
+        "headingCount": 1,
+        "headingVisible": true
+      },
+      "errorClass": null,
+      "launchCause": null
+    },
+    {
+      "stage": "CONTEXT_CLOSE",
+      "passed": true,
+      "facts": null,
+      "errorClass": null,
+      "launchCause": null
+    },
+    {
+      "stage": "BROWSER_CLOSE",
+      "passed": true,
+      "facts": null,
+      "errorClass": null,
+      "launchCause": null
+    }
+  ],
+  "classifierControls": {
+    "caseCount": 15,
+    "passedCount": 15,
+    "failedCount": 0,
+    "passed": true
+  },
+  "clientAcceptance": false,
+  "workerEffectiveTeachingInstantType": "NOT_MEASURED_NO_CONFIG_OR_FIXTURES"
+}

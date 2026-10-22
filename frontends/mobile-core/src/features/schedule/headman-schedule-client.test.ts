@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import { hideDeniedHeadmanSchedule, persistRecurringIntent, readRecurringIntent, recurringUpdate, retainRecurringBack } from './headman-recurring-intent'
+import {
+  hideDeniedHeadmanSchedule,
+  persistRecurringIntent,
+  readRecurringIntent,
+  recurringUpdate,
+  retainRecurringBack,
+} from './headman-recurring-intent'
 import { createMobileNavigationStack, nestedRoute, rootRoute } from '../../shared/navigation'
 import {
   HeadmanScheduleApi,
@@ -14,39 +20,98 @@ import {
 } from './headman-schedule-client'
 
 const input: HeadmanOneOffCreateInput = {
-  groupId: 7, subjectId: 9, assignmentId: 501, date: '2026-10-12',
-  lessonNumber: 3, startTime: '12:00:00', endTime: '13:30:00', classroom: 'А-101',
+  groupId: 7,
+  subjectId: 9,
+  assignmentId: 501,
+  date: '2026-10-12',
+  lessonNumber: 3,
+  startTime: '12:00:00',
+  endTime: '13:30:00',
+  classroom: 'А-101',
 }
 const key = '11111111-2222-4333-8444-555555555555'
-const canonical = { id: 31, physicalLessonId: 42, groupId: 7, subjectId: 9, semesterId: 10, date: input.date, lessonNumber: 3 }
-const json = (body: unknown): Response => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
+const canonical = {
+  id: 31,
+  physicalLessonId: 42,
+  groupId: 7,
+  subjectId: 9,
+  semesterId: 10,
+  date: input.date,
+  lessonNumber: 3,
+}
+const json = (body: unknown): Response =>
+  new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
 
 describe('recurring lifecycle durable ownership', () => {
   it('hides denied preview/apply/readback data, releases Back and retains the exact uncertain command only for its owner', async () => {
     const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
-    const target = { id: 31, groupId: 7, semesterId: 10, subjectId: 9, dayOfWeek: 1, lessonNumber: 3,
-      startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
-    const preview = { revision: 'a'.repeat(64), updatedCount: 2, removedCount: 0, restoredCount: 0, createdCount: 0 }
+    const target = {
+      id: 31,
+      groupId: 7,
+      semesterId: 10,
+      subjectId: 9,
+      dayOfWeek: 1,
+      lessonNumber: 3,
+      startTime: '12:00:00',
+      endTime: '13:30:00',
+      weekType: 'ALL' as const,
+      active: true,
+    }
+    const preview = {
+      revision: 'a'.repeat(64),
+      updatedCount: 2,
+      removedCount: 0,
+      restoredCount: 0,
+      createdCount: 0,
+    }
     const input = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: preview.revision }
-    const intent = { owner, target, input, action: 'UPDATE' as const, preview, key, rejected: false, transferIds: [] }
+    const intent = {
+      owner,
+      target,
+      input,
+      action: 'UPDATE' as const,
+      preview,
+      key,
+      rejected: false,
+      transferIds: [],
+    }
     for (const phase of ['preview', 'apply', 'readback'] as const) {
       const values = new Map<string, string>()
-      const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+      const storage = {
+        getItem: (scope: string) => values.get(scope) ?? null,
+        setItem: (scope: string, value: string) => {
+          values.set(scope, value)
+        },
+      }
       if (phase !== 'preview') persistRecurringIntent(storage, intent)
       const pendingIntent = { value: phase === 'preview' ? null : intent }
-      const view = { denied: { value: false }, busy: { value: true },
-        rows: [{ value: [target] }], editor: [pendingIntent, { value: target }] }
+      const view = {
+        denied: { value: false },
+        busy: { value: true },
+        rows: [{ value: [target] }],
+        editor: [pendingIntent, { value: target }],
+      }
       const navigation = createMobileNavigationStack(rootRoute('headman-more'))
       navigation.push(nestedRoute('headman-more', 'headman-more/schedule/form', 'editor'))
-      navigation.beforeBack(() => !retainRecurringBack(view.denied.value, view.busy.value, pendingIntent.value))
+      navigation.beforeBack(
+        () => !retainRecurringBack(view.denied.value, view.busy.value, pendingIntent.value),
+      )
       expect(navigation.back()?.id).toBe('headman-more/schedule/form')
-      const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
-        if ((phase === 'preview' && String(path).includes('lifecycle-preview'))
-          || (phase === 'apply' && init?.method === 'PUT') || (phase === 'readback' && !init?.method)) return new Response('{}', { status: 403 })
-        return json({ ...target, ...input, transfers: [] })
-      } })
+      const api = new HeadmanScheduleApi({
+        accessToken: () => null,
+        fetcher: async (path, init) => {
+          if (
+            (phase === 'preview' && String(path).includes('lifecycle-preview')) ||
+            (phase === 'apply' && init?.method === 'PUT') ||
+            (phase === 'readback' && !init?.method)
+          )
+            return new Response('{}', { status: 403 })
+          return json({ ...target, ...input, transfers: [] })
+        },
+      })
       try {
-        if (phase === 'preview') await api.previewScheduleItem(target.id, recurringUpdate(target, 'ODD', 'А-102'))
+        if (phase === 'preview')
+          await api.previewScheduleItem(target.id, recurringUpdate(target, 'ODD', 'А-102'))
         else {
           await api.updateScheduleItem(target.id, input, key)
           await api.getScheduleItem(target.id)
@@ -63,29 +128,85 @@ describe('recurring lifecycle durable ownership', () => {
       expect(readRecurringIntent(storage, owner)).toEqual(phase === 'preview' ? null : intent)
       expect(readRecurringIntent(storage, { ...owner, userId: '6' })).toBeNull()
     }
-    const unchanged = { denied: { value: false }, busy: { value: true }, rows: [{ value: [target] }], editor: [{ value: intent }] }
+    const unchanged = {
+      denied: { value: false },
+      busy: { value: true },
+      rows: [{ value: [target] }],
+      editor: [{ value: intent }],
+    }
     expect(hideDeniedHeadmanSchedule(new TypeError('response lost'), unchanged)).toBe(false)
-    expect(hideDeniedHeadmanSchedule(new HeadmanScheduleApiError(new Response('{}', { status: 401 }), null), unchanged)).toBe(false)
+    expect(
+      hideDeniedHeadmanSchedule(
+        new HeadmanScheduleApiError(new Response('{}', { status: 401 }), null),
+        unchanged,
+      ),
+    ).toBe(false)
     expect(unchanged.editor[0]?.value).toEqual(intent)
     expect(retainRecurringBack(false, true, intent)).toBe(true)
   })
   it('replays exact target/payload/revision/key after loss and reload, isolates owners, and fences a late empty DELETE response', async () => {
     const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
-    const target = { id: 31, assignmentId: 501, groupId: 7, semesterId: 10, subjectId: 9,
-      dayOfWeek: 1, lessonNumber: 3, startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
+    const target = {
+      id: 31,
+      assignmentId: 501,
+      groupId: 7,
+      semesterId: 10,
+      subjectId: 9,
+      dayOfWeek: 1,
+      lessonNumber: 3,
+      startTime: '12:00:00',
+      endTime: '13:30:00',
+      weekType: 'ALL' as const,
+      active: true,
+    }
     const revision = 'a'.repeat(64)
-    const preview = { revision, updatedCount: 2, removedCount: 1, restoredCount: 0, createdCount: 0 }
+    const preview = {
+      revision,
+      updatedCount: 2,
+      removedCount: 1,
+      restoredCount: 0,
+      createdCount: 0,
+    }
     const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: revision }
     const values = new Map<string, string>()
-    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
-    persistRecurringIntent(storage, { owner, target, action: 'UPDATE', input: update, preview, key, rejected: false, transferIds: [] })
-    const requests: Array<{ path: string; body: unknown; key: string | null; revision: string | null }> = []
-    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
-      const headers = new Headers(init?.headers)
-      requests.push({ path: String(path), body: init?.body, key: headers.get('Idempotency-Key'), revision: headers.get('If-Match') })
-      if (requests.length === 1) throw new TypeError('accepted response lost')
-      return init?.method === 'DELETE' ? new Response(null, { status: 204 }) : json({ ...target, ...update, transfers: [] })
-    } })
+    const storage = {
+      getItem: (scope: string) => values.get(scope) ?? null,
+      setItem: (scope: string, value: string) => {
+        values.set(scope, value)
+      },
+    }
+    persistRecurringIntent(storage, {
+      owner,
+      target,
+      action: 'UPDATE',
+      input: update,
+      preview,
+      key,
+      rejected: false,
+      transferIds: [],
+    })
+    const requests: Array<{
+      path: string
+      body: unknown
+      key: string | null
+      revision: string | null
+    }> = []
+    const api = new HeadmanScheduleApi({
+      accessToken: () => null,
+      fetcher: async (path, init) => {
+        const headers = new Headers(init?.headers)
+        requests.push({
+          path: String(path),
+          body: init?.body,
+          key: headers.get('Idempotency-Key'),
+          revision: headers.get('If-Match'),
+        })
+        if (requests.length === 1) throw new TypeError('accepted response lost')
+        return init?.method === 'DELETE'
+          ? new Response(null, { status: 204 })
+          : json({ ...target, ...update, transfers: [] })
+      },
+    })
     await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow('response lost')
     const recovered = readRecurringIntent(storage, owner)!
     expect(Object.isFrozen(recovered.input)).toBe(true)
@@ -96,20 +217,41 @@ describe('recurring lifecycle durable ownership', () => {
     expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
     // A DELETE has no JSON body, but retains the same revision/key during retries.
     const deletionKey = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
-    persistRecurringIntent(storage, { ...recovered, action: 'DELETE', input: null, key: deletionKey })
+    persistRecurringIntent(storage, {
+      ...recovered,
+      action: 'DELETE',
+      input: null,
+      key: deletionKey,
+    })
     const deletion = readRecurringIntent(storage, owner)!
-    await expect(api.deleteScheduleItem(deletion.target.id!, deletion.preview.revision, deletion.key)).resolves.toBeUndefined()
+    await expect(
+      api.deleteScheduleItem(deletion.target.id!, deletion.preview.revision, deletion.key),
+    ).resolves.toBeUndefined()
     expect(requests[2]?.revision).toBe(revision)
     expect(requests[2]?.key).toBe(deletionKey)
     let generation = 1
     let respond!: (response: Response) => void
-    const bound = createGenerationBoundHeadmanScheduleApi({ currentGeneration: () => generation,
-      accessTokenFor: () => null, refreshFor: async () => undefined }, async () => new Promise<Response>((resolve) => { respond = resolve }))
+    const bound = createGenerationBoundHeadmanScheduleApi(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => null,
+        refreshFor: async () => undefined,
+      },
+      async () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve
+        }),
+    )
     const pending = bound.deleteScheduleItem(target.id, revision, key)
     generation = 2
     respond(new Response(null, { status: 204 }))
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
-    expect(() => readRecurringIntent({ getItem: () => JSON.stringify({ ...recovered, input: { ...update, subjectId: 99 } }) }, owner)).toThrow('не совпадает')
+    expect(() =>
+      readRecurringIntent(
+        { getItem: () => JSON.stringify({ ...recovered, input: { ...update, subjectId: 99 } }) },
+        owner,
+      ),
+    ).toThrow('не совпадает')
   })
 
   it.each([
@@ -121,51 +263,137 @@ describe('recurring lifecycle durable ownership', () => {
     ['invalid UUID', [{ operationId: 'not-a-uuid', state: 'COMPLETED' }]],
     ['missing state', [{ operationId: key }]],
     ['invalid state', [{ operationId: key, state: 'ACCEPTED' }]],
-  ])('retains the exact durable command after a malformed PUT ACK (%s), then safely replays it', async (_label, transfers) => {
-    const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
-    const target = { id: 31, groupId: 7, semesterId: 10, subjectId: 9, dayOfWeek: 1, lessonNumber: 3,
-      startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
-    const preview = { revision: 'a'.repeat(64), updatedCount: 1, removedCount: 0, restoredCount: 0, createdCount: 0 }
-    const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: preview.revision }
-    const intent = { owner, target, input: update, action: 'UPDATE' as const, preview, key, rejected: false, transferIds: [] }
-    const values = new Map<string, string>()
-    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
-    persistRecurringIntent(storage, intent)
-    const durableBefore = [...values.entries()]
-    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
-    const accepted = { ...target, ...update, transfers: [{ operationId, state: 'PENDING' }] }
-    const requests: Array<{ path: string; body: unknown; key: string | null }> = []
-    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
-      requests.push({ path: String(path), body: init?.body, key: new Headers(init?.headers).get('Idempotency-Key') })
-      return json(requests.length === 1 ? { ...target, ...update, transfers } : accepted)
-    } })
-    await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow()
-    expect([...values.entries()]).toEqual(durableBefore)
-    const recovered = readRecurringIntent(storage, owner)!
-    expect(recovered).toEqual(intent)
-    expect(Object.isFrozen(recovered.input)).toBe(true)
-    expect(recovered.transferIds).toEqual([])
-    await expect(api.updateScheduleItem(recovered.target.id!, recovered.input!, recovered.key)).resolves.toEqual(accepted)
-    expect(requests[1]).toEqual(requests[0])
-    expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
-  })
+  ])(
+    'retains the exact durable command after a malformed PUT ACK (%s), then safely replays it',
+    async (_label, transfers) => {
+      const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
+      const target = {
+        id: 31,
+        groupId: 7,
+        semesterId: 10,
+        subjectId: 9,
+        dayOfWeek: 1,
+        lessonNumber: 3,
+        startTime: '12:00:00',
+        endTime: '13:30:00',
+        weekType: 'ALL' as const,
+        active: true,
+      }
+      const preview = {
+        revision: 'a'.repeat(64),
+        updatedCount: 1,
+        removedCount: 0,
+        restoredCount: 0,
+        createdCount: 0,
+      }
+      const update = {
+        ...recurringUpdate(target, 'ODD', 'А-102'),
+        expectedRevision: preview.revision,
+      }
+      const intent = {
+        owner,
+        target,
+        input: update,
+        action: 'UPDATE' as const,
+        preview,
+        key,
+        rejected: false,
+        transferIds: [],
+      }
+      const values = new Map<string, string>()
+      const storage = {
+        getItem: (scope: string) => values.get(scope) ?? null,
+        setItem: (scope: string, value: string) => {
+          values.set(scope, value)
+        },
+      }
+      persistRecurringIntent(storage, intent)
+      const durableBefore = [...values.entries()]
+      const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+      const accepted = { ...target, ...update, transfers: [{ operationId, state: 'PENDING' }] }
+      const requests: Array<{ path: string; body: unknown; key: string | null }> = []
+      const api = new HeadmanScheduleApi({
+        accessToken: () => null,
+        fetcher: async (path, init) => {
+          requests.push({
+            path: String(path),
+            body: init?.body,
+            key: new Headers(init?.headers).get('Idempotency-Key'),
+          })
+          return json(requests.length === 1 ? { ...target, ...update, transfers } : accepted)
+        },
+      })
+      await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow()
+      expect([...values.entries()]).toEqual(durableBefore)
+      const recovered = readRecurringIntent(storage, owner)!
+      expect(recovered).toEqual(intent)
+      expect(Object.isFrozen(recovered.input)).toBe(true)
+      expect(recovered.transferIds).toEqual([])
+      await expect(
+        api.updateScheduleItem(recovered.target.id!, recovered.input!, recovered.key),
+      ).resolves.toEqual(accepted)
+      expect(requests[1]).toEqual(requests[0])
+      expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
+    },
+  )
 
   it('keeps accepted transfer IDs and the original intent when current-item or transfer readback is malformed', async () => {
     const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
-    const target = { id: 31, groupId: 7, semesterId: 10, subjectId: 9, dayOfWeek: 1, lessonNumber: 3,
-      startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
-    const preview = { revision: 'a'.repeat(64), updatedCount: 1, removedCount: 0, restoredCount: 0, createdCount: 0 }
-    const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: preview.revision }
+    const target = {
+      id: 31,
+      groupId: 7,
+      semesterId: 10,
+      subjectId: 9,
+      dayOfWeek: 1,
+      lessonNumber: 3,
+      startTime: '12:00:00',
+      endTime: '13:30:00',
+      weekType: 'ALL' as const,
+      active: true,
+    }
+    const preview = {
+      revision: 'a'.repeat(64),
+      updatedCount: 1,
+      removedCount: 0,
+      restoredCount: 0,
+      createdCount: 0,
+    }
+    const update = {
+      ...recurringUpdate(target, 'ODD', 'А-102'),
+      expectedRevision: preview.revision,
+    }
     const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
-    const intent = { owner, target, input: update, action: 'UPDATE' as const, preview, key, rejected: false, transferIds: [operationId] }
+    const intent = {
+      owner,
+      target,
+      input: update,
+      action: 'UPDATE' as const,
+      preview,
+      key,
+      rejected: false,
+      transferIds: [operationId],
+    }
     const values = new Map<string, string>()
-    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    const storage = {
+      getItem: (scope: string) => values.get(scope) ?? null,
+      setItem: (scope: string, value: string) => {
+        values.set(scope, value)
+      },
+    }
     persistRecurringIntent(storage, intent)
     const durableBefore = [...values.entries()]
     let response: unknown = { ...target, ...update, transfers: [{ state: 'COMPLETED' }] }
-    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json(response) })
+    const api = new HeadmanScheduleApi({
+      accessToken: () => null,
+      fetcher: async () => json(response),
+    })
     await expect(api.getScheduleItem(target.id)).rejects.toThrow()
-    for (const malformed of [null, { operationId }, { operationId, state: 'ACCEPTED' }, { operationId: key, state: 'COMPLETED' }]) {
+    for (const malformed of [
+      null,
+      { operationId },
+      { operationId, state: 'ACCEPTED' },
+      { operationId: key, state: 'COMPLETED' },
+    ]) {
       response = malformed
       await expect(api.getRecurringTransfer(operationId)).rejects.toThrow()
     }
@@ -178,19 +406,35 @@ describe('recurring lifecycle durable ownership', () => {
 
 describe('ONE_OFF durable creation', () => {
   it('corrects only a proven first refusal; unknown/recovered/replay/stale errors retain the original intent', () => {
-    const problem = { status: 409, type: 'https://api.rutcampustrack.ru/problems/one-off-create-rejected',
-      instance: '/schedule/one-off-lessons', detail: 'Серверное описание может меняться' }
+    const problem = {
+      status: 409,
+      type: 'https://api.rutcampustrack.ru/problems/one-off-create-rejected',
+      instance: '/schedule/one-off-lessons',
+      detail: 'Серверное описание может меняться',
+    }
     const rejected = new HeadmanScheduleApiError(new Response('{}', { status: 409 }), problem)
     expect(canCorrectRejectedOneOff(rejected, true)).toBe(true)
     expect(canCorrectRejectedOneOff(rejected, false)).toBe(false)
     for (const type of ['conflict', 'lifecycle-not-ready', 'recurring-protocol-conflict']) {
-      expect(canCorrectRejectedOneOff(new HeadmanScheduleApiError(new Response('{}', { status: 409 }),
-        { ...problem, type: `https://api.rutcampustrack.ru/problems/${type}` }), true)).toBe(false)
+      expect(
+        canCorrectRejectedOneOff(
+          new HeadmanScheduleApiError(new Response('{}', { status: 409 }), {
+            ...problem,
+            type: `https://api.rutcampustrack.ru/problems/${type}`,
+          }),
+          true,
+        ),
+      ).toBe(false)
     }
     expect(canCorrectRejectedOneOff(new TypeError('response lost'), true)).toBe(false)
     expect(canCorrectRejectedOneOff(new StaleSessionGenerationError(), true)).toBe(false)
     const values = new Map<string, string>()
-    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    const storage = {
+      getItem: (scope: string) => values.get(scope) ?? null,
+      setItem: (scope: string, value: string) => {
+        values.set(scope, value)
+      },
+    }
     persistOneOffIntent(storage, 'scope', { key, input })
     // Refusal after refresh cannot prove the earlier request was not accepted.
     if (canCorrectRejectedOneOff(rejected, false)) values.delete('scope')
@@ -204,22 +448,42 @@ describe('ONE_OFF durable creation', () => {
   })
 
   it('permits the inclusive final semester day but rejects the following day and dates before today', () => {
-    expect(isOneOffDateWithinSemester('2027-01-31', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(true)
-    expect(isOneOffDateWithinSemester('2027-02-01', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(false)
-    expect(isOneOffDateWithinSemester('2026-09-30', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(false)
+    expect(isOneOffDateWithinSemester('2027-01-31', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(
+      true,
+    )
+    expect(isOneOffDateWithinSemester('2027-02-01', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(
+      false,
+    )
+    expect(isOneOffDateWithinSemester('2026-09-30', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(
+      false,
+    )
   })
 
   it('recovers the exact request/key after an unknown outcome and refresh, then reads canonical physical identity', async () => {
     const values = new Map<string, string>()
-    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    const storage = {
+      getItem: (scope: string) => values.get(scope) ?? null,
+      setItem: (scope: string, value: string) => {
+        values.set(scope, value)
+      },
+    }
     const scope = 'user5:session1:HEADMAN:group7'
     persistOneOffIntent(storage, scope, { key, input })
     const requests: Array<{ path: string; key: string | null; body: string | null }> = []
-    const api = new HeadmanScheduleApi({ accessToken: () => 'owned-token', fetcher: async (path, init) => {
-      requests.push({ path: String(path), key: new Headers(init?.headers).get('Idempotency-Key'), body: typeof init?.body === 'string' ? init.body : null })
-      if (requests.length === 1) throw new TypeError('response lost after acceptance')
-      return requests.length === 2 ? json(canonical) : json({ _embedded: { oneOffLessonResponseList: [canonical] } })
-    } })
+    const api = new HeadmanScheduleApi({
+      accessToken: () => 'owned-token',
+      fetcher: async (path, init) => {
+        requests.push({
+          path: String(path),
+          key: new Headers(init?.headers).get('Idempotency-Key'),
+          body: typeof init?.body === 'string' ? init.body : null,
+        })
+        if (requests.length === 1) throw new TypeError('response lost after acceptance')
+        return requests.length === 2
+          ? json(canonical)
+          : json({ _embedded: { oneOffLessonResponseList: [canonical] } })
+      },
+    })
     await expect(api.createOneOffLesson(input, key)).rejects.toThrow('response lost')
     const recovered = readOneOffIntent(storage, scope)!
     expect(Object.isFrozen(recovered.input)).toBe(true)
@@ -228,7 +492,9 @@ describe('ONE_OFF durable creation', () => {
     expect(requests[0]).toEqual(requests[1])
     expect(JSON.parse(requests[1]!.body!)).toEqual(input)
     await expect(api.listOneOffLessons(7, '2026-09-01', '2027-01-01')).resolves.toEqual([canonical])
-    expect(requests[2]!.path).toBe('/api/schedule/one-off-lessons?groupId=7&dateFrom=2026-09-01&dateTo=2027-01-01')
+    expect(requests[2]!.path).toBe(
+      '/api/schedule/one-off-lessons?groupId=7&dateFrom=2026-09-01&dateTo=2027-01-01',
+    )
     expect(values.get(scope)).not.toContain('owned-token')
   })
 
@@ -237,24 +503,50 @@ describe('ONE_OFF durable creation', () => {
     let respond!: (response: Response) => void
     let refreshes = 0
     let calls = 0
-    const api = createGenerationBoundHeadmanScheduleApi({
-      currentGeneration: () => generation, accessTokenFor: () => 'old-token',
-      refreshFor: async () => { refreshes += 1 },
-    }, async () => { calls += 1; return new Promise<Response>((resolve) => { respond = resolve }) })
+    const api = createGenerationBoundHeadmanScheduleApi(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'old-token',
+        refreshFor: async () => {
+          refreshes += 1
+        },
+      },
+      async () => {
+        calls += 1
+        return new Promise<Response>((resolve) => {
+          respond = resolve
+        })
+      },
+    )
     const pending = api.createOneOffLesson(input, key)
     generation = 2
     respond(new Response('{}', { status: 401 }))
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(refreshes).toBe(0)
     expect(calls).toBe(1)
-    await expect(api.createOneOffLesson(input, key)).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    await expect(api.createOneOffLesson(input, key)).rejects.toBeInstanceOf(
+      StaleSessionGenerationError,
+    )
     expect(calls).toBe(1)
   })
 
   it('fails closed for unavailable durable storage or a server response without a physical lesson', async () => {
-    expect(() => persistOneOffIntent({ setItem: () => { throw new Error('storage denied') } }, 'scope', { key, input })).toThrow('storage denied')
+    expect(() =>
+      persistOneOffIntent(
+        {
+          setItem: () => {
+            throw new Error('storage denied')
+          },
+        },
+        'scope',
+        { key, input },
+      ),
+    ).toThrow('storage denied')
     expect(() => readOneOffIntent({ getItem: () => '{broken' }, 'scope')).toThrow()
-    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json({ ...canonical, physicalLessonId: undefined }) })
+    const api = new HeadmanScheduleApi({
+      accessToken: () => null,
+      fetcher: async () => json({ ...canonical, physicalLessonId: undefined }),
+    })
     await expect(api.createOneOffLesson(input, key)).rejects.toThrow('physicalLessonId')
   })
 })

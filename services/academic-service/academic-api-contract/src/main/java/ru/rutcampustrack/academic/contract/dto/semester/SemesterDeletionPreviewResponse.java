@@ -10,5 +10,4 @@ public record SemesterDeletionPreviewResponse(
         SemesterDeletionPriorState priorState,
         long stateVersion,
         String previewDigest,
-        SemesterDeletionCounts counts) {
-}
+        SemesterDeletionCounts counts) {}

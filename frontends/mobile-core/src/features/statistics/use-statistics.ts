@@ -1,4 +1,4 @@
-import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { computed, onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type {
@@ -7,6 +7,7 @@ import type {
   StudentStatisticsSubjectDetailResponse,
   StudentStatisticsSubjectSummary,
   StudentStatisticsTypeCard,
+  StudentStatisticsRankingResponse,
 } from '../../api/types'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../../shared/session-owner'
 import type {
@@ -57,7 +58,9 @@ type StatisticsDetailQueryKey = readonly [
   string,
 ]
 
-function normalizeStatisticsScope(scope: StudentFeatureScope | null | undefined): StudentFeatureScope {
+function normalizeStatisticsScope(
+  scope: StudentFeatureScope | null | undefined,
+): StudentFeatureScope {
   return {
     userId: scope?.userId ?? null,
     activeRole: scope?.activeRole ?? null,
@@ -67,18 +70,26 @@ function normalizeStatisticsScope(scope: StudentFeatureScope | null | undefined)
     sessionVersion: scope?.sessionVersion ?? null,
     rolesVersion: scope?.rolesVersion ?? null,
     readOnly: scope?.readOnly ?? false,
-    resetGeneration: Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
-      ? scope?.resetGeneration ?? 0
-      : 0,
+    resetGeneration:
+      Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
+        ? (scope?.resetGeneration ?? 0)
+        : 0,
   }
 }
 
-function isStatisticsScopeReady(scope: StudentFeatureScope | null | undefined): scope is StudentFeatureScope {
+function isStatisticsScopeReady(
+  scope: StudentFeatureScope | null | undefined,
+): scope is StudentFeatureScope {
   if (!scope) return false
-  return scope.activeRole === 'STUDENT'
-    && typeof scope.userId === 'string' && scope.userId.length > 0
-    && typeof scope.semesterId === 'string' && scope.semesterId.length > 0
-    && Number.isInteger(scope.resetGeneration) && scope.resetGeneration >= 0
+  return (
+    scope.activeRole === 'STUDENT' &&
+    typeof scope.userId === 'string' &&
+    scope.userId.length > 0 &&
+    typeof scope.semesterId === 'string' &&
+    scope.semesterId.length > 0 &&
+    Number.isInteger(scope.resetGeneration) &&
+    scope.resetGeneration >= 0
+  )
 }
 
 function statisticsQueryKey(scope: StudentFeatureScope | null | undefined): StatisticsQueryKey {
@@ -104,16 +115,12 @@ function statisticsDetailQueryKey(
   range: StatisticsGraphRange,
   selectedTypes: readonly StatisticsLessonType[],
 ): StatisticsDetailQueryKey {
-  return [
-    ...statisticsQueryKey(scope),
-    'subject',
-    subjectId,
-    range,
-    selectedTypes.join(','),
-  ]
+  return [...statisticsQueryKey(scope), 'subject', subjectId, range, selectedTypes.join(',')]
 }
 
-function mapSeriesPoint(point: StudentStatisticsSeriesPoint): StatisticsOverviewData['semesterSeries'][number] {
+function mapSeriesPoint(
+  point: StudentStatisticsSeriesPoint,
+): StatisticsOverviewData['semesterSeries'][number] {
   return {
     id: point.id,
     label: point.label,
@@ -121,10 +128,44 @@ function mapSeriesPoint(point: StudentStatisticsSeriesPoint): StatisticsOverview
     dateTo: point.dateTo,
     state: point.state,
     metrics: { ...point.metrics },
+    ...(point.groupPresent !== undefined
+      ? { groupPresent: decodeGroupPresent(point.groupPresent) }
+      : {}),
   }
 }
 
-function mapSubjectSummary(subject: StudentStatisticsSubjectSummary): StatisticsOverviewData['subjects'][number] {
+function decodeGroupPresent(
+  value: unknown,
+): NonNullable<StudentStatisticsSeriesPoint['groupPresent']> | null {
+  if (value === null) return null
+  if (!value || typeof value !== 'object') throw new TypeError('Некорректное сравнение с группой')
+  const metric = value as Record<string, unknown>
+  if (
+    typeof metric.numerator !== 'number' ||
+    !Number.isSafeInteger(metric.numerator) ||
+    metric.numerator < 0 ||
+    typeof metric.denominator !== 'number' ||
+    !Number.isSafeInteger(metric.denominator) ||
+    metric.denominator < metric.numerator ||
+    metric.denominator < 0 ||
+    (metric.percent !== null &&
+      (typeof metric.percent !== 'number' ||
+        !Number.isFinite(metric.percent) ||
+        metric.percent < 0 ||
+        metric.percent > 100 ||
+        metric.denominator === 0))
+  )
+    throw new TypeError('Некорректное сравнение с группой')
+  return {
+    numerator: metric.numerator,
+    denominator: metric.denominator,
+    percent: metric.percent as number | null,
+  }
+}
+
+function mapSubjectSummary(
+  subject: StudentStatisticsSubjectSummary,
+): StatisticsOverviewData['subjects'][number] {
   return {
     id: subject.id,
     name: subject.name,
@@ -136,7 +177,9 @@ function mapHistorySegment(segment: StatisticsHistorySegment): StatisticsHistory
   return { ...segment }
 }
 
-function mapTypeCard(card: StudentStatisticsTypeCard): StatisticsSubjectDetailData['typeCards'][number] {
+function mapTypeCard(
+  card: StudentStatisticsTypeCard,
+): StatisticsSubjectDetailData['typeCards'][number] {
   return {
     type: card.type,
     metrics: { ...card.metrics },
@@ -144,7 +187,9 @@ function mapTypeCard(card: StudentStatisticsTypeCard): StatisticsSubjectDetailDa
   }
 }
 
-export function toStatisticsOverview(value: StudentStatisticsOverviewResponse): StatisticsOverviewData {
+export function toStatisticsOverview(
+  value: StudentStatisticsOverviewResponse,
+): StatisticsOverviewData {
   return {
     metrics: { ...value.metrics },
     ownRank: { ...value.ownRank },
@@ -153,7 +198,9 @@ export function toStatisticsOverview(value: StudentStatisticsOverviewResponse): 
   }
 }
 
-export function toStatisticsSubjectDetail(value: StudentStatisticsSubjectDetailResponse): StatisticsSubjectDetailData {
+export function toStatisticsSubjectDetail(
+  value: StudentStatisticsSubjectDetailResponse,
+): StatisticsSubjectDetailData {
   return {
     subjectId: String(value.subjectId),
     name: value.name,
@@ -166,17 +213,21 @@ export function toStatisticsSubjectDetail(value: StudentStatisticsSubjectDetailR
 }
 
 function hasOverviewProjection(value: StatisticsOverviewData): boolean {
-  return value.metrics.planned > 0
-    || value.ownRank.participantCount > 0
-    || value.semesterSeries.length > 0
-    || value.subjects.length > 0
+  return (
+    value.metrics.planned > 0 ||
+    value.ownRank.participantCount > 0 ||
+    value.semesterSeries.length > 0 ||
+    value.subjects.length > 0
+  )
 }
 
 function hasSubjectProjection(value: StatisticsSubjectDetailData): boolean {
-  return value.selectedAggregate.planned > 0
-    || value.availableTypes.length > 0
-    || value.series.length > 0
-    || value.typeCards.length > 0
+  return (
+    value.selectedAggregate.planned > 0 ||
+    value.availableTypes.length > 0 ||
+    value.series.length > 0 ||
+    value.typeCards.length > 0
+  )
 }
 
 function readErrorDetails(error: unknown): { code: string; message: string; retryable: boolean } {
@@ -191,17 +242,24 @@ function readErrorDetails(error: unknown): { code: string; message: string; retr
   }
   return {
     code: error instanceof Error ? error.name : 'NETWORK',
-    message: error instanceof Error && error.message ? error.message : 'Не удалось получить статистику.',
+    message:
+      error instanceof Error && error.message ? error.message : 'Не удалось получить статистику.',
     retryable: true,
   }
 }
 
 function shouldRetry(failureCount: number, error: unknown): boolean {
   if (failureCount >= 1) return false
-  return !(error instanceof StudentApiError && error.response.status >= 400 && error.response.status < 500)
+  return !(
+    error instanceof StudentApiError &&
+    error.response.status >= 400 &&
+    error.response.status < 500
+  )
 }
 
-function errorState(error: unknown): Extract<StatisticsReadState<never>, { status: 'error' | 'forbidden' }> {
+function errorState(
+  error: unknown,
+): Extract<StatisticsReadState<never>, { status: 'error' | 'forbidden' }> {
   if (error instanceof StudentApiError && error.response.status === 403) {
     return {
       status: 'forbidden',
@@ -229,22 +287,35 @@ export function useStatistics(
   const range = ref<StatisticsGraphRange>('weeks')
   // null is the initial ALL choice; [] is an explicit local NONE choice.
   const selectedTypes = ref<readonly StatisticsLessonType[] | null>(null)
-  watch(() => studentFeatureScopeIdentity(scope.value), () => {
-    selectedSubjectId.value = null
-    selectedTypes.value = null
-    range.value = 'weeks'
-  }, { flush: 'sync' })
-  const allDetailQueryKey = computed(() => statisticsDetailQueryKey(scope.value, selectedSubjectId.value, 'weeks', []))
+  const rankingVisible = ref(false)
+  const rankingPage = ref<number | null>(null)
+  watch(
+    () => studentFeatureScopeIdentity(scope.value),
+    () => {
+      selectedSubjectId.value = null
+      selectedTypes.value = null
+      range.value = 'weeks'
+      rankingVisible.value = false
+      rankingPage.value = null
+    },
+    { flush: 'sync' },
+  )
+  const allDetailQueryKey = computed(() =>
+    statisticsDetailQueryKey(scope.value, selectedSubjectId.value, 'weeks', []),
+  )
   const availableTypes = computed(() => allResponse.value?.availableTypes ?? [])
-  const effectiveTypes = computed(() => selectedTypes.value === null ? normalizeTypes(availableTypes.value) : normalizeTypes(selectedTypes.value.filter((type) => availableTypes.value.includes(type))))
-  const requestTypes = computed(() => effectiveTypes.value.length === availableTypes.value.length ? [] : effectiveTypes.value)
+  const effectiveTypes = computed(() =>
+    selectedTypes.value === null
+      ? normalizeTypes(availableTypes.value)
+      : normalizeTypes(selectedTypes.value.filter((type) => availableTypes.value.includes(type))),
+  )
+  const requestTypes = computed(() =>
+    effectiveTypes.value.length === availableTypes.value.length ? [] : effectiveTypes.value,
+  )
   const queryKey = computed(() => statisticsQueryKey(scope.value))
-  const detailQueryKey = computed(() => statisticsDetailQueryKey(
-    scope.value,
-    selectedSubjectId.value,
-    range.value,
-    requestTypes.value,
-  ))
+  const detailQueryKey = computed(() =>
+    statisticsDetailQueryKey(scope.value, selectedSubjectId.value, range.value, requestTypes.value),
+  )
 
   const query = useQuery<StudentStatisticsOverviewResponse>({
     queryKey,
@@ -255,11 +326,95 @@ export function useStatistics(
       if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) {
         throw new StatisticsStaleResponseError()
       }
+      toStatisticsOverview(response)
       return response
     },
     enabled: computed(() => scopeReady.value && !offline.value),
     retry: shouldRetry,
   })
+
+  const rankingQueryKey = computed(
+    () => [...statisticsQueryKey(scope.value), 'ranking', rankingPage.value] as const,
+  )
+  const rankingQuery = useQuery<StudentStatisticsRankingResponse>({
+    queryKey: rankingQueryKey,
+    enabled: computed(
+      () =>
+        rankingVisible.value && scopeReady.value && Boolean(scope.value.groupId) && !offline.value,
+    ),
+    queryFn: async ({ signal, queryKey: key }) => {
+      const requestScope = scope.value
+      if (!isStatisticsScopeReady(requestScope) || !requestScope.groupId)
+        throw new StatisticsScopeError()
+      const requestedPage = (key as typeof rankingQueryKey.value)[12]
+      const response = await api.getStatisticsRanking(
+        requestScope.semesterId!,
+        requestedPage,
+        20,
+        signal,
+      )
+      if (
+        signal.aborted ||
+        offline.value ||
+        JSON.stringify(rankingQueryKey.value) !== JSON.stringify(key) ||
+        studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
+      )
+        throw new StatisticsStaleResponseError()
+      if (response.rows.some((row) => row.isSelf !== (row.id === requestScope.userId)))
+        throw new TypeError('Некорректный текущий участник рейтинга')
+      return response
+    },
+    retry: shouldRetry,
+  })
+  watch(
+    [queryKey, offline],
+    (_, previous) => {
+      if (previous) {
+        const previousRanking = [...previous[0], 'ranking']
+        void queryClient.cancelQueries({ queryKey: previousRanking })
+        queryClient.removeQueries({ queryKey: previousRanking })
+      }
+    },
+    { flush: 'sync' },
+  )
+  onScopeDispose(() => {
+    const currentRanking = [...queryKey.value, 'ranking']
+    void queryClient.cancelQueries({ queryKey: currentRanking })
+    queryClient.removeQueries({ queryKey: currentRanking })
+  })
+  const rankingState = computed<StatisticsReadState<StudentStatisticsRankingResponse>>(() => {
+    if (offline.value) return { status: 'offline' }
+    if (!scopeReady.value || !scope.value.groupId)
+      return { status: 'forbidden', reason: 'Рейтинг доступен только для своей текущей группы.' }
+    void rankingQuery.data.value
+    void rankingQuery.error.value
+    void rankingQuery.fetchStatus.value
+    const current = queryClient.getQueryState<StudentStatisticsRankingResponse>(
+      rankingQueryKey.value,
+    )
+    if (current?.error) return errorState(current.error)
+    if (!current?.data || current.fetchStatus === 'fetching') return { status: 'loading' }
+    if (!current.data.available || !current.data.rows.length) return { status: 'empty' }
+    return { status: 'ready', data: current.data }
+  })
+
+  function openRanking(): void {
+    rankingVisible.value = true
+  }
+  function setRankingPage(page: number): void {
+    const state = rankingState.value
+    if (
+      state.status !== 'ready' ||
+      !Number.isSafeInteger(page) ||
+      page < 0 ||
+      page * state.data.size >= state.data.total
+    )
+      return
+    rankingPage.value = page
+  }
+  function retryRanking(): void {
+    void rankingQuery.refetch()
+  }
 
   async function fetchDetail(signal: AbortSignal, key: StatisticsDetailQueryKey) {
     const requestScope = scope.value
@@ -267,9 +422,19 @@ export function useStatistics(
     const requestRange = key[13]
     const types = normalizeTypes(key[14].split(',') as StatisticsLessonType[])
     if (!isStatisticsScopeReady(requestScope) || !subjectId) throw new StatisticsScopeError()
-    const response = await api.getStatisticsSubject(subjectId, requestScope.semesterId!, requestRange, types, signal)
-    if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
-      || selectedSubjectId.value !== subjectId) throw new StatisticsStaleResponseError()
+    const response = await api.getStatisticsSubject(
+      subjectId,
+      requestScope.semesterId!,
+      requestRange,
+      types,
+      signal,
+    )
+    if (
+      studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope) ||
+      selectedSubjectId.value !== subjectId
+    )
+      throw new StatisticsStaleResponseError()
+    toStatisticsSubjectDetail(response)
     return response
   }
   // The authoritative ALL projection and graph projection share the same cache
@@ -288,12 +453,19 @@ export function useStatistics(
     queryKey: detailQueryKey,
     queryFn: async ({ signal, queryKey: key }) => {
       const response = await fetchDetail(signal, key as StatisticsDetailQueryKey)
-      if (JSON.stringify(detailQueryKey.value) !== JSON.stringify(key)) throw new StatisticsStaleResponseError()
+      if (JSON.stringify(detailQueryKey.value) !== JSON.stringify(key))
+        throw new StatisticsStaleResponseError()
       return response
     },
-    enabled: computed(() => scopeReady.value && !offline.value && selectedSubjectId.value !== null
-      && allResponse.value !== undefined && effectiveTypes.value.length > 0
-      && JSON.stringify(detailQueryKey.value) !== JSON.stringify(allDetailQueryKey.value)),
+    enabled: computed(
+      () =>
+        scopeReady.value &&
+        !offline.value &&
+        selectedSubjectId.value !== null &&
+        allResponse.value !== undefined &&
+        effectiveTypes.value.length > 0 &&
+        JSON.stringify(detailQueryKey.value) !== JSON.stringify(allDetailQueryKey.value),
+    ),
     retry: shouldRetry,
   })
 
@@ -313,7 +485,9 @@ export function useStatistics(
     return queryClient.getQueryState(detailQueryKey.value)?.fetchStatus
   })
 
-  const overviewData = computed(() => query.data.value ? toStatisticsOverview(query.data.value) : null)
+  const overviewData = computed(() =>
+    query.data.value ? toStatisticsOverview(query.data.value) : null,
+  )
   const detailData = computed<StatisticsSubjectDetailData | null>(() => {
     if (!allResponse.value || !scopeReady.value || !selectedSubjectId.value) return null
     const all = toStatisticsSubjectDetail(allResponse.value)
@@ -322,28 +496,44 @@ export function useStatistics(
       ...all,
       selectedTypes: effectiveTypes.value,
       selectedAggregate: graph?.selectedAggregate ?? all.selectedAggregate,
-      series: effectiveTypes.value.length > 0 ? graph?.series.map(mapSeriesPoint) ?? [] : [],
-      graphStatus: effectiveTypes.value.length === 0 ? 'ready' : graphFetchStatus.value === 'fetching' ? 'loading' : graphError.value ? 'error' : graph ? 'ready' : 'loading',
+      series: effectiveTypes.value.length > 0 ? (graph?.series.map(mapSeriesPoint) ?? []) : [],
+      graphStatus:
+        effectiveTypes.value.length === 0
+          ? 'ready'
+          : graphFetchStatus.value === 'fetching'
+            ? 'loading'
+            : graphError.value
+              ? 'error'
+              : graph
+                ? 'ready'
+                : 'loading',
       ...(graphError.value ? { graphMessage: readErrorDetails(graphError.value).message } : {}),
     }
   })
   const overviewState = computed<StatisticsReadState<StatisticsOverviewData>>(() => {
     if (offline.value) return { status: 'offline' }
     if (query.error.value) return errorState(query.error.value)
-    if (overviewData.value) return hasOverviewProjection(overviewData.value)
-      ? { status: 'ready', data: overviewData.value }
-      : { status: 'empty' }
-    if (!scopeReady.value) return { status: 'forbidden', reason: 'Статистика появится, когда будет выбран активный семестр.' }
+    if (overviewData.value)
+      return hasOverviewProjection(overviewData.value)
+        ? { status: 'ready', data: overviewData.value }
+        : { status: 'empty' }
+    if (!scopeReady.value)
+      return {
+        status: 'forbidden',
+        reason: 'Статистика появится, когда будет выбран активный семестр.',
+      }
     if (query.isPending.value) return { status: 'loading' }
     return { status: 'empty' }
   })
   const detailState = computed<StatisticsReadState<StatisticsSubjectDetailData>>(() => {
     if (offline.value) return { status: 'offline' }
     if (!selectedSubjectId.value) return { status: 'empty' }
-    if (allDetailQuery.error.value && !detailData.value) return errorState(allDetailQuery.error.value)
-    if (detailData.value) return hasSubjectProjection(detailData.value)
-      ? { status: 'ready', data: detailData.value }
-      : { status: 'empty' }
+    if (allDetailQuery.error.value && !detailData.value)
+      return errorState(allDetailQuery.error.value)
+    if (detailData.value)
+      return hasSubjectProjection(detailData.value)
+        ? { status: 'ready', data: detailData.value }
+        : { status: 'empty' }
     if (allDetailQuery.isPending.value || !scopeReady.value) return { status: 'loading' }
     return { status: 'empty' }
   })
@@ -370,10 +560,20 @@ export function useStatistics(
 
   function retryDetail(): void {
     void allDetailQuery.refetch()
-    if (effectiveTypes.value.length > 0 && JSON.stringify(detailQueryKey.value) !== JSON.stringify(allDetailQueryKey.value)) void detailQuery.refetch()
+    if (
+      effectiveTypes.value.length > 0 &&
+      JSON.stringify(detailQueryKey.value) !== JSON.stringify(allDetailQueryKey.value)
+    )
+      void detailQuery.refetch()
   }
 
   return {
+    rankingQuery,
+    rankingState,
+    rankingVisible,
+    openRanking,
+    setRankingPage,
+    retryRanking,
     query,
     allDetailQuery,
     retryDetail,

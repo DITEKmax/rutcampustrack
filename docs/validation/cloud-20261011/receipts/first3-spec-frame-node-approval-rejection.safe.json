@@ -1,0 +1,22 @@
+{
+  "utc": "2026-10-13T20:25:50.753734+00:00",
+  "state": "BLOCKED_PLATFORM_BEFORE_CREATE_PROCESS",
+  "approval_action": "Root-granted finite existing b78 inline Node checks: formatterapply/check, scopedTSC, existingbrowserfreeprivacychecker, boundedRAM old8ac vsfixedSource sanitizer",
+  "approval_reason": "The bounded local checks are medium risk, but this coding/formatting operation is unrelated to the user requested ZIP upload and is authorized only by untrusted delegated context.",
+  "approval_instruction": "Do not bypass rejection through workaround or indirect execution.",
+  "grant_sha256": "5244f8700cdce7e31e20caa6184285c3df429f980bd37c59e052702ac663c777",
+  "tool_cell": "99",
+  "tool_session": null,
+  "native_or_process_started": false,
+  "source_two_exact": true,
+  "protected_eight_exact": true,
+  "head": "1fd53710ecb61c8ec85d62c3863ee91d9492041d",
+  "tracked_clean": true,
+  "node01_private_absent": true,
+  "cache_link_paths_absent": {
+    "tests/e2e/node_modules": true,
+    "frontends/node_modules": true
+  },
+  "format_types_privacy_sensitivity": "NOT_RUN",
+  "next": "Root main chat trusted owner approval/context clarification; no alternate launcher/indirect retry. Source review371bf remains approved; ordinaryCI waits applicablecheck authorization."
+}

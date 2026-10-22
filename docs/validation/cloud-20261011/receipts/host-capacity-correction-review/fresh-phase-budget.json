@@ -1,0 +1,34 @@
+{
+  "time": "2026-10-12T05:58:20.768935+00:00",
+  "actual_free_bytes": 7161970688,
+  "available_inodes": 1439253,
+  "stage_phase_required_bytes": 4630511616,
+  "runtime_phase_required_bytes": 8277277457,
+  "max_nonoverlap_phase_required_bytes": 8277277457,
+  "phase_components": {
+    "floor4GiB": 4294967296,
+    "final192MiB": 201326592,
+    "staging_only_transient128MiB": 134217728,
+    "runtime_only_Docker9_logical_estimate": 2707241745,
+    "runtime_only_growth1GiB": 1073741824
+  },
+  "original_conservative_all_sum_preserved": 8411495185,
+  "candidate_unique_allocated_potential_bytes": 1519378432,
+  "potential_headroom_bytes": 404071663,
+  "256MiB_target_bytes": 268435456,
+  "target_met_at_snapshot": true,
+  "memory_current": 4656574464,
+  "memory_max": 17179869184,
+  "cpu_max": "400000 100000",
+  "actual_recovered_bytes": 0,
+  "actual_stage_or_VFS_container_allocation": "UNKNOWN",
+  "resource_mutations": false,
+  "conditions": [
+    "Root fresh preflight after true writer/allalias freeze before mutation",
+    "all exact10831metadata/SHA/head/COW rules rechecked before selectedpairs",
+    "actual measuredfree delta not st_blocks arithmetic establishesrecovery",
+    "fullstage seal and alltransient/extractors gone beforeDockerdata/apps",
+    "no extraction whiledata/appsactive; otherwiseall-sum budget applies",
+    "actualstage/container/data growth reserve/4GiBfloor measured before everyphase"
+  ]
+}

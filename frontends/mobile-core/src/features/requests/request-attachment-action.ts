@@ -18,7 +18,9 @@ export interface RequestAttachmentWindow {
  * result is therefore handled as blocked, while a failed isolation setter is
  * fail-closed before any async download starts.
  */
-export function openRequestAttachmentPopup(browserWindow: RequestAttachmentWindow): RequestAttachmentPopup | null {
+export function openRequestAttachmentPopup(
+  browserWindow: RequestAttachmentWindow,
+): RequestAttachmentPopup | null {
   const popup = browserWindow.open('', '_blank') as RequestAttachmentPopup | null
   if (!popup) return null
   try {
@@ -55,12 +57,17 @@ export interface RequestAttachmentActionDependencies {
   errorMessage: (error: unknown) => string
 }
 
-export const requestAttachmentPopupBlockedMessage = 'Не удалось открыть вложение: разреши всплывающие окна и повтори.'
-export const requestAttachmentPopupIsolationMessage = 'Не удалось безопасно открыть вложение. Повтори попытку.'
+export const requestAttachmentPopupBlockedMessage =
+  'Не удалось открыть вложение: разреши всплывающие окна и повтори.'
+export const requestAttachmentPopupIsolationMessage =
+  'Не удалось безопасно открыть вложение. Повтори попытку.'
 
 const idleState = (): RequestAttachmentViewState => ({ status: 'idle', error: null })
 const pendingState = (): RequestAttachmentViewState => ({ status: 'pending', error: null })
-const errorState = (message: string): RequestAttachmentViewState => ({ status: 'error', error: message })
+const errorState = (message: string): RequestAttachmentViewState => ({
+  status: 'error',
+  error: message,
+})
 
 /**
  * Opens the blank target during the click event, then fills it from the
@@ -68,17 +75,21 @@ const errorState = (message: string): RequestAttachmentViewState => ({ status: '
  * teardown fences so a late response cannot publish or keep an old popup alive.
  */
 export function runRequestAttachmentOpen(deps: RequestAttachmentActionDependencies): void {
-  if (!deps.ownerIdentity
-    || deps.isDisposed()
-    || deps.ownerIdentity !== deps.currentOwnerIdentity()
-    || deps.ownerGeneration !== deps.currentOwnerGeneration()) return
+  if (
+    !deps.ownerIdentity ||
+    deps.isDisposed() ||
+    deps.ownerIdentity !== deps.currentOwnerIdentity() ||
+    deps.ownerGeneration !== deps.currentOwnerGeneration()
+  )
+    return
 
   let popup: RequestAttachmentPopup | null = null
   let objectUrl: string | null = null
   let navigated = false
-  const isCurrent = (): boolean => !deps.isDisposed()
-    && deps.ownerIdentity === deps.currentOwnerIdentity()
-    && deps.ownerGeneration === deps.currentOwnerGeneration()
+  const isCurrent = (): boolean =>
+    !deps.isDisposed() &&
+    deps.ownerIdentity === deps.currentOwnerIdentity() &&
+    deps.ownerGeneration === deps.currentOwnerGeneration()
   const close = (): void => {
     if (!popup || navigated) return
     deps.closePopup(popup)
@@ -140,18 +151,33 @@ export function runRequestAttachmentOpen(deps: RequestAttachmentActionDependenci
     })
 }
 
-export type RequestAttachmentDownloadDependencies = Pick<RequestAttachmentActionDependencies,
-  'ownerIdentity' | 'ownerGeneration' | 'currentOwnerIdentity' | 'currentOwnerGeneration'
-  | 'isDisposed' | 'download' | 'createObjectUrl' | 'releaseObjectUrl' | 'scheduleRelease'
-  | 'setState' | 'onError' | 'errorMessage'> & {
+export type RequestAttachmentDownloadDependencies = Pick<
+  RequestAttachmentActionDependencies,
+  | 'ownerIdentity'
+  | 'ownerGeneration'
+  | 'currentOwnerIdentity'
+  | 'currentOwnerGeneration'
+  | 'isDisposed'
+  | 'download'
+  | 'createObjectUrl'
+  | 'releaseObjectUrl'
+  | 'scheduleRelease'
+  | 'setState'
+  | 'onError'
+  | 'errorMessage'
+> & {
   save: (url: string) => void
 }
 
 /** The authenticated response may only become a download while its request is current. */
-export async function runRequestAttachmentDownload(deps: RequestAttachmentDownloadDependencies): Promise<void> {
-  const isCurrent = (): boolean => Boolean(deps.ownerIdentity) && !deps.isDisposed()
-    && deps.ownerIdentity === deps.currentOwnerIdentity()
-    && deps.ownerGeneration === deps.currentOwnerGeneration()
+export async function runRequestAttachmentDownload(
+  deps: RequestAttachmentDownloadDependencies,
+): Promise<void> {
+  const isCurrent = (): boolean =>
+    Boolean(deps.ownerIdentity) &&
+    !deps.isDisposed() &&
+    deps.ownerIdentity === deps.currentOwnerIdentity() &&
+    deps.ownerGeneration === deps.currentOwnerGeneration()
   if (!isCurrent()) return
   deps.setState(pendingState())
   let objectUrl: string | null = null

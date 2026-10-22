@@ -1,0 +1,490 @@
+[
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "Pattern",
+      "NotBlank",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AdminPasswordResetLinkResponse.java",
+    "redacted_tostring": true,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java",
+    "redacted_tostring": true,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ChangePasswordRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotBlank",
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmMapDeletionRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "NotBlank",
+      "NotNull",
+      "Positive",
+      "NotNull",
+      "NotBlank",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmSemesterDeletionRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "NotBlank",
+      "Positive",
+      "NotNull",
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmUserArchiveRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "NotBlank",
+      "NotNull",
+      "Positive",
+      "NotNull",
+      "NotBlank",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConsumeWsTicketRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConsumeWsTicketResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/InternalIssueRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotNull",
+      "Positive",
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/InternalIssueResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotNull",
+      "AssertTrue",
+      "NotNull",
+      "Positive",
+      "NotNull",
+      "Positive",
+      "NotNull",
+      "Positive",
+      "NotNull",
+      "Size",
+      "NotBlank",
+      "Size",
+      "NotNull",
+      "Pattern",
+      "AssertTrue",
+      "AssertTrue",
+      "NotNull",
+      "Positive",
+      "NotBlank",
+      "Pattern",
+      "Positive",
+      "Positive",
+      "Size",
+      "NotBlank",
+      "Size",
+      "Size",
+      "NotBlank",
+      "Size",
+      "Size",
+      "NotBlank",
+      "Size",
+      "NotNull",
+      "NotNull",
+      "NotNull",
+      "NotNull",
+      "Size",
+      "NotNull",
+      "NotNull",
+      "Positive",
+      "Size",
+      "NotBlank",
+      "Size",
+      "Size",
+      "NotNull",
+      "Size",
+      "NotNull",
+      "NotNull",
+      "Positive",
+      "NotNull",
+      "NotNull",
+      "Positive",
+      "Size",
+      "NotBlank",
+      "Size",
+      "NotNull",
+      "Positive",
+      "NotBlank",
+      "Size",
+      "NotBlank",
+      "Size",
+      "Size"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/LoginRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotNull"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyByCodeRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "Size"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotNull",
+      "NotBlank",
+      "Size"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotNull",
+      "NotNull"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetCompleteRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotBlank",
+      "Size",
+      "NotBlank",
+      "Size"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "Positive",
+      "Size",
+      "Pattern",
+      "AssertTrue"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetRequestResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetVerifyRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotBlank",
+      "Size",
+      "NotBlank",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordResetVerifyResponse.java",
+    "redacted_tostring": true,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PublicKeyResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginApprovalRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotNull",
+      "NotNull",
+      "NotNull",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginDecisionRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotNull",
+      "NotNull",
+      "NotNull",
+      "Pattern",
+      "NotNull"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginIssueRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotNull",
+      "Pattern",
+      "AssertTrue"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginIssueResponse.java",
+    "redacted_tostring": true,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginPreviewResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginProofRequest.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotNull",
+      "NotNull",
+      "NotNull",
+      "Pattern",
+      "NotNull"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginPurpose.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginState.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginStatusResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RedeemReportDownloadTicketRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RefreshRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadFormat.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketRedemptionResponse.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotNull",
+      "NotNull",
+      "NotBlank",
+      "Pattern",
+      "NotNull"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "Pattern",
+      "NotBlank",
+      "Pattern",
+      "NotBlank",
+      "Pattern",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank",
+      "Pattern",
+      "NotBlank",
+      "Pattern"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java",
+    "redacted_tostring": true,
+    "constraints": [
+      "NotBlank",
+      "Positive"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TmaAuthRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "NotBlank"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TokenResponse.java",
+    "redacted_tostring": true,
+    "constraints": [],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/WsSessionAdmissionRequest.java",
+    "redacted_tostring": false,
+    "constraints": [
+      "Positive",
+      "NotBlank",
+      "Positive",
+      "Positive",
+      "NotBlank",
+      "NotBlank",
+      "Positive"
+    ],
+    "record": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/WsTicketResponse.java",
+    "redacted_tostring": false,
+    "constraints": [],
+    "record": true
+  }
+]

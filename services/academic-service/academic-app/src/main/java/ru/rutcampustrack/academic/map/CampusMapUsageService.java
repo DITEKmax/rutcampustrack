@@ -1,11 +1,7 @@
 package ru.rutcampustrack.academic.map;
 
-import org.springframework.stereotype.Service;
-import org.springframework.context.ApplicationEventPublisher;
-import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
+import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.INVALID_ARGUMENT;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -13,13 +9,16 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
-
-import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
-import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.INVALID_ARGUMENT;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
- * Records one logical, user-facing floor opening and serves the shared admin
- * aggregate.  The database trigger remains the single increment authority.
+ * Records one logical, user-facing floor opening and serves the shared admin aggregate. The
+ * database trigger remains the single increment authority.
  */
 @Service
 public class CampusMapUsageService {
@@ -28,10 +27,11 @@ public class CampusMapUsageService {
     private final CampusMapOwnerHmacProvider ownerHmacProvider;
     private final ApplicationEventPublisher events;
 
-    public CampusMapUsageService(CampusMapReadService mapReadService,
-                                 CampusMapUsageRepository repository,
-                                 CampusMapOwnerHmacProvider ownerHmacProvider,
-                                 ApplicationEventPublisher events) {
+    public CampusMapUsageService(
+            CampusMapReadService mapReadService,
+            CampusMapUsageRepository repository,
+            CampusMapOwnerHmacProvider ownerHmacProvider,
+            ApplicationEventPublisher events) {
         this.mapReadService = mapReadService;
         this.repository = repository;
         this.ownerHmacProvider = ownerHmacProvider;
@@ -39,44 +39,48 @@ public class CampusMapUsageService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void recordFloorOpen(String buildingId,
-                                String floorId,
-                                UUID intentId,
-                                InternalJwtClaims claims) {
+    public void recordFloorOpen(
+            String buildingId, String floorId, UUID intentId, InternalJwtClaims claims) {
         if (intentId == null) {
             throw CampusMapReadException.of(INVALID_ARGUMENT, "map open intent is required");
         }
 
-        CampusMapReadModels.PlanResult plan = mapReadService.readFloorPlan(buildingId, floorId, claims);
+        CampusMapReadModels.PlanResult plan =
+                mapReadService.readFloorPlan(buildingId, floorId, claims);
         if (!plan.hasPlan()) {
-            throw CampusMapReadException.of(FAILED_PRECONDITION,
-                    "campus map floor has no published plan");
+            throw CampusMapReadException.of(
+                    FAILED_PRECONDITION, "campus map floor has no published plan");
         }
 
         long buildingKey = parseCanonicalId(buildingId, "building id");
         long floorKey = parseCanonicalId(floorId, "floor id");
         if (!repository.lockFloorForOpen(floorKey)) {
-            throw CampusMapReadException.of(CampusMapReadException.Code.NOT_FOUND,
-                    "campus map floor was not found");
+            throw CampusMapReadException.of(
+                    CampusMapReadException.Code.NOT_FOUND, "campus map floor was not found");
         }
         byte[] ownerHmac = ownerHmacProvider.forUser(claims.userId());
         byte[] payloadHash = payloadHash(buildingKey, floorKey, intentId);
 
-        boolean newIntent = repository.insertOpenIntent(ownerHmac, intentId, buildingKey, floorKey, payloadHash) == 1;
-        CampusMapUsageRepository.OpenIntentRow intent = repository
-                .findOpenIntentForUpdate(ownerHmac, intentId)
-                .orElseThrow(() -> CampusMapReadException.of(
-                        CampusMapReadException.Code.INTERNAL,
-                        "campus map open intent was not retained"));
+        boolean newIntent =
+                repository.insertOpenIntent(ownerHmac, intentId, buildingKey, floorKey, payloadHash)
+                        == 1;
+        CampusMapUsageRepository.OpenIntentRow intent =
+                repository
+                        .findOpenIntentForUpdate(ownerHmac, intentId)
+                        .orElseThrow(
+                                () ->
+                                        CampusMapReadException.of(
+                                                CampusMapReadException.Code.INTERNAL,
+                                                "campus map open intent was not retained"));
         if (intent.buildingId() != buildingKey
                 || intent.floorId() != floorKey
                 || !Arrays.equals(intent.payloadHash(), payloadHash)) {
-            throw CampusMapReadException.of(FAILED_PRECONDITION,
-                    "map open intent is already bound to another floor");
+            throw CampusMapReadException.of(
+                    FAILED_PRECONDITION, "map open intent is already bound to another floor");
         }
 
-        repository.insertDemandDedupe(ownerHmac, floorKey, intent.acceptedUtcDay(),
-                intentId, intent.acceptedAt());
+        repository.insertDemandDedupe(
+                ownerHmac, floorKey, intent.acceptedUtcDay(), intentId, intent.acceptedAt());
         if (newIntent) events.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
@@ -103,11 +107,12 @@ public class CampusMapUsageService {
 
     private static byte[] payloadHash(long buildingId, long floorId, UUID intentId) {
         try {
-            ByteBuffer payload = ByteBuffer.allocate(Long.BYTES * 2 + 16)
-                    .putLong(buildingId)
-                    .putLong(floorId)
-                    .putLong(intentId.getMostSignificantBits())
-                    .putLong(intentId.getLeastSignificantBits());
+            ByteBuffer payload =
+                    ByteBuffer.allocate(Long.BYTES * 2 + 16)
+                            .putLong(buildingId)
+                            .putLong(floorId)
+                            .putLong(intentId.getMostSignificantBits())
+                            .putLong(intentId.getLeastSignificantBits());
             return MessageDigest.getInstance("SHA-256").digest(payload.array());
         } catch (NoSuchAlgorithmException error) {
             throw CampusMapReadException.of(

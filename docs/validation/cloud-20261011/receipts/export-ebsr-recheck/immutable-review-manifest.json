@@ -1,0 +1,183 @@
+{
+  "revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "verdict": "APPROVE",
+  "product_revision": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "actual_crosslayer_producer": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 807,
+      "sha256": "f8eeba59b91498268ed4af7b1a53542eada8a5f9398f9daeddb111afab470995"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 12161,
+      "sha256": "4f013b5035a23b1c4db59aa9a9a1dd3a34c2e771a8bd1435f64bd046046e49e0"
+    },
+    {
+      "path": "acceptance-source-identity.json",
+      "bytes": 16406,
+      "sha256": "17f1037d13064991db90b909ca5c7188b34502852aab008818bd34980ffef6bc"
+    },
+    {
+      "path": "after2-independent-xml.json",
+      "bytes": 2347,
+      "sha256": "044ba6b2d449cd18707a888d3ff749b2a214f0bc71873e99a1b42e85e4ff71ce"
+    },
+    {
+      "path": "after3-independent-terminal.json",
+      "bytes": 632,
+      "sha256": "1d68668a3fb9289d64d4aee9aafde803ca877122c21becaddec5e9af332e4ec7"
+    },
+    {
+      "path": "after3-independent-xml.json",
+      "bytes": 2159,
+      "sha256": "3a1468f9fd65464eca285cb67e34c12ec3e75dc96ed254322eab476dbda23d91"
+    },
+    {
+      "path": "after3-source-bridge.json",
+      "bytes": 584253,
+      "sha256": "74c7dfd814d3dc7175c33dbfdd8cf55d799ddab18b27fc2d7843b5c096290870"
+    },
+    {
+      "path": "before3-independent-xml.json",
+      "bytes": 5600,
+      "sha256": "5f1c19d71c07962d69db54d584168d728755ea7789088d34b476564c7bafa390"
+    },
+    {
+      "path": "before3-terminal-metadata.json",
+      "bytes": 280,
+      "sha256": "c3a0bdbfc550d2d37de9b384996af8ec56ff59ff9137b8d2aab46fe36e61bcdc"
+    },
+    {
+      "path": "check-runtime-receipts.py",
+      "bytes": 5489,
+      "sha256": "0085a000f895a9d19a6fb04241165ed4df21666a8b879b537c2479f7ba97fa00"
+    },
+    {
+      "path": "compile-source-bridge.json",
+      "bytes": 335,
+      "sha256": "21cd53be3682dde5b15b8a8f91a86fdedc13f4f1ada8ebc37b6a0e49b7d44738"
+    },
+    {
+      "path": "ebsr-affected-unit-1-source-bridge.json",
+      "bytes": 489577,
+      "sha256": "a834f954a5ab1fcc5a3207a7196edd0abc735128e956da311be55dc8dc360de6"
+    },
+    {
+      "path": "ebsr-affected-unit-1-terminal-metadata.json",
+      "bytes": 517,
+      "sha256": "5bc810a90e537f8ad37c389722fd1a5d4c6cffd3081db7d1bbe1198423f2a7c1"
+    },
+    {
+      "path": "ebsr-affected-unit-2-source-bridge.json",
+      "bytes": 489577,
+      "sha256": "32107122e2e70c8bdf9d492cf5c421c290808cb94c42f25dce4c42600212b1ac"
+    },
+    {
+      "path": "ebsr-affected-unit-2-terminal-metadata.json",
+      "bytes": 543,
+      "sha256": "05175a294efe781fe05a5bad4f39707690da9380e41d9d229a13971a37386cd4"
+    },
+    {
+      "path": "ebsr-auth-compatibility-1-source-bridge.json",
+      "bytes": 489577,
+      "sha256": "32107122e2e70c8bdf9d492cf5c421c290808cb94c42f25dce4c42600212b1ac"
+    },
+    {
+      "path": "ebsr-auth-compatibility-1-terminal-metadata.json",
+      "bytes": 499,
+      "sha256": "2a1cb7ffbd9100f5b6fcd7719394ece23f739cc48bd4aff1ef6d30d39d9e1cdb"
+    },
+    {
+      "path": "ebsr-compile-after-1-terminal-metadata.json",
+      "bytes": 379,
+      "sha256": "c5aeb13069d651b63b7585ca8e5ed6dc14e942c0db5c39b7692c9a257f3a368c"
+    },
+    {
+      "path": "ebsr-compile-after-2-terminal-metadata.json",
+      "bytes": 379,
+      "sha256": "f215925dd334335ecd9ab7d705020f6b4f6e128b76bbf368f297b9e0687230dd"
+    },
+    {
+      "path": "ebsr-crosslayer-after-1-terminal-metadata.json",
+      "bytes": 452,
+      "sha256": "31a26eadbe41eec11d52e89bc8fccc4938d4530da7085247be8e91beb4b8d1cc"
+    },
+    {
+      "path": "ebsr-crosslayer-after-2-terminal-metadata.json",
+      "bytes": 497,
+      "sha256": "2d59d45c6fedfdfadb594ed921b538106ebf94fd22e6c0b1f5d03d5f22e21c53"
+    },
+    {
+      "path": "ebsr-crosslayer-after-3-terminal-metadata.json",
+      "bytes": 497,
+      "sha256": "b111126f11f1c9e96b7725459edd1c7e69edfd48531ba304574cc7cdd6b68e0b"
+    },
+    {
+      "path": "enum-compatibility.json",
+      "bytes": 971,
+      "sha256": "881d9603dfe6b00e1660201da32820a9abdd62b5464218add03e9904b70df43f"
+    },
+    {
+      "path": "final-check.py",
+      "bytes": 5700,
+      "sha256": "2f158e184b7a30deb2e4e72db154c7544120bd26fe0df117a475987f4fc7ee61"
+    },
+    {
+      "path": "final-code-inventory.json",
+      "bytes": 2842,
+      "sha256": "c1a29e7c57d917ee337ef23ac6095f240987a8828bc3e74bf4f54f1c13b4e387"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 6202,
+      "sha256": "bcc5a87b8d0374c920885432ca91a30d12c8cb4a93753004a6d95376b9fec087"
+    },
+    {
+      "path": "governing-inputs.json",
+      "bytes": 2902,
+      "sha256": "aea3acc9e5b0eef1b9edbc482bfeb6c6fae2970fede9f9548384f378ce28e85c"
+    },
+    {
+      "path": "known-bad-source-bridge.json",
+      "bytes": 139424,
+      "sha256": "5b0ab43ac07160298313bc85e85fe0ad8d391ae263989e8b1656e6df6e351afe"
+    },
+    {
+      "path": "original-review-hashes.json",
+      "bytes": 3393,
+      "sha256": "e71de261fab3db022ce149008e01590d2a4ebb440c4647042ca27e6336b3ab38"
+    },
+    {
+      "path": "owned-code-inventory.json",
+      "bytes": 3380,
+      "sha256": "afe80c62aef530b00871660a67f27444ab4aaf090c80ac11bfdce4051bd8f1fc"
+    },
+    {
+      "path": "recheck.py",
+      "bytes": 8775,
+      "sha256": "b65767ae6ba936977f940c45ede56b5c8d6fa86b7f9ab739be098b974f930d9e"
+    },
+    {
+      "path": "remaining-actual-evidence.json",
+      "bytes": 14443,
+      "sha256": "679e2f995c75fbe1106a4d2b13317667087167629e8107f59ee8c7756875a596"
+    },
+    {
+      "path": "reused-source-scope.json",
+      "bytes": 24950,
+      "sha256": "ced404fe10fc0abf6dfc6e4596a3595708eea047efb86f0c60a9a10cbfa0b7fd"
+    },
+    {
+      "path": "unit-fixture-independent.json",
+      "bytes": 737,
+      "sha256": "71aba048547a8adfaa18401e3c06dd9a36da4e53fed1ba972eae420f8d1d3f67"
+    }
+  ],
+  "exclusions": "No product source copies, raw XML/log/stdout/request bodies, properties, keys, JWT or credentials included."
+}

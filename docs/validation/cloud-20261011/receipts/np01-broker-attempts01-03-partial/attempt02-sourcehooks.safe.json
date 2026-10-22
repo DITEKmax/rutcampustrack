@@ -1,0 +1,25 @@
+{
+  "utc": "2026-10-12T06:40:19.180117+00:00",
+  "command": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "env_selectors": [
+    "UV_CACHE_DIR=/workspace/.uv-cache",
+    "PRE_COMMIT_HOME=/workspace/.cache/pre-commit"
+  ],
+  "native_exit": 2,
+  "elapsed_seconds": 0.034,
+  "output": "error: failed to create directory `/home/agent/.local/share/uv/tools`: Read-only file system (os error 30)\n",
+  "source_only": true,
+  "Gradle_JVM_containers_workers_services": "NOT_RUN"
+}

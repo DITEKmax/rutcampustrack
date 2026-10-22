@@ -1,49 +1,102 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { AdminMapBuildingResponse } from '../../api/types'
-import { AdminMapClient } from '../../api/map-client'
-import type { AdminAccessProfile } from '../admin-access/admin-access-client'
-import AdminNotice from '../../shared/components/AdminNotice.vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import { StaleSessionGenerationError } from '../../shared/session-owner'
-import './admin-map-screen.pcss'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import type { AdminMapBuildingResponse } from '../../api/types';
+import { AdminMapClient } from '../../api/map-client';
+import type { AdminAccessProfile } from '../admin-access/admin-access-client';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import { StaleSessionGenerationError } from '../../shared/session-owner';
+import './admin-map-screen.pcss';
 
-const props = withDefaults(defineProps<{ client: AdminMapClient; authority: AdminAccessProfile | null; theme?: 'dark' | 'light'; showBack?: boolean }>(), { theme: 'dark', showBack: true })
-const emit = defineEmits<{ back: []; 'owner-error': [cause: unknown] }>()
-const inventory = ref<readonly AdminMapBuildingResponse[]>([])
-const buildingId = ref('all')
-const loading = ref(true)
-const error = ref(false)
-const canView = computed(() => props.authority?.assigned === true && (props.authority.mode === 'FULL' || props.authority.mode === 'LIMITED') && props.authority.permissions.includes('CAMPUS_MAP_MANAGE'))
-const allRows = computed(() => inventory.value.flatMap(building => building.floors.map(floor => ({ building, floor }))))
-const rows = computed(() => allRows.value.filter(row => buildingId.value === 'all' || row.building.id === buildingId.value))
-const total = computed(() => rows.value.reduce((sum, row) => sum + row.floor.openCount, 0))
-const maximum = computed(() => Math.max(1, ...rows.value.map(row => row.floor.openCount)))
-let mounted = false
-let sequence = 0
-let controller: AbortController | undefined
-onMounted(() => { mounted = true; void load() })
-onUnmounted(() => { mounted = false; sequence++; controller?.abort() })
-watch(() => [props.client, props.client.currentGeneration(), props.authority?.userId, props.authority?.assigned, props.authority?.mode, props.authority?.version, props.authority?.permissions.join('|')] as const, () => {
-  sequence++; controller?.abort(); inventory.value = []; buildingId.value = 'all'; error.value = false
-  if (mounted) void load()
-}, { flush: 'sync' })
+const props = withDefaults(
+  defineProps<{
+    client: AdminMapClient;
+    authority: AdminAccessProfile | null;
+    theme?: 'dark' | 'light';
+    showBack?: boolean;
+  }>(),
+  { theme: 'dark', showBack: true },
+);
+const emit = defineEmits<{ back: []; 'owner-error': [cause: unknown] }>();
+const inventory = ref<readonly AdminMapBuildingResponse[]>([]);
+const buildingId = ref('all');
+const loading = ref(true);
+const error = ref(false);
+const canView = computed(
+  () =>
+    props.authority?.assigned === true &&
+    (props.authority.mode === 'FULL' || props.authority.mode === 'LIMITED') &&
+    props.authority.permissions.includes('CAMPUS_MAP_MANAGE'),
+);
+const allRows = computed(() =>
+  inventory.value.flatMap((building) => building.floors.map((floor) => ({ building, floor }))),
+);
+const rows = computed(() =>
+  allRows.value.filter((row) => buildingId.value === 'all' || row.building.id === buildingId.value),
+);
+const total = computed(() => rows.value.reduce((sum, row) => sum + row.floor.openCount, 0));
+const maximum = computed(() => Math.max(1, ...rows.value.map((row) => row.floor.openCount)));
+let mounted = false;
+let sequence = 0;
+let controller: AbortController | undefined;
+onMounted(() => {
+  mounted = true;
+  void load();
+});
+onUnmounted(() => {
+  mounted = false;
+  sequence++;
+  controller?.abort();
+});
+watch(
+  () =>
+    [
+      props.client,
+      props.client.currentGeneration(),
+      props.authority?.userId,
+      props.authority?.assigned,
+      props.authority?.mode,
+      props.authority?.version,
+      props.authority?.permissions.join('|'),
+    ] as const,
+  () => {
+    sequence++;
+    controller?.abort();
+    inventory.value = [];
+    buildingId.value = 'all';
+    error.value = false;
+    if (mounted) void load();
+  },
+  { flush: 'sync' },
+);
 async function load(): Promise<void> {
-  if (!canView.value) { loading.value = false; return }
-  const client = props.client
-  const generation = client.currentGeneration()
-  const request = ++sequence
-  const current = () => mounted && canView.value && request === sequence && props.client === client && client.isCurrentGeneration(generation)
-  controller?.abort(); controller = new AbortController()
-  const signal = controller.signal
-  loading.value = true; error.value = false
+  if (!canView.value) {
+    loading.value = false;
+    return;
+  }
+  const client = props.client;
+  const generation = client.currentGeneration();
+  const request = ++sequence;
+  const current = () =>
+    mounted &&
+    canView.value &&
+    request === sequence &&
+    props.client === client &&
+    client.isCurrentGeneration(generation);
+  controller?.abort();
+  controller = new AbortController();
+  const signal = controller.signal;
+  loading.value = true;
+  error.value = false;
   try {
-    const result = await client.listBuildings(signal)
-    if (current()) inventory.value = result
+    const result = await client.listBuildings(signal);
+    if (current()) inventory.value = result;
   } catch (cause) {
-    if (cause instanceof StaleSessionGenerationError) emit('owner-error', cause)
-    else if (current() && !signal.aborted) error.value = true
-  } finally { if (current()) loading.value = false }
+    if (cause instanceof StaleSessionGenerationError) emit('owner-error', cause);
+    else if (current() && !signal.aborted) error.value = true;
+  } finally {
+    if (current()) loading.value = false;
+  }
 }
 </script>
 
@@ -131,7 +184,9 @@ async function load(): Promise<void> {
             v-for="row in rows"
             :key="row.floor.id"
           >
-            <div><span>Корпус {{ row.building.code }} · этаж {{ row.floor.code }}</span><strong>{{ row.floor.openCount.toLocaleString('ru-RU') }}</strong></div><progress
+            <div>
+              <span>Корпус {{ row.building.code }} · этаж {{ row.floor.code }}</span><strong>{{ row.floor.openCount.toLocaleString('ru-RU') }}</strong>
+            </div><progress
               :value="row.floor.openCount"
               :max="maximum"
               :aria-label="`Корпус ${row.building.code}, этаж ${row.floor.code}: ${row.floor.openCount} открытий`"

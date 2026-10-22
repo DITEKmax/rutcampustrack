@@ -1,0 +1,13 @@
+{
+  "time": "2026-10-11T21:59:50.736986+00:00",
+  "action": "baseline_selected_launch",
+  "sha": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=1 :services:api-gateway:compileJava :services:api-gateway:compileTestJava :services:api-gateway:test --tests ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.signedInvalidAccessClaims_areRejected",
+  "log": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/baseline-selected.log",
+  "lease": "GATEWAY1",
+  "source_hashes": {
+    "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+    "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c"
+  },
+  "state": "STARTING"
+}

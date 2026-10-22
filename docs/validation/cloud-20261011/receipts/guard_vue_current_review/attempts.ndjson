@@ -1,0 +1,3 @@
+{"at": "2026-10-12T08:31:23.155953+00:00", "action": "full root restore and packet read", "status": "PASS", "runtime_started": false}
+{"at": "2026-10-12T08:36:42.435135+00:00", "action": "independent pureAST native0 + exact original/archive/source/mode/metadata preservation", "guard": "APPROVE_SOURCE_ONLY", "Vue": "APPROVE_SOURCE_AND_STAGE_PRESERVATION", "STAGE-PRE01": "CLOSED_SOURCE_AND_ACTUAL_PUBLIC_FILES", "runtime": "NOT_RUN", "findings": []}
+{"at": "2026-10-12T08:39:29.349344+00:00", "action": "bounded final report before immutable seal", "result": "APPROVE_SOURCE_ONLY guard; APPROVE_SOURCE_AND_STAGE_PRESERVATION Vue; STAGE-PRE01 closed source/public-files", "runtime": "NOT_RUN", "blocking_findings": []}

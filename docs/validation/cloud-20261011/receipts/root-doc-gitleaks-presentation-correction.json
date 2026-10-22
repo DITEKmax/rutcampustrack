@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T08:43:42.792429+00:00",
+  "run_session": 71225,
+  "native_exit": 1,
+  "findings": 554,
+  "scope_files": 4,
+  "cause": "generic-api-key false positives on552SHA256 digests of Redis consumed:event identity +one actualGitHub mergeSHA+one historicalpushSHA prose",
+  "source_proof": "broker_container_observer.py lines144–153 SCAN MATCH consumed:*; onlysha256(key), state,pttl persisted; claim values/tokens excluded. Other2SHA independently verified publicGitHub/checkpoint metadata. No actualcredential material involved.",
+  "correction": "two copiedreceipt presentation-field names only, sourcearchivebyte-exact; RootmergeSHAfield name only originalreceipt retainedzip; oldstate snapshotlosslessarchive. No rule/gate/ignore changes or secret concealment",
+  "working_source_mutations": 0
+}

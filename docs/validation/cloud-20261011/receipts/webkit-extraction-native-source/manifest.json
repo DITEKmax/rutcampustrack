@@ -1,0 +1,181 @@
+{
+  "status": "READY_COHERENT_SOURCE_ACTUAL_EXTRACT_NATIVE_BROWSER_NOT_RUN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "361135baa6809a240d0120b0bfde9b808d719b333e67d0c0f77227772197560f",
+      "bytes": 681,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "8c8af04ab98321d709dba1e531a0ee44c62cdaa493c44ea45170090bac717543",
+      "bytes": 3655,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/caller-controls.py",
+      "name": "caller-controls.py",
+      "sha256": "b155057e5d21033627e03e8211c42686ba98f619618ad9a1ce918470eb7c3a38",
+      "bytes": 11548,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/caller-controls.safe.json",
+      "name": "caller-controls.safe.json",
+      "sha256": "6610bf40e63fbb471031ff389e94db81b36040b71a3c2ff86b79fac735270a2d",
+      "bytes": 12333,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/copy-controls.py",
+      "name": "copy-controls.py",
+      "sha256": "4f7f4357ee6b507c6d2e053cad98af66cab2fcc080b245b59f1e4a3c982e8002",
+      "bytes": 3189,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/copy-controls.safe.json",
+      "name": "copy-controls.safe.json",
+      "sha256": "2705a68049914d5b5ba3436e4fa1e743526063443b46dffe068295b4ec14609b",
+      "bytes": 1809,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/custom-executable-proposal.py",
+      "name": "custom-executable-proposal.py",
+      "sha256": "881e959391debab6f44430f143c21c6a4d49215997ced24f33799445fd2d5db9",
+      "bytes": 2025,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/custom-wrapper-boundary.safe.json",
+      "name": "custom-wrapper-boundary.safe.json",
+      "sha256": "1833873b7fd574638df0e25a78903e03b6f1616f6ed8b69017c29e3c285e97c7",
+      "bytes": 1406,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/extract-selected.py",
+      "name": "extract-selected.py",
+      "sha256": "a5e80bcb2e65967f6658dbf1a4754476cdb543b94142362592355ec37270710c",
+      "bytes": 13808,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/extraction-procedure.safe.json",
+      "name": "extraction-procedure.safe.json",
+      "sha256": "35f4cfc858f725456696f35f55c75e633e3d9adf6f076e53637e544f1a42805c",
+      "bytes": 2415,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/launch-schema.safe.json",
+      "name": "launch-schema.safe.json",
+      "sha256": "d0e186a9fcc641fa85633b96670b9d020b2b21013264fb4fc1a3bacb5e453b6e",
+      "bytes": 5293,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/native-probe.py",
+      "name": "native-probe.py",
+      "sha256": "1816f6a987d107410a1c6815b73935c5d45962033f391d45ee37215fedc5de0e",
+      "bytes": 7070,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/native-tools.safe.json",
+      "name": "native-tools.safe.json",
+      "sha256": "266aea178c952fb6b598ba38d228c1232392abc2a69deef8b87f95cb4a97b4b4",
+      "bytes": 907,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/native-validation-procedure.safe.json",
+      "name": "native-validation-procedure.safe.json",
+      "sha256": "46a95f60b8bd7d071f709d792bc27dcecda3d80304980078ab66daf758893587",
+      "bytes": 31866,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/own-paths.py",
+      "name": "own-paths.py",
+      "sha256": "74308f86fb2d336cff81499609efa864bb22fcd7ba5d96d8c7fd427d286b389b",
+      "bytes": 3701,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/prep-errors.safe.json",
+      "name": "prep-errors.safe.json",
+      "sha256": "666c92b9f37fdd214e34b78ac0bab03690312971037b8df28cc3b6f52a6858f9",
+      "bytes": 890,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/prior-authorities.safe.json",
+      "name": "prior-authorities.safe.json",
+      "sha256": "0a0835701fc3e3ce8e73d2d869b9d9bf13390fd23aed0cb09758f126bb71c080",
+      "bytes": 1085,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/runtime-anchors.safe.json",
+      "name": "runtime-anchors.safe.json",
+      "sha256": "18f7a91558475650a5d3845d29b7063f5a0ef380bdda4627b32d0d82b9274f24",
+      "bytes": 1161,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/selected-dso-headers.safe.json",
+      "name": "selected-dso-headers.safe.json",
+      "sha256": "471e8831efec056e5d941bb0a9019d9f36ac0f883863369870831c0f134c8eb8",
+      "bytes": 10266,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/selection.py",
+      "name": "selection.py",
+      "sha256": "db0e9ccf49a2f6e11e4db0ee39f8e9d1aa96ba415419919f0e57298c49bb61eb",
+      "bytes": 2236,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/signed-archive-inputs.safe.json",
+      "name": "signed-archive-inputs.safe.json",
+      "sha256": "5f0b55e24cde22b9bab8ef7c54fb9198a3ce3bea1858f9de981ac6c3ead6a218",
+      "bytes": 3531,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/source-controls.py",
+      "name": "source-controls.py",
+      "sha256": "b99d40f0a556b314cc57eb5b13b6e8771f9f04d71e7df9acac230934103877ae",
+      "bytes": 3300,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/source-controls.safe.json",
+      "name": "source-controls.safe.json",
+      "sha256": "ffcf99e592e97925fe578aa65c1e17a50f180eafe3fd0a13973d32617be7b92d",
+      "bytes": 3780,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/validate-native.py",
+      "name": "validate-native.py",
+      "sha256": "a625a337beb971877f6e4cc4bb1e67afb0f5b2a10597d9273647923d98a270e4",
+      "bytes": 10007,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_prepare/webkit-custom-exec.py",
+      "name": "webkit-custom-exec.py",
+      "sha256": "393621f6984612e6d27f4680eedbd668c368a748098264980f573d4b34f7b7e5",
+      "bytes": 7334,
+      "mode": 365
+    }
+  ],
+  "no_private_payload_data_or_rawlogs": true
+}

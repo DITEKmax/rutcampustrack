@@ -1,181 +1,217 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
-import { acceptsRequestFile, requestAttachmentFormatHint } from './attachment-validation'
-import { RequestAttachmentPreviewUrls, requestAttachmentPreviewKind } from './request-attachment-preview'
-import type { RequestFileLimits, RequestFileRef } from './types'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { acceptsRequestFile, requestAttachmentFormatHint } from './attachment-validation';
+import {
+  RequestAttachmentPreviewUrls,
+  requestAttachmentPreviewKind,
+} from './request-attachment-preview';
+import type { RequestFileLimits, RequestFileRef } from './types';
 
-const props = withDefaults(defineProps<{
-  modelValue: readonly RequestFileRef[]
-  limits: RequestFileLimits | null
-  disabled?: boolean
-  error?: string | null
-  compact?: boolean
-}>(), {
-  disabled: false,
-  error: null,
-  compact: false,
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: readonly RequestFileRef[];
+    limits: RequestFileLimits | null;
+    disabled?: boolean;
+    error?: string | null;
+    compact?: boolean;
+  }>(),
+  {
+    disabled: false,
+    error: null,
+    compact: false,
+  },
+);
 
 const emit = defineEmits<{
-  'update:modelValue': [files: RequestFileRef[]]
-}>()
+  'update:modelValue': [files: RequestFileRef[]];
+}>();
 
-const validationMessage = ref<string | null>(null)
-const statusMessage = ref<string | null>(null)
-const inputId = 'request-attachments-input'
-const previewResources = new RequestAttachmentPreviewUrls()
-const previewUrls = shallowRef<ReadonlyMap<string, string>>(new Map())
-const previewUnavailableIds = shallowRef<ReadonlySet<string>>(new Set())
-const previewErrors = shallowRef<ReadonlyMap<string, string>>(new Map())
+const validationMessage = ref<string | null>(null);
+const statusMessage = ref<string | null>(null);
+const inputId = 'request-attachments-input';
+const previewResources = new RequestAttachmentPreviewUrls();
+const previewUrls = shallowRef<ReadonlyMap<string, string>>(new Map());
+const previewUnavailableIds = shallowRef<ReadonlySet<string>>(new Set());
+const previewErrors = shallowRef<ReadonlyMap<string, string>>(new Map());
 
-const selectedFiles = computed(() => props.modelValue)
+const selectedFiles = computed(() => props.modelValue);
 const limitDescription = computed(() => {
-  const limits = props.limits
-  const parts: string[] = []
+  const limits = props.limits;
+  const parts: string[] = [];
   if (limits?.maxBytesPerFile !== null && limits?.maxBytesPerFile !== undefined) {
-    parts.push((props.compact ? 'До ' : 'до ') + formatBytes(limits.maxBytesPerFile) + (props.compact ? '' : ' на файл'))
+    parts.push(
+      (props.compact ? 'До ' : 'до ') +
+        formatBytes(limits.maxBytesPerFile) +
+        (props.compact ? '' : ' на файл'),
+    );
   }
   if (limits?.maxFiles !== null && limits?.maxFiles !== undefined) {
-    const limitWord = fileLimitWord(limits.maxFiles)
-    parts.push('не более ' + limits.maxFiles + ' ' + limitWord)
+    const limitWord = fileLimitWord(limits.maxFiles);
+    parts.push('не более ' + limits.maxFiles + ' ' + limitWord);
   }
-  if (parts.length === 0) return 'Выбери фото или файл'
-  return parts.join(' · ')
-})
+  if (parts.length === 0) return 'Выбери фото или файл';
+  return parts.join(' · ');
+});
 
 const acceptValue = computed(() => {
-  const types = props.limits?.contentTypes ?? []
-  const extensions = props.limits?.extensions ?? []
-  return [...types, ...extensions].join(',')
-})
+  const types = props.limits?.contentTypes ?? [];
+  const extensions = props.limits?.extensions ?? [];
+  return [...types, ...extensions].join(',');
+});
 
-watch(selectedFiles, (files) => {
-  const previews = previewResources.sync(files)
-  previewUrls.value = previews.urls
-  previewUnavailableIds.value = previews.unavailableIds
-  previewErrors.value = new Map(
-    [...previewErrors.value].filter(([id, url]) => previews.urls.get(id) === url),
-  )
-}, { immediate: true })
+watch(
+  selectedFiles,
+  (files) => {
+    const previews = previewResources.sync(files);
+    previewUrls.value = previews.urls;
+    previewUnavailableIds.value = previews.unavailableIds;
+    previewErrors.value = new Map(
+      [...previewErrors.value].filter(([id, url]) => previews.urls.get(id) === url),
+    );
+  },
+  { immediate: true },
+);
 
-onBeforeUnmount(() => previewResources.clear())
+onBeforeUnmount(() => previewResources.clear());
 
 function previewUrl(file: RequestFileRef): string | null {
-  return previewUrls.value.get(file.id) ?? null
+  return previewUrls.value.get(file.id) ?? null;
 }
 
 function hasPreviewError(file: RequestFileRef): boolean {
-  const url = previewUrl(file)
-  return url !== null && previewErrors.value.get(file.id) === url
+  const url = previewUrl(file);
+  return url !== null && previewErrors.value.get(file.id) === url;
 }
 
 function markPreviewError(fileId: string, event: Event): void {
-  const target = event.currentTarget
-  if (!(target instanceof Element)) return
-  const url = target.getAttribute('src') ?? target.getAttribute('data')
-  if (!url || previewUrls.value.get(fileId) !== url) return
-  const next = new Map(previewErrors.value)
-  next.set(fileId, url)
-  previewErrors.value = next
+  const target = event.currentTarget;
+  if (!(target instanceof Element)) return;
+  const url = target.getAttribute('src') ?? target.getAttribute('data');
+  if (!url || previewUrls.value.get(fileId) !== url) return;
+  const next = new Map(previewErrors.value);
+  next.set(fileId, url);
+  previewErrors.value = next;
 }
 
 function previewKind(file: RequestFileRef): ReturnType<typeof requestAttachmentPreviewKind> {
-  return requestAttachmentPreviewKind(file.file)
+  return requestAttachmentPreviewKind(file.file);
 }
 
 function previewUnavailableMessage(file: RequestFileRef): string {
-  if (!file.file) return 'Предпросмотр недоступен для этого вложения.'
+  if (!file.file) return 'Предпросмотр недоступен для этого вложения.';
   if (previewUnavailableIds.value.has(file.id)) {
-    return 'Не удалось подготовить предпросмотр. Вложение можно удалить или выбрать снова.'
+    return 'Не удалось подготовить предпросмотр. Вложение можно удалить или выбрать снова.';
   }
   if (hasPreviewError(file)) {
-    return 'Не удалось показать предпросмотр. Вложение можно удалить или выбрать снова.'
+    return 'Не удалось показать предпросмотр. Вложение можно удалить или выбрать снова.';
   }
-  return 'Предпросмотр доступен для JPEG, PNG и PDF.'
+  return 'Предпросмотр доступен для JPEG, PNG и PDF.';
 }
 
 function formatBytes(value: number): string {
-  if (value >= 1024 * 1024) return (value / (1024 * 1024)).toFixed(value % (1024 * 1024) === 0 ? 0 : 1) + ' МБ'
-  if (value >= 1024) return (value / 1024).toFixed(0) + ' КБ'
-  return value + ' Б'
+  if (value >= 1024 * 1024)
+    return (value / (1024 * 1024)).toFixed(value % (1024 * 1024) === 0 ? 0 : 1) + ' МБ';
+  if (value >= 1024) return (value / 1024).toFixed(0) + ' КБ';
+  return value + ' Б';
 }
 
 function fileLimitWord(value: number): string {
-  if (value % 10 === 1 && value % 100 !== 11) return 'файла'
-  return 'файлов'
+  if (value % 10 === 1 && value % 100 !== 11) return 'файла';
+  return 'файлов';
 }
 
 function fileId(file: File): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return file.name + '-' + file.size + '-' + file.lastModified
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+    return crypto.randomUUID();
+  return file.name + '-' + file.size + '-' + file.lastModified;
 }
 
 function validateFile(file: File): string | null {
-  const limits = props.limits
-  if (limits?.maxBytesPerFile !== null && limits?.maxBytesPerFile !== undefined && file.size > limits.maxBytesPerFile) {
-    return file.name + ': размер больше ' + formatBytes(limits.maxBytesPerFile) + '.'
+  const limits = props.limits;
+  if (
+    limits?.maxBytesPerFile !== null &&
+    limits?.maxBytesPerFile !== undefined &&
+    file.size > limits.maxBytesPerFile
+  ) {
+    return file.name + ': размер больше ' + formatBytes(limits.maxBytesPerFile) + '.';
   }
   if (!acceptsRequestFile(file, limits)) {
-    const accepted = [...(limits?.contentTypes ?? []), ...(limits?.extensions ?? [])].join(', ')
-    const hint = requestAttachmentFormatHint(limits)
-    return file.name + ': формат не поддерживается' + (accepted ? ' (' + accepted + ')' : '') + (hint ? '. ' + hint : '.')
+    const accepted = [...(limits?.contentTypes ?? []), ...(limits?.extensions ?? [])].join(', ');
+    const hint = requestAttachmentFormatHint(limits);
+    return (
+      file.name +
+      ': формат не поддерживается' +
+      (accepted ? ' (' + accepted + ')' : '') +
+      (hint ? '. ' + hint : '.')
+    );
   }
-  return null
+  return null;
 }
 
 function onPick(event: Event): void {
-  validationMessage.value = null
-  statusMessage.value = null
-  const input = event.target as HTMLInputElement
-  const picked = Array.from(input.files ?? [])
-  const limits = props.limits
-  const maxFiles = limits?.maxFiles
-  const availableSlots = maxFiles === null || maxFiles === undefined
-    ? picked.length
-    : Math.max(0, maxFiles - selectedFiles.value.length)
-  const accepted: RequestFileRef[] = []
-  const errors: string[] = []
+  validationMessage.value = null;
+  statusMessage.value = null;
+  const input = event.target as HTMLInputElement;
+  const picked = Array.from(input.files ?? []);
+  const limits = props.limits;
+  const maxFiles = limits?.maxFiles;
+  const availableSlots =
+    maxFiles === null || maxFiles === undefined
+      ? picked.length
+      : Math.max(0, maxFiles - selectedFiles.value.length);
+  const accepted: RequestFileRef[] = [];
+  const errors: string[] = [];
 
   if (picked.length > availableSlots && maxFiles !== null && maxFiles !== undefined) {
-    errors.push('Можно добавить не более ' + maxFiles + ' ' + fileLimitWord(maxFiles) + '.')
+    errors.push('Можно добавить не более ' + maxFiles + ' ' + fileLimitWord(maxFiles) + '.');
   }
 
   for (const file of picked.slice(0, availableSlots)) {
-    const reason = validateFile(file)
-    if (reason) errors.push(reason)
-    else accepted.push({
-      id: fileId(file),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified,
-      file,
-    })
+    const reason = validateFile(file);
+    if (reason) errors.push(reason);
+    else
+      accepted.push({
+        id: fileId(file),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+        file,
+      });
   }
 
-  const currentTotal = selectedFiles.value.reduce((total, file) => total + file.size, 0)
-  const acceptedWithinTotal: RequestFileRef[] = []
-  let total = currentTotal
+  const currentTotal = selectedFiles.value.reduce((total, file) => total + file.size, 0);
+  const acceptedWithinTotal: RequestFileRef[] = [];
+  let total = currentTotal;
   for (const file of accepted) {
-    if (limits?.maxBytesTotal !== null && limits?.maxBytesTotal !== undefined && total + file.size > limits.maxBytesTotal) {
-      errors.push(file.name + ': общий размер вложений больше ' + formatBytes(limits.maxBytesTotal) + '.')
+    if (
+      limits?.maxBytesTotal !== null &&
+      limits?.maxBytesTotal !== undefined &&
+      total + file.size > limits.maxBytesTotal
+    ) {
+      errors.push(
+        file.name + ': общий размер вложений больше ' + formatBytes(limits.maxBytesTotal) + '.',
+      );
     } else {
-      acceptedWithinTotal.push(file)
-      total += file.size
+      acceptedWithinTotal.push(file);
+      total += file.size;
     }
   }
 
   if (acceptedWithinTotal.length > 0) {
-    emit('update:modelValue', [...selectedFiles.value, ...acceptedWithinTotal])
-    statusMessage.value = 'Добавлено файлов: ' + acceptedWithinTotal.length + '.'
+    emit('update:modelValue', [...selectedFiles.value, ...acceptedWithinTotal]);
+    statusMessage.value = 'Добавлено файлов: ' + acceptedWithinTotal.length + '.';
   }
-  validationMessage.value = errors.length > 0 ? errors.join(' ') : null
-  input.value = ''
+  validationMessage.value = errors.length > 0 ? errors.join(' ') : null;
+  input.value = '';
 }
 
 function removeFile(id: string): void {
-  emit('update:modelValue', selectedFiles.value.filter((file) => file.id !== id))
-  statusMessage.value = 'Вложение удалено.'
+  emit(
+    'update:modelValue',
+    selectedFiles.value.filter((file) => file.id !== id),
+  );
+  statusMessage.value = 'Вложение удалено.';
 }
 </script>
 
@@ -248,7 +284,9 @@ function removeFile(id: string): void {
           role="group"
           :aria-label="'Предпросмотр вложения ' + file.name"
         >
-          <template v-if="previewKind(file) === 'image' && previewUrl(file) && !hasPreviewError(file)">
+          <template
+            v-if="previewKind(file) === 'image' && previewUrl(file) && !hasPreviewError(file)"
+          >
             <img
               class="request-attachment-preview__image"
               :src="previewUrl(file) ?? undefined"
@@ -257,7 +295,9 @@ function removeFile(id: string): void {
             >
           </template>
 
-          <template v-else-if="previewKind(file) === 'pdf' && previewUrl(file) && !hasPreviewError(file)">
+          <template
+            v-else-if="previewKind(file) === 'pdf' && previewUrl(file) && !hasPreviewError(file)"
+          >
             <object
               class="request-attachment-preview__pdf"
               :data="previewUrl(file) ?? undefined"

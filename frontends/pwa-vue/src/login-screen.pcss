@@ -109,3 +109,18 @@
   outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
   outline-offset: var(--rct-focus-offset);
 }
+
+.login-methods {
+  display: flex;
+  gap: var(--rct-space-2);
+  margin-block: var(--rct-space-4);
+}
+.login-methods [aria-selected='true'] {
+  color: var(--rct-color-text-primary);
+  text-decoration: none;
+}
+
+.login-card [role='tabpanel'] {
+  display: grid;
+  gap: var(--rct-space-4);
+}

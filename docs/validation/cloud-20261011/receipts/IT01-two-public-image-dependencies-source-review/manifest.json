@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-13T06:08:05.110423+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/it01_public_image_dependencies/pull-dependencies.py",
+      "sha256": "ccdc76dfdeeab01be675943f0ae0359fee1c500ef3e986d4a911f31cd2e748f6",
+      "size": 8630
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/it01_public_image_dependencies/controls.safe.json",
+      "sha256": "2a1ba508e8251bf46467d7414ab83c8ccca75d2bbbd5fa6d2b4f69dae9642066",
+      "size": 682
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/it01_public_image_dependencies/pull-grant.template.safe.json",
+      "sha256": "a86ca360a8544984a6e3924b3f3e3b3f30f617992fa17bbf79bb275a5991994a",
+      "size": 730
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/it01_public_image_dependencies/READY.safe.json",
+      "sha256": "9c6e148b93dc711d3f95ec3ddb8d6908ce300cbda2acd206bebd4546a60b3d24",
+      "size": 1577
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/it01_public_image_dependencies/HANDOFF.md",
+      "sha256": "7266746e0e4735876118698d7cc10497763358b425b11bfde273b06ed046986d",
+      "size": 1662
+    }
+  ],
+  "no_private": true
+}

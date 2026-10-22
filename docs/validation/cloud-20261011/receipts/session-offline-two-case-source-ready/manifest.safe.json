@@ -1,0 +1,77 @@
+{
+  "state": "SOURCE_READY_RUNTIME_NOT_RUN",
+  "utc": "2026-10-13T01:28:46.366651+00:00",
+  "base": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "git_created_paths": [
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.session-offline.config.ts",
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/session-offline-specs/mobile-session-offline.spec.ts"
+  ],
+  "two_source_hashes": {
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.session-offline.config.ts": "5ded76799d09801b507ab3e83029d0d78fccb3693247c92007cbe015b4aa4039",
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/session-offline-specs/mobile-session-offline.spec.ts": "971715457edc6353715cbeb3bdaabf819b51f87698ee6bc9b806a3ecf88d0714"
+  },
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "sha256": "91645742d9a71e5e2a549956faff8db14d3831b1c36e7479e6ea2450b1f61eb0",
+      "bytes": 3765
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "d0a0349bddf9295e6ab634ae9003cb9cf48a998eafdf0be8b19ae9a6fefd2020",
+      "bytes": 18565
+    },
+    {
+      "path": "VERIFICATION-PLAN.safe.json",
+      "sha256": "c0e17ccc2ff3c82069346bb904a45c43b2fbc74f593b687a2c92921d4984e33c",
+      "bytes": 4884
+    },
+    {
+      "path": "caller-parameter-diff.safe.json",
+      "sha256": "871894ec40b2d5bea1acb0603c8c82400d99f87fb5ecd140ffc513d501130122",
+      "bytes": 2160
+    },
+    {
+      "path": "dependency-resolution.safe.json",
+      "sha256": "7667494468e70b64d2b7ecbb1f7934c7297418d93004b5f31d2815258a76ca5d",
+      "bytes": 2290
+    },
+    {
+      "path": "discovery-reporter.cjs",
+      "sha256": "bf0c9742c44dcf35b8ccc5d4355df784516574cf6a8ac671a9ed0dc0a233ba28",
+      "bytes": 1529
+    },
+    {
+      "path": "run-session-offline.py",
+      "sha256": "16e6dcfc082d72b616e873f573b6f63c9b1ffb28ffa04b0dd05360345fa84ab2",
+      "bytes": 16075
+    },
+    {
+      "path": "source-checks.safe.json",
+      "sha256": "86308dd933224198aa007316537799e5d0d1227edfd843f4310afa853365c1ee",
+      "bytes": 1068
+    },
+    {
+      "path": "source-pins.safe.json",
+      "sha256": "5087a98956fe33136f65669ee439638890188cc433196e166ab729e3320edbfe",
+      "bytes": 3280
+    },
+    {
+      "path": "source.patch",
+      "sha256": "2f12ec5071e6f5ead60cc2b718cb6c12b15d110c0f9a46d7b3dff574576f8590",
+      "bytes": 3545
+    },
+    {
+      "path": "tsconfig.session-offline.json",
+      "sha256": "731c63eeca23892b7822cd938d96b5fe7db3d824fe499d5887a4998c720d2a09",
+      "bytes": 677
+    },
+    {
+      "path": "typecheck-safe.cjs",
+      "sha256": "997e5b1df3ba0782447b3d21a5fa9e3ca0047afb2960899cf5c3837937ab839d",
+      "bytes": 1290
+    }
+  ],
+  "patch_reverse_check_native_exit": 0,
+  "qualifications": "Source/data checks only; no Native Node/TS parser/browser/API/seed/stand invocation. No commit/hook/integration/push."
+}

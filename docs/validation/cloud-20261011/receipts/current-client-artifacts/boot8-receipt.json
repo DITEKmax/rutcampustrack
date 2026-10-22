@@ -1,0 +1,53 @@
+{
+  "phase": "boot8",
+  "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "cwd": "/workspace/rct-worktrees/client-current-artifacts",
+  "argv": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    ":services:auth-service:auth-app:bootJar",
+    ":services:academic-service:academic-app:bootJar",
+    ":services:schedule-service:schedule-app:bootJar",
+    ":services:attendance-service:attendance-app:bootJar",
+    ":services:mobile-bff:mobile-bff-app:bootJar",
+    ":services:api-gateway:bootJar",
+    ":services:notification-service:notification-app:bootJar",
+    ":services:document-renderer-service:document-renderer-app:bootJar"
+  ],
+  "started_utc": "2026-10-12T04:19:26.865346+00:00",
+  "state": "TERMINAL",
+  "resource_before": {
+    "free_bytes": 8156835840,
+    "shared_memory_current": 4028862464,
+    "shared_memory_max": 17179869184,
+    "conservative_new_scope_bytes": 413319168
+  },
+  "raw_log_private_only": true,
+  "child_pid": 201154,
+  "latest_resources": {
+    "free_bytes": 7384903680,
+    "shared_memory_current": 6560735232,
+    "shared_memory_max": 17179869184,
+    "conservative_new_scope_bytes": 1185251328
+  },
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "group_members_after": [],
+  "ended_utc": "2026-10-12T04:21:26.960015+00:00",
+  "resource_after": {
+    "free_bytes": 7335182336,
+    "shared_memory_current": 4994527232,
+    "shared_memory_max": 17179869184,
+    "conservative_new_scope_bytes": 1234972672
+  },
+  "own_WT_allocated_bytes": 1231114240,
+  "own_scratch_allocated_bytes": 3497984,
+  "raw_log_sha256": "4ef25fbe44c3849c15a14ccd3913b87e6f10384409cfa48e541fda41041ff782",
+  "all7350_tracked_source_hashes_unchanged": true
+}

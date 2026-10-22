@@ -1,10 +1,13 @@
 package ru.rutcampustrack.mobilebff.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.slf4j.MDC;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,8 +17,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
+
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.shared.observability.MdcKeys;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
@@ -35,7 +40,8 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
     private static final PathPattern TEACHER_API_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/teacher/**");
     private static final PathPattern HOMEWORK_COMPLETION_PATTERN =
-            PathPatternParser.defaultInstance.parse("/api/v1/student/homework/{homeworkId}/completion");
+            PathPatternParser.defaultInstance.parse(
+                    "/api/v1/student/homework/{homeworkId}/completion");
     private static final PathPattern CHECKIN_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/student/lessons/{lessonId}/checkin");
     private static final PathPattern EXCUSE_SUBMISSION_PATTERN =
@@ -51,8 +57,12 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
-    public MobileIdentityFilter(InternalJwtValidator validator, InternalJwtProperties properties,
-                                MobileRequestContext context, ObjectMapper objectMapper, Clock clock) {
+    public MobileIdentityFilter(
+            InternalJwtValidator validator,
+            InternalJwtProperties properties,
+            MobileRequestContext context,
+            ObjectMapper objectMapper,
+            Clock clock) {
         this.validator = validator;
         this.properties = properties;
         this.context = context;
@@ -69,14 +79,17 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         response.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
         try {
             String token = request.getHeader(properties.headerName());
             InternalJwtClaims claims = validator.validate(token);
             context.authenticate(claims, token);
-            if ("STUDENT".equals(claims.domainRole()) && claims.readOnly() && isMutationRoute(request)) {
+            if ("STUDENT".equals(claims.domainRole())
+                    && claims.readOnly()
+                    && isMutationRoute(request)) {
                 writeReadOnlyProblem(request, response);
                 return;
             }
@@ -85,10 +98,18 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
             response.setStatus(401);
             response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
             response.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
-            MobileProblemDetails problem = new MobileProblemDetails(
-                    401, URI.create("urn:rct:problem:invalid-session"), "Сессия недействительна",
-                    "Требуется повторная аутентификация", URI.create(request.getRequestURI()),
-                    Instant.now(clock), null, ProblemCode.INVALID_SESSION, null, null);
+            MobileProblemDetails problem =
+                    new MobileProblemDetails(
+                            401,
+                            URI.create("urn:rct:problem:invalid-session"),
+                            "Сессия недействительна",
+                            "Требуется повторная аутентификация",
+                            URI.create(request.getRequestURI()),
+                            Instant.now(clock),
+                            MDC.get(MdcKeys.TRACE_ID),
+                            ProblemCode.INVALID_SESSION,
+                            null,
+                            null);
             objectMapper.writeValue(response.getOutputStream(), problem);
         }
     }
@@ -98,12 +119,18 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-        MobileProblemDetails problem = new MobileProblemDetails(
-                HttpStatus.FORBIDDEN.value(), URI.create("urn:rct:problem:role-read-only"),
-                HttpStatus.FORBIDDEN.getReasonPhrase(),
-                "Терминальная student-сессия доступна только для чтения",
-                URI.create(request.getRequestURI()), clock.instant(), null,
-                ProblemCode.ROLE_READ_ONLY, null, null);
+        MobileProblemDetails problem =
+                new MobileProblemDetails(
+                        HttpStatus.FORBIDDEN.value(),
+                        URI.create("urn:rct:problem:role-read-only"),
+                        HttpStatus.FORBIDDEN.getReasonPhrase(),
+                        "Терминальная student-сессия доступна только для чтения",
+                        URI.create(request.getRequestURI()),
+                        clock.instant(),
+                        MDC.get(MdcKeys.TRACE_ID),
+                        ProblemCode.ROLE_READ_ONLY,
+                        null,
+                        null);
         objectMapper.writeValue(response.getOutputStream(), problem);
     }
 

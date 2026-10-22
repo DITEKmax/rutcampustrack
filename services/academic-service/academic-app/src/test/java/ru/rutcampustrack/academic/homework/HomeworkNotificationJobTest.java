@@ -1,5 +1,20 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +27,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -33,22 +48,6 @@ import ru.rutcampustrack.academic.repository.HomeworkWeeklyDigestRunRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -77,46 +76,51 @@ class HomeworkNotificationJobTest {
     @BeforeEach
     void setUp() {
         Clock clock = Clock.fixed(Instant.parse("2026-05-03T06:00:00Z"), ZoneOffset.UTC);
-        job = new HomeworkNotificationJob(
-                homeworkRepository,
-                completionRepository,
-                digestRunRepository,
-                semesterRepository,
-                groupRepository,
-                userRepository,
-                subjectRepository,
-                archiveCoordinator,
-                eventPublisher,
-                clock);
+        job =
+                new HomeworkNotificationJob(
+                        homeworkRepository,
+                        completionRepository,
+                        digestRunRepository,
+                        semesterRepository,
+                        groupRepository,
+                        userRepository,
+                        subjectRepository,
+                        archiveCoordinator,
+                        eventPublisher,
+                        clock);
         when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(activeSemester()));
         when(groupRepository.findAllByIsActiveTrue()).thenReturn(List.of(group(GROUP_ID)));
-        when(subjectRepository.findAllById(any())).thenReturn(List.of(
-                subject(SUBJECT_ID, "Math"),
-                subject(OTHER_SUBJECT_ID, "History")));
+        when(subjectRepository.findAllById(any()))
+                .thenReturn(
+                        List.of(subject(SUBJECT_ID, "Math"), subject(OTHER_SUBJECT_ID, "History")));
     }
 
     @Test
     void publishDueReminders_sendsOnlyToIncompleteStudentsAndMarksHomeworkSent() {
         Homework homework = homework(100L, SUBJECT_ID, DUE_DATE, 2, "Essay");
         when(homeworkRepository.findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
-                SEMESTER_ID, DUE_DATE))
+                        SEMESTER_ID, DUE_DATE))
                 .thenReturn(List.of(homework));
-        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(
-                student(1L),
-                // Canonical STUDENT grant can coexist with a legacy TEACHER row.
-                user(2L, UserRole.TEACHER)));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID))
+                .thenReturn(
+                        List.of(
+                                student(1L),
+                                // Canonical STUDENT grant can coexist with a legacy TEACHER row.
+                                user(2L, UserRole.TEACHER)));
         when(completionRepository.findByHomeworkId(100L))
                 .thenReturn(List.of(new HomeworkCompletion(100L, 1L)));
 
         job.publishDueReminders();
 
-        ArgumentCaptor<ApplicationEvent> eventCaptor = ArgumentCaptor.forClass(ApplicationEvent.class);
+        ArgumentCaptor<ApplicationEvent> eventCaptor =
+                ArgumentCaptor.forClass(ApplicationEvent.class);
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         DomainEvent event = (DomainEvent) eventCaptor.getValue();
         assertThat(event.getEventType()).isEqualTo("homework.due_reminder");
 
-        HomeworkDueReminderEvent.Payload payload = (HomeworkDueReminderEvent.Payload) event.getPayload();
+        HomeworkDueReminderEvent.Payload payload =
+                (HomeworkDueReminderEvent.Payload) event.getPayload();
         assertThat(payload.userId()).isEqualTo(2L);
         assertThat(payload.groupId()).isEqualTo(GROUP_ID);
         assertThat(payload.semesterId()).isEqualTo(SEMESTER_ID);
@@ -125,7 +129,8 @@ class HomeworkNotificationJobTest {
         assertThat(payload.homework().homeworkId()).isEqualTo(100L);
         assertThat(payload.homework().subjectName()).isEqualTo("Math");
 
-        assertThat(homework.getDueReminderSentAt()).isEqualTo(OffsetDateTime.parse("2026-05-03T06:00:00Z"));
+        assertThat(homework.getDueReminderSentAt())
+                .isEqualTo(OffsetDateTime.parse("2026-05-03T06:00:00Z"));
         verify(homeworkRepository).saveAll(List.of(homework));
     }
 
@@ -134,9 +139,15 @@ class HomeworkNotificationJobTest {
         Homework first = homework(100L, SUBJECT_ID, NEXT_MONDAY, 1, "Essay");
         Homework second = homework(200L, OTHER_SUBJECT_ID, NEXT_MONDAY.plusDays(1), 2, "Read");
         List<Homework> weekHomeworks = List.of(first, second);
-        when(digestRunRepository.existsByGroupIdAndWeekStart(GROUP_ID, NEXT_MONDAY)).thenReturn(false);
-        when(homeworkRepository.findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                GROUP_ID, SEMESTER_ID, HomeworkPublicationState.ACTIVE, NEXT_MONDAY, NEXT_MONDAY.plusDays(6)))
+        when(digestRunRepository.existsByGroupIdAndWeekStart(GROUP_ID, NEXT_MONDAY))
+                .thenReturn(false);
+        when(homeworkRepository
+                        .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                                GROUP_ID,
+                                SEMESTER_ID,
+                                HomeworkPublicationState.ACTIVE,
+                                NEXT_MONDAY,
+                                NEXT_MONDAY.plusDays(6)))
                 .thenReturn(weekHomeworks);
         when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID))
                 .thenReturn(List.of(student(1L), user(2L, UserRole.TEACHER)));
@@ -147,14 +158,19 @@ class HomeworkNotificationJobTest {
 
         job.publishWeeklyDigest();
 
-        ArgumentCaptor<ApplicationEvent> eventCaptor = ArgumentCaptor.forClass(ApplicationEvent.class);
+        ArgumentCaptor<ApplicationEvent> eventCaptor =
+                ArgumentCaptor.forClass(ApplicationEvent.class);
         verify(eventPublisher, times(2)).publishEvent(eventCaptor.capture());
 
-        List<HomeworkWeeklyDigestEvent.Payload> payloads = eventCaptor.getAllValues().stream()
-                .map(DomainEvent.class::cast)
-                .peek(event -> assertThat(event.getEventType()).isEqualTo("homework.weekly_digest"))
-                .map(event -> (HomeworkWeeklyDigestEvent.Payload) event.getPayload())
-                .toList();
+        List<HomeworkWeeklyDigestEvent.Payload> payloads =
+                eventCaptor.getAllValues().stream()
+                        .map(DomainEvent.class::cast)
+                        .peek(
+                                event ->
+                                        assertThat(event.getEventType())
+                                                .isEqualTo("homework.weekly_digest"))
+                        .map(event -> (HomeworkWeeklyDigestEvent.Payload) event.getPayload())
+                        .toList();
 
         HomeworkWeeklyDigestEvent.Payload firstStudentPayload = payloadForUser(payloads, 1L);
         assertThat(firstStudentPayload.weekStart()).isEqualTo("2026-05-04");
@@ -170,7 +186,8 @@ class HomeworkNotificationJobTest {
                 .extracting(HomeworkNotificationItem::homeworkId)
                 .containsExactly(100L, 200L);
 
-        ArgumentCaptor<HomeworkWeeklyDigestRun> runCaptor = ArgumentCaptor.forClass(HomeworkWeeklyDigestRun.class);
+        ArgumentCaptor<HomeworkWeeklyDigestRun> runCaptor =
+                ArgumentCaptor.forClass(HomeworkWeeklyDigestRun.class);
         verify(digestRunRepository).save(runCaptor.capture());
         assertThat(runCaptor.getValue().getGroupId()).isEqualTo(GROUP_ID);
         assertThat(runCaptor.getValue().getSemesterId()).isEqualTo(SEMESTER_ID);
@@ -186,13 +203,12 @@ class HomeworkNotificationJobTest {
         job.publishDueReminders();
 
         verify(homeworkRepository, never())
-                .findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
-                        any(), any());
+                .findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(any(), any());
         verify(eventPublisher, never()).publishEvent(any());
     }
 
-    private static HomeworkWeeklyDigestEvent.Payload payloadForUser(List<HomeworkWeeklyDigestEvent.Payload> payloads,
-                                                                    Long userId) {
+    private static HomeworkWeeklyDigestEvent.Payload payloadForUser(
+            List<HomeworkWeeklyDigestEvent.Payload> payloads, Long userId) {
         return payloads.stream()
                 .filter(payload -> userId.equals(payload.userId()))
                 .findFirst()
@@ -226,17 +242,19 @@ class HomeworkNotificationJobTest {
         return subject;
     }
 
-    private static Homework homework(Long id, Long subjectId, LocalDate lessonDate, int lessonNumber, String title) {
-        Homework homework = new Homework(
-                GROUP_ID,
-                subjectId,
-                SEMESTER_ID,
-                title,
-                "Description",
-                "https://example.test/homework",
-                99L,
-                lessonDate,
-                lessonNumber);
+    private static Homework homework(
+            Long id, Long subjectId, LocalDate lessonDate, int lessonNumber, String title) {
+        Homework homework =
+                new Homework(
+                        GROUP_ID,
+                        subjectId,
+                        SEMESTER_ID,
+                        title,
+                        "Description",
+                        "https://example.test/homework",
+                        99L,
+                        lessonDate,
+                        lessonNumber);
         ReflectionTestUtils.setField(homework, "id", id);
         homework.activatePublication();
         return homework;

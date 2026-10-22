@@ -1,0 +1,559 @@
+{
+  "state": "FINITE_JOIN_PASS_SENSITIVE_EXACT_RESTORED_GREEN_REVIEW_PENDING",
+  "base": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "branch": "codex/p09-open-socket-actual-a852",
+  "command": [
+    "bash",
+    "./gradlew",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+    "-PspotlessIdeHook=/workspace/rct-worktrees/p09-auth-socket-join-20261013/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+    "spotlessJavaApply",
+    "spotlessJavaCheck",
+    ":services:notification-service:notification-app:compileJava",
+    ":services:auth-service:auth-app:compileTestJava"
+  ],
+  "source_sha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43",
+  "build_sha256": "282a4efc96471a80d07adcc68bd21568d350a48bf7dab29e58fc130b2b903eaf",
+  "private_log": "/workspace/scratch/rct-validation/p09_open_socket_actual/format_compile.raw.private.log",
+  "actual_join": "PASS",
+  "sensitivity": {
+    "state": "RELEVANT_RED_RESTORED_GREEN",
+    "mutation_scope": "Only explicit secondary test config imports TestConfiguration WebSocketConfig subclass bypassing generic outbound MESSAGE; other frames delegate actual interceptor; all original Auth/test assertions preserved",
+    "mutated_source_sha256": "1542e34985c6a21a23116ffb28844369d28c70f6f84fbe8b5167bf2359ef2a42",
+    "original_source_sha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43",
+    "sensitivity-red": {
+      "command": [
+        "bash",
+        "./gradlew",
+        "--offline",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        ":services:auth-service:auth-app:compileTestJava",
+        ":services:auth-service:auth-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+        "--rerun"
+      ],
+      "result": {
+        "direct_pid": 587106,
+        "native_exit": 1,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 587106,
+            "start_ticks": 18750917
+          },
+          {
+            "pid": 587151,
+            "start_ticks": 18751017
+          },
+          {
+            "pid": 587356,
+            "start_ticks": 18753781
+          },
+          {
+            "pid": 588056,
+            "start_ticks": 18756779
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": false
+      },
+      "elapsed_seconds": 84.56,
+      "peaks": {
+        "rss": 1609969664,
+        "shared": 8795066368,
+        "min_free": 5347512320
+      },
+      "container_settled": true,
+      "tmp_removed": true,
+      "safe_outcomes": {
+        "schemaVersion": 1,
+        "metadata": {
+          "checkoutSha": "f20ad68afae522a77c446141805f6ba221d9085d",
+          "prHeadSha": "f20ad68afae522a77c446141805f6ba221d9085d",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": null,
+          "runAttempt": null,
+          "event": "LOCAL_CONTROL",
+          "testStepOutcome": "UNKNOWN"
+        },
+        "collection": "RESULTS",
+        "acceptance": "NOT_ASSESSED",
+        "xml": [
+          {
+            "ordinal": 1,
+            "sha256": "d200986d59b7f6b3059598bf4d05aefee3c6cbae6af39440b2ef73cf38ef22a9",
+            "suites": [
+              {
+                "ordinal": 1,
+                "declared": {
+                  "tests": 1,
+                  "failures": 1,
+                  "errors": 0,
+                  "skipped": 0
+                },
+                "observed": {
+                  "PASSED": 0,
+                  "FAILED": 1,
+                  "ERROR": 0,
+                  "SKIPPED": 0,
+                  "NOT_EXECUTED": 0
+                },
+                "countsConsistent": true
+              }
+            ],
+            "state": "PARSED"
+          }
+        ],
+        "cases": [
+          {
+            "xmlOrdinal": 1,
+            "suiteOrdinal": 1,
+            "ordinal": 1,
+            "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+            "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+            "status": "FAILED",
+            "identity": "SOURCE_METHOD",
+            "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+            "sourceSha256": "1542e34985c6a21a23116ffb28844369d28c70f6f84fbe8b5167bf2359ef2a42"
+          }
+        ],
+        "summary": {
+          "PASSED": 0,
+          "FAILED": 1,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        }
+      },
+      "failure_projection": {
+        "failure_class": "org.opentest4j.AssertionFailedError",
+        "closure_expected_false_actual_true": true,
+        "source_method_line": 164,
+        "test_source_frames": [
+          {
+            "method": "lambda$realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives$2",
+            "line": 164
+          }
+        ]
+      },
+      "source_sha256": "1542e34985c6a21a23116ffb28844369d28c70f6f84fbe8b5167bf2359ef2a42",
+      "compiled_test_sha256": "870c21d5c81dc5232b6e4fd1564df4cf2edf8ed37393374db51906e95a2fb0ea",
+      "private_log": "/workspace/scratch/rct-validation/p09_open_socket_actual/sensitivity-red/native.raw.private.log"
+    },
+    "exact_source_restored": true,
+    "sensitivity-green": {
+      "command": [
+        "bash",
+        "./gradlew",
+        "--offline",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        ":services:auth-service:auth-app:compileTestJava",
+        ":services:auth-service:auth-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+        "--rerun"
+      ],
+      "result": {
+        "direct_pid": 588759,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 588759,
+            "start_ticks": 18759382
+          },
+          {
+            "pid": 588793,
+            "start_ticks": 18759459
+          },
+          {
+            "pid": 589137,
+            "start_ticks": 18762230
+          },
+          {
+            "pid": 589990,
+            "start_ticks": 18765537
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "elapsed_seconds": 84.09,
+      "peaks": {
+        "rss": 1565024256,
+        "shared": 8762404864,
+        "min_free": 5347274752
+      },
+      "container_settled": true,
+      "tmp_removed": true,
+      "safe_outcomes": {
+        "schemaVersion": 1,
+        "metadata": {
+          "checkoutSha": "f20ad68afae522a77c446141805f6ba221d9085d",
+          "prHeadSha": "f20ad68afae522a77c446141805f6ba221d9085d",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": null,
+          "runAttempt": null,
+          "event": "LOCAL_CONTROL",
+          "testStepOutcome": "UNKNOWN"
+        },
+        "collection": "RESULTS",
+        "acceptance": "NOT_ASSESSED",
+        "xml": [
+          {
+            "ordinal": 1,
+            "sha256": "5a0f21b8086a2801df7f46495913246fc79d752402ae4a9d29474bb8e962bca1",
+            "suites": [
+              {
+                "ordinal": 1,
+                "declared": {
+                  "tests": 1,
+                  "failures": 0,
+                  "errors": 0,
+                  "skipped": 0
+                },
+                "observed": {
+                  "PASSED": 1,
+                  "FAILED": 0,
+                  "ERROR": 0,
+                  "SKIPPED": 0,
+                  "NOT_EXECUTED": 0
+                },
+                "countsConsistent": true
+              }
+            ],
+            "state": "PARSED"
+          }
+        ],
+        "cases": [
+          {
+            "xmlOrdinal": 1,
+            "suiteOrdinal": 1,
+            "ordinal": 1,
+            "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+            "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+            "status": "PASSED",
+            "identity": "SOURCE_METHOD",
+            "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+            "sourceSha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43"
+          }
+        ],
+        "summary": {
+          "PASSED": 1,
+          "FAILED": 0,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        }
+      },
+      "failure_projection": {
+        "failure_class": null,
+        "closure_expected_false_actual_true": false,
+        "source_method_line": null
+      },
+      "source_sha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43",
+      "compiled_test_sha256": "f43a4280fb41de660f22dfaa33d2193b9501acca1fec69ce01d306784d4b6182",
+      "private_log": "/workspace/scratch/rct-validation/p09_open_socket_actual/sensitivity-green/native.raw.private.log"
+    },
+    "compiled_source_restored": true,
+    "compiled_class_restoration": {
+      "compile_task": [
+        "> Task :services:auth-service:auth-app:compileTestJava"
+      ],
+      "mutant_nested_classes_remaining": 0,
+      "original_source_sha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43",
+      "selected_original_test_green": true
+    },
+    "qualification": "RED specifically reached postlogout closure assertion after controlafter delivery; separate forbiddenafter marker delivery not exposed. Same selected Green restores all original noafter/crossrecipient assertions."
+  },
+  "review": "NOT_RUN",
+  "qualification": "Finite prepared test only; original reviewed branch preserved",
+  "tmp_removed": true,
+  "format_first": "NO_SOURCE_NOT_ACCEPTED",
+  "format_compile_result": {
+    "direct_pid": 582282,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 582282,
+        "start_ticks": 18686299
+      },
+      {
+        "pid": 582327,
+        "start_ticks": 18686411
+      },
+      {
+        "pid": 582845,
+        "start_ticks": 18690026
+      },
+      {
+        "pid": 582856,
+        "start_ticks": 18690048
+      },
+      {
+        "pid": 583070,
+        "start_ticks": 18692283
+      },
+      {
+        "pid": 583074,
+        "start_ticks": 18692311
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "compile_elapsed_seconds": 80.29,
+  "compile_peaks": {
+    "rss": 1502711808,
+    "shared": 7685611520,
+    "min_free": 6456164352
+  },
+  "actual_command": [
+    "bash",
+    "./gradlew",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+    "-PspotlessIdeHook=/workspace/rct-worktrees/p09-auth-socket-join-20261013/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+    "spotlessJavaApply",
+    "spotlessJavaCheck",
+    ":services:auth-service:auth-app:compileTestJava",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT"
+  ],
+  "actual_result": {
+    "direct_pid": 583734,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 583734,
+        "start_ticks": 18701246
+      },
+      {
+        "pid": 583766,
+        "start_ticks": 18701334
+      },
+      {
+        "pid": 583981,
+        "start_ticks": 18703667
+      },
+      {
+        "pid": 584897,
+        "start_ticks": 18706873
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "actual_elapsed_seconds": 79.1,
+  "actual_peaks": {
+    "rss": 1441812480,
+    "shared": 8862552064,
+    "min_free": 5349228544
+  },
+  "container_settled": true,
+  "private_actual_log": "/workspace/scratch/rct-validation/p09_open_socket_actual/actual.raw.private.log",
+  "formatter": "EXACT_FILE_AOSP_IDEMPOTENCY_PASS_GRADLE_CHECK_SKIPPED",
+  "formatter_tasks": [
+    "> Task :spotlessJavaApply SKIPPED",
+    "> Task :spotlessJavaCheck SKIPPED"
+  ],
+  "safe_test_outcomes": {
+    "schemaVersion": 1,
+    "metadata": {
+      "checkoutSha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "prHeadSha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "service": "auth-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": null,
+      "runAttempt": null,
+      "event": "LOCAL_CONTROL",
+      "testStepOutcome": "UNKNOWN"
+    },
+    "collection": "RESULTS",
+    "acceptance": "NOT_ASSESSED",
+    "xml": [
+      {
+        "ordinal": 1,
+        "sha256": "1eb2fc24fd09cbe17b84685199a32c0f55c9f6dcd03ee186babe3ee4689943c9",
+        "suites": [
+          {
+            "ordinal": 1,
+            "declared": {
+              "tests": 1,
+              "failures": 0,
+              "errors": 0,
+              "skipped": 0
+            },
+            "observed": {
+              "PASSED": 1,
+              "FAILED": 0,
+              "ERROR": 0,
+              "SKIPPED": 0,
+              "NOT_EXECUTED": 0
+            },
+            "countsConsistent": true
+          }
+        ],
+        "state": "PARSED"
+      }
+    ],
+    "cases": [
+      {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+        "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+        "sourceSha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43"
+      }
+    ],
+    "summary": {
+      "PASSED": 1,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  "commit": "f20ad68afae522a77c446141805f6ba221d9085d",
+  "inventory": {
+    "created": [
+      "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java"
+    ],
+    "modified": [
+      "services/auth-service/auth-app/build.gradle.kts"
+    ],
+    "deleted": []
+  },
+  "cleanup": {
+    "containers_settled": true,
+    "active_owned_ids": [],
+    "owned_roles": [
+      "ryuk",
+      "redis",
+      "postgres"
+    ],
+    "foreign_counts": [
+      0,
+      11,
+      3
+    ],
+    "failure": null
+  },
+  "limitations": [
+    "Direct Simp broker publication bypasses Rabbit/outbox/history producer",
+    "No browser/TLS/edge/production container isolation proof",
+    "Whole P09 remains UNKNOWN",
+    "Fresh whole independent actual/test-quality review pending"
+  ],
+  "formatter_idempotency": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "-PspotlessIdeHook=/workspace/rct-worktrees/p09-auth-socket-join-20261013/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+      "spotlessJava"
+    ],
+    "result": {
+      "direct_pid": 586242,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 586242,
+          "start_ticks": 18726667
+        },
+        {
+          "pid": 586274,
+          "start_ticks": 18726812
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "elapsed_seconds": 20.08,
+    "before_sha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43",
+    "after_sha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43",
+    "byte_equal": true,
+    "peaks": {
+      "rss": 649150464,
+      "shared": 6774890496,
+      "min_free": 6454050816
+    },
+    "tmp_removed": true,
+    "qualification": "normal exact-file formatter canonical bytes; GradleCheck task SKIPPED, not claimed executed"
+  },
+  "limits_preserved": true,
+  "final_clean_status": "",
+  "root_acceptance": {
+    "actual": "finite realAuth-openWSlogout +distinctgateRED/exactrestoredrealGREEN",
+    "review": "APPROVE finalconcretemutationrecheck",
+    "review_receipt": "receipts/P09-and-FIRST3-independent-review.safe.md",
+    "parent_boundary": "BOUNDARY-43",
+    "B013": "DISTINCT frozenunchanged",
+    "integrated_root": "affe13286ca25ef282955a71a94b0aec67b281f5"
+  }
+}

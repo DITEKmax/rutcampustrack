@@ -1,0 +1,18 @@
+# Goal
+Fresh independent bounded completion/recheck of NTR01 d674 correction and prior notification fa02 approval; qualify and seal partial independent source/evidence review before root integration.
+# Context/evidence
+Restore FULL /workspace/rutcampustrack/docs/validation/cloud-20261011/{TASK-CONTRACT,CURRENT,decisions,questions,resources}.md and root AGENTS/RULES/relevant skills before actions. Contract SHA8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5; allQ1–9 resolved, D009 only final docs byte-equivalence. Baseline3908, root eec3, published636. Requested gpt-6.1-sol/high (reviewer xhigh), fork none, actual UNKNOWN. Root sole shared docs/integrator.
+# Constraints
+READ-ONLY all tracked sources/other author receipts/worktrees, sole write own scratch. LIGHT only, no children/Gradle/Java/Docker/browser/mutations/config/source edits or push. Disk2.6GiB below4GiB floor. Safe receipts with exact original hashes/immutable transfer manifest; no credentials/keys/full request bodies/raw stdio/properties/temporary signed URLs. Full native check/runtime claims only actual observed; mocks/source/skip/stale revisions stay qualified.
+# Do not
+No production/deploy/main/real bot/private18514/Figma/secret readings or dumps/external messages/global cleanup/schedulers/newproductrules.
+# Relevant scope
+Read-only /workspace/rct-worktrees/notification-provider at d674ea1ff1d26bf40f2585e0a3438c1896e60a1b, parent fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff. Own NEW /workspace/scratch/rct-validation/ntr_seal_review. Prior independent map_validation_recheck/ntr01-recheck/findings.md explicitAPPROVE but no final transfermanifest/callback UNKNOWN, do not fabricate completion metadata. Original prior root receipts/notification-recovery-review; author /workspace/scratch/rct-validation/notification_provider_developer/NTR01-recheck sealed25 archive f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317; source and own actual red/green logs safe metadata present.
+# Required behavior
+Open critical original current test/production service/lifetime source and actual safe red/green receipts independently, review +20/-2 independent30s oracle/bracket/monotonic5s cap/250ms slack/PTTL range/real expiry HTTP404/logout finally. Red86023native1 one relevant lowerboundFAIL with993/209/29541; green48663native0 one31.905sPASS with29923/168/29582, test-onlyRedis issuedcapability1s controlled defect; production TTL unchanged. Verify exact restoration 4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51, all292source input/prelaunch/terminal/Git bytes, other5fa02paths untouched, safe evidence archive original integrity, exact source bridges from WIP atfa02 to finald674. Reuse unchanged priorreview valid limits; NP01 acceptedinitialdelivery P2 GAP remains separate. Inspect partial prior output against originals rather than blindly adopting verdict. No runtime solelyrecovery/history.
+# Existing patterns
+Original-byte-index/ZIP/transfer manifest, safe XML no credentials/properties/stdio; reviewer original safe files preserved by root before normalized readable copies.
+# Acceptance criteria
+Fresh independent APPROVE/CHANGES_REQUESTED with concrete source/test sensitivity/data/cleanup qualifications, own completion receipt/immutable hashmanifest/ZIP safely publishable output list. Blocking findings cannot be fixed by reviewer. Not fullAuth/notification/socket realprivate chain acceptance.
+# Verification
+Safe private parses of actual originals; never print raw private application logs/secret values. Keep prior partial review and originals byte unchanged. Return exact stable sourceSHA, scope, case evidence, source-equivalence limits.

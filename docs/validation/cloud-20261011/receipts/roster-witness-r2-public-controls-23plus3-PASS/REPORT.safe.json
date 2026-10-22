@@ -1,0 +1,62 @@
+{
+  "toolSession": 17822,
+  "supervisor": {
+    "pid": 456931,
+    "birth_ticks": 11548234
+  },
+  "nativeExit": 0,
+  "allPhasesPass": true,
+  "controls": {
+    "witness": 23,
+    "residualCookie": 3,
+    "failed": 0
+  },
+  "causalCounterexamples": {
+    "oldWrongStatusMalformedKnown": true,
+    "oldMissingUserPageAccepted": true,
+    "oldPartialLessonAccepted": true,
+    "oldPostLoginTokenLost": true,
+    "oldCookieBeforeFetchRejectFalseCleanupConfirmed": true,
+    "newCookieOwnLogoutConfirmedRemovedDisposed": true
+  },
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 456931,
+      "start_ticks": 11548234,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 456942,
+      "start_ticks": 11548477,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 456934,
+      "start_ticks": 11548305,
+      "exactBirthAbsent": true
+    }
+  ],
+  "allReportedOwnedSettledReaped": true,
+  "ownedTempArtifactsRemoved": true,
+  "sourcePinsUnchanged": {
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+    "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/READY.safe.json": "27a0ac41c0efdeadc574204c264f403dd46c10cb81a82b1d174af79c5b3a4289",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/witness-detail-lookup.cjs": "4c4ad5626636b50d3183052ded3d4f342ce8bb15ab2b9645fd3b60d45cc997be",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/before-r1-witness.cjs": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/cleanup-control.cjs": "4b676053d0064c0091bab226a400f6ae98851c7a1367de77107c6081d41c05c8",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/controls.cjs": "c533faac243b9af7b1742a6fca3901a1bbe80042e030fa1cb24709e3fdb01398",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/before-witness.cjs": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+    "/workspace/rutcampustrack/tests/e2e/fixtures/first3-observer.ts": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/package.json": "f5c873af32da3a56849a77a73eb4e6acf9629d58564ba420077feea88800225c"
+  },
+  "rootCheckout": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "sourceReview": "1e1e/5a5b APPROVE_SOURCE_ONLY",
+  "qualification": "Actual public Node/source-function adapters and extracted old source seams. No APIRequestContext.newContext, HTTP/login/API/browser/stand/credentials run. This closes checking-helper regression only, not actual503/client/API acceptance.",
+  "actual503cause": "UNKNOWN",
+  "currentCIcause": "UNKNOWN",
+  "lease": "RELEASED",
+  "limitsQualification": "512MiBmanagedheap/RSS1GiB/TMP32MiB sampledsoft, not hardallocation/process isolation.",
+  "observed_at": "2026-10-13T03:22:59.945567+00:00"
+}

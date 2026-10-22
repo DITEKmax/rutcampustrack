@@ -1,0 +1,58 @@
+{
+  "schema": "P10_ORIGINAL_ARTIFACT_ATTEMPT03_OPERATION_R2_SETTLEMENT_V1",
+  "utc": "2026-10-13T13:27:51.910761+00:00",
+  "tool_start_chunk": "038817",
+  "tool_final_poll_chunk": "9b8209",
+  "tool_session": 22386,
+  "tool_sandbox_permissions": "require_escalated",
+  "caller_exit": 1,
+  "known_owned_births_including_supervisor": [
+    {
+      "pid": 521824,
+      "start_ticks": 15173709,
+      "known_birth_absent": true
+    },
+    {
+      "pid": 521828,
+      "start_ticks": 15173744,
+      "known_birth_absent": true
+    }
+  ],
+  "all2_births_absent": true,
+  "native_settled_all_reaped": true,
+  "terminal_utc": "2026-10-13T13:25:49.971634+00:00",
+  "cleanup_margin_utc": "2026-10-13T13:28:52.463659+00:00",
+  "terminal_before_cleanup_margin_seconds": 182.492,
+  "absence_checks_before_cleanup_margin": true,
+  "lifecycle": {
+    "schema": "P10_REQUEST_LIFECYCLE_V1",
+    "diagnostic_valid": false,
+    "operation_stage": "URL_OPEN",
+    "exception_code": "URL_ERROR",
+    "http_status": 0,
+    "primary_rejection": "BOUNDARY_UNKNOWN",
+    "cleanup_rejection": "NONE",
+    "cleanup_outcome": "REMOVED",
+    "request_reconciliation_required": false,
+    "no_private_message_context_or_values_export": true
+  },
+  "case_projection_and_private_XML_file_absent": true,
+  "private_request_TMP_authority_absent": true,
+  "Source18pins_match_clean_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "frozen_ac4e_93ed_exact": true,
+  "retained_attempt02_response_reused": true,
+  "new_MCP_calls": 0,
+  "adapter_stage": "PRIVATE_REQUEST_UPDATED",
+  "observed_current_operation": "URL_OPEN",
+  "direct_known_exception": "URL_ERROR",
+  "http_status": 0,
+  "nested_reason_and_rootcause": "UNKNOWN_NOT_READ",
+  "historical02_operation_exception_cause": "UNKNOWN",
+  "currentP10_CI_failure_cause": "UNKNOWN",
+  "selected_ZIP_XML_reader_not_reached_in_this_attempt": true,
+  "no_private_body_log_XML_URI_hash_env_export": true,
+  "network_context_changes": false,
+  "test_product_API_PG_browser_B013_effects": 0,
+  "no_retry": true,
+  "next": "Root disposition of closed transport witness; no cause inference/environment fix or newgrant reuse"
+}

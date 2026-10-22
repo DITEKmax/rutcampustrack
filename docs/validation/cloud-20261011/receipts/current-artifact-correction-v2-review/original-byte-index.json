@@ -1,0 +1,96 @@
+{
+  "source": "/workspace/scratch/rct-validation/current_artifact_correction_v2_review",
+  "manifest": "manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "10f9a45fbee05bfe8786ebe1e35a4badd72d2981dddb19d179cc49effa058e16",
+      "original_bytes": 432,
+      "working_sha256": "10f9a45fbee05bfe8786ebe1e35a4badd72d2981dddb19d179cc49effa058e16",
+      "working_bytes": 432,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "2f79d4c4a85b853343b7c8306805fb83eefda9edff9f465a61c2d10d6e1ae679",
+      "original_bytes": 8505,
+      "working_sha256": "2f79d4c4a85b853343b7c8306805fb83eefda9edff9f465a61c2d10d6e1ae679",
+      "working_bytes": 8505,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "actual-control-receipt-audit.json",
+      "original_sha256": "0eb60884e6471422b9e9653321270b26c188686e77333053de66ae304aac6215",
+      "original_bytes": 3406,
+      "working_sha256": "0eb60884e6471422b9e9653321270b26c188686e77333053de66ae304aac6215",
+      "working_bytes": 3406,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "ad96ed8ff954a05169d59214bc7cec54c3e348bd98b7b2d92d541d29893e0efa",
+      "original_bytes": 1177,
+      "working_sha256": "ad96ed8ff954a05169d59214bc7cec54c3e348bd98b7b2d92d541d29893e0efa",
+      "working_bytes": 1177,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "audit.py",
+      "original_sha256": "3af46c9d4a5fd61ac1fe16f83425c96f72e038d7cb332e4f2420120f5aedf750",
+      "original_bytes": 13096,
+      "working_sha256": "b89ab8d7c7213d3aa4f6f27870313fb956dd420a5e8026cb2a5248140f5a660a",
+      "working_bytes": 4805,
+      "transformation": "lossless single-member ZIP of exact working bytes; immutable originals retained",
+      "working_path": "audit.py.readable.zip"
+    },
+    {
+      "path": "author24-root-original-identity.json",
+      "original_sha256": "a55d31eba03facadb77a8c9ca77f3fd8c7e3f14eeae969fea61dab1c55a1aec0",
+      "original_bytes": 387,
+      "working_sha256": "a55d31eba03facadb77a8c9ca77f3fd8c7e3f14eeae969fea61dab1c55a1aec0",
+      "working_bytes": 387,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "independent-preservation.json",
+      "original_sha256": "8434984a151512670bfab2260ba8163289b453384ed13b80e4d56a169dfb2bcd",
+      "original_bytes": 2693,
+      "working_sha256": "8434984a151512670bfab2260ba8163289b453384ed13b80e4d56a169dfb2bcd",
+      "working_bytes": 2693,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "independent-pure-ownership.json",
+      "original_sha256": "99994372a1f22bbe62a66270f6e697dbab1d8d390a97cc83126a4ff170cacd59",
+      "original_bytes": 725,
+      "working_sha256": "99994372a1f22bbe62a66270f6e697dbab1d8d390a97cc83126a4ff170cacd59",
+      "working_bytes": 725,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "restored-root-inputs.json",
+      "original_sha256": "a9e04436ecee9471840a33269be383098852352aaceac216edb06d360ee494ce",
+      "original_bytes": 1314,
+      "working_sha256": "a9e04436ecee9471840a33269be383098852352aaceac216edb06d360ee494ce",
+      "working_bytes": 1314,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verdict.json",
+      "original_sha256": "22d0f9a964787c49451435b233e122c02e72194262a3e5361923846a2cf01938",
+      "original_bytes": 768,
+      "working_sha256": "22d0f9a964787c49451435b233e122c02e72194262a3e5361923846a2cf01938",
+      "working_bytes": 768,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "manifest.json",
+      "original_sha256": "64715bd8880fb714f45f3cd3a719a442fc43384018e3067ce1c3a7dc321459ee",
+      "original_bytes": 1838,
+      "working_sha256": "64715bd8880fb714f45f3cd3a719a442fc43384018e3067ce1c3a7dc321459ee",
+      "working_bytes": 1838,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

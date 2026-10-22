@@ -1,0 +1,45 @@
+{
+  "schema": "P09_CLEANUP_NARROW_SOURCE_RECHECK_V1",
+  "verdict": "APPROVE_SOURCE",
+  "closed_finding": "P09-TEST-CLEANUP-MASKS-PRIMARY",
+  "inverse5": {
+    "prefix_imports_fields_exact": true,
+    "test_locals_only_primary_slot": true,
+    "genuine_join_body_and_assertions_exact": true,
+    "all_noncleanup_helpers_and_secondary_config_exact": true,
+    "build_exact_old_and_pinned": true
+  },
+  "new_RAM3_aggregation_semantics": {
+    "primary_with_existing_TWR_plus_five_cleanup_failures": {
+      "main": "PRIMARY_ASSERTION",
+      "suppressed": [
+        "CONTEXT_CLOSE_TWR",
+        "CLEANUP_0",
+        "CLEANUP_1",
+        "CLEANUP_2",
+        "CLEANUP_3",
+        "CLEANUP_4"
+      ],
+      "all5_attempted": true
+    },
+    "cleanup_only_first_error_and_four_suppressed": {
+      "main": "CLEANUP_0",
+      "suppressed_count": 4,
+      "all5_attempted": true,
+      "would_fail": true
+    },
+    "AfterAll_multiple_delete_failures_continue": {
+      "main": "DELETE_IO",
+      "suppressed": [
+        "DELETE_RUNTIME"
+      ],
+      "all_owned_entries_attempted": true,
+      "would_fail": true
+    }
+  },
+  "qualification": "Source/JLS reasoning and RAM accumulator analogue only; not Java AST/compile/native/sensitivity or actual resource cleanup.",
+  "original_join_review": "REUSED_NO_FULL_REVIEW_OR_OLD4_REPLAY",
+  "compile_runtime_sensitivity_cleanup": "NOT_RUN",
+  "P09_parent": "UNKNOWN",
+  "effects": "Public Source/Git blob reads + own receipt RAM only; no Source edits/real keys/native/network/API/privateenv/artifacts/children/B013"
+}

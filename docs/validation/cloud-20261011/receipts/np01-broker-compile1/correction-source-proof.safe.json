@@ -1,0 +1,91 @@
+{
+  "utc": "2026-10-12T06:35:13.704964+00:00",
+  "scope": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "Java_exact_only_typed_local_replacement": true,
+  "one_publish_execution_and_exact_count1_retained": true,
+  "Python_nonimport_AST_exact": true,
+  "Python_import_multiset_exact": true,
+  "Python_import_order_before": [
+    "ImportFrom(module='__future__', names=[alias(name='annotations')], level=0)",
+    "Import(names=[alias(name='asyncio')])",
+    "Import(names=[alias(name='html')])",
+    "Import(names=[alias(name='json')])",
+    "Import(names=[alias(name='logging')])",
+    "Import(names=[alias(name='os')])",
+    "Import(names=[alias(name='signal')])",
+    "Import(names=[alias(name='sys')])",
+    "Import(names=[alias(name='uuid')])",
+    "ImportFrom(module='pathlib', names=[alias(name='Path')], level=0)",
+    "ImportFrom(module='types', names=[alias(name='SimpleNamespace')], level=0)",
+    "ImportFrom(module='urllib.parse', names=[alias(name='quote')], level=0)",
+    "Import(names=[alias(name='aio_pika')])",
+    "Import(names=[alias(name='aiohttp')])",
+    "Import(names=[alias(name='redis.asyncio', asname='aioredis')])",
+    "ImportFrom(module='aiohttp', names=[alias(name='web')], level=0)",
+    "ImportFrom(module='aiogram', names=[alias(name='Bot'), alias(name='Dispatcher')], level=0)",
+    "ImportFrom(module='aiogram.client.session.aiohttp', names=[alias(name='AiohttpSession')], level=0)",
+    "ImportFrom(module='aiogram.client.telegram', names=[alias(name='TelegramAPIServer')], level=0)",
+    "ImportFrom(module='aiogram.types', names=[alias(name='Update')], level=0)",
+    "ImportFrom(module='bot.consumers.event_consumer', names=[alias(name='DLQ_QUEUE_NAME'), alias(name='QUEUE_NAME'), alias(name='start_consumer')], level=0)",
+    "ImportFrom(module='bot.consumers.event_dispatcher', names=[alias(name='EventDispatcher')], level=0)",
+    "ImportFrom(module='bot.grpc_client.academic_client', names=[alias(name='AcademicGrpcClient')], level=0)",
+    "ImportFrom(module='bot.grpc_client.bot_credentials_client', names=[alias(name='BotCredentialsGrpcClient')], level=0)",
+    "ImportFrom(module='bot.handlers.start', names=[alias(name='start_router')], level=0)",
+    "ImportFrom(module='bot.services.bot_credential_cards', names=[alias(name='BotCredentialCards')], level=0)",
+    "ImportFrom(module='bot.services.idempotency_guard', names=[alias(name='BotIdempotencyGuard')], level=0)",
+    "ImportFrom(module='bot.services.notification_prefs', names=[alias(name='NotificationPreferencesUnavailable')], level=0)",
+    "ImportFrom(module='bot.services.send_queue', names=[alias(name='TelegramSendQueue')], level=0)"
+  ],
+  "Python_import_order_after": [
+    "ImportFrom(module='__future__', names=[alias(name='annotations')], level=0)",
+    "Import(names=[alias(name='asyncio')])",
+    "Import(names=[alias(name='html')])",
+    "Import(names=[alias(name='json')])",
+    "Import(names=[alias(name='logging')])",
+    "Import(names=[alias(name='os')])",
+    "Import(names=[alias(name='signal')])",
+    "Import(names=[alias(name='sys')])",
+    "Import(names=[alias(name='uuid')])",
+    "ImportFrom(module='pathlib', names=[alias(name='Path')], level=0)",
+    "ImportFrom(module='types', names=[alias(name='SimpleNamespace')], level=0)",
+    "ImportFrom(module='urllib.parse', names=[alias(name='quote')], level=0)",
+    "Import(names=[alias(name='aio_pika')])",
+    "Import(names=[alias(name='aiohttp')])",
+    "Import(names=[alias(name='redis.asyncio', asname='aioredis')])",
+    "ImportFrom(module='aiogram', names=[alias(name='Bot'), alias(name='Dispatcher')], level=0)",
+    "ImportFrom(module='aiogram.client.session.aiohttp', names=[alias(name='AiohttpSession')], level=0)",
+    "ImportFrom(module='aiogram.client.telegram', names=[alias(name='TelegramAPIServer')], level=0)",
+    "ImportFrom(module='aiogram.types', names=[alias(name='Update')], level=0)",
+    "ImportFrom(module='aiohttp', names=[alias(name='web')], level=0)",
+    "ImportFrom(module='bot.consumers.event_consumer', names=[alias(name='DLQ_QUEUE_NAME'), alias(name='QUEUE_NAME'), alias(name='start_consumer')], level=0)",
+    "ImportFrom(module='bot.consumers.event_dispatcher', names=[alias(name='EventDispatcher')], level=0)",
+    "ImportFrom(module='bot.grpc_client.academic_client', names=[alias(name='AcademicGrpcClient')], level=0)",
+    "ImportFrom(module='bot.grpc_client.bot_credentials_client', names=[alias(name='BotCredentialsGrpcClient')], level=0)",
+    "ImportFrom(module='bot.handlers.start', names=[alias(name='start_router')], level=0)",
+    "ImportFrom(module='bot.services.bot_credential_cards', names=[alias(name='BotCredentialCards')], level=0)",
+    "ImportFrom(module='bot.services.idempotency_guard', names=[alias(name='BotIdempotencyGuard')], level=0)",
+    "ImportFrom(module='bot.services.notification_prefs', names=[alias(name='NotificationPreferencesUnavailable')], level=0)",
+    "ImportFrom(module='bot.services.send_queue', names=[alias(name='TelegramSendQueue')], level=0)"
+  ],
+  "Python_import_sideeffect_source": "Only from aiohttp import web relocated after aiogram imports; import aiohttp remains before all of them; same package modules/multiset, no import additions/removals. Native full imports to be confirmed in actual runner after Root lease.",
+  "runtime_import_verification": "NOT_RUN_NO_LEASE",
+  "original7048tracked_byte_changes": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "source_inventory": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "8660f1e49daa90dcfb4319ab9b4aa6634f2acf76021878c18bb09a38bfd1e05e",
+      "bytes": 35853
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "7f2942cfc098b5ecfb0aea910429b582563a642d4356599f001e0d76875da9f6",
+      "bytes": 30752
+    }
+  ]
+}

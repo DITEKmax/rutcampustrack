@@ -1,0 +1,27 @@
+{
+  "utc": "2026-10-13T09:10:50.376509+00:00",
+  "scope": "FIRST3_ROOT_CONSUMER_SOURCE_ONLY",
+  "state": "SOURCE_READY_INDEPENDENT_REVIEW_REQUIRED_UNBOUND_NO_DOWNLOAD",
+  "old_schema_sha256": "de183739198feab9c584f82a0dd14d507718791b8adb4df21f6c7e297f4b6839",
+  "new_schema_sha256": "517ba6261f0ff8251151f25835178f54505fadce426cedce19501b9b01d6a213",
+  "canonical_producer_receipt_sha256": "67b602f0802dc00e13575db1e00d175af3652aa47f597e7fba8f71e6921f68f0",
+  "canonical_new_mapping": {
+    "DATASET_SEMESTERS_READ_HTTP": "DATASET_HTTP",
+    "DATASET_SEMESTER_CREATE_HTTP": "DATASET_HTTP",
+    "DATASET_SEMESTER_ACTIVATE_HTTP": "DATASET_HTTP",
+    "DATASET_GROUP_CREATE_HTTP": "DATASET_HTTP",
+    "DATASET_USER_CREATE_HTTP": "DATASET_HTTP",
+    "DATASET_HEADMAN_SET_HTTP": "DATASET_HTTP",
+    "DATASET_SUBJECT_CREATE_HTTP": "DATASET_HTTP",
+    "DATASET_SUBJECT_READ_HTTP": "DATASET_HTTP",
+    "DATASET_LESSON_CREATE_HTTP": "DATASET_HTTP",
+    "DATASET_HOMEWORK_CREATE_HTTP": "DATASET_HTTP",
+    "DATASET_ASSISTANT_CREATE_HTTP": "DATASET_HTTP"
+  },
+  "source_ram_control_count": 419,
+  "all_pass": true,
+  "whole_inverse_exact": true,
+  "old15core9hints_httpstatuses_decoder_fields_caps_duplicates_status_sourcejoin_unchanged": true,
+  "binding": "UNBOUND_FUTURE_ROOT_PUSH; load_binding rejects/no remote authority until actual reviewedintegratedpush+runmetadata/sourceSHA",
+  "qualification": "Root soleconsumer writer; only eleven cause-stage/nonzeroHTTP allowance mirroredfrom frozenproducer, no downloaded/private artifacts/nativeNode/API/Docker/browser. Serialreportedcontext never proves operation/actualHTTP/cause/admission/PASS. Future reporter formatter may alterSHA; metadataonlyrepin review separate."
+}

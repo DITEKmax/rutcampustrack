@@ -3,7 +3,10 @@ import type { HeadmanSubjectType } from '../headman-subjects/headman-subjects-cl
 import type { HeadmanJournalLesson } from '../headman-journal/headman-journal-client'
 
 export type HomeworkBindingMode = 'LESSON' | 'DATE'
-export interface HeadmanHomeworkSubject { readonly id: number; readonly name: string }
+export interface HeadmanHomeworkSubject {
+  readonly id: number
+  readonly name: string
+}
 export interface HeadmanHomeworkHistory {
   readonly id: number
   readonly revision: number
@@ -115,30 +118,55 @@ export class HeadmanHomeworkApi {
   async activeSemester(): Promise<HeadmanHomeworkSemester | null> {
     const semesters = await this.requestPaged(
       (page) => `/api/academic/semesters?page=${page}&size=100`,
-      (value) => embeddedItems(value, ['semesterResponseList']).map(normalizeSemester).filter(isValue),
+      (value) =>
+        embeddedItems(value, ['semesterResponseList']).map(normalizeSemester).filter(isValue),
     )
     return semesters.find((semester) => semester.active) ?? null
   }
 
-  listHomeworks(groupId: number, semesterId: number, archived = false): Promise<readonly HeadmanManagedHomework[]> {
+  listHomeworks(
+    groupId: number,
+    semesterId: number,
+    archived = false,
+  ): Promise<readonly HeadmanManagedHomework[]> {
     assertPositiveInteger(groupId, 'groupId')
     assertPositiveInteger(semesterId, 'semesterId')
     return this.requestPaged(
-      (page) => `/api/academic/homeworks?groupId=${groupId}&semesterId=${semesterId}&page=${page}&size=100${archived ? '&archived=true' : ''}`,
-      (value) => embeddedItems(value, ['homeworkResponseList']).map(normalizeHomework).filter(isValue),
+      (page) =>
+        `/api/academic/homeworks?groupId=${groupId}&semesterId=${semesterId}&page=${page}&size=100${archived ? '&archived=true' : ''}`,
+      (value) =>
+        embeddedItems(value, ['homeworkResponseList']).map(normalizeHomework).filter(isValue),
+      true,
     )
   }
 
   async getHomework(id: number, archived = false): Promise<HeadmanManagedHomework> {
     assertPositiveInteger(id, 'id')
-    const item = normalizeHomework(await this.request<unknown>(`/api/academic/homeworks/${id}${archived ? '?archived=true' : ''}`))
+    const item = normalizeHomework(
+      await this.request<unknown>(
+        `/api/academic/homeworks/${id}${archived ? '?archived=true' : ''}`,
+      ),
+    )
     if (!item || item.id !== id) throw new Error('Некорректное домашнее задание')
     return item
   }
 
-  async nextHomeworkLesson(groupId: number, semesterId: number, subjectId: number, lessonType: HeadmanSubjectType, fromDate: string): Promise<HeadmanJournalLesson | null> {
-    for (const [name, id] of Object.entries({ groupId, semesterId, subjectId })) assertPositiveInteger(id, name)
-    const query = new URLSearchParams({ groupId: String(groupId), semesterId: String(semesterId), subjectId: String(subjectId), lessonType, fromDate })
+  async nextHomeworkLesson(
+    groupId: number,
+    semesterId: number,
+    subjectId: number,
+    lessonType: HeadmanSubjectType,
+    fromDate: string,
+  ): Promise<HeadmanJournalLesson | null> {
+    for (const [name, id] of Object.entries({ groupId, semesterId, subjectId }))
+      assertPositiveInteger(id, name)
+    const query = new URLSearchParams({
+      groupId: String(groupId),
+      semesterId: String(semesterId),
+      subjectId: String(subjectId),
+      lessonType,
+      fromDate,
+    })
     const response = await this.response(`/api/schedule/lessons/next?${query}`)
     if (response.status === 204) return null
     if (!response.ok) throw await this.apiError(response)
@@ -150,23 +178,47 @@ export class HeadmanHomeworkApi {
     const occurrenceRevision = positiveDecimal(row.occurrenceRevision)
     const date = textValue(row.date)
     const lessonNumber = positiveNumber(row.lessonNumber)
-    if (!id || !occurrenceId || !occurrenceRevision || !date || !lessonNumber
-      || positiveNumber(row.groupId) !== groupId || positiveNumber(row.subjectId) !== subjectId
-      || positiveNumber(row.semesterId) !== semesterId || row.lessonType !== lessonType) throw new Error('Некорректная ближайшая пара')
-    return { id, occurrenceId, occurrenceRevision, date, lessonNumber, groupId, subjectId, lessonType,
-      startTime: textValue(row.startTime), endTime: textValue(row.endTime), room: null,
-      status: 'PLANNED', current: true, transferOperationId: null, transferState: null }
+    if (
+      !id ||
+      !occurrenceId ||
+      !occurrenceRevision ||
+      !date ||
+      !lessonNumber ||
+      positiveNumber(row.groupId) !== groupId ||
+      positiveNumber(row.subjectId) !== subjectId ||
+      positiveNumber(row.semesterId) !== semesterId ||
+      row.lessonType !== lessonType
+    )
+      throw new Error('Некорректная ближайшая пара')
+    return {
+      id,
+      occurrenceId,
+      occurrenceRevision,
+      date,
+      lessonNumber,
+      groupId,
+      subjectId,
+      lessonType,
+      startTime: textValue(row.startTime),
+      endTime: textValue(row.endTime),
+      room: null,
+      status: 'PLANNED',
+      current: true,
+      transferOperationId: null,
+      transferState: null,
+    }
   }
 
   listSubjects(): Promise<readonly HeadmanHomeworkSubject[]> {
     return this.requestPaged(
       (page) => `/api/academic/subjects?page=${page}&size=100`,
-      (value) => embeddedItems(value, ['subjectResponseList']).flatMap((entry) => {
-        const subject = unwrapEntity(entry)
-        const id = positiveNumber(subject.id)
-        const name = textValue(subject.name)
-        return id !== null && name !== null ? [{ id, name }] : []
-      }),
+      (value) =>
+        embeddedItems(value, ['subjectResponseList']).flatMap((entry) => {
+          const subject = unwrapEntity(entry)
+          const id = positiveNumber(subject.id)
+          const name = textValue(subject.name)
+          return id !== null && name !== null ? [{ id, name }] : []
+        }),
     )
   }
 
@@ -175,7 +227,8 @@ export class HeadmanHomeworkApi {
     return this.requestPaged(
       (page) => `/api/academic/homeworks/${id}/history?page=${page}&size=100`,
       (value) => {
-        if (!isRecord(value) || !Array.isArray(value.content)) throw new Error('Некорректная история ДЗ')
+        if (!isRecord(value) || !Array.isArray(value.content))
+          throw new Error('Некорректная история ДЗ')
         return value.content.map((entry: unknown) => {
           const row = unwrapEntity(entry)
           const historyId = positiveNumber(row.id)
@@ -185,7 +238,16 @@ export class HeadmanHomeworkApi {
           if (historyId === null || revision === null || occurredAt === null || action === null) {
             throw new Error('Некорректная запись истории ДЗ')
           }
-          return { id: historyId, revision, occurredAt, action, actorId: positiveNumber(row.actorId), actorDisplayName: textValue(row.actorDisplayName), before: row.before, after: row.after }
+          return {
+            id: historyId,
+            revision,
+            occurredAt,
+            action,
+            actorId: positiveNumber(row.actorId),
+            actorDisplayName: textValue(row.actorDisplayName),
+            before: row.before,
+            after: row.after,
+          }
         })
       },
     )
@@ -229,18 +291,33 @@ export class HeadmanHomeworkApi {
       return { state: 'PENDING', receipt: Object.freeze(receipt) }
     }
     const created = normalizeHomework(value)
-    if (created === null || created.groupId !== input.groupId || created.subjectId !== input.subjectId
-      || created.semesterId !== input.semesterId || created.bindingId === null || created.requestKey === null) {
+    if (
+      created === null ||
+      created.groupId !== input.groupId ||
+      created.subjectId !== input.subjectId ||
+      created.semesterId !== input.semesterId ||
+      created.bindingId === null ||
+      created.requestKey === null
+    ) {
       throw new Error('Сервер вернул ДЗ для другого запроса')
     }
     // A replay returns the current placement, which may have moved after creation.
-    validatePublicationReceipt({
-      homeworkId: String(created.id), bindingId: String(created.bindingId), requestKey: created.requestKey,
-    }, input.requestKey, acceptedReceipt)
+    validatePublicationReceipt(
+      {
+        homeworkId: String(created.id),
+        bindingId: String(created.bindingId),
+        requestKey: created.requestKey,
+      },
+      input.requestKey,
+      acceptedReceipt,
+    )
     return { state: 'ACTIVE', homework: created }
   }
 
-  async updateHomework(id: number, input: HeadmanHomeworkUpdateInput): Promise<HeadmanManagedHomework | null> {
+  async updateHomework(
+    id: number,
+    input: HeadmanHomeworkUpdateInput,
+  ): Promise<HeadmanManagedHomework | null> {
     assertPositiveInteger(id, 'id')
     validateTextInput(input.title, 'title', 255)
     validateOptionalText(input.description, 'description', 4000)
@@ -248,20 +325,33 @@ export class HeadmanHomeworkApi {
     validateRequestKey(input.requestKey)
     assertPositiveInteger(input.expectedRevision, 'expectedRevision')
     if (input.bindingMode !== undefined) validatePlacement(input as HeadmanHomeworkPlacementInput)
-    else if (input.selectedOccurrenceId !== undefined || input.selectedOccurrenceRevision !== undefined) throw new RangeError('Снимок пары требует привязку')
-    const updated = normalizeHomework(await this.request<unknown>(`/api/academic/homeworks/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        title: input.title.trim(),
-        description: optionalText(input.description),
-        link: optionalText(input.link),
-        requestKey: input.requestKey,
-        expectedRevision: input.expectedRevision,
-        ...(input.bindingMode === undefined ? {} : { bindingMode: input.bindingMode, lessonDate: input.lessonDate, lessonNumber: input.lessonNumber }),
-        ...placementExtras(input),
+    else if (
+      input.selectedOccurrenceId !== undefined ||
+      input.selectedOccurrenceRevision !== undefined
+    )
+      throw new RangeError('Снимок пары требует привязку')
+    const updated = normalizeHomework(
+      await this.request<unknown>(`/api/academic/homeworks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: input.title.trim(),
+          description: optionalText(input.description),
+          link: optionalText(input.link),
+          requestKey: input.requestKey,
+          expectedRevision: input.expectedRevision,
+          ...(input.bindingMode === undefined
+            ? {}
+            : {
+                bindingMode: input.bindingMode,
+                lessonDate: input.lessonDate,
+                lessonNumber: input.lessonNumber,
+              }),
+          ...placementExtras(input),
+        }),
       }),
-    }))
-    if (updated === null || updated.id !== id || updated.revision === null) throw new Error('Сервер вернул некорректную версию ДЗ')
+    )
+    if (updated === null || updated.id !== id || updated.revision === null)
+      throw new Error('Сервер вернул некорректную версию ДЗ')
     return updated
   }
 
@@ -273,24 +363,34 @@ export class HeadmanHomeworkApi {
   private async requestPaged<T>(
     path: (page: number) => string,
     read: (value: unknown) => readonly T[],
+    authoritativeNext = false,
   ): Promise<readonly T[]> {
     const items: T[] = []
     const visitedPaths = new Set<string>()
-    let nextPath = path(0)
+    const initialPath = path(0)
+    let nextPath = initialPath
     let page = 0
     for (;;) {
-      if (!visitedPaths.add(nextPath)) throw new Error('Сервер вернул зацикленную пагинацию домашних заданий')
+      if (visitedPaths.has(nextPath))
+        throw new Error('Сервер вернул зацикленную пагинацию домашних заданий')
+      visitedPaths.add(nextPath)
       const value = await this.request<unknown>(nextPath)
       items.push(...read(value))
+      const nextHref = authoritativeNext ? nextPageHref(value, initialPath) : null
+      if (nextHref !== null) {
+        nextPath = nextHref
+        page += 1
+        continue
+      }
       const metadata = pageMetadata(value)
       if (metadata !== null && metadata.totalPages > page + 1) {
         nextPath = path(page + 1)
         page += 1
         continue
       }
-      const nextHref = nextPageHref(value)
-      if (nextHref !== null) {
-        nextPath = nextHref
+      const legacyNextHref = authoritativeNext ? null : legacyNextPageHref(value)
+      if (legacyNextHref !== null) {
+        nextPath = legacyNextHref
         page += 1
         continue
       }
@@ -305,7 +405,7 @@ export class HeadmanHomeworkApi {
         this.options.assertCurrent?.()
         return undefined as T
       }
-      const value = await response.json() as T
+      const value = (await response.json()) as T
       this.options.assertCurrent?.()
       return value
     }
@@ -317,7 +417,8 @@ export class HeadmanHomeworkApi {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
@@ -382,21 +483,57 @@ function validateCreateInput(input: HeadmanHomeworkCreateInput): void {
 }
 
 function validatePlacement(input: HeadmanHomeworkPlacementInput): void {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.lessonDate) || new Date(`${input.lessonDate}T12:00:00Z`).toISOString().slice(0, 10) !== input.lessonDate) throw new RangeError('lessonDate должен быть ISO date')
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(input.lessonDate) ||
+    new Date(`${input.lessonDate}T12:00:00Z`).toISOString().slice(0, 10) !== input.lessonDate
+  )
+    throw new RangeError('lessonDate должен быть ISO date')
   if (input.bindingMode === 'DATE') {
-    if (input.lessonNumber !== null || input.selectedOccurrenceId !== undefined || input.selectedOccurrenceRevision !== undefined) throw new RangeError('Для ДЗ на дату идентичность пары должна отсутствовать')
-  } else if (input.bindingMode !== 'LESSON' || input.lessonNumber === null
-    || !Number.isSafeInteger(input.lessonNumber) || input.lessonNumber < 1 || input.lessonNumber > 8) {
+    if (
+      input.lessonNumber !== null ||
+      input.selectedOccurrenceId !== undefined ||
+      input.selectedOccurrenceRevision !== undefined
+    )
+      throw new RangeError('Для ДЗ на дату идентичность пары должна отсутствовать')
+  } else if (
+    input.bindingMode !== 'LESSON' ||
+    input.lessonNumber === null ||
+    !Number.isSafeInteger(input.lessonNumber) ||
+    input.lessonNumber < 1 ||
+    input.lessonNumber > 8
+  ) {
     throw new RangeError('lessonNumber должен быть от 1 до 8')
   }
-  if ((input.selectedOccurrenceId === undefined) !== (input.selectedOccurrenceRevision === undefined)
-    || (input.selectedOccurrenceId !== undefined && (!positiveDecimal(input.selectedOccurrenceId) || !positiveDecimal(input.selectedOccurrenceRevision)))) throw new RangeError('Некорректный снимок пары')
-  if (input.lessonType !== undefined && input.lessonType !== null && !['LECTURE', 'PRACTICE', 'LAB'].includes(input.lessonType)) throw new RangeError('Некорректный тип занятия')
+  if (
+    (input.selectedOccurrenceId === undefined) !==
+      (input.selectedOccurrenceRevision === undefined) ||
+    (input.selectedOccurrenceId !== undefined &&
+      (!positiveDecimal(input.selectedOccurrenceId) ||
+        !positiveDecimal(input.selectedOccurrenceRevision)))
+  )
+    throw new RangeError('Некорректный снимок пары')
+  if (
+    input.lessonType !== undefined &&
+    input.lessonType !== null &&
+    !['LECTURE', 'PRACTICE', 'LAB'].includes(input.lessonType)
+  )
+    throw new RangeError('Некорректный тип занятия')
 }
 
-function placementExtras(input: { lessonType?: HeadmanSubjectType | null; selectedOccurrenceId?: string; selectedOccurrenceRevision?: string }): Record<string, unknown> {
-  return { ...(input.lessonType === undefined ? {} : { lessonType: input.lessonType }),
-    ...(input.selectedOccurrenceId === undefined ? {} : { selectedOccurrenceId: input.selectedOccurrenceId, selectedOccurrenceRevision: input.selectedOccurrenceRevision }) }
+function placementExtras(input: {
+  lessonType?: HeadmanSubjectType | null
+  selectedOccurrenceId?: string
+  selectedOccurrenceRevision?: string
+}): Record<string, unknown> {
+  return {
+    ...(input.lessonType === undefined ? {} : { lessonType: input.lessonType }),
+    ...(input.selectedOccurrenceId === undefined
+      ? {}
+      : {
+          selectedOccurrenceId: input.selectedOccurrenceId,
+          selectedOccurrenceRevision: input.selectedOccurrenceRevision,
+        }),
+  }
 }
 function positiveDecimal(value: unknown): string | null {
   if (typeof value === 'number' && Number.isSafeInteger(value) && value > 0) return String(value)
@@ -414,23 +551,33 @@ function validatePublicationReceipt(
   requestKey: string,
   accepted: HeadmanHomeworkPublicationReceipt | null = null,
 ): void {
-  if (!/^[1-9][0-9]*$/.test(receipt.homeworkId) || !/^[1-9][0-9]*$/.test(receipt.bindingId)
-    || receipt.requestKey.toLowerCase() !== requestKey.toLowerCase()
-    || (accepted !== null && (receipt.homeworkId !== accepted.homeworkId || receipt.bindingId !== accepted.bindingId))) {
+  if (
+    !/^[1-9][0-9]*$/.test(receipt.homeworkId) ||
+    !/^[1-9][0-9]*$/.test(receipt.bindingId) ||
+    receipt.requestKey.toLowerCase() !== requestKey.toLowerCase() ||
+    (accepted !== null &&
+      (receipt.homeworkId !== accepted.homeworkId || receipt.bindingId !== accepted.bindingId))
+  ) {
     throw new Error('Сервер вернул некорректное подтверждение публикации ДЗ')
   }
 }
 
 function assertPositiveInteger(value: number, name: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} должен быть положительным целым числом`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${name} должен быть положительным целым числом`)
 }
 
 function validateTextInput(value: string, name: string, maxLength: number): void {
   if (!value.trim()) throw new RangeError(`${name} обязателен`)
-  if (Array.from(value).length > maxLength) throw new RangeError(`${name} не может быть длиннее ${maxLength} символов`)
+  if (Array.from(value).length > maxLength)
+    throw new RangeError(`${name} не может быть длиннее ${maxLength} символов`)
 }
 
-function validateOptionalText(value: string | null | undefined, name: string, maxLength: number): void {
+function validateOptionalText(
+  value: string | null | undefined,
+  name: string,
+  maxLength: number,
+): void {
   if (value !== null && value !== undefined && Array.from(value).length > maxLength) {
     throw new RangeError(`${name} не может быть длиннее ${maxLength} символов`)
   }
@@ -463,9 +610,15 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
   const lessonDate = textValue(source.lessonDate)
   const lessonNumber = positiveNumber(source.lessonNumber)
   const bindingMode = source.bindingMode ?? 'LESSON'
-  if (id === null || subjectId === null || groupId === null || semesterId === null || lessonDate === null
-    || (bindingMode !== 'LESSON' && bindingMode !== 'DATE')
-    || (bindingMode === 'LESSON' ? lessonNumber === null : source.lessonNumber !== null)) {
+  if (
+    id === null ||
+    subjectId === null ||
+    groupId === null ||
+    semesterId === null ||
+    lessonDate === null ||
+    (bindingMode !== 'LESSON' && bindingMode !== 'DATE') ||
+    (bindingMode === 'LESSON' ? lessonNumber === null : source.lessonNumber !== null)
+  ) {
     return null
   }
   return {
@@ -483,7 +636,16 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
     lessonNumber,
     bindingMode,
     revision: positiveNumber(source.revision),
-    ...(source.lessonType === undefined ? {} : { lessonType: source.lessonType === 'LECTURE' || source.lessonType === 'PRACTICE' || source.lessonType === 'LAB' ? source.lessonType : null }),
+    ...(source.lessonType === undefined
+      ? {}
+      : {
+          lessonType:
+            source.lessonType === 'LECTURE' ||
+            source.lessonType === 'PRACTICE' ||
+            source.lessonType === 'LAB'
+              ? source.lessonType
+              : null,
+        }),
     archived: source.archived === true,
   }
 }
@@ -506,10 +668,39 @@ function pageMetadata(value: unknown): { totalPages: number } | null {
     : null
 }
 
-function nextPageHref(value: unknown): string | null {
+function legacyNextPageHref(value: unknown): string | null {
   if (!isRecord(value) || !isRecord(value._links) || !isRecord(value._links.next)) return null
   const href = value._links.next.href
   return typeof href === 'string' && href.startsWith('/api/') ? href : null
+}
+
+function nextPageHref(value: unknown, initialPath: string): string | null {
+  if (!isRecord(value) || !isRecord(value._links) || !('next' in value._links)) return null
+  const invalid = (): never => {
+    throw new Error('Некорректная ссылка пагинации ДЗ')
+  }
+  const href = isRecord(value._links.next) ? value._links.next.href : null
+  if (typeof href !== 'string' || !href.startsWith('/api/') || /[\s\\]/.test(href)) return invalid()
+  const initial = new URL(initialPath, 'https://pagination.invalid')
+  const target = new URL(href, initial)
+  if (target.origin !== initial.origin || target.pathname !== initial.pathname || target.hash)
+    return invalid()
+  const filters = new Set([...initial.searchParams.keys(), 'groupId', 'semesterId', 'archived'])
+  for (const filter of filters) {
+    if (['page', 'size', 'sort'].includes(filter)) continue
+    const expected = initial.searchParams.getAll(filter)
+    const actual = target.searchParams.getAll(filter)
+    if (
+      filter === 'archived' &&
+      expected.length === 0 &&
+      actual.length === 1 &&
+      actual[0] === 'false'
+    )
+      continue
+    if (expected.length !== actual.length || expected.some((item, index) => item !== actual[index]))
+      return invalid()
+  }
+  return href
 }
 
 function unwrapEntity(value: unknown): Record<string, unknown> {

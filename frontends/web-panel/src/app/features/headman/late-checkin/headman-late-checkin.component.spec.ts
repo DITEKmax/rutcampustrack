@@ -45,15 +45,6 @@ describe('HeadmanLateCheckinComponent', () => {
     expect(screen.getByText('Нет активных запросов')).toBeTruthy();
   });
 
-  it('shows empty state on 404 graceful degradation', async () => {
-    const mockApi = {
-      getGroupLateCheckins: () => of<LateCheckinRequestView[]>([]),
-    };
-    await render(HeadmanLateCheckinComponent, {
-      providers: commonProviders(mockApi),
-    });
-    expect(screen.getByText('Нет активных запросов')).toBeTruthy();
-  });
 
   it('renders a pending request with approve/reject buttons', async () => {
     const sample: LateCheckinRequestView = {

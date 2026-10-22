@@ -1,0 +1,182 @@
+[
+  {
+    "file": "safe-unit-outcomes-schedule-service-1.json",
+    "service": "schedule-service",
+    "task": "test",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 272,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 18,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-notification-service-1.json",
+    "service": "notification-service",
+    "task": "integrationTest",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 62,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 13,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-attendance-service-1.json",
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 220,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 41,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-academic.json",
+    "service": "academic-service",
+    "task": "test",
+    "collection": "NO_RESULTS",
+    "summary": {
+      "PASSED": 0,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 0,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-auth-service-1.json",
+    "service": "auth-service",
+    "task": "integrationTest",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 169,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 24,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-schedule-service-1.json",
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 205,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 38,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-auth-service-1.json",
+    "service": "auth-service",
+    "task": "test",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 140,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 25,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-notification-service-1.json",
+    "service": "notification-service",
+    "task": "test",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 125,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 26,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-it-academic.json",
+    "service": "academic-service",
+    "task": "integrationTest",
+    "collection": "NO_RESULTS",
+    "summary": {
+      "PASSED": 0,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 0,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-api-gateway-1.json",
+    "service": "api-gateway",
+    "task": "test",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 168,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 16,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-api-gateway-1.json",
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 9,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 4,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-attendance-service-1.json",
+    "service": "attendance-service",
+    "task": "test",
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 315,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_count": 47,
+    "acceptance": "NOT_ASSESSED"
+  }
+]

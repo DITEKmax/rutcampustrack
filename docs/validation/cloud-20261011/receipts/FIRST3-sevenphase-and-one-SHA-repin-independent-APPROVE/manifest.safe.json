@@ -1,0 +1,21 @@
+{
+  "schema": "RCT_FINITE_INDEPENDENT_EVIDENCE_RECHECK_MANIFEST_V1",
+  "utc": "2026-10-13T10:29:56.288756+00:00",
+  "verdict": "APPROVE_FINITE_EVIDENCE_AND_SOURCE_REPIN",
+  "integration_ready_exact_scope": true,
+  "findings": [],
+  "qualification": "Reported-context/stubHTTP/browser-free checking, not real client cause or matrix parent PASS",
+  "reviewer_native_reruns": 0,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 4891,
+      "sha256": "34d87dcab6946ecf2dedd2e7b7747b821db8cb60311ba19a72361725c3d9b947"
+    },
+    {
+      "path": "verification.safe.json",
+      "bytes": 4614,
+      "sha256": "0c0fefd811e6973ed0a562f064e3ed6842ac316c2a8fba39ad04572612813108"
+    }
+  ]
+}

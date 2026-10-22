@@ -1,0 +1,86 @@
+{
+  "artifact": 11869345518,
+  "producer": "fd864eb028f271537d24d7b6c065b553c56d6440",
+  "run": 38507359540,
+  "digest": "sha256:0dcf729aea014c4c10b6eceb22c6d3fec4bd13690499008e85bc4422f65e02a8",
+  "bytes": 1062,
+  "phases": {
+    "seed": {
+      "status": "failed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 326,
+          "project": "chromium",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "durationMs": 90576,
+          "errorCount": 1,
+          "diagnostics": [
+            {
+              "stage": "UNKNOWN",
+              "cause": "UNKNOWN",
+              "httpStatus": 0
+            }
+          ],
+          "errorLocations": [
+            {
+              "file": "application-recovery.spec.ts",
+              "line": 326
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {
+    "server": {
+      "targetPresent": true,
+      "targetSemesterMatches": true,
+      "targetStatus": "planned",
+      "endPlus5IsDue": true,
+      "unfinishedTransfer": false,
+      "barrierState": "NONE",
+      "shedlockPresent": true,
+      "shedlockCurrentlyHeld": false,
+      "shedlockRecentlyAcquired": false,
+      "logsObserved": true,
+      "reportedClasses": [
+        "IllegalStateException"
+      ],
+      "reportedSqlStates": [],
+      "reportedLifecycleFailure": true,
+      "reportedAuthorityFrame": false,
+      "reportedLifecycleOrigin": "FILE_CLOCK"
+    },
+    "api": {
+      "clockMatchesExpected": true,
+      "apiReadHttp": 200,
+      "targetPresent": true,
+      "targetStatus": "PLANNED",
+      "current": true,
+      "endPlus5IsDue": true
+    }
+  },
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [
+    "admit",
+    "attachment",
+    "pending"
+  ],
+  "diagnostic_schema": {
+    "seed": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES"
+}

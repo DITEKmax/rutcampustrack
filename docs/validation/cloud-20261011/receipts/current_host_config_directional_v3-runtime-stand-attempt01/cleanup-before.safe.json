@@ -1,0 +1,109 @@
+{
+  "utc": "2026-10-12T10:30:59.013111+00:00",
+  "exact_owned_containers": [
+    {
+      "id": "75db374d47c4fcfcd79f0b3cfc21afc2d25591917a18071b94a4e9dcec0961a0",
+      "name": "/rct-client-host-config-20261012-nginx-1",
+      "image": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "project": "rct-client-host-config-20261012",
+      "service": "nginx",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "566626354f564dfa2c951725f7daf22016bc0e61ba9ab749e4d0ae38e2b2f95f",
+      "name": "/rct-client-host-config-20261012-postgres-schedule-1",
+      "image": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "project": "rct-client-host-config-20261012",
+      "service": "postgres-schedule",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "e567fd4c7b5aea66ccad40336ef4b310635c77d27aaae03237f81d0096495eb8",
+      "name": "/rct-client-host-config-20261012-mongo-attendance-1",
+      "image": "sha256:cc6e50c173ff2cf38ffb812fb582450e9b40fc1f67eadd63e81071f18fc8cc96",
+      "project": "rct-client-host-config-20261012",
+      "service": "mongo-attendance",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "61f4f77e119cec87c2e964169d8a2aa0c39a4ffb403c55fabb79c7ed7b045b04",
+      "name": "/rct-client-host-config-20261012-postgres-academic-1",
+      "image": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "project": "rct-client-host-config-20261012",
+      "service": "postgres-academic",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "ef0f1e972ad2bb69d7d9b2e09c7dec98215c210366a434d334af5d6f77660151",
+      "name": "/rct-client-host-config-20261012-mini-app-nginx-1",
+      "image": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "project": "rct-client-host-config-20261012",
+      "service": "mini-app-nginx",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "6c22942ec1d73f3366385f0f303d4e087bd47c142cc22e88b47b25dc9b87a0d6",
+      "name": "/rct-client-host-config-20261012-pwa-nginx-1",
+      "image": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "project": "rct-client-host-config-20261012",
+      "service": "pwa-nginx",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "be59dc22ee06daf64b84a2e84889cf5f6beb6e7fe4257b0756c5810640b2c8ee",
+      "name": "/rct-client-host-config-20261012-rabbitmq-1",
+      "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "project": "rct-client-host-config-20261012",
+      "service": "rabbitmq",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "a8c3faa9ec33538ff6c2703f85742a10a6f914f7440a956124dd6ebf47ee7c55",
+      "name": "/rct-client-host-config-20261012-document-renderer-service-1",
+      "image": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+      "project": "rct-client-host-config-20261012",
+      "service": "document-renderer-service",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    },
+    {
+      "id": "c395f7fe498339744105296d86f477ccb0524d7b2912b7473fb65d4c05c269c7",
+      "name": "/rct-client-host-config-20261012-redis-1",
+      "image": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+      "project": "rct-client-host-config-20261012",
+      "service": "redis",
+      "status": "created",
+      "pid": 0,
+      "exit": 0
+    }
+  ],
+  "volumes_preserve": [
+    "rct-client-host-config-20261012_owned-mongo-attendance",
+    "rct-client-host-config-20261012_owned-postgres-academic",
+    "rct-client-host-config-20261012_owned-postgres-schedule",
+    "rct-client-host-config-20261012_owned-rabbitmq",
+    "rct-client-host-config-20261012_owned-redis"
+  ],
+  "resources": {
+    "utc": "2026-10-12T10:30:59.013176+00:00",
+    "free_available_bytes": 2517090304,
+    "memory_current": 6008766464,
+    "memory_max": 17179869184
+  },
+  "no_services_ever_started": true
+}

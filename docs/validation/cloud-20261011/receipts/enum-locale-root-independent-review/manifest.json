@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-12T20:06:36.278853+00:00",
+  "outcome": "APPROVE_SOURCE",
+  "scope": "DF-ENUM-FILTER-LOCALE-001 product boundary",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_product_review/REVIEW.md",
+      "relative_path": "REVIEW.md",
+      "size": 4506,
+      "mode": "0o400",
+      "sha256": "657ac3fc1bfb660e7ac2a54fbe4d70c9d67a45c42f3d4c96257cbe828992640d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_product_review/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "size": 2149,
+      "mode": "0o400",
+      "sha256": "ebc2540a4f86c88492a8a19c692d4cff8961b0fb08b59ff2bff30896cccd0557"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/enum_filter_locale_product_review/check.py",
+      "relative_path": "check.py",
+      "size": 6185,
+      "mode": "0o400",
+      "sha256": "f8733248ea38cd13f818e9aa6c15f4ea3ccdc12573cc364c1ca55f5dc8162bb9"
+    }
+  ],
+  "runtime_green": "PENDING_STANDARD_CI"
+}

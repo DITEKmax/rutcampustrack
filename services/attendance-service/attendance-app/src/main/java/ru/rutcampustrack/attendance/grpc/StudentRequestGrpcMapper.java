@@ -8,20 +8,21 @@ import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
 
 /** Domain-to-proto projection. No identity/peer fields are exposed. */
 final class StudentRequestGrpcMapper {
-    private StudentRequestGrpcMapper() {
-    }
+    private StudentRequestGrpcMapper() {}
 
     static StudentRequestDetail detail(StudentRequestModels.RequestDetail detail) {
-        StudentRequestDetail.Builder result = StudentRequestDetail.newBuilder()
-                .setSummary(summary(detail.summary()));
+        StudentRequestDetail.Builder result =
+                StudentRequestDetail.newBuilder().setSummary(summary(detail.summary()));
         if (detail.reason() != null) result.setReason(reason(detail.reason()));
         if (detail.comment() != null) result.setComment(detail.comment());
         detail.attachments().forEach(item -> result.addAttachments(attachment(item)));
         if (detail.decision() != null) result.setDecision(decision(detail.decision()));
         if (detail.decisionSelection() != null) {
             var saved = detail.decisionSelection();
-            var selection = StudentRequestDecisionSelection.newBuilder().setRequestKey(saved.requestKey())
-                    .setExpectedRevision(saved.expectedRevision());
+            var selection =
+                    StudentRequestDecisionSelection.newBuilder()
+                            .setRequestKey(saved.requestKey())
+                            .setExpectedRevision(saved.expectedRevision());
             saved.includedLessons().forEach(item -> selection.addIncludedLessons(lesson(item)));
             saved.excludedLessons().forEach(item -> selection.addExcludedLessons(lesson(item)));
             result.setDecisionSelection(selection.build());
@@ -30,33 +31,54 @@ final class StudentRequestGrpcMapper {
     }
 
     static StudentRequestPage page(StudentRequestModels.RequestPage page) {
-        StudentRequestPage.Builder result = StudentRequestPage.newBuilder()
-                .setPage(page.page()).setSize(page.size())
-                .setTotalElements(page.totalElements()).setTotalPages(page.totalPages());
+        StudentRequestPage.Builder result =
+                StudentRequestPage.newBuilder()
+                        .setPage(page.page())
+                        .setSize(page.size())
+                        .setTotalElements(page.totalElements())
+                        .setTotalPages(page.totalPages());
         page.content().forEach(item -> result.addContent(summary(item)));
         return result.build();
     }
 
     static StudentRequestOptions options(StudentRequestModels.RequestOptions options) {
-        StudentRequestOptions.Builder result = StudentRequestOptions.newBuilder()
-                .setFiles(fileLimits(options.files()))
-                .setBudget(budget(options.budget()));
-        options.reasons().forEach(item -> result.addReasons(StudentRequestReasonOption.newBuilder()
-                .setCode(reason(item.code())).setLabel(item.label())
-                .setCommentRequired(item.commentRequired()).build()));
-        options.lessons().forEach(item -> {
-            StudentRequestLessonOption.Builder lesson = StudentRequestLessonOption.newBuilder()
-                    .setLesson(lesson(item.lesson()))
-                    .setExcuseEligible(item.excuseEligible())
-                    .setLateCheckinEligible(item.lateCheckinEligible());
-            item.pendingRequests().forEach(ref -> lesson.addPendingRequests(StudentRequestPendingRef.newBuilder()
-                    .setId(ref.id()).setKind(kind(ref.kind())).setOrigin(origin(ref.origin())).build()));
-            result.addLessons(lesson.build());
-        });
+        StudentRequestOptions.Builder result =
+                StudentRequestOptions.newBuilder()
+                        .setFiles(fileLimits(options.files()))
+                        .setBudget(budget(options.budget()));
+        options.reasons()
+                .forEach(
+                        item ->
+                                result.addReasons(
+                                        StudentRequestReasonOption.newBuilder()
+                                                .setCode(reason(item.code()))
+                                                .setLabel(item.label())
+                                                .setCommentRequired(item.commentRequired())
+                                                .build()));
+        options.lessons()
+                .forEach(
+                        item -> {
+                            StudentRequestLessonOption.Builder lesson =
+                                    StudentRequestLessonOption.newBuilder()
+                                            .setLesson(lesson(item.lesson()))
+                                            .setExcuseEligible(item.excuseEligible())
+                                            .setLateCheckinEligible(item.lateCheckinEligible());
+                            item.pendingRequests()
+                                    .forEach(
+                                            ref ->
+                                                    lesson.addPendingRequests(
+                                                            StudentRequestPendingRef.newBuilder()
+                                                                    .setId(ref.id())
+                                                                    .setKind(kind(ref.kind()))
+                                                                    .setOrigin(origin(ref.origin()))
+                                                                    .build()));
+                            result.addLessons(lesson.build());
+                        });
         return result.build();
     }
 
-    static StudentRequestAttachmentDownload download(StudentRequestModels.AttachmentDownload download) {
+    static StudentRequestAttachmentDownload download(
+            StudentRequestModels.AttachmentDownload download) {
         byte[] bytes = download.bytes() == null ? new byte[0] : download.bytes();
         return StudentRequestAttachmentDownload.newBuilder()
                 .setData(com.google.protobuf.ByteString.copyFrom(bytes))
@@ -66,16 +88,22 @@ final class StudentRequestGrpcMapper {
                 .build();
     }
 
-    static StudentRequestAttachmentUpload upload(com.google.protobuf.ByteString data,
-                                                 String name, String contentType) {
-        return StudentRequestAttachmentUpload.newBuilder().setData(data)
-                .setName(value(name)).setDeclaredContentType(value(contentType)).build();
+    static StudentRequestAttachmentUpload upload(
+            com.google.protobuf.ByteString data, String name, String contentType) {
+        return StudentRequestAttachmentUpload.newBuilder()
+                .setData(data)
+                .setName(value(name))
+                .setDeclaredContentType(value(contentType))
+                .build();
     }
 
     private static StudentRequestSummary summary(StudentRequestModels.RequestSummary summary) {
-        StudentRequestSummary.Builder result = StudentRequestSummary.newBuilder()
-                .setId(value(summary.id())).setKind(kind(summary.kind())).setStatus(status(summary.status()))
-                .setOrigin(origin(summary.origin()));
+        StudentRequestSummary.Builder result =
+                StudentRequestSummary.newBuilder()
+                        .setId(value(summary.id()))
+                        .setKind(kind(summary.kind()))
+                        .setStatus(status(summary.status()))
+                        .setOrigin(origin(summary.origin()));
         summary.lessons().forEach(item -> result.addLessons(lesson(item)));
         if (summary.createdAt() != null) result.setCreatedAt(summary.createdAt().toString());
         if (summary.updatedAt() != null) result.setUpdatedAt(summary.updatedAt().toString());
@@ -83,9 +111,12 @@ final class StudentRequestGrpcMapper {
     }
 
     private static StudentRequestLesson lesson(StudentRequestModels.LessonSnapshot lesson) {
-        StudentRequestLesson.Builder result = StudentRequestLesson.newBuilder()
-                .setId(lesson.lessonId()).setLessonNumber(lesson.lessonNumber())
-                .setStatus(value(lesson.status())).setBlocked(lesson.blocked());
+        StudentRequestLesson.Builder result =
+                StudentRequestLesson.newBuilder()
+                        .setId(lesson.lessonId())
+                        .setLessonNumber(lesson.lessonNumber())
+                        .setStatus(value(lesson.status()))
+                        .setBlocked(lesson.blocked());
         if (lesson.subjectId() > 0) result.setSubjectId(lesson.subjectId());
         if (lesson.subjectName() != null) result.setSubjectName(lesson.subjectName());
         if (lesson.subjectType() != null) result.setSubjectType(lesson.subjectType());
@@ -94,7 +125,8 @@ final class StudentRequestGrpcMapper {
         if (lesson.startsAt() != null) result.setStartsAt(lesson.startsAt().toString());
         if (lesson.endsAt() != null) result.setEndsAt(lesson.endsAt().toString());
         if (lesson.occurrenceId() != null) result.setOccurrenceId(lesson.occurrenceId());
-        if (lesson.occurrenceRevision() != null) result.setOccurrenceRevision(lesson.occurrenceRevision());
+        if (lesson.occurrenceRevision() != null)
+            result.setOccurrenceRevision(lesson.occurrenceRevision());
         return result.build();
     }
 
@@ -105,13 +137,21 @@ final class StudentRequestGrpcMapper {
         return result.build();
     }
 
-    private static StudentRequestAttachment attachment(StudentRequestModels.AttachmentDescriptor item) {
-        StudentRequestAttachment.Builder result = StudentRequestAttachment.newBuilder()
-                .setId(value(item.id())).setName(value(item.name())).setContentType(value(item.contentType()))
-                .setSizeBytes(item.size()).setSha256(value(item.sha256()))
-                .setState(item.state() == AttachmentState.EXPIRED
-                        ? StudentRequestAttachmentState.STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED
-                        : StudentRequestAttachmentState.STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE);
+    private static StudentRequestAttachment attachment(
+            StudentRequestModels.AttachmentDescriptor item) {
+        StudentRequestAttachment.Builder result =
+                StudentRequestAttachment.newBuilder()
+                        .setId(value(item.id()))
+                        .setName(value(item.name()))
+                        .setContentType(value(item.contentType()))
+                        .setSizeBytes(item.size())
+                        .setSha256(value(item.sha256()))
+                        .setState(
+                                item.state() == AttachmentState.EXPIRED
+                                        ? StudentRequestAttachmentState
+                                                .STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED
+                                        : StudentRequestAttachmentState
+                                                .STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE);
         if (item.uploadedAt() != null) result.setUploadedAt(item.uploadedAt().toString());
         if (item.expiresAt() != null) result.setExpiresAt(item.expiresAt().toString());
         if (item.expiredAt() != null) result.setExpiredAt(item.expiredAt().toString());
@@ -119,38 +159,66 @@ final class StudentRequestGrpcMapper {
     }
 
     private static StudentRequestFileLimits fileLimits(StudentRequestModels.FileLimits item) {
-        return StudentRequestFileLimits.newBuilder().setMaxFiles(item.maxFiles())
-                .setMaxBytesPerFile(item.maxBytesPerFile()).setMaxBytesTotal(item.maxBytesTotal())
-                .addAllContentTypes(item.contentTypes()).addAllExtensions(item.extensions()).build();
+        return StudentRequestFileLimits.newBuilder()
+                .setMaxFiles(item.maxFiles())
+                .setMaxBytesPerFile(item.maxBytesPerFile())
+                .setMaxBytesTotal(item.maxBytesTotal())
+                .addAllContentTypes(item.contentTypes())
+                .addAllExtensions(item.extensions())
+                .build();
     }
 
     private static StudentRequestBudget budget(StudentRequestModels.Budget item) {
-        return StudentRequestBudget.newBuilder().setSemesterId(item.semesterId()).setLimit(item.limit())
-                .setUsed(item.used()).setRemaining(item.remaining()).build();
+        return StudentRequestBudget.newBuilder()
+                .setSemesterId(item.semesterId())
+                .setLimit(item.limit())
+                .setUsed(item.used())
+                .setRemaining(item.remaining())
+                .build();
     }
 
     private static ru.rutcampustrack.attendance.grpc.StudentRequestKind kind(
             ru.rutcampustrack.attendance.contract.enums.StudentRequestKind kind) {
-        if (kind == null) return ru.rutcampustrack.attendance.grpc.StudentRequestKind.STUDENT_REQUEST_KIND_UNSPECIFIED;
+        if (kind == null)
+            return ru.rutcampustrack.attendance.grpc.StudentRequestKind
+                    .STUDENT_REQUEST_KIND_UNSPECIFIED;
         return ru.rutcampustrack.attendance.grpc.StudentRequestKind.valueOf(
                 "STUDENT_REQUEST_KIND_" + kind.name());
     }
 
-    private static ru.rutcampustrack.attendance.grpc.StudentRequestStatus status(StudentRequestStatus status) {
-        if (status == null) return ru.rutcampustrack.attendance.grpc.StudentRequestStatus.STUDENT_REQUEST_STATUS_UNSPECIFIED;
+    private static ru.rutcampustrack.attendance.grpc.StudentRequestStatus status(
+            StudentRequestStatus status) {
+        if (status == null)
+            return ru.rutcampustrack.attendance.grpc.StudentRequestStatus
+                    .STUDENT_REQUEST_STATUS_UNSPECIFIED;
         return ru.rutcampustrack.attendance.grpc.StudentRequestStatus.valueOf(
                 "STUDENT_REQUEST_STATUS_" + status.name());
     }
 
-    private static ru.rutcampustrack.attendance.grpc.StudentRequestOrigin origin(StudentRequestOrigin origin) {
-        if (origin == null) return ru.rutcampustrack.attendance.grpc.StudentRequestOrigin.STUDENT_REQUEST_ORIGIN_UNSPECIFIED;
+    private static ru.rutcampustrack.attendance.grpc.StudentRequestOrigin origin(
+            StudentRequestOrigin origin) {
+        if (origin == null)
+            return ru.rutcampustrack.attendance.grpc.StudentRequestOrigin
+                    .STUDENT_REQUEST_ORIGIN_UNSPECIFIED;
         return ru.rutcampustrack.attendance.grpc.StudentRequestOrigin.valueOf(
                 "STUDENT_REQUEST_ORIGIN_" + origin.name());
     }
 
     private static StudentExcuseReason reason(ExcuseType reason) {
         if (reason == null) return StudentExcuseReason.STUDENT_EXCUSE_REASON_UNSPECIFIED;
-        return StudentExcuseReason.valueOf("STUDENT_EXCUSE_REASON_" + reason.name());
+        return switch (reason) {
+            case ILLNESS -> StudentExcuseReason.STUDENT_EXCUSE_REASON_ILLNESS;
+            case MEDICAL_EXAMINATION ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION;
+            case COMPETITION_PARTICIPATION ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION;
+            case FAMILY_CIRCUMSTANCES ->
+                    StudentExcuseReason.STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES;
+            case OTHER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_OTHER;
+            case UNIVERSITY_ORDER -> StudentExcuseReason.STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER;
+            case SUMMONS -> StudentExcuseReason.STUDENT_EXCUSE_REASON_SUMMONS;
+            default -> throw new IllegalArgumentException("Excuse reason is not supported");
+        };
     }
 
     private static String value(String value) {

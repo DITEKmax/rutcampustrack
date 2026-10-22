@@ -1,0 +1,67 @@
+{
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 23340,
+      "sha256": "9b914efa4440be93cfb9e76eef78aba9b6ba44cde527192864105e428de96632"
+    },
+    {
+      "path": "assemble.py",
+      "bytes": 20859,
+      "sha256": "a509a2bb775dd6c33920c14cd26e415b446c1fbdf277550cec66f72927c6f833"
+    },
+    {
+      "path": "completeness-checks.json",
+      "bytes": 1639,
+      "sha256": "4ada6ab20c893e36a59e95400557d34bc1441f1f946cfdae52389b7585659192"
+    },
+    {
+      "path": "family-state-oracles.json",
+      "bytes": 331867,
+      "sha256": "1fa986d9546790aa60a32776557cd711e6793e713a49a1026eccfdf18af06a28"
+    },
+    {
+      "path": "finite-case-qualifications.json",
+      "bytes": 66499,
+      "sha256": "463ad1fbc48d7441c4762d12246276ed6006987e3d2e2241ad6f29563c21678b"
+    },
+    {
+      "path": "input-source-manifest.json",
+      "bytes": 6759,
+      "sha256": "7dff7473aa668edb1fb4c1aa273c50169dfd6a2ee694a4e1348eb3195b394383"
+    },
+    {
+      "path": "qualified-direct-source-equivalence.json",
+      "bytes": 59493,
+      "sha256": "37c5c9dd67d62f24c08728338be475b588dba1e67c84f1122dfcae2ada5a59b1"
+    },
+    {
+      "path": "remaining-groups.json",
+      "bytes": 501046,
+      "sha256": "af64032138531fbd26298ecca46ad29ce4a36fe7fedcdf5c3b8fef0cbd92482a"
+    },
+    {
+      "path": "research-dispositions.json",
+      "bytes": 30978,
+      "sha256": "4da8c04df6efc5556355c6469eb97edafddb547518d75080fb3222487adfefdc"
+    },
+    {
+      "path": "supplement.py",
+      "bytes": 9576,
+      "sha256": "0cb960f4d379f9201562798935e098738e7348455239ea45e4f112e5ab8e49bd"
+    },
+    {
+      "path": "supplementary-qualified-evidence.json",
+      "bytes": 5381,
+      "sha256": "7a56daa5702f20d3981553e6fb0b84b9f9ca17edfb878477886a6be3069097b8"
+    },
+    {
+      "path": "write_report.py",
+      "bytes": 11830,
+      "sha256": "c64660dd6f8036ab7d6dc2e78fc741256cf49ff5118ade0c604d8787a15640bc"
+    }
+  ],
+  "source_writes": 0,
+  "runtime": "NOT_RUN",
+  "children": 0
+}

@@ -1,26 +1,34 @@
 package ru.rutcampustrack.academic.studentprojection;
 
-import java.time.LocalDate;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
- * Read-only data port for the student projection resolver.
+ * Read-only Auth authority and Academic domain port for the student projection resolver.
  *
- * <p>The port keeps SQL authority reads separate from the deterministic
- * history/rank calculation, which also makes the fail-closed rules testable
- * without replacing the real query adapter.</p>
+ * <p>The port keeps current remote authority separate from the local history/rank calculation,
+ * which also makes the fail-closed rules testable without replacing the real query adapter.
  */
 public interface StudentProjectionQuery {
 
     Optional<AuthoritySnapshot> findAuthority(long userId);
 
-    Optional<SessionSnapshot> findSession(long userId, UUID sessionId);
+    Optional<SessionSnapshot> findSession(InternalJwtClaims claims);
+
+    /** Runs only local domain reads in one own-database repeatable-read snapshot. */
+    <T> T readSnapshot(AuthoritySnapshot authority, Supplier<T> action);
+
+    /** Rechecks current Auth grants and exact local revisions before disclosure. */
+    void verifyCurrent(AuthoritySnapshot authority, StudentProjectionScope scope);
 
     Optional<SemesterSnapshot> findSemester(long semesterId);
 
@@ -35,17 +43,23 @@ public interface StudentProjectionQuery {
     Map<Long, SubjectSnapshot> findSubjectsByIds(Collection<Long> subjectIds);
 
     List<Long> findActiveStudentIds(
-            long groupId,
-            long semesterId,
-            LocalDate dateFrom,
-            LocalDate dateUntilExclusive);
+            long groupId, long semesterId, LocalDate dateFrom, LocalDate dateUntilExclusive);
 
     record AuthoritySnapshot(
             long userId,
             long rolesVersion,
             /** Current status of the authoritative STUDENT grant. */
             String accountStatus,
-            List<RoleGrantSnapshot> grants) {
+            List<RoleGrantSnapshot> grants,
+            long academicRevision) {
+        public AuthoritySnapshot(
+                long userId,
+                long rolesVersion,
+                String accountStatus,
+                List<RoleGrantSnapshot> grants) {
+            this(userId, rolesVersion, accountStatus, grants, 0);
+        }
+
         public AuthoritySnapshot {
             grants = List.copyOf(Objects.requireNonNull(grants, "grants"));
         }
@@ -64,7 +78,8 @@ public interface StudentProjectionQuery {
                 throw new IllegalArgumentException("session identity must be positive");
             }
             if (activeRoleGrantId != null && activeRoleGrantId <= 0) {
-                throw new IllegalArgumentException("activeRoleGrantId must be positive when present");
+                throw new IllegalArgumentException(
+                        "activeRoleGrantId must be positive when present");
             }
             refreshExpiresAt = Objects.requireNonNull(refreshExpiresAt, "refreshExpiresAt");
         }
@@ -75,26 +90,12 @@ public interface StudentProjectionQuery {
         }
     }
 
-    record RoleGrantSnapshot(
-            long id,
-            String role,
-            String status,
-            Long groupId) {
-    }
+    record RoleGrantSnapshot(long id, String role, String status, Long groupId) {}
 
-    record SemesterSnapshot(
-            long id,
-            LocalDate dateFrom,
-            LocalDate dateTo) {
-    }
+    record SemesterSnapshot(long id, LocalDate dateFrom, LocalDate dateTo) {}
 
     record GroupHistorySnapshot(
-            long id,
-            long userId,
-            long groupId,
-            LocalDate joinedAt,
-            LocalDate leftAt) {
-    }
+            long id, long userId, long groupId, LocalDate joinedAt, LocalDate leftAt) {}
 
     record AssignmentSnapshot(
             long id,
@@ -103,13 +104,7 @@ public interface StudentProjectionQuery {
             long semesterId,
             String lessonType,
             LocalDate validFrom,
-            LocalDate validUntilExclusive) {
-    }
+            LocalDate validUntilExclusive) {}
 
-    record SubjectSnapshot(
-            long id,
-            String name,
-            String type,
-            long groupId) {
-    }
+    record SubjectSnapshot(long id, String name, String type, long groupId) {}
 }

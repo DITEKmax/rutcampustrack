@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-13T13:25:49.970846+00:00",
+  "state": "REAPED",
+  "child_pid": 521828,
+  "group": 521828,
+  "members_including_Z": [],
+  "reason": "NATIVE_TERMINAL",
+  "signal_count": 0
+}

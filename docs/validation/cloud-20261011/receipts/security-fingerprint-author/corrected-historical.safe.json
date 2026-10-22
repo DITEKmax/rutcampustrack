@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+    "git",
+    "--no-banner",
+    "--no-color",
+    "--redact=100",
+    "--report-format=json",
+    "--report-path=/workspace/scratch/rct-validation/security_fingerprint/corrected-historical.private-redacted.json",
+    "--log-opts=--no-merges --first-parent e99abf06062f8efd2697da4dc424658feaee08b0^..63647fc9b63175e1e32b0773d57affc637ea1065",
+    "--gitleaks-ignore-path=/workspace/rct-worktrees/security-fingerprint",
+    "/workspace/rct-worktrees/security-fingerprint"
+  ],
+  "exit_code": 0,
+  "findings_count": 0,
+  "findings": [],
+  "report_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+}

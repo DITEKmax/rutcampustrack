@@ -1,0 +1,26 @@
+{
+  "time": "2026-10-12 09:28:13 UTC",
+  "producer": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "checkout": [
+    "314f67ff03438ce16351dccd58b66dfa4f957737"
+  ],
+  "job": 114711154641,
+  "failed_step": "Check formatting with ruff",
+  "lint": "success",
+  "tests": "skipped",
+  "would_reformat": 11,
+  "already_formatted": 99,
+  "paths": [
+    "bot/__main__.py",
+    "bot/grpc_client/bot_credentials_client.py",
+    "bot/grpc_client/bot_service_credentials.py",
+    "bot/handlers/start.py",
+    "bot/notifications/password_changed.py",
+    "bot/services/bot_credential_cards.py",
+    "tests/np01_bridge_runner.py",
+    "tests/np01_broker_bridge_runner.py",
+    "tests/test_bot_credential_cards.py",
+    "tests/test_password_changed.py",
+    "tests/test_start_handler.py"
+  ]
+}

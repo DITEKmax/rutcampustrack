@@ -1,0 +1,16 @@
+{
+  "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "producer_actualCheckout": "9f0732ba13baa2626282692bd5b9aeb4f0531c14",
+  "producer_evidence": "current-a032-P11-case.safe.json metadata.checkoutSha",
+  "gitparents": [
+    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "a03215a363aee844f42067fcf5243e7d49f85bff"
+  ],
+  "merge_tree": "6fe1bdb6d1895c9f3f47212b2f3374165c56dbeb",
+  "head_tree": "6fe1bdb6d1895c9f3f47212b2f3374165c56dbeb",
+  "tree_equal": true,
+  "main_unchanged": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "run": 38493688140,
+  "event": "pull_request",
+  "attempt": 1
+}

@@ -1,8 +1,8 @@
 package ru.rutcampustrack.auth.session;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 class PasswordPolicyTest {
 
@@ -42,7 +42,10 @@ class PasswordPolicyTest {
                 .isEqualTo(PasswordPolicy.Code.MISSING_SPECIAL);
         assertThat(policy.validate("abcdefghijk1 ").code())
                 .isEqualTo(PasswordPolicy.Code.MISSING_SPECIAL);
-        assertThat(policy.validate("e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u03011").code())
+        assertThat(
+                        policy.validate(
+                                        "e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u03011")
+                                .code())
                 .isEqualTo(PasswordPolicy.Code.MISSING_SPECIAL);
     }
 

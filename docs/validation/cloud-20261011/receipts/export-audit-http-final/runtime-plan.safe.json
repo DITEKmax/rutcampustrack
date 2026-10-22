@@ -1,0 +1,12 @@
+{
+  "status": "PREPARED_NOT_RUN; wait explicit rootlease/currentcoherentdeps",
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "scope": "ONE retained ExportJobHttpIT case; product/othercases/fixtures/configs/common/generated exactf09",
+  "normal_case": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation",
+  "planned_green": "Normalcurrentjobcount exactly1 and unrelatedhistory exactcount1; preserveall HTTP/data/event/ticket/revocation checks",
+  "old_global_red": "Controlledexactsamehistoricalfixture +oldunscopedglobalquery, expected1 preserved; freshisolatedcase should observecount2 (or>=2ifotherlegitimatehistory), fail intendedAuditAssertion; actualnumericCIcountUNKNOWN",
+  "duplicate_current_job_sensitivity": "Controlleddisposablecurrentjob duplicateauditfact, unchangedcorrectcurrentjob count1oracle =>actual2/fails intendedAuditAssertion; restoreexactfrozen test then selectedgreen",
+  "runtime_resources": "Afterrootlease only: maxworker1/Gradle+Test JVM768MiB, actualAuthHTTP/random0 +ownpostgres16/redis7-alpine/Testcontainersnormalcleanup+existingRabbit mock; 4GiBfloor before/monitor; no app/broker/browser stack. No blankethistorydeletion.",
+  "formatter": "Onlythis retainedtest viaexistingSpotless target scope underlease ifrequired, separatemechanicalcommit/bridge beforecompile",
+  "native_XML": "Save exactproducer/currentcoherentSHA/commands/nativeexits/preservedcases/hashes/expectedactual/cause beforeeachoverwrite; sourceonly plan isnotactualredgreen"
+}

@@ -1,0 +1,107 @@
+{
+  "schema": "P10_CANONICAL_ONE_FILE_FORMAT_ACTUAL_V1",
+  "utc": "2026-10-13T10:38:43.309329+00:00",
+  "tool_session": 84986,
+  "tool_exit": 0,
+  "semantic_commit": "425b40dd43dbc729ed923a586c6a280891a435cf",
+  "before_source_sha256": "a2865bfef3dc00c1208476677e82dea0b30e75679e454b1ab226a53a3dbc7e33",
+  "after_source_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "one_owned_file_changed": true,
+  "protected_source_pins_preserved": 16,
+  "closed_exact_scope_marker_count": 2,
+  "canonical_apply_check_native0": true,
+  "java_tokens_equal": true,
+  "all_string_char_textblock_literal_bytes_equal": true,
+  "import_sets_equal": true,
+  "git_filemode_preserved100644": true,
+  "all6_births_absent": true,
+  "identities": [
+    {
+      "pid": 510933,
+      "start_ticks": 14158699
+    },
+    {
+      "pid": 510937,
+      "start_ticks": 14158721
+    },
+    {
+      "pid": 510938,
+      "start_ticks": 14158726
+    },
+    {
+      "pid": 510972,
+      "start_ticks": 14158858
+    },
+    {
+      "pid": 511077,
+      "start_ticks": 14160372
+    },
+    {
+      "pid": 511111,
+      "start_ticks": 14160485
+    }
+  ],
+  "private_tmp_envelope_removed": true,
+  "terminal": {
+    "direct_pid": 510937,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 510937,
+        "start_ticks": 14158721
+      },
+      {
+        "pid": 510938,
+        "start_ticks": 14158726
+      },
+      {
+        "pid": 510972,
+        "start_ticks": 14158858
+      },
+      {
+        "pid": 511077,
+        "start_ticks": 14160372
+      },
+      {
+        "pid": 511111,
+        "start_ticks": 14160485
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T10:37:05.366816+00:00",
+    "peaks": {
+      "memory": 5914480640,
+      "min_workspace_free": 8145948672,
+      "owned_rss": 589344768,
+      "log_bytes": 1003
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "private_log_read_only_bounded_marker_projection": true,
+  "private_log_body_hash_export": false,
+  "compile_tests_pg_docker_HTTP_not_run": true,
+  "mechanical_commit": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "parent_P10": "UNKNOWN",
+  "format_native_lease": "RELEASED_AFTER_THIS_ABSENCE_AND_PIN_PROOF",
+  "mechanical_commit_one_file": true,
+  "worktree_clean": true,
+  "compile_binding": {
+    "plan": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/compile01/green-plan.safe.json",
+    "plan_sha256": "b4fc9144eec1531006526b9108f655c2d987fb7891ecc445ea1fe7a895f0d5d3",
+    "manifest_sha256": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "false_grant_template_sha256": "8aa37309f1aa84c014103cb4a7f895e25dea124752eeb0928a28c8c3bab7e0e5",
+    "source": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+    "state": "SOURCE_BOUND_FRESH_ROOT_COMPILE_GRANT_REQUIRED",
+    "native_executed": false
+  },
+  "compiler_grant_absent": true
+}

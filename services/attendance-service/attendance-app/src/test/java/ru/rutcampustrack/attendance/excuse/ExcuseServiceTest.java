@@ -1,40 +1,5 @@
 package ru.rutcampustrack.attendance.excuse;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
-import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
-import ru.rutcampustrack.attendance.exception.ConflictException;
-import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
-import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.security.RequestContext;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
-import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
-import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
-import ru.rutcampustrack.schedule.grpc.LessonInfo;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
-import io.micrometer.core.instrument.Counter;
-import ru.rutcampustrack.shared.observability.BusinessMetrics;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,9 +12,42 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.micrometer.core.instrument.Counter;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
+import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
+import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
+import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
+import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
+
 /**
- * Unit tests for ExcuseService (Phase 59-02).
- * Covers AC-1..AC-6 plus D-11, D-12, D-13, D-14, D-18.
+ * Unit tests for ExcuseService (Phase 59-02). Covers AC-1..AC-6 plus D-11, D-12, D-13, D-14, D-18.
  */
 @ExtendWith(MockitoExtension.class)
 class ExcuseServiceTest {
@@ -58,84 +56,95 @@ class ExcuseServiceTest {
     private static final Long GROUP_ID = 10L;
     private static final Long OTHER_GROUP_ID = 99L;
 
-    @Mock
-    private ExcuseRepository excuseRepository;
+    @Mock private ExcuseRepository excuseRepository;
 
-    @Mock
-    private RequestContext requestContext;
+    @Mock private RequestContext requestContext;
 
-    @Mock
-    private AcademicGrpcClient academicGrpcClient;
+    @Mock private AcademicGrpcClient academicGrpcClient;
 
-    @Mock
-    private AttendanceReadPort attendanceReadPort;
+    @Mock private AttendanceReadPort attendanceReadPort;
 
-    @Mock
-    private AttendanceWritePort attendanceWritePort;
+    @Mock private AttendanceWritePort attendanceWritePort;
 
-    @Mock
-    private ExcuseEventPublisher excuseEventPublisher;
+    @Mock private ExcuseEventPublisher excuseEventPublisher;
 
-    @Mock
-    private ScheduleGrpcClient scheduleGrpcClient;
+    @Mock private ScheduleGrpcClient scheduleGrpcClient;
 
-    @Mock
-    private BusinessMetrics businessMetrics;
+    @Mock private BusinessMetrics businessMetrics;
 
-    @Mock
-    private Counter excuseCreatedCounterMock;
+    @Mock private Counter excuseCreatedCounterMock;
 
     // M08 G10 (Clock-injection regression fix) — см. CheckinServiceTest.
-    @Mock
-    private Clock clock;
+    @Mock private Clock clock;
 
-    @InjectMocks
-    private ExcuseService excuseService;
+    @InjectMocks private ExcuseService excuseService;
 
     private CreateExcuseRequest validRequest;
 
     @BeforeEach
     void setUp() {
-        validRequest = new CreateExcuseRequest(
-                List.of(1L, 2L),
-                ExcuseType.ILLNESS,
-                "Болею"
-        );
+        validRequest = new CreateExcuseRequest(List.of(1L, 2L), ExcuseType.ILLNESS, "Болею");
         // default student context — tests override as needed
         lenient().when(requestContext.getUserId()).thenReturn(STUDENT_ID);
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
-        lenient().when(academicGrpcClient.isHeadman(anyLong(), anyLong()))
+        lenient()
+                .when(academicGrpcClient.isHeadman(anyLong(), anyLong()))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
-        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), eq(GROUP_ID)))
-                .thenAnswer(inv -> LessonResponse.newBuilder().setId(inv.getArgument(0))
-                        .setGroupId(GROUP_ID).setSemesterId(3L).build());
+        lenient()
+                .when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), eq(GROUP_ID)))
+                .thenAnswer(
+                        inv ->
+                                LessonResponse.newBuilder()
+                                        .setId(inv.getArgument(0))
+                                        .setGroupId(GROUP_ID)
+                                        .setSemesterId(3L)
+                                        .build());
         lenient().when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
         // D-25: by default return LessonInfo matching the requested ids + student's group,
         // so the validateLessonIds() check passes. Per-test overrides are still allowed.
-        lenient().when(scheduleGrpcClient.getLessonsByIds(anyList())).thenAnswer(inv -> {
-            List<Long> ids = inv.getArgument(0);
-            return ids.stream()
-                    .map(id -> LessonInfo.newBuilder()
-                            .setLessonId(id)
-                            .setGroupId(GROUP_ID)
-                            .setSemesterId(3L)
-                            .build())
-                    .toList();
-        });
-        lenient().when(attendanceReadPort.findByLessonIdAndUserId(anyLong(), anyLong()))
-                .thenReturn(Optional.of(new AttendanceRecord(
-                        1L, STUDENT_ID, GROUP_ID, 1L, null, 1,
-                        AttendanceStatus.ABSENT, null, null)));
-        lenient().when(excuseRepository.save(any(ExcuseTicket.class)))
-                .thenAnswer(inv -> {
-                    ExcuseTicket t = inv.getArgument(0);
-                    if (t.getId() == null) t.setId("new-id");
-                    return t;
-                });
+        lenient()
+                .when(scheduleGrpcClient.getLessonsByIds(anyList()))
+                .thenAnswer(
+                        inv -> {
+                            List<Long> ids = inv.getArgument(0);
+                            return ids.stream()
+                                    .map(
+                                            id ->
+                                                    LessonInfo.newBuilder()
+                                                            .setLessonId(id)
+                                                            .setGroupId(GROUP_ID)
+                                                            .setSemesterId(3L)
+                                                            .build())
+                                    .toList();
+                        });
+        lenient()
+                .when(attendanceReadPort.findByLessonIdAndUserId(anyLong(), anyLong()))
+                .thenReturn(
+                        Optional.of(
+                                new AttendanceRecord(
+                                        1L,
+                                        STUDENT_ID,
+                                        GROUP_ID,
+                                        1L,
+                                        null,
+                                        1,
+                                        AttendanceStatus.ABSENT,
+                                        null,
+                                        null)));
+        lenient()
+                .when(excuseRepository.save(any(ExcuseTicket.class)))
+                .thenAnswer(
+                        inv -> {
+                            ExcuseTicket t = inv.getArgument(0);
+                            if (t.getId() == null) t.setId("new-id");
+                            return t;
+                        });
         // M04 Группа 8 — counter excuse.created; kind (illness/etc) передаётся
         // в downcase.
-        lenient().when(businessMetrics.excuseCreatedCounter(anyString())).thenReturn(excuseCreatedCounterMock);
+        lenient()
+                .when(businessMetrics.excuseCreatedCounter(anyString()))
+                .thenReturn(excuseCreatedCounterMock);
         // M08 G10 (Clock-injection regression fix).
         lenient().when(clock.instant()).thenReturn(Instant.now());
         lenient().when(clock.getZone()).thenReturn(ZoneId.of("Europe/Moscow"));
@@ -147,8 +156,9 @@ class ExcuseServiceTest {
     @Test
     void createExcuse_asPlainStudent_savesSubmittedTicketWithSnapshot() {
         when(excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
-                STUDENT_ID, validRequest.lessonIds(),
-                List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED)))
+                        STUDENT_ID,
+                        validRequest.lessonIds(),
+                        List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED)))
                 .thenReturn(false);
 
         ExcuseTicket saved = excuseService.createExcuse(validRequest);
@@ -172,7 +182,7 @@ class ExcuseServiceTest {
     @Test
     void createExcuse_duplicateActiveLesson_throwsConflict() {
         when(excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
-                anyLong(), anyList(), anyList()))
+                        anyLong(), anyList(), anyList()))
                 .thenReturn(true);
 
         assertThatThrownBy(() -> excuseService.createExcuse(validRequest))
@@ -207,16 +217,17 @@ class ExcuseServiceTest {
         when(requestContext.getUserId()).thenReturn(headmanId);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
 
-        ExcuseTicket ownTicket = ExcuseTicket.builder()
-                .id("t1")
-                .studentId(headmanId) // same as caller
-                .groupId(GROUP_ID)
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .build();
+        ExcuseTicket ownTicket =
+                ExcuseTicket.builder()
+                        .id("t1")
+                        .studentId(headmanId) // same as caller
+                        .groupId(GROUP_ID)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .build();
         when(excuseRepository.findById("t1")).thenReturn(Optional.of(ownTicket));
 
-        UpdateExcuseStatusRequest req = new UpdateExcuseStatusRequest(
-                ExcuseTicketStatus.APPROVED, "ok");
+        UpdateExcuseStatusRequest req =
+                new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "ok");
 
         assertThatThrownBy(() -> excuseService.updateStatus("t1", req))
                 .isInstanceOf(ConflictException.class)
@@ -235,16 +246,17 @@ class ExcuseServiceTest {
         when(requestContext.getUserId()).thenReturn(headmanId);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
 
-        ExcuseTicket approved = ExcuseTicket.builder()
-                .id("t2")
-                .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
-                .status(ExcuseTicketStatus.APPROVED)
-                .build();
+        ExcuseTicket approved =
+                ExcuseTicket.builder()
+                        .id("t2")
+                        .studentId(STUDENT_ID)
+                        .groupId(GROUP_ID)
+                        .status(ExcuseTicketStatus.APPROVED)
+                        .build();
         when(excuseRepository.findById("t2")).thenReturn(Optional.of(approved));
 
-        UpdateExcuseStatusRequest req = new UpdateExcuseStatusRequest(
-                ExcuseTicketStatus.APPROVED, "again");
+        UpdateExcuseStatusRequest req =
+                new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "again");
 
         assertThatThrownBy(() -> excuseService.updateStatus("t2", req))
                 .isInstanceOf(ConflictException.class)
@@ -261,12 +273,13 @@ class ExcuseServiceTest {
         when(requestContext.getUserId()).thenReturn(STUDENT_ID);
         when(requestContext.isHeadman()).thenReturn(false);
 
-        ExcuseTicket someone = ExcuseTicket.builder()
-                .id("t3")
-                .studentId(999L) // not the caller
-                .groupId(GROUP_ID)
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .build();
+        ExcuseTicket someone =
+                ExcuseTicket.builder()
+                        .id("t3")
+                        .studentId(999L) // not the caller
+                        .groupId(GROUP_ID)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .build();
         when(excuseRepository.findById("t3")).thenReturn(Optional.of(someone));
 
         assertThatThrownBy(() -> excuseService.getTicketById("t3"))
@@ -280,8 +293,10 @@ class ExcuseServiceTest {
     void getGroupTickets_foreignGroupForHeadman_throwsAccessDenied() {
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
 
-        assertThatThrownBy(() ->
-                excuseService.getGroupTickets(OTHER_GROUP_ID, Pageable.unpaged(), null))
+        assertThatThrownBy(
+                        () ->
+                                excuseService.getGroupTickets(
+                                        OTHER_GROUP_ID, Pageable.unpaged(), null))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
@@ -292,8 +307,7 @@ class ExcuseServiceTest {
     void getGroupTickets_asPlainStudent_throwsAccessDenied() {
         when(requestContext.isHeadman()).thenReturn(false);
 
-        assertThatThrownBy(() ->
-                excuseService.getGroupTickets(GROUP_ID, Pageable.unpaged(), null))
+        assertThatThrownBy(() -> excuseService.getGroupTickets(GROUP_ID, Pageable.unpaged(), null))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
@@ -318,20 +332,21 @@ class ExcuseServiceTest {
         when(requestContext.getUserId()).thenReturn(headmanId);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
 
-        ExcuseTicket submitted = ExcuseTicket.builder()
-                .id("t9")
-                .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
-                .semesterId(3L)
-                .lessonIds(List.of(1L, 2L))
-                .excuseType(ExcuseType.ILLNESS)
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(Instant.now())
-                .build();
+        ExcuseTicket submitted =
+                ExcuseTicket.builder()
+                        .id("t9")
+                        .studentId(STUDENT_ID)
+                        .groupId(GROUP_ID)
+                        .semesterId(3L)
+                        .lessonIds(List.of(1L, 2L))
+                        .excuseType(ExcuseType.ILLNESS)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(Instant.now())
+                        .build();
         when(excuseRepository.findById("t9")).thenReturn(Optional.of(submitted));
 
-        UpdateExcuseStatusRequest req = new UpdateExcuseStatusRequest(
-                ExcuseTicketStatus.APPROVED, "справка предоставлена");
+        UpdateExcuseStatusRequest req =
+                new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "справка предоставлена");
 
         ExcuseTicket result = excuseService.updateStatus("t9", req);
 
@@ -341,15 +356,26 @@ class ExcuseServiceTest {
         assertThat(result.getDecisionAt()).isNotNull();
         assertThat(result.getUpdatedAt()).isNotNull();
         verify(excuseRepository).save(submitted);
-        // D-16 cascade: one mark() per lessonId with EXCUSED status + excuse reason (ILLNESS → "Болезнь")
-        verify(attendanceWritePort).mark(STUDENT_ID, 1L, GROUP_ID, 3L,
-                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
-                ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
-                "Болезнь");
-        verify(attendanceWritePort).mark(STUDENT_ID, 2L, GROUP_ID, 3L,
-                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
-                ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
-                "Болезнь");
+        // D-16 cascade: one mark() per lessonId with EXCUSED status + excuse reason (ILLNESS →
+        // "Болезнь")
+        verify(attendanceWritePort)
+                .mark(
+                        STUDENT_ID,
+                        1L,
+                        GROUP_ID,
+                        3L,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
+                        "Болезнь");
+        verify(attendanceWritePort)
+                .mark(
+                        STUDENT_ID,
+                        2L,
+                        GROUP_ID,
+                        3L,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
+                        "Болезнь");
         // 59-05: publishDecided must fire AFTER cascade, before return
         verify(excuseEventPublisher).publishDecided(result);
     }

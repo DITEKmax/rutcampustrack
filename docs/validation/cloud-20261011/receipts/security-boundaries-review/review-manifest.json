@@ -1,0 +1,88 @@
+{
+  "finalized_utc": "2026-10-11T21:41:36.198237+00:00",
+  "stable_input": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+  "verdict": "APPROVE",
+  "files": [
+    {
+      "filename": "checks.json",
+      "sha256": "904a9646127ac421b89648d0f9fba98ae4309cf21b740d29f55865454d645b43",
+      "bytes": 799,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "commands-reconciliation.json",
+      "sha256": "beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3",
+      "bytes": 7454,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "evidence-ledger.json",
+      "sha256": "78dd0fac0a9a2967f80dd8e7bfb0349ef0df59c82979e13faeb8c61352641f0e",
+      "bytes": 33692,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "review.md",
+      "sha256": "85c0a805320e50330add3fe1f813f9127b46a306eeee0b0ce3ff4cb7701315f8",
+      "bytes": 13334,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "source-equivalence.json",
+      "sha256": "d828acbd90c13de6b05594a6d18d7eecdf7d12b3e02366ddcaf25e75e83e2ee2",
+      "bytes": 8270,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "source-ledger.json",
+      "sha256": "7c5a2e7518fb58a9ea0eaa070aed64b4897ea0bcaf2cdae646a3fbd46e469d7f",
+      "bytes": 52945,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "transfer-reconciliation.json",
+      "sha256": "a30d1db2b83a407ce96a70afa367e771859b4050904e421fefe404c81afb2ca6",
+      "bytes": 1069,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    },
+    {
+      "filename": "verdict.json",
+      "sha256": "d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14",
+      "bytes": 1833,
+      "review_artifact_safe_scan": {
+        "jwt": 0,
+        "private_key": 0,
+        "sensitive_markers": 0
+      }
+    }
+  ],
+  "write_ownership": "reviewer receipts only; bytes frozen for root transfer; no runtime/product/test/config edits"
+}

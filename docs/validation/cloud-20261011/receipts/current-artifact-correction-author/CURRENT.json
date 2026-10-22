@@ -1,0 +1,6 @@
+{
+  "state": "SOURCE_READY_SEALING",
+  "active_test_group": null,
+  "all_new_known_control_PIDs_absent": true,
+  "next": "Parent integrate qualification and assign fresh independent source recheck; await separate stricter source-only capacity correction packet."
+}

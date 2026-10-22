@@ -1,8 +1,8 @@
 package ru.rutcampustrack.schedule.exception;
 
 /**
- * Fail-closed response for lifecycle operations whose canonical recurring
- * writer has not been implemented yet.
+ * Fail-closed response for lifecycle operations whose canonical recurring writer has not been
+ * implemented yet.
  */
 public class RecurringLifecycleNotReadyException extends ConflictException {
 

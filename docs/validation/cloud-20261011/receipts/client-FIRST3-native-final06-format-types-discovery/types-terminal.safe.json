@@ -1,0 +1,25 @@
+{
+  "direct_pid": 408475,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 408475,
+      "start_ticks": 10140103
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "phase": "types",
+  "accepted": true,
+  "peaks": {
+    "owned_rss_bytes": 361660416,
+    "run_allocated_bytes": 1433600,
+    "shared_memory_bytes": 11042664448
+  }
+}

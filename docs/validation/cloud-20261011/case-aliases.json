@@ -1,0 +1,12 @@
+{
+  "schema": "rct.validation.case-aliases.v1",
+  "PASS_rows": 75,
+  "canonical_criteria_after_two_confirmed_aliases": 73,
+  "qualification": "bounded current inventory only; all other potential overlaps not exhaustively deduplicated; no completeness percentage",
+  "aliases": {
+    "CASE-CI-E58-SUBJECT-PAGES": "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY",
+    "CASE-CI-E58-SUBJECT-PUBLICATION": "CASE-DATA-T001-TEACHER-PUBLICATION"
+  },
+  "receipts_retained": true,
+  "source": "receipts/matrix-current-reconciliation/matrix-reconciliation.safe.zip"
+}

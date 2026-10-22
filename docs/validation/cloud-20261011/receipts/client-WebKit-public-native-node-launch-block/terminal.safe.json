@@ -1,0 +1,23 @@
+{
+  "direct_pid": null,
+  "native_exit": null,
+  "terminal_reason": "SUPERVISION_ERROR",
+  "signal_count": 0,
+  "settled": false,
+  "all_owned_processes_reaped": false,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": "FileNotFoundError",
+  "phase_success": false,
+  "peaks": {
+    "owned_rss_bytes": 13553664,
+    "run_allocated_bytes": 4096,
+    "shared_memory_bytes": 5264855040
+  },
+  "private_tmp_removed": false,
+  "case_count": 0,
+  "project": "webkit",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout_sha": "ebc2d18226a2f931f2daab454c195c391c7b7f3b"
+}

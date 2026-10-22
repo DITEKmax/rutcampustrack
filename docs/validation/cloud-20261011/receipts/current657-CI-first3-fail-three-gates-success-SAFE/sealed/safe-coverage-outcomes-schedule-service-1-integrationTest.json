@@ -1,0 +1,3185 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+    "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "job": "java-coverage",
+    "runId": "38329143628",
+    "runAttempt": "1",
+    "testStepScope": "unit+integration+report",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "1b442bff08bd6a30a9b993b1bb0a75e69b12dd7ecede51ef1c43b7fe775fc2d1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "0d2188b88a084c1987a48b1a1c4a45e0b0ebe742a0d8f5260ba202c4ac4bc1db",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "9556d630d5a3b99e91e0d047cb42d747280dfa7c1d48934738114ae60a5acaf0",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "85daeec5a3938101578a0e49844305502e2ae999682d2e008cfa5a335ecde06a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 5,
+      "sha256": "8ebb725977b8553fa94e3dec0f224331acacb7940c8422bfc7bbcd45cbb23ca3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 6,
+      "sha256": "83e5337b6ed67110525cf903dc19b3e87dd6fb8faca0216bbdb1297f6d23b19e",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 7,
+      "sha256": "962506b6257bcf25f69e7ed2812ff8599551518e46dff8c5b6f6ea1cda5e2d80",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 8,
+      "sha256": "ca18317efb51249eba6a925250664f25223adbdfde4a7dbd83f76a7ffd1849c4",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 9,
+      "sha256": "5ec7cdc0a4bee5596ba29877b30b40397b75bd7315a257a9ac623a49fc5b0041",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 10,
+      "sha256": "2d11994a66b9ac6ca41e6cd78fe4b2161299e16370d9c32cdcb6a40820d3ca1c",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 13,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 13,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 11,
+      "sha256": "f5a96a3270cb229567f9260838adbcbd028990bd9968e295fbcc84d0ef9599c7",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 12,
+      "sha256": "722baa97f342638a64540a2da3aab578611657d4d1ca837244be54cc35c55711",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 13,
+      "sha256": "e131dc0839da7afa542470b1138479109c2d8719cf45b183db4245e2ec184758",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 14,
+      "sha256": "a3e1db84e75b4a3d7768878f62ffcc23282e516ecb153e57741d45fda5dccb3b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 15,
+      "sha256": "bbf72f4a6647bd37ed621b1d4b8d51ae5a534cc4d86c83e9edde8f69375dfd33",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 16,
+      "sha256": "693dfde3988b6bbea8bef2d540beb88ba542c771a74315e306994f3c2f646742",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 17,
+      "sha256": "d05edf1720b2a26b748bb3ea97728e14489a421c795adf4355e4a3f88a1fc8c6",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 24,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 24,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 18,
+      "sha256": "770d5fa6e014bd476ad695bcbe0ce4ba1c6858746128e13c6307a84d8c958604",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 19,
+      "sha256": "55d1c0230940f102a98f1fe778b2fc507ea20bbc8c781e2d4bb51bbc00ad7e1b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 20,
+      "sha256": "318260cdd74ce34dcc7c56660e3b145fe2c0261a3f9d99c4ca5a285be1b3487a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 21,
+      "sha256": "4484b8409881c2f4a60b58edc22d7a0a1be66d8e7a23b8d82d0ed7c63db03fa5",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 22,
+      "sha256": "5a33b031f7addee6eb2a2c382a3733974192a72d66f94220edb6f9646ea026ff",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 23,
+      "sha256": "7dec707971459e48b6bce8e256790c1100da1e0ff3007a3db88dd8cc15e2776e",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 29,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 29,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 24,
+      "sha256": "cb07108e90a394e664265a3008fff6498c4c9dc3ad1215a121db21863ca4b357",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 25,
+      "sha256": "fcef7699945b804329645bbe3ffa3343181c94e657fb6d710c9b9c1f0fbbc96b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 26,
+      "sha256": "dc5d48e87dbbd74170e5e11d7dde1e9343c16aec46326b9f26413c0b536ceb23",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 27,
+      "sha256": "8b09e6b690dc20d5b51d71c94c567f24d228ed6695072ec44c484a79cfd8b732",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 28,
+      "sha256": "c02581d40822d94c8a69ab9bcbfa5006c309f6403f07d625a311352056fa5413",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 29,
+      "sha256": "730c58778aa844191537bcd36af0d1d16428745daddcb4c37d1ec62c24a84335",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 30,
+      "sha256": "a3557a4d6c2037bcb154270ea1bd7e8ff2c3921c3fb3324e11813a4c7dc6e446",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 31,
+      "sha256": "b7a444bd14154a2c6752c7f38d7b780851985a45eec19a1ce7f9d8e9b3e267a4",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 32,
+      "sha256": "16b4a87210ad41a2ec713f13027bd018db78ac7ce107bbdb623a08ddf6c68bf0",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 33,
+      "sha256": "fda9a113cea9eaab54b1a8d5a621ca5ef6937304af443034aa30e7f484480741",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 11,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 11,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 34,
+      "sha256": "b366ca5316d0d0157f11b19e898a031d859a8441e6eb133bbac0983dd3108040",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 35,
+      "sha256": "16014eb6ebb14dd25b37ef2e3264d8006077a166ee8e70b0d41761000193765e",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 36,
+      "sha256": "8c8c6835c3fbc754ef96f4d5466ec61fd4002652aaf3c2e29532f6ae4037fc63",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 37,
+      "sha256": "139b2aebfb34015175e038fcd6674c4218f9601306dbcca07f9fb024a9e47a73",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 38,
+      "sha256": "079f55180fe7db82ade8096d7f49c4601abc380e0f2e9c4acc39bbbc50f59968",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 11,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 11,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.event.EventIdempotentIT",
+      "method": "duplicateDelivery_handlerCalledOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/event/EventIdempotentIT.java",
+      "sourceSha256": "61371384165c67d9c87c5ba7e00cd95bc1735344192085666bede69806831ec1"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.event.EventIdempotentIT",
+      "method": "differentEventIds_handlerCalledTwice",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/event/EventIdempotentIT.java",
+      "sourceSha256": "61371384165c67d9c87c5ba7e00cd95bc1735344192085666bede69806831ec1"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.events.LessonBlockedContractIT",
+      "method": "blockLesson_publishesValidLessonBlockedEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonBlockedContractIT.java",
+      "sourceSha256": "76b9cba6a6e8372608d5e88d976f02b80a9310282a7742479f095fdbb69aee06"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.events.LessonCancelledContractIT",
+      "method": "cancelLesson_publishesValidLessonCancelledEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonCancelledContractIT.java",
+      "sourceSha256": "626cf33b834e6f18a564180d5c2ceb043c359172cd278e89c933d74fa81f2b2a"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+      "method": "publishedLessonReminderPayload_matchesSchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+      "sourceSha256": "6dcc2262e2e098d299066aaf9b49d7aa21029fc6879e3a49b40b48f478c92408"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+      "method": "notPublishedBeforeMidpoint",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+      "sourceSha256": "6dcc2262e2e098d299066aaf9b49d7aa21029fc6879e3a49b40b48f478c92408"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+      "method": "notPublishedTwiceForSameLesson",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+      "sourceSha256": "6dcc2262e2e098d299066aaf9b49d7aa21029fc6879e3a49b40b48f478c92408"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+      "method": "publishedNearEndReminderPayload_matchesSchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+      "sourceSha256": "6dcc2262e2e098d299066aaf9b49d7aa21029fc6879e3a49b40b48f478c92408"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+      "method": "midpointIsNotCaughtUpInsideNearEndWindow",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+      "sourceSha256": "6dcc2262e2e098d299066aaf9b49d7aa21029fc6879e3a49b40b48f478c92408"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.events.LessonStartedContractIT",
+      "method": "publishedLessonClosedPayload_matchesSchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java",
+      "sourceSha256": "49f9f8ce8af21ec6064c3d05f0a6f38b7bfd013d4fbab3450694392100179378"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.events.LessonStartedContractIT",
+      "method": "publishedLessonStartedPayload_matchesSchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java",
+      "sourceSha256": "49f9f8ce8af21ec6064c3d05f0a6f38b7bfd013d4fbab3450694392100179378"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "abortTombstoneFencesDelayedMoveAndAppliedResultWinsAbort",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "datePlacementReceiptGatesTransferAndKeepsCreateIntentAcrossManualMove",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "blockedExpiredBatchDoesNotStarveWritableSemester",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "datePendingPublicationAndAdmittedEditDrainArchiveWithoutOccurrence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "closedTargetAndElapsedLinkedSourceRejectWithoutPlacementReceiptOrRevision",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "deleteReleaseBeforePreparePersistsExactReplayReceiptAndKeepsDomain",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "reserveConfirmReplay_isDurableAndRejectsForeignGroup",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "unassignedLessonBindingAndReadOmitTeacherIdentityAndDenyForeignGroup",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "deleteCommitIsAtomicReplayableAndLeavesReplayTombstone",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "method": "dateCutoffIsNextMidnightInMoscowAndTerminalReplayIsDenied",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+      "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT",
+      "method": "getLessonsByIds_nonExistentIds_returnsEmptyList",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+      "sourceSha256": "bb335cdb64bfd21d0c09bd8ad99d178bb8c69f4b379797ede6c4c344e28e48b6"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT",
+      "method": "getLessonsByIds_happyPath_returnsInfoForEachLesson",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+      "sourceSha256": "bb335cdb64bfd21d0c09bd8ad99d178bb8c69f4b379797ede6c4c344e28e48b6"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT",
+      "method": "getLessonsByIds_emptyRequest_returnsEmptyList",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+      "sourceSha256": "bb335cdb64bfd21d0c09bd8ad99d178bb8c69f4b379797ede6c4c344e28e48b6"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+      "method": "resolveLesson_throwsNotFound_whenGroupMismatch",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+      "sourceSha256": "03d13af229d83253473ab66b3ac35cb477c34d6c36b9a3ecbb387e7a3241aad5"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+      "method": "resolveLesson_returnsLesson_whenExists",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+      "sourceSha256": "03d13af229d83253473ab66b3ac35cb477c34d6c36b9a3ecbb387e7a3241aad5"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+      "method": "resolveLesson_throwsNotFound_whenLessonCancelled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+      "sourceSha256": "03d13af229d83253473ab66b3ac35cb477c34d6c36b9a3ecbb387e7a3241aad5"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+      "method": "resolveLesson_throwsNotFound_whenDateHasNoLesson",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+      "sourceSha256": "03d13af229d83253473ab66b3ac35cb477c34d6c36b9a3ecbb387e7a3241aad5"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getActiveLesson_noActiveLessons_throwsResourceNotFoundException",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getLessonsByGroup_happyPath_returnsAllMatchingLessons",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getLessonsByGroup_noScheduleItems_returnsEmptyResponse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getLessonById_nonExistentId_throwsResourceNotFoundException",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getLessonsByGroup_dateFromAfterDateTo_throwsIllegalArgumentException",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getActiveLesson_happyPath_returnsLessonResponse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getActiveLesson_multipleActiveLessons_returnsFirstByLessonNumber",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+      "method": "getLessonById_happyPath_returnsLessonResponse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+      "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "method": "beansEndpointReturns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "method": "envEndpointReturns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "method": "healthEndpointReturnsUp",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "method": "actuatorIndexShowsOnlyHealthAndInfo",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "method": "heapdumpEndpointReturns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "method": "infoEndpointReturns200",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "cancelledOccurrenceRestoresThroughExactReplacementAndConflictRollsBack",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "exactReplayReturnsDurableReceiptAndAnotherHashCannotReuseOperation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "terminalClosureClampsCreationCapAndDiscriminatorRejectsForgedAbsentSource",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "closureRetainsFutureCancelledAndHomeworkAndAdoptionUsesExactNullProvenance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "adoptedOriginReplacesAndRestoresWithOrWithoutNewActiveTemplate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "rebindsOnlyFuturePlannedAndKeepsPhysicalHistoryAndCoveredDates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+      "method": "concurrentExactInstallsAndCommitsReplayOneOperationWithoutSlotConflict",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+      "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.EntityMappingIT",
+      "method": "contextLoads_entitiesValidateAgainstSchema",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/EntityMappingIT.java",
+      "sourceSha256": "9646fdfdcab71ce991e3735f716df038fb214866270d4be8ffddc6c8f38f3e3b"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "blockLesson_closed_returns422",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "massCancelLessons_removedRoute_doesNotMutateLessonOrPublishEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "closedNullRoomSnapshotStaysUnknownAfterTemplateRoomChanges",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "getLessons_lowercaseStatusCsv_isAccepted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "blockLesson_notHeadman_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "cancelLesson_alreadyCancelled_returns422",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "cancelThenRestore_archivesExactHomeworkBindingAndKeepsCanonicalHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "cancelLesson_activeLesson_succeeds",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "blockLesson_cancelled_returns422",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "toggleGeoBlock_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "unblockLesson_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "cancelLesson_planned_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "blockLesson_planned_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "restoreLesson_planned_returns422",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "apiDocs_omitRemovedMassCancelContract",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "restoreLesson_cancelled_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "blockLesson_active_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "cancelLesson_missingReason_returns400",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 24,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "method": "cancelLesson_closedLesson_succeeds",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonCancelEventIT",
+      "method": "publishesCancelledEventOnCancel",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonCancelEventIT.java",
+      "sourceSha256": "d48a097f004723cccbbc09d49626caa8b1e8ec489d044161bbfa4f5f2e7589a8"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "createGeneratesLessonsOddWeeks",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "directDbSaveDoesNotTriggerGeneration",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "generatedLessonsHaveCorrectScheduleItemId",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "createGeneratesLessons",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "updateScheduleFieldsReGenerates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "updateNonScheduleFieldsNoReGeneration",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+      "method": "reGenerationPreservesNonPlannedLessons",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+      "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.LessonPerformanceIT",
+      "method": "weekJournalQueryStaysUnder50ms",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java",
+      "sourceSha256": "8e65f7c29a49a4c93d46340541f7f58a046566ecdb84f9fa012bcf1c388afb74"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+      "sourceSha256": "21533c19787367da1e04bba0f052e48eb28e560710af418d387d74ce930c2df4"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.PaginationCapIT",
+      "method": "getLessons_sizeExceedsMax_truncatedToServiceCap",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/PaginationCapIT.java",
+      "sourceSha256": "e00e070ab10cd92e97393dfea47812b83d5eddb121e2978dd94f4c3b80e5ec76"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "physicalConflictRollsBackTemplateAndEveryEarlierLocalEffect",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "existingV17TemplateBootstrapsFenceWithoutChangingItsProvenance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "physicalInsertCommitIsFreshBeforeCapNarrowingChecksRetainedRow",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "activeMismatchedGroupAuthorityHasZeroLocalEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "deletingAndReturningSameSeriesNeverBackfillsAbsenceAndRoomIsNotIdentity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "manuallyCancelledFutureLessonIsNeverResumedByTemplateReturn",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "stalePreviewAndDeniedAuthorityHaveNoEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "sameActorKeyAcrossAssignmentsConflictsBeforeSecondFence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "futureRoomUsesDurableTransferAndReplayKeepsAcceptedSnapshot",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "contradictoryV17TemplateBootstrapRollsBackFenceAtomically",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "templateRoomUpdateAdmitsTodaysNotStartedSlotUsingExactAuthorityTime",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "retainedCancelledRowsBlockCapNarrowingAndDirectOutOfFenceInsert",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "manuallyTransferredPlannedAndCancelledExceptionsArePreserved",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "slotConflictRollsBackSecondFenceAndSeries",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "concurrentLifecycleRequestsAcceptExactlyOneObservedRevision",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "remoteEarlierEndCannotShrinkRetainedFence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "missingAssignmentAuthorityHasZeroLocalEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "acceptedLegacyExplicitTimeReceiptReplaysBeforeNewTimePolicy",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "mismatchedOrPartialExplicitTimesAreBadRequestsWithNoLocalEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "endpointReplaysWithoutDuplicateAndRejectsDifferentPayload",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "concurrentIdenticalWriterCallsReturnOneSeriesWithBoundedWait",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "parityRemovalArchivesFutureHomeworkAndRestoresAsNewPhysicalGeneration",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 24,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "populatedV17CancelledPhysicalAndOccurrenceBootstrapFence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 25,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "templateReturnAfterCommittedTeacherReplacementUsesExistingCloneAndEffectiveTeacher",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 26,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "endpointPersistsSnapshotsAndPastSemesterDates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 27,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "directOccurrenceInsertRejectsTemplateFromDifferentAssignment",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 28,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "concurrentDifferentCreateKeysCannotEditAlreadyResumedSeries",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 29,
+      "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+      "method": "staleRemoteLaterEndDoesNotWidenLocalFence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "createTemplate_invalidGroupId_returns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "createTemplate_nonHeadmanStudent_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "listTemplates_returnsActiveOnly",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "createTemplate_grpcFailure_returns503",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "createTemplate_headman_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "updateTemplate_requiresReplayAndPreviewContract",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "deleteTemplate_requiresReplayAndPreviewContract",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+      "method": "createTemplate_admin_success",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+      "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+      "method": "anyRoleCanView_student",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+      "sourceSha256": "9975f6ab7e4879a1236c5e7cf064d941d6e4b6d3a85be459c2867052349255a9"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+      "method": "anyRoleCanView_teacher",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+      "sourceSha256": "9975f6ab7e4879a1236c5e7cf064d941d6e4b6d3a85be459c2867052349255a9"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+      "method": "responseContainsAllFields",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+      "sourceSha256": "9975f6ab7e4879a1236c5e7cf064d941d6e4b6d3a85be459c2867052349255a9"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+      "method": "defaultStatusFilter_excludesCancelled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+      "sourceSha256": "9975f6ab7e4879a1236c5e7cf064d941d6e4b6d3a85be459c2867052349255a9"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+      "method": "explicitStatusFilter_includesCancelled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+      "sourceSha256": "9975f6ab7e4879a1236c5e7cf064d941d6e4b6d3a85be459c2867052349255a9"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.SecuritySmokeIT",
+      "method": "request_withValidHeaders_returns200",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+      "sourceSha256": "0f9c90297a2f64398bd78ed2a56aba13d40603b79e97d863399ff241cb8259c6"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.SecuritySmokeIT",
+      "method": "request_withoutRoleHeaders_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+      "sourceSha256": "0f9c90297a2f64398bd78ed2a56aba13d40603b79e97d863399ff241cb8259c6"
+    },
+    {
+      "xmlOrdinal": 27,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.integration.ShedLockSmokeIT",
+      "method": "twoInstances_onlyOneHoldsLock",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ShedLockSmokeIT.java",
+      "sourceSha256": "7228e69c418eb0d0ba96a76eab83f341ab3994beac78c28d9cc2ee5683266f4c"
+    },
+    {
+      "xmlOrdinal": 27,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.integration.ShedLockSmokeIT",
+      "method": "shedlockTable_existsWithExpectedColumns",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ShedLockSmokeIT.java",
+      "sourceSha256": "7228e69c418eb0d0ba96a76eab83f341ab3994beac78c28d9cc2ee5683266f4c"
+    },
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT",
+      "method": "currentAuthorityArchivePendingStartedAndConcurrentCasFailWithoutWrites",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+      "sourceSha256": "f0e032ae37dd363c4101b0199b4884476880b632cb90903bf1bc86491064c65d"
+    },
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT",
+      "method": "recurringAndOneOffChangeInPlaceReplayNoOpAndReloadRetainEverything",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+      "sourceSha256": "f0e032ae37dd363c4101b0199b4884476880b632cb90903bf1bc86491064c65d"
+    },
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT",
+      "method": "clearingUnassignedCanonicalRoomRetainsNullThroughPublicReload",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+      "sourceSha256": "f0e032ae37dd363c4101b0199b4884476880b632cb90903bf1bc86491064c65d"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+      "method": "transitionsPlannedToActive",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+      "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+      "method": "doesNotTransitionCancelledLesson",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+      "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+      "method": "doesNotTransitionFutureLesson",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+      "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+      "method": "transitionsActiveToClosedAfterGrace",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+      "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+      "method": "catchesUpMissedTransitionsOnRestart",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+      "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+      "method": "doesNotTransitionActiveBeforeGracePeriod",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+      "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "legacyTemplateNullClearsRoomAndReplaysHistoricalTimesOnlyInSavedContext",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "requestReplayUsesCanonicalOutboxAndFixedReceiptsCompleteOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "legacyReplayUsesSavedRoomAndPreservesAcceptedProtocolBytes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "oneOffPublicTransferKeepsOriginAndBindingsAcrossRaceReplayAckAndRestore",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "historicalRoomOnlyTemplateUpdateKeepsLegacyTimes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "completionOutboxFailureRollsBackFinalReceiptAndStateThenRetryEmitsOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+      "method": "nullableRoomIntentConflictsButExactRetryKeepsReceipt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+      "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+    },
+    {
+      "xmlOrdinal": 31,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+      "method": "v17SourceGuardPreservesV1ToV16RowSchemaAndHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+      "sourceSha256": "adf06af5b67e968062a7f0747902316c4eae543e0255b0f59c2b5748b5dd7ff8"
+    },
+    {
+      "xmlOrdinal": 31,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+      "method": "checksumConsistencyAfterFullMigrate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+      "sourceSha256": "adf06af5b67e968062a7f0747902316c4eae543e0255b0f59c2b5748b5dd7ff8"
+    },
+    {
+      "xmlOrdinal": 31,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+      "method": "freshInstallAppliesAllMigrations",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+      "sourceSha256": "adf06af5b67e968062a7f0747902316c4eae543e0255b0f59c2b5748b5dd7ff8"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "freshFullChainMigratesValidatesAndRepeatsWithoutWork",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "crossOneOffOriginIsRejectedEvenWhenSnapshotsMatch",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "crossTemplateRecurringOriginIsRejectedEvenWhenSnapshotsMatch",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "oneOffOriginRetainsIdentityWhileRestoredGenerationMovesSlot",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "lineageReplayAndOwnershipConstraintsRejectForeignOrMutableRows",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "assignmentIdIsRequiredAndPositiveForNewTemplates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+      "method": "assignmentAndGenerationIdentityRetainPhysicalHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "restore_sameAssignment_reusesPhysicalAndRejectsOccupiedSlot",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "delete_canonicalCancelArchivesBinding_retainsOriginAndDoesNotCancelReplacement",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "restore_twoHopTeacherReturnCreatesExactNewAssignmentGeneration_oldPhysicalRemainsImmutable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "concurrentSameKeyAndChangedPayload_haveOneAtomicWinner",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "create_rejectsMismatchedOrPartialTimesAndCatalogRequiresAuthentication",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "blockOneOff_persistsAndEmitsExactPhysicalSnapshotWithNullableRoom",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "restore_foreignCommittedReplacementChainIsRejectedWithoutMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "acceptedLegacyExplicitTimeReceiptReplaysBeforeNewTimePolicy",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "create_rejectsForeignAuthorityAndHeadmanScope_atomically",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "cancelledRecurringPhysical_releasesSlotAndRetainsBothHistories",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+      "method": "create_canonicalSnapshotFeedsLookupAndList_replaysOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+      "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+      "method": "failedActionOutboxAppendRollsBackLessonOccurrenceAndReplayTogether",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+      "sourceSha256": "72ee14d2d4aa0a3ae06655337b1373ee06c0b1547c42f628fbf7fa6c5977b082"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+      "method": "actionSnapshotsAreDurableTruthfulAndCreationReplayDoesNotDuplicate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+      "sourceSha256": "72ee14d2d4aa0a3ae06655337b1373ee06c0b1547c42f628fbf7fa6c5977b082"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+      "method": "publishesCancelledEventOnDelete",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+      "sourceSha256": "72ee14d2d4aa0a3ae06655337b1373ee06c0b1547c42f628fbf7fa6c5977b082"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+      "method": "publishesCreatedEventOnCreate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+      "sourceSha256": "72ee14d2d4aa0a3ae06655337b1373ee06c0b1547c42f628fbf7fa6c5977b082"
+    },
+    {
+      "xmlOrdinal": 35,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT",
+      "method": "canInsertAndRetrieve",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+      "sourceSha256": "5a045df614351998bfb41f22ae61845c4775d3033987ea9689998e0964e49ffb"
+    },
+    {
+      "xmlOrdinal": 35,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT",
+      "method": "originsAtSameSlotRemainDistinctForRetainedHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+      "sourceSha256": "5a045df614351998bfb41f22ae61845c4775d3033987ea9689998e0964e49ffb"
+    },
+    {
+      "xmlOrdinal": 35,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT",
+      "method": "semesterIdNotNull_rejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+      "sourceSha256": "5a045df614351998bfb41f22ae61845c4775d3033987ea9689998e0964e49ffb"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "wrongSignatureInternalToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "invalidInternalToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "legacyHeaders_dualMode_accepted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "signedHeadmanTokenUsesStudentDomainRoleAndKeepsIdentityFlags",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "validInternalToken_passesFilter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "expiredInternalToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+      "method": "internalToken_precedenceOverLegacy",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+      "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+    },
+    {
+      "xmlOrdinal": 37,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT",
+      "method": "legacyHeaders_strictMode_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+      "sourceSha256": "b7122f85ca3458dc9778b103f20c26dbd095c650545ff2c17bb67e235d9d953c"
+    },
+    {
+      "xmlOrdinal": 37,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT",
+      "method": "noHeaders_strictMode_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+      "sourceSha256": "b7122f85ca3458dc9778b103f20c26dbd095c650545ff2c17bb67e235d9d953c"
+    },
+    {
+      "xmlOrdinal": 37,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT",
+      "method": "validInternalToken_strictMode_passes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+      "sourceSha256": "b7122f85ca3458dc9778b103f20c26dbd095c650545ff2c17bb67e235d9d953c"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "toggleGeoBlock_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "deleteOneOffLesson_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "restoreLesson_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "listScheduleItems_foreignGroupId_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "unblockLesson_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "getScheduleItem_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "blockLesson_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "getLessons_foreignGroupId_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "deleteScheduleItem_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "listOneOffLessons_foreignGroupId_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+      "method": "cancelLesson_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+      "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+    }
+  ],
+  "summary": {
+    "PASSED": 205,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

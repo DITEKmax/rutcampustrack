@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T07:36:43.181956+00:00",
+  "writer": "ci_academic_heap soleformatter/configwriter existingWT",
+  "scope_extension": ".prettierrc.json minimal Vue-only semi:true override ONLY after actualexistingESLintstyle checks; do notweakenlint orassertions",
+  "reason": "actual @vue/compiler-sfc code46 regression from semi:false multi-statement eventattributes",
+  "plan": "propose/readactualsyntaxdiff+nativeoriginal/badformatter/correctedtemplatecompile; commitconfigseparately fromheldmechanical798. Rerun963 format/check withmeaningproof. No broaderconfig/stack/plugins unlessconcreteblocker reported",
+  "resource": "sameFORMAT_PRETTIER1 light512m/128MiB; no Java/Python/SQL heavy",
+  "design": "currentrutcampustrack-design is available via verified Q004; read applicable preservingUI source/tokens guideline before necessaryUI source correction; no newdesign/Figma"
+}

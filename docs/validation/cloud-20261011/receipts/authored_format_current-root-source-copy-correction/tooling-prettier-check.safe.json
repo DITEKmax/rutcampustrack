@@ -1,0 +1,1 @@
+{"native_exit": 0, "exact_argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node", "/workspace/rct-worktrees/client-current-artifacts/frontends/node_modules/prettier/bin/prettier.cjs", "--check", "scripts/format-authored.mjs"]}

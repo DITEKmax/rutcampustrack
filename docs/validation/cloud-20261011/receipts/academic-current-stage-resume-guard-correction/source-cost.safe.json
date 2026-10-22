@@ -1,0 +1,20 @@
+{
+  "status": "SOURCE_COST_ACCOUNTING_NOT_NATIVE_TIMING",
+  "old_whole1797_cost_fromindependentMemo": "15535 fullPREFIX walks/11631 directory loops/2107chunks; originalerror precise causeUNKNOWN",
+  "resume_existing_exact_files": 894,
+  "copy_missing_only": 903,
+  "remaining_logical_bytes": 100735666,
+  "remaining_file_4KiB_rounding": 102760448,
+  "all_public_directories_opened_once": 60,
+  "new_directories_created_once": 20,
+  "remaining_stream_chunks": 1213,
+  "modeled_effects_create_write_flush_fsync_publication": 3945,
+  "model_effect_triggered_inventories_upper": 66,
+  "time_cadence_extra_inventories": "ActualUNKNOWN; <=1sec or64effects beforeanynextwrite, forceentry/final, stale scans/checks stop",
+  "all_numeric_caps_unchanged": true,
+  "maximum_single_effect_upper": 1048576,
+  "sample_headroom": 67108864,
+  "remaining_copy_forecast_bytes_with_metadata_reserve": 111149056,
+  "sampling_qualification": "Not exact integrity/allocation-limit proof; changed protectedmetadata/foreign additions reconcileorstop, full final app SHA/mode/composition/currentJAR+wholeprefix allocation mandatory",
+  "model_status": "Historical ac79 source model only; F02 raw writes remove flush calls and add internal receipt effect checks. Native/short-write effect counts UNKNOWN; \u22641second/64effect sampling/caps unchanged."
+}

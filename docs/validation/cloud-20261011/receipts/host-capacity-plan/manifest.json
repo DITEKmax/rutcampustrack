@@ -1,0 +1,203 @@
+{
+  "sealed_at": "2026-10-12T05:01:50.653087+00:00",
+  "scope": "READ_ONLY capacity source/staging planning; only NEW own receipts",
+  "selected_candidate_scopes": [
+    "client-current-artifacts",
+    "np01-config",
+    "np01-contract",
+    "security-fingerprint",
+    "delivery",
+    "file-boundaries",
+    "gateway-claims",
+    "recovery",
+    "renderer-files",
+    "auth-generator",
+    "ci-evidence"
+  ],
+  "unselected_ci_candidate_file": "ci-academic-heap-candidates.json is historical unselected; not mutation inventory",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/HANDOFF.md",
+      "sha256": "b83da6db0180c2acc43275403a242cc0e7141fc3d6f9af5cac5d04c8ffc624eb",
+      "bytes": 7688
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/RESULT.json",
+      "sha256": "ba04f07b8ba810c9d62a2bc22aaab73845ee8709e07ab87466521ef2707877db",
+      "bytes": 2508
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/STAGING.md",
+      "sha256": "f51a3f2cf2e02e9926bd4904740decc5ee7be16e777d688a4b821bbc9bc41895",
+      "bytes": 8793
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/auth-generator-candidates.json",
+      "sha256": "a0e1bbe6d11aa74e2ded150e98338c8633f32339d20cd5431257373aba7b2855",
+      "bytes": 433651
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/budget.json",
+      "sha256": "9dd9acd0a8805917dde4e018d4e8d0b297b4aad4088577748b568f1a1f714f88",
+      "bytes": 974
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/candidate-validation.json",
+      "sha256": "274edbdce577638148722101cf4afe0974af360cbff24dd5408ccf143be54d75",
+      "bytes": 491
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/ci-academic-heap-candidates.json",
+      "sha256": "4a38078ffcd399f807a2d4a81200b7872127b1bbb755479274aa4acf0bb9bdc0",
+      "bytes": 460064
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/ci-evidence-candidates.json",
+      "sha256": "2b60eef24b1b0bec8c396ab576071ceac15b1bfef18dd79b212b7c2a952c1026",
+      "bytes": 431387
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/client-current-artifacts-candidates.json",
+      "sha256": "b73fc661bf135363e29e618db7842387c6ca795520e03f76db3f3c3305b9f962",
+      "bytes": 466848
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/delivery-candidates.json",
+      "sha256": "e4d3484e7ef6c77f36e3df4380c801daa4af40405a1dc6e9abb87c3cc45c129f",
+      "bytes": 428297
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/diagnose.py",
+      "sha256": "327a6a79e73843b7fc59fba2f66c518c4fb0219e52f822f2c326a9f86d65f965",
+      "bytes": 4107
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/file-boundaries-candidates.json",
+      "sha256": "9748fde1d8bfeb9474be88215be2b902fedcf80ab7dc2c139e474418bfbd2441",
+      "bytes": 435666
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/finalize.py",
+      "sha256": "893948f2dff3f7840a011558b9688a9d2dfe85487a0bfd87ec6b8483d844c434",
+      "bytes": 4598
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/gateway-claims-candidates.json",
+      "sha256": "86490082b2fbe4d51851f3d09fdd4ff124c0b52fd6efb4d900519a2fe559fd0f",
+      "bytes": 433651
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/np01-config-candidates.json",
+      "sha256": "5df5c67e5e40cb850616ca5dc85ddd1d177a6a586de12d5a24a29f187ca1a0ca",
+      "bytes": 424788
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/np01-contract-candidates.json",
+      "sha256": "ac74706a5e14bf0834c2338205611e4ce511c9a65e7dcddb09350d6e09a155e8",
+      "bytes": 426364
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/preflight.json",
+      "sha256": "e78737bfe29ed3fa368640366e266e6495f2bd45bb25a2184b103ce3cf0052d6",
+      "bytes": 203
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/preservation-after.json",
+      "sha256": "f4bfbe8d538d540f8858253eb390d0cfdcee007df0a7c0a364ca995a6b86bada",
+      "bytes": 1002
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/preservation-before.json",
+      "sha256": "f4bfbe8d538d540f8858253eb390d0cfdcee007df0a7c0a364ca995a6b86bada",
+      "bytes": 1002
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/recovery-candidates.json",
+      "sha256": "ce7feb0dc06237bf6cb3754a4f5124277fc073ef557961e2f8bef086545e56d4",
+      "bytes": 428839
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/renderer-files-candidates.json",
+      "sha256": "9720d5b980d26a5c1a037a7d9546ecb7896ace4e7fee848f6511922be4e9358a",
+      "bytes": 433094
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/security-fingerprint-candidates.json",
+      "sha256": "02c11133033148f04c6c6ffeaa820ddc535ef4c3c480f619ad425ce1dae5cab6",
+      "bytes": 442323
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/source-diagnosis.json",
+      "sha256": "3bc7e8da193543aa8271873e0309dca2e8781966f72a1e35018d41d8798ed077",
+      "bytes": 3462
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/source-proof.json",
+      "sha256": "9088a3371bd51a036a57093c112bec95b772358b79d78f7f1bb57eced9ddc50e",
+      "bytes": 1163
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-academic.json",
+      "sha256": "56373e415344d307e2474662ff7c05ddf12915af53b6eccf989e4025d40e9a8c",
+      "bytes": 584277
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-attendance.json",
+      "sha256": "56e49c5914fec98a5eb04507920418cf7f11bd368512fa51587cb7da6350964c",
+      "bytes": 570835
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-auth.json",
+      "sha256": "1f2464745f02d88ff672e53eedb860480d79813e30a210a9895029c256468e4e",
+      "bytes": 497177
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-bff.json",
+      "sha256": "a1fd1651a275d64d51989d3f55018032cefc1a4eacc7693e7f2c99fd402b750d",
+      "bytes": 424034
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-gateway.json",
+      "sha256": "6f4b0cd5c314462cd619ce27c7846abac7a800af9de8ecb3130761dfded0669d",
+      "bytes": 90231
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-notification.json",
+      "sha256": "336ff10dc15d686b443a1b82b9f3798457448be8d8d3dc764bdd55e75a5adb05",
+      "bytes": 455276
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-renderer.json",
+      "sha256": "15dc8f7a44ec921b63ac6df4ea91bd1b875efeaf54d9468f79d908bef496b879",
+      "bytes": 412968
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/stage-schedule.json",
+      "sha256": "e801c826b784461a96256ced31b45fd9778625d634ccdad96e94668e1d7d95c7",
+      "bytes": 492191
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/staging-inspection-attempt1.json",
+      "sha256": "ab6536ee8c6672537e77d2ab25876dde55c654162cf8f2e83e447c573007640d",
+      "bytes": 453
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/staging-map.py",
+      "sha256": "12fbb5c7a958dc1cd3368a17d6907e6ab3dfce9d869fc0e18f0173fb495abcf3",
+      "bytes": 4420
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/staging-summary.json",
+      "sha256": "85817ee4aa7404a6ad7cca875f3fb798a6a8a74a637c855b53ef44543db74713",
+      "bytes": 1835
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/staging-transient-budget.json",
+      "sha256": "effae58eb4483c88cd4578c5f26782cf3a1666f087107c719d76bee0c3e87c38",
+      "bytes": 1386
+    }
+  ],
+  "file_count": 36,
+  "bytes": 8816046,
+  "resource_mutations": false
+}

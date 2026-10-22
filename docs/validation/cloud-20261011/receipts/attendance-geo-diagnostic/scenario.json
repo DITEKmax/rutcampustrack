@@ -1,0 +1,59 @@
+[
+  {
+    "id": "AG01",
+    "source_ids": [
+      "AG-S01",
+      "AG-S02"
+    ],
+    "stories": [
+      "JS-STUDENT-01"
+    ],
+    "state": "HEADMAN ABSENT, active unblocked same-group lesson within Moscow window, no pending excuse/cooldown",
+    "action": "valid successful geo checkin",
+    "expected": "PRESENT/STUDENT_GEO same attendance ID; markedBy cleared, new revision; durable original ABSENT→PRESENT history, attendance.marked+dashboard outbox and receipt; replay unchanged",
+    "status": "RULED_OUT_SOURCE_FORK_RESOLVED",
+    "runtime": "NOT_RUN",
+    "proposal_disposition": "Q005A candidate test proposal withdrawn; existing reviewed tests restored; no product defect under D005",
+    "accepted_decision": "D005/Q005B",
+    "accepted_expected": "Manual HEADMAN ABSENT prevents geofence/check-in and automatic request through this attempt; snapshot disabled HEADMAN_ABSENT_REQUIRES_APPEAL. Existing accepted past-lesson appeal and other guards unchanged.",
+    "existing_test": "StudentCheckinTransactionIT.manualHeadmanAbsenceRejectsBeforeGeofenceAndWithoutPairMutation"
+  },
+  {
+    "id": "AG02",
+    "source_ids": [
+      "AG-S01",
+      "AG-S02"
+    ],
+    "stories": [
+      "JS-STUDENT-02"
+    ],
+    "state": "same manual ABSENT, failed/unavailable geo",
+    "action": "geo checkin then same-key replay",
+    "expected": "PENDING_CONFIRMATION AUTO_GEO_FAILURE request once; manual ABSENT preserved; no manual-appeal quota charge; cooldown+receipt, durable geo history and requested outbox; replay unchanged",
+    "status": "RULED_OUT_SOURCE_FORK_RESOLVED",
+    "runtime": "NOT_RUN",
+    "proposal_disposition": "Q005A candidate test proposal withdrawn; existing reviewed tests restored; no product defect under D005",
+    "accepted_decision": "D005/Q005B",
+    "accepted_expected": "Manual HEADMAN ABSENT prevents geofence/check-in and automatic request through this attempt; snapshot disabled HEADMAN_ABSENT_REQUIRES_APPEAL. Existing accepted past-lesson appeal and other guards unchanged.",
+    "existing_test": "StudentCheckinTransactionIT.manualHeadmanAbsenceRejectsBeforeGeofenceAndWithoutPairMutation"
+  },
+  {
+    "id": "AG03",
+    "source_ids": [
+      "AG-S01",
+      "AG-S02"
+    ],
+    "stories": [
+      "JS-STUDENT-01"
+    ],
+    "state": "manual ABSENT in snapshot; no pending manual/excuse; in-window",
+    "action": "student today attendance snapshot",
+    "expected": "Eligibility ELIGIBLE; pending AUTO_GEO_FAILURE only cooldown gates retry; cancelled/closed/blocked/readOnly/foreign still rejected",
+    "status": "RULED_OUT_SOURCE_FORK_RESOLVED",
+    "runtime": "NOT_RUN",
+    "proposal_disposition": "Q005A candidate test proposal withdrawn; existing reviewed tests restored; no product defect under D005",
+    "accepted_decision": "D005/Q005B",
+    "accepted_expected": "Manual HEADMAN ABSENT prevents geofence/check-in and automatic request through this attempt; snapshot disabled HEADMAN_ABSENT_REQUIRES_APPEAL. Existing accepted past-lesson appeal and other guards unchanged.",
+    "existing_test": "StudentAttendanceSnapshotServiceTest.pendingAutoRequestDoesNotBypassHeadmanAbsence"
+  }
+]

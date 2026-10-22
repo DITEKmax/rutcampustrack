@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-12T00:49:23.521652+00:00",
+  "phase": "ebsr-affected-unit-1",
+  "producer_commit": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "Auth": {
+    "tests": 15,
+    "passed": 14,
+    "failures": 1,
+    "skipped": 0
+  },
+  "Gateway": "NOT_RUN after Auth task failure",
+  "classification": "NEW_UNIT_FIXTURE_UNSTUBBED_SIGNER_NULL",
+  "cause": "Mocked JwtService.generateInternalReportDownloadToken returned null, existing AuthAdmissionResponse rejects null internalToken before expiry assertions",
+  "correction": "Return a nonblank synthetic authority in the existing mock pattern; leave product/DTO/assertions unchanged",
+  "source_stable": true,
+  "recheck": "ReportDownloadTicketServiceTest and unrun Gateway classes; validation/event/FULL guard unrelated sources stable PASS",
+  "not_product_or_sensitivity_evidence": true
+}

@@ -1,0 +1,62 @@
+{
+  "status": "READY_EXISTING_APPROVED_SOURCE_READONLY_PREFLIGHT_NOT_RUN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "dab4a70a0940bc95874c759cb58a7c54c769ac5ae9aa12d3f6a2f242a80e16be",
+      "bytes": 671,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "e1c9712c3d042a3d9bc3a13ff82856b3dc2c414237ad36b4dae29d4f851c31b2",
+      "bytes": 2306,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/IPAM-mounts.safe.json",
+      "name": "IPAM-mounts.safe.json",
+      "sha256": "2a713b08da26b621131bc8536ca35ec913f47c01a5be23ab6b96a2aaeff7a26e",
+      "bytes": 2244,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/effective-launch-ready.safe.json",
+      "name": "effective-launch-ready.safe.json",
+      "sha256": "8939fa70688a302541f583a854336df6cc0ad3c23f5285ef256a63a583255242",
+      "bytes": 10636,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/native-preflight.safe.json",
+      "name": "native-preflight.safe.json",
+      "sha256": "ac4a2e7861557da2a5c97872841dc8ea6cbc936284307f44fdb5ed7ea99dd278",
+      "bytes": 4957,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/readiness-order.safe.json",
+      "name": "readiness-order.safe.json",
+      "sha256": "0a4764bf7c96addeca07d7c2caeff900ba061f2992e2560613eaeaa584ad2c97",
+      "bytes": 1526,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/restart-grant.template.safe.json",
+      "name": "restart-grant.template.safe.json",
+      "sha256": "33019cec5dab19dec8133f71dbe645b90dcbaa31a497ac93bf6d514b730fa253",
+      "bytes": 1874,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/source-artifact-preflight.safe.json",
+      "name": "source-artifact-preflight.safe.json",
+      "sha256": "0130c1d0c2ad4650bef2f0f37777386c75f3f3c26aae56cb61fa0742f9337d5b",
+      "bytes": 9178,
+      "mode": 384
+    }
+  ],
+  "private_keys_ENV_data_or_rawlogs_included": false
+}

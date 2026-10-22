@@ -1,0 +1,55 @@
+{
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "sha256": "934e7c23ac0e9c1bcb6ace2092db2dad4208fe816e3141c70b29cd82eeffafe3",
+      "bytes": 233
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "sha256": "08fe9c1100501099c31b48d85b8b8b43c4525d150abfebc64a240e39ab958d44",
+      "bytes": 2162
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/edge-default.conf",
+      "relative_path": "edge-default.conf",
+      "sha256": "132d55c08d7e55388b8d44cc41433a12652c8c739c4e772edf5af0f7c5541677",
+      "bytes": 4693
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/edge-overlay.compose.yml",
+      "relative_path": "edge-overlay.compose.yml",
+      "sha256": "242f64854f4c118cb9a220b6e6053960f325edb4558de3cc885818809fac69c7",
+      "bytes": 275
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/effective-launch-inputs.json",
+      "relative_path": "effective-launch-inputs.json",
+      "sha256": "6bb1bac95626c0178e91d2152aedef26bb9125869ee0bf81804f918a1c2f6cf6",
+      "bytes": 1056
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/prepare-correction.py",
+      "relative_path": "prepare-correction.py",
+      "sha256": "45427c975769f0012c0758f4f044f4417dba181937c7034b65a192d12d929ec8",
+      "bytes": 1294
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/validate-correction.py",
+      "relative_path": "validate-correction.py",
+      "sha256": "cb0097f6cc7cfc13662aef3f68245937c6f22a05ebba610307a55c259def52ad",
+      "bytes": 3567
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/validation.safe.json",
+      "relative_path": "validation.safe.json",
+      "sha256": "86adc1d56613837778e186ffc6c564299c9b81478a226497cfab9b97153b384d",
+      "bytes": 3763
+    }
+  ],
+  "status": "SOURCE_ONLY_CORRECTION",
+  "base_sha256": "e3b6e2c80d819e758bd54722a0d348764dcee5ce64a1ede0cd20df16adc96378",
+  "private_files": 0
+}

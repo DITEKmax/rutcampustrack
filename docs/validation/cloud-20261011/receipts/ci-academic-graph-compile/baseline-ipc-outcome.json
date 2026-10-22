@@ -1,0 +1,25 @@
+{
+  "phase": "baseline",
+  "utc": "2026-10-12T05:00:45.464484+00:00",
+  "native_exit": 1,
+  "stopped": null,
+  "peak": {
+    "utc": "2026-10-12T05:00:23.613320+00:00",
+    "free_bytes": 7291105280,
+    "memory_current": 4721307648,
+    "memory_max": 17179869184,
+    "cpu_max": "400000 100000",
+    "allocation_bytes": 815677440
+  },
+  "after": {
+    "utc": "2026-10-12T05:00:45.108649+00:00",
+    "free_bytes": 7288889344,
+    "memory_current": 4201545728,
+    "memory_max": 17179869184,
+    "cpu_max": "400000 100000",
+    "allocation_bytes": 815501312
+  },
+  "raw_private_log": "/workspace/scratch/rct-validation/ci_academic_graph_compile/baseline-ipc.raw.private.log",
+  "own_processes_remaining": {},
+  "cleanup_qualification": "Only descendants recorded with exact process start-time identities"
+}

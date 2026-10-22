@@ -1,0 +1,11 @@
+{
+  "schema": "RCT_P07_ACTUAL_SAFE_SEAL_V1",
+  "files": {
+    "REPORT.safe.json": "e1ebe3451a8c70af6933edf257f72198d7c0214ebabaebedabb8a9125733c1d8",
+    "child-exit.safe.json": "0849db4a0b7391d48c2cb70ee4cc4b56672a052b36510fc8199e65323b9b4f4e",
+    "process.safe.json": "6d43b598d93ad283f561b1c37857901f8b5dd131c77cc9d0748a8c7bcfd06f40",
+    "supervisor.safe.json": "d982ae39fa7ba06bc1ce0a6e70c63fa59979465d579718aa6d13961de14a99a4",
+    "terminal.safe.json": "28754f3b0d419d6803bffb06157fbabb2c9a53e2bf482381e7558e39045817cc",
+    "validator-results.safe.json": "8573cba2bb9ebf1c138214604729d49dd92be668068f7527564e16ad2e333a7c"
+  }
+}

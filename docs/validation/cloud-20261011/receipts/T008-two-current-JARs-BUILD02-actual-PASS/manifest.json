@@ -1,0 +1,46 @@
+{
+  "utc": "2026-10-13T09:14:58.750609+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/OUTCOME.safe.json",
+      "sha256": "c11314f42481e4ba4d98405b4dea3151c1085808e26906bf9fcb35bff92ccac5",
+      "size": 10726
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/HANDOFF.md",
+      "sha256": "4273891c38041ebbcd62732a879c3b2fdd2345869f79ce5127109c0393bc66e9",
+      "size": 1225
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/build-result.safe.json",
+      "sha256": "a6c092211b8e458204b8d8c1cbe146b4412a3af1e248a5956e965ef55d1b92a3",
+      "size": 866211
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/build-supervisor.safe.json",
+      "sha256": "779f2b08627f45e16c24dd53fc3ff1ea1463568634f96cd837a2c074e33131d7",
+      "size": 117
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/clone-terminal.safe.json",
+      "sha256": "d5abb7b8ccf531b0a87553ef8f480284c18c84a65b7ecedaffc0188391d85eec",
+      "size": 395
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/sparse-config-terminal.safe.json",
+      "sha256": "f55f1dcdc1a2a030c1a82fdb3c65cf11cefc86b5a61ea57218a2637b04aa5ab8",
+      "size": 395
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/checkout-terminal.safe.json",
+      "sha256": "5adb4c2dffdd32361dfc09e3d6af11732645a983259f9e374d7034e85bb9a348",
+      "size": 395
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_checkout_mode_correction/actual-build02/academic-attendance-bootjar-terminal.safe.json",
+      "sha256": "3de8c8a83d92a1398a64e262b7373d3c572d1006eb52c4d7e823c6c31675e998",
+      "size": 779
+    }
+  ],
+  "no_privategrant_ENV_key_logs_payloadbinary": true
+}

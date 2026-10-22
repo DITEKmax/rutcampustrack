@@ -2,7 +2,6 @@ package ru.rutcampustrack.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,8 +15,7 @@ public record AuthSessionSummary(
         @Schema(nullable = true) String locationLabel,
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant lastSeenAt,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean current
-) {
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean current) {
     public AuthSessionSummary {
         requireUuid(sessionId, "sessionId");
         requireUppercase(authMethod, "authMethod");

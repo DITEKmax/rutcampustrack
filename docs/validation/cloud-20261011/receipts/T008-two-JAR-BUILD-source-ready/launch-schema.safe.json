@@ -1,0 +1,40 @@
+{
+  "utc": "2026-10-13T08:22:13.562727+00:00",
+  "phase": "BUILD_ONLY_FIXED2",
+  "command": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/build-academic.py",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/private/build-grant.json"
+  ],
+  "context": "normalapproved actor1000/root0/tmp0; normalplatformapproval/no bypass",
+  "frozen_source": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "tracked787_SHA256": "5e9e6162ce34eedb1f7329d8dd295be7b35dcdbf131cf2663a61990571783b41",
+  "required6_journal_source_SHA256": "88f94ccebc5c103b002f40d8c504fb77a980465a9a6301d327fb0270f57de9ef",
+  "prefix": "/tmp/rct-journal-twojar-refresh-20261013-attempt01",
+  "prefix_absent": true,
+  "helper_pins": {
+    "build-academic.py": "64fc7df53b3ae22fdded3089ace09ee019e5d6b87a5ede9638e01475c03d98a1",
+    "refresh-boundary.py": "f24c7782057347bdd4043a589bab6adbb9c2399125c5f6765e722aa5ee73a117",
+    "inspect-academic.py": "a33f45dfd19fa765d30ae64d8292b85dbf20bc6ae3225d3b9a7d9e30b37dcc68"
+  },
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "actual_BUILD": "NOT_RUN",
+  "actualSHAs_or_librarycounts": "UNKNOWN before exactcurrenttwo build; no futureartifactidentity claim",
+  "selected_RAM_checks": 57,
+  "qualification": "Full frozenmanifest/self-source RAM consumer; fixedgrant/module/mode/path/foreignallocation/expiry-duringpreflight/cadence/forcedfinal/derivedlibraries/falsecurrentproducer+RPCpayload/settled-publication-failure controls; publicsyntheticZIP layout bytes not JVMcompilation or actualreap",
+  "sample_qualification": "Cheapfloors/shared/netWS +UTC LAST everyeffect; allocatedprefix fullentry/final and due>=1s sincepreviouscompleted sample. Native allocation can change between snapshots, and slow inventory itself has unmeasured duration beforeactual; not a hard1secondscan/isolation/instantcap proof. Any foreign/link/special node/IO denied at snapshot. Actualresource/guard failures settlechild before deniedreceiptwrite; closedmetadata emitted for owner-safe capture withoutbypassinggates.",
+  "resources": {
+    "workspace": 8158900224,
+    "tmp": 7499886592,
+    "shared": 5355331584,
+    "preDocker_deficit": 1221918426
+  },
+  "future_result": "/tmp/rct-journal-twojar-refresh-20261013-attempt01/build-result.safe.json",
+  "future_artifacts": [
+    "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+    "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar"
+  ],
+  "other6_originals": "retained producer908 artifacts/COW/meta; no touch or rebuild",
+  "STAGE_runtime": "EXCLUDED from sourcefiles and grant; currentstanddisk blocker unchanged"
+}

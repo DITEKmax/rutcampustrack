@@ -1,0 +1,60 @@
+{
+  "runtime": "NOT_RUN",
+  "files": [
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 5
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 8
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 8
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 3
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/start.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 5
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 1
+    },
+    {
+      "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 10
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 24
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 6
+    },
+    {
+      "path": "services/notification-bot/tests/test_password_changed.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 8
+    },
+    {
+      "path": "services/notification-bot/tests/test_start_handler.py",
+      "syntax": "AST_PARSE_ONLY",
+      "functions": 9
+    }
+  ]
+}

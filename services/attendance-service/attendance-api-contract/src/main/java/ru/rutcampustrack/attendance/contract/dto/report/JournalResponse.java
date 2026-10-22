@@ -1,17 +1,17 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.List;
-
 /**
- * Top-level response for journal grid (RPRT-02, D-07).
- * Columns are dates (List<String>), rows are students (List<JournalStudentRow>).
- * Extends RepresentationModel for HATEOAS _links support.
- * Plain Java class — no Lombok (contract module rule).
+ * Top-level response for journal grid (RPRT-02, D-07). Columns are dates (List<String>), rows are
+ * students (List<JournalStudentRow>). Extends RepresentationModel for HATEOAS _links support. Plain
+ * Java class — no Lombok (contract module rule).
  */
-@Schema(description = "Журнал группы по предмету: колонки — даты, строки — студенты со статусами по датам")
+@Schema(
+        description =
+                "Журнал группы по предмету: колонки — даты, строки — студенты со статусами по датам")
 public class JournalResponse extends RepresentationModel<JournalResponse> {
 
     private final Long groupId;
@@ -19,7 +19,8 @@ public class JournalResponse extends RepresentationModel<JournalResponse> {
     private final List<String> dates;
     private final List<JournalStudentRow> students;
 
-    public JournalResponse(Long groupId, Long subjectId, List<String> dates, List<JournalStudentRow> students) {
+    public JournalResponse(
+            Long groupId, Long subjectId, List<String> dates, List<JournalStudentRow> students) {
         this.groupId = groupId;
         this.subjectId = subjectId;
         this.dates = dates;

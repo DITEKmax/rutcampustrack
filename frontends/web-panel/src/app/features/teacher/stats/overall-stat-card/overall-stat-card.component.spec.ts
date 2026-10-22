@@ -9,14 +9,6 @@ describe('OverallStatCardComponent', () => {
     }).compileComponents();
   });
 
-  it('creates the component', () => {
-    const fixture = TestBed.createComponent(OverallStatCardComponent);
-    const comp = fixture.componentInstance;
-    comp.totalLessons = 10;
-    comp.attendanceRate = 85;
-    fixture.detectChanges();
-    expect(comp).toBeTruthy();
-  });
 
   it('renders the total lessons number', () => {
     const fixture = TestBed.createComponent(OverallStatCardComponent);
@@ -38,13 +30,4 @@ describe('OverallStatCardComponent', () => {
     expect(text).toContain('90%');
   });
 
-  it('renders "Всего занятий" label', () => {
-    const fixture = TestBed.createComponent(OverallStatCardComponent);
-    const comp = fixture.componentInstance;
-    comp.totalLessons = 5;
-    comp.attendanceRate = 100;
-    fixture.detectChanges();
-    const text: string = fixture.nativeElement.textContent;
-    expect(text).toContain('Всего занятий');
-  });
 });

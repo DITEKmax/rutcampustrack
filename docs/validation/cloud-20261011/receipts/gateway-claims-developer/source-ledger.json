@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/workspace/rct-worktrees/gateway-claims/services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java",
+    "role": "UNCHANGED_PRODUCT_RAW_JSON_GUARD",
+    "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f"
+  },
+  {
+    "path": "/workspace/rct-worktrees/gateway-claims/services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "role": "MODIFIED_TEST_ONLY",
+    "sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "role": "OWNER_P07_SECURITY_CONTRACT",
+    "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b"
+  }
+]

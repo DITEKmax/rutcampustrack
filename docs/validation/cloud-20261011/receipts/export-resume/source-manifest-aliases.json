@@ -1,0 +1,41 @@
+{
+  "purpose": "Lossless source-manifest duplicate elimination; original receipts remain unchanged at own scratch paths",
+  "aliases": [
+    {
+      "original_path": "ebsr-compile-after-2-source-manifest.json",
+      "canonical_archive_path": "ebsr-compile-after-1-source-manifest.json",
+      "sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "bytes": 437488
+    },
+    {
+      "original_path": "ebsr-crosslayer-after-1-source-manifest.json",
+      "canonical_archive_path": "ebsr-compile-after-1-source-manifest.json",
+      "sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "bytes": 437488
+    },
+    {
+      "original_path": "ebsr-crosslayer-after-2-source-manifest.json",
+      "canonical_archive_path": "ebsr-compile-after-1-source-manifest.json",
+      "sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "bytes": 437488
+    },
+    {
+      "original_path": "ebsr-affected-unit-1-source-manifest.json",
+      "canonical_archive_path": "ebsr-crosslayer-after-3-source-manifest.json",
+      "sha256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+      "bytes": 437488
+    },
+    {
+      "original_path": "ebsr-auth-compatibility-1-source-manifest.json",
+      "canonical_archive_path": "ebsr-affected-unit-2-source-manifest.json",
+      "sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "bytes": 437488
+    },
+    {
+      "original_path": "ebsr-jobs-compatibility-1-source-manifest.json",
+      "canonical_archive_path": "ebsr-affected-unit-2-source-manifest.json",
+      "sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "bytes": 437488
+    }
+  ]
+}

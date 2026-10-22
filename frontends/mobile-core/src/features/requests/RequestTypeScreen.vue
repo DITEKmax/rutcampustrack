@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import type { RequestKind, RequestTypeChoice } from './types'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import type { RequestKind, RequestTypeChoice } from './types';
 
-const props = withDefaults(defineProps<{
-  choices: readonly RequestTypeChoice[]
-  busy?: boolean
-  error?: string | null
-}>(), {
-  busy: false,
-  error: null,
-})
+const props = withDefaults(
+  defineProps<{
+    choices: readonly RequestTypeChoice[];
+    busy?: boolean;
+    error?: string | null;
+  }>(),
+  {
+    busy: false,
+    error: null,
+  },
+);
 
 const emit = defineEmits<{
-  back: []
-  choose: [kind: RequestKind]
-}>()
+  back: [];
+  choose: [kind: RequestKind];
+}>();
 </script>
 
 <template>

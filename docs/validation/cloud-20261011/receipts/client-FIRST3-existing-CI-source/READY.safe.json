@@ -1,0 +1,16 @@
+{
+  "schema": "RCT_FIRST3_CI_READY_V1",
+  "commit": "f5a0d60000332f6560856e527e91e3defcff8a54",
+  "base": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+  "manifestSha256": "cb7cc19e14d52ece50ba2cb515e0f0f0b376c2479e7e59255968ac41ac11dc8d",
+  "archive": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177/first3-ci-source.safe.zip",
+  "archiveSha256": "705151b0e25cfdbf7da4e311d73f222ddbe7fcad362d71cc5b84cb63333f8bdd",
+  "archiveBytes": 35102,
+  "archiveEntries": 10,
+  "sourceChecksPassed": 37,
+  "native": "NOT_RUN",
+  "clientAcceptance": false,
+  "worktreeAllocationKiB": 864,
+  "sourceHook": "ABSENT_NOT_BYPASSED",
+  "readableHandoff": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177/HANDOFF.md"
+}

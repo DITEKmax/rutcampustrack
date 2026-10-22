@@ -1,0 +1,21 @@
+{
+  "verdict": "APPROVE_SOURCE_BUILD_ONLY",
+  "files": {
+    "REPORT.md": {
+      "bytes": 1069,
+      "sha256": "7a93bfb9f9a6aefb135607e1a5b50ea282908e929de1d756499cd60f93022f3a"
+    },
+    "REVIEW.safe.json": {
+      "bytes": 4563,
+      "sha256": "7e1b94921d7229ae5188c64f70f96070e55bac1ffda2f5baf0d133fc74e4a229"
+    },
+    "independent-controls.safe.json": {
+      "bytes": 1864,
+      "sha256": "aab2a332d4f811666588f96aeb3f161daefb353886569e9573a26d9ed634b38d"
+    },
+    "source-invariants.safe.json": {
+      "bytes": 1229,
+      "sha256": "fa5c827aac59a409a79c2b2c2dd91d956e83d07aedb1ad0a9b4efff347654e18"
+    }
+  }
+}

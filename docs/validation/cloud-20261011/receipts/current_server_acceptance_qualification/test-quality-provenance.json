@@ -1,0 +1,261 @@
+[
+  {
+    "row": "CASE-SAQ-AUTH-ROLE-SELECTION",
+    "method": "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-AUTH-NEUTRAL-SCOPE",
+    "method": "bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+    "method": "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-RESET-ATOMIC-PURPOSE",
+    "method": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-RESET-NATURAL-EXPIRY-REUSE",
+    "method": "passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-RESET-ACCOUNT-ATTEMPT-WINDOW",
+    "method": "passwordResetFailedAttemptsSurviveANewChallenge",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-ADMIN-RECOVERY-DENIAL",
+    "method": "adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-AUTH-LIVE-REVOKE",
+    "method": "liveAdmissionThenCommittedRevokeIsDenied",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "method": "concurrentActualHttpConsumersHaveExactlyOneWinnerAndBurnTicket",
+    "baseline_method_present": false,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "method": "actualRedisThirtySecondExpiryRejectsUnconsumedTicket",
+    "baseline_method_present": false,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "method": "logoutBeforeConsumeInvalidatesOutstandingTicket",
+    "baseline_method_present": false,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "method": "consumeTicket_revokedBeforeConsume_isRejectedAndBurned",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-WS-OUTBOUND-REVOKE-SEAM",
+    "method": "openSocketReceivesBeforeRevokeAndCannotReceiveNextPrivateMessageAfterRevoke",
+    "baseline_method_present": false,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-ADMIN-LAST-FULL-AND-DOWNGRADE-RACE",
+    "method": "concurrentFullRevocationsSerializeAndCannotRemoveLastFull",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-ADMIN-LAST-FULL-AND-DOWNGRADE-RACE",
+    "method": "actorDowngradeWhileWaitingForGlobalLockCannotUseOldFullAdmission",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-ADMIN-LIMITED-CATALOGUE",
+    "method": "limitedAssignmentRoundTripsValidatesDependenciesAndNeverDelegatesFull",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-USER-ARCHIVE-RESTORE-ROLLBACK",
+    "method": "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-ASSIGNMENT-OVERLAP-AND-DATES",
+    "method": "sameTeacherSameTypeOverlapRaceCommitsOneAndReturnsOne409",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-ASSIGNMENT-OVERLAP-AND-DATES",
+    "method": "invalidAssignmentDateBoundsAreRejectedWithoutWrite",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-ASSIGNMENT-PENDING-EXACT-REPLAY",
+    "method": "pendingActivationIsFencedAndExactReplayCompletesAfterScheduleCommit",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-SEMESTER-RESTORE-NOT-ACTIVE",
+    "method": "expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-NOTIFICATION-CLAIM-OUTAGE",
+    "method": "concurrentSameEventClaimCommitsOneEffectAndLoserRetriesSafely",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-NOTIFICATION-CLAIM-OUTAGE",
+    "method": "authorityOutageRollsBackEventClaimBeforeEnqueueAndReplayAdmitsOnce",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-NOTIFICATION-BOT-TOGGLE-CAS",
+    "method": "concurrentCallbackTogglesAndReplaysLinearizeWithoutLostUpdates",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-NOTIFICATION-WHOLE-PROFILE-CAS",
+    "method": "concurrentPreferenceSavesCommitOneWholeProfileAndLoserGets409",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-EXPORT-ENUM-DB-WIRE",
+    "method": "threeGenerationFailuresTerminateAndWireAndDatabaseRejectUnknownOrOrdinalState",
+    "baseline_method_present": false,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-EXPORT-HTTP-REVOKE-AUDIT",
+    "method": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation",
+    "baseline_method_present": false,
+    "baseline_method_byte_equal": false,
+    "quality": "NEW_OR_CHANGED_METHOD_SENSITIVITY_REQUIRES_EXACT_EXISTING_RECEIPT_OR_SELECTIVE_CHECK"
+  },
+  {
+    "row": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "method": "browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "method": "sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "method": "rejectedExpiredAndSupersededChallengesCannotIssueAndRedisLimitsAreAuthoritative",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "method": "receiptFailureRollsBackSessionAuditAndCleanupOnlyDeletesOwnedExpiredQrMetadata",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "method": "acceptsTwelveUnicodeScalarsWithNdAndPSpecial",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "method": "symbolAloneSatisfiesSpecialCategoryWithoutPunctuation",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "method": "supplementaryScalarsCountAsOneAndUnicodeNdIsAccepted",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "method": "rejectsMissingDigitOrSpecialAndDoesNotTreatSpaceOrCombiningMarkAsSpecial",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "method": "enforcesScalarMinimumAndUtf8ByteMaximumWithoutTruncation",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  },
+  {
+    "row": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "method": "rejectsUnpairedSurrogatesInsteadOfReplacingThem",
+    "baseline_method_present": true,
+    "baseline_method_byte_equal": true,
+    "quality": "UNCHANGED_BASELINE_ASSERTION_BODY"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "EBSR01",
+    "severity": "P1",
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+    "line": 261,
+    "rule": "Accepted EA01 async generation succeeds after fresh job authority; signed-worker validation retained",
+    "counterexample": "Enqueue t0 yields expires=t0+600s; claim at t0+1s puts that expiry in ticketExpiresAt. generate validates with verifyInternalReportDownloadToken, which rejects ticketExpiresAt>now+60s. No backend dispatch; repeated GENERATION_FAILED then ERROR after 3 attempts. JWT exp is separately short and cannot satisfy this extra guard.",
+    "correction": "Make worker authority and Gateway validation use compatible bounded fresh capability expiry or a distinct verified job authority contract. Preserve original 60-second reusable ticket guard, job retention and fresh session/grants.",
+    "verification": "Use actual RSA verification with a fresh real Auth claim and Gateway worker/generate path, showing backend dispatch and durable ready bytes; meaningful known-bad/source-before failure then green. Include expired/tampered/mismatched selector denial and legacy ticket expiry positive/negative controls.",
+    "original_status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "status": "CLOSED_SOURCE_AND_BOUNDED_ACTUAL_GREEN",
+    "final_revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+    "current_line": 269,
+    "disposition": "Independent affected recheck APPROVE; see REPORT.md for exact source/actual/sensitivity limits"
+  },
+  {
+    "id": "EBSR02",
+    "severity": "P2",
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+    "line": 69,
+    "rule": "TASK-CONTRACT §4 expiry/concurrency failure is a safe expected refusal; no unexpected 500",
+    "counterexample": "load observes ready job before expiry; first authority check completes; before the bytea SELECT, expires_at passes or an authorized concurrent enqueue deletes the expired row. queryForObject requires exactly one row and throws EmptyResultDataAccessException on zero rows; narrow advice does not handle it; shared catch-all returns 500.",
+    "correction": "Handle absent/expired ready content as an explicit safe expired/unavailable response; preserve second current-authority read and no-store. Do not broadly swallow DB failures.",
+    "verification": "Deterministically expire/remove the row between initial admission and content query, using real PG/controller or controlled boundary; assert contract 4xx, no content, no-store. Preserve normal ready-byte positive and revoke denial controls.",
+    "original_status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "status": "CLOSED_SOURCE_AND_BOUNDED_ACTUAL_GREEN",
+    "final_revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+    "current_line": 73,
+    "disposition": "Independent affected recheck APPROVE; see REPORT.md for exact source/actual/sensitivity limits"
+  },
+  {
+    "id": "EBSR03",
+    "severity": "P2",
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+    "line": 4,
+    "rule": "TASK-CONTRACT §4 enums: do not use enum position as wire identifier; string-only kind contract and stable mapping",
+    "counterexample": "Default Jackson enum deserialization accepts integral ordinal (and a numeric string with default coercion). New kind 8 maps to ADMIN_USERS; shared mapper only configures unknown-as-null and unknown-properties, while Gateway local mapper also leaves FAIL_ON_NUMBERS_FOR_ENUMS disabled. Thus numeric kind is an undocumented positional identifier. Existing string codes and current grants still prevent unauthorized data access.",
+    "correction": "Make kind boundary accept only explicit existing string codes; reject numeric/ordinal coercion narrowly without changing shared mapper/config ownership or existing string meanings.",
+    "verification": "Real configured Auth and Gateway decoders reject integer 8/numeric-string 8, unknown/null/malformed kind and accept all ten canonical string kinds. Selective relevant known-bad enum decoder control then restored green.",
+    "original_status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "status": "CLOSED_SOURCE_AND_BOUNDED_ACTUAL_GREEN",
+    "final_revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+    "current_line": 30,
+    "disposition": "Independent affected recheck APPROVE; see REPORT.md for exact source/actual/sensitivity limits"
+  },
+  {
+    "id": "EBSR04",
+    "severity": "P2",
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+    "line": 116,
+    "rule": "D007 current USERS_VIEW/GROUPS_VIEW and selected ADMIN authority apply at initiation as well as read/download",
+    "counterexample": "Legacy public ticket issuer accepts newly added ADMIN_USERS/GROUPS. issue calls issueReadyJob; active selectable teacher/student, or LIMITED ADMIN with GROUPS_VIEW only, passes because method only special-cases trend/roster before writing ticket. It returns a capability for ADMIN_USERS. The later Academic route denies download; this is initiation-policy failure, not a demonstrated content leak.",
+    "correction": "Enforce selected report role/current respective registry grant on legacy issuance for new kinds as well as durable-job paths, with live authority fail-closed. Reuse one admission rule without circular service dependencies; preserve old sync transport and ticket TTL.",
+    "verification": "Actual Auth HTTP: teacher/student and LIMITED wrong/no-grant issuance rejected without Redis capability; current USERS_VIEW/GROUPS_VIEW allowed for corresponding ordinary exports; revocation and authority outage fail-closed; FULL column rule unchanged. Relevant negative regression control and restored green.",
+    "original_status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "status": "CLOSED_SOURCE_AND_BOUNDED_ACTUAL_GREEN",
+    "final_revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+    "current_line": 124,
+    "disposition": "Independent affected recheck APPROVE; see REPORT.md for exact source/actual/sensitivity limits"
+  }
+]

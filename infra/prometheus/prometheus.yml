@@ -1,89 +1,306 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
-
-# M04 Группа 9 — Alertmanager routing. Prometheus отсылает fired
-# алерты в alertmanager:9093, тот через routing tree выбирает webhook
-# → notification-web:9094/internal/alert → RabbitMQ → Telegram-бот
-# админу. Silence 22:00-08:00 MSK через mute_time_intervals в
-# alertmanager.yml (D3).
+  scrape_timeout: 10s
+  sample_limit: 20000
+  label_limit: 40
+  label_name_length_limit: 128
+  label_value_length_limit: 512
+  body_size_limit: 16MB
+  external_labels:
+    environment: production
+    cluster: rutcampustrack
 alerting:
   alertmanagers:
-    - static_configs:
-        - targets: ['alertmanager:9093']
-
+  - static_configs:
+    - targets:
+      - alertmanager:9093
 rule_files:
-  - /etc/prometheus/rules/*.yml
-
+- /etc/prometheus/rules/*.yml
 scrape_configs:
-  - job_name: 'alertmanager'
-    static_configs:
-      - targets: ['alertmanager:9093']
-
-  - job_name: 'node-exporter'
-    static_configs:
-      - targets: ['node-exporter:9100']
-
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['cadvisor:8080']
-
-  - job_name: 'auth-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['auth-service:9090']
-
-  - job_name: 'academic-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['academic-service:9091']
-
-  - job_name: 'schedule-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['schedule-service:9092']
-
-  - job_name: 'attendance-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['attendance-service:9093']
-
-  - job_name: 'notification-web'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['notification-web:9094']
-
-  - job_name: 'mobile-bff'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['mobile-bff:9080']
-
-  # M13 G19 — RabbitMQ Prometheus plugin (rabbitmq_prometheus, port 15692).
-  # Включается через image rabbitmq:3.13-management-alpine. Покрывает
-  # alert'ы DLQBacklog / RabbitMQQueueBacklog / RabbitMQConnectionLost.
-  - job_name: 'rabbitmq'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['rabbitmq:15692']
-
-  # M13 G20 — blackbox-exporter probe'ит публичный HTTPS endpoint
-  # ruttrack.site. Экспортирует probe_ssl_earliest_cert_expiry для alert'а
-  # SslCertExpiresSoon. Relabel-pattern из официальной blackbox docs:
-  # __param_target = target из static_configs, instance label =
-  # original target (для grouping в alerts), __address__ → blackbox-exporter
-  # service.
-  - job_name: 'blackbox-https'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    scrape_interval: 60s
-    static_configs:
-      - targets:
-          - https://ruttrack.site
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter:9115
+- job_name: alertmanager
+  static_configs:
+  - targets:
+    - alertmanager:9093
+    labels:
+      environment: production
+      service: alertmanager
+- job_name: node-exporter
+  static_configs:
+  - targets:
+    - node-exporter:9100
+    labels:
+      environment: production
+      service: node-exporter
+- job_name: cadvisor
+  static_configs:
+  - targets:
+    - cadvisor:8080
+    labels:
+      environment: production
+      service: cadvisor
+  metric_relabel_configs:
+  - source_labels:
+    - __name__
+    regex: container_(cpu_usage_seconds_total|memory_usage_bytes|memory_working_set_bytes|memory_swap|spec_memory_limit_bytes|last_seen|network_receive_bytes_total|network_transmit_bytes_total|fs_usage_bytes|fs_limit_bytes|oom_events_total)
+    action: keep
+- job_name: auth-service
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - auth-service:9090
+    labels:
+      environment: production
+      service: auth-service
+- job_name: academic-service
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - academic-service:9091
+    labels:
+      environment: production
+      service: academic-service
+- job_name: schedule-service
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - schedule-service:9092
+    labels:
+      environment: production
+      service: schedule-service
+- job_name: attendance-service
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - attendance-service:9093
+    labels:
+      environment: production
+      service: attendance-service
+- job_name: notification-web
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - notification-web:9094
+    labels:
+      environment: production
+      service: notification-web
+- job_name: mobile-bff
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - mobile-bff:9080
+    labels:
+      environment: production
+      service: mobile-bff
+- job_name: rabbitmq
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - rabbitmq:15692
+    labels:
+      environment: production
+      service: rabbitmq
+- job_name: blackbox-https
+  metrics_path: /probe
+  params:
+    module:
+    - http_2xx
+  scrape_interval: 60s
+  static_configs:
+  - targets:
+    - https://ruttrack.site
+    labels:
+      environment: production
+      service: blackbox-https
+  relabel_configs:
+  - source_labels:
+    - __address__
+    target_label: __param_target
+  - source_labels:
+    - __param_target
+    target_label: instance
+  - target_label: __address__
+    replacement: blackbox-exporter:9115
+- job_name: api-gateway
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - api-gateway:8080
+    labels:
+      environment: production
+      service: api-gateway
+- job_name: document-renderer-service
+  metrics_path: /actuator/prometheus
+  static_configs:
+  - targets:
+    - document-renderer-service:9095
+    labels:
+      environment: production
+      service: document-renderer-service
+- job_name: prometheus
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - prometheus:9090
+    labels:
+      environment: production
+      service: prometheus
+- job_name: grafana
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - grafana:3000
+    labels:
+      environment: production
+      service: grafana
+- job_name: loki
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - loki:3100
+    labels:
+      environment: production
+      service: loki
+- job_name: tempo
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - tempo:3200
+    labels:
+      environment: production
+      service: tempo
+- job_name: alloy
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - alloy:12345
+    labels:
+      environment: production
+      service: alloy
+- job_name: blackbox-exporter
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - blackbox-exporter:9115
+    labels:
+      environment: production
+      service: blackbox-exporter
+- job_name: rabbitmq-queues
+  metrics_path: /metrics/detailed
+  params:
+    family:
+    - queue_coarse_metrics
+    - queue_metrics
+    vhost:
+    - /
+  static_configs:
+  - targets:
+    - rabbitmq:15692
+    labels:
+      environment: production
+      service: rabbitmq
+- job_name: blackbox-readiness
+  metrics_path: /probe
+  params:
+    module:
+    - actuator_readiness
+  static_configs:
+  - targets:
+    - http://auth-service:9090/actuator/health
+    labels:
+      service: auth-service
+      environment: production
+  - targets:
+    - http://academic-service:9091/actuator/health
+    labels:
+      service: academic-service
+      environment: production
+  - targets:
+    - http://schedule-service:9092/actuator/health
+    labels:
+      service: schedule-service
+      environment: production
+  - targets:
+    - http://attendance-service:9093/actuator/health
+    labels:
+      service: attendance-service
+      environment: production
+  - targets:
+    - http://document-renderer-service:9095/actuator/health
+    labels:
+      service: document-renderer-service
+      environment: production
+  - targets:
+    - http://notification-web:9094/actuator/health
+    labels:
+      service: notification-web
+      environment: production
+  - targets:
+    - http://mobile-bff:9080/actuator/health
+    labels:
+      service: mobile-bff
+      environment: production
+  - targets:
+    - http://api-gateway:8080/actuator/health
+    labels:
+      service: api-gateway
+      environment: production
+  - targets:
+    - http://notification-bot:8081/health
+    labels:
+      service: notification-bot
+      environment: production
+  relabel_configs:
+  - source_labels:
+    - __address__
+    target_label: __param_target
+  - source_labels:
+    - __param_target
+    target_label: instance
+  - target_label: __address__
+    replacement: blackbox-exporter:9115
+- job_name: postgres-academic-exporter
+  static_configs:
+  - targets:
+    - postgres-academic-exporter:9187
+    labels:
+      environment: production
+      service: postgres-academic
+- job_name: postgres-schedule-exporter
+  static_configs:
+  - targets:
+    - postgres-schedule-exporter:9187
+    labels:
+      environment: production
+      service: postgres-schedule
+- job_name: mongodb-exporter
+  static_configs:
+  - targets:
+    - mongodb-exporter:9216
+    labels:
+      environment: production
+      service: mongo-attendance
+- job_name: redis-exporter
+  static_configs:
+  - targets:
+    - redis-exporter:9121
+    labels:
+      environment: production
+      service: redis
+      redis_role: critical
+- job_name: redis-cache-exporter
+  static_configs:
+  - targets:
+    - redis-cache-exporter:9121
+    labels:
+      environment: production
+      service: redis-cache
+      redis_role: cache
+- job_name: notification-bot
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - notification-bot:8081
+    labels:
+      environment: production
+      service: notification-bot

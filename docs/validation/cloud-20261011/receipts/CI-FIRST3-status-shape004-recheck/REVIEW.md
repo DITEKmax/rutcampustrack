@@ -1,0 +1,11 @@
+# ROSTER503 Status subset — targeted recheck004
+
+**APPROVE_SOURCE_ONLY; CI-F3-STATUS-SHAPE-004 CLOSED_SOURCE.** Requested/selected gpt-6.1-sol/high; actual model/effort UNKNOWN. READY4827, source74ff and helper536f independently pinned. Exact replacement of the two changed classifier lines and two explanatory comments recovers complete olde75 bytes. Original e75/eeb/428 seals are preserved. No reopening of runtime/privacy/async/formatter reviews.
+
+The corrected expression requires the known field order code→description→cause=null and closing brace, rejects braces in the description, and separately rejects embedded code/description/cause field delimiters. Whitelisted gRPC code remains mandatory. Five complete-malformed negatives accepted by the exact old regex now fail the new expression/delimiter predicate: garbage, reversed fields, ambiguous duplicate fields, braced description and non-null cause. Two known-shape positives, including a public synthetic private description, remain accepted. Checks were exact-source RAM regex transcriptions, not Node/native replay.
+
+This intentionally recognizes a subset: unusual or non-null-cause legitimate Status renderings remain UNKNOWN. Generic Academic prefix still does not identify an RPC operation. No raw description/cause field, secret, ID or response-derived hash is output. Existing async/cancellation/STOP/END and 8KiB postbuffer/softRSS qualifications remain unchanged by full reverse proof.
+
+The control helper now has29 planned cases, adds those five negatives, and requires the late-STOP operation to reject. Source override is restricted to canonical candidate or immutable old snapshot; memory compilation uses the same canonical module filename/resolution, with no filesystem source alias or new runner. This enables a Root-granted finite old-RED/new-GREEN comparison without changing the producer. The sourcebuilder Gitcwd129 erratum is not a native runtime result.
+
+Native29 controls/causal RED-GREEN/format/types/discovery/browser remain NOT_RUN. Next operation: Root fresh bounded Node grant with exact old/new/helper pins; preserve expected old failures separately from new PASS. Actual roster503 deeper cause remains UNKNOWN; this source closure is not a client or product PASS.

@@ -1,0 +1,14 @@
+{
+  "pass": true,
+  "old": {
+    "functionSurvives": false,
+    "hashCallPass": false,
+    "closedTypeError": true
+  },
+  "new": {
+    "functionSurvives": true,
+    "hashCallPass": true,
+    "closedTypeError": false
+  },
+  "qualification": "Actual selected old/new Python AST function and exact two module-level loops, publicfakePath/hash in RAM. Source control only; no module execution/privategrant/Node/HTTP/API/browser/service effects."
+}

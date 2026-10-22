@@ -1,0 +1,27 @@
+[
+  {
+    "name": "export_ebsr_recheck",
+    "manifest_sha256": "ca386bb82eeb35a3c72873a95f3fd9a37a5578312ad98395f7f89d689460b13a",
+    "safe_files_unchanged": 34
+  },
+  {
+    "name": "export_merged_repository_review",
+    "manifest_sha256": "c517f22f8583d0e21577038005c11356d093f15709ed290285da1c009e05c048",
+    "safe_files_unchanged": 12
+  },
+  {
+    "name": "np01_domain_review",
+    "manifest_sha256": "42a2d450f6746ea21112518ed676250973ad1de2d98a05383f58e96d59cdc519",
+    "safe_files_unchanged": 14
+  },
+  {
+    "name": "np01_domain_recheck",
+    "manifest_sha256": "3c2fcab3183fa3a226beddadd7f049226d768dde4c37a92a401a3af15da53815",
+    "safe_files_unchanged": 10
+  },
+  {
+    "name": "host_runtime_review",
+    "manifest_sha256": "2ad5ab1ff74906023921b5424d2e0c15f476f81f6eb97efc872d27b14767aa26",
+    "safe_files_unchanged": 11
+  }
+]

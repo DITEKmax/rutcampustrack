@@ -1,0 +1,7 @@
+{
+  "schema": "RCT_P06_RESTORED_GREEN_ACTUAL_MANIFEST_V1",
+  "files": {
+    "REPORT.safe.json": "b8e36afab8e03366cc8326e587b93268abb5ba6590071b85bbf66d3b4da0094d"
+  },
+  "excluded": "selected.raw.private.xml + originalprivateJunitXML and /tmp rawGradlelog: private600/unhashed/unexported"
+}

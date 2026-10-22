@@ -1,0 +1,347 @@
+{
+  "schema": "RCT_CURRENT1742_FINAL_NATIVE_ACCOUNTING_V1",
+  "safe_archives_validated": 18,
+  "task_outcome_files": 24,
+  "graphs": {
+    "Coverage": {
+      "PASSED": 2600,
+      "FAILED": 1,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "CI": {
+      "PASSED": 2600,
+      "FAILED": 1,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    }
+  },
+  "by_task": {
+    "Coverage_test": {
+      "PASSED": 1487,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "CI_test": {
+      "PASSED": 1487,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "Coverage_integrationTest": {
+      "PASSED": 1113,
+      "FAILED": 1,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "CI_integrationTest": {
+      "PASSED": 1113,
+      "FAILED": 1,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    }
+  },
+  "source_method_unique_keys_across_graphs": 1863,
+  "ordinal_instances_per_graph": {
+    "Coverage": 741,
+    "CI": 741
+  },
+  "do_not_sum_graphs_as_independent_tests": true,
+  "actual_checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+  "all24_head_event_attempt_checkout_exact": true,
+  "failed_or_error": [
+    {
+      "graph": "Coverage",
+      "case": {
+        "xmlOrdinal": 7,
+        "suiteOrdinal": 1,
+        "ordinal": 4,
+        "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+        "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+        "status": "FAILED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+        "sourceSha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8"
+      }
+    },
+    {
+      "graph": "CI",
+      "case": {
+        "xmlOrdinal": 7,
+        "suiteOrdinal": 1,
+        "ordinal": 4,
+        "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+        "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+        "status": "FAILED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+        "sourceSha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8"
+      }
+    }
+  ],
+  "skips_notexecuted": [
+    {
+      "graph": "Coverage",
+      "service": "api-gateway",
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "graph": "Coverage",
+      "service": "api-gateway",
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 2,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "graph": "Coverage",
+      "service": "api-gateway",
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "graph": "CI",
+      "service": "api-gateway",
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "graph": "CI",
+      "service": "api-gateway",
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 2,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "graph": "CI",
+      "service": "api-gateway",
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    }
+  ],
+  "critical_current_cases": [
+    {
+      "graph": "CI",
+      "metadata": {
+        "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+        "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38387263916",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 28,
+        "suiteOrdinal": 1,
+        "ordinal": 12,
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "method": "enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d"
+      },
+      "qualification": "Native source-bound case status, no additional phase telemetry from SAFE schema; historical96CAPcause UNKNOWN"
+    },
+    {
+      "graph": "CI",
+      "metadata": {
+        "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+        "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "service": "schedule-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38387263916",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 23,
+        "suiteOrdinal": 1,
+        "ordinal": 7,
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+        "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+      },
+      "qualification": "Native source-bound case status, no additional phase telemetry from SAFE schema; historical96CAPcause UNKNOWN"
+    },
+    {
+      "graph": "CI",
+      "metadata": {
+        "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+        "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38387263916",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 9,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+        "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+        "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+      },
+      "qualification": "Native source-bound case status, no additional phase telemetry from SAFE schema; historical96CAPcause UNKNOWN"
+    },
+    {
+      "graph": "Coverage",
+      "metadata": {
+        "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+        "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38387263972",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 28,
+        "suiteOrdinal": 1,
+        "ordinal": 12,
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "method": "enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d"
+      },
+      "qualification": "Native source-bound case status, no additional phase telemetry from SAFE schema; historical96CAPcause UNKNOWN"
+    },
+    {
+      "graph": "Coverage",
+      "metadata": {
+        "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+        "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "service": "schedule-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38387263972",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 23,
+        "suiteOrdinal": 1,
+        "ordinal": 7,
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+        "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+      },
+      "qualification": "Native source-bound case status, no additional phase telemetry from SAFE schema; historical96CAPcause UNKNOWN"
+    },
+    {
+      "graph": "Coverage",
+      "metadata": {
+        "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+        "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38387263972",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 9,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+        "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+        "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+      },
+      "qualification": "Native source-bound case status, no additional phase telemetry from SAFE schema; historical96CAPcause UNKNOWN"
+    }
+  ],
+  "P06_both_graphs": "PASSED_EXACT_SOURCE_METHOD_SOURCE0669",
+  "P10_both_graphs": "FAILED_EXACT_SOURCE_METHOD_SOURCE104e_SOLE_AUTH_FAIL",
+  "P10_cause": "UNKNOWN_NO_CAUSE_FIELDS_IN_SAFE_PACKET",
+  "FIRST3": "NOT_RUN_BOOT_FAILURE_EXECUTION_AND_UPLOAD_SKIPPED",
+  "source_acceptance": "FINITE_EVIDENCE_ONLY_NO_MATRIX_PARENT_PROMOTION"
+}

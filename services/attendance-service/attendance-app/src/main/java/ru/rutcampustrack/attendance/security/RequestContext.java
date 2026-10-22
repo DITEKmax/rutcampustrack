@@ -6,12 +6,11 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 
 /**
- * Request-scoped bean that holds the authenticated user context injected by
- * API Gateway via X-User-Id / X-User-Role / X-Group-Id / X-Is-Headman headers.
+ * Request-scoped bean that holds the authenticated user context injected by API Gateway via
+ * X-User-Id / X-User-Role / X-Group-Id / X-Is-Headman headers.
  *
- * CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that
- * singleton beans (e.g. RoleCheckAspect) receive a properly scoped proxy
- * instead of a stale instance captured at startup.
+ * <p>CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that singleton beans (e.g.
+ * RoleCheckAspect) receive a properly scoped proxy instead of a stale instance captured at startup.
  */
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)

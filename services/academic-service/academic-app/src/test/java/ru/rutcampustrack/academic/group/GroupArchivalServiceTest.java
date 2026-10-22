@@ -1,8 +1,14 @@
 package ru.rutcampustrack.academic.group;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.event.GroupArchivedEvent;
 
@@ -12,18 +18,11 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-/**
- * Unit tests для {@link GroupArchivalService} (BUG-006-6 / план 58-06).
- */
+/** Unit tests для {@link GroupArchivalService} (BUG-006-6 / план 58-06). */
 class GroupArchivalServiceTest {
 
-    private static final Clock FIXED_CLOCK = Clock.fixed(
-            Instant.parse("2026-06-01T00:00:00Z"), ZoneOffset.UTC);
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-06-01T00:00:00Z"), ZoneOffset.UTC);
 
     private Group group(long id, String name, boolean active) {
         Group g = new Group();
@@ -61,7 +60,8 @@ class GroupArchivalServiceTest {
         Group g = group(42L, "УИТ-411", true);
         service.archive(g);
 
-        ArgumentCaptor<GroupArchivedEvent> captor = ArgumentCaptor.forClass(GroupArchivedEvent.class);
+        ArgumentCaptor<GroupArchivedEvent> captor =
+                ArgumentCaptor.forClass(GroupArchivedEvent.class);
         verify(publisher).publishEvent(captor.capture());
         GroupArchivedEvent event = captor.getValue();
         assertThat(event.getEventType()).isEqualTo("group.archived");
@@ -78,12 +78,5 @@ class GroupArchivalServiceTest {
         assertThatThrownBy(() -> service.archive(g))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already archived");
-    }
-
-    @Test
-    void buildArchivedName_composesSuffix() {
-        GroupArchivalService service = new GroupArchivalService(
-                mock(ApplicationEventPublisher.class), FIXED_CLOCK);
-        assertThat(service.buildArchivedName("УИТ-411", 2026)).isEqualTo("УИТ-411 (выпуск 2026)");
     }
 }

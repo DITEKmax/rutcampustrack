@@ -1,0 +1,55 @@
+{
+  "status": "READ_ONLY_ZIP_ENTRY_MAPPING_NO_EXTRACTION",
+  "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "services": [
+    {
+      "service": "auth",
+      "regular_entries": 1530,
+      "source_jar_sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95"
+    },
+    {
+      "service": "academic",
+      "regular_entries": 1797,
+      "source_jar_sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a"
+    },
+    {
+      "service": "schedule",
+      "regular_entries": 1515,
+      "source_jar_sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03"
+    },
+    {
+      "service": "attendance",
+      "regular_entries": 1745,
+      "source_jar_sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f"
+    },
+    {
+      "service": "bff",
+      "regular_entries": 1296,
+      "source_jar_sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea"
+    },
+    {
+      "service": "gateway",
+      "regular_entries": 291,
+      "source_jar_sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39"
+    },
+    {
+      "service": "notification",
+      "regular_entries": 1400,
+      "source_jar_sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c"
+    },
+    {
+      "service": "renderer",
+      "regular_entries": 1260,
+      "source_jar_sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712"
+    }
+  ],
+  "distinct_SHA_mode_size_count": 2937,
+  "logical_distinct_bytes": 166383274,
+  "rounded4KiB_distinct_bytes": 172953600,
+  "proposed_staged_mode_distinct_bytes": 166383274,
+  "proposed_staged_mode_rounded4KiB_bytes": 172953600,
+  "stage_reserve_bytes": 201326592,
+  "actual_allocated_bytes": "UNKNOWN",
+  "dirs_paths_created": false,
+  "resource_mutations": false
+}

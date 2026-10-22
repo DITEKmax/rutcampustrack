@@ -12,5 +12,4 @@ public record HeadmanAssignmentPreviewResponse(
         String candidateFio,
         boolean sameHeadman,
         boolean activatesDraft,
-        int assistantsToRevoke
-) {}
+        int assistantsToRevoke) {}

@@ -1,0 +1,21 @@
+{
+  "source": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "critical_sources": "Eight schema/producer/legacy/Jdbc IT/validator/V57 inputs exactaa713 andRoot731",
+  "Python4": "AST nonimport bodies/import multisets equal; import sideeffect risks reviewed statically, no actual import/startup execution",
+  "preserved_finite_historical_proofs": [
+    "DOMAIN1 13unit",
+    "22PG",
+    "1realTLS-Python-provider",
+    "71Python",
+    "3selective intended faults +restored3green"
+  ],
+  "qualification": "Preserve producer/source/finite predicate evidence at actual original revisions; Python reordered imports/body equivalence is not byteidentity, fresh ff433 runtime receipt or whole NP01/client PASS. New AuthOtp expectations/closed fixture inventory have no actual after run. D009 executable-source change requires current CI/gates.",
+  "runtime_pending": [
+    "Current full Auth/Academic suites including corrected two Auth cases and fixture-dependent Academic cases",
+    "Meaningful selected new metadata assertion faults (wrong positive UID/generation/binding/recipient or metadata field/secret mismatch) intended assertion failure and exact restored green under separate Root lease",
+    "Broker7 cases/default300 heldlease naturalexpiry/nativeACK/ownprocess/container cleanup remain independent NOT_RUN",
+    "Current Python/native startup/runtime checks at integrated source, ordinary current CI gates"
+  ],
+  "no_raw_secret_logs_or_XML_read": true
+}

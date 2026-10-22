@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "scope": "NARROW_D002_CALLBACK_CONST_ROOT481_REBIND",
+  "verdict": "APPROVE_SOURCE",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "df96100930266d0ac3923239d4393ddba5aa316d90b5f545d4bbb1e880db91c4",
+      "bytes": 1959,
+      "mode": "600"
+    },
+    {
+      "path": "narrow-source.safe.json",
+      "sha256": "c4b6355d6bf93ef453b2acec36e32235e78ec3ad0876d164f84873a4b4435795",
+      "bytes": 824,
+      "mode": "600"
+    },
+    {
+      "path": "review.safe.json",
+      "sha256": "c63452f731ff6fda9fcfa3fd93563733450f12bd972a8951659b17527a54af47",
+      "bytes": 644,
+      "mode": "600"
+    },
+    {
+      "path": "verify-narrow-source.py",
+      "sha256": "b0044d8b3f9a13acd2e412e9a69a3642200cc25c4b382f82821916c7ff42dc85",
+      "bytes": 4068,
+      "mode": "600"
+    }
+  ],
+  "file_count": 4,
+  "actual367_stage": "UNKNOWN",
+  "native": "NOT_RUN"
+}

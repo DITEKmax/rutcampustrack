@@ -1,0 +1,84 @@
+{
+  "schema": "RCT_FIRST3_LINK_LIFECYCLE_R1_SOURCE_MANIFEST_V1",
+  "native": "NOT_RUN",
+  "authorized_by_root": false,
+  "files": [
+    {
+      "path": "SOURCE-READY.safe.json",
+      "sha256": "cf91218db4d87965ec67213f9ca1e6c704dd430a839bb1ce5680cb524d49f315",
+      "bytes": 8551
+    },
+    {
+      "path": "before/artifact-privacy.ts",
+      "sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+      "bytes": 3822
+    },
+    {
+      "path": "before/mobile-dataset.ts",
+      "sha256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+      "bytes": 11888
+    },
+    {
+      "path": "before/safe-reporter.ts",
+      "sha256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+      "bytes": 13224
+    },
+    {
+      "path": "check-lifecycle-selected-ast.py",
+      "sha256": "4fecf479a1679343923bb0287a18482c5e728173cad95048737b97e8e2b00f3c",
+      "bytes": 8240
+    },
+    {
+      "path": "controls/dataset-http.control.spec.ts",
+      "sha256": "bc5184b37e4e00f7caab32862fbc6595b1bc86d281d7b72101112fc821592513",
+      "bytes": 1009
+    },
+    {
+      "path": "dataset-controls.cjs",
+      "sha256": "dad7ba8e48f366e5a83257d0a47c5b5a141476f7f09c2a16f541c7574d1b7350",
+      "bytes": 12326
+    },
+    {
+      "path": "lifecycle-controls.safe.json",
+      "sha256": "f1d347088a470e5bf6726d3e4d8e5be2f0373149929541f448d29016c02d9a7a",
+      "bytes": 9269
+    },
+    {
+      "path": "native-plan/PLAN.safe.json",
+      "sha256": "97ed159fda15ddb6d8cf3cd5da04a12313d0ef7ea6c2e7ebf6f77ca442408d20",
+      "bytes": 12059
+    },
+    {
+      "path": "native-plan/grant.template.safe.json",
+      "sha256": "d4c91984e920f45b641460291ddcbbc67e5ba4655833cb31a6c456e6417d7df8",
+      "bytes": 1352
+    },
+    {
+      "path": "native-plan/run-approved-node.py",
+      "sha256": "b278d0ee9f3eac08f57ff2ce658d7d2d249e57f2b60b19f6e0de9d038f9bb1b2",
+      "bytes": 13518
+    },
+    {
+      "path": "tsconfig.ci-first3.json",
+      "sha256": "99f330f1bb2d2e9d1462e60e95ae40bc47690bac85e31374d64214f8b8f7d4ec",
+      "bytes": 905
+    },
+    {
+      "path": "typecheck-safe.cjs",
+      "sha256": "1125fbe3ccb4ab4c752bedee2c27cf0dd47a4998442c0885bebbf4acecccff00",
+      "bytes": 1349
+    },
+    {
+      "path": "worker-control.cjs",
+      "sha256": "b1c4258de6547abb9f014138c1742bffc9c40587922136dc8025fbda1341f2a2",
+      "bytes": 2283
+    },
+    {
+      "path": "worker-control.config.ts",
+      "sha256": "cdb1d1304c3989cb4f4c93d79b376b39a471139c4f42974263251488be0b6d65",
+      "bytes": 645
+    }
+  ],
+  "producer_head": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "current_actual_CI_cause": "UNKNOWN"
+}

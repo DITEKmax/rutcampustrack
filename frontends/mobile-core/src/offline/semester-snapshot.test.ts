@@ -83,8 +83,8 @@ interface FakeEnvironment {
   database: IDBDatabase & {
     records: Map<string, unknown>
     transactionCalls: number
-  putCalls: number
-  deleteCalls: number
+    putCalls: number
+    deleteCalls: number
     controls: FakeControls
   }
   storage: FakeStorage
@@ -196,7 +196,8 @@ let localStorageDescriptor: PropertyDescriptor | undefined
 afterEach(() => {
   if (indexedDbDescriptor) Object.defineProperty(globalThis, 'indexedDB', indexedDbDescriptor)
   else delete (globalThis as { indexedDB?: IDBFactory }).indexedDB
-  if (localStorageDescriptor) Object.defineProperty(globalThis, 'localStorage', localStorageDescriptor)
+  if (localStorageDescriptor)
+    Object.defineProperty(globalThis, 'localStorage', localStorageDescriptor)
   else delete (globalThis as { localStorage?: Storage }).localStorage
   indexedDbDescriptor = undefined
   localStorageDescriptor = undefined
@@ -305,39 +306,44 @@ describe('SemesterSnapshotStore write fence', () => {
     await expect(new SemesterSnapshotStore().readCurrent()).resolves.toEqual(newest)
   })
 
-  it.each(['before switch', 'during switch'])('keeps B guard, record and pointer when B saves %s and late A switches then writes', async (barrier) => {
-    const environment = setup(true)
-    const storeA = new SemesterSnapshotStore()
-    const older = makeSnapshot('42', '2026-09-08T08:30:00Z')
-    await storeA.clearMismatchedCurrent(older.scopeKey!)
-    let pendingSwitch: Promise<Awaited<ReturnType<SemesterSnapshotStore['switchToDetailed']>>> | undefined
-    let delayedOpen: FakeOpenRequest | undefined
-    if (barrier === 'during switch') {
-      environment.database.controls.holdOpen = true
-      pendingSwitch = storeA.switchToDetailed('42')
-      await new Promise<void>((resolve) => queueMicrotask(resolve))
-      delayedOpen = environment.openRequests.at(-1)!
-      environment.database.controls.holdOpen = false
-    }
-    // A awaits its schedule GET. B confirms a different group and commits.
-    const storeB = new SemesterSnapshotStore()
-    const newest = makeSnapshot('42', '2026-09-08T09:00:00Z')
-    newest.scope!.groupId = '19'
-    newest.scopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '19', '9'])
-    await storeB.clearMismatchedCurrent(newest.scopeKey)
-    await storeB.switchToDetailed('42')
-    await storeB.write(newest)
-    const pointer = environment.storage.getItem(currentOwnerKey)
-    // The real late A activation calls switchToDetailed before write.
-    delayedOpen?.resolve(environment.database)
-    const staleSwitch = await (pendingSwitch ?? storeA.switchToDetailed('42'))
-    await storeA.write(older)
-    expect(environment.storage.getItem(currentScopeKey)).toBe(newest.scopeKey)
-    expect(environment.storage.getItem(currentOwnerKey)).toBe(pointer)
-    expect(environment.database.records.get('42')).toEqual(newest)
-    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toEqual(newest)
-    expect(staleSwitch.pointerCleanup.reason).toBe('owner-replaced')
-  })
+  it.each(['before switch', 'during switch'])(
+    'keeps B guard, record and pointer when B saves %s and late A switches then writes',
+    async (barrier) => {
+      const environment = setup(true)
+      const storeA = new SemesterSnapshotStore()
+      const older = makeSnapshot('42', '2026-09-08T08:30:00Z')
+      await storeA.clearMismatchedCurrent(older.scopeKey!)
+      let pendingSwitch:
+        | Promise<Awaited<ReturnType<SemesterSnapshotStore['switchToDetailed']>>>
+        | undefined
+      let delayedOpen: FakeOpenRequest | undefined
+      if (barrier === 'during switch') {
+        environment.database.controls.holdOpen = true
+        pendingSwitch = storeA.switchToDetailed('42')
+        await new Promise<void>((resolve) => queueMicrotask(resolve))
+        delayedOpen = environment.openRequests.at(-1)!
+        environment.database.controls.holdOpen = false
+      }
+      // A awaits its schedule GET. B confirms a different group and commits.
+      const storeB = new SemesterSnapshotStore()
+      const newest = makeSnapshot('42', '2026-09-08T09:00:00Z')
+      newest.scope!.groupId = '19'
+      newest.scopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '19', '9'])
+      await storeB.clearMismatchedCurrent(newest.scopeKey)
+      await storeB.switchToDetailed('42')
+      await storeB.write(newest)
+      const pointer = environment.storage.getItem(currentOwnerKey)
+      // The real late A activation calls switchToDetailed before write.
+      delayedOpen?.resolve(environment.database)
+      const staleSwitch = await (pendingSwitch ?? storeA.switchToDetailed('42'))
+      await storeA.write(older)
+      expect(environment.storage.getItem(currentScopeKey)).toBe(newest.scopeKey)
+      expect(environment.storage.getItem(currentOwnerKey)).toBe(pointer)
+      expect(environment.database.records.get('42')).toEqual(newest)
+      await expect(new SemesterSnapshotStore().readCurrent()).resolves.toEqual(newest)
+      expect(staleSwitch.pointerCleanup.reason).toBe('owner-replaced')
+    },
+  )
 
   it('does not overwrite a newer durable context from another store during an old retry', async () => {
     const environment = setup(true)
@@ -370,13 +376,18 @@ describe('SemesterSnapshotStore write fence', () => {
     ['account', '43', 'STUDENT', '17', '9'],
     ['role', '42', 'HEADMAN', '17', '9'],
     ['semester', '42', 'STUDENT', '17', '10'],
-  ])('retires an incompatible %s partition before loading replacement data', async (_name, userId, role, groupId, semesterId) => {
-    setup(true)
-    const store = new SemesterSnapshotStore()
-    const result = await store.clearMismatchedCurrent(JSON.stringify(['student-read-model-v1', userId, role, groupId, semesterId]))
-    expect(result?.safeOffline).toBe(true)
-    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
-  })
+  ])(
+    'retires an incompatible %s partition before loading replacement data',
+    async (_name, userId, role, groupId, semesterId) => {
+      setup(true)
+      const store = new SemesterSnapshotStore()
+      const result = await store.clearMismatchedCurrent(
+        JSON.stringify(['student-read-model-v1', userId, role, groupId, semesterId]),
+      )
+      expect(result?.safeOffline).toBe(true)
+      await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+    },
+  )
 
   it('retains an exact partition and retires its pointer even if record deletion fails', async () => {
     const environment = setup(true)

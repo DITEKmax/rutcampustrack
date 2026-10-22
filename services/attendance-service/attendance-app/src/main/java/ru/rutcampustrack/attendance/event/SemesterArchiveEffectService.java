@@ -3,11 +3,6 @@ package ru.rutcampustrack.attendance.event;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.shared.outbox.OutboxStorage;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -18,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /** Receipts and acknowledges the Schedule effects that gate full semester archival. */
 @Service
@@ -27,20 +26,25 @@ public class SemesterArchiveEffectService {
     private static final String TARGET = "ATTENDANCE";
     private static final String SOURCE = "schedule-service";
     private static final int EVENT_VERSION = 1;
-    private static final ObjectMapper CANONICAL_JSON = new ObjectMapper()
-            .disable(SerializationFeature.INDENT_OUTPUT);
-    private static final List<String> TRACKED_EVENT_TYPES = List.of(
-            "lesson.closed", "lesson.cancelled", "lesson.deleted", "lesson.one_off.cancelled");
+    private static final ObjectMapper CANONICAL_JSON =
+            new ObjectMapper().disable(SerializationFeature.INDENT_OUTPUT);
+    private static final List<String> TRACKED_EVENT_TYPES =
+            List.of(
+                    "lesson.closed",
+                    "lesson.cancelled",
+                    "lesson.deleted",
+                    "lesson.one_off.cancelled");
 
     private final MongoTemplate mongoTemplate;
     private final SemesterArchiveFence fence;
     private final OutboxStorage outboxStorage;
     private final ObjectMapper objectMapper;
 
-    public SemesterArchiveEffectService(MongoTemplate mongoTemplate,
-                                        SemesterArchiveFence fence,
-                                        OutboxStorage outboxStorage,
-                                        ObjectMapper objectMapper) {
+    public SemesterArchiveEffectService(
+            MongoTemplate mongoTemplate,
+            SemesterArchiveFence fence,
+            OutboxStorage outboxStorage,
+            ObjectMapper objectMapper) {
         this.mongoTemplate = mongoTemplate;
         this.fence = fence;
         this.outboxStorage = outboxStorage;
@@ -48,14 +52,15 @@ public class SemesterArchiveEffectService {
     }
 
     /**
-     * Checks for an exact durable receipt before a consumer makes any external
-     * calls. Identity parsing and comparison are intentionally the same as the
-     * transactional apply path.
+     * Checks for an exact durable receipt before a consumer makes any external calls. Identity
+     * parsing and comparison are intentionally the same as the transactional apply path.
      */
     public boolean hasReceipt(Map<String, Object> envelope) {
         Effect identity = parse(envelope);
-        SemesterArchiveEffectReceiptDocument receipt = mongoTemplate.findById(
-                identity.eventId() + ":" + TARGET, SemesterArchiveEffectReceiptDocument.class);
+        SemesterArchiveEffectReceiptDocument receipt =
+                mongoTemplate.findById(
+                        identity.eventId() + ":" + TARGET,
+                        SemesterArchiveEffectReceiptDocument.class);
         if (receipt == null) {
             return false;
         }
@@ -67,25 +72,25 @@ public class SemesterArchiveEffectService {
 
     @Transactional(transactionManager = "mongoTransactionManager")
     public void apply(Map<String, Object> envelope, Runnable effect) {
-        applyInCurrentTransaction(envelope, () -> { }, effect);
+        applyInCurrentTransaction(envelope, () -> {}, effect);
     }
 
     /**
-     * Runs read/lock-only scope validation before entering a nested transactional
-     * domain service. Typed scope rejections can then commit their ERROR receipt
-     * and ACK without a REQUIRED proxy having marked this transaction rollback-only.
+     * Runs read/lock-only scope validation before entering a nested transactional domain service.
+     * Typed scope rejections can then commit their ERROR receipt and ACK without a REQUIRED proxy
+     * having marked this transaction rollback-only.
      */
     @Transactional(transactionManager = "mongoTransactionManager")
     public void apply(Map<String, Object> envelope, Runnable preflight, Runnable effect) {
         applyInCurrentTransaction(envelope, preflight, effect);
     }
 
-    private void applyInCurrentTransaction(Map<String, Object> envelope,
-                                           Runnable preflight, Runnable effect) {
+    private void applyInCurrentTransaction(
+            Map<String, Object> envelope, Runnable preflight, Runnable effect) {
         Effect identity = parse(envelope);
         String receiptId = identity.eventId() + ":" + TARGET;
-        SemesterArchiveEffectReceiptDocument receipt = mongoTemplate.findById(
-                receiptId, SemesterArchiveEffectReceiptDocument.class);
+        SemesterArchiveEffectReceiptDocument receipt =
+                mongoTemplate.findById(receiptId, SemesterArchiveEffectReceiptDocument.class);
         if (receipt != null) {
             if (!matches(receipt, identity)) {
                 throw new IllegalArgumentException("Schedule effect identity changed on replay");
@@ -109,17 +114,18 @@ public class SemesterArchiveEffectService {
             blockingReason = rejected.blockingReason();
         }
 
-        receipt = SemesterArchiveEffectReceiptDocument.builder()
-                .id(receiptId)
-                .sourceEventId(identity.eventId())
-                .target(TARGET)
-                .sourceEventType(identity.eventType())
-                .semesterId(identity.semesterId())
-                .payloadHash(identity.payloadHash())
-                .result(result)
-                .blockingReason(blockingReason)
-                .createdAt(Instant.now())
-                .build();
+        receipt =
+                SemesterArchiveEffectReceiptDocument.builder()
+                        .id(receiptId)
+                        .sourceEventId(identity.eventId())
+                        .target(TARGET)
+                        .sourceEventType(identity.eventType())
+                        .semesterId(identity.semesterId())
+                        .payloadHash(identity.payloadHash())
+                        .result(result)
+                        .blockingReason(blockingReason)
+                        .createdAt(Instant.now())
+                        .build();
         mongoTemplate.insert(receipt);
         enqueueAcknowledgement(receipt);
     }
@@ -134,16 +140,18 @@ public class SemesterArchiveEffectService {
         payload.put("result", receipt.getResult());
         payload.put("blocking_reason", receipt.getBlockingReason());
         try {
-            String json = objectMapper.writeValueAsString(
-                    EventEnvelope.build(ACK_EVENT_TYPE, payload));
+            String json =
+                    objectMapper.writeValueAsString(EventEnvelope.build(ACK_EVENT_TYPE, payload));
             outboxStorage.save(ACK_EVENT_TYPE, json);
         } catch (JsonProcessingException error) {
-            throw new IllegalStateException("Failed to serialize semester archive effect acknowledgement", error);
+            throw new IllegalStateException(
+                    "Failed to serialize semester archive effect acknowledgement", error);
         }
     }
 
     private Effect parse(Map<String, Object> envelope) {
-        if (envelope == null || !SOURCE.equals(envelope.get("source"))
+        if (envelope == null
+                || !SOURCE.equals(envelope.get("source"))
                 || integer(envelope.get("event_version"), "event_version") != EVENT_VERSION) {
             throw new IllegalArgumentException("Unsupported or untrusted Schedule effect envelope");
         }
@@ -179,26 +187,33 @@ public class SemesterArchiveEffectService {
             byte[] canonical = CANONICAL_JSON.writeValueAsBytes(canonicalize(payload));
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical));
         } catch (JsonProcessingException error) {
-            throw new IllegalArgumentException("Schedule effect payload cannot be canonicalized", error);
+            throw new IllegalArgumentException(
+                    "Schedule effect payload cannot be canonicalized", error);
         } catch (NoSuchAlgorithmException error) {
             throw new IllegalStateException("SHA-256 is unavailable", error);
         }
     }
 
     private static Object canonicalize(Object value) {
-        if (value == null || value instanceof String || value instanceof Boolean
-                || value instanceof Byte || value instanceof Short
-                || value instanceof Integer || value instanceof Long) {
+        if (value == null
+                || value instanceof String
+                || value instanceof Boolean
+                || value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long) {
             return value;
         }
         if (value instanceof Number) {
-            throw new IllegalArgumentException("Schedule effect payload must not contain non-integer numbers");
+            throw new IllegalArgumentException(
+                    "Schedule effect payload must not contain non-integer numbers");
         }
         if (value instanceof Map<?, ?> map) {
             TreeMap<String, Object> sorted = new TreeMap<>();
             for (Map.Entry<?, ?> entry : map.entrySet()) {
                 if (!(entry.getKey() instanceof String key)) {
-                    throw new IllegalArgumentException("Schedule effect payload object keys must be strings");
+                    throw new IllegalArgumentException(
+                            "Schedule effect payload object keys must be strings");
                 }
                 sorted.put(key, canonicalize(entry.getValue()));
             }
@@ -209,12 +224,15 @@ public class SemesterArchiveEffectService {
             list.forEach(item -> canonical.add(canonicalize(item)));
             return canonical;
         }
-        throw new IllegalArgumentException("Unsupported Schedule effect payload value: "
-                + value.getClass().getSimpleName());
+        throw new IllegalArgumentException(
+                "Unsupported Schedule effect payload value: " + value.getClass().getSimpleName());
     }
 
     private static long integer(Object value, String field) {
-        if (!(value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long)) {
+        if (!(value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long)) {
             throw new IllegalArgumentException(field + " must be an integer");
         }
         return ((Number) value).longValue();
@@ -241,5 +259,5 @@ public class SemesterArchiveEffectService {
         }
     }
 
-    private record Effect(String eventId, String eventType, long semesterId, String payloadHash) { }
+    private record Effect(String eventId, String eventType, long semesterId, String payloadHash) {}
 }

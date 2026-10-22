@@ -8,6 +8,11 @@ plugins {
 group = "ru.rutcampustrack"
 version = "0.1.0"
 
+tasks.named<Test>("integrationTest") {
+    // Full Spring/Testcontainers suite and the ArchUnit test-class graph share this worker.
+    maxHeapSize = "1g"
+}
+
 dependencyManagement {
     imports {
         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
@@ -19,6 +24,7 @@ dependencyManagement {
 dependencies {
     // Наш контракт
     implementation(project(":services:academic-service:academic-api-contract"))
+    implementation(project(":services:auth-service:auth-api-contract"))
 
     // M11 G0.4: shared-web Spring Boot starter (GlobalExceptionHandler
     // catch-all для Spring MVC exceptions + JacksonConfig + AdminActionAspect
@@ -99,6 +105,10 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     // Test
+    // NP01 broker bridge exercises the real Auth credential producer and outbox sender.
+    testImplementation(project(":services:auth-service:auth-app")) {
+        isTransitive = false
+    }
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")

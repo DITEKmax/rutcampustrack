@@ -32,24 +32,32 @@ dependencyManagement {
 // micrometer-tracing идёт compileOnly — auto-config компилируется, runtime
 // активен только при наличии tracing stack у consumer'а.
 dependencies {
+    compileOnly("io.sentry:sentry:8.61.0")
+    testImplementation("io.sentry:sentry:8.61.0")
     api("io.micrometer:micrometer-core")
     compileOnly("org.springframework.boot:spring-boot-actuator")
     compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure")
     compileOnly("org.springframework:spring-context")
+    compileOnly("org.springframework:spring-tx")
     compileOnly("org.slf4j:slf4j-api")
     compileOnly("io.grpc:grpc-api")
     // M13 G10 — SpanExportingPredicate / FinishedSpan interface для
     // ActuatorTracingExcludeFilter. Version is supplied by the Boot BOM.
     compileOnly("io.micrometer:micrometer-tracing")
+    compileOnly("io.micrometer:micrometer-tracing-bridge-otel")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-trace")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator")
+    testImplementation("org.springframework:spring-tx")
     testImplementation("io.micrometer:micrometer-registry-prometheus")
     testImplementation("io.grpc:grpc-api")
     testImplementation("io.grpc:grpc-inprocess")
     // M13 G10 — для unit-тестов фильтра (FinishedSpan через Mockito).
     testImplementation("io.micrometer:micrometer-tracing")
+    testImplementation("io.micrometer:micrometer-tracing-bridge-otel")
+    testImplementation("io.opentelemetry:opentelemetry-sdk-trace")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testFixturesApi("io.micrometer:micrometer-core")

@@ -1,37 +1,66 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ProfileRequestError, ProfileResolvedTheme, ProfileRoute, ProfileSnapshot } from './profile-types'
-import { displayInitials, roleLabel } from './profile-types'
-import profileAppearance from './assets/profile-appearance.svg'
-import profileHistory from './assets/profile-history.svg'
-import profileRoleSwitch from './assets/profile-role-switch.svg'
-import profileSecurity from './assets/profile-security.svg'
-import profileSessions from './assets/profile-sessions.svg'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import './profile-screen.pcss'
+import { computed, ref, watch } from 'vue';
+import BrowserLoginApprovalForm from './BrowserLoginApprovalForm.vue';
+import type { BrowserLoginApprovalPort } from './browser-login-approval';
+import type { HeadmanPermissionOption } from '../headman-group/headman-group-client';
+import type {
+  ProfileRequestError,
+  ProfileResolvedTheme,
+  ProfileRoute,
+  ProfileSnapshot,
+} from './profile-types';
+import { displayInitials, roleLabel } from './profile-types';
+import profileAppearance from './assets/profile-appearance.svg';
+import profileHistory from './assets/profile-history.svg';
+import profileRoleSwitch from './assets/profile-role-switch.svg';
+import profileSecurity from './assets/profile-security.svg';
+import profileSessions from './assets/profile-sessions.svg';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  snapshot: ProfileSnapshot | null
-  loading?: boolean
-  error?: ProfileRequestError | null
-  onRetry?: (() => void | Promise<void>) | undefined
-  onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined
-  onLogout?: (() => void | Promise<void>) | undefined
-  logoutBusy?: boolean
-  showActiveRole?: boolean
-  showRoleSwitch?: boolean
-  theme?: ProfileResolvedTheme
-}>(), {
-  loading: false,
-  error: null,
-  onRetry: undefined,
-  onNavigate: undefined,
-  onLogout: undefined,
-  logoutBusy: false,
-  showActiveRole: true,
-  showRoleSwitch: true,
-  theme: 'dark',
-})
+const props = withDefaults(
+  defineProps<{
+    snapshot: ProfileSnapshot | null;
+    browserLoginApproval?: BrowserLoginApprovalPort | null;
+    delegatedPermissions?: readonly HeadmanPermissionOption[];
+    loading?: boolean;
+    error?: ProfileRequestError | null;
+    onRetry?: (() => void | Promise<void>) | undefined;
+    onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined;
+    onLogout?: (() => void | Promise<void>) | undefined;
+    logoutBusy?: boolean;
+    showActiveRole?: boolean;
+    showRoleSwitch?: boolean;
+    theme?: ProfileResolvedTheme;
+  }>(),
+  {
+    delegatedPermissions: () => [],
+    browserLoginApproval: null,
+    loading: false,
+    error: null,
+    onRetry: undefined,
+    onNavigate: undefined,
+    onLogout: undefined,
+    logoutBusy: false,
+    showActiveRole: true,
+    showRoleSwitch: true,
+    theme: 'dark',
+  },
+);
+
+const approvalOpen = ref(false);
+const approvalAvailable = computed(
+  () =>
+    !!props.browserLoginApproval &&
+    !!props.snapshot?.activeRole &&
+    !props.snapshot.readOnly &&
+    !props.loading &&
+    !props.error &&
+    props.browserLoginApproval.isOnline(),
+);
+watch([() => props.snapshot, () => props.browserLoginApproval, approvalAvailable], () => {
+  approvalOpen.value = false;
+});
 
 const rows = [
   { route: 'role-switch', label: 'Сменить роль', icon: profileRoleSwitch },
@@ -39,20 +68,26 @@ const rows = [
   { route: 'security', label: 'Безопасность', icon: profileSecurity },
   { route: 'sessions', label: 'Активные сеансы', icon: profileSessions },
   { route: 'history', label: 'История аккаунта', icon: profileHistory },
-] as const satisfies readonly { route: Extract<ProfileRoute, 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'>; label: string; icon: string }[]
-const visibleRows = computed(() => props.showRoleSwitch ? rows : rows.filter((item) => item.route !== 'role-switch'))
+] as const satisfies readonly {
+  route: Extract<ProfileRoute, 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'>;
+  label: string;
+  icon: string;
+}[];
+const visibleRows = computed(() =>
+  props.showRoleSwitch ? rows : rows.filter((item) => item.route !== 'role-switch'),
+);
 
 function navigate(route: ProfileRoute): void {
-  void props.onNavigate?.(route)
+  void props.onNavigate?.(route);
 }
 
 function isBootstrapUnavailable(route: ProfileRoute): boolean {
-  return !props.snapshot?.activeRole && (route === 'security' || route === 'history')
+  return !props.snapshot?.activeRole && (route === 'security' || route === 'history');
 }
 
 function logout(): void {
-  if (props.logoutBusy) return
-  void props.onLogout?.()
+  if (props.logoutBusy) return;
+  void props.onLogout?.();
 }
 </script>
 
@@ -105,10 +140,57 @@ function logout(): void {
               class="profile-card__meta"
             >
               <template v-if="showActiveRole">
-                {{ snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана' }}
+                {{
+                  snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана'
+                }}
               </template><span v-if="snapshot.groupLabel">{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span>
             </p>
+            <p class="profile-card__meta">
+              Telegram ID:
+              {{
+                snapshot.telegramId === undefined
+                  ? 'нет данных'
+                  : snapshot.telegramId === null
+                    ? 'не привязан'
+                    : snapshot.telegramId
+              }}
+            </p>
           </div>
+        </section>
+
+        <section
+          v-if="snapshot.activeRole === 'STUDENT' && !snapshot.readOnly && delegatedPermissions.length"
+          class="profile-permissions"
+          aria-label="Дополнительные права"
+        >
+          <h2>Дополнительные права</h2>
+          <ul>
+            <li
+              v-for="permission in delegatedPermissions"
+              :key="permission.code"
+            >
+              {{ permission.label }}
+            </li>
+          </ul>
+        </section>
+
+        <section
+          v-if="approvalAvailable && browserLoginApproval"
+          aria-label="Вход в браузере"
+        >
+          <BrowserLoginApprovalForm
+            v-if="approvalOpen"
+            :port="browserLoginApproval"
+            @close="approvalOpen = false"
+          />
+          <button
+            v-else
+            class="profile-secondary-button"
+            type="button"
+            @click="approvalOpen = true"
+          >
+            Вход в браузере
+          </button>
         </section>
 
         <nav aria-label="Настройки профиля">

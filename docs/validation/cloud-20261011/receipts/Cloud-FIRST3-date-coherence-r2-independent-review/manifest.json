@@ -1,0 +1,23 @@
+{
+  "scope": "CLOUD_FIRST3_FINITE_DATE_CONFIG_BASE_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "input_zip_sha256": "dceb034c077ff4139193f443e87df3b4380687c5f879c2f862875eb9f4523b86",
+  "input_manifest_sha256": "9175c300ae768acff36a00e56052aaca47e691f587960ca68d969311ddce29f0",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 5781,
+      "sha256": "52a3fdd09de05ec5814a28e5ac857dc6d01eaa31f40ea70aac3bd583985a61e8"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 1442,
+      "sha256": "ef365e74c9d3095b2e9c5ab1e2259efe755e53671925b49d8293dc6ae2d00fb5"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3309,
+      "sha256": "091392daa7c2748b3b6388df7b9340fca7563bf7500fe8b2a2aeba65934cd029"
+    }
+  ]
+}

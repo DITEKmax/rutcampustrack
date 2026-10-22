@@ -1,0 +1,12 @@
+{
+  "attempt": "format-absolute-IdeHook",
+  "native_session_id": 56909,
+  "native_exit_code": 0,
+  "result": "NOT_VERIFIED",
+  "cause": "Spotless IdeHook diagnostic reported IS DIRTY and intentionally SKIPPED apply/check; no formatter PASS",
+  "source_commit": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "log_sha256": "bd732afc4d1e63a49bcdcca65e84fe7f29b0b2750e80b3309819eda4e8924d81",
+  "retry": "Temporary runtime init restricts existing configured Spotless target to sole retained IT, normal apply/check tasks; no formattingrule/repositoryconfig change",
+  "init_sha256": "58a463bedc64c7525c15d8b1f856cd834875432ed6a1f5ac48791334001aa325",
+  "utc": "2026-10-12T01:49:42Z"
+}

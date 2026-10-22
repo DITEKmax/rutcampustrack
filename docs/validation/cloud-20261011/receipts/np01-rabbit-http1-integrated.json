@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-12T07:39:55.431200+00:00",
+  "author_sha": "b89874ccb92a444c945e020cf1d7ffe20ede997a",
+  "root_sha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "source_byte_equal": true,
+  "review": "np01-rabbit-http1-root-review.json",
+  "runtime_retry": "granted sameNP01_BROKER1 caps afterfreshfree/emptyDocker/alloldownPIDsabsent; stage/Vuepubliccopy lightonly"
+}

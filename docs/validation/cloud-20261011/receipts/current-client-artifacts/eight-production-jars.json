@@ -1,0 +1,193 @@
+{
+  "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "boot8_native_exit": 0,
+  "source7350_exact": true,
+  "JAR_runtime": "NOT_RUN",
+  "fixture_inspector_source_sha256": "2c1fb3a2722eef29ff536682068151488684a3e59b348d4fc6a1c698f82406e0",
+  "jars": [
+    {
+      "service": "auth",
+      "module": "auth-service/auth-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "bytes": 100183493,
+      "allocated_bytes": 100188160,
+      "mode": "0o600",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.auth.AuthApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 173
+    },
+    {
+      "service": "academic",
+      "module": "academic-service/academic-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "bytes": 99760018,
+      "allocated_bytes": 99766272,
+      "mode": "0o600",
+      "sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.academic.AcademicApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 183
+    },
+    {
+      "service": "schedule",
+      "module": "schedule-service/schedule-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "bytes": 93153993,
+      "allocated_bytes": 93159424,
+      "mode": "0o600",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.schedule.ScheduleApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 174
+    },
+    {
+      "service": "attendance",
+      "module": "attendance-service/attendance-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "bytes": 95976000,
+      "allocated_bytes": 95981568,
+      "mode": "0o600",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.attendance.AttendanceApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 197
+    },
+    {
+      "service": "bff",
+      "module": "mobile-bff/mobile-bff-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "bytes": 50139225,
+      "allocated_bytes": 50147328,
+      "mode": "0o600",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.mobilebff.MobileBffApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 103
+    },
+    {
+      "service": "gateway",
+      "module": "api-gateway",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "bytes": 62093389,
+      "allocated_bytes": 62099456,
+      "mode": "0o600",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.gateway.GatewayApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 135
+    },
+    {
+      "service": "notification",
+      "module": "notification-service/notification-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "bytes": 86688703,
+      "allocated_bytes": 86695936,
+      "mode": "0o600",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.notification.NotificationWebApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "EXACT_EMBEDDED_CURRENT908_SHA",
+      "git_properties_sha256": "d7d5a498c98146c11fb122f7bb0250b00fa0d6fb4fdeaf45fd885ea2db77e694",
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 185
+    },
+    {
+      "service": "renderer",
+      "module": "document-renderer-service/document-renderer-app",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "bytes": 48918520,
+      "allocated_bytes": 48922624,
+      "mode": "0o600",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.documentrenderer.DocumentRendererApplication",
+        "Spring-Boot-Version": "3.5.16",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "git_properties_proof": "N/A_CANONICAL_RENDERER_NOT_ENROLLED; fresh boot8/source7350 producer proof",
+      "git_properties_sha256": null,
+      "nested_fixture_absent": true,
+      "ZIP_CRC_all_entries": "PASS",
+      "direct_nested_jars": 93
+    }
+  ]
+}

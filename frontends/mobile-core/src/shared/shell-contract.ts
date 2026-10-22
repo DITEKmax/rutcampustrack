@@ -6,19 +6,28 @@ function isRootLikeRoute(route: MobileRoute): boolean {
 }
 
 function isTaskLikeRoute(route: MobileRoute): boolean {
-  return route.kind === 'nested' && (route.surface === 'task' || route.surface === 'detail' || route.surface === 'editor')
+  return (
+    route.kind === 'nested' &&
+    (route.surface === 'task' || route.surface === 'detail' || route.surface === 'editor')
+  )
 }
 
 export function shouldShowMobileDock(route: MobileRoute, keyboardVisible: boolean): boolean {
   return isRootLikeRoute(route) && !keyboardVisible
 }
 
-export function resolvedBackOwner(route: MobileRoute, hostBackOwner: MobileBackOwner = 'product'): MobileBackOwner {
+export function resolvedBackOwner(
+  route: MobileRoute,
+  hostBackOwner: MobileBackOwner = 'product',
+): MobileBackOwner {
   if (!isTaskLikeRoute(route)) return 'none'
   return hostBackOwner
 }
 
-export function shouldShowProductBack(route: MobileRoute, hostBackOwner: MobileBackOwner = 'product'): boolean {
+export function shouldShowProductBack(
+  route: MobileRoute,
+  hostBackOwner: MobileBackOwner = 'product',
+): boolean {
   return resolvedBackOwner(route, hostBackOwner) === 'product'
 }
 

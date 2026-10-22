@@ -1,0 +1,64 @@
+{
+  "status": "SOURCE_ONLY_CORRECTION",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "sha256": "f425dda5d575cf21a3236867e4b9835b35e0738373609657e987fe2be64ea156",
+      "bytes": 301
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "sha256": "660d03fdec814d669c830457992e4e85dc79318674d41cc3777f0646d8760850",
+      "bytes": 3583
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/effective-launch-inputs.json",
+      "relative_path": "effective-launch-inputs.json",
+      "sha256": "85e29682626888bbc119bb1a430ebc86d50f9e0df75645ce21a9d486267cf61d",
+      "bytes": 2118
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/loopback-representation.safe.json",
+      "relative_path": "loopback-representation.safe.json",
+      "sha256": "70ec14ad8543cebafec2a720cc81565cbae82526f6c0f9b1b2c5f70b209ccc48",
+      "bytes": 544
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/official-replica-source.safe.json",
+      "relative_path": "official-replica-source.safe.json",
+      "sha256": "bb11c241c0ef1fc990f0776f437e4b33bc6e88a4df317ed849dc2ad29fea90db",
+      "bytes": 3452
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/prepare-correction.py",
+      "relative_path": "prepare-correction.py",
+      "sha256": "1da2bbfe603ae0bddf91540c526665a7d389c9ec35c8b80f40c51b944ec39ee9",
+      "bytes": 2655
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/run-mongo.py",
+      "relative_path": "run-mongo.py",
+      "sha256": "707dfc1a3a5ae9ba6d7a2ce6fde38a03b95b7422f1018615d67ce623be33c310",
+      "bytes": 10986
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/validate-correction.py",
+      "relative_path": "validate-correction.py",
+      "sha256": "df3b9be4ee1ec985e1cc3f7811815fe170559eafbd2348c9c222cabcc5694f8b",
+      "bytes": 4406
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/validation.safe.json",
+      "relative_path": "validation.safe.json",
+      "sha256": "86ee46054bd071ff09357e1355049cebae026b61ca7323f8fac9ae73114f4f81",
+      "bytes": 2618
+    }
+  ],
+  "original_seals": [
+    "e3b6",
+    "75e4"
+  ],
+  "private_files": 0
+}

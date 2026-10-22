@@ -1,0 +1,36 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "compat-before01",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 1,
+  "disk_aborted": false,
+  "seconds": 12.758,
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc",
+      "status": "FAIL",
+      "failure_type": null
+    }
+  ],
+  "xml": [
+    {
+      "name": "runtime-TEST-compat-before.xml",
+      "bytes": 2015,
+      "sha256": "82cb8f2758f09687ca5573cf4fc26dfc47ced7ff35a857b5719a7804ed9ed82d"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "917c7e4f655927d4e67ccc96e4779e33f97b361a759806dd904a3bb4ec8b4c2a",
+  "free_bytes": 9496563712,
+  "utc": "2026-10-12T02:56:55Z"
+}

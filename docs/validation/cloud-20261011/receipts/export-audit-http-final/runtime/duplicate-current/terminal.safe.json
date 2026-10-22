@@ -1,0 +1,9 @@
+{
+  "phase": "duplicate-current",
+  "native_exit": 1,
+  "start": "2026-10-12T02:57:04.836664+00:00",
+  "end": "2026-10-12T02:58:03.290825+00:00",
+  "disk_floor_stop": false,
+  "private_log_sha256": "2004a960b043560cd807ef5a2e5e55540134ff6d60257f707777c3408cca398b",
+  "private_log_bytes": 6061
+}

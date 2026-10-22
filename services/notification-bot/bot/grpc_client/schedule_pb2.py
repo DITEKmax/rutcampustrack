@@ -4,39 +4,106 @@
 # source: schedule.proto
 # Protobuf Python Version: 6.31.0
 """Generated protocol buffer code."""
-
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import runtime_version as _runtime_version
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
-
-_runtime_version.ValidateProtobufRuntimeVersion(_runtime_version.Domain.PUBLIC, 6, 31, 0, "", "schedule.proto")
+_runtime_version.ValidateProtobufRuntimeVersion(
+    _runtime_version.Domain.PUBLIC,
+    6,
+    31,
+    0,
+    '',
+    'schedule.proto'
+)
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\x0eschedule.proto\x12\x17rutcampustrack.schedule":\n\x13\x41\x63tiveLessonRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x11\n\ttimestamp\x18\x02 \x01(\t"&\n\x11LessonByIdRequest\x12\x11\n\tlesson_id\x18\x01 \x01(\x03"b\n\x15LessonsByGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03\x12\x11\n\tdate_from\x18\x03 \x01(\t\x12\x0f\n\x07\x64\x61te_to\x18\x04 \x01(\t"\xf1\x01\n\x0eLessonResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x18\n\x10schedule_item_id\x18\x02 \x01(\x03\x12\x10\n\x08group_id\x18\x03 \x01(\x03\x12\x12\n\nsubject_id\x18\x04 \x01(\x03\x12\x12\n\nteacher_id\x18\x05 \x01(\x03\x12\x0c\n\x04\x64\x61te\x18\x06 \x01(\t\x12\x15\n\rlesson_number\x18\x07 \x01(\x05\x12\x12\n\nstart_time\x18\x08 \x01(\t\x12\x10\n\x08\x65nd_time\x18\t \x01(\t\x12\x0e\n\x06status\x18\n \x01(\t\x12\x16\n\x0eis_geo_blocked\x18\x0b \x01(\x08\x12\x0c\n\x04room\x18\x0c \x01(\t"K\n\x0fLessonsResponse\x12\x38\n\x07lessons\x18\x01 \x03(\x0b\x32\'.rutcampustrack.schedule.LessonResponse2\xd4\x02\n\x13ScheduleGrpcService\x12h\n\x0fGetActiveLesson\x12,.rutcampustrack.schedule.ActiveLessonRequest\x1a\'.rutcampustrack.schedule.LessonResponse\x12\x64\n\rGetLessonById\x12*.rutcampustrack.schedule.LessonByIdRequest\x1a\'.rutcampustrack.schedule.LessonResponse\x12m\n\x11GetLessonsByGroup\x12..rutcampustrack.schedule.LessonsByGroupRequest\x1a(.rutcampustrack.schedule.LessonsResponseB#\n\x1fru.rutcampustrack.schedule.grpcP\x01\x62\x06proto3'
-)
+
+
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eschedule.proto\x12\x17rutcampustrack.schedule\"\xa2\x01\n&SemesterArchiveHomeworkBindingIdentity\x12\x12\n\nbinding_id\x18\x01 \x01(\x03\x12\x15\n\roccurrence_id\x18\x02 \x01(\x03\x12\x10\n\x08\x61\x63tor_id\x18\x03 \x01(\x03\x12\x13\n\x0brequest_key\x18\x04 \x01(\t\x12\x14\n\x0cpayload_hash\x18\x05 \x01(\x0c\x12\x10\n\x08revision\x18\x06 \x01(\x03\"\xa9\x03\n SetSemesterArchiveBarrierRequest\x12\x14\n\x0coperation_id\x18\x01 \x01(\t\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03\x12\x15\n\rstate_version\x18\x03 \x01(\x03\x12G\n\x07\x63ommand\x18\x04 \x01(\x0e\x32\x36.rutcampustrack.schedule.SemesterArchiveBarrierCommand\x12U\n\x07\x62inding\x18\x05 \x01(\x0b\x32?.rutcampustrack.schedule.SemesterArchiveHomeworkBindingIdentityH\x00\x88\x01\x01\x12]\n\x12\x62inding_resolution\x18\x06 \x01(\x0e\x32\x41.rutcampustrack.schedule.SemesterArchiveHomeworkBindingResolution\x12\x13\n\x0bhomework_id\x18\x07 \x01(\x03\x12#\n\x1b\x65xpected_participant_digest\x18\x08 \x01(\tB\n\n\x08_binding\"\xc9\x03\n!SetSemesterArchiveBarrierResponse\x12\x14\n\x0coperation_id\x18\x01 \x01(\t\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03\x12\x15\n\rstate_version\x18\x03 \x01(\x03\x12G\n\x05state\x18\x04 \x01(\x0e\x32\x38.rutcampustrack.schedule.SemesterArchiveParticipantState\x12\x17\n\x0f\x62locking_reason\x18\x05 \x01(\t\x12]\n\x0fpending_binding\x18\x06 \x01(\x0b\x32?.rutcampustrack.schedule.SemesterArchiveHomeworkBindingIdentityH\x00\x88\x01\x01\x12\x19\n\x11terminal_event_id\x18\x07 \x01(\t\x12\x1a\n\x12participant_digest\x18\x08 \x01(\t\x12 \n\x18schedule_templates_count\x18\t \x01(\x03\x12\x1d\n\x15one_off_lessons_count\x18\n \x01(\x03\x12\x15\n\rlessons_count\x18\x0b \x01(\x03\x42\x12\n\x10_pending_binding\"5\n\x1eSemesterDeletionPreviewRequest\x12\x13\n\x0bsemester_id\x18\x01 \x01(\x03\"\xcd\x01\n\"SemesterDeletionParticipantPreview\x12\x13\n\x0bsemester_id\x18\x01 \x01(\x03\x12\x1a\n\x12participant_digest\x18\x02 \x01(\t\x12 \n\x18schedule_templates_count\x18\x03 \x01(\x03\x12\x1d\n\x15one_off_lessons_count\x18\x04 \x01(\x03\x12\x15\n\rlessons_count\x18\x05 \x01(\x03\x12\x1e\n\x16observed_fence_version\x18\x06 \x01(\x03\":\n\x13\x41\x63tiveLessonRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x11\n\ttimestamp\x18\x02 \x01(\t\"&\n\x11LessonByIdRequest\x12\x11\n\tlesson_id\x18\x01 \x01(\x03\"M\n\x14ResolveLessonRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x0c\n\x04\x64\x61te\x18\x02 \x01(\t\x12\x15\n\rlesson_number\x18\x03 \x01(\x05\"b\n\x15LessonsByGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03\x12\x11\n\tdate_from\x18\x03 \x01(\t\x12\x0f\n\x07\x64\x61te_to\x18\x04 \x01(\t\"\xf6\x01\n InstallAssignmentCloseCapRequest\x12\x14\n\x0coperation_id\x18\x01 \x01(\t\x12!\n\x14source_assignment_id\x18\x02 \x01(\x03H\x00\x88\x01\x01\x12!\n\x14target_assignment_id\x18\x03 \x01(\x03H\x01\x88\x01\x01\x12\x16\n\x0e\x65\x66\x66\x65\x63tive_from\x18\x04 \x01(\t\x12\x14\n\x0cpayload_hash\x18\x05 \x01(\x0c\x12\x16\n\x0eoperation_kind\x18\x06 \x01(\tB\x17\n\x15_source_assignment_idB\x17\n\x15_target_assignment_id\"J\n\x1c\x43ommitAssignmentCloseRequest\x12\x14\n\x0coperation_id\x18\x01 \x01(\t\x12\x14\n\x0cpayload_hash\x18\x02 \x01(\x0c\"i\n\x16\x41ssignmentCloseReceipt\x12\x14\n\x0coperation_id\x18\x01 \x01(\t\x12\r\n\x05state\x18\x02 \x01(\t\x12\x13\n\x0bmoved_count\x18\x03 \x01(\x03\x12\x15\n\rskipped_count\x18\x04 \x01(\x03\"\xfd\x05\n\x0eLessonResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x18\n\x10schedule_item_id\x18\x02 \x01(\x03\x12\x10\n\x08group_id\x18\x03 \x01(\x03\x12\x12\n\nsubject_id\x18\x04 \x01(\x03\x12\x0c\n\x04\x64\x61te\x18\x06 \x01(\t\x12\x15\n\rlesson_number\x18\x07 \x01(\x05\x12\x12\n\nstart_time\x18\x08 \x01(\t\x12\x10\n\x08\x65nd_time\x18\t \x01(\t\x12\x0e\n\x06status\x18\n \x01(\t\x12\x16\n\x0eis_geo_blocked\x18\x0b \x01(\x08\x12\x0c\n\x04room\x18\x0c \x01(\t\x12\x1d\n\x15is_blocked_by_headman\x18\r \x01(\x08\x12\x19\n\x11room_change_state\x18\x0e \x01(\t\x12\x1a\n\rprevious_room\x18\x0f \x01(\tH\x00\x88\x01\x01\x12\x15\n\roccurrence_id\x18\x10 \x01(\x03\x12\x1a\n\rassignment_id\x18\x11 \x01(\x03H\x01\x88\x01\x01\x12\x13\n\x0bsemester_id\x18\x12 \x01(\x03\x12 \n\x13\x61ssigned_teacher_id\x18\x13 \x01(\x03H\x02\x88\x01\x01\x12\x13\n\x0blesson_type\x18\x14 \x01(\t\x12\x12\n\ngeneration\x18\x15 \x01(\x03\x12\x10\n\x08revision\x18\x16 \x01(\x03\x12\x12\n\nvalid_from\x18\x17 \x01(\t\x12\x13\n\x0bvalid_until\x18\x18 \x01(\t\x12\x0f\n\x07\x63urrent\x18\x19 \x01(\x08\x12\x1d\n\x15transfer_operation_id\x18\x1a \x01(\t\x12\x16\n\x0etransfer_state\x18\x1b \x01(\t\x12 \n\x13\x63\x61ncellation_reason\x18\x1d \x01(\tH\x03\x88\x01\x01\x12\x1b\n\x13occurrence_revision\x18\x1c \x01(\x03\x12\r\n\x05moved\x18\x1e \x01(\x08\x42\x10\n\x0e_previous_roomB\x10\n\x0e_assignment_idB\x16\n\x14_assigned_teacher_idB\x16\n\x14_cancellation_reasonJ\x04\x08\x05\x10\x06R\nteacher_id\"s\n\x0fLessonsResponse\x12\x38\n\x07lessons\x18\x01 \x03(\x0b\x32\'.rutcampustrack.schedule.LessonResponse\x12\x17\n\nupdated_at\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_updated_at\")\n\x13LessonsByIdsRequest\x12\x12\n\nlesson_ids\x18\x01 \x03(\x03\"L\n\x14LessonsByIdsResponse\x12\x34\n\x07lessons\x18\x01 \x03(\x0b\x32#.rutcampustrack.schedule.LessonInfo\"\xca\x02\n\nLessonInfo\x12\x11\n\tlesson_id\x18\x01 \x01(\x03\x12\x10\n\x08group_id\x18\x02 \x01(\x03\x12\x12\n\nsubject_id\x18\x03 \x01(\x03\x12\x11\n\tstarts_at\x18\x04 \x01(\t\x12\x15\n\rlesson_number\x18\x05 \x01(\x05\x12\x0c\n\x04\x64\x61te\x18\x06 \x01(\t\x12\x15\n\roccurrence_id\x18\x07 \x01(\x03\x12\x1a\n\rassignment_id\x18\x08 \x01(\x03H\x00\x88\x01\x01\x12\x13\n\x0bsemester_id\x18\t \x01(\x03\x12\x17\n\nteacher_id\x18\n \x01(\x03H\x01\x88\x01\x01\x12\x13\n\x0blesson_type\x18\x0b \x01(\t\x12\x12\n\ngeneration\x18\x0c \x01(\x03\x12\x10\n\x08revision\x18\r \x01(\x03\x12\x0e\n\x06status\x18\x0e \x01(\tB\x10\n\x0e_assignment_idB\r\n\x0b_teacher_id\"3\n\x1d\x43ountSubjectReferencesRequest\x12\x12\n\nsubject_id\x18\x01 \x01(\x03\"\x9d\x01\n\x1e\x43ountSubjectReferencesResponse\x12\x1c\n\x14schedule_items_count\x18\x01 \x01(\x03\x12\x1d\n\x15one_off_lessons_count\x18\x02 \x01(\x03\x12!\n\x19non_planned_lessons_count\x18\x03 \x01(\x03\x12\x1b\n\x13total_lessons_count\x18\x04 \x01(\x03\"1\n\x18OccurrenceHistoryRequest\x12\x15\n\roccurrence_id\x18\x01 \x01(\x03\"\x93\x01\n\x19OccurrenceHistoryResponse\x12\x36\n\tinstances\x18\x01 \x03(\x0b\x32#.rutcampustrack.schedule.LessonInfo\x12>\n\x07\x65ntries\x18\x02 \x03(\x0b\x32-.rutcampustrack.schedule.LessonLifecycleEntry\"\x9b\x02\n\x14LessonLifecycleEntry\x12\x10\n\x08revision\x18\x01 \x01(\x03\x12\x0e\n\x06\x61\x63tion\x18\x02 \x01(\t\x12\x33\n\x06lesson\x18\x03 \x01(\x0b\x32#.rutcampustrack.schedule.LessonInfo\x12?\n\rtarget_lesson\x18\x04 \x01(\x0b\x32#.rutcampustrack.schedule.LessonInfoH\x00\x88\x01\x01\x12\x12\n\ngeneration\x18\x05 \x01(\x03\x12\x13\n\x06reason\x18\x06 \x01(\tH\x01\x88\x01\x01\x12\x10\n\x08\x61\x63tor_id\x18\x07 \x01(\x03\x12\x13\n\x0boccurred_at\x18\x08 \x01(\tB\x10\n\x0e_target_lessonB\t\n\x07_reason\"\xdb\x01\n\x1dReserveHomeworkBindingRequest\x12\x15\n\roccurrence_id\x18\x01 \x01(\x03\x12\x13\n\x0brequest_key\x18\x02 \x01(\t\x12\x19\n\x11\x65xpected_revision\x18\x03 \x01(\x03\x12\x14\n\x0cpayload_hash\x18\x04 \x01(\x0c\x12\x14\n\x0c\x62inding_mode\x18\x05 \x01(\t\x12\x10\n\x08group_id\x18\x06 \x01(\x03\x12\x12\n\nsubject_id\x18\x07 \x01(\x03\x12\x13\n\x0bsemester_id\x18\x08 \x01(\x03\x12\x0c\n\x04\x64\x61te\x18\t \x01(\t\"]\n\x1d\x43onfirmHomeworkBindingRequest\x12\x12\n\nbinding_id\x18\x01 \x01(\x03\x12\x13\n\x0bhomework_id\x18\x02 \x01(\x03\x12\x13\n\x0brequest_key\x18\x03 \x01(\t\"]\n\x1d\x41rchiveHomeworkBindingRequest\x12\x12\n\nbinding_id\x18\x01 \x01(\x03\x12\x13\n\x0bhomework_id\x18\x02 \x01(\x03\x12\x13\n\x0brequest_key\x18\x03 \x01(\t\"\xf1\x02\n\x17HomeworkBindingResponse\x12\x12\n\nbinding_id\x18\x01 \x01(\x03\x12\x15\n\roccurrence_id\x18\x02 \x01(\x03\x12;\n\x0e\x63urrent_lesson\x18\x03 \x01(\x0b\x32#.rutcampustrack.schedule.LessonInfo\x12\x18\n\x0bhomework_id\x18\x04 \x01(\x03H\x00\x88\x01\x01\x12<\n\x05state\x18\x05 \x01(\x0e\x32-.rutcampustrack.schedule.HomeworkBindingState\x12\x10\n\x08revision\x18\x06 \x01(\x03\x12\x10\n\x08group_id\x18\x07 \x01(\x03\x12\x12\n\nsubject_id\x18\x08 \x01(\x03\x12\x13\n\x0bsemester_id\x18\t \x01(\x03\x12\x0c\n\x04\x64\x61te\x18\n \x01(\t\x12\x15\n\rlesson_number\x18\x0b \x01(\x05\x12\x14\n\x0c\x62inding_mode\x18\x0c \x01(\tB\x0e\n\x0c_homework_id\"2\n\x1cHomeworkBindingLookupRequest\x12\x12\n\nbinding_id\x18\x01 \x01(\x03\"\xcd\x01\n\x14HomeworkEditIdentity\x12\x14\n\x0coperation_id\x18\x01 \x01(\t\x12\x12\n\nbinding_id\x18\x02 \x01(\x03\x12\x13\n\x0bhomework_id\x18\x03 \x01(\x03\x12\x10\n\x08\x61\x63tor_id\x18\x04 \x01(\x03\x12\x13\n\x0brequest_key\x18\x05 \x01(\t\x12\x14\n\x0c\x63ommand_hash\x18\x06 \x01(\x0c\x12\x10\n\x08group_id\x18\x07 \x01(\x03\x12\x12\n\nsubject_id\x18\x08 \x01(\x03\x12\x13\n\x0bsemester_id\x18\t \x01(\x03\"\xfb\x01\n\x1aMoveHomeworkBindingRequest\x12?\n\x08identity\x18\x01 \x01(\x0b\x32-.rutcampustrack.schedule.HomeworkEditIdentity\x12!\n\x19\x65xpected_binding_revision\x18\x02 \x01(\x03\x12\x14\n\x0c\x62inding_mode\x18\x03 \x01(\t\x12\x1c\n\x14target_occurrence_id\x18\x04 \x01(\x03\x12 \n\x18\x65xpected_lesson_revision\x18\x05 \x01(\x03\x12\x0c\n\x04\x64\x61te\x18\x06 \x01(\t\x12\x15\n\rlesson_number\x18\x07 \x01(\x05\"\xb1\x01\n\x13HomeworkEditReceipt\x12?\n\x08identity\x18\x01 \x01(\x0b\x32-.rutcampustrack.schedule.HomeworkEditIdentity\x12\r\n\x05state\x18\x02 \x01(\t\x12J\n\x10\x61\x63\x63\x65pted_binding\x18\x03 \x01(\x0b\x32\x30.rutcampustrack.schedule.HomeworkBindingResponse\"1\n\x17HomeworkBindingsRequest\x12\x16\n\x0eoccurrence_ids\x18\x01 \x03(\x03\"^\n\x18HomeworkBindingsResponse\x12\x42\n\x08\x62indings\x18\x01 \x03(\x0b\x32\x30.rutcampustrack.schedule.HomeworkBindingResponse*\xc4\x03\n\x1dSemesterArchiveBarrierCommand\x12\x30\n,SEMESTER_ARCHIVE_BARRIER_COMMAND_UNSPECIFIED\x10\x00\x12,\n(SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE\x10\x01\x12,\n(SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE\x10\x02\x12,\n(SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE\x10\x03\x12\x37\n3SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING\x10\x04\x12+\n\'SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE\x10\x05\x12(\n$SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE\x10\x06\x12+\n\'SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE\x10\x07\x12*\n&SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE\x10\x08*\xde\x01\n(SemesterArchiveHomeworkBindingResolution\x12<\n8SEMESTER_ARCHIVE_HOMEWORK_BINDING_RESOLUTION_UNSPECIFIED\x10\x00\x12:\n6SEMESTER_ARCHIVE_HOMEWORK_BINDING_CONFIRM_MATERIALIZED\x10\x01\x12\x38\n4SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED\x10\x02*\x8f\x03\n\x1fSemesterArchiveParticipantState\x12\x32\n.SEMESTER_ARCHIVE_PARTICIPANT_STATE_UNSPECIFIED\x10\x00\x12,\n(SEMESTER_ARCHIVE_PARTICIPANT_NOT_STARTED\x10\x01\x12(\n$SEMESTER_ARCHIVE_PARTICIPANT_PENDING\x10\x02\x12&\n\"SEMESTER_ARCHIVE_PARTICIPANT_READY\x10\x03\x12\x31\n-SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE\x10\x04\x12\x30\n,SEMESTER_ARCHIVE_PARTICIPANT_RELEASE_PENDING\x10\x05\x12)\n%SEMESTER_ARCHIVE_PARTICIPANT_RELEASED\x10\x06\x12(\n$SEMESTER_ARCHIVE_PARTICIPANT_DELETED\x10\x07*\xaa\x01\n\x14HomeworkBindingState\x12&\n\"HOMEWORK_BINDING_STATE_UNSPECIFIED\x10\x00\x12\"\n\x1eHOMEWORK_BINDING_STATE_PENDING\x10\x01\x12!\n\x1dHOMEWORK_BINDING_STATE_ACTIVE\x10\x02\x12#\n\x1fHOMEWORK_BINDING_STATE_ARCHIVED\x10\x03\x32\xda\x13\n\x13ScheduleGrpcService\x12h\n\x0fGetActiveLesson\x12,.rutcampustrack.schedule.ActiveLessonRequest\x1a\'.rutcampustrack.schedule.LessonResponse\x12\x64\n\rGetLessonById\x12*.rutcampustrack.schedule.LessonByIdRequest\x1a\'.rutcampustrack.schedule.LessonResponse\x12m\n\x11GetLessonsByGroup\x12..rutcampustrack.schedule.LessonsByGroupRequest\x1a(.rutcampustrack.schedule.LessonsResponse\x12n\n\x0fGetLessonsByIds\x12,.rutcampustrack.schedule.LessonsByIdsRequest\x1a-.rutcampustrack.schedule.LessonsByIdsResponse\x12g\n\rResolveLesson\x12-.rutcampustrack.schedule.ResolveLessonRequest\x1a\'.rutcampustrack.schedule.LessonResponse\x12\x89\x01\n\x16\x43ountSubjectReferences\x12\x36.rutcampustrack.schedule.CountSubjectReferencesRequest\x1a\x37.rutcampustrack.schedule.CountSubjectReferencesResponse\x12}\n\x14GetOccurrenceHistory\x12\x31.rutcampustrack.schedule.OccurrenceHistoryRequest\x1a\x32.rutcampustrack.schedule.OccurrenceHistoryResponse\x12\x82\x01\n\x16ReserveHomeworkBinding\x12\x36.rutcampustrack.schedule.ReserveHomeworkBindingRequest\x1a\x30.rutcampustrack.schedule.HomeworkBindingResponse\x12\x82\x01\n\x16\x43onfirmHomeworkBinding\x12\x36.rutcampustrack.schedule.ConfirmHomeworkBindingRequest\x1a\x30.rutcampustrack.schedule.HomeworkBindingResponse\x12\x82\x01\n\x16\x41rchiveHomeworkBinding\x12\x36.rutcampustrack.schedule.ArchiveHomeworkBindingRequest\x1a\x30.rutcampustrack.schedule.HomeworkBindingResponse\x12z\n\x13GetHomeworkBindings\x12\x30.rutcampustrack.schedule.HomeworkBindingsRequest\x1a\x31.rutcampustrack.schedule.HomeworkBindingsResponse\x12}\n\x12GetHomeworkBinding\x12\x35.rutcampustrack.schedule.HomeworkBindingLookupRequest\x1a\x30.rutcampustrack.schedule.HomeworkBindingResponse\x12x\n\x13MoveHomeworkBinding\x12\x33.rutcampustrack.schedule.MoveHomeworkBindingRequest\x1a,.rutcampustrack.schedule.HomeworkEditReceipt\x12s\n\x14\x43ontinueHomeworkEdit\x12-.rutcampustrack.schedule.HomeworkEditIdentity\x1a,.rutcampustrack.schedule.HomeworkEditReceipt\x12z\n\x1b\x41\x62ortUnacceptedHomeworkEdit\x12-.rutcampustrack.schedule.HomeworkEditIdentity\x1a,.rutcampustrack.schedule.HomeworkEditReceipt\x12v\n\x17\x41\x63knowledgeHomeworkEdit\x12-.rutcampustrack.schedule.HomeworkEditIdentity\x1a,.rutcampustrack.schedule.HomeworkEditReceipt\x12\x87\x01\n\x19InstallAssignmentCloseCap\x12\x39.rutcampustrack.schedule.InstallAssignmentCloseCapRequest\x1a/.rutcampustrack.schedule.AssignmentCloseReceipt\x12\x7f\n\x15\x43ommitAssignmentClose\x12\x35.rutcampustrack.schedule.CommitAssignmentCloseRequest\x1a/.rutcampustrack.schedule.AssignmentCloseReceipt\x12\x92\x01\n\x19SetSemesterArchiveBarrier\x12\x39.rutcampustrack.schedule.SetSemesterArchiveBarrierRequest\x1a:.rutcampustrack.schedule.SetSemesterArchiveBarrierResponse\x12\x92\x01\n\x1aGetSemesterDeletionPreview\x12\x37.rutcampustrack.schedule.SemesterDeletionPreviewRequest\x1a;.rutcampustrack.schedule.SemesterDeletionParticipantPreviewB#\n\x1fru.rutcampustrack.schedule.grpcP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "schedule_pb2", _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'schedule_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
-    _globals["DESCRIPTOR"]._loaded_options = None
-    _globals["DESCRIPTOR"]._serialized_options = b"\n\037ru.rutcampustrack.schedule.grpcP\001"
-    _globals["_ACTIVELESSONREQUEST"]._serialized_start = 43
-    _globals["_ACTIVELESSONREQUEST"]._serialized_end = 101
-    _globals["_LESSONBYIDREQUEST"]._serialized_start = 103
-    _globals["_LESSONBYIDREQUEST"]._serialized_end = 141
-    _globals["_LESSONSBYGROUPREQUEST"]._serialized_start = 143
-    _globals["_LESSONSBYGROUPREQUEST"]._serialized_end = 241
-    _globals["_LESSONRESPONSE"]._serialized_start = 244
-    _globals["_LESSONRESPONSE"]._serialized_end = 485
-    _globals["_LESSONSRESPONSE"]._serialized_start = 487
-    _globals["_LESSONSRESPONSE"]._serialized_end = 562
-    _globals["_SCHEDULEGRPCSERVICE"]._serialized_start = 565
-    _globals["_SCHEDULEGRPCSERVICE"]._serialized_end = 905
+  _globals['DESCRIPTOR']._loaded_options = None
+  _globals['DESCRIPTOR']._serialized_options = b'\n\037ru.rutcampustrack.schedule.grpcP\001'
+  _globals['_SEMESTERARCHIVEBARRIERCOMMAND']._serialized_start=5735
+  _globals['_SEMESTERARCHIVEBARRIERCOMMAND']._serialized_end=6187
+  _globals['_SEMESTERARCHIVEHOMEWORKBINDINGRESOLUTION']._serialized_start=6190
+  _globals['_SEMESTERARCHIVEHOMEWORKBINDINGRESOLUTION']._serialized_end=6412
+  _globals['_SEMESTERARCHIVEPARTICIPANTSTATE']._serialized_start=6415
+  _globals['_SEMESTERARCHIVEPARTICIPANTSTATE']._serialized_end=6814
+  _globals['_HOMEWORKBINDINGSTATE']._serialized_start=6817
+  _globals['_HOMEWORKBINDINGSTATE']._serialized_end=6987
+  _globals['_SEMESTERARCHIVEHOMEWORKBINDINGIDENTITY']._serialized_start=44
+  _globals['_SEMESTERARCHIVEHOMEWORKBINDINGIDENTITY']._serialized_end=206
+  _globals['_SETSEMESTERARCHIVEBARRIERREQUEST']._serialized_start=209
+  _globals['_SETSEMESTERARCHIVEBARRIERREQUEST']._serialized_end=634
+  _globals['_SETSEMESTERARCHIVEBARRIERRESPONSE']._serialized_start=637
+  _globals['_SETSEMESTERARCHIVEBARRIERRESPONSE']._serialized_end=1094
+  _globals['_SEMESTERDELETIONPREVIEWREQUEST']._serialized_start=1096
+  _globals['_SEMESTERDELETIONPREVIEWREQUEST']._serialized_end=1149
+  _globals['_SEMESTERDELETIONPARTICIPANTPREVIEW']._serialized_start=1152
+  _globals['_SEMESTERDELETIONPARTICIPANTPREVIEW']._serialized_end=1357
+  _globals['_ACTIVELESSONREQUEST']._serialized_start=1359
+  _globals['_ACTIVELESSONREQUEST']._serialized_end=1417
+  _globals['_LESSONBYIDREQUEST']._serialized_start=1419
+  _globals['_LESSONBYIDREQUEST']._serialized_end=1457
+  _globals['_RESOLVELESSONREQUEST']._serialized_start=1459
+  _globals['_RESOLVELESSONREQUEST']._serialized_end=1536
+  _globals['_LESSONSBYGROUPREQUEST']._serialized_start=1538
+  _globals['_LESSONSBYGROUPREQUEST']._serialized_end=1636
+  _globals['_INSTALLASSIGNMENTCLOSECAPREQUEST']._serialized_start=1639
+  _globals['_INSTALLASSIGNMENTCLOSECAPREQUEST']._serialized_end=1885
+  _globals['_COMMITASSIGNMENTCLOSEREQUEST']._serialized_start=1887
+  _globals['_COMMITASSIGNMENTCLOSEREQUEST']._serialized_end=1961
+  _globals['_ASSIGNMENTCLOSERECEIPT']._serialized_start=1963
+  _globals['_ASSIGNMENTCLOSERECEIPT']._serialized_end=2068
+  _globals['_LESSONRESPONSE']._serialized_start=2071
+  _globals['_LESSONRESPONSE']._serialized_end=2836
+  _globals['_LESSONSRESPONSE']._serialized_start=2838
+  _globals['_LESSONSRESPONSE']._serialized_end=2953
+  _globals['_LESSONSBYIDSREQUEST']._serialized_start=2955
+  _globals['_LESSONSBYIDSREQUEST']._serialized_end=2996
+  _globals['_LESSONSBYIDSRESPONSE']._serialized_start=2998
+  _globals['_LESSONSBYIDSRESPONSE']._serialized_end=3074
+  _globals['_LESSONINFO']._serialized_start=3077
+  _globals['_LESSONINFO']._serialized_end=3407
+  _globals['_COUNTSUBJECTREFERENCESREQUEST']._serialized_start=3409
+  _globals['_COUNTSUBJECTREFERENCESREQUEST']._serialized_end=3460
+  _globals['_COUNTSUBJECTREFERENCESRESPONSE']._serialized_start=3463
+  _globals['_COUNTSUBJECTREFERENCESRESPONSE']._serialized_end=3620
+  _globals['_OCCURRENCEHISTORYREQUEST']._serialized_start=3622
+  _globals['_OCCURRENCEHISTORYREQUEST']._serialized_end=3671
+  _globals['_OCCURRENCEHISTORYRESPONSE']._serialized_start=3674
+  _globals['_OCCURRENCEHISTORYRESPONSE']._serialized_end=3821
+  _globals['_LESSONLIFECYCLEENTRY']._serialized_start=3824
+  _globals['_LESSONLIFECYCLEENTRY']._serialized_end=4107
+  _globals['_RESERVEHOMEWORKBINDINGREQUEST']._serialized_start=4110
+  _globals['_RESERVEHOMEWORKBINDINGREQUEST']._serialized_end=4329
+  _globals['_CONFIRMHOMEWORKBINDINGREQUEST']._serialized_start=4331
+  _globals['_CONFIRMHOMEWORKBINDINGREQUEST']._serialized_end=4424
+  _globals['_ARCHIVEHOMEWORKBINDINGREQUEST']._serialized_start=4426
+  _globals['_ARCHIVEHOMEWORKBINDINGREQUEST']._serialized_end=4519
+  _globals['_HOMEWORKBINDINGRESPONSE']._serialized_start=4522
+  _globals['_HOMEWORKBINDINGRESPONSE']._serialized_end=4891
+  _globals['_HOMEWORKBINDINGLOOKUPREQUEST']._serialized_start=4893
+  _globals['_HOMEWORKBINDINGLOOKUPREQUEST']._serialized_end=4943
+  _globals['_HOMEWORKEDITIDENTITY']._serialized_start=4946
+  _globals['_HOMEWORKEDITIDENTITY']._serialized_end=5151
+  _globals['_MOVEHOMEWORKBINDINGREQUEST']._serialized_start=5154
+  _globals['_MOVEHOMEWORKBINDINGREQUEST']._serialized_end=5405
+  _globals['_HOMEWORKEDITRECEIPT']._serialized_start=5408
+  _globals['_HOMEWORKEDITRECEIPT']._serialized_end=5585
+  _globals['_HOMEWORKBINDINGSREQUEST']._serialized_start=5587
+  _globals['_HOMEWORKBINDINGSREQUEST']._serialized_end=5636
+  _globals['_HOMEWORKBINDINGSRESPONSE']._serialized_start=5638
+  _globals['_HOMEWORKBINDINGSRESPONSE']._serialized_end=5732
+  _globals['_SCHEDULEGRPCSERVICE']._serialized_start=6990
+  _globals['_SCHEDULEGRPCSERVICE']._serialized_end=9512
 # @@protoc_insertion_point(module_scope)

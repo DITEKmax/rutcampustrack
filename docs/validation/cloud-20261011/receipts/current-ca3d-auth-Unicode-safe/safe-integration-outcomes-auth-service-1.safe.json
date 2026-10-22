@@ -1,0 +1,37 @@
+{
+  "artifact_id": 11837741782,
+  "name": "safe-integration-outcomes-auth-service-1",
+  "archive_bytes": 8397,
+  "archive_sha256": "e747ce04485e8f0f10d4cee68db43209405dd27096cdd52d2c9e5b72075f2470",
+  "producer": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "e3488c02a73d57b14cd22566c984e6a02fff2f2c",
+        "prHeadSha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+        "service": "auth-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38443009381",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 171,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

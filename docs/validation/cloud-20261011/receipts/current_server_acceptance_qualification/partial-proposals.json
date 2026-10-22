@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "root_source": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "native_producer": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "native_checkout": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+  "rows": [
+    {
+      "id": "CASE-SAQ-AUTH-ROLE-SELECTION",
+      "classes": [
+        "SessionAuthFlowIT"
+      ],
+      "methods": [
+        "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess"
+      ],
+      "families": [
+        "JS-SYSTEM-02",
+        "JS-SYSTEM-14"
+      ],
+      "boundaries": [
+        "BOUNDARY-01"
+      ],
+      "role": "One account with durable ACTIVE STUDENT and TEACHER grants; selected own session",
+      "mode": "Actual random-port Auth HTTP + PostgreSQL/Redis",
+      "prestate": "Fresh account; two active durable grants; no prior selected session",
+      "action": "Password login then authoritative TEACHER role selection and session reread",
+      "oracles": [
+        "Login current session STUDENT; both grants in response",
+        "PUT expected session version succeeds; version becomes2 and new access token issued",
+        "New bearer reread is TEACHER; responses no-store"
+      ],
+      "limits": "Finite two-role server flow. Does not establish four-role/default HEADMAN/admin, wrong-role domain writes, two tabs, complete profile/semester or client role-operation acceptance.",
+      "implementation": [
+        "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+        "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+      ]
+    },
+    {
+      "id": "CASE-SAQ-AUTH-NEUTRAL-SCOPE",
+      "classes": [
+        "SessionAuthFlowIT"
+      ],
+      "methods": [
+        "bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword"
+      ],
+      "families": [
+        "JS-SYSTEM-02",
+        "JS-SYSTEM-14"
+      ],
+      "boundaries": [
+        "BOUNDARY-01",
+        "BOUNDARY-03"
+      ],
+      "role": "Visible synthetic active account with no durable role grants; neutral bootstrap bearer",
+      "mode": "Actual random-port Auth HTTP + PostgreSQL/Redis",
+      "prestate": "New neutral account and authenticated bootstrap session, no selectable grant",
+      "action": "Read own current/live sessions; request ungranted role, account history and password command",
+      "oracles": [
+        "Current session and sessions200/no-store",
+        "Role selection403 ROLE_NOT_GRANTED",
+        "History and password403 BOOTSTRAP_SCOPE_DENIED"
+      ],
+      "limits": "Neutral authorization scope only; terminal role read-only domain operations remain separate. No absence-of-all-DB-side-effects assertion for denied requests.",
+      "implementation": [
+        "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+        "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+      ]
+    },
+    {
+      "id": "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+      "classes": [
+        "SessionAuthFlowIT"
+      ],
+      "methods": [
+        "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry"
+      ],
+      "families": [
+        "JS-SYSTEM-14",
+        "RESEARCH-P06",
+        "RESEARCH-P08"
+      ],
+      "boundaries": [
+        "BOUNDARY-01",
+        "BOUNDARY-02"
+      ],
+      "role": "Own authenticated neutral account; refresh cookie authority, no implicit role grant",
+      "mode": "Two concurrent actual HTTP callers; real PostgreSQL durable CAS; Redis container present",
+      "prestate": "One current refresh JTI and recorded signed absolute expiry",
+      "action": "Barrier-race identical cookie; rotate winner again; replay original",
+      "oracles": [
+        "Exactly one200 and one409 REFRESH_ALREADY_ROTATED",
+        "Fresh tokens differ while absolute expiry remains identical across both rotations",
+        "Cookie Max-Age decreases; no-store on winner/loser",
+        "Older replay401 REFRESH_REJECTED"
+      ],
+      "limits": "Real refresh concurrency/absolute expiry only. Browser tab race, authority outage/restart and explicit session expiry path remain separately required.",
+      "implementation": [
+        "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java"
+      ]
+    }
+  ],
+  "historical_finding": "remaining-groups.json source_paths contains individual characters from flattened source string; immutable derived view is not canonical. Use scenarios.csv source JSON arrays and actual boundary refs; do not edit original or infer optional/PASS."
+}

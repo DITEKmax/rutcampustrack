@@ -7,11 +7,20 @@ import type {
   StudentRequestSummary,
 } from '../../api/types'
 import type { StudentFeatureScope } from '../../shared/session-owner'
-import { RequestsController, shouldLoadRequestOptions, validateExcusePayload, validateLateCheckinPayload } from './requests-controller'
+import {
+  RequestsController,
+  shouldLoadRequestOptions,
+  validateExcusePayload,
+  validateLateCheckinPayload,
+} from './requests-controller'
 import type { RequestsPort } from './requests-port'
 import type { ExcuseRequestPayload, RequestKind, RequestOptions } from './types'
 
-function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void; reject: (reason?: unknown) => void } {
+function deferred<T>(): {
+  promise: Promise<T>
+  resolve: (value: T) => void
+  reject: (reason?: unknown) => void
+} {
   let resolve!: (value: T) => void
   let reject!: (reason?: unknown) => void
   const promise = new Promise<T>((resolvePromise, rejectPromise) => {
@@ -62,14 +71,22 @@ function page(content: StudentRequestSummary[]): StudentRequestPage {
 function options(overrides: Partial<RequestOptions> = {}): RequestOptions {
   return {
     reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: true }],
-    files: { maxFiles: 1, maxBytesPerFile: 10, maxBytesTotal: 10, contentTypes: ['text/plain'], extensions: [] },
+    files: {
+      maxFiles: 1,
+      maxBytesPerFile: 10,
+      maxBytesTotal: 10,
+      contentTypes: ['text/plain'],
+      extensions: [],
+    },
     budget: { limit: 2, used: 0, remaining: 2, semesterId: 'semester-1' },
-    lessons: [{
-      lesson: { id: 'lesson-1', lessonNumber: 1, status: 'OPEN', blocked: false },
-      excuseEligible: true,
-      lateCheckinEligible: true,
-      pendingRequests: [],
-    }],
+    lessons: [
+      {
+        lesson: { id: 'lesson-1', lessonNumber: 1, status: 'OPEN', blocked: false },
+        excuseEligible: true,
+        lateCheckinEligible: true,
+        pendingRequests: [],
+      },
+    ],
     ...overrides,
   }
 }
@@ -77,14 +94,22 @@ function options(overrides: Partial<RequestOptions> = {}): RequestOptions {
 function generatedOptions(): StudentRequestOptions {
   return {
     reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: true }],
-    files: { maxFiles: 1, maxBytesPerFile: 10, maxBytesTotal: 10, contentTypes: ['text/plain'], extensions: [] },
+    files: {
+      maxFiles: 1,
+      maxBytesPerFile: 10,
+      maxBytesTotal: 10,
+      contentTypes: ['text/plain'],
+      extensions: [],
+    },
     budget: { limit: 2, remaining: 2, semesterId: 'semester-1', used: 0 },
-    lessons: [{
-      lesson: { id: 'lesson-1', lessonNumber: 1, status: 'OPEN', blocked: false },
-      excuseEligible: true,
-      lateCheckinEligible: true,
-      pendingRequests: [],
-    }],
+    lessons: [
+      {
+        lesson: { id: 'lesson-1', lessonNumber: 1, status: 'OPEN', blocked: false },
+        excuseEligible: true,
+        lateCheckinEligible: true,
+        pendingRequests: [],
+      },
+    ],
   }
 }
 
@@ -93,7 +118,11 @@ function port(overrides: Partial<RequestsPort> = {}): RequestsPort {
     listRequests: async () => page([]),
     getRequest: async (id) => detail(summary(id)),
     getRequestOptions: async () => generatedOptions(),
-    submitExcuse: async (command) => detail({ ...summary('created'), lessons: [{ id: command.lessonIds[0]!, lessonNumber: 1, status: 'OPEN', blocked: false }] }),
+    submitExcuse: async (command) =>
+      detail({
+        ...summary('created'),
+        lessons: [{ id: command.lessonIds[0]!, lessonNumber: 1, status: 'OPEN', blocked: false }],
+      }),
     submitLateCheckin: async () => detail(summary('created-late')),
     cancelRequest: async () => detail(summary('cancelled')),
     downloadRequestAttachment: async () => new Blob(['file']),
@@ -101,12 +130,15 @@ function port(overrides: Partial<RequestsPort> = {}): RequestsPort {
   }
 }
 
-function controller(overrides: Partial<{
-  port: RequestsPort | null
-  scope: StudentFeatureScope | null
-  offline: boolean
-  readOnly: boolean
-}> = {}, keyFactory = () => 'request-key-0001') {
+function controller(
+  overrides: Partial<{
+    port: RequestsPort | null
+    scope: StudentFeatureScope | null
+    offline: boolean
+    readOnly: boolean
+  }> = {},
+  keyFactory = () => 'request-key-0001',
+) {
   const state = {
     port: overrides.port === undefined ? port() : overrides.port,
     scope: overrides.scope === undefined ? scope : overrides.scope,
@@ -125,13 +157,15 @@ function controller(overrides: Partial<{
 
 type ConcurrentRequestResource = 'open' | 'archive' | 'options'
 
-async function runConcurrentLoads(order: readonly ConcurrentRequestResource[]): Promise<RequestsController> {
+async function runConcurrentLoads(
+  order: readonly ConcurrentRequestResource[],
+): Promise<RequestsController> {
   const open = deferred<StudentRequestPage>()
   const archive = deferred<StudentRequestPage>()
   const requestOptions = deferred<StudentRequestOptions>()
   const { value } = controller({
     port: port({
-      listRequests: async (bucket) => bucket === 'OPEN' ? open.promise : archive.promise,
+      listRequests: async (bucket) => (bucket === 'OPEN' ? open.promise : archive.promise),
       getRequestOptions: async () => requestOptions.promise,
     }),
   })
@@ -151,7 +185,9 @@ describe('RequestsController', () => {
     const value = await runConcurrentLoads(['open', 'archive', 'options'])
 
     expect(value.view.open.requests.map((item) => item.summary.id)).toEqual(['open-concurrent'])
-    expect(value.view.archive.requests.map((item) => item.summary.id)).toEqual(['archive-concurrent'])
+    expect(value.view.archive.requests.map((item) => item.summary.id)).toEqual([
+      'archive-concurrent',
+    ])
     expect(value.view.open.loading).toBe(false)
     expect(value.view.archive.loading).toBe(false)
     expect(value.view.optionsLoading).toBe(false)
@@ -162,7 +198,9 @@ describe('RequestsController', () => {
     const value = await runConcurrentLoads(['options', 'archive', 'open'])
 
     expect(value.view.open.requests.map((item) => item.summary.id)).toEqual(['open-concurrent'])
-    expect(value.view.archive.requests.map((item) => item.summary.id)).toEqual(['archive-concurrent'])
+    expect(value.view.archive.requests.map((item) => item.summary.id)).toEqual([
+      'archive-concurrent',
+    ])
     expect(value.view.open.loading).toBe(false)
     expect(value.view.archive.loading).toBe(false)
     expect(value.view.optionsLoading).toBe(false)
@@ -199,7 +237,8 @@ describe('RequestsController', () => {
       }),
     })
     const loadIfNeeded = (): Promise<void> | undefined => {
-      if (!shouldLoadRequestOptions(value.view.options, value.view.optionsLoading, false)) return undefined
+      if (!shouldLoadRequestOptions(value.view.options, value.view.optionsLoading, false))
+        return undefined
       return value.loadOptions()
     }
 
@@ -247,7 +286,9 @@ describe('RequestsController', () => {
     expect(first.value.view.optionsError).toBeNull()
 
     const staleOptions = deferred<StudentRequestOptions>()
-    const context = controller({ port: port({ getRequestOptions: async () => staleOptions.promise }) })
+    const context = controller({
+      port: port({ getRequestOptions: async () => staleOptions.promise }),
+    })
     const contextLoad = context.value.loadOptions()
     context.state.scope = { ...scope, resetGeneration: 2 }
     context.value.onContextChanged()
@@ -256,6 +297,97 @@ describe('RequestsController', () => {
     await expect(contextLoad).resolves.toBeUndefined()
     expect(context.value.view.optionsError).toBeNull()
     expect(context.value.view.optionsLoading).toBe(false)
+  })
+
+  it('keeps the server OPEN total independent of pages and suppresses unavailable or stale ownership', async () => {
+    const reply = deferred<StudentRequestPage>()
+    let fail = false
+    const { value, state } = controller({
+      port: port({
+        listRequests: async (bucket, pageNumber) => {
+          if (fail) throw new Error('Список недоступен')
+          if (bucket === 'ARCHIVE') return { ...page([]), totalElements: 91 }
+          if (pageNumber === 0) return reply.promise
+          return { ...page([summary('next')]), page: 1, totalElements: 27, totalPages: 3 }
+        },
+      }),
+    })
+    expect(value.openCount()).toBeNull()
+    const initial = value.loadBucket('open')
+    expect(value.openCount()).toBeNull()
+    reply.resolve({ ...page([summary('one')]), totalElements: 27, totalPages: 3 })
+    await initial
+    expect(value.openCount()).toBe(27)
+    await value.loadMore('open')
+    expect(value.view.open.requests).toHaveLength(2)
+    expect(value.openCount()).toBe(27)
+    value.selectBucket('archive')
+    await value.loadBucket('archive')
+    expect(value.openCount()).toBe(27)
+    fail = true
+    await expect(value.loadBucket('open')).rejects.toThrow('Список недоступен')
+    expect(value.openCount()).toBeNull()
+    fail = false
+    await value.loadBucket('open')
+    state.offline = true
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+    state.offline = false
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+    await value.loadBucket('open')
+    expect(value.openCount()).toBe(27)
+    state.scope = { ...scope, userId: 'new-owner' }
+    expect(value.openCount()).toBeNull()
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
+  })
+
+  it('refreshes the OPEN total after submission and cancellation and discards a late owner count', async () => {
+    let ids = ['one']
+    const stale = deferred<StudentRequestPage>()
+    let hold = false
+    const { value, state } = controller({
+      port: port({
+        listRequests: async () => (hold ? stale.promise : page(ids.map((id) => summary(id)))),
+        submitExcuse: async () => {
+          ids = ['one', 'created']
+          return detail(summary('created'))
+        },
+        cancelRequest: async () => {
+          ids = ['one']
+          return detail({ ...summary('created'), status: 'CANCELLED' })
+        },
+      }),
+    })
+    value.view.options = options()
+    await value.loadBucket('open')
+    expect(value.openCount()).toBe(1)
+    await value.submitExcuse({
+      lessonIds: ['lesson-1'],
+      reason: 'OTHER',
+      comment: 'Пояснение',
+      files: [],
+    })
+    expect(value.openCount()).toBe(2)
+    await value.cancelRequest('created')
+    expect(value.openCount()).toBe(1)
+    hold = true
+    const late = value.loadBucket('open')
+    state.scope = { ...scope, sessionId: 'replacement-session' }
+    value.onContextChanged()
+    stale.resolve({ ...page([]), totalElements: 82 })
+    await late
+    expect(value.openCount()).toBeNull()
+    hold = false
+    ids = []
+    await value.loadBucket('open')
+    expect(value.openCount()).toBe(0)
+    state.offline = true
+    value.onContextChanged()
+    state.offline = false
+    value.onContextChanged()
+    expect(value.openCount()).toBeNull()
   })
 
   it('requests OPEN page size 10 and hydrates at most ten details with concurrency three', async () => {
@@ -290,7 +422,9 @@ describe('RequestsController', () => {
 
   it('keeps failed details visibly unavailable and suppresses a late owner response', async () => {
     let resolveList!: (value: StudentRequestPage) => void
-    const pendingList = new Promise<StudentRequestPage>((resolve) => { resolveList = resolve })
+    const pendingList = new Promise<StudentRequestPage>((resolve) => {
+      resolveList = resolve
+    })
     const first = controller({ port: port({ listRequests: async () => pendingList }) })
     const loading = first.value.loadBucket('open')
     first.state.scope = { ...scope, resetGeneration: 2 }
@@ -302,7 +436,9 @@ describe('RequestsController', () => {
     const failed = controller({
       port: port({
         listRequests: async () => page([summary('failed')]),
-        getRequest: async () => { throw new Error('деталь не отвечает') },
+        getRequest: async () => {
+          throw new Error('деталь не отвечает')
+        },
       }),
     })
     await failed.value.loadBucket('open')
@@ -316,8 +452,14 @@ describe('RequestsController', () => {
     let listCalls = 0
     const direct = controller({
       port: port({
-        listRequests: async () => { listCalls += 1; return page([]) },
-        getRequest: async (id) => { fetchedIds.push(id); return detail(summary(id)) },
+        listRequests: async () => {
+          listCalls += 1
+          return page([])
+        },
+        getRequest: async (id) => {
+          fetchedIds.push(id)
+          return detail(summary(id))
+        },
       }),
     })
 
@@ -328,13 +470,19 @@ describe('RequestsController', () => {
     expect(loaded.summary.id).toBe('ticket-42')
     expect(loaded.summary.canCancel).toBe(true)
 
-    const wrongIdentity = controller({ port: port({ getRequest: async () => detail(summary('other-ticket')) }) })
-    await expect(wrongIdentity.value.loadTargetDetail('ticket-42', 'EXCUSE')).rejects.toMatchObject({ code: 'UNAVAILABLE' })
+    const wrongIdentity = controller({
+      port: port({ getRequest: async () => detail(summary('other-ticket')) }),
+    })
+    await expect(wrongIdentity.value.loadTargetDetail('ticket-42', 'EXCUSE')).rejects.toMatchObject(
+      { code: 'UNAVAILABLE' },
+    )
 
     const wrongKind = controller({
       port: port({ getRequest: async (id) => detail({ ...summary(id), kind: 'EXCUSE' }) }),
     })
-    await expect(wrongKind.value.loadTargetDetail('late-42', 'LATE_CHECKIN')).rejects.toMatchObject({ code: 'UNAVAILABLE' })
+    await expect(wrongKind.value.loadTargetDetail('late-42', 'LATE_CHECKIN')).rejects.toMatchObject(
+      { code: 'UNAVAILABLE' },
+    )
 
     const pendingDetail = deferred<StudentRequestDetail>()
     const stale = controller({ port: port({ getRequest: async () => pendingDetail.promise }) })
@@ -345,29 +493,41 @@ describe('RequestsController', () => {
     await expect(pending).rejects.toMatchObject({ code: 'STALE' })
   })
 
-  it.each(['EXCUSE', 'LATE_CHECKIN'] as const)('cancels a %s notification target without bucket data', async (kind) => {
-    let listCalls = 0
-    const fetchedIds: string[] = []
-    const cancelledIds: string[] = []
-    const refreshed = detail({ ...summary('target-51', kind), status: 'CANCELLED' })
-    const direct = controller({
-      port: port({
-        listRequests: async () => { listCalls += 1; return page([]) },
-        getRequest: async (id) => { fetchedIds.push(id); return detail(summary(id, kind)) },
-        cancelRequest: async (id) => { cancelledIds.push(id); return refreshed },
-      }),
-    })
+  it.each(['EXCUSE', 'LATE_CHECKIN'] as const)(
+    'cancels a %s notification target without bucket data',
+    async (kind) => {
+      let listCalls = 0
+      const fetchedIds: string[] = []
+      const cancelledIds: string[] = []
+      const refreshed = detail({ ...summary('target-51', kind), status: 'CANCELLED' })
+      const direct = controller({
+        port: port({
+          listRequests: async () => {
+            listCalls += 1
+            return page([])
+          },
+          getRequest: async (id) => {
+            fetchedIds.push(id)
+            return detail(summary(id, kind))
+          },
+          cancelRequest: async (id) => {
+            cancelledIds.push(id)
+            return refreshed
+          },
+        }),
+      })
 
-    const updated = await direct.value.cancelTargetRequest('target-51', kind)
+      const updated = await direct.value.cancelTargetRequest('target-51', kind)
 
-    expect(listCalls).toBe(0)
-    expect(fetchedIds).toEqual(['target-51'])
-    expect(cancelledIds).toEqual(['target-51'])
-    expect(direct.value.view.open.requests).toEqual([])
-    expect(direct.value.view.archive.requests).toEqual([])
-    expect(updated.summary.status).toBe('CANCELLED')
-    expect(updated.summary.canCancel).toBe(false)
-  })
+      expect(listCalls).toBe(0)
+      expect(fetchedIds).toEqual(['target-51'])
+      expect(cancelledIds).toEqual(['target-51'])
+      expect(direct.value.view.open.requests).toEqual([])
+      expect(direct.value.view.archive.requests).toEqual([])
+      expect(updated.summary.status).toBe('CANCELLED')
+      expect(updated.summary.canCancel).toBe(false)
+    },
+  )
 
   it('refreshes loaded request buckets after notification target cancellation', async () => {
     const pending = summary('target-54')
@@ -402,8 +562,12 @@ describe('RequestsController', () => {
     expect(openListCalls).toBe(2)
     expect(archiveListCalls).toBe(2)
     expect(direct.value.view.open.requests).toEqual([])
-    expect(direct.value.view.archive.requests.map((request) => [request.summary.id, request.summary.status]))
-      .toEqual([['target-54', 'CANCELLED']])
+    expect(
+      direct.value.view.archive.requests.map((request) => [
+        request.summary.id,
+        request.summary.status,
+      ]),
+    ).toEqual([['target-54', 'CANCELLED']])
   })
 
   it('keeps target cancellation successful when a loaded bucket refresh fails', async () => {
@@ -435,7 +599,10 @@ describe('RequestsController', () => {
     const stale = controller({
       port: port({
         getRequest: async () => pendingDetail.promise,
-        cancelRequest: async () => { cancelCalls += 1; return detail({ ...summary('target-52'), status: 'CANCELLED' }) },
+        cancelRequest: async () => {
+          cancelCalls += 1
+          return detail({ ...summary('target-52'), status: 'CANCELLED' })
+        },
       }),
     })
     const pending = stale.value.cancelTargetRequest('target-52', 'EXCUSE')
@@ -452,7 +619,10 @@ describe('RequestsController', () => {
     let cancelCalls = 0
     const denied = controller({
       port: port({
-        cancelRequest: async () => { cancelCalls += 1; throw forbidden },
+        cancelRequest: async () => {
+          cancelCalls += 1
+          throw forbidden
+        },
       }),
     })
 
@@ -462,14 +632,23 @@ describe('RequestsController', () => {
 
   it('stops mutations before transport while offline or read-only', async () => {
     let sends = 0
-    const transport = port({ submitLateCheckin: async () => { sends += 1; return detail(summary('sent')) } })
+    const transport = port({
+      submitLateCheckin: async () => {
+        sends += 1
+        return detail(summary('sent'))
+      },
+    })
     const offline = controller({ port: transport, offline: true })
     offline.value.view.options = options()
-    await expect(offline.value.submitLateCheckin({ lessonId: 'lesson-1' })).rejects.toMatchObject({ code: 'OFFLINE' })
+    await expect(offline.value.submitLateCheckin({ lessonId: 'lesson-1' })).rejects.toMatchObject({
+      code: 'OFFLINE',
+    })
 
     const readOnly = controller({ port: transport, readOnly: true })
     readOnly.value.view.options = options()
-    await expect(readOnly.value.submitLateCheckin({ lessonId: 'lesson-1' })).rejects.toMatchObject({ code: 'READ_ONLY' })
+    await expect(readOnly.value.submitLateCheckin({ lessonId: 'lesson-1' })).rejects.toMatchObject({
+      code: 'READ_ONLY',
+    })
     expect(sends).toBe(0)
   })
 
@@ -484,35 +663,91 @@ describe('RequestsController', () => {
     ['LATE_CHECKIN', undefined, 'MANUAL', false],
     ['EXCUSE', 'UNKNOWN', 'MANUAL', false],
     ['LATE_CHECKIN', 'UNKNOWN', 'MANUAL', false],
-  ] as const)('validates %s with pending %s (%s) without borrowing geo retry permission', (kind, pendingKind, origin, allowed) => {
-    const eligible = options().lessons![0]!
-    const value = options({ lessons: [{ ...eligible, pendingRequests: [{ id: 'pending-1', kind: pendingKind as never, origin }] }] })
-    const errors = kind === 'EXCUSE'
-      ? validateExcusePayload({ lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Причина', files: [] }, value)
-      : validateLateCheckinPayload({ lessonId: 'lesson-1' }, value)
-    expect(errors).toEqual(allowed ? [] : ['Выбранная пара больше недоступна.'])
-  })
+  ] as const)(
+    'validates %s with pending %s (%s) without borrowing geo retry permission',
+    (kind, pendingKind, origin, allowed) => {
+      const eligible = options().lessons![0]!
+      const value = options({
+        lessons: [
+          {
+            ...eligible,
+            pendingRequests: [{ id: 'pending-1', kind: pendingKind as never, origin }],
+          },
+        ],
+      })
+      const errors =
+        kind === 'EXCUSE'
+          ? validateExcusePayload(
+              { lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Причина', files: [] },
+              value,
+            )
+          : validateLateCheckinPayload({ lessonId: 'lesson-1' }, value)
+      expect(errors).toEqual(allowed ? [] : ['Выбранная пара больше недоступна.'])
+    },
+  )
 
-  it.each(['EXCUSE', 'LATE_CHECKIN'] as const)('never replaces negative server %s eligibility with other-kind pending permission', (kind) => {
-    const value = options({ lessons: [{
-      ...options().lessons![0]!, excuseEligible: false, lateCheckinEligible: false,
-      pendingRequests: [{ id: 'pending-1', kind: kind === 'EXCUSE' ? 'LATE_CHECKIN' : 'EXCUSE' }],
-    }] })
-    const errors = kind === 'EXCUSE'
-      ? validateExcusePayload({ lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Причина', files: [] }, value)
-      : validateLateCheckinPayload({ lessonId: 'lesson-1' }, value)
-    expect(errors).toEqual(['Выбранная пара больше недоступна.'])
-  })
+  it.each(['EXCUSE', 'LATE_CHECKIN'] as const)(
+    'never replaces negative server %s eligibility with other-kind pending permission',
+    (kind) => {
+      const value = options({
+        lessons: [
+          {
+            ...options().lessons![0]!,
+            excuseEligible: false,
+            lateCheckinEligible: false,
+            pendingRequests: [
+              { id: 'pending-1', kind: kind === 'EXCUSE' ? 'LATE_CHECKIN' : 'EXCUSE' },
+            ],
+          },
+        ],
+      })
+      const errors =
+        kind === 'EXCUSE'
+          ? validateExcusePayload(
+              { lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Причина', files: [] },
+              value,
+            )
+          : validateLateCheckinPayload({ lessonId: 'lesson-1' }, value)
+      expect(errors).toEqual(['Выбранная пара больше недоступна.'])
+    },
+  )
 
   it('uses server option metadata for OTHER comments and file constraints', () => {
-    const payload: ExcuseRequestPayload = { lessonIds: ['lesson-1'], reason: 'OTHER', comment: '', files: [] }
-    expect(validateExcusePayload(payload, options())).toContain('Добавь комментарий для выбранной причины.')
-    expect(validateExcusePayload({ ...payload, comment: 'Есть пояснение', files: [{ id: 'x', name: 'x.txt', size: 11, type: 'text/plain' }] }, options())).toContain('x.txt: размер больше допустимого.')
+    const payload: ExcuseRequestPayload = {
+      lessonIds: ['lesson-1'],
+      reason: 'OTHER',
+      comment: '',
+      files: [],
+    }
+    expect(validateExcusePayload(payload, options())).toContain(
+      'Добавь комментарий для выбранной причины.',
+    )
+    expect(
+      validateExcusePayload(
+        {
+          ...payload,
+          comment: 'Есть пояснение',
+          files: [{ id: 'x', name: 'x.txt', size: 11, type: 'text/plain' }],
+        },
+        options(),
+      ),
+    ).toContain('x.txt: размер больше допустимого.')
   })
 
   it('requires the MIME and extension pair to agree before submission', () => {
-    const payload: ExcuseRequestPayload = { lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Есть пояснение', files: [] }
-    const file = (name: string, type: string) => ({ id: name, name, size: 4, type, file: {} as File })
+    const payload: ExcuseRequestPayload = {
+      lessonIds: ['lesson-1'],
+      reason: 'OTHER',
+      comment: 'Есть пояснение',
+      files: [],
+    }
+    const file = (name: string, type: string) => ({
+      id: name,
+      name,
+      size: 4,
+      type,
+      file: {} as File,
+    })
     const limits = {
       maxFiles: 2,
       maxBytesPerFile: 10,
@@ -522,33 +757,79 @@ describe('RequestsController', () => {
     }
     const requestOptions = options({ files: limits })
 
-    expect(validateExcusePayload({ ...payload, files: [file('photo.jpeg', 'image/jpeg')] }, requestOptions)).toEqual([])
-    expect(validateExcusePayload({ ...payload, files: [file('proof.pdf', 'application/pdf')] }, requestOptions)).toEqual([])
-    expect(validateExcusePayload({ ...payload, files: [file('photo.jpg', 'image/jpeg')] }, requestOptions)).toEqual([])
-    const mismatch = validateExcusePayload({ ...payload, files: [file('document.jpg', 'application/pdf')] }, requestOptions)
-    expect(mismatch.some((error) => error.includes('document.jpg: формат не поддерживается. MIME и расширение должны соответствовать:'))).toBe(true)
-    const secondMismatch = validateExcusePayload({ ...payload, files: [file('document.pdf', 'image/png')] }, requestOptions)
-    expect(secondMismatch.some((error) => error.includes('document.pdf: формат не поддерживается. MIME и расширение должны соответствовать:'))).toBe(true)
+    expect(
+      validateExcusePayload(
+        { ...payload, files: [file('photo.jpeg', 'image/jpeg')] },
+        requestOptions,
+      ),
+    ).toEqual([])
+    expect(
+      validateExcusePayload(
+        { ...payload, files: [file('proof.pdf', 'application/pdf')] },
+        requestOptions,
+      ),
+    ).toEqual([])
+    expect(
+      validateExcusePayload(
+        { ...payload, files: [file('photo.jpg', 'image/jpeg')] },
+        requestOptions,
+      ),
+    ).toEqual([])
+    const mismatch = validateExcusePayload(
+      { ...payload, files: [file('document.jpg', 'application/pdf')] },
+      requestOptions,
+    )
+    expect(
+      mismatch.some((error) =>
+        error.includes(
+          'document.jpg: формат не поддерживается. MIME и расширение должны соответствовать:',
+        ),
+      ),
+    ).toBe(true)
+    const secondMismatch = validateExcusePayload(
+      { ...payload, files: [file('document.pdf', 'image/png')] },
+      requestOptions,
+    )
+    expect(
+      secondMismatch.some((error) =>
+        error.includes(
+          'document.pdf: формат не поддерживается. MIME и расширение должны соответствовать:',
+        ),
+      ),
+    ).toBe(true)
   })
 
   it('reuses one key for an ambiguous retry and blocks edits until explicit abandon', async () => {
     const sent: Array<{ key: string; comment: string }> = []
     const keys = ['request-key-0001', 'request-key-0002']
     let attempts = 0
-    const { value } = controller({
-      port: port({
-        submitExcuse: async (command, _files, key) => {
-          sent.push({ key, comment: command.comment ?? '' })
-          attempts += 1
-          if (attempts < 3) {
-            throw new TypeError('network response lost')
-          }
-          return detail(summary('created'))
-        },
-      }),
-    }, () => keys.shift() ?? 'request-key-0002')
+    const upload = new File(['ok'], 'retry.txt', { type: 'text/plain' })
+    const receivedFiles: Array<readonly File[]> = []
+    const { value } = controller(
+      {
+        port: port({
+          submitExcuse: async (command, files, key) => {
+            receivedFiles.push(files)
+            sent.push({ key, comment: command.comment ?? '' })
+            attempts += 1
+            if (attempts < 3) {
+              throw new TypeError('network response lost')
+            }
+            return detail(summary('created'))
+          },
+        }),
+      },
+      () => keys.shift() ?? 'request-key-0002',
+    )
     value.view.options = options()
-    const payload: ExcuseRequestPayload = { lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Есть пояснение', files: [] }
+    const payload: ExcuseRequestPayload = {
+      lessonIds: ['lesson-1'],
+      reason: 'OTHER',
+      comment: 'Есть пояснение',
+      files: [
+        { id: 'retry-file', name: upload.name, size: upload.size, type: upload.type, file: upload },
+      ],
+    }
 
     await expect(value.submitExcuse(payload)).rejects.toThrow('network response lost')
     await expect(value.submitExcuse(payload)).rejects.toThrow('network response lost')
@@ -556,16 +837,71 @@ describe('RequestsController', () => {
       { key: 'request-key-0001', comment: 'Есть пояснение' },
       { key: 'request-key-0001', comment: 'Есть пояснение' },
     ])
-    await expect(value.submitExcuse({ ...payload, comment: 'Изменённый текст' })).rejects.toMatchObject({ code: 'AMBIGUOUS' })
+    await expect(
+      value.submitExcuse({ ...payload, comment: 'Изменённый текст' }),
+    ).rejects.toMatchObject({ code: 'AMBIGUOUS' })
+    expect(value.view.mutationError).toBe('Результат отправки не подтверждён.')
     value.abandonCommand('EXCUSE')
-    await expect(value.submitExcuse({ ...payload, comment: 'Изменённый текст' })).resolves.toBeTruthy()
+    expect(value.view.mutationError).toBeNull()
+    await expect(
+      value.submitExcuse({ ...payload, comment: 'Изменённый текст' }),
+    ).resolves.toBeTruthy()
     expect(sent[2]?.key).toBe('request-key-0002')
+    expect(receivedFiles).toHaveLength(3)
+    for (const files of receivedFiles) expect(files[0]).toBe(upload)
+
+    // An unrelated cancellation can own the shared error while command A remains ambiguous.
+    const cancellationError = 'Не удалось отменить другую заявку.'
+    const other = controller({
+      port: port({
+        listRequests: async () => page([summary('cancel-B')]),
+        submitExcuse: async () => {
+          throw new TypeError('command A response lost')
+        },
+        cancelRequest: async () => {
+          throw new Error(cancellationError)
+        },
+      }),
+    }).value
+    other.view.options = options()
+    await other.loadBucket('open', 0)
+    await expect(other.submitExcuse(payload)).rejects.toThrow('command A response lost')
+    const commandA = other.view.command
+    await expect(other.cancelRequest('cancel-B')).rejects.toThrow(cancellationError)
+    expect(other.view.command).toEqual(commandA)
+    expect(other.view.mutationError).toBe(cancellationError)
+    other.abandonCommand('EXCUSE')
+    expect(other.view.command).toBeNull()
+    expect(other.view.mutationError).toBe(cancellationError)
   })
 })
 
 it('retains original student request evidence and the immutable partial decision coverage', async () => {
   const original = summary('partial')
-  const receipt = { requestKey: '11111111-1111-4111-8111-111111111111', expectedRevision: 'a'.repeat(64), includedLessons: [{ ...original.lessons[0]!, id: 'current-21', occurrenceId: '121', occurrenceRevision: '3', subjectName: 'Математика', date: '2026-10-08' }], excludedLessons: [{ ...original.lessons[0]!, id: 'current-22', occurrenceId: '122', occurrenceRevision: '4', subjectName: 'Физика', date: '2026-10-09' }] }
+  const receipt = {
+    requestKey: '11111111-1111-4111-8111-111111111111',
+    expectedRevision: 'a'.repeat(64),
+    includedLessons: [
+      {
+        ...original.lessons[0]!,
+        id: 'current-21',
+        occurrenceId: '121',
+        occurrenceRevision: '3',
+        subjectName: 'Математика',
+        date: '2026-10-08',
+      },
+    ],
+    excludedLessons: [
+      {
+        ...original.lessons[0]!,
+        id: 'current-22',
+        occurrenceId: '122',
+        occurrenceRevision: '4',
+        subjectName: 'Физика',
+        date: '2026-10-09',
+      },
+    ],
+  }
   const source = { ...detail({ ...original, status: 'APPROVED' }), decisionSelection: receipt }
   const { value } = controller({ port: port({ getRequest: async () => source }) })
   const result = await value.loadTargetDetail('partial', 'EXCUSE')

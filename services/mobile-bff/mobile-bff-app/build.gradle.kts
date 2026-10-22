@@ -18,7 +18,11 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:mobile-bff:mobile-bff-api-contract"))
     implementation(project(":services:shared:shared-security"))
+    implementation(project(":services:shared:shared-web-api"))
     implementation(project(":services:shared:shared-logback"))
+    implementation(project(":services:shared:shared-observability"))
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -26,6 +30,9 @@ dependencies {
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
         exclude(group = "io.grpc", module = "grpc-netty-shaded")
     }
     implementation("io.grpc:grpc-netty")

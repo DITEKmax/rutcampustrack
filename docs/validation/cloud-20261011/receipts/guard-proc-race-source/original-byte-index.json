@@ -1,0 +1,143 @@
+{
+  "source": "/workspace/scratch/rct-validation/guard_proc_race_correction",
+  "manifest": "manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "18d78583b74a953aa31f540f5bf63c632158cb5a5b8b8815debdac3c47cdf692",
+      "original_bytes": 341,
+      "working_sha256": "18d78583b74a953aa31f540f5bf63c632158cb5a5b8b8815debdac3c47cdf692",
+      "working_bytes": 341,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "ff2eb2f67b8c65db9c6b7d0c30c3ad84ab35043be5d10cb422aa030925564d21",
+      "original_bytes": 3997,
+      "working_sha256": "ff2eb2f67b8c65db9c6b7d0c30c3ad84ab35043be5d10cb422aa030925564d21",
+      "working_bytes": 3997,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "RESULT.json",
+      "original_sha256": "41548d8b9a26f90c83c4f040bf5d22682fb533c63f9aa5f133e6cf5222690423",
+      "original_bytes": 715,
+      "working_sha256": "41548d8b9a26f90c83c4f040bf5d22682fb533c63f9aa5f133e6cf5222690423",
+      "working_bytes": 715,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "actual-error-provenance.safe.json",
+      "original_sha256": "af60bc13628a96d1840ff50785ae7181cc122cb23426637efd2b60d588dcc0c0",
+      "original_bytes": 1834,
+      "working_sha256": "af60bc13628a96d1840ff50785ae7181cc122cb23426637efd2b60d588dcc0c0",
+      "working_bytes": 1834,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "actual-source-bindings.json",
+      "original_sha256": "61fa0c4e0a2b931fecfdc1f88110061058c7f2fbe949157fb213dda8e7c72680",
+      "original_bytes": 781,
+      "working_sha256": "61fa0c4e0a2b931fecfdc1f88110061058c7f2fbe949157fb213dda8e7c72680",
+      "working_bytes": 781,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "d1db0bc6562a3ab94477f73bd466d9af81c39446f3b23b65c06f0cbf01711da1",
+      "original_bytes": 420,
+      "working_sha256": "d1db0bc6562a3ab94477f73bd466d9af81c39446f3b23b65c06f0cbf01711da1",
+      "working_bytes": 420,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "bounded-child.py",
+      "original_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+      "original_bytes": 9745,
+      "working_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+      "working_bytes": 9745,
+      "transformation": "byte equal",
+      "working_path": "bounded-child.py.readable.zip",
+      "working_container_sha256": "87f77db420e0860d3b58eba4f294c3eb724094354c5e4b8a49cf7f2b51758a09",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "ownership-controls-result.json",
+      "original_sha256": "3fcb07e627183f74a24df1d50fde711bf294bd3179d3810d16aed06330671a90",
+      "original_bytes": 863,
+      "working_sha256": "3fcb07e627183f74a24df1d50fde711bf294bd3179d3810d16aed06330671a90",
+      "working_bytes": 863,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ownership-controls.py",
+      "original_sha256": "8e33402521a322ac9a18756089ca3bd42932bbe1e1783a9226a371503a32ed23",
+      "original_bytes": 3546,
+      "working_sha256": "8e33402521a322ac9a18756089ca3bd42932bbe1e1783a9226a371503a32ed23",
+      "working_bytes": 3546,
+      "transformation": "byte equal",
+      "working_path": "ownership-controls.py.readable.zip",
+      "working_container_sha256": "a6fd0af572fe52a51fadaaafab41f1bae34797968270fa972f5ffa6d82cdad11",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "preservation.json",
+      "original_sha256": "5281813cfe511a58504def25ca6969bdbc8f93406b048c782955eef8b2e93387",
+      "original_bytes": 1809,
+      "working_sha256": "5281813cfe511a58504def25ca6969bdbc8f93406b048c782955eef8b2e93387",
+      "working_bytes": 1809,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proc-race-controls-result.json",
+      "original_sha256": "b0cb94de554213bcadeb2b740feed82edaa790c74d3985ca87e3c9224af12019",
+      "original_bytes": 2399,
+      "working_sha256": "b0cb94de554213bcadeb2b740feed82edaa790c74d3985ca87e3c9224af12019",
+      "working_bytes": 2399,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proc-race-controls.py",
+      "original_sha256": "a1fca6a627c73725662caac9e949d331ce22601d510c9a295c40bee1587f780e",
+      "original_bytes": 6423,
+      "working_sha256": "a1fca6a627c73725662caac9e949d331ce22601d510c9a295c40bee1587f780e",
+      "working_bytes": 6423,
+      "transformation": "byte equal",
+      "working_path": "proc-race-controls.py.readable.zip",
+      "working_container_sha256": "eb0668cdd9548efc4b7960f9ef21b4258c485eb7a10802ea34f29e4ff015b23e",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "source-change-proof.json",
+      "original_sha256": "59e34ced07a56063100ea326bc1f71f4d07382e3b5e50bf765415125d9653d71",
+      "original_bytes": 784,
+      "working_sha256": "59e34ced07a56063100ea326bc1f71f4d07382e3b5e50bf765415125d9653d71",
+      "working_bytes": 784,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source.diff",
+      "original_sha256": "ee51bf301d773077437a0156c0a36ecefcbade2f5b58d02a3fef5d67f0d6f9b4",
+      "original_bytes": 863,
+      "working_sha256": "ee51bf301d773077437a0156c0a36ecefcbade2f5b58d02a3fef5d67f0d6f9b4",
+      "working_bytes": 863,
+      "transformation": "byte equal",
+      "working_path": "source.diff.readable.zip",
+      "working_container_sha256": "24f5a2a5feed0ddb8db246b068f8523b4eeff320ff702c25defcdc329d74ed11",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    },
+    {
+      "path": "manifest.json",
+      "original_sha256": "2486f5f66ff9770af071e2792d3a37164c811dd6362d3311b479993d45577a39",
+      "original_bytes": 4288,
+      "working_sha256": "2486f5f66ff9770af071e2792d3a37164c811dd6362d3311b479993d45577a39",
+      "working_bytes": 4288,
+      "transformation": "external original manifest byte equal",
+      "working_path": "manifest.json.readable.zip",
+      "working_container_sha256": "487d9d0d55f75c2ec8b28fbee3ba0fbb8d766176b0d9224be8833682c0d6ee83",
+      "presentation": "lossless readable view archive; original sealed member unchanged"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

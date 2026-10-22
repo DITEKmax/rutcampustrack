@@ -31,9 +31,9 @@ COPY services/notification-service/notification-app/build.gradle.kts \
 COPY services/notification-service/notification-app/src \
      services/notification-service/notification-app/src
 
-# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
-# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service without sharing daemon state.
+# BuildKit serializes only writers using the same service cache.
+RUN --mount=type=cache,id=rct-gradle-notification,target=/root/.gradle,sharing=locked \
     chmod +x gradlew && ./gradlew :services:notification-service:notification-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers

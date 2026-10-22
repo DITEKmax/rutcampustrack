@@ -1,0 +1,2 @@
+{"utc": "2026-10-12T05:32:33.071402+00:00", "action": "full state restoration + exact6 source/archive capture", "result": "author26 CRC+allSHA PASS; before6 exactRoot731 andcb778; after6 exactff433/current", "runtime": "NOT_RUN"}
+{"utc": "2026-10-12T05:45:12.771993+00:00", "action": "independent critical source/diff/AST/native safe diagnosis +preservation", "result": "APPROVE_SOURCE_ONLY exact6; no blockers; preserved113 earlier safe files andbroker2/source archives", "runtime": "NOT_RUN"}

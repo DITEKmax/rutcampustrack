@@ -1,19 +1,18 @@
 package ru.rutcampustrack.shared.web.validation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import java.time.LocalDate;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.time.LocalDate;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class DateRangeValidatorTest {
 
@@ -36,17 +35,21 @@ class DateRangeValidatorTest {
 
     static Stream<Arguments> validCases() {
         return Stream.of(
-                Arguments.of(new ReportRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2)), "from < to"),
-                Arguments.of(new ReportRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 1)), "from == to (inclusive)"),
+                Arguments.of(
+                        new ReportRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2)),
+                        "from < to"),
+                Arguments.of(
+                        new ReportRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 1)),
+                        "from == to (inclusive)"),
                 Arguments.of(new ReportRange(null, LocalDate.of(2026, 1, 2)), "from null"),
-                Arguments.of(new ReportRange(LocalDate.of(2026, 1, 1), null), "to null")
-        );
+                Arguments.of(new ReportRange(LocalDate.of(2026, 1, 1), null), "to null"));
     }
 
     static Stream<Arguments> invalidCases() {
         return Stream.of(
-                Arguments.of(new ReportRange(LocalDate.of(2026, 1, 2), LocalDate.of(2026, 1, 1)), "from > to")
-        );
+                Arguments.of(
+                        new ReportRange(LocalDate.of(2026, 1, 2), LocalDate.of(2026, 1, 1)),
+                        "from > to"));
     }
 
     @ParameterizedTest(name = "valid: {1}")

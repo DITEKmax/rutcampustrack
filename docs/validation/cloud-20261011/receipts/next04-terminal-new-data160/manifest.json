@@ -1,0 +1,54 @@
+{
+  "utc": "2026-10-13T03:57:39.039506+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/terminal.safe.json",
+      "archive_member": "terminal.safe.json",
+      "sha256": "60444ee2d142356f2df59bfc69b022bf69f6e290af659683365399d7a0cc4240",
+      "size": 2287
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/tool-terminal.safe.json",
+      "archive_member": "tool-terminal.safe.json",
+      "sha256": "6bf83f1654344f499e2f2a22ea98ded59525d71a1659215346f04d7ac2b11a09",
+      "size": 1037
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/known16-absence.safe.json",
+      "archive_member": "known16-absence.safe.json",
+      "sha256": "330467177990526698240ae74c799fc05058f12cb42d6d884bb0a3ffae325b8d",
+      "size": 2608
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/stopped-native-data-fence-next04.safe.json",
+      "archive_member": "stopped-native-data-fence-next04.safe.json",
+      "sha256": "23c83d38757c3df0ef8336707aa4d06d5f10905d93095e9ad96907dfceee9e7f",
+      "size": 56220
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/terminal-resources.safe.json",
+      "archive_member": "terminal-resources.safe.json",
+      "sha256": "00a87e87437bd612d041cbda26d0fda0cf8e2e01e6161075083857ea45af1c02",
+      "size": 178
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/foreground-stop-terminal.safe.json",
+      "archive_member": "foreground-stop-terminal.safe.json",
+      "sha256": "06742d4f3d5c1b99ac41fd92e5acea68047eab4290fe5adf8c4fce203ae55245",
+      "size": 1443
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/docker-cleanup-before.safe.json",
+      "archive_member": "docker-cleanup-before.safe.json",
+      "sha256": "db1f21a5f008d22948c8c5113932cd7837cb206026d896b63d85e1f0ea252e49",
+      "size": 824
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/docker-cleanup-terminal.safe.json",
+      "archive_member": "docker-cleanup-terminal.safe.json",
+      "sha256": "44c845bde2ea411a0f40437e69947605d2133e34c3c25cb707620f74203b4f65",
+      "size": 669
+    }
+  ],
+  "no_private_values": true
+}

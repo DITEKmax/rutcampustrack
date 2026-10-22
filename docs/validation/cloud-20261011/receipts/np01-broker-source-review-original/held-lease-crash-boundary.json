@@ -1,0 +1,53 @@
+{
+  "source_verdict": "PROCESSING_DISTINGUISHED_FROM_COMPLETED; no confirmed product defect",
+  "runtime_verdict": "PENDING exact held-lease worker-death scenario; not covered by released-claim restart",
+  "sources": [
+    {
+      "path": "services/notification-bot/bot/consumers/event_consumer.py",
+      "lines": [
+        88,
+        127,
+        142,
+        144,
+        145,
+        181,
+        191,
+        196,
+        231,
+        245,
+        275,
+        280
+      ],
+      "behavior": "claim failure with non-completed marker NACKs original requeue=True; ignored processed context does not also ACK; ACK/NACK belongs native broker transaction; complete follows awaited durable handler/batch"
+    },
+    {
+      "path": "services/notification-bot/bot/services/idempotency_guard.py",
+      "behavior": "SET NX EX default300 processing:owner; is_completed exact completed; token CAS completion/renew/release; completion TTL604800"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "lines": [
+        98,
+        246,
+        252,
+        253,
+        254,
+        373,
+        374,
+        377,
+        382
+      ],
+      "behavior": "worker frozen only after twice-observed Redis key None; original released-claim restart only"
+    }
+  ],
+  "existing_unit_scope": "test_idempotency_guard uses fakeredis; test_ttl_expires injects ttl_seconds=1 and only asserts current TTL, not natural-expiry held-worker recovery. pending/prepared/watchdog tests use mocked guard/broker/process; none is native held-lease OS death/real Redis/Rabbit proof.",
+  "pending_observables": [
+    "owned worker dies with actual processing token still held and original UNACKED, tracker PENDING/provider unresolved",
+    "fresh worker redelivery while token held: real redelivery/NACK, no premature native ACK/no completed marker/no lost cleanup",
+    "natural default300s lease expiry without key deletion or TTL shortening",
+    "fresh claim after expiry, exact confirmed cleanup -> tracker CLEANED/Redis completed/native ACK, ready0/unacked0"
+  ],
+  "budget_qualification": "Original180s supervisor budget cannot observe full natural300s expiry; future exact scoped lease/deadline must be planned by Root. No runtime/resource grant or new campaign requested by this review.",
+  "executed": "Local read/hash/source review only; no consumer, broker, Redis, subprocess signals or native test executed."
+}

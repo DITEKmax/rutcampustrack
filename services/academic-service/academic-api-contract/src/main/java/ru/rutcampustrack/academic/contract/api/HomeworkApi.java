@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -21,43 +22,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
-import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
-import ru.rutcampustrack.academic.contract.dto.homework.HomeworkPublicationPendingResponse;
-import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkHistoryResponse;
-import org.springframework.data.domain.Page;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkPublicationPendingResponse;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
+import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 
-/**
- * REST API contract for homework management.
- */
+/** REST API contract for homework management. */
 @Tag(name = "Homeworks", description = "Управление домашними заданиями")
 @RequestMapping("/academic/homeworks")
 public interface HomeworkApi {
 
     @Operation(summary = "Создать домашнее задание (HEADMAN или помощник с manage_homework)")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Задание создано"),
-            @ApiResponse(responseCode = "202",
-                    description = "Задание сохранено, привязка ожидает подтверждения; повторить с тем же requestKey",
-                    content = @Content(schema = @Schema(implementation = HomeworkPublicationPendingResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "503", description = "Schedule временно недоступен до сохранения содержимого")
+        @ApiResponse(responseCode = "201", description = "Задание создано"),
+        @ApiResponse(
+                responseCode = "202",
+                description =
+                        "Задание сохранено, привязка ожидает подтверждения; повторить с тем же requestKey",
+                content =
+                        @Content(
+                                schema =
+                                        @Schema(
+                                                implementation =
+                                                        HomeworkPublicationPendingResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(
+                responseCode = "503",
+                description = "Schedule временно недоступен до сохранения содержимого")
     })
     @PostMapping
-    ResponseEntity<?> createHomework(
-            @Valid @RequestBody CreateHomeworkRequest request);
+    ResponseEntity<?> createHomework(@Valid @RequestBody CreateHomeworkRequest request);
 
     @Operation(summary = "Получить задание по ID")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Задание найдено"),
-            @ApiResponse(responseCode = "404", description = "Задание не найдено")
+        @ApiResponse(responseCode = "200", description = "Задание найдено"),
+        @ApiResponse(responseCode = "404", description = "Задание не найдено")
     })
     @GetMapping("/{id}")
-    ResponseEntity<EntityModel<HomeworkResponse>> getHomework(@PathVariable Long id,
-            @RequestParam(defaultValue = "false") boolean archived);
+    ResponseEntity<EntityModel<HomeworkResponse>> getHomework(
+            @PathVariable Long id, @RequestParam(defaultValue = "false") boolean archived);
 
-    default ResponseEntity<EntityModel<HomeworkResponse>> getHomework(Long id) { return getHomework(id, false); }
+    default ResponseEntity<EntityModel<HomeworkResponse>> getHomework(Long id) {
+        return getHomework(id, false);
+    }
 
     @Operation(summary = "Список заданий для группы и семестра")
     @ApiResponse(responseCode = "200", description = "Список заданий")
@@ -69,22 +77,24 @@ public interface HomeworkApi {
             Pageable pageable,
             PagedResourcesAssembler<HomeworkResponse> assembler);
 
-    default ResponseEntity<PagedModel<EntityModel<HomeworkResponse>>> listHomeworks(Long groupId, Long semesterId,
-            Pageable pageable, PagedResourcesAssembler<HomeworkResponse> assembler) {
+    default ResponseEntity<PagedModel<EntityModel<HomeworkResponse>>> listHomeworks(
+            Long groupId,
+            Long semesterId,
+            Pageable pageable,
+            PagedResourcesAssembler<HomeworkResponse> assembler) {
         return listHomeworks(groupId, semesterId, false, pageable, assembler);
     }
 
     @Operation(summary = "Обновить ДЗ своей группы (староста или помощник с manage_homework)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Задание обновлено"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Задание не найдено")
+        @ApiResponse(responseCode = "200", description = "Задание обновлено"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Задание не найдено")
     })
     @PutMapping("/{id}")
     ResponseEntity<EntityModel<HomeworkResponse>> updateHomework(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateHomeworkRequest request);
+            @PathVariable Long id, @Valid @RequestBody UpdateHomeworkRequest request);
 
     @Operation(summary = "История изменений ДЗ, включая архивные задания")
     @GetMapping("/{id}/history")
@@ -92,28 +102,30 @@ public interface HomeworkApi {
 
     @Operation(summary = "Архивировать задание (HEADMAN или помощник с manage_homework)")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Задание удалено"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Задание не найдено")
+        @ApiResponse(responseCode = "204", description = "Задание удалено"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Задание не найдено")
     })
     @DeleteMapping("/{id}")
     ResponseEntity<Void> deleteHomework(@PathVariable Long id);
 
-    @Operation(summary = "Отметить задание выполненным (STUDENT)", description = "Создаёт запись HomeworkCompletion для текущего студента.")
+    @Operation(
+            summary = "Отметить задание выполненным (STUDENT)",
+            description = "Создаёт запись HomeworkCompletion для текущего студента.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Задание отмечено выполненным"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Задание не найдено"),
-            @ApiResponse(responseCode = "409", description = "Задание уже выполнено")
+        @ApiResponse(responseCode = "204", description = "Задание отмечено выполненным"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Задание не найдено"),
+        @ApiResponse(responseCode = "409", description = "Задание уже выполнено")
     })
     @PostMapping("/{id}/complete")
     ResponseEntity<Void> markComplete(@PathVariable Long id);
 
     @Operation(summary = "Снять отметку выполнения (STUDENT)")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Отметка снята"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Задание или отметка не найдены")
+        @ApiResponse(responseCode = "204", description = "Отметка снята"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Задание или отметка не найдены")
     })
     @DeleteMapping("/{id}/complete")
     ResponseEntity<Void> unmarkComplete(@PathVariable Long id);

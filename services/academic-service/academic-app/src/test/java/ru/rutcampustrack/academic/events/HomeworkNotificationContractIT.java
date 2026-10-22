@@ -1,16 +1,34 @@
 package ru.rutcampustrack.academic.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
+import java.io.IOException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -18,8 +36,8 @@ import ru.rutcampustrack.academic.entity.HomeworkCompletion;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.homework.HomeworkNotificationJob;
 import ru.rutcampustrack.academic.homework.HomeworkBindingArchiveCoordinator;
+import ru.rutcampustrack.academic.homework.HomeworkNotificationJob;
 import ru.rutcampustrack.academic.integration.AbstractAcademicEventIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
@@ -31,26 +49,9 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.io.IOException;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
 /**
- * Verifies that the real scheduled homework producer is serialized by the
- * academic outbox listener into both published notification schemas.
+ * Verifies that the real scheduled homework producer is serialized by the academic outbox listener
+ * into both published notification schemas.
  */
 class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTest {
 
@@ -65,44 +66,50 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
     private static final Instant NOW = Instant.parse("2026-03-05T10:00:00Z");
     private static final LocalDate TODAY = LocalDate.of(2026, 3, 5);
 
-    @Autowired
     private HomeworkNotificationJob notificationJob;
+    @Autowired private ApplicationEventPublisher eventPublisher;
+    @Autowired private PlatformTransactionManager transactionManager;
 
-    @Autowired
-    private OutboxStorage outboxStorage;
+    @Autowired private OutboxStorage outboxStorage;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private HomeworkRepository homeworkRepository;
+    private final HomeworkRepository homeworkRepository = mock(HomeworkRepository.class);
 
-    @MockitoBean
-    private HomeworkCompletionRepository completionRepository;
+    private final HomeworkCompletionRepository completionRepository =
+            mock(HomeworkCompletionRepository.class);
 
-    @MockitoBean
-    private HomeworkWeeklyDigestRunRepository digestRunRepository;
+    private final HomeworkWeeklyDigestRunRepository digestRunRepository =
+            mock(HomeworkWeeklyDigestRunRepository.class);
 
-    @MockitoBean
-    private SemesterRepository semesterRepository;
+    private final SemesterRepository semesterRepository = mock(SemesterRepository.class);
 
-    @MockitoBean
-    private GroupRepository groupRepository;
+    private final GroupRepository groupRepository = mock(GroupRepository.class);
 
-    @MockitoBean
-    private UserRepository userRepository;
+    private final UserRepository userRepository = mock(UserRepository.class);
 
-    @MockitoBean
-    private SubjectRepository subjectRepository;
+    private final SubjectRepository subjectRepository = mock(SubjectRepository.class);
 
-    @MockitoBean
-    private HomeworkBindingArchiveCoordinator archiveCoordinator;
+    private final HomeworkBindingArchiveCoordinator archiveCoordinator =
+            mock(HomeworkBindingArchiveCoordinator.class);
 
-    @MockitoBean(name = "clock")
-    private Clock clock;
+    private final Clock clock = mock(Clock.class);
 
     @BeforeEach
     void useStableProducerClock() {
+        // Keep model doubles local: the common fixture needs the actual repositories to seed Auth.
+        notificationJob =
+                new HomeworkNotificationJob(
+                        homeworkRepository,
+                        completionRepository,
+                        digestRunRepository,
+                        semesterRepository,
+                        groupRepository,
+                        userRepository,
+                        subjectRepository,
+                        archiveCoordinator,
+                        eventPublisher,
+                        clock);
         when(clock.instant()).thenReturn(NOW);
         when(clock.getZone()).thenReturn(ZoneOffset.UTC);
         when(clock.withZone(any(ZoneId.class)))
@@ -119,15 +126,16 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
 
         when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(semester));
         when(groupRepository.findAllByIsActiveTrue()).thenReturn(List.of(group));
-        when(homeworkRepository
-                .findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
+        when(homeworkRepository.findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
                         SEMESTER_ID, TODAY.plusDays(2)))
                 .thenReturn(List.of(homework));
         when(subjectRepository.findAllById(anySet())).thenReturn(List.of(subject));
-        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(student));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID))
+                .thenReturn(List.of(student));
         when(completionRepository.findByHomeworkId(DUE_HOMEWORK_ID)).thenReturn(List.of());
 
-        notificationJob.publishDueReminders();
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(status -> notificationJob.publishDueReminders());
 
         JsonNode envelope = pendingEvent("homework.due_reminder");
         assertThat(envelope.path("event_type").asText()).isEqualTo("homework.due_reminder");
@@ -142,31 +150,41 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
     }
 
     @Test
-    void weeklyDigest_serializesRealProducerOutputAndRecipientItemsAgainstSchema() throws Exception {
+    void weeklyDigest_serializesRealProducerOutputAndRecipientItemsAgainstSchema()
+            throws Exception {
         Semester semester = activeSemester();
         Group group = activeGroup();
         Subject math = subject(SUBJECT_ID, "Math");
         Subject history = subject(OTHER_SUBJECT_ID, "History");
-        Homework completed = homework(COMPLETED_HOMEWORK_ID, SUBJECT_ID, TODAY.plusDays(4), 1, "Read");
-        Homework pending = homework(PENDING_HOMEWORK_ID, OTHER_SUBJECT_ID, TODAY.plusDays(5), 2, "Essay");
+        Homework completed =
+                homework(COMPLETED_HOMEWORK_ID, SUBJECT_ID, TODAY.plusDays(4), 1, "Read");
+        Homework pending =
+                homework(PENDING_HOMEWORK_ID, OTHER_SUBJECT_ID, TODAY.plusDays(5), 2, "Essay");
         User student = student(STUDENT_ID);
         LocalDate weekStart = LocalDate.of(2026, 3, 9);
         LocalDate weekEnd = LocalDate.of(2026, 3, 15);
 
         when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(semester));
         when(groupRepository.findAllByIsActiveTrue()).thenReturn(List.of(group));
-        when(digestRunRepository.existsByGroupIdAndWeekStart(GROUP_ID, weekStart)).thenReturn(false);
+        when(digestRunRepository.existsByGroupIdAndWeekStart(GROUP_ID, weekStart))
+                .thenReturn(false);
         when(homeworkRepository
-                .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                        GROUP_ID, SEMESTER_ID, HomeworkPublicationState.ACTIVE, weekStart, weekEnd))
+                        .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                                GROUP_ID,
+                                SEMESTER_ID,
+                                HomeworkPublicationState.ACTIVE,
+                                weekStart,
+                                weekEnd))
                 .thenReturn(List.of(completed, pending));
         when(subjectRepository.findAllById(anySet())).thenReturn(List.of(math, history));
-        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(student));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID))
+                .thenReturn(List.of(student));
         when(completionRepository.findByHomeworkIdInAndStudentId(
-                eq(List.of(COMPLETED_HOMEWORK_ID, PENDING_HOMEWORK_ID)), eq(STUDENT_ID)))
+                        eq(List.of(COMPLETED_HOMEWORK_ID, PENDING_HOMEWORK_ID)), eq(STUDENT_ID)))
                 .thenReturn(List.of(new HomeworkCompletion(COMPLETED_HOMEWORK_ID, STUDENT_ID)));
 
-        notificationJob.publishWeeklyDigest();
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(status -> notificationJob.publishWeeklyDigest());
 
         JsonNode envelope = pendingEvent("homework.weekly_digest");
         assertThat(envelope.path("event_type").asText()).isEqualTo("homework.weekly_digest");
@@ -182,10 +200,12 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
     }
 
     private JsonNode pendingEvent(String eventType) throws IOException {
-        List<OutboxRecord> records = outboxStorage.findPending(1000).stream()
-                .filter(record -> eventType.equals(record.eventType()))
-                .toList();
-        assertThat(records).as("real producer should leave one %s event in outbox", eventType)
+        List<OutboxRecord> records =
+                outboxStorage.findPending(1000).stream()
+                        .filter(record -> eventType.equals(record.eventType()))
+                        .toList();
+        assertThat(records)
+                .as("real producer should leave one %s event in outbox", eventType)
                 .hasSize(1);
         return objectMapper.readTree(records.get(0).payload());
     }
@@ -222,11 +242,19 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
         return subject;
     }
 
-    private static Homework homework(long id, long subjectId, LocalDate lessonDate,
-                                     int lessonNumber, String title) {
-        Homework homework = new Homework(
-                GROUP_ID, subjectId, SEMESTER_ID, title, "Description", "https://example.test/homework",
-                STUDENT_ID, lessonDate, lessonNumber);
+    private static Homework homework(
+            long id, long subjectId, LocalDate lessonDate, int lessonNumber, String title) {
+        Homework homework =
+                new Homework(
+                        GROUP_ID,
+                        subjectId,
+                        SEMESTER_ID,
+                        title,
+                        "Description",
+                        "https://example.test/homework",
+                        STUDENT_ID,
+                        lessonDate,
+                        lessonNumber);
         ReflectionTestUtils.setField(homework, "id", id);
         homework.activatePublication();
         return homework;

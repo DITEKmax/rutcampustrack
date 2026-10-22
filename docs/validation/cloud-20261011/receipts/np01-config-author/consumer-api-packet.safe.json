@@ -1,0 +1,30 @@
+{
+  "status": "SOURCE_READY; independent review and integration pending",
+  "base": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "commit": "5d564870e631a276d88ac5a4b97463929f9b6687",
+  "worktree": "/workspace/rct-worktrees/np01-config",
+  "files": [
+    "services/academic-service/academic-app/src/main/resources/application.yml",
+    "services/notification-bot/bot/config.py"
+  ],
+  "Settings_API": {
+    "bot_to_academic_service_token": "str; Field(default=\"\",repr=False); env BOT_TO_ACADEMIC_SERVICE_TOKEN",
+    "existing_unchanged": [
+      "academic_grpc_host",
+      "academic_grpc_port",
+      "academic_grpc_tls_enabled",
+      "academic_grpc_tls_ca_path"
+    ]
+  },
+  "Academic_property": "grpc.service-identity.bot-to-academic-token=${BOT_TO_ACADEMIC_SERVICE_TOKEN:}",
+  "agreed_domain_consumer": "BotCredentialsGrpcClient(host,port,grpc_secret=\"\",tls_enabled=False,tls_ca_path=\"\",service_token=\"\")",
+  "agreed_authority": "https://{host}:{port}/rutcampustrack.academic.AcademicGrpcService; exact two-method callback allowlist belongs to domain transport",
+  "required_boundary": "New token never falls back to GRPC_SECRET/Notification; blank/malformed blocks protected client/receiver capability. Per-call credentials on secure channel only. No global metadata. Ordinary startup unaffected.",
+  "checks": "verification.safe.json and commit-checks.safe.json",
+  "limits": [
+    "Protected RPC actual denial/cross-layer flow NOT_RUN here.",
+    "Local observed Pydantic versions differ from bot pins; pinned runtime waits approved lease.",
+    "No generation/tooling/lock/env/compose/gates/prod/required-env-list changes."
+  ],
+  "root_next": "Fresh integrated NP01 security/data review must include these two additive configs; publish protected methods before full client/receiver tests."
+}

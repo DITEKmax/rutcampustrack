@@ -1,0 +1,50 @@
+{
+  "criteria": [
+    {
+      "criterion": "Original36manifest and Root immutablearchive retained",
+      "status": "PASS_READ_ONLY",
+      "evidence": "independent-staging-check.json"
+    },
+    {
+      "criterion": "4422distinctnlink1,11cleanheads,frozenreferenceeec3metadata/traversal",
+      "status": "PASS_READ_ONLY",
+      "evidence": "independent-candidate-check.json"
+    },
+    {
+      "criterion": "Protectedsource/recoveryselectionboundary",
+      "status": "CHANGES_REQUESTED",
+      "evidence": "CAP-B01/CAP-B02; strict-selection-review.json"
+    },
+    {
+      "criterion": "3575strictremainingpairs independentlySHAequal/modeUIDGIDdeviceequal",
+      "status": "PASS_READ_ONLY",
+      "evidence": "subset of3696verifiedSHApairs in independent-candidate-check.json"
+    },
+    {
+      "criterion": "All8JAR hashes10834entrySHA/full4layers/publicNEWmodes/index/launcher",
+      "status": "PASS_READ_ONLY_SOURCE_PLAN",
+      "evidence": "independent-staging-check.json"
+    },
+    {
+      "criterion": "Actual allocated stage /9Docker/imageUSER/tmp/native/runtime",
+      "status": "NOT_RUN_UNKNOWN",
+      "evidence": "no extraction/container/JVM/nativegrant"
+    },
+    {
+      "criterion": "72original safe receipt files retained",
+      "status": "PASS_READ_ONLY",
+      "evidence": "independent-staging-check.json"
+    },
+    {
+      "criterion": "Phaseorder stagingbeforeDocker,transientreleased",
+      "status": "APPROVE_CONDITIONAL_SOURCE_CALCULATION",
+      "evidence": "maxstaging4630511616/runtime8277277457B; actualphase/diskmeasurements required"
+    },
+    {
+      "criterion": "Enoughcapacity under protectedboundary",
+      "status": "INSUFFICIENT_POTENTIAL",
+      "evidence": "phase-budget-strict.json"
+    }
+  ],
+  "resource_mutations": false
+}

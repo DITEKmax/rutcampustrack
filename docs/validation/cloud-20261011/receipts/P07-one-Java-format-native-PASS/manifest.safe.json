@@ -1,0 +1,13 @@
+{
+  "files": {
+    "semantic-source-manifest.safe.json": "7af5d53b4503555dad5b68a3078e9fc9aea1bd3a49398980388cec9cfce299ff",
+    "format-plan.safe.json": "a66bd5490d7e70b50cd6772a65037d93b642190b502b3b2742975a0015f6ed94",
+    "READY.safe.json": "05508be008bd11ceae2daeb43b68f61d6fd58d9005cccb3a72e17875bf715c9d",
+    "run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "format-journal.init.gradle": "6b9910273467501fc83f79e2f49edcbfac34af06939f357a7cc30f7ee56be1b5",
+    "grant.template.safe.json": "e1c39e2e8f72048566c9c2dcee77796f08120cfa4bd3792c77549bde0e8c2008"
+  },
+  "native": "NOT_RUN",
+  "product_revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1"
+}

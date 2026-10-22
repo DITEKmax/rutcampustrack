@@ -1,21 +1,20 @@
 package ru.rutcampustrack.notification.history;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 
-import java.util.List;
-
-/**
- * Spring Data MongoDB repository для notification_history (M10).
- */
-public interface NotificationHistoryRepository extends MongoRepository<NotificationHistoryDocument, String> {
+/** Spring Data MongoDB repository для notification_history (M10). */
+public interface NotificationHistoryRepository
+        extends MongoRepository<NotificationHistoryDocument, String> {
 
     Page<NotificationHistoryDocument> findByUserIdOrderBySentAtDesc(Long userId, Pageable pageable);
 
-    Page<NotificationHistoryDocument> findByUserIdAndReadAtIsNullOrderBySentAtDesc(Long userId, Pageable pageable);
+    Page<NotificationHistoryDocument> findByUserIdAndReadAtIsNullOrderBySentAtDesc(
+            Long userId, Pageable pageable);
 
     List<NotificationHistoryDocument> findByEventIdAndUserIdIn(String eventId, List<Long> userIds);
 

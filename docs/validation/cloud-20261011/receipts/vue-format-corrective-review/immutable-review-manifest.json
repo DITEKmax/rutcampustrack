@@ -1,0 +1,55 @@
+{
+  "review": "independent formatter corrective source review",
+  "source_commit": "9a77f68205df2cbd41892373e261fa05adae0265",
+  "base": "b3c0d04ede6b79c9818042e81074c848974d3ce9",
+  "verdict": "APPROVE_SOURCE",
+  "blocking_findings": [],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "runtime_product_browser_Windows": "NOT_RUN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 523,
+      "sha256": "3ff594a75ba87fc3ea62fb3aaff722952e6ca92fb6c4b59daf698be054e7c91e"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1287,
+      "sha256": "37ffe4190fabce17c97f258e6c98278aa201da13a58a056970fb02980fbba155"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 8769,
+      "sha256": "a210a523a08d4d345b23c245365ac7c4996bcc4fd5fb49f1302c301caf7e6afc"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 1379,
+      "sha256": "ca2a4b9478a1137d7fd2fcba6edad4530f02beb90dc37e0b46fbf5af2b34d9e8"
+    },
+    {
+      "path": "critical-source-and-native.safe.json",
+      "bytes": 7223,
+      "sha256": "74d4ab4cdbaeea50a357997504a351b7a2d3b789db949fe18226c9143e430108"
+    },
+    {
+      "path": "findings.safe.json",
+      "bytes": 911,
+      "sha256": "0ac5bc9b19b2199a8b4fdd9c6e73d976127429daf7181ee6b8212afd632bd60f"
+    },
+    {
+      "path": "meaning-and-sensitivity.safe.json",
+      "bytes": 37016,
+      "sha256": "954d5373623da6361dac5813e3ea0b7c7cf67db5a2696e5e2ee5c9df48798d06"
+    },
+    {
+      "path": "source-and-archive.safe.json",
+      "bytes": 43192,
+      "sha256": "6bce8d49374de98a207a8d1f3c4ba5f3d0f9ba3cfe3a2e2e06839ab945ea6e04"
+    }
+  ],
+  "private_values_raw_logs": false,
+  "immutable_after_seal": true
+}

@@ -1,0 +1,152 @@
+{
+  "producer": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "checkoutSha": "a932aae335267d6774a39f8b1c2284795b8ac54c",
+  "runId": 38480461362,
+  "jobId": 115581484151,
+  "cause": "DEPENDENCY_NOT_FOUND_PRE_TEST",
+  "deeperResolverCause": "UNKNOWN",
+  "failureStep": 9,
+  "failureTask": ":services:auth-service:auth-app:extractIncludeProto",
+  "failureConfiguration": ":services:auth-service:auth-app:compileProtoPath",
+  "exit": 1,
+  "buildSeconds": 24,
+  "integrationTaskEntered": false,
+  "testVerdict": "NOT_EXECUTED_NO_RESULTS",
+  "evidence": {
+    "stepsReadCount": 1,
+    "logsReadCount": 1,
+    "responseBytes": 43607,
+    "logChars": 42726,
+    "consumerLimitBytes": 33554432,
+    "rawPersisted": false,
+    "rawEmitted": false,
+    "connectorTransportLimit": "UNMEASURED",
+    "markerLines": [
+      388,
+      389,
+      390,
+      394,
+      397,
+      400,
+      403,
+      406,
+      409,
+      412,
+      415,
+      418,
+      421,
+      424,
+      427,
+      437,
+      438
+    ],
+    "dependencies": [
+      "org.projectlombok:lombok:1.18.46",
+      "javax.annotation:javax.annotation-api:1.3.2",
+      "org.springframework.boot:spring-boot-starter-web:3.5.16",
+      "org.springframework.boot:spring-boot-starter-data-redis:3.5.16",
+      "org.springframework.boot:spring-boot-starter-amqp:3.5.16",
+      "org.springframework.boot:spring-boot-starter-security:3.5.16",
+      "net.javacrumbs.shedlock:shedlock-spring:5.16.0",
+      "net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0",
+      "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9",
+      "org.springframework.boot:spring-boot-starter-data-jpa:3.5.16",
+      "net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE",
+      "io.grpc:grpc-netty:1.82.4",
+      "com.google.protobuf:protobuf-java:3.25.8"
+    ],
+    "logBytes": 42741,
+    "stepResponseBytes": 1607,
+    "minimalFailureSkeletons": [
+      {
+        "line": 388,
+        "message": "Execution failed for task [TASK_REDACTED]."
+      },
+      {
+        "line": 389,
+        "message": "Could not resolve all files for configuration [CONFIGURATION_REDACTED]."
+      },
+      {
+        "line": 390,
+        "message": "Could not find [DEPENDENCY_REDACTED]."
+      }
+    ],
+    "failedTaskMarkerLine": 380
+  },
+  "qualification": "Actual failure is Gradle dependency resolution before integrationTest. Dependency cache/repository/provider cause UNKNOWN. Coverage success is separate evidence; no flaky or product assertion failure verdict.",
+  "recommendation": "Integrate only the Auth integrationTest --refresh-dependencies condition with the coherent pending package; run next ordinary CI once. Preserve historical a852 dependency-resolution failure. Classify resolver behavior and actual Auth tests independently; no claim this fixes the unproved cache mechanism.",
+  "cacheObservation": {
+    "setupJavaCacheRestore": "SUCCESS_LOG_MARKER",
+    "setupGradleHomeExists": "OBSERVED",
+    "setupGradleRestoration": "SKIPPED_EXISTING_HOME",
+    "setupGradleSave": "NOT_RESTORED_OR_SAVED_LOG_MARKER",
+    "cacheCausality": "UNKNOWN",
+    "ciAction": "gradle/actions/setup-gradle@v6",
+    "coverageAction": "gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e",
+    "bothWorkflowSetupJavaGradleCaching": true
+  },
+  "sourceObservation": {
+    "repository": "MAVEN_CENTRAL",
+    "repositoryPolicyChangedFromBaseline": false,
+    "versionCatalogChangedFromBaseline": false,
+    "settingsChangedFromBaseline": false,
+    "authDependencyChangesFromBaseline": "THREE_TEST_IMPLEMENTATION_ONLY",
+    "failedConfiguration": "MAIN_COMPILE_PROTO_PATH",
+    "dockerBuildKitIsolationScope": "SEPARATE_DOCKER_JOB_NOT_THIS_HOST_GRADLE_TASK",
+    "priorDockerDaemonFailureRelation": "NOT_ESTABLISHED"
+  },
+  "classification": {
+    "observedCause": "GRADLE_DEPENDENCY_RESOLUTION_FAILURE_PRE_TEST",
+    "productFailure": "NOT_ESTABLISHED",
+    "oracleFailure": "NOT_ESTABLISHED",
+    "environmentOrCacheMechanism": "UNKNOWN",
+    "flaky": "NOT_ESTABLISHED",
+    "coverageMeaning": "SEPARATE_SAME_HEAD_SUCCESS_NOT_CAUSE_PROOF"
+  },
+  "limits": {
+    "connectorTransportResponseLimit": "UNMEASURED",
+    "connectorTransportTimeOrMemoryLimit": "UNMEASURED",
+    "postReturnConsumerLimitBytes": 33554432,
+    "consumerAccepted": true,
+    "nativeCommandsLaunched": 0,
+    "testsRerun": 0,
+    "productOrWorkflowEdits": 0
+  },
+  "diagnosticCorrection": {
+    "state": "AUTHOR_COMMITTED_ROOT_INTEGRATION_NORMAL_CI_PENDING",
+    "writer": "a852_auth_it_diagnosis",
+    "selectedModel": "gpt-6.1-sol",
+    "selectedEffort": "high",
+    "actualModelEffort": "UNKNOWN",
+    "worktree": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+    "branch": "codex/auth-it-dependency-refresh-20261013",
+    "base": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+    "preservedPriorBranch": "codex/report-educational-clock-20261013",
+    "preservedPriorHead": "bded95ef6e244693e45f6b37a484c5d65e518daf",
+    "paths": [
+      ".github/workflows/ci.yml"
+    ],
+    "fileBeforeSha256": "6cff9abf6f5069d771df40ed0195f51c6146f07f1a6887e218851af51d5b6f9f",
+    "fileAfterSha256": "b8c460c7b54a576222a0e2ebb4bb69f9636bee86d58630b069dd9c3d49d1cd70",
+    "changedCondition": "AUTH_INTEGRATION_TASK_REFRESH_DEPENDENCY_METADATA",
+    "command": "./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon ${{ matrix.service.name == 'auth-service' && '--refresh-dependencies' || '' }}",
+    "reason": "13 missing compileProtoPath dependencies after setup-java cache restoration; refresh invalidates trusted resolution metadata without discarding artifact downloads. Cache causal hypothesis remains UNKNOWN.",
+    "checks": {
+      "prettier3.6.2ScopedCheck": 0,
+      "PyYamlParseAndInverseFullWorkflowEquality": 0,
+      "sixMatrixCommandSelections": 0,
+      "gitDiffCheck": 0
+    },
+    "otherFiveMatrixCommands": "UNCHANGED_AFTER_EXPRESSION_EVALUATION",
+    "unitCoverageE2ERepositoryDependenciesTimeoutsTestsGates": "UNCHANGED",
+    "authorCommit": "4c9198df38b04381b599ccc1428e693085b4ded4",
+    "configuredGitPreCommitHook": "ABSENT_NOT_CHANGED",
+    "ciTestResult": "NOT_RUN",
+    "nativeHeavyOrNetworkDependencyDownloads": 0,
+    "historicalFailurePreserved": true,
+    "historicalCacheInnerCause": "UNKNOWN",
+    "normalGitCommitExit": 0,
+    "worktreeStatus": "CLEAN",
+    "ownership": "RELEASED_TO_ROOT"
+  }
+}

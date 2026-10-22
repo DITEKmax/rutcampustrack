@@ -1,0 +1,28 @@
+{
+  "206343": {
+    "ppid": 206338,
+    "pgid": 206343,
+    "start": 3511502,
+    "state": "S",
+    "bounded_jvm_flags": [
+      "-Xmx64m"
+    ]
+  },
+  "206377": {
+    "ppid": 206343,
+    "pgid": 206377,
+    "start": 3511588,
+    "state": "S",
+    "bounded_jvm_flags": [
+      "-XX:MaxMetaspaceSize=256m",
+      "-Xmx768m"
+    ]
+  },
+  "206544": {
+    "ppid": 206377,
+    "pgid": 206377,
+    "start": 3515625,
+    "state": "R",
+    "bounded_jvm_flags": []
+  }
+}

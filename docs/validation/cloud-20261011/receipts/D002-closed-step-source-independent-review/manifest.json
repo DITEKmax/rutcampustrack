@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scope": "D002_SINGLE_ORIGINAL367_PUBLIC_STEP_PRIVACY_SOURCE",
+  "verdict": "APPROVE_SOURCE",
+  "file_count": 4,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "8675dc2f534acae91dbbf1dc47b2b0bfc63f81421f9037add22bb73a7330ff31",
+      "bytes": 5751,
+      "mode": "600"
+    },
+    {
+      "path": "review.safe.json",
+      "sha256": "4f61fa9912a25de7a44dd5093f1d3ea415d224d71d12811d9905d68179e59141",
+      "bytes": 5626,
+      "mode": "600"
+    },
+    {
+      "path": "source-bindings.safe.json",
+      "sha256": "9e58c966b57fb5971cec5884e2303bbd9f14fd683195a89db2e4c018c0a79fb5",
+      "bytes": 2482,
+      "mode": "600"
+    },
+    {
+      "path": "verify-source-bindings.py",
+      "sha256": "66717b22b1020a47fb55f7161c93fc2827386eb0246b689580daba78ce45ead1",
+      "bytes": 4244,
+      "mode": "600"
+    }
+  ],
+  "native": "NOT_RUN",
+  "historical367_stage": "UNKNOWN",
+  "no_parent_promotion": true
+}

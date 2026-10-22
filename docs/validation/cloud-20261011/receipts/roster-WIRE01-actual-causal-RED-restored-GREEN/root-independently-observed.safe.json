@@ -1,0 +1,60 @@
+{
+  "utc": "2026-10-13T06:54:22.968925+00:00",
+  "all_births": [
+    {
+      "pid": 491560,
+      "start_ticks": 12786168,
+      "birth_absent": true
+    },
+    {
+      "pid": 491585,
+      "start_ticks": 12786185,
+      "birth_absent": true
+    },
+    {
+      "pid": 491586,
+      "start_ticks": 12786191,
+      "birth_absent": true
+    },
+    {
+      "pid": 491618,
+      "start_ticks": 12786296,
+      "birth_absent": true
+    },
+    {
+      "pid": 491848,
+      "start_ticks": 12789239,
+      "birth_absent": true
+    },
+    {
+      "pid": 491888,
+      "start_ticks": 12789480,
+      "birth_absent": true
+    },
+    {
+      "pid": 491934,
+      "start_ticks": 12789932,
+      "birth_absent": true
+    },
+    {
+      "pid": 491969,
+      "start_ticks": 12790003,
+      "birth_absent": true
+    },
+    {
+      "pid": 492291,
+      "start_ticks": 12793156,
+      "birth_absent": true
+    },
+    {
+      "pid": 492327,
+      "start_ticks": 12793406,
+      "birth_absent": true
+    }
+  ],
+  "source13_and_protected2_exact": true,
+  "private_tmp_absent": true,
+  "parent_envelope_absent": true,
+  "actualtool_finalexit": "AUTHOR_POLL_PENDING",
+  "qualification": "Root closedreceipt/sourcehash/procbirth check. Actual muted4011FAIL\u2192restoredsame1PASS; no fresh duplicate/cross-agent tool ownership assumed."
+}

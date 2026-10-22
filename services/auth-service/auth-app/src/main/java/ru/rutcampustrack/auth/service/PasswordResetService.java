@@ -1,13 +1,25 @@
 package ru.rutcampustrack.auth.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
-import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.dto.PasswordResetRequest;
 import ru.rutcampustrack.auth.dto.PasswordResetRequestResponse;
@@ -16,23 +28,10 @@ import ru.rutcampustrack.auth.dto.PasswordResetVerifyResponse;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.event.OtpRequestedEvent;
 import ru.rutcampustrack.auth.exception.PasswordResetException;
+import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.SessionLifecycleService;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
-import ru.rutcampustrack.auth.repository.UserRepository;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.HexFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
 /** Purpose-isolated Telegram OTP and one-use reset-ticket flow. */
 @Service
@@ -44,7 +43,8 @@ public final class PasswordResetService {
     private static final long PROOF_LIMITED = 2L;
     private static final long PROOF_INVALID = 3L;
 
-    private static final String REQUEST_BUDGET_SCRIPT_TEXT = """
+    private static final String REQUEST_BUDGET_SCRIPT_TEXT =
+            """
             local sent = tonumber(redis.call('GET', KEYS[1]) or '0')
             if sent >= tonumber(ARGV[1]) or redis.call('EXISTS', KEYS[2]) == 1 then
                 return 0
@@ -57,7 +57,8 @@ public final class PasswordResetService {
             return 1
             """;
 
-    private static final String STORE_REAL_CHALLENGE_SCRIPT_TEXT = """
+    private static final String STORE_REAL_CHALLENGE_SCRIPT_TEXT =
+            """
             local failures = tonumber(redis.call('GET', KEYS[5]) or '0')
             if failures >= tonumber(ARGV[1]) then
                 redis.call('SET', KEYS[1], ARGV[3], 'EX', tonumber(ARGV[4]))
@@ -76,14 +77,16 @@ public final class PasswordResetService {
             return tostring(tonumber(ARGV[1]) - failures)
             """;
 
-    private static final String STORE_DECOY_CHALLENGE_SCRIPT_TEXT = """
+    private static final String STORE_DECOY_CHALLENGE_SCRIPT_TEXT =
+            """
             redis.call('SET', KEYS[1], ARGV[1], 'EX', tonumber(ARGV[3]))
             redis.call('SET', KEYS[2], '0', 'EX', tonumber(ARGV[3]))
             redis.call('SET', KEYS[3], ARGV[2], 'EX', tonumber(ARGV[3]))
             return 1
             """;
 
-    private static final String RECORD_MISMATCH_SCRIPT_TEXT = """
+    private static final String RECORD_MISMATCH_SCRIPT_TEXT =
+            """
             local account = redis.call('GET', KEYS[1])
             local user = redis.call('GET', KEYS[2])
             local storedCode = redis.call('GET', KEYS[3])
@@ -114,7 +117,8 @@ public final class PasswordResetService {
             return '1:' .. tostring(remaining) .. ':' .. tostring(ttl)
             """;
 
-    private static final String CONSUME_CHALLENGE_SCRIPT_TEXT = """
+    private static final String CONSUME_CHALLENGE_SCRIPT_TEXT =
+            """
             local account = redis.call('GET', KEYS[1])
             local user = redis.call('GET', KEYS[2])
             local storedCode = redis.call('GET', KEYS[3])
@@ -160,10 +164,15 @@ public final class PasswordResetService {
             UserRepository userRepository,
             SessionLifecycleService sessionLifecycle,
             AuthService authService,
-            ApplicationEventPublisher eventPublisher
-    ) {
-        this(redisTemplate, otpProperties, userRepository, sessionLifecycle, authService,
-                eventPublisher, Clock.systemUTC());
+            ApplicationEventPublisher eventPublisher) {
+        this(
+                redisTemplate,
+                otpProperties,
+                userRepository,
+                sessionLifecycle,
+                authService,
+                eventPublisher,
+                Clock.systemUTC());
     }
 
     PasswordResetService(
@@ -173,8 +182,7 @@ public final class PasswordResetService {
             SessionLifecycleService sessionLifecycle,
             AuthService authService,
             ApplicationEventPublisher eventPublisher,
-            Clock clock
-    ) {
+            Clock clock) {
         this.redisTemplate = Objects.requireNonNull(redisTemplate, "redisTemplate");
         this.otpProperties = Objects.requireNonNull(otpProperties, "otpProperties");
         this.userRepository = Objects.requireNonNull(userRepository, "userRepository");
@@ -190,45 +198,58 @@ public final class PasswordResetService {
             throw new IllegalArgumentException("exactly one recovery identifier is required");
         }
         User requestedUser = findUserForReset(request);
-        String accountKey = requestedUser != null && requestedUser.getId() != null
-                ? accountKeyForUser(requestedUser.getId())
-                : unknownAccountKey(request);
+        String accountKey =
+                requestedUser != null && requestedUser.getId() != null
+                        ? accountKeyForUser(requestedUser.getId())
+                        : unknownAccountKey(request);
         String challengeId = randomToken(24);
         String challengeHash = sha256(challengeId);
         String code = newCode();
         int ttlSeconds = otpProperties.ttlSeconds();
 
-        Long budgetAccepted = execute(requestBudgetScript,
-                List.of(requestWindowKey(accountKey), requestCooldownKey(accountKey)),
-                otpProperties.maxAttempts(), otpProperties.attemptsWindowSeconds(),
-                Math.max(1, otpProperties.resendCooldownSeconds()));
+        Long budgetAccepted =
+                execute(
+                        requestBudgetScript,
+                        List.of(requestWindowKey(accountKey), requestCooldownKey(accountKey)),
+                        otpProperties.maxAttempts(),
+                        otpProperties.attemptsWindowSeconds(),
+                        Math.max(1, otpProperties.resendCooldownSeconds()));
 
         if (budgetAccepted == null || budgetAccepted != 1L) {
             return new PasswordResetRequestResponse(challengeId, ttlSeconds);
         }
 
-        User user = requestedUser != null
-                && requestedUser.getId() != null
-                && requestedUser.getTelegramId() != null
-                && requestedUser.getTelegramId() > 0
-                ? requestedUser
-                : null;
+        User user =
+                requestedUser != null
+                                && requestedUser.getId() != null
+                                && requestedUser.getTelegramId() != null
+                                && requestedUser.getTelegramId() > 0
+                                && !hasActiveAdminGrant(requestedUser.getId())
+                        ? requestedUser
+                        : null;
         if (user == null) {
             storeDecoyChallenge(challengeHash, accountKey, code, ttlSeconds);
             return new PasswordResetRequestResponse(challengeId, ttlSeconds);
         }
 
         long telegramId = user.getTelegramId();
-        int attemptsRemaining = storeRealChallenge(
-                challengeHash, accountKey, user.getId(), code, ttlSeconds);
+        int attemptsRemaining =
+                storeRealChallenge(challengeHash, accountKey, user.getId(), code, ttlSeconds);
         if (attemptsRemaining > 0) {
             try {
-                eventPublisher.publishEvent(new OtpRequestedEvent(
-                        this, telegramId, code, ttlSeconds,
-                        "password_reset", challengeId, attemptsRemaining));
+                eventPublisher.publishEvent(
+                        new OtpRequestedEvent(
+                                this,
+                                telegramId,
+                                code,
+                                ttlSeconds,
+                                "password_reset",
+                                challengeId,
+                                attemptsRemaining));
             } catch (RuntimeException exception) {
                 // The public response remains indistinguishable for known and unknown IDs.
-                log.warn("Password-reset OTP notification could not be published ({})",
+                log.warn(
+                        "Password-reset OTP notification could not be published ({})",
                         exception.getClass().getSimpleName());
             }
         }
@@ -258,9 +279,19 @@ public final class PasswordResetService {
             throw recordMismatch(challengeHash, accountKey);
         }
 
-        String consumed = execute(consumeChallengeScript,
-                List.of(ownerKey, userKey, codeKey, activeChallengeKey(accountKey), verifyFailuresKey(accountKey)),
-                accountKey, challengeHash, storedCode, otpProperties.maxAttempts());
+        String consumed =
+                execute(
+                        consumeChallengeScript,
+                        List.of(
+                                ownerKey,
+                                userKey,
+                                codeKey,
+                                activeChallengeKey(accountKey),
+                                verifyFailuresKey(accountKey)),
+                        accountKey,
+                        challengeHash,
+                        storedCode,
+                        otpProperties.maxAttempts());
         ScriptResult result = parseScriptResult(consumed, 3);
         if (result.status() == PROOF_EXPIRED || result.status() == PROOF_INVALID) {
             throw otpExpired();
@@ -273,16 +304,25 @@ public final class PasswordResetService {
         }
 
         User user = findUserById(userId);
-        if (user == null) {
+        if (user == null || hasActiveAdminGrant(userId)) {
             throw otpExpired();
         }
         String resetTicket = randomToken(32);
         Instant now = clock.instant();
         int expiresInSeconds = otpProperties.ttlSeconds();
-        boolean ticketSaved = sessionLifecycle.issuePasswordResetTicket(
-                userId,
-                new CredentialSessionTransactionPort.CredentialHash(sha256(resetTicket)),
-                now.plusSeconds(expiresInSeconds));
+        boolean ticketSaved;
+        try {
+            ticketSaved =
+                    sessionLifecycle.issuePasswordResetTicket(
+                            userId,
+                            new CredentialSessionTransactionPort.CredentialHash(
+                                    sha256(resetTicket)),
+                            now.plusSeconds(expiresInSeconds));
+        } catch (AuthSessionException exception) {
+            // A grant may activate after the precheck. Preserve database unavailability separately.
+            if (exception.code() == AuthSessionException.Code.ROLE_NOT_GRANTED) throw otpExpired();
+            throw exception;
+        }
         if (!ticketSaved) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
@@ -307,7 +347,8 @@ public final class PasswordResetService {
             }
             return userRepository.findByLogin(request.login().trim()).orElse(null);
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
@@ -315,40 +356,68 @@ public final class PasswordResetService {
         try {
             return userRepository.findById(userId).orElse(null);
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+    }
+
+    private boolean hasActiveAdminGrant(long userId) {
+        try {
+            return userRepository.hasActiveAdminGrant(userId);
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
     private int storeRealChallenge(
-            String challengeHash,
-            String accountKey,
-            long userId,
-            String code,
-            int ttlSeconds
-    ) {
-        String result = execute(storeRealChallengeScript,
-                List.of(challengeAccountKey(challengeHash), challengeUserKey(challengeHash),
-                        challengeCodeKey(challengeHash), activeChallengeKey(accountKey),
-                        verifyFailuresKey(accountKey)),
-                otpProperties.maxAttempts(), userId, accountKey, ttlSeconds, code,
-                challengeHash, challengePrefix());
+            String challengeHash, String accountKey, long userId, String code, int ttlSeconds) {
+        String result =
+                execute(
+                        storeRealChallengeScript,
+                        List.of(
+                                challengeAccountKey(challengeHash),
+                                challengeUserKey(challengeHash),
+                                challengeCodeKey(challengeHash),
+                                activeChallengeKey(accountKey),
+                                verifyFailuresKey(accountKey)),
+                        otpProperties.maxAttempts(),
+                        userId,
+                        accountKey,
+                        ttlSeconds,
+                        code,
+                        challengeHash,
+                        challengePrefix());
         return result == null ? 0 : parseNonNegativeInt(result, 0);
     }
 
-    private void storeDecoyChallenge(String challengeHash, String accountKey, String code, int ttlSeconds) {
-        execute(storeDecoyChallengeScript,
-                List.of(challengeAccountKey(challengeHash), challengeUserKey(challengeHash),
+    private void storeDecoyChallenge(
+            String challengeHash, String accountKey, String code, int ttlSeconds) {
+        execute(
+                storeDecoyChallengeScript,
+                List.of(
+                        challengeAccountKey(challengeHash),
+                        challengeUserKey(challengeHash),
                         challengeCodeKey(challengeHash)),
-                accountKey, code, ttlSeconds);
+                accountKey,
+                code,
+                ttlSeconds);
     }
 
     private PasswordResetException recordMismatch(String challengeHash, String accountKey) {
-        String result = execute(recordMismatchScript,
-                List.of(challengeAccountKey(challengeHash), challengeUserKey(challengeHash),
-                        challengeCodeKey(challengeHash), activeChallengeKey(accountKey),
-                        verifyFailuresKey(accountKey)),
-                accountKey, challengeHash, otpProperties.maxAttempts(),
-                otpProperties.attemptsWindowSeconds());
+        String result =
+                execute(
+                        recordMismatchScript,
+                        List.of(
+                                challengeAccountKey(challengeHash),
+                                challengeUserKey(challengeHash),
+                                challengeCodeKey(challengeHash),
+                                activeChallengeKey(accountKey),
+                                verifyFailuresKey(accountKey)),
+                        accountKey,
+                        challengeHash,
+                        otpProperties.maxAttempts(),
+                        otpProperties.attemptsWindowSeconds());
         ScriptResult parsed = parseScriptResult(result, 3);
         if (parsed.status() == PROOF_EXPIRED) {
             return otpExpired();
@@ -358,30 +427,28 @@ public final class PasswordResetService {
         }
         if (parsed.status() == PROOF_INVALID) {
             return new PasswordResetException(
-                    PasswordResetException.Code.OTP_INVALID,
-                    parsed.attemptsRemaining(), null);
+                    PasswordResetException.Code.OTP_INVALID, parsed.attemptsRemaining(), null);
         }
         return new PasswordResetException(
-                PasswordResetException.Code.OTP_INVALID,
-                parsed.attemptsRemaining(), null);
+                PasswordResetException.Code.OTP_INVALID, parsed.attemptsRemaining(), null);
     }
 
     private String redisValue(String key) {
         try {
             return redisTemplate.opsForValue().get(key);
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
     private <T> T execute(DefaultRedisScript<T> script, List<String> keys, Object... args) {
         try {
-            Object[] serializedArgs = Arrays.stream(args)
-                    .map(String::valueOf)
-                    .toArray();
+            Object[] serializedArgs = Arrays.stream(args).map(String::valueOf).toArray();
             return redisTemplate.execute(script, keys, serializedArgs);
         } catch (DataAccessException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
@@ -393,7 +460,8 @@ public final class PasswordResetService {
         if (parts.length != fields) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
-        return new ScriptResult(parseLong(parts[0]),
+        return new ScriptResult(
+                parseLong(parts[0]),
                 parts.length > 1 ? parseInt(parts[1], -1) : -1,
                 parts.length > 2 ? parseInt(parts[2], 0) : 0);
     }
@@ -403,15 +471,18 @@ public final class PasswordResetService {
     }
 
     private PasswordResetException rateLimited(int attemptsRemaining, int retryAfterSeconds) {
-        return new PasswordResetException(PasswordResetException.Code.OTP_RATE_LIMITED,
-                attemptsRemaining, Math.max(0, retryAfterSeconds));
+        return new PasswordResetException(
+                PasswordResetException.Code.OTP_RATE_LIMITED,
+                attemptsRemaining,
+                Math.max(0, retryAfterSeconds));
     }
 
     private static long parseUserId(String value) {
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
@@ -432,7 +503,8 @@ public final class PasswordResetService {
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException exception) {
-            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
@@ -451,9 +523,10 @@ public final class PasswordResetService {
     }
 
     private static String unknownAccountKey(PasswordResetRequest request) {
-        String identifier = request.telegramId() != null
-                ? "telegram:" + request.telegramId()
-                : "login:" + request.login().trim().toLowerCase(Locale.ROOT);
+        String identifier =
+                request.telegramId() != null
+                        ? "telegram:" + request.telegramId()
+                        : "login:" + request.login().trim().toLowerCase(Locale.ROOT);
         return sha256("password-reset-account:unknown:" + identifier);
     }
 
@@ -491,19 +564,19 @@ public final class PasswordResetService {
 
     private static boolean constantTimeCodeEquals(String expected, String actual) {
         return MessageDigest.isEqual(
-                expected.getBytes(StandardCharsets.UTF_8),
-                actual.getBytes(StandardCharsets.UTF_8));
+                expected.getBytes(StandardCharsets.UTF_8), actual.getBytes(StandardCharsets.UTF_8));
     }
 
     private static String sha256(String value) {
         try {
-            return HexFormat.of().formatHex(
-                    MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
     }
 
-    private record ScriptResult(long status, int attemptsRemaining, int retryAfterSeconds) {
-    }
+    private record ScriptResult(long status, int attemptsRemaining, int retryAfterSeconds) {}
 }

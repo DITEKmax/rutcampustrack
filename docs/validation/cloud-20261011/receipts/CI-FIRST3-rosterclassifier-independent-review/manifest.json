@@ -1,0 +1,17 @@
+{
+  "scope": "ROSTER503_CLASSIFIER_PRIVACY_ASYNC_DELTA_ONLY",
+  "verdict": "CHANGES_REQUESTED",
+  "finding": "CI-F3-STATUS-SHAPE-004",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1497,
+      "sha256": "4e0d9a0c9aaff58cf1f765048bcf281b43fe54dac122deaf792bd9a4cdf1c893"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3669,
+      "sha256": "51e2cd86938fefb2f93f914da35c8ce7e1b082def4f0d624f50b2f22dfe3b073"
+    }
+  ]
+}

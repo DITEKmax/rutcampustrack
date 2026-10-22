@@ -1,0 +1,36 @@
+{
+  "kind": "POSIX_MODE_ONLY_SELECTED_SOURCE_COUNTEREXAMPLE",
+  "original": "f5a0d60000332f6560856e527e91e3defcff8a54",
+  "finding": "CI-F3-CLOCK-MODE-001",
+  "pass": true,
+  "rows": [
+    {
+      "variant": "original",
+      "modes": {
+        "directory": "0o700",
+        "clock-fixture.jar": "0o644",
+        "disposable-target": "0o600",
+        "current-instant": "0o600",
+        "private": "0o700"
+      },
+      "other_uid_traverse_and_read": false,
+      "private_other_uid_denied": true
+    },
+    {
+      "variant": "corrected",
+      "modes": {
+        "directory": "0o755",
+        "clock-fixture.jar": "0o644",
+        "disposable-target": "0o644",
+        "current-instant": "0o644",
+        "private": "0o700"
+      },
+      "other_uid_traverse_and_read": true,
+      "private_other_uid_denied": true
+    }
+  ],
+  "outer_private_umask_preserved": "0o077",
+  "controls_tmp_removed": true,
+  "node_or_container_executed": false,
+  "qualification": "Python reproduces POSIX mkdir/open mode masking from the selected existing Node helper; non-owner mode predicate only, no actual container read or service boot."
+}

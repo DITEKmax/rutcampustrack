@@ -1,20 +1,18 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
 /**
  * Pure calculator for the numeric part of a student attendance projection.
  *
- * <p>Lifecycle and attendance mark are separate inputs. A planned or active
- * occurrence is future data, whereas a closed occurrence with no stored mark
- * is projected as absent and reported as an integrity diagnostic. The
- * calculator never writes the projected mark.</p>
+ * <p>Lifecycle and attendance mark are separate inputs. A planned or active occurrence is future
+ * data, whereas a closed occurrence with no stored mark is projected as absent and reported as an
+ * integrity diagnostic. The calculator never writes the projected mark.
  */
 public final class AttendanceMetricCalculator {
 
@@ -31,14 +29,12 @@ public final class AttendanceMetricCalculator {
     }
 
     /**
-     * One authoritative physical occurrence. The id is never inferred or
-     * synthesized here. For CLOSED, a null mark means that persistence missed
-     * the close-time ABSENT materialization and is therefore a diagnostic.
+     * One authoritative physical occurrence. The id is never inferred or synthesized here. For
+     * CLOSED, a null mark means that persistence missed the close-time ABSENT materialization and
+     * is therefore a diagnostic.
      */
     public record Occurrence(
-            Long occurrenceId,
-            OccurrenceState state,
-            AttendanceStatus attendanceStatus) {
+            Long occurrenceId, OccurrenceState state, AttendanceStatus attendanceStatus) {
 
         public static Occurrence planned(long occurrenceId) {
             return new Occurrence(occurrenceId, OccurrenceState.PLANNED, null);
@@ -74,15 +70,13 @@ public final class AttendanceMetricCalculator {
             if (count < 0) {
                 throw StudentProjectionException.invalidMetrics("negative count " + count);
             }
-            if (percent != null
-                    && (percent.signum() < 0 || percent.compareTo(ONE_HUNDRED) > 0)) {
+            if (percent != null && (percent.signum() < 0 || percent.compareTo(ONE_HUNDRED) > 0)) {
                 throw StudentProjectionException.invalidMetrics(
                         "percentage outside 0..100: " + percent);
             }
             this.count = count;
-            this.percent = percent == null
-                    ? null
-                    : percent.setScale(PERCENT_SCALE, RoundingMode.HALF_UP);
+            this.percent =
+                    percent == null ? null : percent.setScale(PERCENT_SCALE, RoundingMode.HALF_UP);
         }
 
         public int count() {
@@ -127,10 +121,9 @@ public final class AttendanceMetricCalculator {
     }
 
     /**
-     * The four required measures. {@code plannedCount} is the dense number of
-     * all included physical occurrences (future and held); {@link
-     * #futureCount()} isolates the PLANNED/ACTIVE part. Percentages are
-     * derived from these counts, so a caller cannot provide contradictory
+     * The four required measures. {@code plannedCount} is the dense number of all included physical
+     * occurrences (future and held); {@link #futureCount()} isolates the PLANNED/ACTIVE part.
+     * Percentages are derived from these counts, so a caller cannot provide contradictory
      * count/percentage pairs.
      */
     public record Metrics(
@@ -153,21 +146,23 @@ public final class AttendanceMetricCalculator {
                 throw StudentProjectionException.invalidMetrics(
                         "held count cannot exceed included planned count");
             }
-            if (presentCount < 0 || presentOrExcusedCount < 0
-                    || excusedCount < 0 || absentCount < 0) {
+            if (presentCount < 0
+                    || presentOrExcusedCount < 0
+                    || excusedCount < 0
+                    || absentCount < 0) {
                 throw StudentProjectionException.invalidMetrics("negative status count");
             }
             if (diagnostics == null) {
                 throw StudentProjectionException.invalidMetrics("diagnostics is null");
             }
-            int presentAndExcused = safeAdd(
-                    presentCount, excusedCount, "present + excused");
-            int allStatuses = safeAdd(
-                    presentAndExcused, absentCount, "present + excused + absent");
+            int presentAndExcused = safeAdd(presentCount, excusedCount, "present + excused");
+            int allStatuses = safeAdd(presentAndExcused, absentCount, "present + excused + absent");
             if (allStatuses != heldCount) {
                 throw StudentProjectionException.invalidMetrics(
                         "status counts do not add up to held count: "
-                                + allStatuses + " != " + heldCount);
+                                + allStatuses
+                                + " != "
+                                + heldCount);
             }
             if (presentOrExcusedCount != presentAndExcused) {
                 throw StudentProjectionException.invalidMetrics(
@@ -264,8 +259,8 @@ public final class AttendanceMetricCalculator {
     }
 
     /**
-     * Calculates dense included and held metrics. This static entry point has
-     * no state and can be called by a future adapter without dependency setup.
+     * Calculates dense included and held metrics. This static entry point has no state and can be
+     * called by a future adapter without dependency setup.
      */
     public static Metrics calculate(Collection<Occurrence> occurrences) {
         if (occurrences == null) {
@@ -319,9 +314,13 @@ public final class AttendanceMetricCalculator {
                             case ABSENT -> absentCount = addOne(absentCount, "absent count");
                             case EXCUSED -> excusedCount = addOne(excusedCount, "excused count");
                             case FREE_ATTENDANCE ->
-                                    throw StudentProjectionException.unsupportedAttendanceStatus(id, status);
-                            case CANCELLED -> throw StudentProjectionException.invalidOccurrence(
-                                    "CLOSED occurrence " + id + " has CANCELLED attendance mark");
+                                    throw StudentProjectionException.unsupportedAttendanceStatus(
+                                            id, status);
+                            case CANCELLED ->
+                                    throw StudentProjectionException.invalidOccurrence(
+                                            "CLOSED occurrence "
+                                                    + id
+                                                    + " has CANCELLED attendance mark");
                         }
                     }
                 }
@@ -334,8 +333,8 @@ public final class AttendanceMetricCalculator {
             }
         }
 
-        int presentOrExcusedCount = addCounts(
-                presentCount, excusedCount, "present + excused count");
+        int presentOrExcusedCount =
+                addCounts(presentCount, excusedCount, "present + excused count");
         return new Metrics(
                 plannedCount,
                 heldCount,

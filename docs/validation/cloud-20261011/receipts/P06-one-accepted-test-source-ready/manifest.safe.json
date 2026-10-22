@@ -1,0 +1,11 @@
+{
+  "schema": "RCT_P06_ONE_TEST_SOURCE_SEAL_V1",
+  "files": {
+    "InternalSessionAdmissionIT.after.java": "36bb223e2f903b1133bee2ce940e3341f48fa16f481441232c5668643dbc9ba9",
+    "InternalSessionAdmissionIT.before.java": "ed055a5fc45c1d970033c01566acabca00fec57ce2e47611a1611379c097cfe5",
+    "READY.safe.json": "59dae8140feec42fbd42439e8ebcf08595518d813f1f7f5927b8abe06115d0c2",
+    "REVIEW.md": "cc5503e2809fb5974a3943c86683fd2f65dc893add8d8781fc5f68782d8b71d5",
+    "checks.safe.json": "7eb3c11b96f04ce8be95504fd49500b352997637659ada3fd21dcc709d3f701e",
+    "source.patch": "97f4d2d104cf478313c2b0e28b140226a93ae15cea34833fedf5a7037a412662"
+  }
+}

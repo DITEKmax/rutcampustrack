@@ -1,0 +1,26 @@
+{
+  "files": {
+    "CURRENT.safe.json": {
+      "bytes": 231,
+      "sha256": "2f00e409b317571b8fef82e6f9ff9323256c39769c895d43e5cc34ed34200e25"
+    },
+    "REPORT.md": {
+      "bytes": 935,
+      "sha256": "23d86e4cae7b2c9c7f72114a817b5ee2a54635e4d6c3adff9bf0cf44b6e834bd"
+    },
+    "REVIEW.safe.json": {
+      "bytes": 3590,
+      "sha256": "e1fdb5eb7e6b2090767fb9fe0708c9132d42761c2fecf42c71f5711be6f29a48"
+    },
+    "admission-counterexample.safe.json": {
+      "bytes": 828,
+      "sha256": "15592926d317aff6ebfc0aa4330849b23717415ea8e5157f7456cb84aacd06b2"
+    },
+    "selected-source-oracles.safe.json": {
+      "bytes": 2612,
+      "sha256": "120c07eda29e3bced424261cf48ae26b561fbbc508c6fe16bd4764304212bfec"
+    }
+  },
+  "qualification": "Safe source-only evidence; no raw outputs/private carriers",
+  "status": "CHANGES_REQUESTED"
+}

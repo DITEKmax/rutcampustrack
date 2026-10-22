@@ -57,7 +57,11 @@ async def test_ttl_set(fake_redis):
 
     key = KEY_TEMPLATE.format(lesson_id=3, user_id=30)
     ttl = await fake_redis.ttl(key)
-    assert ttl > 0
+    assert TTL - 5 <= ttl <= TTL
+    await client.add_message_id(3, 31, 43)
+    await client.delete_key(3, 30)
+    assert await client.get_message_ids(3, 31) == [43]
+    assert TTL - 5 <= await fake_redis.ttl(KEY_TEMPLATE.format(lesson_id=3, user_id=31)) <= TTL
 
 
 @pytest.mark.asyncio

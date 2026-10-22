@@ -1,91 +1,144 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import type { NotificationItem, NotificationPaletteId } from './notifications-v2-models'
-import { NotificationInboxHold } from './notification-inbox-gesture'
-import './notification-inbox.pcss'
+import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import type { NotificationItem, NotificationPaletteId } from './notifications-v2-models';
+import { NotificationInboxHold } from './notification-inbox-gesture';
+import './notification-inbox.pcss';
 
-const props = withDefaults(defineProps<{
-  item: NotificationItem
-  colorId?: NotificationPaletteId
-  pending?: boolean
-  offline?: boolean
-  canOpenAction?: boolean
-}>(), { colorId: 'violet', pending: false, offline: false, canOpenAction: true })
+const props = withDefaults(
+  defineProps<{
+    item: NotificationItem;
+    colorId?: NotificationPaletteId;
+    pending?: boolean;
+    offline?: boolean;
+    canOpenAction?: boolean;
+  }>(),
+  { colorId: 'violet', pending: false, offline: false, canOpenAction: true },
+);
 const emit = defineEmits<{
-  'read-state': [item: NotificationItem, read: boolean]
-  'open-item': [item: NotificationItem]
-}>()
-const expanded = ref(false)
-const menuOpen = ref(false)
-const menuAction = ref<HTMLButtonElement | null>(null)
-const mainAction = ref<HTMLButtonElement | null>(null)
-const detailsId = `${useId()}-details`
-const menuId = `${useId()}-menu`
-const instructionsId = `${useId()}-instructions`
-const unread = computed(() => props.item.readAt === null)
-const commandsDisabled = computed(() => props.pending || props.offline)
-const readRequestedRevision = ref<string | null>(null)
-const displayedSummary = computed(() => props.item.summary?.trim() && props.item.summary.trim() !== props.item.heading.trim() ? props.item.summary : null)
+  'read-state': [item: NotificationItem, read: boolean];
+  'open-item': [item: NotificationItem];
+}>();
+const expanded = ref(false);
+const menuOpen = ref(false);
+const menuAction = ref<HTMLButtonElement | null>(null);
+const mainAction = ref<HTMLButtonElement | null>(null);
+const detailsId = `${useId()}-details`;
+const menuId = `${useId()}-menu`;
+const instructionsId = `${useId()}-instructions`;
+const unread = computed(() => props.item.readAt === null);
+const commandsDisabled = computed(() => props.pending || props.offline);
+const readRequestedRevision = ref<string | null>(null);
+const displayedSummary = computed(() =>
+  props.item.summary?.trim() && props.item.summary.trim() !== props.item.heading.trim()
+    ? props.item.summary
+    : null,
+);
 const sentLabel = computed(() => {
-  const date = new Date(props.item.sentAt)
-  return Number.isNaN(date.getTime()) ? 'Время неизвестно' : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date)
-})
-const hold = new NotificationInboxHold(() => { menuOpen.value = true })
+  const date = new Date(props.item.sentAt);
+  return Number.isNaN(date.getTime())
+    ? 'Время неизвестно'
+    : new Intl.DateTimeFormat('ru-RU', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+});
+const hold = new NotificationInboxHold(() => {
+  menuOpen.value = true;
+});
 
 function expand(): void {
-  expanded.value = !expanded.value
-  if (expanded.value && unread.value && !commandsDisabled.value && readRequestedRevision.value !== props.item.revision) {
-    readRequestedRevision.value = props.item.revision
-    emit('read-state', props.item, true)
+  expanded.value = !expanded.value;
+  if (
+    expanded.value &&
+    unread.value &&
+    !commandsDisabled.value &&
+    readRequestedRevision.value !== props.item.revision
+  ) {
+    readRequestedRevision.value = props.item.revision;
+    emit('read-state', props.item, true);
   }
 }
 function activate(): void {
   if (props.item.action) {
-    if (!commandsDisabled.value && props.canOpenAction) emit('open-item', props.item)
-  } else expand()
+    if (!commandsDisabled.value && props.canOpenAction) emit('open-item', props.item);
+  } else expand();
 }
 function beginHold(event: PointerEvent): void {
-  if (unread.value || commandsDisabled.value || event.button !== 0 || !event.isPrimary) return
-  hold.start(event.pointerId, event.clientX, event.clientY)
+  if (unread.value || commandsDisabled.value || event.button !== 0 || !event.isPrimary) return;
+  hold.start(event.pointerId, event.clientX, event.clientY);
 }
 function suppressHeldClick(event: MouseEvent): void {
-  if (!hold.consumeClick(event.detail > 0)) return
-  event.preventDefault()
-  event.stopImmediatePropagation()
+  if (!hold.consumeClick(event.detail > 0)) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
 }
 function showKeyboardMenu(event: KeyboardEvent): void {
-  if (unread.value || commandsDisabled.value || !(event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10'))) return
-  event.preventDefault()
-  menuOpen.value = true
+  if (
+    unread.value ||
+    commandsDisabled.value ||
+    !(event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10'))
+  )
+    return;
+  event.preventDefault();
+  menuOpen.value = true;
 }
 function markUnread(): void {
-  if (unread.value || commandsDisabled.value) return
-  menuOpen.value = false
-  emit('read-state', props.item, false)
-  mainAction.value?.focus()
+  if (unread.value || commandsDisabled.value) return;
+  menuOpen.value = false;
+  emit('read-state', props.item, false);
+  mainAction.value?.focus();
 }
 function closeMenu(): void {
-  if (!menuOpen.value) return
-  menuOpen.value = false
-  mainAction.value?.focus()
+  if (!menuOpen.value) return;
+  menuOpen.value = false;
+  mainAction.value?.focus();
 }
-function cancelHold(): void { hold.cancel() }
-watch(menuAction, (element) => { if (element) element.focus() })
-watch(() => props.pending, (pending, wasPending) => {
-  // A completed command without a read ACK leaves the same revision retryable.
-  if (wasPending && !pending && unread.value) readRequestedRevision.value = null
-})
-watch(() => props.item.id, () => {
-  expanded.value = false
-  menuOpen.value = false
-  readRequestedRevision.value = null
-  hold.cancel()
-})
-watch(() => props.item.revision, () => { readRequestedRevision.value = null; hold.cancel() })
-watch(() => [props.pending, props.offline, props.item.readAt], () => { hold.cancel(); menuOpen.value = false })
-onMounted(() => { window.addEventListener('scroll', cancelHold, true) })
-onBeforeUnmount(() => { hold.cancel(); window.removeEventListener('scroll', cancelHold, true) })
+function cancelHold(): void {
+  hold.cancel();
+}
+watch(menuAction, (element) => {
+  if (element) element.focus();
+});
+watch(
+  () => props.pending,
+  (pending, wasPending) => {
+    // A completed command without a read ACK leaves the same revision retryable.
+    if (wasPending && !pending && unread.value) readRequestedRevision.value = null;
+  },
+);
+watch(
+  () => props.item.id,
+  () => {
+    expanded.value = false;
+    menuOpen.value = false;
+    readRequestedRevision.value = null;
+    hold.cancel();
+  },
+);
+watch(
+  () => props.item.revision,
+  () => {
+    readRequestedRevision.value = null;
+    hold.cancel();
+  },
+);
+watch(
+  () => [props.pending, props.offline, props.item.readAt],
+  () => {
+    hold.cancel();
+    menuOpen.value = false;
+  },
+);
+onMounted(() => {
+  window.addEventListener('scroll', cancelHold, true);
+});
+onBeforeUnmount(() => {
+  hold.cancel();
+  window.removeEventListener('scroll', cancelHold, true);
+});
 </script>
 
 <template>
@@ -154,7 +207,11 @@ onBeforeUnmount(() => { hold.cancel(); window.removeEventListener('scroll', canc
       :id="instructionsId"
       class="notification-inbox__sr-only"
     >
-      {{ unread ? 'Не прочитано' : 'Прочитано. Действие «Отметить непрочитанным» доступно через кнопку действий или Shift и F10.' }}
+      {{
+        unread
+          ? 'Не прочитано'
+          : 'Прочитано. Действие «Отметить непрочитанным» доступно через кнопку действий или Shift и F10.'
+      }}
     </span>
     <div
       :id="detailsId"

@@ -1,0 +1,69 @@
+{
+  "attempt": "green-1",
+  "session": 22176,
+  "captured_exit": 0,
+  "elapsed": "1m 38s",
+  "rows": [
+    {
+      "class": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "method": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "method": "grpcClientsMustSetDeadline",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "method": "integrationTestsMustEndWithIT",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "method": "entitiesMustNotUseJpaRelations",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "method": "repositoriesReturningCollectionsMustGuardNPlusOne",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+      "method": "reportDoesNotImportCheckin",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+      "method": "integrationTestsMustEndWithIT",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+      "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "method": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "method": "grpcClientsMustSetDeadline",
+      "status": "PASS"
+    }
+  ],
+  "owned_container_ids": {
+    "2909808a1d55a0545656bad21ae9154a5ccfb3810c282c583ea9118870ae07bf": "testcontainers/ryuk:0.11.0",
+    "2c6344ac58e9dd9be656d1899d0a9071d080c658bd4c7d142e2b779ad6dd93ff": "postgres:16"
+  },
+  "jwt_markers": 0,
+  "owned_pids_live": []
+}

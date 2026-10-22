@@ -45,7 +45,9 @@ export class NotificationsUnreadState {
     const api = this.api
     const task = this.resolve(epoch, api)
     this.pending = task
-    void task.finally(() => { if (this.pending === task) this.pending = null })
+    void task.finally(() => {
+      if (this.pending === task) this.pending = null
+    })
     return task
   }
 
@@ -66,7 +68,8 @@ export class NotificationsUnreadState {
       try {
         const count = await api.unreadCount()
         if (epoch !== this.epoch || revision !== this.revision) continue
-        if (!Number.isSafeInteger(count) || count < 0) throw new Error('Некорректный счётчик уведомлений')
+        if (!Number.isSafeInteger(count) || count < 0)
+          throw new Error('Некорректный счётчик уведомлений')
         this.view.count = count
         this.view.status = 'ready'
         this.publish()
@@ -91,5 +94,7 @@ export class NotificationsUnreadState {
     this.publish()
   }
 
-  private publish(): void { this.listeners.forEach(listener => listener()) }
+  private publish(): void {
+    this.listeners.forEach((listener) => listener())
+  }
 }

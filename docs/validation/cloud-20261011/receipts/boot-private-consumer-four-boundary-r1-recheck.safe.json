@@ -1,0 +1,30 @@
+{
+  "schema": "BOOT_FOUR_BOUNDARY_NARROW_RECHECK_V1",
+  "verdict": "APPROVE_SOURCE",
+  "source_manifest_sha256": "8b45452eddf1ce8ce289a0255033f1639ce8c7a4350ff55c116c6734939af580",
+  "helper_sha256": "6f763b5e42675fbdc5137f102e41429a29fa10ba2096b9f8015cb801562b6ab1",
+  "dispatcher_sha256": "7fba14a14cf2ee3e49c21ca11339615ee8d61acf6f2dddbe6c9b3bd3fc039ede",
+  "closed_findings": [
+    "BOOT-BRIDGE-CLOSE-ONLY-CREATION-UNTRACKED",
+    "BOOT-BRIDGE-PARSER-CLOSE-MASKS-PRIMARY",
+    "BOOT-BRIDGE-CARRIER-READ-WITHOUT-FRESH-GUARD",
+    "BOOT-BRIDGE-CLOSED-PROJECTION-NOT-PERSISTED"
+  ],
+  "checks": {
+    "public_pin_and_equivalence_checks": 21,
+    "public_pins": "PASS",
+    "actual_selected_AST_RAM_correction_groups": 4,
+    "close_only_unlink_denied": "PASS",
+    "actual_selected_dispatch_AST_RAM": ["normal:PASS", "missing_outcome:PASS", "failed_child:PASS", "false_grant:PASS", "wrong_dispatch_pin:PASS"],
+    "old20_and_full_framework": "REUSED_NOT_REPLAYED"
+  },
+  "reviewer_checking_attempt01": "StopIteration selecting wrong public bootstrap source before RAM; corrected inline lookup only; checking failure preserved here",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "native_SDK_API_privatefiles_actual_helper_import": "NOT_RUN",
+  "cause": "UNKNOWN",
+  "FIRST3": "NOT_RUN",
+  "qualifications": ["Receipt unavailable on exhausted guard/platform loss remains reconciliation required", "SameUID sampling limitations retained", "Root connector transport allocation/cancellation limitations reused", "No second read/parser or blind cleanup", "Fresh separate Root grant and normal approval required"],
+  "effects": "Public Source and selected AST with synthetic RAM adapters; own two review receipts only; no product/Source edits, native, SDK, API, private values, children or B013 action"
+}

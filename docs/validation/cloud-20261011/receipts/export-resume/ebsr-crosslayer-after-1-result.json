@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-12T00:32:40.056665+00:00",
+  "phase": "ebsr-crosslayer-after-1",
+  "head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "wipHash": "b18f90d68bbc2695c5f35ad2b11f3c34589190c106e345899cf4beb9d69f462a",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+    "--rerun",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "FAIL",
+  "sourceManifest": "ebsr-crosslayer-after-1-source-manifest.json",
+  "sourceManifestSHA256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+  "testFixtureControls": {},
+  "diskFreeBeforeBytes": 5092892672,
+  "resourceStop": "disk below parent 4GiB floor",
+  "diskFreeAfterBytes": 4125818880,
+  "exitCode": -15,
+  "finished": "2026-10-12T00:33:05.066293+00:00",
+  "logSHA256": "dd112f9f3325570b47849e90f4c350dc44f4cfc1ba201cc1f860bd1ba0ff63b2",
+  "sourceFilesUnchangedDuringRun": true,
+  "taskExecution": {
+    ":services:auth-service:auth-app:integrationTest": "NOT_RUN"
+  }
+}

@@ -1,7 +1,6 @@
 package ru.rutcampustrack.shared.security;
 
 import io.jsonwebtoken.Jwts;
-
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.time.Duration;
@@ -46,8 +45,7 @@ public final class InternalJwtTestFactory {
             String status,
             Long groupId,
             boolean isHeadman,
-            boolean readOnly
-    ) {
+            boolean readOnly) {
         Instant issuedAt = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         return buildToken(
                 userId,
@@ -64,8 +62,7 @@ public final class InternalJwtTestFactory {
                 ISSUER,
                 AUDIENCE,
                 "internal",
-                keyPair
-        );
+                keyPair);
     }
 
     public String buildToken(
@@ -83,23 +80,27 @@ public final class InternalJwtTestFactory {
             String issuer,
             String audience,
             String tokenUse,
-            KeyPair signer
-    ) {
-        var builder = Jwts.builder()
-                .header().keyId(KEY_ID).and()
-                .subject(Long.toString(userId))
-                .issuer(issuer)
-                .audience().add(audience).and()
-                .claim("token_use", tokenUse)
-                .claim("sid", sessionId.toString())
-                .claim("sv", Long.toString(sessionVersion))
-                .claim("rv", Long.toString(rolesVersion))
-                .claim("role", role)
-                .claim("status", status)
-                .claim("is_headman", isHeadman)
-                .claim("readOnly", readOnly)
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiration));
+            KeyPair signer) {
+        var builder =
+                Jwts.builder()
+                        .header()
+                        .keyId(KEY_ID)
+                        .and()
+                        .subject(Long.toString(userId))
+                        .issuer(issuer)
+                        .audience()
+                        .add(audience)
+                        .and()
+                        .claim("token_use", tokenUse)
+                        .claim("sid", sessionId.toString())
+                        .claim("sv", Long.toString(sessionVersion))
+                        .claim("rv", Long.toString(rolesVersion))
+                        .claim("role", role)
+                        .claim("status", status)
+                        .claim("is_headman", isHeadman)
+                        .claim("readOnly", readOnly)
+                        .issuedAt(Date.from(issuedAt))
+                        .expiration(Date.from(expiration));
         if (groupId != null) {
             builder.claim("group_id", Long.toString(groupId));
         }

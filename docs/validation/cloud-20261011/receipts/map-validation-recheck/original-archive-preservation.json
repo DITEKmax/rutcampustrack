@@ -1,0 +1,16 @@
+{
+  "source_archive": {
+    "path": "immutable-review-package.zip",
+    "bytes": 1256889,
+    "sha256": "787fa977242767be680d39668669e41d40395d642747615814fe38ed0911ed1f",
+    "entries": 59,
+    "compression": "STORED"
+  },
+  "source_manifest": {
+    "path": "sha256-manifest.json",
+    "sha256": "ba03bfbaa63782d9586d16a5c59c431742eace5be2ff9c091d2374c28464a5cb"
+  },
+  "root_container": "preserved-original-review-package.zip",
+  "root_container_sha256": "651659dc66e88d301c9fe874c2af7f1de9e81605f92c934e9fdce84ddbe9383a",
+  "transformation": "original archive stored as one exact member in compressed wrapper; revieweroriginal untouched"
+}

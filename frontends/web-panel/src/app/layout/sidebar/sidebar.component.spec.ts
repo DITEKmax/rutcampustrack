@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
+import userEvent from '@testing-library/user-event';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -173,8 +174,8 @@ describe('SidebarComponent', () => {
     });
 
     const component = fixture.componentInstance;
-    await component.logout();
+    await userEvent.click(screen.getByRole('button', { name: 'Выйти' }));
 
-    expect(authServiceMock.logout).toHaveBeenCalled();
+    expect(authServiceMock.logout).toHaveBeenCalledWith(mockAuthApi, TestBed.inject(Router));
   });
 });

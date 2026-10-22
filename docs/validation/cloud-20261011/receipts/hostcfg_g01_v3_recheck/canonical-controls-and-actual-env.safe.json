@@ -1,0 +1,275 @@
+{
+  "finding": "HOSTCFG-G01",
+  "status": "CLOSED_SOURCE_AND_ACTUAL_SYNTHETIC_ENV",
+  "selected_current_Python": [
+    {
+      "path": "/workspace/rutcampustrack/services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+      "source_sha256": "16fe232cd7c544ba2e179685b9c35fef88fe4926547eb34dcb887274be621e14",
+      "function_AST_sha256": "d86ccca32980a4bfe47f098934f67623ebecaa180fb7f9c64d8f33edb5d02b42"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/notification-bot/bot/services/notification_prefs.py",
+      "source_sha256": "637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796",
+      "function_AST_sha256": "134b26ac69e5f3e46a3a01b5c852b44be3db749e76054f561060cf9c13884073"
+    }
+  ],
+  "Java_source": {
+    "path": "/workspace/rutcampustrack/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+    "sha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+    "native_JVM": "NOT_RUN; independently inspected source-rule counterpart"
+  },
+  "public_controls": [
+    {
+      "case": "valid32",
+      "expected": true,
+      "actual_python_selected_AST": [
+        true,
+        true
+      ],
+      "Java_source_rule_counterpart": true
+    },
+    {
+      "case": "valid32zero",
+      "expected": true,
+      "actual_python_selected_AST": [
+        true,
+        true
+      ],
+      "Java_source_rule_counterpart": true
+    },
+    {
+      "case": "empty",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "hex64",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "padding",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "short42",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "long44",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "decoded31",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "decoded33",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "plus",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "slash",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "space",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "Unicode",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    },
+    {
+      "case": "same_decoded32_noncanonical_alias",
+      "expected": false,
+      "actual_python_selected_AST": [
+        false,
+        false
+      ],
+      "Java_source_rule_counterpart": false
+    }
+  ],
+  "public_control_count": 14,
+  "predicate_count": 3,
+  "noncanonical_alias_same_decoded_bytes": true,
+  "actual_redgreen": [
+    {
+      "name": "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+      "old_actual_rejected_by_both_Python_and_Java_source_rule": true,
+      "new_actual_accepted_by_both_Python_and_Java_source_rule": true,
+      "all_sender_receiver_reserved_copies_match": true
+    },
+    {
+      "name": "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+      "old_actual_rejected_by_both_Python_and_Java_source_rule": true,
+      "new_actual_accepted_by_both_Python_and_Java_source_rule": true,
+      "all_sender_receiver_reserved_copies_match": true
+    },
+    {
+      "name": "BOT_TO_NOTIFICATION_SERVICE_TOKEN",
+      "old_actual_rejected_by_both_Python_and_Java_source_rule": true,
+      "new_actual_accepted_by_both_Python_and_Java_source_rule": true,
+      "all_sender_receiver_reserved_copies_match": true
+    },
+    {
+      "name": "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN",
+      "old_actual_rejected_by_both_Python_and_Java_source_rule": true,
+      "new_actual_accepted_by_both_Python_and_Java_source_rule": true,
+      "all_sender_receiver_reserved_copies_match": true
+    }
+  ],
+  "four_new_directions_distinct": true,
+  "nine_private_copies": [
+    {
+      "name": "academic.json",
+      "changed_value_names_only": [
+        "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+        "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+        "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+      ],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": false,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "attendance.json",
+      "changed_value_names_only": [],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": true,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "auth.json",
+      "changed_value_names_only": [],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": true,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "bff.json",
+      "changed_value_names_only": [],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": true,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "docker.env",
+      "changed_value_names_only": [],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": true,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "gateway.json",
+      "changed_value_names_only": [],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": true,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "inactive-bot-pair.json",
+      "changed_value_names_only": [
+        "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+        "BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+      ],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": false,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "notification.json",
+      "changed_value_names_only": [
+        "BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+      ],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": false,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    },
+    {
+      "name": "schedule.json",
+      "changed_value_names_only": [
+        "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+        "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+      ],
+      "other_names_values_equal": true,
+      "unchanged_file_byte_equal": false,
+      "mode": "0600",
+      "owner": 1000,
+      "new_regular_nlink": 1
+    }
+  ],
+  "private_values_or_hashes_written": false
+}

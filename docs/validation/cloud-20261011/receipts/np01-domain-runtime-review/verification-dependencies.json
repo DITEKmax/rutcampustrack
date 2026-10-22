@@ -1,0 +1,17 @@
+{
+  "accepted": "SCOPED_DOMAIN1_RUNTIME_ONLY",
+  "pending": [
+    "Actual Auth producer\u2192Rabbit native bot claim/idempotency/ACK/requeue/DLQ with outage recovery and source identity",
+    "Integration current exact domain24+common/config dependencies and fresh remote CI/Coverage/Security",
+    "Full native client/private Telegram/family acceptance as required by root matrix"
+  ],
+  "limits": [
+    "Direct bridge event synthesized from isolated SQL control; no actual producer/broker flow",
+    "Injected BOT context in PG domainIT; transport separately unit/realTLSbridge",
+    "New object restart same process, not deployment restart",
+    "Unresolved edit/delete refusal remains pending; physical purge unavailable",
+    "No new independent rebind/archive/delete scanner/event",
+    "New broker two-file harness outside aa reviewed24 scope",
+    "Producer9PG absence receipt historical exact inspection; reviewer no live Docker census"
+  ]
+}

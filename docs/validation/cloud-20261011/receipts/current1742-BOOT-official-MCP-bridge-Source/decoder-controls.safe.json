@@ -1,0 +1,32 @@
+{
+  "source_only": true,
+  "actual_connector_called": false,
+  "native_helper_imported": false,
+  "groups": 6,
+  "rows": [
+    {
+      "name": "EXACT_CRLF_LF_TRAILING_NEWLINE_UNICODE_AND_PATCH_TEXT",
+      "passed": true
+    },
+    {
+      "name": "EXTRA_MISSING_AND_WRONG_HEAD_SCHEMA_DENIED",
+      "passed": true
+    },
+    {
+      "name": "DUPLICATE_KEY_AND_NON_ASCII_CARRIER_DENIED",
+      "passed": true
+    },
+    {
+      "name": "MALFORMED_EMPTY_NUL_LONE_SURROGATE_DENIED",
+      "passed": true
+    },
+    {
+      "name": "CARRIER_OVER_32M_DENIED",
+      "passed": true
+    },
+    {
+      "name": "ERROR_IS_CLOSED_NO_INPUT_MESSAGE",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-11T23:25:43.894262+00:00",
+  "reason": "Mandatory Gitleaks identified two source revision/SHA identifiers as generic keys; independent original hashes prove they are source identities, not credentials. Mandatory whitespace normalized readable XML copies. Rules/gates unchanged.",
+  "changed_working_receipts": [
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/red-mvr-05-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "docs/validation/cloud-20261011/receipts/gateway-claims-developer/structural-boundary-red.xml",
+    "docs/validation/cloud-20261011/receipts/ci-generator-recheck/transfer-manifest.json",
+    "docs/validation/cloud-20261011/receipts/export-client-review/contract-compatibility.json",
+    "docs/validation/cloud-20261011/receipts/map-validation-review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "docs/validation/cloud-20261011/receipts/map-validation-review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "docs/validation/cloud-20261011/receipts/map-validation-review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "docs/validation/cloud-20261011/receipts/map-validation-review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml"
+  ],
+  "exact_originals": "All ZIP members verified against original_byte_index; archives and reviewer worktrees unchanged",
+  "runtime": "NOT_RUN; output evidence only, not source/expected result correction"
+}

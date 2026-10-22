@@ -1,0 +1,27 @@
+{
+  "native": {
+    "direct_pid": 386944,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 386944,
+        "start_ticks": 9561686
+      },
+      {
+        "pid": 386978,
+        "start_ticks": 9561788
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false
+  },
+  "source_unchanged": true,
+  "source_sha": "4a9c9ac845d2fdf62b2b0f26497a897c42878eed8ca5c766e8747a6d00ef6ad0",
+  "tests_API_Docker": "NOT_RUN"
+}

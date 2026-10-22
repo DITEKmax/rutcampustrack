@@ -1,0 +1,118 @@
+{
+  "utc": "2026-10-13T07:17:49.363843+00:00",
+  "status": "EXISTING_CI_SOURCE_ROUTE_CONFIRMED_ACTUAL_FUTURE_NOT_RUN",
+  "backend_source_producer": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "currentRoot_local": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+  "remotePR_current": "9176c680f4f810816792b4e21f6e60f387f38740",
+  "selected8": [
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getLessonAttendance_headman_returnsAllGroupMembers",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "200;3rosterentries;present+symbol+;unmarkedstatus/symbolnull"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getLessonAttendance_regularStudentForbidden",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "403 for ordinary nonheadman student"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getJournal_headman_returnsGridShape",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "200;2dates;3students;gridcell symbolstring"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentStats_excludesCancelled",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "200;cancelledexcluded;totals2;50%;subjectname/type"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentStats_excludesAuthoritativeCancelledAndTransferredStoredRecords",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "200;authoritative cancelled/transferred records excluded;subjects empty,total0"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentRecords_filteredBySubject",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "200;subjectfilter yields1 record"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentRecords_allSubjects",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "source_sha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea",
+      "assertions": "200;unfiltered yields2 records"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "journal_historicalRoster_authorizedFileAndClear",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "source_sha256": "def754977de95b0c4a830ed58dbec449bf86910355381dc32562062b1949e161",
+      "assertions": "historical nonmember403 beforewrite;multipartEXCUSED200;roster200/CLOSED/2entries/excuse+attachment;downloadPDF exactbytes200;clear204;AttendanceDocument+attachment repos empty"
+    }
+  ],
+  "ci": {
+    "workflow": ".github/workflows/ci.yml",
+    "job": "java-integration-test",
+    "matrix_service": "attendance-service",
+    "job_display": "Java IT \u2014 attendance-service",
+    "task_command": "./gradlew :services:attendance-service:attendance-app:integrationTest --no-daemon",
+    "filter": "includeTestsMatching(\"*IT\")",
+    "unit_excludes": "excludeTestsMatching(\"*IT\")",
+    "artifact": "safe-integration-outcomes-attendance-service-<runAttempt>",
+    "safe_path": "build/ci-test-outcomes/attendance-service/integrationTest/safe-outcomes.json"
+  },
+  "coverage": {
+    "workflow": ".github/workflows/coverage.yml",
+    "job": "java-coverage",
+    "job_display": "Java coverage \u2014 attendance-service",
+    "task_command": "./gradlew :services:attendance-service:attendance-app:test :services:attendance-service:attendance-app:integrationTest :services:attendance-service:attendance-app:jacocoTestReport --no-daemon",
+    "artifact": "safe-coverage-outcomes-attendance-service-<runAttempt>"
+  },
+  "required_dependency_scope": {
+    "host": "GitHub ubuntu-latest managedDocker/Temurin21/Gradlewrapper",
+    "databases": [
+      "MongoDBContainer mongo:7.0 replicaSetURL"
+    ],
+    "other_containers": [
+      "RabbitMQContainer rabbitmq:3.13-management",
+      "GenericContainer redis:7.2 port6379"
+    ],
+    "standard_TC": "Ryuk/default tinyalpine startupchecks; no disablingchecks/reuseenable proposal",
+    "postgres": "not needed for isolated Attendance8; AcademicSQL separatejob",
+    "seed": "no seedSQL/manualaccount/bootstrap; fixtures insert ownAttendanceDocuments and stubs; setUp removes AttendanceDocuments, Marking removes attachment repo; inherited drain marks ownleftover outboxsent",
+    "reuse": "withReuse(true) source; freshCI runner/comment says globalreuse notenabled; actual CI configuration/runtime not independently inspected"
+  },
+  "clocks_TLS_limits": {
+    "fixture_lesson_date": "2026-04-01/2026-04-02 past lesson; semesterIDs stubbed",
+    "clock": "productionClock.system Europe/Moscow; no fixedClock override in selectedbase/config; CI actual instant must satisfy requireStarted forApr1",
+    "transport": "SpringBoot RANDOM_PORT/MockMvc; legacy testheaders enabled; inmemoryPublicKeyProvider; grpc.server.port=-1 and plaintexttestaddresses",
+    "mocked": [
+      "ScheduleGrpcClient",
+      "AcademicGrpcClient",
+      "SemesterCacheService",
+      "GeofenceService"
+    ],
+    "liveTLS_RPC": "NOT_PROVEN_BY_THESE8; separate realNettywire/AcademicSQL/fullclient needed"
+  },
+  "receipt_acceptance": [
+    "actual target after backend23482 integration/push; actionsheadSHA +collectorprHeadSha +actualcheckoutSha (PRmerge distinct) retained",
+    "source registry must bind actual selected test source bytes to reviewed producer/integrated revision",
+    "each of exact8 unique(classname,method) SOURCE_METHOD/PASSED; zero FAILED/ERROR/SKIPPED/NOT_EXECUTED amongselected8; collectionRESULTS and suitecountsConsistent",
+    "testStepOutcome success and required wholeCI/Cov gates independent; empty/testtask/oldproducer/alljobgreenalone insufficient",
+    "rootisFailOnNoMatchingTests=false, so explicitselectedidentitycount8 required; selectedsource has noDisabled/Assumptions/disabledWithoutDocker skip",
+    "safecollector sourcefield hashes/metadata only; never rawXMLfailmessage/privatebody/logs"
+  ],
+  "action": "Integrate reviewed23482; push then reuse exact normalCI/Coverage receipts. No duplicate local AttendanceVFS run/capraise/workflowedit/checkdisable needed for this finite8 if actual proof adequate. Other rightsmutation/client/fullmatrix remain separate."
+}

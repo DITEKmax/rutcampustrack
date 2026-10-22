@@ -1,0 +1,174 @@
+{
+  "at": "2026-10-12T02:33:09.719061+00:00",
+  "root_parent": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "root_final": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "author_rows": [
+    {
+      "author_commit": "1dbee1831e58477b7ea455e0220751fda09284a0",
+      "paths": [
+        "event-schemas/password.changed.json",
+        "proto/academic.proto",
+        "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "e70c0053355f3e2fc5754a98945d1281df0cc8d8"
+    },
+    {
+      "author_commit": "5a028710f6d7cddfef0d6815fa4f7dd2d5d1fc5e",
+      "paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "b2fe1956cc84abaf3378cf77f87aadfbfdb1b6c9"
+    },
+    {
+      "author_commit": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "b0adad082fe77cef2a2629492b5dce305e6567a8"
+    },
+    {
+      "author_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "942b98808b1f15ea1261b306f4ea6df8d6b5d587"
+    },
+    {
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "paths": [
+        "services/notification-bot/bot/grpc_client/academic_pb2.py",
+        "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "a2f272f5c246f3f5df8f00c8cb4cb19468946b25"
+    },
+    {
+      "author_commit": "5d564870e631a276d88ac5a4b97463929f9b6687",
+      "paths": [
+        "services/academic-service/academic-app/src/main/resources/application.yml",
+        "services/notification-bot/bot/config.py"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "528bd3ae964b8022b28b0b020813d1211ad66add"
+    },
+    {
+      "author_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+      "paths": [
+        "scripts/generate-bot-proto.py"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "04ba00026310f41049ecb4a15345a601b0986602"
+    },
+    {
+      "author_commit": "f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+      "paths": [
+        "scripts/format-authored.mjs"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "3e4a96154e9fbb447f1e61c854803055d4dd81c5"
+    },
+    {
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "paths": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/coverage.yml"
+      ],
+      "native_exit": 0,
+      "integrated_commit": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362"
+    }
+  ],
+  "paths": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "sha256": "e05122c8128ca75ce6d32e2da94221a1a88f6594d9854145146dafa6df652a84",
+      "bytes": 15047,
+      "exact": true
+    },
+    {
+      "path": ".github/workflows/coverage.yml",
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "sha256": "18de3ebcaaf92b970835aa80655479f8fc9001134524cca9f59a4f86902186ff",
+      "bytes": 9448,
+      "exact": true
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360,
+      "exact": true
+    },
+    {
+      "path": "proto/academic.proto",
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570,
+      "exact": true
+    },
+    {
+      "path": "scripts/format-authored.mjs",
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960",
+      "bytes": 8764,
+      "exact": true
+    },
+    {
+      "path": "scripts/generate-bot-proto.py",
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "sha256": "10a3cdfa4c5e064c4aa55dab7c27bcaf1eb9ec08f26d3cf7fab624167919a1e3",
+      "bytes": 4131,
+      "exact": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/application.yml",
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "sha256": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+      "bytes": 5430,
+      "exact": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465,
+      "exact": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "bytes": 28237,
+      "exact": true
+    },
+    {
+      "path": "services/notification-bot/bot/config.py",
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "sha256": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+      "bytes": 5138,
+      "exact": true
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2.py",
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737,
+      "exact": true
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py",
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766,
+      "exact": true
+    }
+  ],
+  "all12authorfinal_exact": true,
+  "meaning_format_commits_separate": true,
+  "product_domain": "notintegrated yet",
+  "mandatory_source_gates": "next"
+}

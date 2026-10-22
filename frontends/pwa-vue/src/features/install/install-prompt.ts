@@ -25,14 +25,17 @@ export const INSTALL_DISMISSED_STORAGE_KEY = 'rct:pwa-install-dismissed:v1'
 
 function isIos(view: Window): boolean {
   const userAgent = view.navigator.userAgent.toLowerCase()
-  const iPadDesktopMode = view.navigator.platform === 'MacIntel' && view.navigator.maxTouchPoints > 1
+  const iPadDesktopMode =
+    view.navigator.platform === 'MacIntel' && view.navigator.maxTouchPoints > 1
   return /iphone|ipad|ipod/.test(userAgent) || iPadDesktopMode
 }
 
 function isStandalone(view: Window): boolean {
   const navigatorWithStandalone = view.navigator as Navigator & { standalone?: boolean }
-  return view.matchMedia?.('(display-mode: standalone)').matches === true
-    || navigatorWithStandalone.standalone === true
+  return (
+    view.matchMedia?.('(display-mode: standalone)').matches === true ||
+    navigatorWithStandalone.standalone === true
+  )
 }
 
 function readStorage(view: Window): Storage | null {

@@ -1,0 +1,36 @@
+{
+  "producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "independent_reconciliation": "914cdc11ee6d65b5ba2a8baf2aa0d4e7c63ce47334439ac7ec0655faa76b163c",
+  "cases": [
+    {
+      "receipt": "/workspace/scratch/rct-validation/ci_1742d1_receipts/safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "receipt_sha256": "2ab9bb697c60875292c95a62bca99d0e7a2c4d99c25edcff5e83e202f348c8de",
+      "case": {
+        "xmlOrdinal": 6,
+        "suiteOrdinal": 1,
+        "ordinal": 8,
+        "classname": "ru.rutcampustrack.auth.integration.AuthIT",
+        "method": "publicKey_returnsRsaPem",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+        "sourceSha256": "33046ce94aac46b3b0055cd46b81d49107dab3536b503780f8f9b646868fa446"
+      }
+    },
+    {
+      "receipt": "/workspace/scratch/rct-validation/ci_1742d1_receipts/safe-coverage-outcomes-auth-service-1-integrationTest.json",
+      "receipt_sha256": "9a829e392302e4d5fff9d6d6cea7762e0d7eaa90ababa0754a1bc88be7e3f10a",
+      "case": {
+        "xmlOrdinal": 6,
+        "suiteOrdinal": 1,
+        "ordinal": 8,
+        "classname": "ru.rutcampustrack.auth.integration.AuthIT",
+        "method": "publicKey_returnsRsaPem",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+        "sourceSha256": "33046ce94aac46b3b0055cd46b81d49107dab3536b503780f8f9b646868fa446"
+      }
+    }
+  ]
+}

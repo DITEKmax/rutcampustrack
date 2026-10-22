@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-12T04:25:51.190888+00:00",
+  "all8272_installed_entries_sha_mode_or_symlink_exact": true,
+  "new_old_namespace_files": 0,
+  "current_workspace_aliases": [
+    {
+      "name": "mobile-core",
+      "resolves": "/workspace/rct-worktrees/client-current-artifacts/frontends/mobile-core"
+    },
+    {
+      "name": "pwa-vue",
+      "resolves": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue"
+    },
+    {
+      "name": "tma-vue",
+      "resolves": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue"
+    }
+  ],
+  "old_namespace_mutated": false
+}

@@ -1,9 +1,15 @@
 package ru.rutcampustrack.shared.web.exception;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,17 +33,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
-    private final MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test/resource");
+    private final MockHttpServletRequest request =
+            new MockHttpServletRequest("POST", "/api/test/resource");
 
     @AfterEach
     void cleanupMdc() {
@@ -48,10 +48,19 @@ class GlobalExceptionHandlerTest {
     @DisplayName("MethodArgumentNotValid → 400 + fieldErrors[] с field/rejectedValue/message")
     void handleMethodArgumentNotValid() {
         BindingResult binding = mock(BindingResult.class);
-        when(binding.getFieldErrors()).thenReturn(List.of(
-                new FieldError("dto", "email", "not-an-email", false, null, null, "must be a valid email"),
-                new FieldError("dto", "age", -1, false, null, null, "must be positive")
-        ));
+        when(binding.getFieldErrors())
+                .thenReturn(
+                        List.of(
+                                new FieldError(
+                                        "dto",
+                                        "email",
+                                        "not-an-email",
+                                        false,
+                                        null,
+                                        null,
+                                        "must be a valid email"),
+                                new FieldError(
+                                        "dto", "age", -1, false, null, null, "must be positive")));
         MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
         when(ex.getBindingResult()).thenReturn(binding);
 
@@ -84,9 +93,9 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("HttpMessageNotReadable → 400 malformed-request")
     void handleNotReadable() {
-        HttpMessageNotReadableException ex = new HttpMessageNotReadableException(
-                "JSON parse error",
-                new ServletServerHttpRequest(request));
+        HttpMessageNotReadableException ex =
+                new HttpMessageNotReadableException(
+                        "JSON parse error", new ServletServerHttpRequest(request));
 
         ResponseEntity<ErrorResponse> resp = handler.handleNotReadable(ex, request);
 
@@ -96,10 +105,12 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("SockJS/WebSocket write failure -> empty response without problem+json converter")
     void handleNotWritableForWebSocketTransport() {
-        MockHttpServletRequest wsRequest = new MockHttpServletRequest("POST", "/ws/512/lpmckv5r/xhr_streaming");
+        MockHttpServletRequest wsRequest =
+                new MockHttpServletRequest("POST", "/ws/512/lpmckv5r/xhr_streaming");
         wsRequest.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, 401);
-        HttpMessageNotWritableException ex = new HttpMessageNotWritableException(
-                "No converter for LinkedHashMap with application/javascript");
+        HttpMessageNotWritableException ex =
+                new HttpMessageNotWritableException(
+                        "No converter for LinkedHashMap with application/javascript");
 
         ResponseEntity<?> resp = handler.handleNotWritable(ex, wsRequest);
 
@@ -111,12 +122,14 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Non-WebSocket write failure -> standard 500 problem+json")
     void handleNotWritableForRestEndpoint() {
-        HttpMessageNotWritableException ex = new HttpMessageNotWritableException("converter failed");
+        HttpMessageNotWritableException ex =
+                new HttpMessageNotWritableException("converter failed");
 
         ResponseEntity<?> resp = handler.handleNotWritable(ex, request);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(resp.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(resp.getBody()).isInstanceOf(ErrorResponse.class);
     }
 
@@ -124,7 +137,8 @@ class GlobalExceptionHandlerTest {
     @DisplayName("HttpMediaTypeNotSupported -> 415")
     void handleMediaType() {
         HttpMediaTypeNotSupportedException ex =
-                new HttpMediaTypeNotSupportedException(MediaType.TEXT_XML, List.of(MediaType.APPLICATION_JSON));
+                new HttpMediaTypeNotSupportedException(
+                        MediaType.TEXT_XML, List.of(MediaType.APPLICATION_JSON));
 
         ResponseEntity<ErrorResponse> resp = handler.handleMediaType(ex, request);
 
@@ -188,7 +202,8 @@ class GlobalExceptionHandlerTest {
     @DisplayName("NoHandlerFound → 404")
     void handleNoHandler() {
         NoHandlerFoundException ex =
-                new NoHandlerFoundException("GET", "/no/such", new org.springframework.http.HttpHeaders());
+                new NoHandlerFoundException(
+                        "GET", "/no/such", new org.springframework.http.HttpHeaders());
 
         ResponseEntity<ErrorResponse> resp = handler.handleNoHandler(ex, request);
 
@@ -230,20 +245,24 @@ class GlobalExceptionHandlerTest {
         assertThat(resp.getBody().traceId()).isNull();
     }
 
-    private static void assertProblem(ResponseEntity<ErrorResponse> resp,
-                                       HttpStatus expectedStatus,
-                                       String expectedTypeSuffix) {
+    private static void assertProblem(
+            ResponseEntity<ErrorResponse> resp,
+            HttpStatus expectedStatus,
+            String expectedTypeSuffix) {
         assertThat(resp.getStatusCode()).isEqualTo(expectedStatus);
-        assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(resp.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().status()).isEqualTo(expectedStatus.value());
-        assertThat(resp.getBody().type()).isEqualTo(ErrorResponse.PROBLEM_BASE + expectedTypeSuffix);
+        assertThat(resp.getBody().type())
+                .isEqualTo(ErrorResponse.PROBLEM_BASE + expectedTypeSuffix);
         assertThat(resp.getBody().instance()).isEqualTo("/api/test/resource");
         assertThat(resp.getBody().timestamp()).isNotNull();
     }
 
     @SuppressWarnings("unchecked")
-    private static ConstraintViolation<Object> mockViolation(String path, String message, Object invalidValue) {
+    private static ConstraintViolation<Object> mockViolation(
+            String path, String message, Object invalidValue) {
         ConstraintViolation<Object> v = mock(ConstraintViolation.class);
         Path p = mock(Path.class);
         when(p.toString()).thenReturn(path);

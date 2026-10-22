@@ -4,9 +4,8 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Immutable, server-owned membership of one user in one role. The identity
- * fields are deliberately explicit so an adapter cannot silently rebind a
- * session grant to another user.
+ * Immutable, server-owned membership of one user in one role. The identity fields are deliberately
+ * explicit so an adapter cannot silently rebind a session grant to another user.
  */
 public record RoleGrant(
         long grantId,
@@ -15,8 +14,7 @@ public record RoleGrant(
         RoleStatus status,
         Long groupId,
         Instant createdAt,
-        Instant updatedAt
-) {
+        Instant updatedAt) {
 
     public RoleGrant {
         if (grantId <= 0) {

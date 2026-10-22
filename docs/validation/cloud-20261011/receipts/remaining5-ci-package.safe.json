@@ -1,0 +1,67 @@
+{
+  "state": "SOURCE_READY_FORMAT_TYPES_DISCOVERY_PASS_BROWSER_NOT_RUN_REVIEW_PENDING",
+  "base": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+  "worktree": "/workspace/rct-worktrees/shared-validator-execution-20261013",
+  "branch": "codex/remaining5-client-20261013",
+  "root_grant": "/workspace/scratch/rct-validation/root_clock_next5_grants/remaining5-node.safe.json",
+  "modified_files": [
+    ".github/workflows/ci.yml",
+    "tests/e2e/fixtures/mobile-dataset.ts",
+    "tests/e2e/playwright.real-mobile.config.ts"
+  ],
+  "checks": {
+    "FormatWrite": {
+      "exit": 0,
+      "wall_time_seconds": 0.483071118,
+      "output": ".github/workflows/ci.yml 86ms (unchanged)\ntests/e2e/fixtures/mobile-dataset.ts 194ms (unchanged)\ntests/e2e/playwright.real-mobile.config.ts 13ms (unchanged)\n"
+    },
+    "FormatCheck": {
+      "exit": 0,
+      "wall_time_seconds": 0.547099499,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    "Types": {
+      "exit": 0,
+      "wall_time_seconds": 2.591981792,
+      "output": ""
+    },
+    "Discovery": {
+      "exit": 0,
+      "wall_time_seconds": 1.61409833,
+      "output": "Listing tests:\n  [chromium] › mobile-real-server.spec.ts:212:7 › Current Vue roles with real synthetic domain @real-mobile › LIMITED ADMIN views accounts while creation is denied by UI and server\n  [chromium] › mobile-real-server.spec.ts:239:7 › Current Vue roles with real synthetic domain @real-mobile › empty foreign-group homework and transport failure provide a real retry path\n  [chromium] › mobile-real-server.spec.ts:260:7 › Current Vue roles with real synthetic domain @real-mobile › another live session revokes the browser session and recovery exposes login only\n  [chromium] › mobile-real-server.spec.ts:278:7 › Current Vue roles with real synthetic domain @real-mobile › D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials\n  [chromium] › mobile-real-server.spec.ts:367:7 › Production PWA service worker D002 @real-mobile › warm offline reload remains read-only; revoked session reconnect clears the cached user\nTotal: 5 tests in 1 file\n"
+    }
+  },
+  "discovery": {
+    "project": "chromium",
+    "lines": [
+      212,
+      239,
+      260,
+      278,
+      367
+    ],
+    "cases": 5,
+    "file": "mobile-real-server.spec.ts",
+    "browser": false,
+    "fixture_execution": false,
+    "static_builtin_list_exception": true
+  },
+  "preserved": [
+    "originalspecbytesandlinepositions",
+    "FIRST3clockwrapperandobserver",
+    "canonicalSafeReporter",
+    "serviceWorkersallowcase367",
+    "oneworker0retry60sectest30minjob",
+    "realauthsecurityclocks",
+    "seedbootstrapunchanged",
+    "safeonlyseparateupload"
+  ],
+  "cleanup": {
+    "own_link_removed": true,
+    "own_tmp_removed": true,
+    "node_processes_remaining": 0,
+    "foreign_java_untouched": true
+  },
+  "qualification": "Standard foreground GNU timeout bounds each phase; entry resource and UTC checks are sampled, not hard OS resource isolation. Formatterwrite guard lacked shell errexit; entry resource observation met granted floors and formatter returned0 in0.48s. Remaining3 phases used failclosed errexit. Built-in Playwright may reuse its default shared transform cache (static Source only); no shared-cache cleanup attempted. No browser/API/server/Docker/network/install; no scenario PASS claimed.",
+  "next": "Independent review whole3filepackage; root integration with domain-clock fix; ordinary CI FIRST3 success prerequisite then5realbrowser cases."
+}

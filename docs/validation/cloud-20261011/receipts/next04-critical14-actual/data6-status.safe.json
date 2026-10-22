@@ -1,0 +1,44 @@
+[
+  {
+    "id": "0c4b136a02046edaaa52029209719ae52910851f1b360e40151a16c7bd1dac22",
+    "name": "/rct-client-host-config-20261012-rabbitmq-1",
+    "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "service": "rabbitmq",
+    "project": "rct-client-host-config-20261012"
+  },
+  {
+    "id": "02d679106869633c7ece09e62ba79aefc2357814940fcfade742ed1639f9299b",
+    "name": "/rct-client-host-config-20261012-document-renderer-service-1",
+    "image": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+    "service": "document-renderer-service",
+    "project": "rct-client-host-config-20261012"
+  },
+  {
+    "id": "04222b423f84d3edb5f46f6a1854d8693f059c5d9aaedc25e37fa795c32a42d8",
+    "name": "/rct-client-host-config-20261012-postgres-schedule-1",
+    "image": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+    "service": "postgres-schedule",
+    "project": "rct-client-host-config-20261012"
+  },
+  {
+    "id": "96daa410cc422e31d25201d793a61981e1ec042ab5a44dd0f521cf52c7a99775",
+    "name": "/rct-client-host-config-20261012-nginx-1",
+    "image": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+    "service": "nginx",
+    "project": "rct-client-host-config-20261012"
+  },
+  {
+    "id": "826ebb1512d3899dc3b15fce9adafc22360c61f3989c478665887d1866611f4f",
+    "name": "/rct-client-host-config-20261012-redis-1",
+    "image": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+    "service": "redis",
+    "project": "rct-client-host-config-20261012"
+  },
+  {
+    "id": "23e1189615d94c7d4cc4202f0dd254177583fc52b1b98fe55f13641fb831bdb0",
+    "name": "/rct-client-host-config-20261012-postgres-academic-1",
+    "image": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+    "service": "postgres-academic",
+    "project": "rct-client-host-config-20261012"
+  }
+]

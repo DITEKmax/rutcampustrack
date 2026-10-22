@@ -1,0 +1,53 @@
+{
+  "worktrees": {
+    "/workspace/rct-worktrees/ci-evidence": {
+      "expected_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "head": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "head_equal": true,
+      "status": "",
+      "files": [
+        {
+          "path": "scripts/collect-ci-test-outcomes.py",
+          "sha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+          "bytes_equal_committed": true
+        },
+        {
+          "path": "tests/harness/test_ci_test_outcomes.py",
+          "sha256": "c721d4419953cb66010eabb5412a80a3874d52533e9c0e9ca0836cba3c95d298",
+          "bytes_equal_committed": true
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+          "bytes_equal_committed": true
+        }
+      ]
+    },
+    "/workspace/rct-worktrees/auth-generator": {
+      "expected_commit": "381543370f08c2251daa00e80c16e3d441cfe072",
+      "head": "381543370f08c2251daa00e80c16e3d441cfe072",
+      "head_equal": true,
+      "status": "",
+      "files": [
+        {
+          "path": "frontends/mobile-core/scripts/generate-auth-types.mjs",
+          "sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+          "bytes_equal_committed": true
+        }
+      ]
+    }
+  },
+  "ci_correction_inventory": [
+    "M\tscripts/collect-ci-test-outcomes.py",
+    "M\ttests/harness/test_ci_test_outcomes.py"
+  ],
+  "ci_whole_package_inventory": [
+    "M\t.github/workflows/ci.yml",
+    "A\tscripts/collect-ci-test-outcomes.py",
+    "A\ttests/harness/test_ci_test_outcomes.py"
+  ],
+  "generator_inventory": [
+    "M\tfrontends/mobile-core/scripts/generate-auth-types.mjs"
+  ],
+  "generator_only_assigned_file": true
+}

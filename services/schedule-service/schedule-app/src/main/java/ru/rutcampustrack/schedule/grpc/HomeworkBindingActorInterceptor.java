@@ -13,10 +13,9 @@ import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 
 /**
- * Authenticates the Academic user identity only for the binding RPCs.
- * The shared-secret interceptor remains responsible for service identity, and
- * this interceptor independently validates the signed user token.  No caller
- * supplied actor id is accepted because it would make the binding owner
+ * Authenticates the Academic user identity only for the binding RPCs. The shared-secret interceptor
+ * remains responsible for service identity, and this interceptor independently validates the signed
+ * user token. No caller supplied actor id is accepted because it would make the binding owner
  * mutable by the transport caller.
  */
 @GrpcGlobalServerInterceptor
@@ -41,25 +40,27 @@ public class HomeworkBindingActorInterceptor implements ServerInterceptor {
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-            ServerCall<ReqT, RespT> call,
-            Metadata headers,
-        ServerCallHandler<ReqT, RespT> next) {
+            ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         String method = call.getMethodDescriptor().getFullMethodName();
         if (!RESERVE_METHOD_NAME.equals(method)
                 && !CONFIRM_METHOD_NAME.equals(method)
                 && !ARCHIVE_METHOD_NAME.equals(method)
                 && !GET_METHOD_NAME.equals(method)
                 && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBinding").equals(method)
-                && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/MoveHomeworkBinding").equals(method)) {
+                && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/MoveHomeworkBinding")
+                        .equals(method)) {
             return next.startCall(call, headers);
         }
 
         try {
             InternalJwtClaims claims = validator.validate(headers.get(INTERNAL_TOKEN));
-            Context context = Context.current().withValue(HomeworkBindingActorContext.CLAIMS, claims);
+            Context context =
+                    Context.current().withValue(HomeworkBindingActorContext.CLAIMS, claims);
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
-            call.close(Status.UNAUTHENTICATED.withDescription("Invalid internal identity"), new Metadata());
+            call.close(
+                    Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),
+                    new Metadata());
             return new ServerCall.Listener<>() {};
         }
     }

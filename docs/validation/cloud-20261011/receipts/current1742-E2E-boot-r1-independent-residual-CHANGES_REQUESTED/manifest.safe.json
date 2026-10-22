@@ -1,0 +1,42 @@
+{
+  "schema": "RCT_BOOT_DIAG_R1_NARROW_RECHECK_MANIFEST_V1",
+  "utc": "2026-10-13T11:56:42.388386+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "original3_metadata_drift_cases_fixed": true,
+  "findings": [
+    {
+      "id": "BOOT-CLEANUP-UNLINK-MASKS-PRIMARY",
+      "priority": 2,
+      "source": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/closed-boot-parser.py",
+      "locus": "finally/else os.unlink"
+    }
+  ],
+  "real_log_API_native_effects": false,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 2706,
+      "sha256": "f4dc576e8d1d5cba181a357ccf6f705137fbf35cad545cd40b46d55a1dfdac48"
+    },
+    {
+      "path": "bindings.safe.json",
+      "bytes": 432,
+      "sha256": "c984bf7806c81328d7ef92848932b51863106754d192f7e4539fe599fd7604e4"
+    },
+    {
+      "path": "check-primary-unlink-ast.py",
+      "bytes": 1827,
+      "sha256": "b1e27c67f914fc2dc64ed3f8ad8b89ff7c170e84b0957f72735c6eeaa9e8d499"
+    },
+    {
+      "path": "targeted-controls.safe.json",
+      "bytes": 1561,
+      "sha256": "36d331fd7650d0463bca4a4c597c308d7b43764fce92a35b3e02b5627e52bb16"
+    },
+    {
+      "path": "unlink-primary-counterexample.safe.json",
+      "bytes": 325,
+      "sha256": "a9a990726f5833ede3e7f3ec36af4d99890a15c42335450ec817b02da285ea0f"
+    }
+  ]
+}

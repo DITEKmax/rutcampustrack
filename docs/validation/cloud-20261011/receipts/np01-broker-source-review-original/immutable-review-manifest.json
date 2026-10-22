@@ -1,0 +1,83 @@
+{
+  "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+  "parent": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "verdict": "CHANGES_REQUESTED",
+  "runtime": "NOT_RUN",
+  "held_processing_lease_crash_runtime": "PENDING",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 756,
+      "sha256": "cef08455649d43e09178f6966d82b7b39027ec681e604b9cc880c5e32e432a2d"
+    },
+    {
+      "path": "PARTIAL.md",
+      "bytes": 612,
+      "sha256": "5fcdf0a99a602ee951ce91c7beaa52f86db5bb02c93e49aecb470aa80f379152"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 17163,
+      "sha256": "d3ae9085ef45d222377a2f281712fb944966199b4394cb2ab7544af9feea4bbf"
+    },
+    {
+      "path": "author-plan-original.safe.json",
+      "bytes": 5911,
+      "sha256": "ccfc0388dc08a505e5f8c0e276d766f5ef7aa94aa172f6a44cf99066951cf4dd"
+    },
+    {
+      "path": "dependency-source-inventory.json",
+      "bytes": 5221,
+      "sha256": "de9ce1a8227cd7782a00a6293afac5492789b719159ae9fe493fa1b0a7c623f0"
+    },
+    {
+      "path": "final-preservation-check.json",
+      "bytes": 435,
+      "sha256": "d628f3ea4ceb74ea3c60cc548a4cb0b5742afa09ad5a478c1e8d31819b6c65d7"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 3348,
+      "sha256": "0e713ab6f698e5b4585b6cb36bd9058536af7ea01a633b14b848da8f16eecbd2"
+    },
+    {
+      "path": "foreign-card-oracle-counterexample.json",
+      "bytes": 353,
+      "sha256": "d6afa973b98b57bc79d012f8bbeacb79be7b7757397f4c0f4ea647e86e9d00a5"
+    },
+    {
+      "path": "held-lease-crash-boundary.json",
+      "bytes": 2499,
+      "sha256": "46ce89e5aee2c1266ff04fcfc61c5d361f1a0b92478c24b4949cde83869b7bb5"
+    },
+    {
+      "path": "partial-findings.json",
+      "bytes": 3348,
+      "sha256": "0e713ab6f698e5b4585b6cb36bd9058536af7ea01a633b14b848da8f16eecbd2"
+    },
+    {
+      "path": "previous-seals-unchanged.json",
+      "bytes": 1017,
+      "sha256": "205a2097bfd894c61d381bd75b4a0dc599103020b8e99404e1c055aebbdba454"
+    },
+    {
+      "path": "source-inventory.json",
+      "bytes": 893,
+      "sha256": "0faa4d03528ff2f994668c397da54353e614fa7c3d5d87e54d15538804bdae76"
+    },
+    {
+      "path": "verification.safe.json",
+      "bytes": 729,
+      "sha256": "9ee314850e806b88165c5cb63b55a3f66bab0205da0d544506e97a77723b345f"
+    }
+  ],
+  "excluded": [
+    "private-frozen-source/**",
+    "author/root source and runtime logs/XML/properties",
+    "real/synthetic ENV values, keys, provider card contents"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN"
+}

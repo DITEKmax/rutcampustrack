@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/formatter-root-immutable-copy-correction-scope.json",
+    "bytes": 1195,
+    "sha256": "eb398eeeaeb43457db621dd68b2af6c06fa81687859849c4d5c6fde7c5dff214"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/nonangular_format_review/safe-review.zip",
+    "sha256": "3e95cdc73d8f346d021e573a727c005c9d43226a80e579f9bd11af1b36bd2721",
+    "reuse": "all unaffected preservation results immutable"
+  }
+]

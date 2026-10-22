@@ -1,123 +1,68 @@
-import { test, expect } from '@playwright/test';
-import { TEST_USERS } from '../fixtures/users';
+import { randomUUID } from 'node:crypto';
+import { test, expect, admit } from '../fixtures/mobile-dataset';
 import { loginAs } from '../fixtures/auth';
 import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
-import path from 'path';
-import fs from 'fs';
+import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
 
-// M14 G7: генерируем 10MB PDF в beforeAll если файл отсутствует —
-// раньше тест ссылался на test-excuse.pdf которого не было в fixtures/.
-// PDF минимально валидный (header + EOF) + padding до 10MB.
-const FIXTURE_PDF = path.resolve(__dirname, '../fixtures/test-excuse.pdf');
-
-function ensureFixturePdf(): void {
-  if (fs.existsSync(FIXTURE_PDF)) return;
-  const header = Buffer.from('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n', 'binary');
-  const trailer = Buffer.from(
-    '\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n' +
-      '2 0 obj\n<< /Type /Pages /Kids [] /Count 0 >>\nendobj\n' +
-      'xref\n0 3\n0000000000 65535 f\n' +
-      '0000000015 00000 n\n0000000060 00000 n\n' +
-      'trailer\n<< /Size 3 /Root 1 0 R >>\nstartxref\n105\n%%EOF\n',
-    'binary',
-  );
-  // Padding до ~10MB — некритичный текстовый блок между header и trailer.
-  const padSize = 10 * 1024 * 1024 - header.length - trailer.length;
-  const pad = Buffer.alloc(padSize, 0x20); // ASCII space
-  fs.writeFileSync(FIXTURE_PDF, Buffer.concat([header, pad, trailer]));
-}
-
-/**
- * M08 Группа 5 (P2-8/5) — student excuse ticket с file-upload.
- *
- * Scenario:
- *  1. student логинится.
- *  2. открывает /student/excuses/new.
- *  3. выбирает pairs (прошедшие за последние 7 дней) + reason.
- *  4. загружает 10MB PDF (fixtures/test-excuse.pdf генерируется once).
- *  5. submit → POST /attendance/excuses/with-file → 201 + self-link.
- *  6. headman (separate browser context) видит excuse + approves.
- *  7. student видит status APPROVED.
- *
- * File-upload endpoint — M05 G1 + M07 G11 `client_max_body_size 25m`.
- */
+test.afterEach(async () => sanitizeTestErrors(test.info()));
 
 test.describe('Student excuse + file upload', () => {
-  test.beforeAll(() => {
-    ensureFixturePdf();
-  });
-
-  test('student submits excuse with 10MB PDF, headman approves', async ({ page, browser }) => {
-    await loginAs(page, TEST_USERS.student);
+  test('student 10MiB legacy upload is refused without creating a ticket', async ({ page, dataset }) => {
+    const marker = `synthetic-upload-${randomUUID()}`;
+    const pdf = Buffer.alloc(10 * 1024 * 1024, 0x20);
+    Buffer.from(`%PDF-1.4\n% ${marker}\n`).copy(pdf);
+    Buffer.from('\n%%EOF\n').copy(pdf, pdf.length - 7);
+    const student = { ...dataset.student, expectedLandingPath: '/student/dashboard' };
+    const yesterday = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000).toISOString().slice(0, 10);
+    const ownLesson = await dataset.headmanActor.call('POST', '/api/schedule/one-off-lessons', {
+      groupId: dataset.group.id, subjectId: dataset.subject.id,
+      assignmentId: dataset.subject.assignments[0].id, date: yesterday,
+      lessonNumber: 8, classroom: 'Синтетическая аудитория',
+    }, [201, 200], { 'Idempotency-Key': randomUUID() });
+    const lessonId = String(ownLesson.physicalLessonId);
+    const actor = await admit(dataset.request, dataset.student, 'STUDENT');
+    await expect.poll(async () => {
+      const report = await actor.call('GET', '/api/attendance/reports/student/records');
+      return Object.values(report._embedded ?? {}).flat().some((record: any) =>
+        String(record.lessonId) === lessonId && record.lessonDate === yesterday && record.status === 'absent');
+    }, { timeout: 15000 }).toBe(true);
+    const tickets = async () => {
+      const body = await actor.call('GET', '/api/attendance/excuses/me');
+      return (Array.isArray(body) ? body : Object.values(body._embedded ?? {}).flat()) as any[];
+    };
+    const before = (await tickets()).map((ticket) => String(ticket.id)).sort();
+    await loginAs(page, student);
     await page.goto('/student/excuses');
-
-    // M14 G7: реальная кнопка — «Подать тикет» (student-excuses.component.html:11).
-    await page.getByRole('button', { name: /подать тикет|новый|создать/i }).click();
-
-    // M14 G7: открыт MatDialog с формой excuse-form-dialog.
-    // - Excuse type: <mat-select> (Material, не native <select>) — клик +
-    //   getByRole('option') вместо selectOption().
-    // - Lesson picker: <label data-testid="lesson-picker-item"> (M14 G7
-    //   testid added). Клик через `.first().click()` toggle'ит mat-checkbox.
-    // - File upload: <input type="file" aria-label="Прикрепить файл">
-    //   (excuse-form-dialog.component.html:84-88).
-    // - Submit: <button>Подать тикет</button> в mat-dialog-actions.
-
-    // 1. Lesson picker — обязательное поле, без выбранной пары submit
-    //    выдаст validationError. Выбираем первую.
-    const firstLesson = page.locator('[data-testid="lesson-picker-item"]').first();
-    await firstLesson.click();
-
-    // 2. Excuse type через MatSelect (открыть → выбрать option).
-    await page.getByLabel(/причина пропуска/i).click();
-    await page.getByRole('option', { name: /болезн|медицин/i }).first().click();
-
-    // 3. Comment — необязательно, но добавим.
-    await page.getByLabel(/комментарий/i).fill('Справка от врача прилагается.');
-
-    // 4. File upload — input скрыт под <label>, используем filesetter
-    //    напрямую через input[type="file"]. PDF создан в beforeAll.
-    await page.locator('input[type="file"]').setInputFiles(FIXTURE_PDF);
-
-    // 5. Submit.
-    await page.getByRole('button', { name: /подать тикет/i }).click();
-
-    // Dialog закрывается после успешной отправки. Спустя момент в списке
-    // активных тикетов появляется новая запись.
-    await expect(page.getByRole('button', { name: /подать тикет/i }).first()).toBeVisible({
-      timeout: 15_000,
+    await page.getByRole('button', { name: 'Подать тикет', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Новый тикет о пропуске', exact: true });
+    // The fresh owned student has only this missed number-8 occurrence.
+    const checkbox = dialog.getByRole('checkbox', { name: /№8 / });
+    await expect(checkbox).toHaveCount(1);
+    await checkbox.check();
+    await dialog.getByLabel('Причина пропуска', { exact: true }).click();
+    await page.getByRole('option', { name: /болезн|медицин/i }).click();
+    await dialog.getByPlaceholder('Укажите дополнительные обстоятельства', { exact: true }).fill(marker);
+    await dialog.locator('input[type="file"]').setInputFiles({
+      name: `${marker}.pdf`, mimeType: 'application/pdf', buffer: pdf,
     });
-
+    expect(await dialog.locator('input[type="file"]').evaluate((element) =>
+      element instanceof HTMLInputElement && element.files?.length === 1 &&
+      element.files[0].size === 10 * 1024 * 1024 && element.files[0].type === 'application/pdf'),
+      'Actual browser form retains the exact 10MiB PDF selection').toBe(true);
+    const submitted = page.waitForResponse((response) => response.request().method() === 'POST' &&
+      new URL(response.url()).pathname === '/api/attendance/excuses/with-file');
+    await dialog.getByRole('button', { name: 'Подать тикет', exact: true }).click();
+    const response = await submitted;
+    expect(response.status(), 'Retired legacy multipart route cannot report success').toBe(410);
+    expect(/^multipart\/form-data;\s*boundary=/i.test(response.request().headers()['content-type'] ?? ''),
+      'Retired response belongs to the actual multipart submission').toBe(true);
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Не удалось подать тикет. Попробуйте ещё раз.', { exact: true })).toBeVisible();
+    await expect(page.getByText('Запрос отправлен. Подтверждение придёт в Telegram.', { exact: true })).toHaveCount(0);
+    const after = await tickets();
+    expect(JSON.stringify(after.map((ticket) => String(ticket.id)).sort()) === JSON.stringify(before),
+      'Retired request creates no ticket in the owned student scope').toBe(true);
+    expect(after.some((ticket) => ticket.comment === marker)).toBe(false);
     await assertNoA11yCriticalOrSerious(page);
-
-    // Headman в отдельном browser context'е approves. Seed user `student`
-    // имеет is_headman=true, поэтому используем его (M14 G8 убрал
-    // TEST_USERS.headman дубликат).
-    const headmanContext = await browser.newContext();
-    const headmanPage = await headmanContext.newPage();
-    try {
-      await loginAs(headmanPage, TEST_USERS.student);
-      await headmanPage.goto('/headman/excuses');
-
-      const firstExcuse = headmanPage.locator('[data-testid="excuse-card"]').first();
-      await expect(firstExcuse).toBeVisible({ timeout: 10_000 });
-
-      // Кнопка «Одобрить» внутри excuse-card (headman-excuses.component.ts:136).
-      await firstExcuse.getByRole('button', { name: /одобрить/i }).click();
-
-      // После approve — ticket уходит из pendingTickets в resolvedTickets.
-      // Verify через отсутствие первой excuse-card либо появление section
-      // «Решения». Используем resolvedTickets section как positive signal.
-      await expect(headmanPage.getByText(/решения|одобрен/i).first()).toBeVisible({
-        timeout: 10_000,
-      });
-    } finally {
-      await headmanContext.close();
-    }
-
-    // Student обновляет страницу → ticket в архиве со статусом APPROVED.
-    await page.reload();
-    await page.getByRole('tab', { name: /архив/i }).click();
-    await expect(page.getByText(/одобрен/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

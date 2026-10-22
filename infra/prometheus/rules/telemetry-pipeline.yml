@@ -1,0 +1,252 @@
+groups:
+- name: telemetry-pipeline
+  rules:
+  - alert: PrometheusRuleEvaluationFailed
+    expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: PrometheusRuleEvaluationFailed in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: PrometheusNotificationFailed
+    expr: increase(prometheus_notifications_errors_total[5m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: PrometheusNotificationFailed in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: PrometheusReloadFailed
+    expr: prometheus_config_last_reload_successful == 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: PrometheusReloadFailed in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: PrometheusStorageCompactionFailed
+    expr: increase(prometheus_tsdb_compactions_failed_total[5m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: PrometheusStorageCompactionFailed in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: AlertmanagerNotificationFailed
+    expr: increase(alertmanager_notifications_failed_total[5m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: AlertmanagerNotificationFailed in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: AlertmanagerReloadFailed
+    expr: alertmanager_config_last_reload_successful == 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: AlertmanagerReloadFailed in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: LokiIngestDiscarded
+    expr: sum by (job, environment, reason) (increase(loki_discarded_samples_total[5m])) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: LokiIngestDiscarded in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: AlloyLogDeliveryDropped
+    expr: sum by (job, environment, reason) (increase(loki_write_dropped_entries_total[5m])) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: AlloyLogDeliveryDropped in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: TempoSpansDiscarded
+    expr: sum by (job, environment, reason) (increase(tempo_discarded_spans_total[5m])) > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: TempoSpansDiscarded in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: FilesystemInodesLow
+    expr: (node_filesystem_files_free{fstype=~"ext4|xfs|btrfs"} / node_filesystem_files{fstype=~"ext4|xfs|btrfs"} < 0.10)
+      and node_filesystem_files > 0
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: FilesystemInodesLow in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: FilesystemHeadroomLow
+    expr: node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"} < 4 * 1024 * 1024 * 1024
+    for: 2m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: FilesystemHeadroomLow in {{ $labels.job }} / {{ $labels.instance }}
+      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
+        before treating dashboards as complete; preserve persistent data.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: ReportProcessingFailed
+    expr: attendance_report_last_failure_timestamp_seconds > 0 and time() - attendance_report_last_failure_timestamp_seconds
+      < 300
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Report processing failure in {{ $labels.report }} / {{ $labels.format }}
+      description: An eligible report processing attempt failed or exhausted admission capacity; expected400/403/422 rejections
+        do not update this gauge. First event is detectable even before a second counter sample. Inspect safe request/trace
+        IDs and the report/DLQ runbook.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
+- name: business-producer-alerts
+  rules:
+  - record: rct_sli:export_bad_ratio5m
+    expr: clamp_min(1 - sum by(job,instance,environment,kind) (rate(rct_export_jobs_duration_seconds_bucket{outcome="success",le="60.0"}[5m])) / sum by(job,instance,environment,kind)
+      (rate(rct_export_jobs_terminal_total{outcome=~"success|failure"}[5m])),0)
+  - record: rct_sli:export_bad_ratio1h
+    expr: clamp_min(1 - sum by(job,instance,environment,kind) (rate(rct_export_jobs_duration_seconds_bucket{outcome="success",le="60.0"}[1h])) / sum by(job,instance,environment,kind)
+      (rate(rct_export_jobs_terminal_total{outcome=~"success|failure"}[1h])),0)
+  - alert: ExportJobTerminalFailure
+    expr: (max by(job,environment,kind,reason) (rct_export_jobs_failures and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds >
+      time() - 30)) > 0) or (rct_export_jobs_last_failure_timestamp_seconds > time() - 300)
+    for: 0m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: A durable export job failed
+      description: ERROR snapshot is durable current job state, not an attempt. Process last-failure timestamp covers the first observed terminal failure
+        and resets on restart; fresh persisted ERROR covers restart. Denied/rejected requests are excluded. Inspect job state and correlated logs; do not
+        delete retained jobs.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: ExportJobDeadlineExceeded
+    expr: max by(job,environment,kind) (rct_export_jobs_oldest_nonterminal_age_seconds and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds
+      > time() - 30)) > 60
+    for: 0m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: An accepted export exceeds its60s business deadline
+      description: Age is since durable admission, including queued retries; it is not the worker retry-due age. Inspect ready/error/queued/preparing states
+        and worker capacity; retain accepted work.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: ExportJobLeaseStuck
+    expr: max by(job,environment,kind) (rct_export_jobs_stuck_leases and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds > time()
+      - 30)) > 0
+    for: 1m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Export worker lease remains expired
+      description: A fresh shared-DB snapshot sees expired running leases. Inspect bounded automatic reclaim/recovery and downstream availability; avoid
+        duplicate manual execution.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: ExportJobSnapshotStale
+    expr: (time() - rct_export_jobs_snapshot_timestamp_seconds) > 30
+    for: 1m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Export job state snapshot is stale
+      description: Scheduled5s SQL snapshot has not succeeded for30s. Queue/age gauges are filtered when stale; zero is not proof of no jobs. Inspect DB
+        connectivity and snapshot_failures_total.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: NotificationBotTaskDown
+    expr: notification_bot_task_alive == 0 or notification_bot_consumer_connected == 0
+    for: 1m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Business notification bot task/consumer is down
+      description: Actual process task/consumer state is zero; queued work is not a delivered notification. Inspect task logs, broker connection and watchdog
+        recovery.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: NotificationBotSendExhausted
+    expr: notification_bot_send_tasks_exhausted_total > 0
+    for: 0m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: Business notification send exhausted its retries
+      description: Process counter records actual exhausted send tasks; it is not a user delivery receipt. Absolute counter avoids hiding a first pre-scrape
+        failure. It resets on process restart; retained broker/DLQ state must be inspected.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: ExportJobBudgetBurnFast
+    expr: rct_sli:export_bad_ratio5m > (14.4 * 0.005) and rct_sli:export_bad_ratio1h > (14.4 * 0.005) and (sum by(job,instance,environment,kind) (increase(rct_export_jobs_terminal_total{outcome=~"success|failure"}[5m]))
+      >= 20)
+    for: 2m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: Export60s/99.5% objective burns its budget
+      description: Eligible denominator is once-only committed terminal success/failure; good is successful completion within60s, including queue/retry
+        wait. Expected authority denied/size rejected and internal retry attempts are excluded. Low traffic remains NaN/insufficient; single terminal failure
+        and accepted-age alerts are separate.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+- name: export-slo-window-rollup
+  interval: 30m
+  rules:
+  - record: rct_sli:export_scrape_complete30m
+    expr: (min by(job,environment)(min_over_time(up{job="academic-service",environment="production"}[30m])) == 1) and on(job,environment) (min by(job,environment)(count_over_time(up{job="academic-service",environment="production"}[30m]))
+      >= 120) and on(job,environment) (count by(job,environment)(up{job="academic-service",environment="production"}) == count by(job,environment)(rct_expected_target{job="academic-service",environment="production"}))
+  - record: rct_sli:export_eligible_events30m
+    expr: sum by(job,environment,kind)(increase(rct_export_jobs_terminal_total{job="academic-service",environment="production",outcome=~"success|failure"}[30m]))
+  - record: rct_sli:export_good_events30m
+    expr: sum by(job,environment,kind)(increase(rct_export_jobs_duration_seconds_bucket{job="academic-service",environment="production",outcome="success",le="60.0"}[30m]))
+  - record: rct_sli:export_window_timestamp_seconds
+    expr: time() + 0 * ((min by(job,environment,kind)(count_over_time(rct_export_jobs_terminal_total{job="academic-service",environment="production",outcome=~"success|failure"}[30m]))
+      >= 120) and on(job,environment,kind) (min by(job,environment,kind)(count_over_time(rct_export_jobs_duration_seconds_bucket{job="academic-service",environment="production",outcome="success",le="60.0"}[30m]))
+      >= 120) and on(job,environment) rct_sli:export_scrape_complete30m)
+- name: export-slo-long-window
+  interval: 1m
+  rules:
+  - record: rct_sli:export_source_coverage_seconds30d
+    expr: time() - min_over_time(rct_sli:export_window_timestamp_seconds[29d23h59m59s])
+  - record: rct_sli:export_source_samples30d
+    expr: count_over_time(rct_sli:export_window_timestamp_seconds[29d23h59m59s])
+  - record: rct_sli:export_good_fraction30d
+    expr: (sum_over_time(rct_sli:export_good_events30m[29d23h59m59s]) / sum_over_time(rct_sli:export_eligible_events30m[29d23h59m59s])) and on(job,environment,kind)
+      (rct_sli:export_source_coverage_seconds30d >= 2590200) and on(job,environment,kind) (rct_sli:export_source_samples30d >= 1440)

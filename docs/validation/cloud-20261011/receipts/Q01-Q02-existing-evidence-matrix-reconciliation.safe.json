@@ -1,0 +1,136 @@
+{
+  "Goal": "Independent criterionC reconciliation of Q01/Q02 existing eight real-client proofs only. No broad source audit/new run or new scenario denominator.",
+  "Context": {
+    "base": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+    "producer": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+    "CI": 38499807565,
+    "event": "pull_request",
+    "model": "selected/requested Sol6.1 high; actualUNKNOWN",
+    "authority": "TASK/CURRENT/resources reread; decisions/questions exactunchanged838d..75cb, D002/D003/frozenbounds refreshed. Root solematrixwriter; unrelatedWIP notinspected."
+  },
+  "eligible_full_PASS": {
+    "family_ids": [],
+    "boundary_ids": [],
+    "reason": "Existing candidate rows bundle additional accepted behaviors. None is fully satisfied by only these eight checks; no missing branch invented to justify UNKNOWN. Already proven criteria below must be credited once and never rerun merely because parent row remains UNKNOWN."
+  },
+  "finite_PASS_reuse": [
+    {
+      "proof": "VC-CLIENT-PWA-HOMEWORK-COMPLETION-R2",
+      "line": 14,
+      "receipt": "FIRST3",
+      "satisfies": "PWA own completion PUT200→reload persistence, foreigngroup403/404 and own readbacktrue; CLIENT-FE-STUDENT-05 completion slice only. JS-STUDENT-21 is ordering/focus story, not wholly closed by this one-homework toggle."
+    },
+    {
+      "proof": "VC-CLIENT-HEADMAN-EXCUSE-BLOB-01",
+      "line": 61,
+      "receipt": "FIRST3",
+      "satisfies": "Actual HEADMAN selected, roster markPRESENT, EXCUSED/ILLNESS+68BPNG upload/open exactBlob bytes, foreignattachment403/404; profilelogout204/loginUI; TEACHER realread200/exactsubject and write403. CLIENT-FE-HEADMAN-01 and TEACHER-01 slices; no teacher lesson-detail UI navigation inferred from page.request GET."
+    },
+    {
+      "proof": "VC-CLIENT-PWA-STUDENT-HELPER-MARK-REVOKE-64B",
+      "line": 160,
+      "receipt": "FIRST3",
+      "satisfies": "STUDENT with MARK_ATTENDANCE, no selectableHEADMAN; actualjournal route+mark200+real reportPRESENT/revision; headman APIfullrevoke; samebearer403/noeffect; reload hides helperroute/permissions[]. No fivecapability or partialrevoke proof."
+    },
+    {
+      "proof": "VC-CLIENT-LIMITED-REGISTRY-CREATE-DENY-01",
+      "line": 230,
+      "receipt": "NEXT5",
+      "satisfies": "USERS_VIEW-only ADMIN registrysearch visible/createbutton absent/createPOST403. Not limitedrights assignment/update/revoke, wholecatalogue or data-after-denial inventory."
+    },
+    {
+      "proof": "VC-CLIENT-HOMEWORK-EMPTY-MANUAL-RETRY-01",
+      "line": 257,
+      "receipt": "NEXT5",
+      "satisfies": "Foreigngroup realemptyUI; clientGET abort produces error/retry; unroute/manualretry GET200+realmarker. Deliberate GETtransport fault is not actual serveroutage or commandreplay."
+    },
+    {
+      "proof": "VC-CLIENT-PWA-LIVE-SESSION-REVOKE-01",
+      "line": 298,
+      "receipt": "NEXT5",
+      "satisfies": "Second actual session terminates browser session; reload loginonly/no protectednav, old bearerGET401. Selected-session revocation only, not global logout/expiry."
+    },
+    {
+      "proof": "VC-CLIENT-TMA-REUSE-LIVE-SUSPEND-01",
+      "line": 316,
+      "receipt": "NEXT5",
+      "satisfies": "D003 same valid signed TEACHERproof actualtwoadmissions200+teacherUI; grantSUSPENDED then neutralbootstrap/noowner/nav; role403ROLE_NOT_SELECTABLE and protectedread/write403BOOTSTRAP_SCOPE_DENIED. Synthetic Telegramhost/Chromium, not nativeTelegram or time/proofmalformation boundaries."
+    },
+    {
+      "proof": "VC-CLIENT-D002-OFFLINE-RECONNECT-CACHE-01",
+      "line": 405,
+      "receipt": "NEXT5",
+      "satisfies": "D002 productionSWready/controller, warm offlineHOMEWORK reload/read/sliderdisabled after sessionrevoked; reconnectserverdenial→login; foreignaccount no oldmarker; explicitlogout thenoffline reload nooldmarker/nav. Not offlineschedule/Moscow-day rollover/absoluteexpiry/installupdate/TMAoffline."
+    }
+  ],
+  "accepted_missing_by_family": {
+    "CLIENT-FE-STUDENT-05": "Source775/783/788/941: day/week/month/search, multiitemorder/focus, external-link and archivebehavior. Completion/reload/foreigndeny/empty/retry slices alreadyPASS.",
+    "JS-STUDENT-21": "Source783–787: unfinishedfirst, lessonorder within day, completedvisible atbottom, focusretained. Onehomework toggle cannot prove relativeorder/focus.",
+    "JS-STUDENT-WEB-04": "Source941: optimisticcompletion rollsback on servererror. Case14 succeeds; case257 aborts listGET, not completionPUT; no rollback assertion.",
+    "JS-STUDENT-10": "D002 overrides oldstats wording: own cachedschedule+homework readonly until onlineadmission. Case405 proves homework; offlineschedule notasserted. Do not reinstate offline-statistics requirement.",
+    "CLIENT-FE-HEADMAN-01": "Source425/440/666/447/454: geo-block/read-actionhistory/counts and archived/foreign/revoked headman/CASconflict. Existing roster/PRESENT/excuse/blob/teacher403 alreadyPASS.",
+    "JS-HEADMAN-01": "Source425–438 control includes clearing/toggling off and manualABSENT; not asserted by61/160. Registeredrow also retains foreign/terminal/archived boundaries; no new requirement from testname.",
+    "CLIENT-FE-HEADMAN-06": "Source575/577: assign/editUI, otherfourcapability boundaries, partialrevoke and self/foreign/staleforeground/403/retry. MARK/fullrevoke slice done.",
+    "JS-HEADMAN-14": "Source575 selects five separatecapabilities. FixtureAPI creates MARK-only, no UIpermission choice or remainingcapability behavior assertions.",
+    "JS-HEADMAN-15": "Source577 allows full or partial removal. Full revoke done; removingonecap while anotherremains unasserted.",
+    "CLIENT-FE-TEACHER-01": "Source341/345/349/356/381/387/391/402: Today/catalog/journal/detail/excuse UI, foreign/current-assignment/attachment scope. Loginowner+page.request lessonread/write403 is its proven slice.",
+    "CLIENT-FE-ADMIN-07": "Row: assign/update/revoke LIMITEDrights, authorityversion/staleretry/invalidpermission/self/lastFULL/outage. Case230 registryview/create403 does notexercise these; source cell empty, attach existingOct08decision provenance.",
+    "JS-ADMIN-26": "Source325: activeADMIN must not expose student/headman/teacher feature routes or make their calls before explicitroleswitch. Registryonly case230 does not assert those absent routes.",
+    "CLIENT-FE-AUTH-01": "Source874/row: invalidcredentials401+alert/no nav/cookie, HttpOnly/Secure/Strict cookie and memory-only bearer assertions. Eighttests prove positivelogins, not these boundaries.",
+    "CLIENT-FE-AUTH-02": "Source325/874/row: stale expectedSessionVersion, ungranted/read-only roles and staleowner/data. PositiveHEADMAN/ADMIN choices and suspendedTEACHER denial done.",
+    "CLIENT-FE-AUTH-04": "Source825/row: logout-all, unconfirmedlogout networkfailure latch, latecallback cleanup. Currentlogout and selected-sessionrevoke alreadyPASS.",
+    "CLIENT-FE-TMA-01": "Source853/300: tamperedproof, profile/hostBack/no proof-token persistence and otheracceptedrole adapters. Case316 proves validTEACHERreuse+suspend only.",
+    "CLIENT-FE-TMA-02": "D003/source853/874: malformed/expired/future/duplicate proofs, binding/account revoke and age86400 boundary. Validproofreuse/live suspendedgrant done.",
+    "CLIENT-FE-OFFLINE-01": "D002/source839: cachedschedule, Moscowday rollover, attachment exclusion and broaderwritecontrols. HW/SW readonly slice done.",
+    "CLIENT-FE-OFFLINE-02": "D002/row: actualexpired-sessionreload, offlineschedule/attachment/TMAauthority. Case405 revokes session, not actualexpiry.",
+    "CLIENT-FE-OFFLINE-03": "D002/source839/row: reconnect after role/grant/accountchange, delayedresponse/retry cannot cross newowner/token. Sessionrevoke reconnect+foreignmarker absence done; no delayedcallback injected.",
+    "CLIENT-FE-OFFLINE-04": "D002/row: TMAoffline/reload never hydrates durablePWAmodel or allows offlinewrite. TMA316 staysonline; PWA405 is not TMAproof."
+  },
+  "accepted_missing_by_boundary": [
+    {
+      "id": "BOUNDARY-47",
+      "finite": [
+        405,
+        298
+      ],
+      "missing": "D002 realHWoffline/read-only/reconnectdeny/foreign/logoutcache slices done. Remaining: cachedschedule, offlineattachment/roleswitch, delayedcallback scope, TMAoffline; source_refs D002+release-surface14. Do not leave old367timeout as currentreason."
+    },
+    {
+      "id": "BOUNDARY-48",
+      "finite": [],
+      "missing": "Source837/841/929 installstandalone/updateworker/backgroundnotification optout/iOS/unsupportedplatform behavior. SWready in405 is setup, not these accepted actions."
+    },
+    {
+      "id": "BOUNDARY-49",
+      "finite": [
+        14,
+        61,
+        160,
+        230,
+        257,
+        298,
+        316,
+        405
+      ],
+      "missing": "TASK§4/currentfinitepacket: FULLADMIN actualclient operation; separatehelpercapability boundaries; signed TMASTUDENT/HEADMAN sharedoperation and TMAoffline. Eight Chromium cases cover important role/error paths, not whole B49. No role×browser×operation crossproduct requested."
+    }
+  ],
+  "Root_matrix_corrections": [
+    "Keep all eight finite proofrecords PASS; remove obsolete no-runtime/oldHeadman61-before-uploadFAIL from CLIENT-FE-HEADMAN-01/06 and no-runtime from covered slice rows. Replace with exactfiniteproof+acceptedmissingcondition above, not a new familyPASS.",
+    "CLIENT-FE-OFFLINE-01/03 blocking_scope still cites original367 TIMEOUT/noD002assertions. Preserve that historicalfailure in attempts; currentreason is specific missingconditions, since405 now genuinelyPASS.",
+    "VC-CLIENT-LIMITED-REGISTRY-CREATE-DENY-01 parent_boundary_ids B09;B47: keepB09, replace unrelatedB47 withB49.",
+    "VC-CLIENT-HOMEWORK-EMPTY-MANUAL-RETRY-01 parent_boundary_ids B47: change toB49; browserGETretry is not offlineboundaryproof.",
+    "VC-CLIENT-D002-OFFLINE-RECONNECT-CACHE-01 parent_boundary_ids B48: change toB47. B48 is install/update/push, not cachedoffline read.",
+    "VC-CLIENT-PWA-STUDENT-HELPER-MARK-REVOKE-64B role_grants/limits incorrectly say fivecapspregranted. Exactf8b MobileDataset seed POST permissions:[MARK_ATTENDANCE], unchanged75cb. Correct to seededMARK-only/fullrevoke/noHEADMAN; no denial for each othercapability inferred.",
+    "VC-CLIENT-PWA-HOMEWORK-COMPLETION-R2 sourceJS-STUDENT-21 is related ordering dependency only: proof must not close ordering/focus. B52 remote/format criterion receives no additionalproof from these eight; outside this reconciliation."
+  ],
+  "Verification": {
+    "receipts": {
+      "FIRST3": "docs/validation/cloud-20261011/receipts/current-f8b-FIRST3.safe.json artifact11866400090 sha256544dea4492f5aed0dc6eda5e59347680b4e1e1d88209a62963bcabf339ddb051",
+      "NEXT5": "docs/validation/cloud-20261011/receipts/current-f8b-next5.safe.json artifact11866325271 sha256144233d623924d0d0c002bbace47be824bae49470c4c527708a2f29273ff477a"
+    },
+    "actual": "Both producerf8b receipts: eight individual14/61/160/230/257/298/316/405 PASS/zeroerrors/runnererrors/unsafeartifacts. Same-run separateAuthcheckout receipt proves merge5b17c81248229d9b142a2b3580ce5de6657c6bb6 parents3908+f8b/treeequal; browserSAFE alone cannot attestcheckout.",
+    "source": "Originalfullspec SHA1baa244f10df755235b288d2f570569231aff7a946f6dd55beae3f708e1d28e6 equalsreceipts. Eightcaseprefix448lines SHA c52a444a77c8b4842c54b229f5106f9b20105bf260c3ead401330594f1ef8507 byte-equal75cb after excluding one newdiagnostic import; newtests appended. Dataset only ADMINclockexemption changed, oldeight branch unchanged. No claim globaldependency equivalence/runat75cb.",
+    "effects": "Local reads/Git comparisons only. Sole mutation this q01q02 key; Q07/q15 preserved. No runtime/Node/network/tests/repo/WT/children. No218functions/percentage or fullfamilyPASS claim. B013/B014FROZEN; no Angular/main/prod/secrets."
+  }
+}

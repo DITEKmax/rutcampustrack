@@ -1,0 +1,10 @@
+{
+  "native_exit": 0,
+  "settled": true,
+  "phase_success": true,
+  "supervisor_birth_absent": true,
+  "passed_lines": 4,
+  "skipped_lines": 2,
+  "source2_byte_intact": true,
+  "qualification": "Existingexact2filehooks; Gitleaks --staged seesemptyindex, notrangescan; currentSecurityCI remainsrequired. Privatehooklog notpublished."
+}

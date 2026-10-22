@@ -7,14 +7,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-
 @Entity
-@Table(name = "homework_weekly_digest_runs",
+@Table(
+        name = "homework_weekly_digest_runs",
         uniqueConstraints = @UniqueConstraint(columnNames = {"group_id", "week_start"}))
 @Getter
 @NoArgsConstructor
@@ -36,7 +36,8 @@ public class HomeworkWeeklyDigestRun {
     @Column(name = "sent_at", nullable = false)
     private OffsetDateTime sentAt;
 
-    public HomeworkWeeklyDigestRun(Long groupId, Long semesterId, LocalDate weekStart, OffsetDateTime sentAt) {
+    public HomeworkWeeklyDigestRun(
+            Long groupId, Long semesterId, LocalDate weekStart, OffsetDateTime sentAt) {
         this.groupId = groupId;
         this.semesterId = semesterId;
         this.weekStart = weekStart;

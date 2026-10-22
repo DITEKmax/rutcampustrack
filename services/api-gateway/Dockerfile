@@ -20,9 +20,9 @@ COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-
 COPY services/api-gateway/build.gradle.kts services/api-gateway/
 COPY services/api-gateway/src services/api-gateway/src
 
-# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
-# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service without sharing daemon state.
+# BuildKit serializes only writers using the same service cache.
+RUN --mount=type=cache,id=rct-gradle-api-gateway,target=/root/.gradle,sharing=locked \
     chmod +x gradlew && ./gradlew :services:api-gateway:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers

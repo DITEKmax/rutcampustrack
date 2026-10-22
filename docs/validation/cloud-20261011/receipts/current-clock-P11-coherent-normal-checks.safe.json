@@ -1,0 +1,74 @@
+{
+  "at": "2026-10-14T00:19:14.921695+00:00",
+  "revision": "069f267ddd6cd12ee4c4fc3108970d8a3533e1b9",
+  "existing_caller_sha256": "b2ec7f903fafcb6f40f2de9f02c692d3d64213c137301a658052461aa09f41b8",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "checked_paths": [
+    "build.gradle.kts",
+    "tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java",
+    "tests/e2e/infra/docker-compose.clock-fixture.yml",
+    "tests/e2e/backend-clock/src/main/resources/META-INF/spring.factories",
+    "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilter.java",
+    "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "docs/validation/cloud-20261011/CURRENT.md",
+    "docs/validation/cloud-20261011/attempts.ndjson",
+    "docs/validation/cloud-20261011/boundary-scenarios.csv",
+    "docs/validation/cloud-20261011/defects.md",
+    "docs/validation/cloud-20261011/resources.md",
+    "docs/validation/cloud-20261011/scenarios.csv",
+    "docs/validation/cloud-20261011/source-ledger.json",
+    "docs/validation/cloud-20261011/verified-cases.csv",
+    "docs/validation/cloud-20261011/receipts/current-e9a5-AuthIT.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-e9a5-FIRST3.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-e9a5-P09-case.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-e9a5-real-push-readback.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-e9a5-terminal-gates-checkout.safe.json",
+    "docs/validation/cloud-20261011/receipts/P11-Gateway-pooled-release-red-green.safe.json",
+    "docs/validation/cloud-20261011/receipts/P11-Gateway-pooled-release-independent-review.safe.md",
+    "docs/validation/cloud-20261011/receipts/FIRST3-real-Boot-clock-registration-red-green.safe.json",
+    "docs/validation/cloud-20261011/receipts/FIRST3-real-Boot-clock-registration-independent-review.safe.md"
+  ],
+  "checks": {
+    "normal_precommit_hooks_pass": 6,
+    "fail": 0,
+    "skip": 0,
+    "JSON_CSV_NDJSON": "PASS",
+    "ndjson_historical_blank_lines_preserved": 53,
+    "initial_new_parser_blankline_error": "CORRECTED_CHECKER_ONLY_NO_HISTORICAL_MUTATION"
+  },
+  "terminal": {
+    "direct_pid": 605436,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 605436,
+        "start_ticks": 19089757
+      },
+      {
+        "pid": 605448,
+        "start_ticks": 19089760
+      },
+      {
+        "pid": 605455,
+        "start_ticks": 19089786
+      },
+      {
+        "pid": 605476,
+        "start_ticks": 19089792
+      },
+      {
+        "pid": 605504,
+        "start_ticks": 19089871
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "genuine_browser_and_final_gates": "PENDING"
+}

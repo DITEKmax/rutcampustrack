@@ -1,0 +1,38 @@
+{
+  "status": "PURE_ARGV_CLASSIFICATION_PASS_NO_FORMATTER_SPAWN",
+  "requested": "posix-check",
+  "calls": [
+    {
+      "command": "bash",
+      "args": [
+        "/workspace/rct-worktrees/ci-academic-heap/gradlew",
+        "formatJavaCheck",
+        "--no-daemon"
+      ],
+      "cwd": "/workspace/rct-worktrees/ci-academic-heap/",
+      "shell": false
+    }
+  ],
+  "preserved": [
+    {
+      "path": "docs/validation/cloud-20261011/receipts/current-client-artifacts/manifest.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/export-audit-http-author/manifest.safe.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/host-guard-correction-author/manifest.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/host-runtime-prepare/manifest.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    }
+  ],
+  "actualPowerShellRuntime": "NOT_RUN",
+  "actualJavaFormatterRuntime": "NOT_RUN",
+  "wrapperMode": 384,
+  "sourceBytes": 9469
+}

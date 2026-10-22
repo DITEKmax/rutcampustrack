@@ -1,5 +1,22 @@
 @import '../../styles/tokens.pcss';
-:root button[data-action='cancel'], :root button[data-action='delete'] { border: 0; color: var(--rct-color-text-on-fill-strong); background: var(--rct-color-danger-fill); }
-:root button[data-action='confirm'] { border: 0; color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
-:root button[data-action='clear'] { border: 0; color: var(--rct-color-accent-on-now); background: var(--rct-color-text-on-fill-strong); }
-:root button[data-action]:disabled { color: var(--rct-color-disabled-text); background: var(--rct-color-disabled-surface); cursor: not-allowed; }
+:root button[data-action='cancel'],
+:root button[data-action='delete'] {
+  border: 0;
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--rct-color-danger-fill);
+}
+:root button[data-action='confirm'] {
+  border: 0;
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:root button[data-action='clear'] {
+  border: 0;
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-text-on-fill-strong);
+}
+:root button[data-action]:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}

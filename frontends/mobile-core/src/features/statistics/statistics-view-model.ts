@@ -1,16 +1,31 @@
+import type {
+  StudentStatisticsRankingResponse,
+  StudentStatisticsSeriesPoint,
+} from '../../api/types'
+
+export type StatisticsRankingData = StudentStatisticsRankingResponse
 export type StatisticsTheme = 'dark' | 'light'
 
 export type StatisticsReadState<T> =
   | { readonly status: 'loading' }
   | { readonly status: 'ready'; readonly data: T }
   | { readonly status: 'empty' }
-  | { readonly status: 'error'; readonly code: string; readonly message: string; readonly retryable: boolean }
+  | {
+      readonly status: 'error'
+      readonly code: string
+      readonly message: string
+      readonly retryable: boolean
+    }
   | { readonly status: 'forbidden'; readonly reason: string }
   | { readonly status: 'offline' }
 
 export type StatisticsGraphRange = 'days' | 'weeks'
 export type StatisticsLessonType = 'LECTURE' | 'PRACTICE' | 'LAB'
-export const STATISTICS_TYPE_ORDER = ['LECTURE', 'PRACTICE', 'LAB'] as const satisfies readonly StatisticsLessonType[]
+export const STATISTICS_TYPE_ORDER = [
+  'LECTURE',
+  'PRACTICE',
+  'LAB',
+] as const satisfies readonly StatisticsLessonType[]
 
 export interface StatisticsMetricValue {
   readonly count: number
@@ -39,6 +54,7 @@ export interface StatisticsSeriesPoint {
   readonly dateTo: string
   readonly state: 'DATA' | 'NO_DATA' | 'FUTURE'
   readonly metrics: StatisticsMetricSet
+  readonly groupPresent?: StudentStatisticsSeriesPoint['groupPresent']
 }
 
 export type StatisticsHistoryStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'FUTURE' | 'NO_DATA'
@@ -126,9 +142,13 @@ export function toggleTypeSelection(
   type: StatisticsLessonType,
 ): readonly StatisticsLessonType[] {
   if (selectedTypes.includes(type)) {
-    return STATISTICS_TYPE_ORDER.filter((candidate) => candidate !== type && selectedTypes.includes(candidate))
+    return STATISTICS_TYPE_ORDER.filter(
+      (candidate) => candidate !== type && selectedTypes.includes(candidate),
+    )
   }
-  return STATISTICS_TYPE_ORDER.filter((candidate) => candidate === type || selectedTypes.includes(candidate))
+  return STATISTICS_TYPE_ORDER.filter(
+    (candidate) => candidate === type || selectedTypes.includes(candidate),
+  )
 }
 
 export function seriesForRange(

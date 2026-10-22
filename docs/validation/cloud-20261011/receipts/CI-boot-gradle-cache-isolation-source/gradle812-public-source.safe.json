@@ -1,0 +1,78 @@
+{
+  "source_only": true,
+  "JVM_run": false,
+  "classes": [
+    {
+      "jar": "gradle-client-services-8.12.jar",
+      "class": "org/gradle/launcher/daemon/client/SingleUseDaemonClient.class",
+      "class_sha256": "3269a7ef90b9f645a15bbdb77c080bf242c15d6ce3d5342323ca0dd6ea32d038",
+      "qualification": "Public local Gradle8.12 distribution constant-pool inspection only; not execution or full method/control-flow proof",
+      "constant_pool_known_symbol_substrings": [
+        {
+          "symbol": "startSingleUseDaemon",
+          "present": true
+        },
+        {
+          "symbol": "To honour the JVM settings for this build a single-use Daemon process will be forked.",
+          "present": true
+        }
+      ]
+    },
+    {
+      "jar": "gradle-client-services-8.12.jar",
+      "class": "org/gradle/launcher/daemon/client/DefaultDaemonConnector.class",
+      "class_sha256": "f9c00ee032a8d9fbf2c715f5a3a44f65c3fb7415709ac36c3d65c2dc71b687c9",
+      "qualification": "Public local Gradle8.12 distribution constant-pool inspection only; not execution or full method/control-flow proof",
+      "constant_pool_known_symbol_substrings": [
+        {
+          "symbol": "startSingleUseDaemon",
+          "present": true
+        },
+        {
+          "symbol": "getAll",
+          "present": true
+        },
+        {
+          "symbol": "getUid",
+          "present": true
+        },
+        {
+          "symbol": "Timeout waiting to connect to the Gradle daemon",
+          "present": true
+        }
+      ]
+    },
+    {
+      "jar": "gradle-daemon-protocol-8.12.jar",
+      "class": "org/gradle/launcher/daemon/registry/DaemonDir.class",
+      "class_sha256": "065a5c44ecca606905b32d78de0e1808e91ac36ef737921c68f8aab8ea85992f",
+      "qualification": "Public local Gradle8.12 distribution constant-pool inspection only; not execution or full method/control-flow proof",
+      "constant_pool_known_symbol_substrings": [
+        {
+          "symbol": "registry.bin",
+          "present": true
+        },
+        {
+          "symbol": "getRegistry",
+          "present": true
+        }
+      ]
+    },
+    {
+      "jar": "gradle-daemon-protocol-8.12.jar",
+      "class": "org/gradle/launcher/daemon/registry/PersistentDaemonRegistry.class",
+      "class_sha256": "0553d342193974411cd4eb957e73084498aa95926c1fd91c6965e453ccb32936",
+      "qualification": "Public local Gradle8.12 distribution constant-pool inspection only; not execution or full method/control-flow proof",
+      "constant_pool_known_symbol_substrings": [
+        {
+          "symbol": "daemon addresses registry",
+          "present": true
+        },
+        {
+          "symbol": "org/gradle/cache/FileLockManager",
+          "present": true
+        }
+      ]
+    }
+  ]
+}

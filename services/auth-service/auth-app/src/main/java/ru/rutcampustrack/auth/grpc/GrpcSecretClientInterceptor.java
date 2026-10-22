@@ -7,7 +7,9 @@ import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
+
 import net.devh.boot.grpc.client.interceptor.GrpcGlobalClientInterceptor;
+
 import org.springframework.beans.factory.annotation.Value;
 
 /** Sends the configured shared gRPC secret required by Academic's existing boundary. */
@@ -22,10 +24,15 @@ public final class GrpcSecretClientInterceptor implements ClientInterceptor {
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
-            MethodDescriptor<ReqT, RespT> method,
-            CallOptions callOptions,
-            Channel next) {
-        return new ForwardingClientCall.SimpleForwardingClientCall<>(next.newCall(method, callOptions)) {
+            MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+        if (callOptions.getCredentials()
+                        instanceof
+                        ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentials
+                || method.getFullMethodName().startsWith("rutcampustrack.authauthority.")) {
+            return next.newCall(method, callOptions);
+        }
+        return new ForwardingClientCall.SimpleForwardingClientCall<>(
+                next.newCall(method, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
                 if (secret != null && !secret.isBlank()) {

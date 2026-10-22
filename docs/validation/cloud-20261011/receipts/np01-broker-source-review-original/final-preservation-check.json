@@ -1,0 +1,13 @@
+{
+  "original2_git_blobs_exact": true,
+  "old24_current_aa713_exact": true,
+  "old_DOMAIN1_archive": {
+    "sha256": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+    "bytes": 5520518,
+    "members": 65
+  },
+  "all_prior_safe_files_unchanged": 92,
+  "all_prior_manifests_unchanged": 6,
+  "future_author_mutations": "Original report uses sealed frozen2, not changing author working copy",
+  "runtime": "NOT_RUN"
+}

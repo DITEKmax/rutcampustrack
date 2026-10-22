@@ -1,0 +1,113 @@
+[
+  {
+    "status": "create",
+    "id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+    "from": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "Type": "container",
+    "Action": "create",
+    "Actor": {
+      "ID": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+      "Attributes": {
+        "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "name": "rct_np01_diag_803eade4e1714423a5c1434299a4d004",
+        "rct.validation.owner": "np01_diag_803eade4e1714423a5c1434299a4d004"
+      }
+    },
+    "scope": "local",
+    "time": 1791790335,
+    "timeNano": 1791790335316489326
+  },
+  {
+    "status": "start",
+    "id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+    "from": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "Type": "container",
+    "Action": "start",
+    "Actor": {
+      "ID": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+      "Attributes": {
+        "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "name": "rct_np01_diag_803eade4e1714423a5c1434299a4d004",
+        "rct.validation.owner": "np01_diag_803eade4e1714423a5c1434299a4d004"
+      }
+    },
+    "scope": "local",
+    "time": 1791790335,
+    "timeNano": 1791790335497443074
+  },
+  {
+    "status": "kill",
+    "id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+    "from": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "Type": "container",
+    "Action": "kill",
+    "Actor": {
+      "ID": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+      "Attributes": {
+        "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "name": "rct_np01_diag_803eade4e1714423a5c1434299a4d004",
+        "rct.validation.owner": "np01_diag_803eade4e1714423a5c1434299a4d004",
+        "signal": "15"
+      }
+    },
+    "scope": "local",
+    "time": 1791790346,
+    "timeNano": 1791790346617062155
+  },
+  {
+    "status": "stop",
+    "id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+    "from": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "Type": "container",
+    "Action": "stop",
+    "Actor": {
+      "ID": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+      "Attributes": {
+        "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "name": "rct_np01_diag_803eade4e1714423a5c1434299a4d004",
+        "rct.validation.owner": "np01_diag_803eade4e1714423a5c1434299a4d004"
+      }
+    },
+    "scope": "local",
+    "time": 1791790347,
+    "timeNano": 1791790347841909203
+  },
+  {
+    "status": "die",
+    "id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+    "from": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "Type": "container",
+    "Action": "die",
+    "Actor": {
+      "ID": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+      "Attributes": {
+        "execDuration": "12",
+        "exitCode": "0",
+        "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "name": "rct_np01_diag_803eade4e1714423a5c1434299a4d004",
+        "rct.validation.owner": "np01_diag_803eade4e1714423a5c1434299a4d004"
+      }
+    },
+    "scope": "local",
+    "time": 1791790347,
+    "timeNano": 1791790347844946281
+  },
+  {
+    "status": "destroy",
+    "id": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+    "from": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "Type": "container",
+    "Action": "destroy",
+    "Actor": {
+      "ID": "46a474ad7ea3041eb5e62bdd73e50c9c0edb9e542d7d7a26f5ab70a829e85933",
+      "Attributes": {
+        "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+        "name": "rct_np01_diag_803eade4e1714423a5c1434299a4d004",
+        "rct.validation.owner": "np01_diag_803eade4e1714423a5c1434299a4d004"
+      }
+    },
+    "scope": "local",
+    "time": 1791790348,
+    "timeNano": 1791790348082607262
+  }
+]

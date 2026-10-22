@@ -1,0 +1,108 @@
+{
+  "source": "/workspace/scratch/rct-validation/authored_format_current/root-source-copy-correction",
+  "manifest": "transfer-manifest.json",
+  "files": [
+    {
+      "path": "classification-one-delta.safe.json",
+      "original_sha256": "a4fefe28182b43beb7f0694c1930326ff0d29b3928ec3fada4aa48a970ef56ed",
+      "original_bytes": 420,
+      "working_sha256": "933d23a5f391b7c9ddc01fd55b7b394cde44591c20bde37f06b305a89c0ec54a",
+      "working_bytes": 421,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "tooling-commit.safe.json",
+      "original_sha256": "9b3e39ed14c02c2675a8ac57330d54557752959eafe1e77a965707e3ec8a465f",
+      "original_bytes": 169,
+      "working_sha256": "7b8861500afa70f3d2687079fce942c8cce575d606be567e3123d7979e744a31",
+      "working_bytes": 170,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "c2b7d9f25a27cd43bea2a947df3beb784de69177b6c73cb0526ff52ba0a7108d",
+      "original_bytes": 556,
+      "working_sha256": "c2b7d9f25a27cd43bea2a947df3beb784de69177b6c73cb0526ff52ba0a7108d",
+      "working_bytes": 556,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "tooling-hooks.safe.json",
+      "original_sha256": "6eb412d86f7b0fdaa38b50b2a17e0c598bfb6ad2442f65eaa7b62d2403d78bea",
+      "original_bytes": 289,
+      "working_sha256": "f4eee94c844831ad272fc32a02dcec462509993e3fdde8df8bae7bea07d5ada6",
+      "working_bytes": 290,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "python16-reviewed-replacement.patch",
+      "original_sha256": "5a395c25c265c6ac2ad27a834f20bfdd4bad2793c390a3bdaf9c4e6695c4a74e",
+      "original_bytes": 145434,
+      "working_sha256": "ee43056082927a6813ceb1de0df7a01cd7af698aeef292ed797fd27bb55b0e60",
+      "working_bytes": 29804,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "python16-reviewed-replacement.patch.readable.zip"
+    },
+    {
+      "path": "tooling-prettier-check.safe.json",
+      "original_sha256": "92c9635c3d2db3abc94f4d0a3a218e3e0ca6e506c8b8060a9f77ca72b0421590",
+      "original_bytes": 250,
+      "working_sha256": "4a279d4161e067958453f05931c4c9ffd819fef9d60a44e2c44edd3a9fd7d744",
+      "working_bytes": 251,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "python120-native.safe.json",
+      "original_sha256": "b03d3660e3b2be80eb657ffb098dc3994e8ca00051c113df4369dbd918f24ea8",
+      "original_bytes": 39026,
+      "working_sha256": "a3251581509bffd4804d9d3ff967c2fafad02c517b5e7f57b74f595aeb1a0ab7",
+      "working_bytes": 39027,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "python16-replacement.safe.json",
+      "original_sha256": "fdaec769ad4c8342acc3b847c20a86cfd60ee20f5ba64f50e6505dbc367458d6",
+      "original_bytes": 1448,
+      "working_sha256": "78ddb66e26f0e04d08bb10bf34cb9e047725c3d4ac2ddbbfad2df8a3cf5dcbb9",
+      "working_bytes": 1449,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "restoration-commit.safe.json",
+      "original_sha256": "a0a510378807163b19bfcd5b6f2e93aa00ce7e81c2c9cc7b2dedee2220a2c226",
+      "original_bytes": 280,
+      "working_sha256": "d9fcf228003e13a7265d2a09a82c2d0512f210688d92c5d69973d96f50d692ef",
+      "working_bytes": 281,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "corrected-net-import-plan.safe.json",
+      "original_sha256": "f1b3f9df7fa6fc2278c088c77fe1a789242a9d46ed0da034ae614842f9df8342",
+      "original_bytes": 500810,
+      "working_sha256": "f7fb81b8f722cb61ef42f7c220b27dec0241813a371457497f9d2dbfb0223a5a",
+      "working_bytes": 109239,
+      "transformation": "only final newline normalization; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "corrected-net-import-plan.safe.json.readable.zip"
+    },
+    {
+      "path": "inventory120.json",
+      "original_sha256": "44924fd0d819f9c51d3414eddde60b919b39185ff7a0810538c7d68dd458e245",
+      "original_bytes": 1179607,
+      "working_sha256": "e8423359c889b4b70857f4665a4931c84c9bf1ae530f6890c129579cdbede5b9",
+      "working_bytes": 65560,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "inventory120.json.readable.zip"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "57d2cce9b76f8835ee6a12c3fae91a71247a11c4a986adba4e79586ce2751ce8",
+      "original_bytes": 2155,
+      "working_sha256": "0e5fe7dc8f062b37944b55cdef46066e506e4690cf789ec2100771ce6f5b3d1f",
+      "working_bytes": 1083,
+      "transformation": "external original manifest byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "transfer-manifest.json.readable.zip"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

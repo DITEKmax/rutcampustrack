@@ -1,0 +1,18 @@
+{
+  "utc": "2026-10-13T17:49:50.410614+00:00",
+  "scope": "ROOT_DOC267_NORMAL_HOOKS_FINAL_PASS",
+  "result": "SAME58816_NATIVE0_ALL5APPLICABLE_PASS_ALLBIRTHSABSENT_NO_ARTIFACTBYTECHANGE",
+  "candidate_files": 267,
+  "recorded_births": 10,
+  "hooks": {
+    "Gitleaks secret detection": true,
+    "check json": true,
+    "check for added large files": true,
+    "fix end of files": true,
+    "trim trailing whitespace": true
+  },
+  "all_fresh_absent": true,
+  "non_state_candidate_mutations": 0,
+  "local_sha": "52a95a8f38753f17277de616ebf608cf34937cb9",
+  "qualification": "YAML nofiles normalSKIP; no source producttests repeated/rulesweakened. Source15archive9e298 restoresandpreservesexactmachinebytes; old25excludedunchanged. Prior11919FAIL retainedcauseEOF/trailing automaticnormalization; RootownleaseRELEASED. Product/test53Scope actualP10finitePASS independently84b613accepted, CIcurrentnewNOT_RUN. Nextpartialhandoff/CURRENT refresh/scopedfinaldocs check\u2192ordinarydesignatedcommit/push/readback/normalCI thenactualheadman/helper browser."
+}

@@ -1,0 +1,26 @@
+{
+  "time": "2026-10-11T22:07:10.626768+00:00",
+  "action": "final_selected_green_terminal",
+  "sha": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "session": "UNKNOWN_TOOL_RESULT_TRUNCATED",
+  "exit": "UNKNOWN_TOOL_RESULT_TRUNCATED",
+  "gradle_result": "BUILD SUCCESSFUL in 34s",
+  "tests": {
+    "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+    "tests": "43",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-11T22:04:10",
+    "hostname": "993a1bc854c1",
+    "time": "2.46"
+  },
+  "xml": "/workspace/scratch/rct-validation/gateway_claims_developer/final-selected-green.xml",
+  "xml_sha256": "3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897",
+  "log_sha256": "105233695b339828f19d7aa33e5d89857ccf7fab83e6cefa536b26173831541b",
+  "status": "PASS",
+  "product_changes": 0,
+  "no_live_own_processes": true,
+  "lease": "GATEWAY1_RELEASED",
+  "evidence_limit": "Final tool session/exit metadata was lost at compaction; exact launch command and WIP hash saved before execution. No duplicate execution for history."
+}

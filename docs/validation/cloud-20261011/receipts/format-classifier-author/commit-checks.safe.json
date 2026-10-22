@@ -1,0 +1,14 @@
+{
+  "staged_gitleaks8.24.3": {
+    "exit": 0,
+    "findings": 0
+  },
+  "EOF_whitespace_size": "PASS",
+  "node_parser": "PASS",
+  "actual_inventory_mode": "PASS",
+  "root_eligible_source_hash_guard": {
+    "count": 2663,
+    "all_unchanged": true
+  },
+  "diff_check": 0
+}

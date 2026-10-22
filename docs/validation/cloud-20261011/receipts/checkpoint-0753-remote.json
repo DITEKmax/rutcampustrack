@@ -1,0 +1,12 @@
+{
+  "outcome": "0753actualpush94725native0_readback_verified",
+  "local_sha": "0753aec1fadea48e87e459552b9630f35170d2f9",
+  "remote_branch_sha": "0753aec1fadea48e87e459552b9630f35170d2f9",
+  "pr_head_sha": "0753aec1fadea48e87e459552b9630f35170d2f9",
+  "draft": true,
+  "merged": false,
+  "target": "main",
+  "main_sha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "source_receipts": "cd3 producer, not0753 execution/finalD009",
+  "utc": "2026-10-12T09:48:59.310738+00:00"
+}

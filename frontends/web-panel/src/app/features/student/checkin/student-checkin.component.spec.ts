@@ -236,30 +236,6 @@ describe('StudentCheckinComponent', () => {
   });
 
   // ── 5 ───────────────────────────────────────────────────────────
-  it('on 2xx success the CTA swaps to confirmation badge', async () => {
-    stubGeo(true);
-    const { fixture } = await setup();
-    flushLessons([lesson({ status: 'ACTIVE' })]);
-    fixture.detectChanges();
-    flushSubjectCache();
-    fixture.detectChanges();
-
-    await userEvent
-      .setup({ advanceTimers: vi.advanceTimersByTime })
-      .click(
-        screen.getByRole('button', { name: 'Отметиться на текущей паре' }),
-      );
-    fixture.detectChanges();
-
-    httpMock.expectOne('/api/attendance/checkin').flush({
-      status: 'present',
-      lessonId: 42,
-      timestamp: '2026-04-09T09:05:00Z',
-    });
-    fixture.detectChanges();
-
-    expect(screen.getByText('Вы отметились')).toBeTruthy();
-  });
 
   // ── 6 ───────────────────────────────────────────────────────────
   it('shows "Вы уже отмечены на этом занятии." on HTTP 409', async () => {

@@ -1,0 +1,21 @@
+{
+  "producer": "58534 real Chromium/backend partial bounded run",
+  "qualification": "three failing cases; five interrupted/uncompleted UNKNOWN; no raw error context or raw log transferred",
+  "files": [
+    {
+      "name": "PARTIAL.safe.json",
+      "size": 2547,
+      "sha256": "07f18e2c36ef2a57104981a8a1745e423c195ae4a06e1c8ed06efbaad4e23725"
+    },
+    {
+      "name": "terminal.safe.json",
+      "size": 3145,
+      "sha256": "b935ab511561e1729697e4ffdb6e84871cd560f587ccc5731e3052fbb7abb40c"
+    },
+    {
+      "name": "process.safe.json",
+      "size": 149,
+      "sha256": "4d8893e178c1c23d22be9fb15151dbeab739e24124e8e58158d09fb0d188b45b"
+    }
+  ]
+}

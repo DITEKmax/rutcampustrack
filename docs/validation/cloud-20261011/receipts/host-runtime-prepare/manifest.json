@@ -1,0 +1,154 @@
+{
+  "at": "2026-10-12T02:24:26.415758+00:00",
+  "owner": "host_runtime_prepare",
+  "source_revision": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "status": "PREPARATION_COMPLETE_RUNTIME_NOT_RUN_CACHE2_COMPLETE",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/CACHE2-after.json",
+      "sha256": "e7d25c0b9257e335c737583f85065ee3e998edf97c5d69834332887d132e8298",
+      "bytes": 13689
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/CACHE2-attempts.ndjson",
+      "sha256": "bc9919bb94e0a9c014a84a1b0ec5952a3dc7d15abb5348321438960d71bb057e",
+      "bytes": 7490
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/CACHE2-before.json",
+      "sha256": "62fed072dd144cf6cd982e8a73cace29377197f264f9a4971891108bb6f7de94",
+      "bytes": 20237
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/CACHE2-manifest.json",
+      "sha256": "6dbc6114d07d7eb6df5baae76f2830b3fb0b5c826a056714b771c8b5a2d55115",
+      "bytes": 801
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/CACHE2-result.json",
+      "sha256": "caeb35857da7ab7ca734c064cb23a46355b4d361cb8cde8fb0897fbeb137e70e",
+      "bytes": 12476
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/FINAL-verification.json",
+      "sha256": "ca22f2a4ba42c3fac8fe753f67cb8e12548cd5319ebd264a525047d000261b83",
+      "bytes": 656
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/HANDOFF.md",
+      "sha256": "f39869ccb1918906f4ceded5902c6a85c7dfa4d59177d0b785c6a74124b04f88",
+      "bytes": 11175
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/PARTIAL.md",
+      "sha256": "9c9dfb9846d0a2f7297a76a08ce7bb385a0c98c8c4bacbc741767845b916d909",
+      "bytes": 1375
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/auth-spec.validation-only.json",
+      "sha256": "bda388e081a17137dcaf54a991e1e3822841203f1d5b52afc627f6b6e8567ba3",
+      "bytes": 2149
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/buildkit-current.jsonl",
+      "sha256": "64046f5457360f70aaf014452c1a9ee7ea15b1fa99af15db4b5089bb7ebb5cbd",
+      "bytes": 10770
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/buildkit-exact-filter-proof.jsonl",
+      "sha256": "4e74f782f571740d704ef59063514f014e6aec21b260228aecb590207903142e",
+      "bytes": 301
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/buildkit-prune-help.txt",
+      "sha256": "375c8f524a2252384ab656ec19f5a7b4fa1c3a19fce8fd9d32b3ee6988ed7bf0",
+      "bytes": 733
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/capacity-candidates.json",
+      "sha256": "3d8fe7e6a89834312154f8f25892e99a4a274a54860fe9090fe04702ccd17245",
+      "bytes": 16371
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/containers-current.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/data-renderer-edge.compose.template.yml",
+      "sha256": "c2ae96c53bbfd4fcbaf8886d12d0fc3c7d66a19de25174bd30ec601c1554cea6",
+      "bytes": 7283
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/host-key-generation.template.json",
+      "sha256": "3807904eeb31d3b53d993ec5a2cabeedcd255c370494ac77ca5d4248cae311b3",
+      "bytes": 4115
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/host-service-specs.template.json",
+      "sha256": "83ec2df770013034b2d5c6f4c567cc98ed563d09c157caa4bf3b097661616e79",
+      "bytes": 17419
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/host9-current-image-budget.json",
+      "sha256": "bf4640dcd0ed2c59a05e3274b380fcdc9b6f42c76c03345cb0a76c8720f45928",
+      "bytes": 1727
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/images-current.jsonl",
+      "sha256": "b1ec8c64467b87a66d4ab5af4d235176c8f3c6bcb2b8d1a84c2cae5e6dcd6023",
+      "bytes": 3529
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/listeners-current.txt",
+      "sha256": "eb79357025bf81df8995e48cdaa5825aab16933d9675b52466d0c12bdcb5f5ad",
+      "bytes": 44
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/networks-current.jsonl",
+      "sha256": "ee4dd9612165274824b6aa2c9ba9817ae3ccf86b635fa08126e9b85a20f088ea",
+      "bytes": 550
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/partial-manifest.json",
+      "sha256": "9ee822495851a2e8cc821a47370dbe3ca8392cde18532e41bc66c99c8d1b4444",
+      "bytes": 2425
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/protected-image-metadata.json",
+      "sha256": "b19328c97ffc87f8ed2d5569ab9f736df103daae0ac19b07f676bf88d8827a9c",
+      "bytes": 10242
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/resource-snapshot.json",
+      "sha256": "d5912f2ac2920633599b7c81fd16bfa7c8601c68280a9087737625e76161799d",
+      "bytes": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/root-grant.template.json",
+      "sha256": "72006172d0b0be682a2fb130a16af8b5ff9eb214e01c9e0d7661da25dcee0c32",
+      "bytes": 364
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/safe-child-status.py",
+      "sha256": "178b194097865cd682ed60fed0ab7ee1e1720da7552c4f22e58eaa56cd8f5b09",
+      "bytes": 7162
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/source-ledger.json",
+      "sha256": "430fb2f7f620c8f28b9b929090ba38506b40e0d249383dc19ac25c96f2ffe74f",
+      "bytes": 3823
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/template-input-source-manifest.json",
+      "sha256": "cfd6c334b7bbdebcfde4a4f01d8f6a82ca8b6b29839d70c3099a5ebe3aa0c3f1",
+      "bytes": 12981
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/verification.json",
+      "sha256": "ae449c7717cdfd79fdc96d7fc72dacc5178dd4b391c6cb74830e116468fdbdab",
+      "bytes": 684
+    }
+  ],
+  "total_file_bytes": 170955
+}

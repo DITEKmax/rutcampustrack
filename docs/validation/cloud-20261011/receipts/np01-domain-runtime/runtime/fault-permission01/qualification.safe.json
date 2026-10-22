@@ -1,0 +1,16 @@
+{
+  "qualified": true,
+  "failure_type": "java.lang.AssertionError",
+  "expected_violation": "Missing PERMISSION_DENIED on first foreignUID request",
+  "frames": [
+    [
+      "denied",
+      "329"
+    ],
+    [
+      "privateForeignAndUnknownReadModesFailClosed",
+      "91"
+    ]
+  ],
+  "compile_infra_failure": false
+}

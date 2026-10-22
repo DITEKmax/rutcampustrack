@@ -5,6 +5,34 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.16" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
+    id("com.diffplug.spotless") version "7.0.4"
+}
+
+// Author sources only. Generated stubs, historical copies and byte-sensitive
+// fixtures are deliberately outside this formatter's target.
+spotless {
+    java {
+        val authoredJava = providers.exec {
+            commandLine("git", "ls-files", "-z", "--", "services/**/src/**/*.java", "tests/e2e/backend-clock/**/*.java")
+        }.standardOutput.asText.get().split('\u0000').filter { path ->
+            path.isNotBlank() && !path.contains("/generated/") &&
+                !path.contains("/snapshots/")
+        }
+        target(authoredJava)
+        googleJavaFormat("1.25.2").aosp()
+    }
+}
+
+tasks.register("formatJava") {
+    group = "formatting"
+    description = "Formats tracked handwritten Java with four-space AOSP style."
+    dependsOn("spotlessJavaApply")
+}
+
+tasks.register("formatJavaCheck") {
+    group = "verification"
+    description = "Checks tracked handwritten Java without rewriting files."
+    dependsOn("spotlessJavaCheck")
 }
 
 group = "ru.rutcampustrack"
@@ -188,35 +216,7 @@ subprojects {
 tasks.register("verifyNoDebugInProd") {
     group = "verification"
     description = "QA1/NEW-57 — fails build if DEBUG level set for ru.rutcampustrack in application.yml or application-prod.yml"
-
-    val configFiles = fileTree(rootDir) {
-        include("services/**/src/main/resources/application.yml")
-        include("services/**/src/main/resources/application-prod.yml")
-        exclude("**/build/**")
-    }
-    inputs.files(configFiles)
-
-    doLast {
-        val violations = mutableListOf<String>()
-        val pattern = Regex("""ru\.rutcampustrack[^:]*:\s*DEBUG""")
-        configFiles.forEach { file ->
-            file.useLines { lines ->
-                lines.forEachIndexed { idx, line ->
-                    val trimmed = line.substringBefore('#').trim()
-                    if (pattern.containsMatchIn(trimmed)) {
-                        violations += "${file.relativeTo(rootDir).invariantSeparatorsPath}:${idx + 1}: $line"
-                    }
-                }
-            }
-        }
-        if (violations.isNotEmpty()) {
-            throw GradleException(
-                "QA1 violation — DEBUG level for ru.rutcampustrack must NOT appear in default or prod configs.\n" +
-                "Use application-dev.yml for DEBUG. Violations:\n  " +
-                violations.joinToString("\n  ")
-            )
-        }
-    }
+    dependsOn(":services:shared:shared-logback:verifyProductionLoggingLevels")
 }
 
 tasks.named("check") {
@@ -229,37 +229,7 @@ tasks.named("check") {
 tasks.register("verifyLogbackJsonInAllServices") {
     group = "verification"
     description = "QA7/NEW-68 — fails build if any *-app or auth/api-gateway resources lacks logback-spring.xml with shared/logback-base.xml include"
-
-    val expectedServices = listOf(
-        "services/api-gateway/src/main/resources",
-        "services/auth-service/auth-app/src/main/resources",
-        "services/academic-service/academic-app/src/main/resources",
-        "services/schedule-service/schedule-app/src/main/resources",
-        "services/attendance-service/attendance-app/src/main/resources",
-        "services/mobile-bff/mobile-bff-app/src/main/resources",
-        "services/notification-service/notification-app/src/main/resources",
-    )
-    val expectedInclude = "shared/logback-base.xml"
-
-    inputs.files(expectedServices.map { rootDir.resolve("$it/logback-spring.xml") })
-
-    doLast {
-        val missing = mutableListOf<String>()
-        expectedServices.forEach { dir ->
-            val configFile = rootDir.resolve("$dir/logback-spring.xml")
-            if (!configFile.exists()) {
-                missing += "$dir/logback-spring.xml — file missing"
-            } else if (!configFile.readText().contains(expectedInclude)) {
-                missing += "$dir/logback-spring.xml — does not include $expectedInclude"
-            }
-        }
-        if (missing.isNotEmpty()) {
-            throw GradleException(
-                "QA7 violation — каждый Spring-сервис обязан подключать shared/logback-base.xml.\n" +
-                "Missing/broken:\n  " + missing.joinToString("\n  ")
-            )
-        }
-    }
+    dependsOn(":services:shared:shared-logback:verifyServiceLogback")
 }
 
 tasks.named("check") {
@@ -334,4 +304,39 @@ springBootApps.forEach { path ->
     project(":${path.replace("/", ":")}").afterEvaluate {
         tasks.findByName("processResources")?.dependsOn(":generateGitProperties")
     }
+}
+
+// Explicit external E2E artifact. No production source set, bootJar or assemble depends on it.
+val e2eClock = sourceSets.create("e2eClock") {
+    java.setSrcDirs(listOf("tests/e2e/backend-clock/src/main/java"))
+    resources.setSrcDirs(listOf("tests/e2e/backend-clock/src/main/resources"))
+}
+val e2eClockControl = sourceSets.create("e2eClockControl") {
+    java.setSrcDirs(listOf("tests/e2e/backend-clock/src/control/java"))
+    compileClasspath += e2eClock.output
+    runtimeClasspath += e2eClock.output
+}
+dependencies {
+    add(e2eClock.compileOnlyConfigurationName,
+        platform("org.springframework.boot:spring-boot-dependencies:3.5.16"))
+    add(e2eClock.compileOnlyConfigurationName, "org.springframework:spring-context")
+    add(e2eClock.compileOnlyConfigurationName, project(":services:shared:shared-web-api"))
+    add(e2eClockControl.implementationConfigurationName,
+        platform("org.springframework.boot:spring-boot-dependencies:3.5.16"))
+    add(e2eClockControl.implementationConfigurationName, "org.springframework:spring-context")
+    add(e2eClockControl.implementationConfigurationName, "org.springframework.boot:spring-boot")
+    add(e2eClockControl.implementationConfigurationName, project(":services:shared:shared-web-api"))
+}
+tasks.register<Jar>("e2eClockFixtureJar") {
+    group = "verification"
+    description = "Builds an external opt-in teaching clock for disposable real-server E2E only."
+    archiveFileName.set("clock-fixture.jar")
+    destinationDirectory.set(layout.buildDirectory.dir("e2e-clock"))
+    from(e2eClock.output)
+}
+tasks.register<JavaExec>("e2eClockFixtureControl") {
+    group = "verification"
+    description = "Checks injection, atomic file changes, guards and excluded service identities."
+    classpath = e2eClockControl.runtimeClasspath
+    mainClass.set("ru.rutcampustrack.e2e.ClockFixtureControl")
 }

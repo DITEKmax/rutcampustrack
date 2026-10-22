@@ -1,0 +1,54 @@
+{
+  "files": [
+    {
+      "path": "READY.safe.json",
+      "bytes": 3421,
+      "sha256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526"
+    },
+    {
+      "path": "NATIVE-PLAN.safe.json",
+      "bytes": 4926,
+      "sha256": "f7b3dbdea8e992e16948e5fe92bb1f8f25db99afb0d4916be41057c21d87062a"
+    },
+    {
+      "path": "PLAN.safe.json",
+      "bytes": 7172,
+      "sha256": "fcb1b9d41c73475f63a56b7b09b77eac4ac0d5e1a6b919e7a18c3f86f1ce0c71"
+    },
+    {
+      "path": "run-api-witness.py",
+      "bytes": 17489,
+      "sha256": "6b0bacd1ef831d897da567e2fe46b429e67275d7cbe829b56c3bd253933c9a19"
+    },
+    {
+      "path": "before-d0b9-run-api-witness.py",
+      "bytes": 17463,
+      "sha256": "d0b965cc06ee42f5af1ae7a89ba8991fa5afae8f7c8f949e146d494d34b0f239"
+    },
+    {
+      "path": "delta.patch",
+      "bytes": 1705,
+      "sha256": "64e202cb7f8fe1e7e285dfcd784e441568e6507b62781f8e564bc47c6402b8cb"
+    },
+    {
+      "path": "digest-shadow-control.py",
+      "bytes": 2513,
+      "sha256": "fdd1da7c9a44d1110260feb04d38addcfe4de0c20c1f2aace106b0e43cd8da85"
+    },
+    {
+      "path": "digest-shadow-control.safe.json",
+      "bytes": 443,
+      "sha256": "0bc071376b7b8531b9be191c41326c70187bd72f480f0441db649b8d6ead9271"
+    },
+    {
+      "path": "SOURCE-PROOF.safe.json",
+      "bytes": 1401,
+      "sha256": "3b217362e3daf0ede14079ed11fb2fdf6ae6890e9ddb4743f0d7eda108677430"
+    },
+    {
+      "path": "grant.template.safe.json",
+      "bytes": 1960,
+      "sha256": "118c3d416c7884a02e1f4ff6701069487d3119d3ed3ea9a7cf4f513068a95077"
+    }
+  ]
+}

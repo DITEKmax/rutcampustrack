@@ -1,0 +1,761 @@
+{
+  "root_revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+  "whole_family_PASS_promotions": 0,
+  "whole_boundary_PASS_promotions": 0,
+  "immutable_full_queue": "receipts/matrix-evidence-reconciliation/remaining-execution-queue.json",
+  "queue_sha256": "1c8f80b72e9283228a8f82607990d7ccdcb4496dd3df27274eeef028d52842d3",
+  "full_required_execution_groups": 48,
+  "entries": [
+    {
+      "case_id": "CASE-SB01-OTP-VALIDATION-REDACTION",
+      "parent_family_ids": [
+        "JS-SYSTEM-13",
+        "RESEARCH-L03",
+        "RESEARCH-P03",
+        "RESEARCH-P17"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-05",
+        "BOUNDARY-08"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-PASSWORD-OTP",
+        "SHARED-SECURITY-ERRORS",
+        "CLIENT-AUTH-ROLES"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-PASSWORD-OTP",
+        "required_oracles:SHARED-SECURITY-ERRORS",
+        "required_oracles:CLIENT-AUTH-ROLES"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Relevant baseline red echo assertions preserved; actual HTTP invalid boundary and independent DTO seam. External OTP delivery/reset/browser flows remain required."
+    },
+    {
+      "case_id": "CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES",
+      "parent_family_ids": [
+        "JS-HEADMAN-08",
+        "RESEARCH-L04",
+        "RESEARCH-P03"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-50"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "SCHEDULE-CLOCK-GENERATION",
+        "MIGRATIONS",
+        "CLIENT-HEADMAN"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:SCHEDULE-CLOCK-GENERATION",
+        "required_oracles:MIGRATIONS",
+        "required_oracles:CLIENT-HEADMAN"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Final green02 supersedes green01 HTTP200/empty-result failure. Write oracle is converter plus actual native PG cast, not JPA persist. Full enum/API/DB/TS compatibility and history remain."
+    },
+    {
+      "case_id": "CASE-SB03-MONGO-ENUM-ROUNDTRIP",
+      "parent_family_ids": [
+        "RESEARCH-L04",
+        "RESEARCH-P18"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-50"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "MIGRATIONS",
+        "ATTENDANCE-READ-REPORT",
+        "CLIENT-STUDENT-GEO-REQUESTS"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:MIGRATIONS",
+        "required_oracles:ATTENDANCE-READ-REPORT",
+        "required_oracles:CLIENT-STUDENT-GEO-REQUESTS"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Persistence-level unknown refusal is not a public HTTP recovery/503 proof. Numeric/ordinal migration not performed; broader domain lifecycle/client compat remains required."
+    },
+    {
+      "case_id": "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE",
+      "parent_family_ids": [
+        "RESEARCH-L04",
+        "RESEARCH-P03",
+        "RESEARCH-P07",
+        "RESEARCH-P17",
+        "CLIENT-FE-STUDENT-01"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-08",
+        "BOUNDARY-50"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "BFF-CONTRACT-HTTP",
+        "SHARED-SECURITY-ERRORS",
+        "CLIENT-STUDENT-GEO-REQUESTS"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:BFF-CONTRACT-HTTP",
+        "required_oracles:SHARED-SECURITY-ERRORS",
+        "required_oracles:CLIENT-STUDENT-GEO-REQUESTS"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Signed forwarding is real; upstream domain persistence and live authority are controlled seams. No TLS/service identity policy/global BFF/full client acceptance."
+    },
+    {
+      "case_id": "CASE-SB05-REPORT-PROOF-REDACTION",
+      "parent_family_ids": [
+        "RESEARCH-L03",
+        "RESEARCH-P17",
+        "RESEARCH-P16",
+        "JS-HEADMAN-19"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-08",
+        "BOUNDARY-46"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "EXPORT-ASYNC-CORE",
+        "ATTENDANCE-READ-REPORT",
+        "CLIENT-MAP-FILES-EXPORTS"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:EXPORT-ASYNC-CORE",
+        "required_oracles:ATTENDANCE-READ-REPORT",
+        "required_oracles:CLIENT-MAP-FILES-EXPORTS"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Dedicated validation advice preserves internal issuer admission. New async export/type consumers require recheck after integration; full rendering/download/client cases remain."
+    },
+    {
+      "case_id": "CASE-SB06-INITIAL-PASSWORD-DISPLAY",
+      "parent_family_ids": [
+        "JS-SYSTEM-01",
+        "JS-ADMIN-02",
+        "JS-ADMIN-19",
+        "CLIENT-FE-ADMIN-03"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-02",
+        "BOUNDARY-10",
+        "BOUNDARY-11"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "ACADEMIC-ADMIN",
+        "AUTH-PASSWORD-OTP",
+        "BOT-DELIVERY",
+        "CLIENT-ADMIN"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:ACADEMIC-ADMIN",
+        "required_oracles:AUTH-PASSWORD-OTP",
+        "required_oracles:BOT-DELIVERY",
+        "required_oracles:CLIENT-ADMIN"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Final corrected green03 fixture proves grant assertions after earlier no-store red. Post-change consumer shape is direct DB fixture; separate Auth transaction case below. No single two-service/browser chain or bot initial delivery."
+    },
+    {
+      "case_id": "CASE-SB06-AUTH-PASSWORD-COMMIT-CLEAR",
+      "parent_family_ids": [
+        "JS-SYSTEM-01",
+        "JS-SYSTEM-04",
+        "RESEARCH-P06",
+        "RESEARCH-P10",
+        "CLIENT-FE-AUTH-05"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-02",
+        "BOUNDARY-07"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-PASSWORD-OTP",
+        "AUTH-SESSION",
+        "BOT-DELIVERY",
+        "CLIENT-AUTH-ROLES"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-PASSWORD-OTP",
+        "required_oracles:AUTH-SESSION",
+        "required_oracles:BOT-DELIVERY",
+        "required_oracles:CLIENT-AUTH-ROLES"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Actual successful transaction separate from Academic consumer fixture. Hash verification observed through replacement login; this is not all Unicode/limit/reset/export/artifact/provider/client password acceptance."
+    },
+    {
+      "case_id": "CASE-DATA-T001-TEACHER-PUBLICATION",
+      "parent_family_ids": [
+        "JS-TEACHER-09",
+        "JS-HEADMAN-12",
+        "RESEARCH-L05"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-22"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "ACADEMIC-ASSIGNMENT",
+        "CLIENT-TEACHER",
+        "CLIENT-HEADMAN"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:ACADEMIC-ASSIGNMENT",
+        "required_oracles:CLIENT-TEACHER",
+        "required_oracles:CLIENT-HEADMAN"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Relevant baseline actual negative oracle red; controls use real PG and signed in-process HTTP, controlled Schedule receipts. Future export findLessonTypeCodes must coexist and trigger merged-source inspection; no full Auth/Schedule/PWA history acceptance."
+    },
+    {
+      "case_id": "CASE-DATA-L06-BATCH-TRANSFER-FENCE",
+      "parent_family_ids": [
+        "JS-HEADMAN-21",
+        "RESEARCH-L06",
+        "RESEARCH-P21"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-24"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "SCHEDULE-TRANSFER-CANCEL",
+        "ATTENDANCE-PARTICIPANTS",
+        "CLIENT-HEADMAN"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:SCHEDULE-TRANSFER-CANCEL",
+        "required_oracles:ATTENDANCE-PARTICIPANTS",
+        "required_oracles:CLIENT-HEADMAN"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Known-bad raw same-Netty compact RPC counterfeit produces relevant expected-throwable red; restored source exact. RPC counts diagnostic; no TLS/token/Mongo no-write/distributed atomicity/performance readiness."
+    },
+    {
+      "case_id": "CASE-DATA-L07-ARCHIVE-ACTIVATION-SERIAL",
+      "parent_family_ids": [
+        "JS-ADMIN-09",
+        "RESEARCH-L07",
+        "RESEARCH-P04",
+        "RESEARCH-P05"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-16",
+        "BOUNDARY-18"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "ACADEMIC-SEMESTER",
+        "CLIENT-ADMIN"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:ACADEMIC-SEMESTER",
+        "required_oracles:CLIENT-ADMIN"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Bounded PG advisory-lock serialization and exact event; no HTTP optimistic conflict, all archive/restore/delete phases/interleavings or client admission."
+    },
+    {
+      "case_id": "CASE-DATA-L08-FENCED-AUTH-TUPLE",
+      "parent_family_ids": [
+        "JS-ADMIN-02",
+        "JS-SYSTEM-14",
+        "RESEARCH-L08",
+        "RESEARCH-P06"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-02",
+        "BOUNDARY-03"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-SESSION",
+        "ACADEMIC-ADMIN",
+        "SCHEMA-OWNER-L08",
+        "CLIENT-AUTH-ROLES"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-SESSION",
+        "required_oracles:ACADEMIC-ADMIN",
+        "required_oracles:SCHEMA-OWNER-L08",
+        "required_oracles:CLIENT-AUTH-ROLES"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Local JDBC shared-schema fence, no HTTP/client/restart/outage/foreign-session claim; database-per-service/Saga not introduced."
+    },
+    {
+      "case_id": "CASE-DATA-L08-PASSWORD-ROLLBACK-EVENT",
+      "parent_family_ids": [
+        "JS-SYSTEM-04",
+        "RESEARCH-L08",
+        "RESEARCH-P05",
+        "RESEARCH-P06"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-02",
+        "BOUNDARY-07"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-PASSWORD-OTP",
+        "AUTH-SESSION",
+        "SCHEMA-OWNER-L08",
+        "CLIENT-AUTH-ROLES"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-PASSWORD-OTP",
+        "required_oracles:AUTH-SESSION",
+        "required_oracles:SCHEMA-OWNER-L08",
+        "required_oracles:CLIENT-AUTH-ROLES"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Controlled local JDBC failure with real durable rollback; no full passwordHTTP, accepted reset, browser, notification-provider or distributed transaction claim."
+    },
+    {
+      "case_id": "CASE-DATA-L08-PASSWORD-ROLLBACK-SESSIONS",
+      "parent_family_ids": [
+        "JS-SYSTEM-04",
+        "RESEARCH-L08",
+        "RESEARCH-P05",
+        "RESEARCH-P06"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-02",
+        "BOUNDARY-07"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-PASSWORD-OTP",
+        "AUTH-SESSION",
+        "SCHEMA-OWNER-L08",
+        "CLIENT-AUTH-ROLES"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-PASSWORD-OTP",
+        "required_oracles:AUTH-SESSION",
+        "required_oracles:SCHEMA-OWNER-L08",
+        "required_oracles:CLIENT-AUTH-ROLES"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "Controlled local JDBC failure with real durable rollback; no full passwordHTTP, accepted reset, browser, notification-provider or distributed transaction claim."
+    },
+    {
+      "case_id": "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY",
+      "parent_family_ids": [
+        "JS-HEADMAN-11",
+        "JS-HEADMAN-12",
+        "JS-HEADMAN-13",
+        "RESEARCH-L05",
+        "RESEARCH-P15"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-22"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "ACADEMIC-ASSIGNMENT",
+        "CLIENT-HEADMAN"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:ACADEMIC-ASSIGNMENT",
+        "required_oracles:CLIENT-HEADMAN"
+      ],
+      "specific_dependency": {
+        "id": "DLRV-DEP-01",
+        "required": true,
+        "status": "UNKNOWN",
+        "next": "Record exact integrated Academic CI legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals testcase status/sourceSHA/revision/argv/XML/checkout; targeted current run only if omitted or fails."
+      },
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "HISTORICAL_PASS at testSHA1b05815bfcf0cffc1f634e978345d7633de87e3c4cfdf3c1983e798a9cef96f5 only; initial exact test bytes unavailable. Current33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821 byte identity known; exact page execution still UNKNOWN."
+    },
+    {
+      "case_id": "CASE-GW01-NUMERICDATE-LOCAL-PRECHECK",
+      "parent_family_ids": [
+        "RESEARCH-P07",
+        "RESEARCH-P17",
+        "JS-SYSTEM-13"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-08"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "SHARED-SECURITY-ERRORS",
+        "AUTH-SESSION",
+        "CLIENT-AUTH-ROLES",
+        "FINAL-FORMAT-PARSER-GATES"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:SHARED-SECURITY-ERRORS",
+        "required_oracles:AUTH-SESSION",
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:FINAL-FORMAT-PARSER-GATES"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Exact selected source bytes equal reviewed source at e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "limits": "TEST_FIXTURE_ONLY; production byte SHA3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f unchanged from baseline/current. Known defective six-case control has2 meaningful millis0 failures. Final BUILD SUCCESSFUL34s observed; tool session/exit UNKNOWN. No full auth/server/browser/remote final-gate PASS."
+    },
+    {
+      "case_id": "CASE-CI232-WRONG-PASSWORD",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-01",
+        "JS-SYSTEM-13"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-01"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-STUDENT-LOGIN-COOKIE",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-01",
+        "JS-SYSTEM-13",
+        "RESEARCH-P08"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-01"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-STUDENT-ADMIN-DENIAL",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-02",
+        "JS-SYSTEM-14"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-01",
+        "BOUNDARY-03"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-02",
+        "JS-ADMIN-26"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-01",
+        "BOUNDARY-09"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-REFRESH-RELOAD",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-03",
+        "JS-SYSTEM-14",
+        "RESEARCH-P08"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-01"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-LOGOUT-REVOKE",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-04",
+        "RESEARCH-P06",
+        "RESEARCH-P08"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-01",
+        "BOUNDARY-02"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-ONLINE-RECONNECT",
+      "parent_family_ids": [
+        "CLIENT-FE-AUTH-03",
+        "CLIENT-FE-OFFLINE-03"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-47"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "CLIENT-AUTH-ROLES",
+        "AUTH-SESSION",
+        "CLIENT-OFFLINE-D002"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:CLIENT-AUTH-ROLES",
+        "required_oracles:AUTH-SESSION",
+        "required_oracles:CLIENT-OFFLINE-D002"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-TMA-TAMPERED",
+      "parent_family_ids": [
+        "CLIENT-FE-TMA-01",
+        "CLIENT-FE-TMA-02",
+        "RESEARCH-P07"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-05",
+        "BOUNDARY-06"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-QR-TMA",
+        "CLIENT-TMA-PROVIDER",
+        "CLIENT-TEACHER"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-QR-TMA",
+        "required_oracles:CLIENT-TMA-PROVIDER",
+        "required_oracles:CLIENT-TEACHER"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    },
+    {
+      "case_id": "CASE-CI232-TMA-TEACHER-HOST-BACK",
+      "parent_family_ids": [
+        "CLIENT-FE-TMA-01",
+        "CLIENT-FE-TMA-03",
+        "CLIENT-FE-TEACHER-01"
+      ],
+      "parent_boundary_ids": [
+        "BOUNDARY-06",
+        "BOUNDARY-49"
+      ],
+      "whole_parent_promotions": [],
+      "required": true,
+      "queue_groups": [
+        "AUTH-QR-TMA",
+        "CLIENT-TMA-PROVIDER",
+        "CLIENT-TEACHER"
+      ],
+      "remaining_required_oracles": [
+        "required_oracles:AUTH-QR-TMA",
+        "required_oracles:CLIENT-TMA-PROVIDER",
+        "required_oracles:CLIENT-TEACHER"
+      ],
+      "specific_dependency": null,
+      "current_source_equivalence": "Six named checkpoint232 spec/fixture/config inputs equal e587; bounded checkpoint PASS, no current complete dependency graph claim.",
+      "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree."
+    }
+  ],
+  "required_groups_preserved": "All original48 queue entries remain required; partial oracles above do not cancel remaining original clauses.",
+  "required_oracles": {
+    "AUTH-PASSWORD-OTP": {
+      "required": true,
+      "remaining_observable_oracle": "Accept only stable reviewed SECURITY2 corrections. OTP purpose/TTL/attempt/single-use, password policy/hash+clear initial SQL, permitted initial/reset display vs ordinary DTO/export/log denial, sensitive proof/error/no-store; actual public endpoints."
+    },
+    "SHARED-SECURITY-ERRORS": {
+      "required": true,
+      "remaining_observable_oracle": "Targeted JWTpurpose/issuer/audience/algorithm and caller→target→method actual protectedTLS policies; safe RFC9457 fields/log markers/traces/no secret echo. Preserve renderer existing distinct boundary; no blanket TLS-protectedRPC claim."
+    },
+    "CLIENT-AUTH-ROLES": {
+      "required": true,
+      "remaining_observable_oracle": "Real production Vue PWA/TMA login/multirole selection(defaultneverADMIN)/reload/access-expiry/refresh singlewinner/logoutallsessions/password/OTP/reset/binding; real denied old access and current state after revoke. Existing auth smoke and bounded currentVue spec candidates; old Angular scalar-role specs cannot stand in."
+    },
+    "SCHEDULE-CLOCK-GENERATION": {
+      "required": true,
+      "remaining_observable_oracle": "Isolated educational clock after full security-clock isolation recheck. Eight Moscow slots, exact time/date/parity bounds, retrospective first generation, remove/readd preserving lesson IDs/history and omitted interval, oneoff uniqueness/retry, real start/close/catchup outcomes."
+    },
+    "MIGRATIONS": {
+      "required": true,
+      "remaining_observable_oracle": "Disposable clean and synthetic historical upgrade schemas/indices/constraints/sequence values, stable enum roundtrip/unknown/null/legacy+new consumers. Single Academic Flyway owner for shared Auth schema; no repair/clean to conceal failures."
+    },
+    "CLIENT-HEADMAN": {
+      "required": true,
+      "remaining_observable_oracle": "Actual mobile journal marking/live counters/queue optimisticfailure/retry, recurring/oneoff/room/transfer/cancelrestore, subject/types/teacherassignment/helpers permissions/roster/resetlink; current rights revoked after render rejected server and clientupdated. No unaccepted adjacent studentprofileedit or masscancel."
+    },
+    "ATTENDANCE-READ-REPORT": {
+      "required": true,
+      "remaining_observable_oracle": "Domain-calculated metrics zero-denominator/rounding/current+historical cohort, actual types and teacher/group/subject isolation, named helperVIEW_STATS allowed but roster denied; real distinct export model/file assertions in export fixture."
+    },
+    "CLIENT-STUDENT-GEO-REQUESTS": {
+      "required": true,
+      "remaining_observable_oracle": "Real current Moscow geo window serverack beforemark, GPSdeny/networkretry/D005 manualabsence disable, automatic/manual requestorigin/quota/reason/file upload; student mark/request persisted and correct headman decision. No unlimited clock fixture reaches session/token/attachment security expiry."
+    },
+    "BFF-CONTRACT-HTTP": {
+      "required": true,
+      "remaining_observable_oracle": "Actual current-user HTTP→signed gRPC context with current grants, privateETag200→304→newversion and no-store sensitive routes, read-only teacher/student negatives/no writes, DTO unknown/null/format and upload/download metadata. Fake upstream IT is not deployed chain."
+    },
+    "EXPORT-ASYNC-CORE": {
+      "required": true,
+      "remaining_observable_oracle": "Accepted async initiate→jobidentity queued/preparing→generation→ready event→authorised download; no sync file in initiation; actual renderer failure→error, retry/revoke/foreign job deny with unchanged data; private existing WS hint and live authority at initiation/read/download. No extra retention/cross-session/exactly-once-provider promise."
+    },
+    "CLIENT-MAP-FILES-EXPORTS": {
+      "required": true,
+      "remaining_observable_oracle": "Actual ready map download/version/browserSVGnegative, accepted request PNG/document preview/ticketexpiry/forbiddenbytes, distinct export selection→ready→download MIME/content/Cyrillicfilename/permissions; no legend/student selfexport/newteacherroster requirement."
+    },
+    "ACADEMIC-ADMIN": {
+      "required": true,
+      "remaining_observable_oracle": "Actual routes with FULL/LIMITED distinct12-grant guards/dependencies/protected targets; live revoke and waiting stale actor; last FULL concurrent winner; user restore leaves no active grants; stable single role-independent login/add-role collisions."
+    },
+    "BOT-DELIVERY": {
+      "required": true,
+      "remaining_observable_oracle": "Real isolated Rabbit/Mongo/Redis retry/kill/redelivery/ACK-after-durable-effect, preferences outage defer, fresh audience/binding after429 and prepared-intent restart. Python mocked publisher/provider tests are supporting. No real private bot."
+    },
+    "CLIENT-ADMIN": {
+      "required": true,
+      "remaining_observable_oracle": "Actual ready mobile FULL/LIMITED dashboard/registry user+group/semester/maps/accountcredentials+binding; granted guardgroups, missing/revokedgrant negatives/servernoeffect; no future webpanelUI added. Adminselfreset not implied by reset-other link."
+    },
+    "AUTH-SESSION": {
+      "required": true,
+      "remaining_observable_oracle": "Real selected-role/multirole login, refresh one winner/conflict, cookie attributes and foreign-session isolation, grant/password revoke/restart/authority outage; durable state+outbox rollback. Client admission separate."
+    },
+    "ACADEMIC-ASSIGNMENT": {
+      "required": true,
+      "remaining_observable_oracle": "Actual user/subject/type/assignment commands and competing assignment race201/409; replacement closes history and removes eligible future lessons via real participant; current active teacher group history authority vs historical-only denial; subject durable delete intent retry."
+    },
+    "CLIENT-TEACHER": {
+      "required": true,
+      "remaining_observable_oracle": "Actual mobile teacher today/daily selectedlesson/historical subjectjournal/scrollpagination/sort/filter/stats read and request/fileview; foreigngroup/historical-only scope deny, any write deny; journal/export current selectors and error/empty/retry."
+    },
+    "SCHEDULE-TRANSFER-CANCEL": {
+      "required": true,
+      "remaining_observable_oracle": "Actual transfer participant recovery/epochs, cancellation immutable history/metric exclusion/restoration empty current teacher, room-only ID preserved+new scopedETag; full chain live schedule notification/browser updates. Keep protective per-item checks during transfer."
+    },
+    "ATTENDANCE-PARTICIPANTS": {
+      "required": true,
+      "remaining_observable_oracle": "Real Mongo+Rabbit transfer/archive/delete barriers and owned row/file cleanup, delayedtrusted event/drain/epoch fences, duplicate and mismatched identity/payload, retry/DLQ; interrupted durable operation resumes after fresh restore. External authority mock limit retained."
+    },
+    "ACADEMIC-SEMESTER": {
+      "required": true,
+      "remaining_observable_oracle": "Activation/archival/extension/restore with PG coordinator and actual Schedule/Attendance barriers and durable participant retry; original IDs/history preserved; deletion preview/digest/foreign rows, replay cannot bypass grants. No destructive production target."
+    },
+    "SCHEMA-OWNER-L08": {
+      "required": true,
+      "remaining_observable_oracle": "Single Academic Flyway pipeline owns users/role_grants/auth_sessions/reset/QR tables and shared schema migrations; Auth Flyway disabled. Preserve safe table/column owner-consumer manifest and actual atomic credentials/grants/session rollback/concurrency and synthetic upgrade."
+    },
+    "FINAL-FORMAT-PARSER-GATES": {
+      "required": true,
+      "remaining_observable_oracle": "Complete tracked authored language inventory(Java/Vue/TSJS/HTML/PCSSCSS/Python/SQL/config), deterministic formatter/check and relevant parser/lint/type/build no generated/vendor exactfixtures changes. Semantic freeze and clock fixture classpath/security isolation independently checked. Then exact final local=remote=PRhead, current CI/Coverage/Security actualcheckout mergeSHA and draftPR main/handoff; checkpoint Actions not final."
+    },
+    "CLIENT-OFFLINE-D002": {
+      "required": true,
+      "remaining_observable_oracle": "Production serviceWorkers allow/warm+reload with persistent own schedule/homework; expiry/revoke offline only read until reconnectauthority, no writes/newattachments/roleswitch/TMAoffline; explicitlogout and userA→B including latecallbacks expose no old scope. Loaded-tab offline/unit worker mocks do not close."
+    },
+    "AUTH-QR-TMA": {
+      "required": true,
+      "remaining_observable_oracle": "Reuse accepted TMA malformed/window/reuse and QR safe-error children. Remaining guest proof ownership, authenticated approver/current grants, one exchange winner/expired proof/revoked issuer, rate/body bounds and current TMA parser tamper/duplicates; actual host separate."
+    },
+    "CLIENT-TMA-PROVIDER": {
+      "required": true,
+      "remaining_observable_oracle": "Synthetic real TMA Vue host signed admission/reuse/deeplink/Back/download online; native Telegram launch/deeplink/download separately actual provider if available. Exact inaccessible provider only BLOCKED with missing access proof, not all client work."
+    }
+  }
+}

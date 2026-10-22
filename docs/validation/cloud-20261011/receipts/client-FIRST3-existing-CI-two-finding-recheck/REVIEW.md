@@ -1,0 +1,23 @@
+# FIRST3 — targeted two-finding SOURCE recheck
+
+Requested/selected reviewer: gpt-6.1-sol/high. Actual model/effort: UNKNOWN.
+
+**Four runtime source paths: APPROVE_SOURCE_ONLY.** Both original P2 findings CI-F3-CLOCK-MODE-001 and CI-F3-DATE-COHERENCE-002 are CLOSED_SOURCE. This is not a native grant, browser/CI PASS, historical cause closure, or full client acceptance.
+
+Reviewed immutable correction commit `8a83e32af1c317cc084486eba8009d2a44081cdb`, manifest `3e7d4482b5a9bb0a14765a50369f3e1fa7531de502b9717ed31b16884285f4f1`, ZIP `9a141bd57a9adad4537d5b8fc4cc5bdfef9cc7a2a275bcdcaafb5ff3ed976d20` (21 members). Original review 1627/3acd and f5a0 source remain unchanged. Exact reverse transformations recover the entire original workflow and wrapper; portable config, observer and original spec bytes are unchanged. Git comparison finds exactly those two modified paths.
+
+The public clock helper alone executes inside the `umask 022` subshell. Its existing requested modes therefore become directory 0755 and marker/current-instant 0644, so the two distinct container UIDs can traverse/read the mounted public synthetic fixture. The outer private 077/0700 boundary remains intact. RAM mode algebra reproduces the original 0700/0600 cross-UID failure and corrected positive; no actual container read was performed.
+
+The wrapper requests the existing worker `teachingInstant`, rejects a missing value, and awaits `page.clock.setFixedTime` before constructing/starting the observer and before any original test navigation. The dataset uses the same worker instant. Six independent Moscow calendar cases include Saturday/Sunday and UTC-to-Moscow midnight: three old default-date mismatches become coherent, and three existing coherent cases stay coherent. Pinned Playwright 1.59.1 public types document that setFixedTime fixes Date while keeping timers running. Browser Date is explicitly changed for these FIRST3 cases. Backend security time, nine existing smoke commands, assertions, worker/retry settings and budgets retain complete original bytes outside the reviewed delta. Full client expiry, password recovery and assistant cooldown behavior remain unverified by this fixture; no historical failure cause is inferred.
+
+## Prospective Node discovery helper — separate P2
+
+**CI-F3-DISCOVERY-ORIGIN-003: CHANGES_REQUESTED before the proposed exact-three discovery command.** The correction packet's `source-discovery.config.ts:5` spreads the runtime first3 config without rebasing its relative `testDir: './first3-specs'`. The proposed CLI loads the helper from the packet directory. Actual pinned Playwright `lib/common/configLoader.js:305` uses the loaded config file's parent as configDir; `lib/common/config.js:149` resolves config.testDir relative to that configDir, with `path.resolve` at line193. The selected Chromium project has no overriding testDir. Therefore the proposed discovery looks in `/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/first3-specs`, which does not exist, while the genuine wrapper is in `/workspace/rct-worktrees/client-ci-first3/tests/e2e/first3-specs`. An imported config object does not retain its original directory for this resolution.
+
+Minimal correction: bind the discovery-only helper's testDir to that actual absolute worktree directory, preserve `--list`/no-webServer and the strict exact-three reporter. No runtime config, assertions, fixture or security changes are needed. This is a source reachability counterexample, not an actual native discovery result or a failure of the runtime CI config loaded from tests/e2e.
+
+The proposed noEmit types config explicitly selects the new config/wrapper/observer, original spec and discovery helper (five files). Format/types/imports/discovery remain NOT_RUN and require Root's separate bounded Node-only grant after the discovery path correction is sealed. Proposed dependency links remain future operations; this review created none.
+
+Validation: six bounded independent groups in checks.safe.json. Source/hash/Git reads and RAM mode/calendar/path calculations only. No target imports, Node, browser, JVM, DB/API, services, credential reads, fixtures or source changes. The immutable author packet was opened in memory without extraction. No repeats of the original full source review or native 43-probe package.
+
+Next operation: author seals only the discovery helper path correction; targeted parameter recheck, then Root may grant the serial format/noEmit-types/strict three-case browser-free discovery phases with fresh capacity/source bindings. Original two-P2 runtime correction is already source-approved.

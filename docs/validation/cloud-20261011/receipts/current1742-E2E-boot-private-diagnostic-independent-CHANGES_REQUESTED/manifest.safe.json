@@ -1,0 +1,36 @@
+{
+  "schema": "RCT_INDEPENDENT_BOOT_DIAGNOSTIC_SOURCE_REVIEW_MANIFEST_V1",
+  "utc": "2026-10-13T11:42:54.541736+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "BOOT-PRIVATE-CLEANUP-METADATA-DRIFT",
+      "priority": 2,
+      "source": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source/closed-boot-parser.py",
+      "line": 128
+    }
+  ],
+  "native_API_private_read": false,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 5292,
+      "sha256": "431bb22954ebd90596e5798da846f0bb067b7ceb9ac52b4a2f44822556384324"
+    },
+    {
+      "path": "check-metadata-drift-ast.py",
+      "bytes": 2732,
+      "sha256": "c959c82a06859e36d80cdcaa377b01f667255fac78d9eb535548a7097707d67d"
+    },
+    {
+      "path": "metadata-drift-counterexample.safe.json",
+      "bytes": 1257,
+      "sha256": "30bd5ccbbf6b60c5a9dd5fe46e2727e63b99ec074a4e50c5655a0332e4c19db4"
+    },
+    {
+      "path": "source-bindings.safe.json",
+      "bytes": 1924,
+      "sha256": "438bc9c72f515d7c3fb5657d71bfcd88957cbd78849749c5065b2be01bd9aca5"
+    }
+  ]
+}

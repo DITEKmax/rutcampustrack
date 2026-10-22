@@ -12,8 +12,7 @@ public record SecurityEvent(
         Instant occurredAt,
         AuthMethod authMethod,
         String clientLabel,
-        String locationLabel
-) {
+        String locationLabel) {
 
     public enum Type {
         LOGIN,

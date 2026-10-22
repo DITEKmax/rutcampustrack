@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.security;
 
+import java.util.Arrays;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -7,12 +8,10 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 
-import java.util.Arrays;
-
 /**
- * AOP aspect that enforces role-based access control for methods annotated with
- * {@link RequireRole}. Reads the current user's role from {@link RequestContext}
- * and throws {@link AccessDeniedException} if the role is not among the allowed values.
+ * AOP aspect that enforces role-based access control for methods annotated with {@link
+ * RequireRole}. Reads the current user's role from {@link RequestContext} and throws {@link
+ * AccessDeniedException} if the role is not among the allowed values.
  */
 @Aspect
 @Component

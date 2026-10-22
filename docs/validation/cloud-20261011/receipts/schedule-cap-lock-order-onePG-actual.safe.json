@@ -1,0 +1,130 @@
+{
+  "schema": "RCT_CAP_ONEPG01_ACTUAL_V1",
+  "utc": "2026-10-13T20:09:06.331788+00:00",
+  "status": "PASS",
+  "session": 80688,
+  "start_chunk": "d0c819",
+  "final_chunk": "958b6d",
+  "grant_sha256": "4d7186c325912fb998c8336b20c8f1ffa1b96bb077fc4583a77f04a391957dd5",
+  "terminal": {
+    "direct_pid": 554628,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 554628,
+        "start_ticks": 17576763
+      },
+      {
+        "pid": 554629,
+        "start_ticks": 17576767
+      },
+      {
+        "pid": 554663,
+        "start_ticks": 17576915
+      },
+      {
+        "pid": 555018,
+        "start_ticks": 17581464
+      },
+      {
+        "pid": 555440,
+        "start_ticks": 17583335
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "container_settled": true,
+    "utc": "2026-10-13T20:07:44.041935+00:00",
+    "peaks": {
+      "memory": 8427552768,
+      "min_workspace_free": 5572579328,
+      "owned_rss": 1646071808,
+      "log_bytes": 6469
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "fresh_selected_JUnit": {
+    "parseaccepted": true,
+    "source_path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT.xml",
+    "class": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert()",
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "selected_case_count": 1,
+    "all_case_and_suite_counts_consistent": true,
+    "mtime_after_grant": true,
+    "mode600_nofollow_UID_nlink1_bound1MiB": true,
+    "strictUTF8_declaration_DTD_entity_NUL_gate": true,
+    "raw_XML_retained_unhashed": true
+  },
+  "semantic_commit": "b5948067b8420f5a45acdece0eafd054da924ad6",
+  "source_commit": "141a4d3c4a00a841ff4eedbb4378b022bf5fbf9e",
+  "test_source_sha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9",
+  "public_test_class_sha256": "c1d9961e2025976801fdd5d8c2b2db4ddb39e8951de85772330ce81f060ef279",
+  "Source16_supplement27_exact": true,
+  "WT_clean": true,
+  "all6_owned_births_fresh_absent": true,
+  "births": [
+    {
+      "pid": 554535,
+      "start_ticks": 17576700,
+      "birth_absent": true
+    },
+    {
+      "pid": 554628,
+      "start_ticks": 17576763,
+      "birth_absent": true
+    },
+    {
+      "pid": 554629,
+      "start_ticks": 17576767,
+      "birth_absent": true
+    },
+    {
+      "pid": 554663,
+      "start_ticks": 17576915,
+      "birth_absent": true
+    },
+    {
+      "pid": 555018,
+      "start_ticks": 17581464,
+      "birth_absent": true
+    },
+    {
+      "pid": 555440,
+      "start_ticks": 17583335,
+      "birth_absent": true
+    }
+  ],
+  "container_settled": true,
+  "container_failure_none": true,
+  "owned_active_empty": true,
+  "sampled_owned_resource_roles": {
+    "ryuk": 1,
+    "postgres": 1
+  },
+  "foreign0_11_3_exact": true,
+  "private_TMP_absent": true,
+  "authority_absent": true,
+  "native_terminal_and_final_before_active_margin": true,
+  "margin_remaining_seconds": 80.615,
+  "format_actual_sha256": "5fdd6375fab4590f59bcd8658bd6c97940e25340b6dc501462b490ae1d1b080c",
+  "compile_actual_sha256": "cb6e9b64c17efb2d48b0cd98ed365dfcd2d73315bb9d2c195534bb8e74646cbb",
+  "before_receipt": "Root current-8ac-Schedule-CAP-safe artifact11841044522/exactb40de/PessimisticLockingFailureException40P01/barrierNOT_OBSERVED",
+  "qualification": "Exactly one currentCAPfixture method actualPASS aftercanonicalsemester-beforeassignment locking and requiredownedlivePGblocking barrier. Originalassertions verify CAPcommit/freshreject/creationFeb10/retentionFeb23/noFeb16row; blockedpoint is semester guard. RealPG withmockAcademicwrapper/clock, not publicHTTP/remotesignedadmission. Resource roles are sampledobservations, no proofmissedshort-livedprobe count. Historical96cause UNKNOWN/currentRootordinaryCI afterintegration stillrequired; no othercase/mutation/B013/fullstand/browser or privatebody/log/ENV/hash export."
+}

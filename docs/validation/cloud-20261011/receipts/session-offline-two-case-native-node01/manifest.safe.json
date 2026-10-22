@@ -1,0 +1,76 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_NODE01_SEAL",
+  "files": [
+    {
+      "path": "REPORT.safe.json",
+      "sha256": "d5dc9308083e113d2e11a42dc297f55ea2ce6165915fe6030107cbd575aaf057",
+      "bytes": 2311
+    },
+    {
+      "path": "SOURCE-CHECKS.safe.json",
+      "sha256": "c8312ae21c7442eb991f1b8decb14a25c6ff2326a14df8512115669d336ed7cc",
+      "bytes": 333
+    },
+    {
+      "path": "format-launch.safe.json",
+      "sha256": "5d20f9a7c40c0de02e5b089ebcf692794f16747612629b72151470845c2062ed",
+      "bytes": 636
+    },
+    {
+      "path": "format-process.safe.json",
+      "sha256": "9c69e7ccc8cb842e81e596087a1ea3cee8724d902bd81985ec00d8c6ac651c03",
+      "bytes": 147
+    },
+    {
+      "path": "format-terminal.safe.json",
+      "sha256": "9a614259e2a2f7875bd4666a1d133b43ee413e1c836b9e4b8de9a3db1cf7dabd",
+      "bytes": 567
+    },
+    {
+      "path": "list-launch.safe.json",
+      "sha256": "9be476e206cc1185fea2e144d36c999400376ab9199bc03325d7523963486654",
+      "bytes": 715
+    },
+    {
+      "path": "list-process.safe.json",
+      "sha256": "1f77d98fbf236795425a1ab7a6ce7e6050b09cacc14834eafa0c2395c9da96b2",
+      "bytes": 147
+    },
+    {
+      "path": "list-terminal.safe.json",
+      "sha256": "4b60a6deba7d8af187d55e486c0c3bc63124ee523ce16242fe82dcf3e97c70d2",
+      "bytes": 566
+    },
+    {
+      "path": "list.safe.json",
+      "sha256": "841bc5c4fbb094d553f3c3eaab2a2242a9f913c95c58a2b5fbe8d54ef0ad87db",
+      "bytes": 316
+    },
+    {
+      "path": "supervisor.safe.json",
+      "sha256": "337ccb73fb1be6295faeae9a2a33da636e3d7487cc7f2d56e7495834777beb76",
+      "bytes": 138
+    },
+    {
+      "path": "types-launch.safe.json",
+      "sha256": "716eca5ba82e10dd613a8a23655ebf58ad7b983c4823f16dd30e7dd90d3bed14",
+      "bytes": 412
+    },
+    {
+      "path": "types-process.safe.json",
+      "sha256": "36bd14caa21a900619d115580527b8fa9db3dcb4ae8649cd7311bc1dc8ccff40",
+      "bytes": 147
+    },
+    {
+      "path": "types-terminal.safe.json",
+      "sha256": "f619c9f4cb5d8cebf06ad5d114fd305b21174e35401f7b0abb27aa3970f2ceb1",
+      "bytes": 567
+    },
+    {
+      "path": "types.safe.json",
+      "sha256": "08c6e131d30e92cfd18cb0541f55f3073a1ab487a07488ac0ea4b7af379d6f35",
+      "bytes": 154
+    }
+  ],
+  "report_sha256": "d5dc9308083e113d2e11a42dc297f55ea2ce6165915fe6030107cbd575aaf057"
+}

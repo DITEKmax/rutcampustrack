@@ -1,19 +1,17 @@
 package ru.rutcampustrack.attendance.contract.dto.marking;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.hateoas.RepresentationModel;
-
 import java.util.List;
+import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Response for batch mark (M05 D7 / P2-10/4).
  *
- * <p>{@code items} — persisted marks в том же порядке что и request.
- * {@code processed} — успешно записано (при pseudo-atomic semantics
- * всегда равно items.size()).
+ * <p>{@code items} — persisted marks в том же порядке что и request. {@code processed} — успешно
+ * записано (при pseudo-atomic semantics всегда равно items.size()).
  *
- * <p>Не содержит HATEOAS _links per-item (noise на 30+ items);
- * self-link добавляется на уровне MarkBatchResponse.
+ * <p>Не содержит HATEOAS _links per-item (noise на 30+ items); self-link добавляется на уровне
+ * MarkBatchResponse.
  */
 @Schema(description = "Результат пакетной отметки: список персистированных записей и их количество")
 public class MarkBatchResponse extends RepresentationModel<MarkBatchResponse> {

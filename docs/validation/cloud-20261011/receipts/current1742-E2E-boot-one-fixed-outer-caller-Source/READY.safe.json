@@ -1,0 +1,19 @@
+{
+  "state": "OUTER_SOURCE_READY_FOR_NEW_FLOW_REVIEW",
+  "caller_sha256": "0a1c9dd666189d8f3ff7fd8afc865dec35cccdf47691af0c137c703605cf8c5d",
+  "r2_review_path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_review/r2-recheck/manifest.safe.json",
+  "r2_review_sha256": "afab73a598f6281c43969c7fd7e98103776c25a793f0361c81910280213f280f",
+  "source_RAM_groups": 15,
+  "old51_and_parser_corrections_reused": true,
+  "actual_native_API_log_read": false,
+  "cause": "UNKNOWN",
+  "fixed_command": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/read-existing-boot.py",
+    "--grant",
+    "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/private/read-grant.json"
+  ],
+  "output_namespace_absent": true,
+  "window_max_seconds": 120,
+  "Root_grant_created": false
+}

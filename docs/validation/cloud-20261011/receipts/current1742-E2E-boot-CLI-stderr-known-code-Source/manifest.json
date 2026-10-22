@@ -1,0 +1,80 @@
+{
+  "state": "SOURCE_ONLY_NEW_FAILED_CLI_OBSERVATION",
+  "utc": "2026-10-13T12:56:24.946824+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/CURRENT.md",
+      "relative": "CURRENT.md",
+      "bytes": 303,
+      "sha256": "806f4b7a75e8feb602992d2d2a8d3b3c822df10e0986d7701b524035f2588cef"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/HANDOFF.md",
+      "relative": "HANDOFF.md",
+      "bytes": 5645,
+      "sha256": "3ed62f31ea732b56bab331e8e6a0183275f22a7fa941029db74d874704643587"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/READY.safe.json",
+      "relative": "READY.safe.json",
+      "bytes": 557,
+      "sha256": "c1833065f8dd21ca8a58cdd2637b670714c76e17c73ca6d7b939b44963deacac"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/capture-job-private.py",
+      "relative": "capture-job-private.py",
+      "bytes": 4069,
+      "sha256": "f4280cc990d874235689c41e22c7fc190a1e147e180377e63b72b272f9b94ccf"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/check-cli-source.py",
+      "relative": "check-cli-source.py",
+      "bytes": 4986,
+      "sha256": "cc210cb4830b767abc7b1f909eeffc6c4eb2c7145150ea810a295b5b63656b1d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/check-new-flow.py",
+      "relative": "check-new-flow.py",
+      "bytes": 3914,
+      "sha256": "450c54daa95cfac4e15cf85c763e149d0c8331f50d200047b9b5f16fd3179468"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/cli-controls.safe.json",
+      "relative": "cli-controls.safe.json",
+      "bytes": 1202,
+      "sha256": "f8e98c7fe81447166a1330409f1d3b8309f15813809a963a2c171e206282245c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/closed-cli-failure.py",
+      "relative": "closed-cli-failure.py",
+      "bytes": 2829,
+      "sha256": "e72cb4d72b944e5accc37529aec8b535b91fa34419cfc2c94be388b7bf29928c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/delta.safe.json",
+      "relative": "delta.safe.json",
+      "bytes": 923,
+      "sha256": "6c8738337fdaeb82da89065314a20d1964869e1320edabd05a973952de071814"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/grant.template.safe.json",
+      "relative": "grant.template.safe.json",
+      "bytes": 1693,
+      "sha256": "b0045e7460e6a7da8ac2c6f2371f45d9205ba3d82139fcc7adb841d19c95c20a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/new-flow-controls.safe.json",
+      "relative": "new-flow-controls.safe.json",
+      "bytes": 638,
+      "sha256": "a56f9a5cb4f3f11fcde2cc98873d9c126bc2a9cc526c79057c3dcc2eae033319"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/read-existing-boot.py",
+      "relative": "read-existing-boot.py",
+      "bytes": 18238,
+      "sha256": "163324076e8d284b3a54fde5b36b8dab172277e33a0ba9700b532d8eb5fe8d37"
+    }
+  ],
+  "private_inputs_included": false,
+  "actual_read": "NOT_RUN"
+}

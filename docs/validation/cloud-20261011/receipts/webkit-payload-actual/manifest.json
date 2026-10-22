@@ -1,0 +1,300 @@
+{
+  "status": "PASS_PAYLOAD_HEADERS_ONLY_LEASE_RELEASED",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/CURRENT.safe.json",
+      "name": "CURRENT.safe.json",
+      "sha256": "943669eff728ff52822696137ba7157fac747916ee0ccfd250aad15dd1ccfe52",
+      "bytes": 143,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "bccfcc3ad324c4805fb89bf735c088805bc98be50f1471ba1ecfb27e1f993078",
+      "bytes": 672,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/archives.safe.json",
+      "name": "archives.safe.json",
+      "sha256": "5f0b55e24cde22b9bab8ef7c54fb9198a3ce3bea1858f9de981ac6c3ead6a218",
+      "bytes": 3531,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/author-CURRENT.json",
+      "name": "author-CURRENT.json",
+      "sha256": "f3ca29858fa24588917299c54eb72f4a6408503bed31b36585d1c79a57c53633",
+      "bytes": 998,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/author-outcome.safe.json",
+      "name": "author-outcome.safe.json",
+      "sha256": "6e210ee5633c71d505b90029a143fa29142d6317353bd8a9ae0eb7363a10ec60",
+      "bytes": 4724,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libcairo-script-interpreter2-process.safe.json",
+      "name": "curl-libcairo-script-interpreter2-process.safe.json",
+      "sha256": "356dcdf3eb0bbe4a1aa7eae93d33763b147100e6c0698f794172c7d51f01ab50",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libcairo-script-interpreter2-terminal.safe.json",
+      "name": "curl-libcairo-script-interpreter2-terminal.safe.json",
+      "sha256": "342f71e3e64b68d1f83c4af859216fac8c24375480d2f7027f42b4e90de2dfcc",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgles2-process.safe.json",
+      "name": "curl-libgles2-process.safe.json",
+      "sha256": "241218a75529fcde04061014b224d2f8d4470aef0664cb6eab61bead617cd5d0",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgles2-terminal.safe.json",
+      "name": "curl-libgles2-terminal.safe.json",
+      "sha256": "bac119a877a0b9e603ca166af7643a4ca77eb84e365b76bdee156f76e9369fd7",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgraphene-1.0-0-process.safe.json",
+      "name": "curl-libgraphene-1.0-0-process.safe.json",
+      "sha256": "8b4ef5a2181e8dd2b90b465625f2f79a99edaad78a28fb39c662a02b37b3b5fb",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgraphene-1.0-0-terminal.safe.json",
+      "name": "curl-libgraphene-1.0-0-terminal.safe.json",
+      "sha256": "f2e472a7606926e9b0abc4f16dc66e574f6cff3e8f4781ddd0a78e22fa2aa1c0",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgtk-4-1-process.safe.json",
+      "name": "curl-libgtk-4-1-process.safe.json",
+      "sha256": "133f62b09f5d529a0385d3cfd9359140d684a825e998012452cfda01e1e1cf30",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgtk-4-1-terminal.safe.json",
+      "name": "curl-libgtk-4-1-terminal.safe.json",
+      "sha256": "b545a627a3ac749cc8bf170deb057472e17d409b51516894f49211f73cf8fbda",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgtk-4-common-process.safe.json",
+      "name": "curl-libgtk-4-common-process.safe.json",
+      "sha256": "e90451621d596bdacd4d586e104f98f4f2c5ece3b6c6768268513b368b75f18e",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libgtk-4-common-terminal.safe.json",
+      "name": "curl-libgtk-4-common-terminal.safe.json",
+      "sha256": "95fb60ed6833e97337f96e135c78f45e33b578defe8b1a311b2904bb94339eb2",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libharfbuzz-icu0-process.safe.json",
+      "name": "curl-libharfbuzz-icu0-process.safe.json",
+      "sha256": "80023169783953fd40c9cc954ae8f1985c98642150cc42386c8e652fcdd254cb",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libharfbuzz-icu0-terminal.safe.json",
+      "name": "curl-libharfbuzz-icu0-terminal.safe.json",
+      "sha256": "69fe93604b155e644e2ff100cf4c2d096a4be87828aaceaecd2390f365972f54",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libhidapi-hidraw0-process.safe.json",
+      "name": "curl-libhidapi-hidraw0-process.safe.json",
+      "sha256": "cdf383ccebc76f08a2e42e1be67d752728578b7763da956580f8c5aea4d4e24c",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libhidapi-hidraw0-terminal.safe.json",
+      "name": "curl-libhidapi-hidraw0-terminal.safe.json",
+      "sha256": "599aa7c43e337c10434575d6204dc28a7499c0b7ecdf5d63d0de2cddbb431bd5",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libhyphen0-process.safe.json",
+      "name": "curl-libhyphen0-process.safe.json",
+      "sha256": "db34d89ed1b64c948eaec5da5f60efe65b80dfb741a6d8a191b71987d516e373",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libhyphen0-terminal.safe.json",
+      "name": "curl-libhyphen0-terminal.safe.json",
+      "sha256": "fc76c4eb71f96d77711ec521bb1f5f7e37e79b3cab35182f36a748397dc6f4d1",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-liblzo2-2-process.safe.json",
+      "name": "curl-liblzo2-2-process.safe.json",
+      "sha256": "81252ba2e3ccf69c990e3e61c6219238c910fa0658e25aae1c21427fd5f5e9d2",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-liblzo2-2-terminal.safe.json",
+      "name": "curl-liblzo2-2-terminal.safe.json",
+      "sha256": "9b105b09d45ded6dca198cfb7962913327ceb7661dbd5a204e6d63d01c9518d4",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libmanette-0.2-0-process.safe.json",
+      "name": "curl-libmanette-0.2-0-process.safe.json",
+      "sha256": "b2e7a0bb73710e675803304d4246a8814e405485433261ae59663186dbd4d21c",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libmanette-0.2-0-terminal.safe.json",
+      "name": "curl-libmanette-0.2-0-terminal.safe.json",
+      "sha256": "6cae387b1602a5234db545a28716607041e9deee61f7db497033d266ff252282",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libwoff1-process.safe.json",
+      "name": "curl-libwoff1-process.safe.json",
+      "sha256": "47def1d9d826668ae799a4b42f3694ab0eb5f3a56c01b84dc68182d23dec464d",
+      "bytes": 147,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/curl-libwoff1-terminal.safe.json",
+      "name": "curl-libwoff1-terminal.safe.json",
+      "sha256": "dd41d99bbcbd0cc41475169e94abd6383f49de646e2824d6dd668907bd2b0c46",
+      "bytes": 394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/launch.safe.json",
+      "name": "launch.safe.json",
+      "sha256": "affd4f2b8433d12ffce52f996dd389d424b1d4029d1f9af83d57e2e69375c405",
+      "bytes": 772,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libcairo-script-interpreter2-headers.safe.json",
+      "name": "libcairo-script-interpreter2-headers.safe.json",
+      "sha256": "4985412c6a4182a06eed790ad4b08f7d1674638680aa88097b5466e14e26346d",
+      "bytes": 5050,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libgles2-headers.safe.json",
+      "name": "libgles2-headers.safe.json",
+      "sha256": "62ff88f6e5e2678c52edd8c6cb1681a7c82e95a64180a68183960cf165fd7685",
+      "bytes": 6030,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libgraphene-1.0-0-headers.safe.json",
+      "name": "libgraphene-1.0-0-headers.safe.json",
+      "sha256": "cd41d19ceb830eed0f5feca523ae06411ecbcaee757c81a67a68559a31d7dd38",
+      "bytes": 4733,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libgtk-4-1-headers.safe.json",
+      "name": "libgtk-4-1-headers.safe.json",
+      "sha256": "adc584798e24326674f86f0150eb7532746e984d34770d527fff2ba5b30a728f",
+      "bytes": 7968,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libgtk-4-common-headers.safe.json",
+      "name": "libgtk-4-common-headers.safe.json",
+      "sha256": "556db1aeca721c988dba01c1c41f5f0cde3e9b09095b7ac32aa0866456dc6034",
+      "bytes": 81138,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libharfbuzz-icu0-headers.safe.json",
+      "name": "libharfbuzz-icu0-headers.safe.json",
+      "sha256": "b12420cb1542316a3f83c3e9e4d1908b13365d5d234ac52bb81d6d5f0c78d162",
+      "bytes": 4729,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libhidapi-hidraw0-headers.safe.json",
+      "name": "libhidapi-hidraw0-headers.safe.json",
+      "sha256": "385e30051409daad9781441122ebb52e9566a769ca57bc1470eb40e300644964",
+      "bytes": 4947,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libhyphen0-headers.safe.json",
+      "name": "libhyphen0-headers.safe.json",
+      "sha256": "92930c530ea7b960a112278d6409f6ac1f13cee319d4215575e6be16c498aba0",
+      "bytes": 5914,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/liblzo2-2-headers.safe.json",
+      "name": "liblzo2-2-headers.safe.json",
+      "sha256": "d839d37e6a9444012ce46a88f8aac99a9166ec5ff9aa0872b1d03eda3e03b580",
+      "bytes": 5682,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libmanette-0.2-0-headers.safe.json",
+      "name": "libmanette-0.2-0-headers.safe.json",
+      "sha256": "397e763cf45c93f34c07fa3584ec64f76a4ac2d2eed41a4fd1da1bb98328463b",
+      "bytes": 4561,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/libwoff1-headers.safe.json",
+      "name": "libwoff1-headers.safe.json",
+      "sha256": "7a0f38e2617336cd313efdd9c67cac2118c0268d9f846f6f47b7cdfa686ee5d1",
+      "bytes": 5106,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/partial.safe.json",
+      "name": "partial.safe.json",
+      "sha256": "c954249ee2e92f50520da412cd34fdea3ec99f37a06b3ea0271e2d2e56cd238a",
+      "bytes": 6615,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/preservation.safe.json",
+      "name": "preservation.safe.json",
+      "sha256": "7a72d197b8416bd4be70a4612c57a7be9fd3167daa8e2e954f149caaf7344c3e",
+      "bytes": 186,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_context_correction/actual-attempt02/terminal-seal/terminal.safe.json",
+      "name": "terminal.safe.json",
+      "sha256": "9c39d44e3f8f88509489825ec2ed29b44952bddac7ed42c695b021b8916c57d7",
+      "bytes": 6866,
+      "mode": 384
+    }
+  ],
+  "no_private_payload_library_data_or_rawlogs": true
+}

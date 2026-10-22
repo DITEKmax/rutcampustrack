@@ -7,12 +7,12 @@ import jakarta.validation.constraints.Positive;
 /** CAS-protected ADMIN headman assignment. */
 @Schema(description = "Назначение старосты с проверкой ожидающего значения")
 public record AssignHeadmanRequest(
-        @Schema(description = "ID студента из состава группы", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull
-        @Positive
-        Long studentId,
-
+        @Schema(
+                        description = "ID студента из состава группы",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull
+                @Positive
+                Long studentId,
         @Schema(description = "Текущий ID старосты; null означает ожидание отсутствия старосты")
-        @Positive
-        Long expectedHeadmanId
-) {}
+                @Positive
+                Long expectedHeadmanId) {}

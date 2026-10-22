@@ -7,20 +7,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-
 /**
- * JPA entity for the schedule_one_off_lessons table.
- * Represents a one-off lesson inserted by the headman for a specific date.
+ * JPA entity for the schedule_one_off_lessons table. Represents a one-off lesson inserted by the
+ * headman for a specific date.
  *
- * D-04: No teacher_id — teacher access goes through TeacherSubjectGroup (D-16).
- * D-21: UNIQUE(group_id, date, lesson_number) enforced at DB level.
- * D-23: semester_id NOT NULL — resolved automatically by date at creation time.
+ * <p>D-04: No teacher_id — teacher access goes through TeacherSubjectGroup (D-16). D-21:
+ * UNIQUE(group_id, date, lesson_number) enforced at DB level. D-23: semester_id NOT NULL — resolved
+ * automatically by date at creation time.
  */
 @Entity
 @Table(name = "schedule_one_off_lessons")

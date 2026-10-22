@@ -1,0 +1,153 @@
+{
+  "status": "SOURCE_METADATA_READY_NOT_NATIVE_DEPENDENCY_OR_CLIENT_PASS",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "62f1e950a8d5b7a918d4ffd550bc0a6d84d24791387df6e52062c962cc20c960",
+      "bytes": 798,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "4b46aa451eac75a4b8d252965abb5a5c097d730a952a178576c60dd403387946",
+      "bytes": 4262,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/InRelease.download.safe.json",
+      "name": "InRelease.download.safe.json",
+      "sha256": "43f35f63cbaafb7df068d961298f5c598936d67496471227056941f690c5237d",
+      "bytes": 256,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/Packages.xz.download.safe.json",
+      "name": "Packages.xz.download.safe.json",
+      "sha256": "bf2b7deaa988fd51b226a29e637a78e05385014c9c233b87302855e1232de673",
+      "bytes": 277,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/apt-simulation.safe.json",
+      "name": "apt-simulation.safe.json",
+      "sha256": "0a402fecea8f6eb05f3ea2b17b005537acc017fbff600ddb1cdb20049dc7fbe8",
+      "bytes": 8599,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/attempt01/InRelease.download.safe.json",
+      "name": "attempt01/InRelease.download.safe.json",
+      "sha256": "93fe08d13ec5cae8e20be15a0e86122455a5d9edd2303fe2957ee0d4b328c4f6",
+      "bytes": 189,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/attempt01/fetch-signed-index.py",
+      "name": "attempt01/fetch-signed-index.py",
+      "sha256": "7a4472ba93ffa09bba6407af169502be9cf137982f84ca568cc6b3f4ce2664c2",
+      "bytes": 4469,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/custom-executable-api.safe.json",
+      "name": "custom-executable-api.safe.json",
+      "sha256": "73bcf9e85cef53739933a670d47e17d693b15154fb31f0de8b6e96c49501a949",
+      "bytes": 2734,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/custom-executable-proposal.py",
+      "name": "custom-executable-proposal.py",
+      "sha256": "881e959391debab6f44430f143c21c6a4d49215997ced24f33799445fd2d5db9",
+      "bytes": 2025,
+      "mode": 365
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/custom-executable-source-controls.safe.json",
+      "name": "custom-executable-source-controls.safe.json",
+      "sha256": "811b75b85fbbd14edb907d0383751776980b648dcb5150ce03e0dd2924104e64",
+      "bytes": 1589,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/fetch-signed-index.py",
+      "name": "fetch-signed-index.py",
+      "sha256": "50ea54974f80d13c4401393403d9da06594a7924b9e73abb9c8074f4f28359fa",
+      "bytes": 4461,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/future-webkit-child-mapping.safe.json",
+      "name": "future-webkit-child-mapping.safe.json",
+      "sha256": "2bf3d0c07976df8fd31441579b844c02880921109be9de8f7fc56913a6720be4",
+      "bytes": 3766,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/host-installed-public-package-versions.safe.json",
+      "name": "host-installed-public-package-versions.safe.json",
+      "sha256": "4f3169715e02a2238d2723c99a2527feb8bc60a262a3825025795d49c0887913",
+      "bytes": 163466,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/metadata-resource-inventory.safe.json",
+      "name": "metadata-resource-inventory.safe.json",
+      "sha256": "186dcf1dce3f5ef1d5e15a7d26bd17f02b86fc3bf1732ee35f5216984b1e998f",
+      "bytes": 2137,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/package-closure-plan.safe.json",
+      "name": "package-closure-plan.safe.json",
+      "sha256": "32bc9d0c3c87db6f17e0db1cd23fde992d0e270895c2122514b8b2498d11785f",
+      "bytes": 10034,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/resolve-closure.py",
+      "name": "resolve-closure.py",
+      "sha256": "cec43c8c67bb7da3d6f117e8316285ce7afd1680193c9930c14b6a507163ab98",
+      "bytes": 5828,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/signature-negative-control.safe.json",
+      "name": "signature-negative-control.safe.json",
+      "sha256": "ed3a1449a1cafd2255242fbba6985f6fc5fa77ed0d6b50b4c8c610b4285d27b8",
+      "bytes": 406,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/signature.safe.json",
+      "name": "signature.safe.json",
+      "sha256": "7fb31ae96f237477ff348917d18cddc112995e05b104c89c2f0b4390aab2b32c",
+      "bytes": 632,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/signed-index-authenticity.safe.json",
+      "name": "signed-index-authenticity.safe.json",
+      "sha256": "36d04105a085f8ab85b7137b1cdb6d657a9bc2f5c7258e523b01aefe63db802c",
+      "bytes": 1025,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/signed-public/InRelease",
+      "name": "signed-public/InRelease",
+      "sha256": "0584fba32e13e0ab8285fb16c27adea1ec03a73669c18702821094fd6ca86675",
+      "bytes": 140421,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_signed_plan/signed-public/Release.verified",
+      "name": "signed-public/Release.verified",
+      "sha256": "8604eb6fba4e103b48f029f4d945e8c96d07a418b663de8386617d0b78bd3bcf",
+      "bytes": 138611,
+      "mode": 384
+    }
+  ],
+  "private_ENV_keys_config_rawlogs_library_payload_or_index_archive_included": false
+}

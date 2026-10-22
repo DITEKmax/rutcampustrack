@@ -1,0 +1,37 @@
+{
+  "schema": "rct-independent-p07-final-actual-reconciliation-v1",
+  "disposition": "QUALIFIED_FINITE_ACTUAL_ACCEPT_INTEGRATION_READY_EXACT4_PATHS",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "semantic_revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1",
+  "mechanical_revision": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d",
+  "inventory_paths": 4,
+  "formatter_actual": "PASS_ONE_TARGET_APPLY_CHECK",
+  "compile_main_test": "EXECUTED_PASS",
+  "HTTP_actual": {
+    "methods": 2,
+    "PASS": 2,
+    "F": 0,
+    "E": 0,
+    "S": 0
+  },
+  "physical_original": "FAIL_NATIVE1_GROWTH_CAP_PRESERVED",
+  "physical_continuation": "GREEN_AND_KNOWN_OWN_CLEANUP_COMPLETE",
+  "physical_old_RED": "EXIT1_WITH_FROZEN_SOURCE_ORDER_JOIN_MARKER_BYTES_NOT_PERSISTED",
+  "recorded_births": {
+    "format": 6,
+    "HTTP": 7,
+    "physical_original": "UNKNOWN",
+    "physical_continuation": "UNKNOWN"
+  },
+  "post_stop_readonly_observations": "FORMAT_AND_PHYSICAL_EXPLICITLY_QUALIFIED",
+  "blocking_findings": [],
+  "Source_review_reused": true,
+  "old_controls_rerun": false,
+  "own_new_application_native": 0,
+  "private_values_read": false,
+  "production_UID_private_readability_TLS_fullstack": "UNKNOWN",
+  "P07": "UNKNOWN",
+  "B013_retry": false
+}

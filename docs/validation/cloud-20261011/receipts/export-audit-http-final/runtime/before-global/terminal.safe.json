@@ -1,0 +1,9 @@
+{
+  "phase": "before-global",
+  "native_exit": 1,
+  "start": "2026-10-12T02:52:12.553353+00:00",
+  "end": "2026-10-12T02:53:20.568635+00:00",
+  "disk_floor_stop": false,
+  "private_log_sha256": "85a40986bd08d6b4ae7eb33a5d0ea7b061d9f3f422a9ce23e03e2dfcc80eb841",
+  "private_log_bytes": 6063
+}

@@ -8,9 +8,13 @@ export function watchHeadmanHomeworkAvailability(options: {
   loadContext: () => void
   refreshReads: () => void
 }): WatchStopHandle {
-  return watch(options.offline, (offline) => {
-    if (offline) options.invalidateReads()
-    else if (options.hasContext()) options.refreshReads()
-    else if (!options.mutationLocked()) options.loadContext()
-  }, { flush: 'sync' })
+  return watch(
+    options.offline,
+    (offline) => {
+      if (offline) options.invalidateReads()
+      else if (options.hasContext()) options.refreshReads()
+      else if (!options.mutationLocked()) options.loadContext()
+    },
+    { flush: 'sync' },
+  )
 }

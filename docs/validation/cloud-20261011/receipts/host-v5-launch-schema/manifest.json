@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/effective-launch-inputs-v2.json",
+      "relative_path": "effective-launch-inputs-v2.json",
+      "sha256": "af322a3e4b7a04ad405259bfe46297e292b2711122a9c3addea3eef0e177e210",
+      "bytes": 2427
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5_mongo_identity_correction/launch-schema-erratum.safe.json",
+      "relative_path": "launch-schema-erratum.safe.json",
+      "sha256": "c767e3153f896ca3657c896bcbd964cc5bdf4435d3e5d103ec20ebc187c6bd32",
+      "bytes": 639
+    }
+  ],
+  "core_manifest_sha256": "077de277ed0dd9182e36da132c0e82611d65504382a9e45692d07ffe9d0a0e95",
+  "supersedes": "launch-schema only; core source unchanged"
+}

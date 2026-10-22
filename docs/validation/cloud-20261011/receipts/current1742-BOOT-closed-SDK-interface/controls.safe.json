@@ -1,0 +1,1 @@
+{"source_only":true,"actual_SDK_native":false,"groups":[{"name":"ONLY_PREDEFINED_TYPES_COUNTS_NO_UNKNOWN_KEYS_VALUES","passed":true},{"name":"PREDEFINED_ACCESSOR_CLOSED_WITHOUT_GETTER_CALL","passed":true},{"name":"NO_BINDING_STATUS_JSON_ERROR_AMBIGUOUS_REFUSED","passed":true},{"name":"ONLY_EXPLICIT_DIRECT_SCHEMA_PRIVATE_PAYLOAD","passed":true}]}

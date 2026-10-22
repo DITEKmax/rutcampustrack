@@ -1,0 +1,80 @@
+{
+  "utc": "2026-10-13T03:57:39.039506+00:00",
+  "cohort": "restart-20261013-next04",
+  "all8_settled_reaped": true,
+  "all16_exact_births_absent": true,
+  "docker6_network_absent": true,
+  "five_volumes_DB_key_preserved": true,
+  "foreground_child_native": [
+    {
+      "service": "mongo",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": 0,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "academic",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "auth",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "schedule",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "attendance",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "bff",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": 143,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "gateway",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "notification",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    }
+  ],
+  "qualifier": "STOP_REQUEST lifecycle settlement; six JVM -9 is not graceful application/client PASS",
+  "cleanup_before_fixed_dispatch_and_hardstop": true,
+  "stopped_metadata_nodes": 160,
+  "new_stopped_fence": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/stopped-native-data-fence-next04.safe.json",
+  "new_stopped_fence_sha256": "23c83d38757c3df0ef8336707aa4d06d5f10905d93095e9ad96907dfceee9e7f",
+  "bound4_originals_unchanged": true,
+  "no_client_verdict_promoted": true,
+  "resources": {
+    "utc": "2026-10-13T03:57:39.039506+00:00",
+    "workspace_available": 9416806400,
+    "tmp_available": 7500152832,
+    "shared_memory": 5515350016,
+    "shared_limit": 17179869184
+  }
+}

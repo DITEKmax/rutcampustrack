@@ -1,0 +1,47 @@
+{
+  "scope": "PARAMETER_SOURCE_RAM_ONLY",
+  "checks": [
+    {
+      "case": "actual159_accept",
+      "expected_accept": true,
+      "actual_accept": true,
+      "pass": true
+    },
+    {
+      "case": "old158_path_deny",
+      "expected_accept": false,
+      "actual_accept": false,
+      "pass": true
+    },
+    {
+      "case": "wrongSHA_deny",
+      "expected_accept": false,
+      "actual_accept": false,
+      "pass": true
+    },
+    {
+      "case": "actualSHA_changed_deny",
+      "expected_accept": false,
+      "actual_accept": false,
+      "pass": true
+    },
+    {
+      "case": "missing_node_deny",
+      "expected_accept": false,
+      "actual_accept": false,
+      "pass": true
+    },
+    {
+      "case": "extra_node_deny",
+      "expected_accept": false,
+      "actual_accept": false,
+      "pass": true
+    },
+    {
+      "case": "actual_old158_consumer_denies_new159_binding",
+      "pass": true
+    }
+  ],
+  "oldcontrols_not_replayed": true,
+  "actual_metadata_scan_native_API": "NOT_RUN"
+}

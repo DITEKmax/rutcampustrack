@@ -2,6 +2,7 @@ package ru.rutcampustrack.attendance.event;
 
 import com.mongodb.client.MongoDatabase;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
@@ -20,14 +21,11 @@ import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
 
-import java.time.Clock;
-
 /**
  * Собирает outbox-инфраструктуру в attendance-service (M02 Группа 5).
  *
- * <p>Разделено на Storage (всегда) + Publisher (prod only), как в academic.
- * Mongo-специфично: LockProvider через {@code shedlock-provider-mongo}
- * (не jdbc — у attendance MongoDB).
+ * <p>Разделено на Storage (всегда) + Publisher (prod only), как в academic. Mongo-специфично:
+ * LockProvider через {@code shedlock-provider-mongo} (не jdbc — у attendance MongoDB).
  */
 @Configuration
 public class OutboxConfig {
@@ -62,9 +60,8 @@ public class OutboxConfig {
     @EnableSchedulerLock(defaultLockAtMostFor = "PT5M")
     public static class Publisher {
         @Bean
-        public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage,
-                                                     OutboxEventSender sender,
-                                                     MeterRegistry meterRegistry) {
+        public OutboxPublisherJob outboxPublisherJob(
+                OutboxStorage storage, OutboxEventSender sender, MeterRegistry meterRegistry) {
             return new OutboxPublisherJob(storage, sender, meterRegistry);
         }
 

@@ -1,0 +1,49 @@
+{
+  "review": "independent original NP01 selective sensitivity plan",
+  "source_commit": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+  "plan_archive_sha256": "7f01456b46876f54b6357dcbee45526aa6281b8152e930f5faac9382f6e00412",
+  "verdict": "CHANGES_REQUESTED_PLAN",
+  "findings": [
+    "NP01-SENS-ORACLE01/P2"
+  ],
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 502,
+      "sha256": "a6414eb1512d15b274d0f861cf5bb2434a9f8393a8a319ffb8c4e84c13a1be4e"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1118,
+      "sha256": "53b141936b3ced4a41b351a6d6aaef47c4e404a89b3b3f554eb7b55f95ce4765"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 7904,
+      "sha256": "9907734be57a6b673bcc62f2042b61768f92fd3a7924cbd2d9f9e1a688ae50f8"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 636,
+      "sha256": "8cf884a5f513855a94b46286fecfda4c79e57a97e5fd578e6c2ca2d2fccf9e62"
+    },
+    {
+      "path": "critical-plan-boundaries.safe.json",
+      "bytes": 5425,
+      "sha256": "3e94dafbab50b03c748ee8d8342e31edf64a71aa01c55c8d281bb2d6d98485ff"
+    },
+    {
+      "path": "partial-findings.safe.json",
+      "bytes": 1926,
+      "sha256": "7ba357abc397fb8c4b627b47f0ab20edae7f566430f6ae30131532e0802bc11b"
+    },
+    {
+      "path": "source-and-original-seal.safe.json",
+      "bytes": 2147,
+      "sha256": "72b5b4d5851932ef2872d449344f9438b4548a666659c3a2d2e3ccefccfd9c7f"
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "private_values_raw_logs": false,
+  "immutable_after_seal": true
+}

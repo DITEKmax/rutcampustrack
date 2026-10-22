@@ -1,0 +1,24 @@
+{
+  "schema": "P09_CLEANUP_ONE_FINDING_INDEPENDENT_APPROVAL_V1",
+  "utc": "2026-10-13T14:07:46.404937+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "closed_finding": "P09-TEST-CLEANUP-MASKS-PRIMARY",
+  "remaining_findings": [],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "author_head": "80dc4070b0c011581d287b043a494aea91876d46",
+  "test_sha256": "f8f7f9b37afcc313d80833b1ff9998584685f218ac7b2bc5e4eefb0df6cae52c",
+  "build_sha256": "282a4efc96471a80d07adcc68bd21568d350a48bf7dab29e58fc130b2b903eaf",
+  "checks": {
+    "exact_Source_inverse5": "PASS",
+    "TWR_primary_and_independent_cleanup_semantics": "COHERENT",
+    "new_RAM3_accumulator_analogues": "PASS_QUALIFIED_NOT_JAVA",
+    "unchanged_join_and_old_RAM4": "REUSED_NOT_RERUN"
+  },
+  "compile_runtime_sensitivity_actual_cleanup": "NOT_RUN",
+  "P09_parent": "UNKNOWN",
+  "native_freeze": "RESPECTED",
+  "effects": "Read-only publicSource/Git + own receipts/RAM; no keys/env/private artifacts/native/API/network/Source edits/children/B013",
+  "next": "Root releases native freeze after safe resource account; fresh approved formatter/compile/one join plan; actualcleanup/sensitivity/restoredGREEN/currentCI before matrix promotion"
+}

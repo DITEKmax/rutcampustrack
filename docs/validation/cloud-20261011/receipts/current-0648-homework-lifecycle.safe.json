@@ -1,0 +1,36 @@
+{
+  "artifact": 11881495344,
+  "producer": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "run": 38536484758,
+  "digest": "sha256:83efc4db899ff19bc8e61515aff86a83d4fbcff9060abcc1186ee6c40ced1676",
+  "bytes": 371,
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-homework-lifecycle.spec.ts",
+        "line": 16,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 4268,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "HELPER_HOMEWORK_COMPLETION",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

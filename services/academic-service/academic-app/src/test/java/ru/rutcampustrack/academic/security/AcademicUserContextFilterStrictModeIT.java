@@ -1,59 +1,87 @@
 package ru.rutcampustrack.academic.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.shared.security.InternalJwtProperties;
 
 /**
- * M03a: verifies strict mode (legacy-headers-enabled=false) — X-User-* headers
- * are rejected, only a valid X-Internal-Token passes.
+ * M03a: verifies strict mode (legacy-headers-enabled=false) — X-User-* headers are rejected, only a
+ * valid X-Internal-Token passes.
  *
- * This mirrors the final state of M03a after the strict toggle commit.
+ * <p>This mirrors the final state of M03a after the strict toggle commit.
  */
-@AutoConfigureMockMvc
-@TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
+@AutoConfigureMockMvc(
+        print = org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint.NONE)
+@TestPropertySource(properties = "rct.fixture.legacy-headers-enabled=false")
 class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationTest {
 
-    private static final UUID SESSION_ID = UUID.fromString("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    @Autowired private MockMvc mockMvc;
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired private com.fasterxml.jackson.databind.ObjectMapper mapper;
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private InternalJwtProperties properties;
 
-    @Autowired
-    private InternalJwtTestFactory factory;
+    @BeforeEach
+    void strictModeIsEffective() {
+        assertThat(properties.legacyHeadersEnabled()).isFalse();
+    }
 
     @Test
     void noHeaders_strictMode_returns401() throws Exception {
-        mockMvc.perform(get("/academic/users"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/academic/users")).andExpect(status().isUnauthorized());
     }
 
     @Test
     void legacyHeaders_strictMode_returns401() throws Exception {
-        mockMvc.perform(get("/academic/users")
-                        .header("X-User-Id", "1")
-                        .header("X-User-Role", "ADMIN"))
+        mockMvc.perform(
+                        get("/academic/users")
+                                .header("X-User-Id", "1")
+                                .header("X-User-Role", "ADMIN"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
-        String token = factory.validToken(1L, SESSION_ID, 1L, 1L,
-                "ADMIN", "ACTIVE", null, false, false);
-        MvcResult result = mockMvc.perform(get("/academic/users")
-                        .header("X-Internal-Token", token))
-                .andReturn();
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
+        var selected =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", selected.internalToken());
+        var response =
+                http.exchange(
+                        "/academic/users",
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        String.class);
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        var page = mapper.readTree(response.getBody());
+        assertThat(page.path("page").path("totalElements").asLong()).isEqualTo(3);
+        var ids = new java.util.HashSet<Long>();
+        page.path("_embedded")
+                .path("userResponseList")
+                .forEach(
+                        row -> {
+                            ids.add(row.path("id").asLong());
+                            assertThat(row.has("passwordHash")).isFalse();
+                            assertThat(
+                                            row.path("initialPassword").isMissingNode()
+                                                    || row.path("initialPassword").isNull())
+                                    .isTrue();
+                        });
+        assertThat(ids)
+                .containsExactlyInAnyOrder(
+                        identityFixture.canonical().adminId(),
+                        identityFixture.canonical().teacherId(),
+                        identityFixture.canonical().studentId());
     }
 }

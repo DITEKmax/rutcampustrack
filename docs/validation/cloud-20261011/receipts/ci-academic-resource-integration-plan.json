@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T03:48:58.035652+00:00",
+  "root_before": "ef12375e2d9e4616cc9d355076c2e1f37d8be510",
+  "author_final": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "heap_commit": "d4b2a533008954691673c263d2a3e57bdc554f84",
+  "review": "APPROVE_SOURCE0findings",
+  "review_manifest_sha256": "d21b0b3ff04de54f2edda74800f3e9ac2dc8e10f866c12513b9379a1a3b1ec1b",
+  "path": "services/academic-service/academic-app/build.gradle.kts",
+  "before_equal2a": true,
+  "operation": "normal heap-only cherry-pick d4b; exact author dependency-only net patch d4b\u219274b gitapply--index +separate scopedcommit; heldfulltransitive34c0 neverrootcommitted or run",
+  "author_patch_sha256": "30eff23086cfc3f4c1fc66cf72b3fcd9817ccad83c653ecbb392a9d499e05fee",
+  "expected_final_source_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "required_runtime": "actualgraphs exactAuthmainartifactdelta/securityunchanged,compile/duplicateprotos/resourceorder/fullcurrentAcademicIT/remotegates"
+}

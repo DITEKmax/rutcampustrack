@@ -1,4 +1,7 @@
-import { ProfileRequestError } from '../../mobile-core/src/features/profile/profile-types'
+import {
+  ProfileRequestError,
+  ownProfileTelegramId,
+} from '../../mobile-core/src/features/profile/profile-types'
 import type {
   ProfilePasswordPolicy,
   ProfileRole,
@@ -12,7 +15,20 @@ import type {
   ProfileSessionSummary,
   ProfileSessionsPage,
 } from '../../mobile-core/src/features/profile/profile-types'
-import type { components as authComponents, operations as authOperations } from '../../mobile-core/src/api/generated/auth'
+import type {
+  components as authComponents,
+  operations as authOperations,
+} from '../../mobile-core/src/api/generated/auth'
+
+import {
+  decodeBrowserLoginPreview,
+  decodeBrowserLoginStatus,
+} from '../../mobile-core/src/features/profile/browser-login-approval'
+import type {
+  BrowserLoginProof,
+  BrowserLoginPreview,
+  BrowserLoginStatus,
+} from '../../mobile-core/src/features/profile/browser-login-approval'
 
 type AuthSchemas = authComponents['schemas']
 type GeneratedTokenResponse = AuthSchemas['TokenResponse']
@@ -55,6 +71,8 @@ export type AuthProblem = {
   traceId?: string
   field?: string
   code?: string
+  /** Derived only from the gateway's exact current-session denial envelope. */
+  gatewayCurrentRoleDenied?: true
   fieldErrors?: readonly { field?: string; message?: string }[]
 }
 
@@ -71,7 +89,12 @@ export class AuthRequestError extends ProfileRequestError {
     causeValue?: unknown,
   ) {
     const serverCode = problem?.code ?? null
-    super(authErrorCode(serverCode, status), authErrorMessage(operation, status, problem, causeValue), status, problem)
+    super(
+      authErrorCode(serverCode, status),
+      authErrorMessage(operation, status, problem, causeValue),
+      status,
+      problem,
+    )
     this.name = 'AuthRequestError'
     this.operation = operation
     this.problem = problem
@@ -89,15 +112,27 @@ export class AuthPayloadError extends AuthRequestError {
 
 export class AuthProtocolError extends AuthRequestError {
   constructor(operation: string, responseStatus: number, message: string, value?: unknown) {
-    super(operation, responseStatus, { title: 'Некорректный ответ сервера', detail: message }, value)
+    super(
+      operation,
+      responseStatus,
+      { title: 'Некорректный ответ сервера', detail: message },
+      value,
+    )
     this.name = 'AuthProtocolError'
   }
 }
 
 export interface AuthClient {
   login(input: AuthLoginInput): Promise<AuthToken>
+  loginOtp(input: { code: string }): Promise<AuthToken>
+  previewBrowserLogin(proof: BrowserLoginProof): Promise<BrowserLoginPreview>
+  decideBrowserLogin(
+    proof: BrowserLoginProof,
+    decision: 'CONFIRM' | 'REJECT',
+  ): Promise<BrowserLoginStatus>
   refresh(): Promise<AuthToken>
   getSnapshot(): Promise<ProfileSnapshot>
+  getOwnTelegramId(userId: string): Promise<string | null | undefined>
   selectRole(input: AuthSelectRoleInput): Promise<ProfileRoleSelection>
   listSessions(input?: ProfilePageRequest): Promise<ProfileSessionsPage>
   listHistory(input?: ProfilePageRequest): Promise<ProfileHistoryPage>
@@ -113,7 +148,9 @@ export interface AuthClient {
  * optional but the authenticated runtime must provide.
  */
 export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
-  const fetcher = options.fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const fetcher =
+    options.fetcher ??
+    ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   const accessToken = options.accessToken ?? (() => null)
 
   return {
@@ -123,19 +160,79 @@ export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
       }
       return requestToken('login', '/api/auth/login', input, fetcher, accessToken)
     },
+    loginOtp: (input) => {
+      if (!/^[0-9]{6}$/u.test(input.code))
+        throw new AuthPayloadError('login-otp', 'Введи шестизначный код')
+      return requestToken(
+        'login-otp',
+        '/api/auth/otp/verify-by-code',
+        { code: input.code },
+        fetcher,
+        accessToken,
+      )
+    },
+    previewBrowserLogin: async (proof) =>
+      decodeBrowserLoginPreview(
+        await requestJson<unknown>(
+          'browser-login-preview',
+          '/api/auth/qr/preview',
+          'POST',
+          proof,
+          fetcher,
+          accessToken,
+        ),
+        proof,
+      ),
+    decideBrowserLogin: async (proof, decision) =>
+      decodeBrowserLoginStatus(
+        await requestJson<unknown>(
+          'browser-login-decision',
+          '/api/auth/qr/decision',
+          'POST',
+          { ...proof, decision },
+          fetcher,
+          accessToken,
+        ),
+        proof,
+      ),
     refresh: () => requestToken('refresh', '/api/auth/refresh', undefined, fetcher, accessToken),
     getSnapshot: async () => {
-      const value = await requestJson<GeneratedCurrentSessionResponse>('current-session', '/api/auth/session', 'GET', undefined, fetcher, accessToken)
+      const value = await requestJson<GeneratedCurrentSessionResponse>(
+        'current-session',
+        '/api/auth/session',
+        'GET',
+        undefined,
+        fetcher,
+        accessToken,
+      )
       return adaptSession(value, 'current-session')
+    },
+    getOwnTelegramId: async (userId) => {
+      const value = await requestJson<unknown>(
+        'own-profile',
+        '/api/academic/users/me',
+        'GET',
+        undefined,
+        (input, init) => fetcher(input, { ...init, cache: 'no-store' }),
+        accessToken,
+      )
+      return ownProfileTelegramId(value, userId)
     },
     selectRole: async (input) => {
       if (!isProfileRole(input.role) || !isDecimalVersion(input.expectedSessionVersion)) {
         throw new AuthPayloadError('select-role', 'Параметры смены роли некорректны', input)
       }
-      const value = await requestJson<GeneratedSelectActiveRoleResponse>('select-role', '/api/auth/session/active-role', 'PUT', {
-        role: input.role,
-        expectedSessionVersion: input.expectedSessionVersion,
-      }, fetcher, accessToken)
+      const value = await requestJson<GeneratedSelectActiveRoleResponse>(
+        'select-role',
+        '/api/auth/session/active-role',
+        'PUT',
+        {
+          role: input.role,
+          expectedSessionVersion: input.expectedSessionVersion,
+        },
+        fetcher,
+        accessToken,
+      )
       return adaptRoleSelection(value, input, 'select-role')
     },
     listSessions: async (input) => {
@@ -175,14 +272,37 @@ export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
       )
     },
     terminateSession: async (sessionId) => {
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(sessionId)) throw new AuthPayloadError('terminate-session', 'Идентификатор сессии некорректен')
-      await requestEmptyMutation('terminate-session', `/api/auth/sessions/${sessionId}`, 'DELETE', undefined, fetcher, accessToken)
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(sessionId))
+        throw new AuthPayloadError('terminate-session', 'Идентификатор сессии некорректен')
+      await requestEmptyMutation(
+        'terminate-session',
+        `/api/auth/sessions/${sessionId}`,
+        'DELETE',
+        undefined,
+        fetcher,
+        accessToken,
+      )
     },
     logoutAll: async () => {
-      await requestEmptyMutation('logout-all', '/api/auth/logout-all', 'POST', undefined, fetcher, accessToken)
+      await requestEmptyMutation(
+        'logout-all',
+        '/api/auth/logout-all',
+        'POST',
+        undefined,
+        fetcher,
+        accessToken,
+      )
     },
     logout: async () => {
-      await requestJson<null>('logout', '/api/auth/logout', 'POST', undefined, fetcher, accessToken, { allowEmpty: true })
+      await requestJson<null>(
+        'logout',
+        '/api/auth/logout',
+        'POST',
+        undefined,
+        fetcher,
+        accessToken,
+        { allowEmpty: true },
+      )
     },
   }
 }
@@ -202,11 +322,18 @@ function pagePath(path: string, input?: ProfilePageRequest): string {
 async function requestToken(
   operation: string,
   path: string,
-  body: AuthLoginInput | undefined,
+  body: AuthLoginInput | { code: string } | undefined,
   fetcher: typeof fetch,
   accessToken: () => string | null,
 ): Promise<AuthToken> {
-  const value = await requestJson<GeneratedTokenResponse>(operation, path, 'POST', body, fetcher, accessToken)
+  const value = await requestJson<GeneratedTokenResponse>(
+    operation,
+    path,
+    'POST',
+    body,
+    fetcher,
+    accessToken,
+  )
   return adaptToken(value, operation, true)
 }
 
@@ -220,7 +347,12 @@ async function requestEmptyMutation(
 ): Promise<void> {
   const response = await sendRequest(operation, path, method, body, fetcher, accessToken)
   if (response.status !== 204) {
-    throw new AuthProtocolError(operation, response.status, 'Сервер должен вернуть ровно HTTP 204', response.status)
+    throw new AuthProtocolError(
+      operation,
+      response.status,
+      'Сервер должен вернуть ровно HTTP 204',
+      response.status,
+    )
   }
 
   // Fetch may normalize illegal wire framing before exposing a Response. We
@@ -230,20 +362,43 @@ async function requestEmptyMutation(
   try {
     contentLength = response.headers.get('Content-Length')
   } catch (error) {
-    throw new AuthProtocolError(operation, response.status, 'Не удалось проверить Content-Length пустого ответа', error)
+    throw new AuthProtocolError(
+      operation,
+      response.status,
+      'Не удалось проверить Content-Length пустого ответа',
+      error,
+    )
   }
-  if (contentLength !== null && (typeof contentLength !== 'string' || !/^0+$/.test(contentLength.trim()))) {
-    throw new AuthProtocolError(operation, response.status, 'Сервер вернул некорректный Content-Length для HTTP 204', contentLength)
+  if (
+    contentLength !== null &&
+    (typeof contentLength !== 'string' || !/^0+$/.test(contentLength.trim()))
+  ) {
+    throw new AuthProtocolError(
+      operation,
+      response.status,
+      'Сервер вернул некорректный Content-Length для HTTP 204',
+      contentLength,
+    )
   }
 
   let responseBody: string
   try {
     responseBody = await response.text()
   } catch (error) {
-    throw new AuthProtocolError(operation, response.status, 'Не удалось проверить пустой ответ сервера', error)
+    throw new AuthProtocolError(
+      operation,
+      response.status,
+      'Не удалось проверить пустой ответ сервера',
+      error,
+    )
   }
   if (typeof responseBody !== 'string' || responseBody.length !== 0) {
-    throw new AuthProtocolError(operation, response.status, 'Сервер вернул тело ответа для HTTP 204', responseBody)
+    throw new AuthProtocolError(
+      operation,
+      response.status,
+      'Сервер вернул тело ответа для HTTP 204',
+      responseBody,
+    )
   }
 }
 
@@ -259,7 +414,7 @@ async function requestJson<T>(
   const response = await sendRequest(operation, path, method, body, fetcher, accessToken)
   if (options.allowEmpty && (response.status === 204 || response.status === 205)) return null as T
   try {
-    return await response.json() as T
+    return (await response.json()) as T
   } catch (error) {
     throw new AuthPayloadError(operation, 'Сервер вернул пустой или нечитаемый ответ', error)
   }
@@ -287,22 +442,38 @@ async function sendRequest(
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     })
   } catch (error) {
-    throw new AuthRequestError(operation, undefined, { code: 'NETWORK', title: 'Нет соединения с сервером' }, error)
+    throw new AuthRequestError(
+      operation,
+      undefined,
+      { code: 'NETWORK', title: 'Нет соединения с сервером' },
+      error,
+    )
   }
 
   if (!response.ok) {
-    throw new AuthRequestError(operation, response.status, await readProblem(response), undefined)
+    throw new AuthRequestError(
+      operation,
+      response.status,
+      await readProblem(response, operation),
+      undefined,
+    )
   }
   return response
 }
 
-async function readProblem(response: Response): Promise<AuthProblem | null> {
+async function readProblem(response: Response, operation: string): Promise<AuthProblem | null> {
   try {
-    const value = await response.json() as unknown
+    const value = (await response.json()) as unknown
     if (!isRecord(value)) return null
     const extras = isRecord(value.extras) ? value.extras : null
     const code = extras && typeof extras.code === 'string' ? extras.code : undefined
     return {
+      ...(operation === 'current-session' &&
+      response.status === 403 &&
+      value.status === 403 &&
+      value.code === 'WRONG_ROLE'
+        ? { gatewayCurrentRoleDenied: true as const }
+        : {}),
       ...(typeof value.status === 'number' ? { status: value.status } : {}),
       ...(typeof value.type === 'string' ? { type: value.type } : {}),
       ...(typeof value.title === 'string' ? { title: value.title } : {}),
@@ -312,7 +483,9 @@ async function readProblem(response: Response): Promise<AuthProblem | null> {
       ...(typeof value.traceId === 'string' ? { traceId: value.traceId } : {}),
       ...(typeof value.field === 'string' ? { field: value.field } : {}),
       ...(code ? { code } : {}),
-      ...(Array.isArray(value.fieldErrors) ? { fieldErrors: value.fieldErrors.filter(isFieldError) } : {}),
+      ...(Array.isArray(value.fieldErrors)
+        ? { fieldErrors: value.fieldErrors.filter(isFieldError) }
+        : {}),
     }
   } catch {
     return null
@@ -324,7 +497,8 @@ function adaptToken(value: unknown, operation: string, requireToken: boolean): A
     throw new AuthPayloadError(operation, 'Сервер не вернул access token', value)
   }
   const accessToken = value.accessToken
-  if (!isNonEmptyString(accessToken)) throw new AuthPayloadError(operation, 'Сервер не вернул access token', value)
+  if (!isNonEmptyString(accessToken))
+    throw new AuthPayloadError(operation, 'Сервер не вернул access token', value)
   const expiresIn = value.expiresIn
   if (expiresIn !== undefined && !isPositiveInteger(expiresIn)) {
     throw new AuthPayloadError(operation, 'Сервер вернул некорректный срок действия токена', value)
@@ -354,18 +528,22 @@ function adaptHistoryPage(value: unknown, operation: string): ProfileHistoryPage
 
 function adaptNextCursor(value: unknown, operation: string): string | null {
   if (value === undefined || value === null) return null
-  if (!isNonEmptyString(value)) throw new AuthPayloadError(operation, 'Сервер вернул некорректный курсор', value)
+  if (!isNonEmptyString(value))
+    throw new AuthPayloadError(operation, 'Сервер вернул некорректный курсор', value)
   return value
 }
 
 function adaptSessionSummary(value: unknown, operation: string): ProfileSessionSummary {
-  if (!isRecord(value)) throw new AuthPayloadError(operation, 'Сервер вернул некорректный сеанс', value)
+  if (!isRecord(value))
+    throw new AuthPayloadError(operation, 'Сервер вернул некорректный сеанс', value)
   const session = value as GeneratedAuthSessionSummary
-  if (!isNonEmptyString(session.sessionId)
-    || !isNonEmptyString(session.authMethod)
-    || !isNonEmptyString(session.createdAt)
-    || !isNonEmptyString(session.lastSeenAt)
-    || typeof session.current !== 'boolean') {
+  if (
+    !isNonEmptyString(session.sessionId) ||
+    !isNonEmptyString(session.authMethod) ||
+    !isNonEmptyString(session.createdAt) ||
+    !isNonEmptyString(session.lastSeenAt) ||
+    typeof session.current !== 'boolean'
+  ) {
     throw new AuthPayloadError(operation, 'Сервер вернул неполные данные сеанса', value)
   }
   const authMethod = adaptAuthMethod(session.authMethod, operation)
@@ -383,11 +561,14 @@ function adaptSessionSummary(value: unknown, operation: string): ProfileSessionS
 }
 
 function adaptHistoryEvent(value: unknown, operation: string): ProfileHistoryEvent {
-  if (!isRecord(value)) throw new AuthPayloadError(operation, 'Сервер вернул некорректное событие истории', value)
+  if (!isRecord(value))
+    throw new AuthPayloadError(operation, 'Сервер вернул некорректное событие истории', value)
   const event = value as GeneratedAccountHistoryEvent
-  if (!isNonEmptyString(event.id)
-    || !isNonEmptyString(event.type)
-    || !isNonEmptyString(event.occurredAt)) {
+  if (
+    !isNonEmptyString(event.id) ||
+    !isNonEmptyString(event.type) ||
+    !isNonEmptyString(event.occurredAt)
+  ) {
     throw new AuthPayloadError(operation, 'Сервер вернул неполное событие истории', value)
   }
   const authMethod = optionalAuthMethod(event.authMethod, operation)
@@ -403,41 +584,57 @@ function adaptHistoryEvent(value: unknown, operation: string): ProfileHistoryEve
   }
 }
 
-function adaptAuthMethod(value: unknown, operation: string): NonNullable<ProfileSessionSummary['authMethod']> {
+function adaptAuthMethod(
+  value: unknown,
+  operation: string,
+): NonNullable<ProfileSessionSummary['authMethod']> {
   if (value === 'PASSWORD' || value === 'OTP' || value === 'TMA') return value
   throw new AuthPayloadError(operation, 'Сервер вернул неизвестный способ входа', value)
 }
 
-function optionalAuthMethod(value: unknown, operation: string): ProfileHistoryEvent['authMethod'] | undefined {
+function optionalAuthMethod(
+  value: unknown,
+  operation: string,
+): ProfileHistoryEvent['authMethod'] | undefined {
   if (value === undefined || value === null) return value === null ? null : undefined
   return adaptAuthMethod(value, operation)
 }
 
 function adaptHistoryType(value: unknown, operation: string): ProfileHistoryEvent['type'] {
-  if (value === 'LOGIN'
-    || value === 'ROLE_CHANGED'
-    || value === 'CURRENT_LOGOUT'
-    || value === 'LOGOUT_ALL'
-    || value === 'PASSWORD_CHANGED'
-    || value === 'SECURITY_REVOKED') return value
+  if (
+    value === 'LOGIN' ||
+    value === 'ROLE_CHANGED' ||
+    value === 'CURRENT_LOGOUT' ||
+    value === 'LOGOUT_ALL' ||
+    value === 'PASSWORD_CHANGED' ||
+    value === 'SECURITY_REVOKED'
+  )
+    return value
   throw new AuthPayloadError(operation, 'Сервер вернул неизвестный тип события истории', value)
 }
 
-function optionalNullableString(value: unknown, operation: string, field: string): string | null | undefined {
+function optionalNullableString(
+  value: unknown,
+  operation: string,
+  field: string,
+): string | null | undefined {
   if (value === undefined) return undefined
   return expectNullableString(value, operation, field)
 }
 
 function adaptSession(value: unknown, operation: string): ProfileSnapshot {
-  if (!isRecord(value)) throw new AuthPayloadError(operation, 'Сервер вернул некорректную сессию', value)
+  if (!isRecord(value))
+    throw new AuthPayloadError(operation, 'Сервер вернул некорректную сессию', value)
   const session = value as GeneratedCurrentSessionResponse
-  if (!isCanonicalUuid(session.sessionId)
-    || !isDecimalId(session.userId)
-    || !isNonEmptyString(session.displayName)
-    || !isDecimalVersion(session.sessionVersion)
-    || !isDecimalVersion(session.rolesVersion)
-    || typeof session.readOnly !== 'boolean'
-    || !Array.isArray(session.roles)) {
+  if (
+    !isCanonicalUuid(session.sessionId) ||
+    !isDecimalId(session.userId) ||
+    !isNonEmptyString(session.displayName) ||
+    !isDecimalVersion(session.sessionVersion) ||
+    !isDecimalVersion(session.rolesVersion) ||
+    typeof session.readOnly !== 'boolean' ||
+    !Array.isArray(session.roles)
+  ) {
     throw new AuthPayloadError(operation, 'Сервер вернул неполные данные сессии', value)
   }
   const roles = session.roles.map((grant) => adaptRoleGrant(grant, operation))
@@ -449,17 +646,24 @@ function adaptSession(value: unknown, operation: string): ProfileSnapshot {
   if (roleKeys.size !== roles.length) {
     throw new AuthPayloadError(operation, 'Сервер вернул повторяющуюся роль', value)
   }
-  const activeRole = session.activeRole === undefined || session.activeRole === null
-    ? null
-    : adaptRole(session.activeRole, operation)
+  const activeRole =
+    session.activeRole === undefined || session.activeRole === null
+      ? null
+      : adaptRole(session.activeRole, operation)
   if (activeRole !== null && !roles.some((grant) => grant.role === activeRole)) {
-    throw new AuthPayloadError(operation, 'Активная роль отсутствует в списке доступных ролей', value)
+    throw new AuthPayloadError(
+      operation,
+      'Активная роль отсутствует в списке доступных ролей',
+      value,
+    )
   }
   return {
     sessionId: session.sessionId,
     userId: session.userId,
     displayName: session.displayName,
-    ...(session.groupLabel === undefined ? {} : { groupLabel: expectNullableString(session.groupLabel, operation, 'groupLabel') }),
+    ...(session.groupLabel === undefined
+      ? {}
+      : { groupLabel: expectNullableString(session.groupLabel, operation, 'groupLabel') }),
     sessionVersion: session.sessionVersion,
     rolesVersion: session.rolesVersion,
     activeRole,
@@ -469,8 +673,17 @@ function adaptSession(value: unknown, operation: string): ProfileSnapshot {
   }
 }
 
-function adaptRoleSelection(value: unknown, input: AuthSelectRoleInput, operation: string): ProfileRoleSelection {
-  if (!isRecord(value) || !isNonEmptyString(value.accessToken) || !isPositiveInteger(value.expiresIn) || !isRecord(value.session)) {
+function adaptRoleSelection(
+  value: unknown,
+  input: AuthSelectRoleInput,
+  operation: string,
+): ProfileRoleSelection {
+  if (
+    !isRecord(value) ||
+    !isNonEmptyString(value.accessToken) ||
+    !isPositiveInteger(value.expiresIn) ||
+    !isRecord(value.session)
+  ) {
     throw new AuthPayloadError(operation, 'Сервер вернул неполный ответ смены роли', value)
   }
   const session = adaptSession(value.session, operation)
@@ -485,36 +698,43 @@ function adaptRoleSelection(value: unknown, input: AuthSelectRoleInput, operatio
 }
 
 function adaptRoleGrant(value: unknown, operation: string): ProfileRoleGrant {
-  if (!isRecord(value)
-    || !isDecimalId(value.grantId)
-    || !isProfileRole(value.role)
-    || !isRoleStatus(value.status)
-    || typeof value.selectable !== 'boolean'
-    || typeof value.readOnly !== 'boolean') {
+  if (
+    !isRecord(value) ||
+    !isDecimalId(value.grantId) ||
+    !isProfileRole(value.role) ||
+    !isRoleStatus(value.status) ||
+    typeof value.selectable !== 'boolean' ||
+    typeof value.readOnly !== 'boolean'
+  ) {
     throw new AuthPayloadError(operation, 'Сервер вернул некорректное право роли', value)
   }
   const groupId = value.groupId === undefined || value.groupId === null ? null : value.groupId
-  if (groupId !== null && !isDecimalId(groupId)) throw new AuthPayloadError(operation, 'Сервер вернул некорректную группу роли', value)
+  if (groupId !== null && !isDecimalId(groupId))
+    throw new AuthPayloadError(operation, 'Сервер вернул некорректную группу роли', value)
   return {
     grantId: value.grantId,
     role: value.role,
     status: value.status,
     ...(groupId === null ? {} : { groupId }),
-    ...(value.contextLabel === undefined ? {} : { contextLabel: expectNullableString(value.contextLabel, operation, 'contextLabel') }),
+    ...(value.contextLabel === undefined
+      ? {}
+      : { contextLabel: expectNullableString(value.contextLabel, operation, 'contextLabel') }),
     selectable: value.selectable,
     readOnly: value.readOnly,
   }
 }
 
 function adaptPasswordPolicy(value: unknown, operation: string): ProfilePasswordPolicy {
-  if (!isRecord(value)
-    || !isPositiveInteger(value.minCodePoints)
-    || !isPositiveInteger(value.maxUtf8Bytes)
-    || typeof value.requiresDecimalDigit !== 'boolean'
-    || value.normalization !== 'NONE'
-    || !Array.isArray(value.specialCategories)
-    || value.specialCategories.some((category) => category !== 'P' && category !== 'S')
-    || new Set(value.specialCategories).size !== value.specialCategories.length) {
+  if (
+    !isRecord(value) ||
+    !isPositiveInteger(value.minCodePoints) ||
+    !isPositiveInteger(value.maxUtf8Bytes) ||
+    typeof value.requiresDecimalDigit !== 'boolean' ||
+    value.normalization !== 'NONE' ||
+    !Array.isArray(value.specialCategories) ||
+    value.specialCategories.some((category) => category !== 'P' && category !== 'S') ||
+    new Set(value.specialCategories).size !== value.specialCategories.length
+  ) {
     throw new AuthPayloadError(operation, 'Сервер вернул некорректную политику пароля', value)
   }
   const categories = [...value.specialCategories] as ('P' | 'S')[]
@@ -528,28 +748,58 @@ function adaptPasswordPolicy(value: unknown, operation: string): ProfilePassword
 }
 
 function expectNullableString(value: unknown, operation: string, field: string): string | null {
-  if (value !== null && typeof value !== 'string') throw new AuthPayloadError(operation, `Сервер вернул некорректное поле ${field}`, value)
+  if (value !== null && typeof value !== 'string')
+    throw new AuthPayloadError(operation, `Сервер вернул некорректное поле ${field}`, value)
   return value
 }
 
-function authErrorCode(serverCode: string | null, status: number | undefined): ProfileRequestError['code'] {
+function authErrorCode(
+  serverCode: string | null,
+  status: number | undefined,
+): ProfileRequestError['code'] {
   const known: ProfileRequestError['code'][] = [
-    'SESSION_STATE_STALE', 'SESSION_VERSION_CONFLICT', 'REFRESH_ALREADY_ROTATED', 'ROLE_NOT_GRANTED',
-    'ROLE_NOT_SELECTABLE', 'ROLE_READ_ONLY', 'BOOTSTRAP_SCOPE_DENIED', 'CURRENT_PASSWORD_INVALID',
-    'PASSWORD_POLICY_VIOLATION', 'INVALID_CURSOR', 'AUTHORITY_UNAVAILABLE', 'INVALID_SESSION',
-    'SESSION_REVOKED', 'SESSION_NOT_FOUND', 'REFRESH_REJECTED', 'OFFLINE_MUTATION_DISABLED', 'ACCOUNT_INVALIDATED', 'NETWORK', 'UNKNOWN',
+    'SESSION_STATE_STALE',
+    'SESSION_VERSION_CONFLICT',
+    'REFRESH_ALREADY_ROTATED',
+    'ROLE_NOT_GRANTED',
+    'ROLE_NOT_SELECTABLE',
+    'ROLE_READ_ONLY',
+    'BOOTSTRAP_SCOPE_DENIED',
+    'CURRENT_PASSWORD_INVALID',
+    'PASSWORD_POLICY_VIOLATION',
+    'INVALID_CURSOR',
+    'AUTHORITY_UNAVAILABLE',
+    'INVALID_SESSION',
+    'SESSION_REVOKED',
+    'SESSION_NOT_FOUND',
+    'REFRESH_REJECTED',
+    'OFFLINE_MUTATION_DISABLED',
+    'ACCOUNT_INVALIDATED',
+    'NETWORK',
+    'UNKNOWN',
   ]
-  if (serverCode && known.includes(serverCode as ProfileRequestError['code'])) return serverCode as ProfileRequestError['code']
+  if (serverCode && known.includes(serverCode as ProfileRequestError['code']))
+    return serverCode as ProfileRequestError['code']
   if (status === 409) return 'SESSION_STATE_STALE'
   if (status === 503 || status === 504) return 'AUTHORITY_UNAVAILABLE'
   if (status === 401) return 'INVALID_SESSION'
   return serverCode === 'NETWORK' ? 'NETWORK' : 'UNKNOWN'
 }
 
-function authErrorMessage(operation: string, status: number | undefined, problem: AuthProblem | null, causeValue: unknown): string {
-  if (problem?.detail || problem?.title) return problem.detail ?? problem.title ?? 'Ошибка авторизации'
-  if (problem?.code === 'NETWORK' || causeValue instanceof TypeError) return 'Не удалось связаться с сервером'
-  if (status === 401) return operation === 'login' ? 'Неверный логин или пароль' : 'Сессия больше недействительна'
+function authErrorMessage(
+  operation: string,
+  status: number | undefined,
+  problem: AuthProblem | null,
+  causeValue: unknown,
+): string {
+  if (operation === 'login-otp' && (status === 401 || status === 410))
+    return 'Код недействителен или истёк. Получи новый код в Telegram'
+  if (problem?.detail || problem?.title)
+    return problem.detail ?? problem.title ?? 'Ошибка авторизации'
+  if (problem?.code === 'NETWORK' || causeValue instanceof TypeError)
+    return 'Не удалось связаться с сервером'
+  if (status === 401)
+    return operation === 'login' ? 'Неверный логин или пароль' : 'Сессия больше недействительна'
   if (status === 403) return 'Доступ запрещён для текущей сессии'
   return 'Не удалось выполнить запрос авторизации'
 }
@@ -559,12 +809,20 @@ function isProfileRole(value: unknown): value is ProfileRole {
 }
 
 function adaptRole(value: unknown, operation: string): ProfileRole {
-  if (!isProfileRole(value)) throw new AuthPayloadError(operation, 'Сервер вернул неизвестную роль', value)
+  if (!isProfileRole(value))
+    throw new AuthPayloadError(operation, 'Сервер вернул неизвестную роль', value)
   return value
 }
 
 function isRoleStatus(value: unknown): value is ProfileRoleStatus {
-  return value === 'ACTIVE' || value === 'SUSPENDED' || value === 'EXPELLED' || value === 'GRADUATED' || value === 'DISMISSED' || value === 'ARCHIVED'
+  return (
+    value === 'ACTIVE' ||
+    value === 'SUSPENDED' ||
+    value === 'EXPELLED' ||
+    value === 'GRADUATED' ||
+    value === 'DISMISSED' ||
+    value === 'ARCHIVED'
+  )
 }
 
 function isDecimalId(value: unknown): value is string {
@@ -572,8 +830,10 @@ function isDecimalId(value: unknown): value is string {
 }
 
 function isCanonicalUuid(value: unknown): value is string {
-  return typeof value === 'string'
-    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(value)
+  return (
+    typeof value === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(value)
+  )
 }
 
 function isDecimalVersion(value: unknown): value is string {
@@ -593,7 +853,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isFieldError(value: unknown): value is { field?: string; message?: string } {
-  return isRecord(value)
-    && (value.field === undefined || typeof value.field === 'string')
-    && (value.message === undefined || typeof value.message === 'string')
+  return (
+    isRecord(value) &&
+    (value.field === undefined || typeof value.field === 'string') &&
+    (value.message === undefined || typeof value.message === 'string')
+  )
 }

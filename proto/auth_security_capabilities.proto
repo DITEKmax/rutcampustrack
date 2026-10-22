@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package rutcampustrack.authsecurity;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.authsecurity.grpc";
+
+import "auth_data_authority.proto";
+
+// Academic-only TLS+x-service-token methods. Auth owns live session, credential,
+// password/OTP and capability checks; Academic owns preview/eligibility/effects,
+// report selectors/READY/artifacts. No method calls Academic or reads its DB.
+service AuthSecurityCapabilityService {
+  rpc AdmitSessionIdentity(StoredSessionIdentity) returns (LiveSessionAuthority);
+  rpc AdmitStoredSession(AdmitStoredSessionRequest) returns (AdmittedReportAuthority);
+  rpc IssueReportCapability(IssueReportCapabilityRequest) returns (IssuedReportCapability);
+  rpc RedeemReportCapability(RedeemReportCapabilityRequest) returns (RedeemedReportCapability);
+  rpc ChallengeSubjectDeletion(SubjectDeletionChallengeRequest) returns (SubjectDeletionChallenge);
+  rpc VerifySubjectDeletion(SubjectDeletionVerifyRequest) returns (SubjectDeletionVerification);
+  rpc CheckSubjectDeletionReceipt(SubjectDeletionReceiptRequest) returns (SubjectDeletionReceipt);
+  // Exact consumed proof continuation from Auth-owned original actor tuple, no user JWT.
+  rpc CheckStoredSubjectDeletionReceipt(SubjectDeletionReceiptRequest) returns (SubjectDeletionReceipt);
+  rpc ConfirmPasswordStepUp(PasswordStepUpRequest) returns (PasswordStepUpReceipt);
+  rpc CheckPasswordStepUpReceipt(PasswordStepUpReceiptRequest) returns (PasswordStepUpReceipt);
+}
+
+message StoredSessionIdentity {
+  int64 user_id = 1;
+  string session_id = 2;
+  int64 session_version = 3;
+  int64 roles_version = 4;
+  string role = 5;
+  string status = 6;
+  optional int64 group_id = 7;
+  bool is_headman = 8;
+  bool read_only = 9;
+}
+message LiveSessionAuthority {
+  StoredSessionIdentity identity = 1;
+  string internal_token = 2; // transient current identity only, never durable
+  string expires_at = 3;
+  rutcampustrack.authauthority.AuthorityAdminProfile admin_profile = 4;
+  optional int64 active_role_grant_id = 5; // exact currently selected positive grant ID
+  string refresh_expires_at = 6; // current UTC ISO instant, never inferred from token TTL
+  optional string revoked_at = 7; // absent for every successfully admitted current session
+}
+message AdmitStoredSessionRequest {
+  StoredSessionIdentity identity = 1;
+  string report_kind = 2; // exact existing closed ReportDownloadKind catalogue
+  string selector_hash = 3; // lowercase SHA-256; Auth never receives the selector
+  string not_after = 4; // ISO-8601 UTC; capped by current session/issuer expiry
+  bool requires_full = 5; // sticky for an owner artifact that can disclose FULL-only data
+  string owner_resource_id = 6; // canonical Academic UUID; required for a renderer token
+  string lease_id = 7; // canonical UUID for the exact admitted render attempt
+}
+message AdmittedReportAuthority {
+  StoredSessionIdentity identity = 1;
+  string internal_token = 2; // transient only; never persist in a job/outbox/result/trace
+  string expires_at = 3;
+  rutcampustrack.authauthority.AuthorityAdminProfile admin_profile = 4;
+  bool requires_full = 5;
+}
+message IssueReportCapabilityRequest {
+  AdmitStoredSessionRequest authority = 1;
+  string owner_resource_id = 2; // opaque Academic UUID; Auth never checks READY or looks it up
+}
+message IssuedReportCapability {
+  string ticket = 1; // opaque, reusable <=60s; no selector or session in URL
+  string expires_at = 2;
+  bool requires_full = 3;
+}
+message RedeemReportCapabilityRequest {
+  string ticket = 1;
+}
+message RedeemedReportCapability {
+  AdmittedReportAuthority authority = 1;
+  string report_kind = 2;
+  string selector_hash = 3;
+  string owner_resource_id = 4;
+  string expires_at = 5;
+}
+// Redis stores only identity+kind+hash+opaque resource ID+expiry+requiresFull.
+// Preserve issue10/session/60s and redeem20/ticket limits. Every issue/redemption
+// rechecks the current session/grant/profile/fence; no successful authority cache.
+// Academic checks exact current domain scope and READY before issue/serve, and
+// rechecks Auth plus domain scope after bytes are loaded before disclosure.
+
+message SubjectDeletionBinding {
+  int64 subject_id = 1;
+  int64 semester_id = 2;
+  int64 group_id = 3;
+  string operation_id = 4;
+  string preview_digest = 5;
+}
+message SubjectDeletionChallengeRequest {
+  SubjectDeletionBinding binding = 1;
+  string password = 2; // transient only; actor is signed x-internal-token metadata
+}
+message SubjectDeletionChallenge {
+  string challenge_id = 1;
+  string expires_at = 2;
+  int32 attempts_remaining = 3;
+}
+message SubjectDeletionVerifyRequest {
+  SubjectDeletionBinding binding = 1;
+  string challenge_id = 2;
+  string code = 3;
+}
+message SubjectDeletionVerification {
+  bool accepted = 1;
+  string receipt_id = 2;
+}
+message SubjectDeletionReceiptRequest {
+  SubjectDeletionBinding binding = 1;
+  string receipt_id = 2;
+}
+message SubjectDeletionReceipt {
+  string receipt_id = 1;
+  SubjectDeletionBinding binding = 2;
+  StoredSessionIdentity actor = 3;
+  int64 credentials_version = 4;
+  int64 telegram_binding_version = 5;
+  int64 telegram_id = 6;
+  string expires_at = 7;
+}
+enum PasswordStepUpPurpose {
+  PASSWORD_STEP_UP_PURPOSE_UNSPECIFIED = 0;
+  PASSWORD_STEP_UP_PURPOSE_USER_ARCHIVE = 1;
+  PASSWORD_STEP_UP_PURPOSE_SEMESTER_DELETE = 2;
+  PASSWORD_STEP_UP_PURPOSE_MAP_FLOOR_DELETE = 3;
+  PASSWORD_STEP_UP_PURPOSE_MAP_BUILDING_DELETE = 4;
+}
+message PasswordStepUpBinding {
+  PasswordStepUpPurpose purpose = 1;
+  int64 target_id = 2;
+  string operation_id = 3;
+  string preview_digest = 4;
+}
+message PasswordStepUpRequest {
+  PasswordStepUpBinding binding = 1;
+  string password = 2; // signed actor metadata, never a login/reset capability
+}
+message PasswordStepUpReceiptRequest {
+  PasswordStepUpBinding binding = 1;
+  string receipt_id = 2;
+}
+message PasswordStepUpReceipt {
+  string receipt_id = 1;
+  PasswordStepUpBinding binding = 2;
+  StoredSessionIdentity actor = 3;
+  int64 credentials_version = 4;
+  int64 telegram_binding_version = 5;
+  string expires_at = 6;
+}
+// Step-up receipts bind exact purpose/op/preview/resource + actor sid/sv/rv and
+// credential/binding generations. Academic persists an immutable admission
+// receipt for that one operation and rechecks its local policy under own locks.
+// No cross-DB FK or remote call under those locks; same accepted operation can
+// resume its durable effects, a receipt cannot authorize a new operation.
+// Invalid/unknown fields: INVALID_ARGUMENT; missing/expired capability: NOT_FOUND;
+// stale tuple/receipt: FAILED_PRECONDITION; denied: PERMISSION_DENIED; exhausted
+// limits: RESOURCE_EXHAUSTED; dependency/current authority failure: UNAVAILABLE.

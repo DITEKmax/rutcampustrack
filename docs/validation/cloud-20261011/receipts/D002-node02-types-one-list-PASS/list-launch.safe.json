@@ -1,0 +1,20 @@
+{
+  "phase": "list",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+    "test",
+    "--config",
+    "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.d002-steps.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--list",
+    "--reporter",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/discovery-reporter.cjs"
+  ],
+  "ready_sha256": "abf70b9342cb033e6f26f1759c59f51c1067b0cdc165cd0037416c3730e13acc",
+  "deadline_seconds": 180,
+  "absolute_stop_at": "2026-10-13T03:28:18.445730+00:00"
+}

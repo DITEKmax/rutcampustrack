@@ -1,0 +1,37 @@
+{
+  "schema": "rct-p10-no-store-oracle-independent-source-review-v1",
+  "disposition": "CHANGES_REQUESTED_ONE_QUOTED_COMMA_P2_PLANS_APPROVE_REUSE",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "reviewed_source_sha256": "a1aae309d0a13e834de61cce1b41c768ddfdf452138d76f44238eca8a243e6d8",
+  "READY_sha256": "cf089798059e53bb5943c47996a716a85fbfc78b40cd16a518337fb06f27c772",
+  "finding": {
+    "id": "P10-NO-STORE-QUOTED-COMMA-FALSE-POSITIVE",
+    "priority": 2,
+    "source": "AuthOtpFlowIT.java::assertUnicodePasswordRejection",
+    "counterexample_public_header": "extension=\"prefix,no-store,suffix\"",
+    "actual_no_store_directive": false,
+    "new_ascii_source_predicate": true,
+    "old_exclusive_predicate": false
+  },
+  "default_compound_source_counterexample": {
+    "old": false,
+    "new": true,
+    "actual_original_header": "UNKNOWN"
+  },
+  "all_other_oracles_source_inverse_exact": true,
+  "formatter_parent_child_init_byte_exact": true,
+  "IT_parent_child_observer_byte_exact": true,
+  "protected_pins_exact": 17,
+  "postformat_rebind_required": true,
+  "old_control_suites_rerun": false,
+  "native_Java_Docker_API_artifact_or_private_body_access": false,
+  "Source_author_or_shared_writes": 0,
+  "original_console_frame": 1184,
+  "prior_HTTP400_assertion_passed": true,
+  "original_runtime_cause": "SOURCE_QUALIFIED_ORACLE_MISMATCH_ACTUAL_HEADER_UNKNOWN",
+  "fresh_root_grants_required": true,
+  "P10": "UNKNOWN",
+  "B013_retry": false
+}

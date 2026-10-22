@@ -1,0 +1,16 @@
+[
+  {
+    "id": "HOST-G01",
+    "severity": "P2",
+    "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "file": "/workspace/scratch/rct-validation/host_runtime_prepare/safe-child-status.py",
+    "line": 40,
+    "counterexample": "OWN/../host_runtime_review/CURRENT.json",
+    "stdlib_lexical_is_relative_to": true,
+    "resolved_is_relative_to": false,
+    "all_existing_components_non_symlink": true,
+    "impact": "Scope guard permits cwd/artifact/environment access outside author-owned directory when a traversal path enters a sealed spec/grant",
+    "required": "Reject parent traversal and prove resolved containment; retain no-symlink rule before any owned file/cwd use",
+    "verification": "Pure standard-library path predicates only; no authored runner/app/runtime/key/environment execution or read"
+  }
+]

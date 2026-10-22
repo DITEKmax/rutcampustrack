@@ -1,0 +1,445 @@
+{
+  "created_at": "2026-10-11T20:53:33.241809+00:00",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "frozen_commit": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+  "entries": [
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImpl.java",
+      "bytes": 4924,
+      "sha256": "a4a5694929f00e3dbd46f001313bfc75996d0b33c94ac08e33007481e7993186",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/InvalidDocumentException.java",
+      "bytes": 446,
+      "sha256": "8c0acdf3ed8feb568f4d21370b52dcf0f70492c1f97ef73fdb421cb8e247718d",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+      "bytes": 12196,
+      "sha256": "fec83613e9ceec752a7082997662daec3566bc558c19f140203d8ff377e51455",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+      "bytes": 4455,
+      "sha256": "b2c01956d5fd3dc00c64ac5d42efcdc3a1c693b9702ec504ca3b2e2a7c4f7da8",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImplTest.java",
+      "bytes": 6850,
+      "sha256": "395676cc4a394bd847c6aae4db742a2a4ceef7527e267d05ec6bd94495fa8386",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/DocumentRendererCancellationIT.java",
+      "bytes": 4379,
+      "sha256": "a10e903f5e2500fe5fe5edf242228e567aeaf1c28e738a7c44ba15081c9d5e60",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterNativeIT.java",
+      "bytes": 8918,
+      "sha256": "ccca8c6f8ef858b2107b597a225b4c43cb6195e38ede29f407990e3cb255f32d",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+      "bytes": 10053,
+      "sha256": "602bd0c76c2b9b24ca0ff556d60400be20d9b7ad3a0d79ee3a11cb9d711edaf8",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentInputValidationTest.java",
+      "bytes": 3798,
+      "sha256": "b4731eb05f347269d3482f5c2255d40b866b3ac4b292a7d440307d1c1ffe29c7",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/ProcessRunnerLifecycleTest.java",
+      "bytes": 5549,
+      "sha256": "f54abbec1edb3a04f4950c7460a41fbecfcecbff5cfcbb0813469d209cdd4939",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/RendererDocxFixture.java",
+      "bytes": 3531,
+      "sha256": "fd6a1f1fa746c2e53930ff10b67f562efc641a39e1ca478fab32e7ea79daf1c3",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/AGENTS.md",
+      "bytes": 4327,
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/AGENTS.md",
+      "bytes": 2914,
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/tests/AGENTS.md",
+      "bytes": 5464,
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/.agent/orchestration-v2/RULES.md",
+      "bytes": 24809,
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/.agent/orchestration-v2/CURRENT.md",
+      "bytes": 1799,
+      "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/build.gradle.kts",
+      "bytes": 13875,
+      "sha256": "5304f8bc9b710d9ce09e42d07cb873f2fbb02d6d4e88cb33efb180fa3cad2d32",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/proto/document_renderer.proto",
+      "bytes": 594,
+      "sha256": "76c37f078134fda156d5a1e03f9bc6a1e3271898882f8d7fb3cbe0ba3b1aa0a2",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "bytes": 5816,
+      "sha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/GrpcAuthInterceptor.java",
+      "bytes": 1287,
+      "sha256": "9a292e9793f6a3c4b544b8f0e0793fda4b7f4d26c3d861a559ef22d5aadf3dc5",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/resources/application.yml",
+      "bytes": 899,
+      "sha256": "2477cffa6e4ac496f72e065e31bb25f877ab20dcdee5994dff0262c3f32c1bc9",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/DocumentRendererProperties.java",
+      "bytes": 1247,
+      "sha256": "6c556da43ba8405b34e295bea7abea76d34dbe3ba002569a567585f97049f125",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/build.gradle.kts",
+      "bytes": 1770,
+      "sha256": "d0c8e2abf940530d1616a5c4a930aaefd0057210663196e95d4eccedd7665aae",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/DocumentRendererGrpcClient.java",
+      "bytes": 3520,
+      "sha256": "1ec557aa3d8dca9f7ee2f81d16fab4bd8012b266ff515e83c96d5b9f5aba6fab",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/GrpcSecretClientInterceptor.java",
+      "bytes": 1191,
+      "sha256": "69b1505fcdeeab46ef40f4ac6e6b71112f034bade190ed0452ce45c357557683",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-worktrees/renderer-files/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/ProcessRunnerTest.java",
+      "bytes": 1402,
+      "sha256": "d11bddd934ba5a5eed594c322c7d8cc4a54a1e79ba94e0adffb8cbb6ebcfb551",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "bytes": 80090,
+      "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "bytes": 6133,
+      "sha256": "7fcc142f186d785598c118ca1b2f330b43585ddffb2f899f8f20eeda75e75a54",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "bytes": 3741,
+      "sha256": "973230377c9be5b945cde48dd6a97b3c5aec909e8893947fa474c164029edef4",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "bytes": 6144,
+      "sha256": "1049ab69d838b46442c405bcda1780ac3e85e638c1a29032647d37b0c4e9471e",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "bytes": 4808,
+      "sha256": "f7fdb80e80c6aeee5d1c2c28c2b601c2545bd94d307a482ed5dc1ed1632eca46",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-renderer-review.md",
+      "bytes": 2576,
+      "sha256": "ce9419639aa2d0c3c17092e297e1fbd53f16aaf9992bd6a1eb6b38e34533ea34",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-cloud-skills-20261011/project/rct-verification/SKILL.md",
+      "bytes": 1733,
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/rct-cloud-skills-20261011/project/rct-source-resolution/SKILL.md",
+      "bytes": 1557,
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/final-receipt.json",
+      "bytes": 10313,
+      "sha256": "84c1a51d05cab055aa519b5bb2415422a24f0ac8d4aff696b42bc947ce7dc480",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/attempts.ndjson",
+      "bytes": 8511,
+      "sha256": "e34292a9cdb149973cc7e212fa03539e05ab924a38f24929eac504da00843264",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/inventory.json",
+      "bytes": 3571,
+      "sha256": "2f8cadb11ca45c28697769c2826a6c763bab706500afd8735fbc0f01e932900c",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-artifact-sha256.json",
+      "bytes": 523,
+      "sha256": "ba40299bf5a89f647bf3b343aaa93c3f486e7e75ebad46bfbbf7e53233ed0ccc",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/defects.md",
+      "bytes": 3190,
+      "sha256": "03781ddd010105b02ca0a4d8d480fcfb0335890522c2ab18bf7c59b378144a95",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/commit-01.log",
+      "bytes": 1169,
+      "sha256": "08159c6fb2904e91d34abcf67dca8a66dac531cf45ee31548aa210525dc4a168",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-cancellation-03.log",
+      "bytes": 2484,
+      "sha256": "571fdc872c2f066dac0b8242e062623c848b8cec8638c9cf7564dcbd99e10210",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02.log",
+      "bytes": 3563,
+      "sha256": "a2a8bdc5cc44135f4e28099a4793d9dd8440d7b90047defb7f82ac73b7336c75",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-cancellation-01.log",
+      "bytes": 3385,
+      "sha256": "ce827f22e04595b93c67652bc711ce7fb81435187a8d3b27491a105cd854561f",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01.log",
+      "bytes": 3373,
+      "sha256": "956fd265390db2ddfaad1764b7114c031b06937f4f70f2b02094be693bb63b18",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-unit-02.log",
+      "bytes": 3901,
+      "sha256": "ded8b77d15b0999614072f5ed750f4e3d3e88c51af7749e25c868b34b3cf9ffd",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-unit-01.log",
+      "bytes": 4143,
+      "sha256": "c53f8b4f0840483c311ef471f809d404f2262f3086324af40e3bed8486e72ea5",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-baseline-01.log",
+      "bytes": 3173,
+      "sha256": "e68fc66520c7cb2a9a671eb20f94a19baaf6f512dc5248ce032471ebb75cec32",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-baseline-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+      "bytes": 1412,
+      "sha256": "8201a21c159135ba717879bdd6a88f71619c3d35de04a081b0fa31066a78ae1f",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+      "bytes": 715,
+      "sha256": "52c58c4af8ed337eacee0bc2236ad9ed8992d44a4df2233e55b8914e54059319",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+      "bytes": 488,
+      "sha256": "d396a3ff9efb20f991da2fb2fbff8ef659f6ad3b65c1dd2af0e30973c2ecd7ba",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+      "bytes": 2118,
+      "sha256": "29dda2ec2cc97a261e8189968a598980bee614c44feedcaad0ad5262f8ed0869",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "bytes": 8283,
+      "sha256": "6f428eaa3c70105ded6f416ae1216e7b07c7c5671bb4f2884f1288da4ab0ce6a",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+      "bytes": 676,
+      "sha256": "6c624202b1e5a47b1106632f64f911a1259ce43381855c2ac0558400d4e2450e",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+      "bytes": 716,
+      "sha256": "e4f57cddb37bf512a8968876a9bb25040ad3ed4c26fef3d870aa1785e77d86fd",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+      "bytes": 488,
+      "sha256": "9bc869dce3538c4867596188ad1dbb1e44aa8c26003c919e06ce7fdc56e70b3d",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest.xml",
+      "bytes": 5128,
+      "sha256": "4fef8b70255f7f20116d362919d292080365a113341d9e9bb9fe16f7853f3f98",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+      "bytes": 2119,
+      "sha256": "43cc85036452828c7a3f79b0a8b21f6893b1d6e2532436b14ee868d90ebc652b",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+      "bytes": 1935,
+      "sha256": "638c3fde042478a0297fd371e34afb354fca77e4831e9a4d99f079f03980a2c1",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "bytes": 4636,
+      "sha256": "aeadbbb5fa5bb859b533bf950a52af4a46c54413185aa3e1e9d57c17da296a05",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+      "bytes": 676,
+      "sha256": "e1219e9aef774e331dc3af4da1b2b45fc8d40fa5e47ce3a51acf79a47cdefc59",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-cancellation-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "bytes": 8517,
+      "sha256": "cc43f9c1c8d739dcc9d01f281a2a251214210ed3edd039986dab071271aec12c",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-unit-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+      "bytes": 9554,
+      "sha256": "2c55ddff55cdc03dcb0b7ec28e946a0872d563f0e6bc2e92216a56aafda54c4e",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-unit-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+      "bytes": 6357,
+      "sha256": "0103502794e59db2361f204a45350332a0225f8041d45cef1f9143d0d5ffad9a",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-cancellation-03-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "bytes": 754,
+      "sha256": "beef83c030341e66821266e2dd8388adcccaf75a4e6119d5ad19864a5446f5aa",
+      "read": "full or targeted semantic read; XML independently parsed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/page-0001.png",
+      "bytes": 4985,
+      "sha256": "e48aa4742310b0acbc3d5aee66bd74389dc93a695fd85022cb8d15cb45f47bc0",
+      "read": "binary hash/archive structure and both page PNG visual"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/pages.zip",
+      "bytes": 5690,
+      "sha256": "9e005259a6f9f82a80cea46a7cb8e6261746d8969bdf17c1fed9934dacda5621",
+      "read": "binary hash/archive structure and both page PNG visual"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/first-page.png",
+      "bytes": 4985,
+      "sha256": "e48aa4742310b0acbc3d5aee66bd74389dc93a695fd85022cb8d15cb45f47bc0",
+      "read": "binary hash/archive structure and both page PNG visual"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/two-pages.docx",
+      "bytes": 1247,
+      "sha256": "21d37cb9556cdb3f33bd74ff314b9f48e34593d243d9ed9c6003fbba9ad23b8a",
+      "read": "binary hash/archive structure and both page PNG visual"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/two-pages.pdf",
+      "bytes": 14641,
+      "sha256": "dbd1d47f0bf35103158246db781a467ef79e7e10e39f7f675768c0a9826e3b76",
+      "read": "binary hash/archive structure and both page PNG visual"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/page-0002.png",
+      "bytes": 5283,
+      "sha256": "c84673b667464b9c28728ea08f515273e72639c989ccaa2fcf3a249008787355",
+      "read": "binary hash/archive structure and both page PNG visual"
+    },
+    {
+      "path": "git:3908fad9624f97aec8891fc79338ceb6b0616bf3:services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImpl.java",
+      "bytes": 2470,
+      "sha256": "4f7743b39e8e0ff402f0b9f972d8ed33df2c0b3b8232f4c9413858365036ca5e",
+      "read": "full baseline retrieved and delta independently reviewed"
+    },
+    {
+      "path": "git:3908fad9624f97aec8891fc79338ceb6b0616bf3:services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+      "bytes": 7992,
+      "sha256": "e660a3d2cfbba0709ee5d4091b4228c2f38f122e40cf3b763d9eb6ab53596123",
+      "read": "full baseline retrieved and delta independently reviewed"
+    },
+    {
+      "path": "git:3908fad9624f97aec8891fc79338ceb6b0616bf3:services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+      "bytes": 2227,
+      "sha256": "c2950410262e3b3f29c2b45e127bf5cd044836d0016f6a7325dc4df89fd779ea",
+      "read": "full baseline retrieved and delta independently reviewed"
+    }
+  ]
+}

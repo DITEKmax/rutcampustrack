@@ -16,7 +16,7 @@ const TEACHERS = [
 
 function makeApi(overrides: Partial<HeadmanApiService> = {}): HeadmanApiService {
   return {
-    listTeachers: vi.fn(() => of({ _embedded: { userResponseList: TEACHERS } })),
+    listTeachers: vi.fn(() => of({ _embedded: { userResponseList: [...TEACHERS].reverse() } })),
     createSubject: vi.fn(() => of({ id: 99, name: 'Новый', type: 'LECTURE', teacherIds: [] })),
     updateSubject: vi.fn(() => of({ id: 10, name: 'Обновлён', type: 'PRACTICE', teacherIds: [] })),
     ...overrides,
@@ -171,8 +171,9 @@ describe('SubjectDialogComponent', () => {
       expect(component.teachersLoading).toBe(false);
       expect(component.teachers.length).toBe(3);
       // Sorted by lastName with ru-collator (Иванов, Петров, Сидоров)
-      expect(component.teachers[0].id).toBe(1);
-      expect(component.teachers[2].id).toBe(3);
+      expect(component.teachers.map(teacher => [teacher.id, teacher.fullName])).toEqual([
+        [1, 'Иванов Иван Иванович'], [2, 'Петров Пётр Петрович'], [3, 'Сидоров Семён Семёнович'],
+      ]);
     });
 
     it('teacherLabel renders ФИО + табельный номер to disambiguate однофамильцев', () => {

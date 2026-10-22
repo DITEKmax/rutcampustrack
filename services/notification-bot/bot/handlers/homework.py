@@ -6,7 +6,9 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from bot.handlers.prefs import HOMEWORK_WEEK_LABEL
+from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL
+from bot.handlers.start import private_sender
+from bot.services.bot_menu import resolve_menu_scope
 
 logger = logging.getLogger(__name__)
 
@@ -21,41 +23,58 @@ async def cmd_homework_week(
     message: Message,
     academic_client,
     today: date | None = None,
+    bot_homework_client=None,
+    bot_menu_client=None,
 ) -> None:
-    """Show homework for the nearest 7 days for the current Telegram user."""
-    telegram_id = message.from_user.id
+    """Show homework for the nearest 7 days for the current Telegram student."""
+    await _show_homework(message, academic_client, bot_homework_client, today, days=7, bot_menu_client=bot_menu_client)
 
+
+@homework_router.message(Command("homework_today"))
+@homework_router.message(F.text == HOMEWORK_TODAY_LABEL)
+async def cmd_homework_today(
+    message: Message, academic_client, today: date | None = None, bot_homework_client=None, bot_menu_client=None
+) -> None:
+    await _show_homework(message, academic_client, bot_homework_client, today, days=1, bot_menu_client=bot_menu_client)
+
+
+async def _show_homework(
+    message: Message, academic_client, bot_homework_client, today: date | None, *, days: int, bot_menu_client=None
+) -> None:
+    telegram_id = private_sender(message)
+    if telegram_id is None:
+        await message.answer("Открой личный чат с ботом, чтобы посмотреть свои задания.")
+        return
     try:
-        user_response = await academic_client.get_user_by_telegram_id(telegram_id)
-        if not user_response.found:
-            await message.answer("⚠️ Аккаунт не найден\n\nОбратитесь к старосте, чтобы проверить привязку.")
-            return
-
-        group_id = int(getattr(user_response, "group_id", 0) or 0)
-        if not group_id:
-            await message.answer("⚠️ Группа не указана\n\nВаш аккаунт пока не привязан к учебной группе.")
+        scope = await resolve_menu_scope(bot_menu_client, telegram_id)
+        if scope is None or not scope.homework_enabled:
+            await message.answer("ДЗ недоступно. Нужна действующая роль студента с учебной группой.")
             return
 
         start = today or datetime.now(_MOSCOW_TZ).date()
-        end = start + timedelta(days=6)
+        end = start + timedelta(days=days - 1)
         semester = await academic_client.get_active_semester()
         if semester is None:
             await message.answer("Сейчас нет активного семестра, поэтому список ДЗ недоступен.")
             return
 
-        semester_id = int(getattr(semester, "id"))
+        if bot_homework_client is None:
+            raise RuntimeError("Own bot homework capability unavailable")
         homeworks = [
             _homework_proto_to_item(homework)
-            for homework in await academic_client.get_homeworks_for_week(
-                group_id=group_id,
-                semester_id=semester_id,
-                student_id=int(getattr(user_response, "user_id")),
+            for homework in await bot_homework_client.homeworks(
+                telegram_sender_id=telegram_id,
+                expected_user_id=scope.user_id,
+                expected_roles_version=scope.roles_version,
+                expected_telegram_binding_version=scope.telegram_binding_version,
                 date_from=start.isoformat(),
                 date_to=end.isoformat(),
             )
         ]
         upcoming = _filter_week_homeworks(homeworks, start, end)
 
+        if await resolve_menu_scope(bot_menu_client, telegram_id) != scope:
+            raise RuntimeError("Own homework authority changed")
         await message.answer(_build_homework_week_text(upcoming, {}, start, end))
     except Exception:
         logger.warning("Error in /homework handler", exc_info=True)
@@ -109,12 +128,14 @@ async def _resolve_subject_names(items: list[dict], academic_client) -> dict[int
 
 def _build_homework_week_text(items: list[dict], subject_names: dict[int, str], start: date, end: date) -> str:
     lines = [
-        "📚 Домашнее задание на ближайшую неделю",
+        "📚 Домашнее задание на сегодня" if start == end else "📚 Домашнее задание на ближайшую неделю",
         f"{_format_date(start)} — {_format_date(end)}",
         "",
     ]
     if not items:
-        lines.append("На ближайшие 7 дней домашних заданий нет.")
+        lines.append(
+            "На сегодня домашних заданий нет." if start == end else "На ближайшие 7 дней домашних заданий нет."
+        )
         return "\n".join(lines)
 
     by_date: dict[str, list[dict]] = defaultdict(list)

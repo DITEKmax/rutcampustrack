@@ -1,0 +1,30 @@
+[
+  {
+    "manifest": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+    "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+    "files": 24,
+    "unchanged": true,
+    "mismatches": []
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+    "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+    "files": 29,
+    "unchanged": true,
+    "mismatches": []
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+    "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+    "files": 6,
+    "unchanged": true,
+    "mismatches": []
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+    "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+    "files": 13,
+    "unchanged": true,
+    "mismatches": []
+  }
+]

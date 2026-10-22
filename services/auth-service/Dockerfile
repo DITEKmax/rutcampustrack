@@ -23,9 +23,9 @@ COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-
 COPY services/auth-service/auth-app/build.gradle.kts services/auth-service/auth-app/
 COPY services/auth-service/auth-app/src services/auth-service/auth-app/src
 
-# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
-# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service without sharing daemon state.
+# BuildKit serializes only writers using the same service cache.
+RUN --mount=type=cache,id=rct-gradle-auth,target=/root/.gradle,sharing=locked \
     chmod +x gradlew && ./gradlew :services:auth-service:auth-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers
@@ -36,7 +36,8 @@ RUN java -Djarmode=layertools -jar app.jar extract
 
 # Stage 3: Runtime
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S app && adduser -S app -G app \
+    && addgroup -S -g 10004 auth-tls && addgroup app auth-tls
 WORKDIR /app
 
 COPY --from=extractor /app/dependencies/ ./

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { adminCanNavigate } from '../../shared/admin-navigation'
-import type { AdminAccessProfile } from '../admin-access/admin-access-client'
-import semesterIcon from '../../assets/admin/semester.svg'
-import nextIcon from '../../assets/admin/next.svg'
-import mapIcon from '../profile/assets/more-map.svg'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import './admin-more-screen.pcss'
-defineProps<{ authority: AdminAccessProfile | null }>()
-const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statistics'] }>()
+import { adminCanNavigate } from '../../shared/admin-navigation';
+import type { AdminAccessProfile } from '../admin-access/admin-access-client';
+import semesterIcon from '../../assets/admin/semester.svg';
+import nextIcon from '../../assets/admin/next.svg';
+import mapIcon from '../profile/assets/more-map.svg';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import './admin-more-screen.pcss';
+defineProps<{ authority: AdminAccessProfile | null }>();
+const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statistics'] }>();
 </script>
 
 <template>

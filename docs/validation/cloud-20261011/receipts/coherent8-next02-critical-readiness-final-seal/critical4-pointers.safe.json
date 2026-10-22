@@ -1,0 +1,18 @@
+{
+  "artifact_source": {
+    "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/artifact-source.safe.json",
+    "sha256": "ed76fc2e51f22831bbf7892204eb0d7e6cfe8196558232db5057e8d7358508b3"
+  },
+  "runtime_mapping": {
+    "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/runtime-mapping.safe.json",
+    "sha256": "bf8de2b8f5e13dd9a325ab62d7045e367984a392f1e3550d8117deb4ad02b806"
+  },
+  "critical_readiness": {
+    "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/stand-readiness.safe.json",
+    "sha256": "d8c28454cfcb7f424329e072fcc7ddd3cb00780b0c4a6c0e6009b7f4a635e335"
+  },
+  "host_live8": {
+    "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/host-live8.safe.json",
+    "sha256": "599a73b3f906543d1caa4edef55c3562bf116dac0d90ba39379cd0400ae6446b"
+  }
+}

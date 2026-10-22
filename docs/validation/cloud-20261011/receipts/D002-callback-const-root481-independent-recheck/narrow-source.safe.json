@@ -1,0 +1,19 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "observer_inverse_whole_bytes_exact": true,
+  "guard_before_function_alias": true,
+  "same_closed_callback_receiver_message": true,
+  "Root_changed_paths": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "other17_committed_blob_mode_exact": true,
+  "private_fixture_bodies": "Not read; committed blob identities compared for unchanged17. Future exact source admission still mandatory.",
+  "guard_whole_bytes_exact": true,
+  "old_sanitizer_wipe_core_exact": true,
+  "old_reporter_class_exact_except_previously_reviewed_diagnostics_row": true,
+  "onError_preserved_step_callbacks_absent": true,
+  "native_TS18048_line": "NOT_CAPTURED; source-nullable-symbol address only",
+  "new_types_discovery": "NOT_RUN",
+  "actual367_stage": "UNKNOWN"
+}

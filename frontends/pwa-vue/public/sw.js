@@ -9,58 +9,83 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys()
-    const appScope = new URL(self.registration.scope).pathname === '/app/'
-    // Retire only the React PWA caches belonging to this exact existing scope.
-    // Another application on the origin keeps its Workbox and custom caches.
-    const retired = keys.filter((key) => key !== cacheName && (
-      key.startsWith('rct-student-pwa-')
-      || appScope && key === 'headman-api-cache-v1'
-      || appScope && /^workbox-precache-v\d+-/.test(key) && key.endsWith(`-${self.registration.scope}`)
-    ))
-    await Promise.all(retired.map((key) => caches.delete(key)))
-    await self.clients.claim()
-  })())
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys()
+      const appScope = new URL(self.registration.scope).pathname === '/app/'
+      // Retire only the React PWA caches belonging to this exact existing scope.
+      // Another application on the origin keeps its Workbox and custom caches.
+      const retired = keys.filter(
+        (key) =>
+          key !== cacheName &&
+          (key.startsWith('rct-student-pwa-') ||
+            (appScope && key === 'headman-api-cache-v1') ||
+            (appScope &&
+              /^workbox-precache-v\d+-/.test(key) &&
+              key.endsWith(`-${self.registration.scope}`))),
+      )
+      await Promise.all(retired.map((key) => caches.delete(key)))
+      await self.clients.claim()
+    })(),
+  )
 })
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
-  if (event.data?.type === 'RCT_PUSH_READ' || event.data?.type === 'RCT_PUSH_BIND' || event.data?.type === 'RCT_PUSH_CLEAR') {
+  if (
+    event.data?.type === 'RCT_PUSH_READ' ||
+    event.data?.type === 'RCT_PUSH_BIND' ||
+    event.data?.type === 'RCT_PUSH_CLEAR'
+  ) {
     // Stop an in-flight push as soon as disable reaches this worker, before IDB I/O.
     if (event.data.type === 'RCT_PUSH_BIND' && event.data.binding === null) pushGateClosed = true
-    event.waitUntil(pushSerial(async () => {
-      try {
-        const source = event.source && await self.clients.get(event.source.id)
-        if (!source || !source.url.startsWith(self.registration.scope)) throw new Error('Invalid source')
-        let cleared = false
-        if (event.data.type === 'RCT_PUSH_CLEAR') {
-          const previous = await pushBinding()
-          const expected = event.data.binding
-          const matches = previous === null ? expected === null
-            : expected?.userId === previous.userId && expected?.fingerprint === previous.fingerprint
-          if (matches) {
-            pushGateClosed = true
-            await pushBinding(null, true)
-            const notifications = await self.registration.getNotifications()
-            for (const notification of notifications) {
-              if (matchesPush(previous, notification.data)) notification.close()
+    event.waitUntil(
+      pushSerial(async () => {
+        try {
+          const source = event.source && (await self.clients.get(event.source.id))
+          if (!source || !source.url.startsWith(self.registration.scope))
+            throw new Error('Invalid source')
+          let cleared = false
+          if (event.data.type === 'RCT_PUSH_CLEAR') {
+            const previous = await pushBinding()
+            const expected = event.data.binding
+            const matches =
+              previous === null
+                ? expected === null
+                : expected?.userId === previous.userId &&
+                  expected?.fingerprint === previous.fingerprint
+            if (matches) {
+              pushGateClosed = true
+              await pushBinding(null, true)
+              const notifications = await self.registration.getNotifications()
+              for (const notification of notifications) {
+                if (matchesPush(previous, notification.data)) notification.close()
+              }
+              cleared = true
             }
-            cleared = true
           }
+          if (event.data.type === 'RCT_PUSH_BIND') {
+            const next = event.data.binding
+            if (
+              next !== null &&
+              (!next ||
+                typeof next.userId !== 'string' ||
+                !/^\d+$/.test(next.userId) ||
+                typeof next.fingerprint !== 'string' ||
+                !/^[a-f0-9]{64}$/.test(next.fingerprint))
+            )
+              throw new Error('Invalid binding')
+            await pushBinding(next, true)
+            pushGateClosed = next === null
+            const notifications = await self.registration.getNotifications()
+            for (const notification of notifications) notification.close()
+          }
+          event.ports[0]?.postMessage({ ok: true, binding: await pushBinding(), cleared })
+        } catch {
+          event.ports[0]?.postMessage({ ok: false })
         }
-        if (event.data.type === 'RCT_PUSH_BIND') {
-          const next = event.data.binding
-          if (next !== null && (!next || typeof next.userId !== 'string' || !/^\d+$/.test(next.userId)
-            || typeof next.fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(next.fingerprint))) throw new Error('Invalid binding')
-          await pushBinding(next, true)
-          pushGateClosed = next === null
-          const notifications = await self.registration.getNotifications()
-          for (const notification of notifications) notification.close()
-        }
-        event.ports[0]?.postMessage({ ok: true, binding: await pushBinding(), cleared })
-      } catch { event.ports[0]?.postMessage({ ok: false }) }
-    }))
+      }),
+    )
   }
 })
 
@@ -81,60 +106,99 @@ function pushBinding(value, write = false) {
       const db = request.result
       const tx = db.transaction('binding', write ? 'readwrite' : 'readonly')
       const store = tx.objectStore('binding')
-      const query = write ? (value === null ? store.delete('current') : store.put(value, 'current')) : store.get('current')
-      tx.oncomplete = () => { db.close(); resolve(write ? value : query.result ?? null) }
-      tx.onerror = tx.onabort = () => { db.close(); reject(tx.error) }
+      const query = write
+        ? value === null
+          ? store.delete('current')
+          : store.put(value, 'current')
+        : store.get('current')
+      tx.oncomplete = () => {
+        db.close()
+        resolve(write ? value : (query.result ?? null))
+      }
+      tx.onerror = tx.onabort = () => {
+        db.close()
+        reject(tx.error)
+      }
     }
   })
 }
 function matchesPush(binding, envelope) {
-  return binding && envelope && envelope.recipientUserId === binding.userId
-    && envelope.subscriptionFingerprint === binding.fingerprint
+  return (
+    binding &&
+    envelope &&
+    envelope.recipientUserId === binding.userId &&
+    envelope.subscriptionFingerprint === binding.fingerprint
+  )
 }
 function boundedPushAction(value) {
   return typeof value === 'string' && /^[A-Za-z0-9_-]{1,384}$/.test(value) ? value : null
 }
 self.addEventListener('push', (event) => {
-  event.waitUntil(pushSerial(async () => {
-    let payload
-    try { payload = event.data?.json() } catch { return }
-    const binding = await pushBinding()
-    if (pushGateClosed || !matchesPush(binding, payload)) return
-    await self.registration.showNotification(typeof payload.title === 'string' ? payload.title.slice(0, 180) : 'RutCampusTrack', {
-      body: typeof payload.body === 'string' ? payload.body.slice(0, 1500) : '',
-      tag: `rct-${binding.fingerprint}-${typeof payload.event_type === 'string' ? payload.event_type : 'notification'}`,
-      data: { recipientUserId: binding.userId, subscriptionFingerprint: binding.fingerprint,
-        ...(boundedPushAction(payload.notificationAction) ? { notificationAction: payload.notificationAction } : {}) },
-    })
-  }).catch(() => undefined))
+  event.waitUntil(
+    pushSerial(async () => {
+      let payload
+      try {
+        payload = event.data?.json()
+      } catch {
+        return
+      }
+      const binding = await pushBinding()
+      if (pushGateClosed || !matchesPush(binding, payload)) return
+      await self.registration.showNotification(
+        typeof payload.title === 'string' ? payload.title.slice(0, 180) : 'RutCampusTrack',
+        {
+          body: typeof payload.body === 'string' ? payload.body.slice(0, 1500) : '',
+          tag: `rct-${binding.fingerprint}-${typeof payload.event_type === 'string' ? payload.event_type : 'notification'}`,
+          data: {
+            recipientUserId: binding.userId,
+            subscriptionFingerprint: binding.fingerprint,
+            ...(boundedPushAction(payload.notificationAction)
+              ? { notificationAction: payload.notificationAction }
+              : {}),
+          },
+        },
+      )
+    }).catch(() => undefined),
+  )
 })
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  event.waitUntil(pushSerial(async () => {
-    const binding = await pushBinding()
-    if (pushGateClosed || !matchesPush(binding, event.notification.data)) return
-    const action = boundedPushAction(event.notification.data.notificationAction)
-    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-    for (const client of windows) {
-      if (client.url.startsWith(self.registration.scope)) {
-        await client.focus()
-        client.postMessage({ type: 'RCT_PUSH_OPEN', userId: binding.userId, ...(action ? { notificationAction: action } : {}) })
-        return
+  event.waitUntil(
+    pushSerial(async () => {
+      const binding = await pushBinding()
+      if (pushGateClosed || !matchesPush(binding, event.notification.data)) return
+      const action = boundedPushAction(event.notification.data.notificationAction)
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      for (const client of windows) {
+        if (client.url.startsWith(self.registration.scope)) {
+          await client.focus()
+          client.postMessage({
+            type: 'RCT_PUSH_OPEN',
+            userId: binding.userId,
+            ...(action ? { notificationAction: action } : {}),
+          })
+          return
+        }
       }
-    }
-    // The typed launch remains intent; the signed app session owns target authorization.
-    const url = new URL(self.registration.scope)
-    url.searchParams.set('pushNotifications', '1')
-    url.searchParams.set('pushOwner', binding.userId)
-    if (action) url.searchParams.set('notificationAction', action)
-    await self.clients.openWindow(url.href)
-  }).catch(() => undefined))
+      // The typed launch remains intent; the signed app session owns target authorization.
+      const url = new URL(self.registration.scope)
+      url.searchParams.set('pushNotifications', '1')
+      url.searchParams.set('pushOwner', binding.userId)
+      if (action) url.searchParams.set('notificationAction', action)
+      await self.clients.openWindow(url.href)
+    }).catch(() => undefined),
+  )
 })
 
 self.addEventListener('fetch', (event) => {
   const request = event.request
   const url = new URL(request.url)
-  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.includes('/api/')) return
+  if (
+    request.method !== 'GET' ||
+    url.origin !== self.location.origin ||
+    url.pathname.includes('/api/')
+  )
+    return
 
   // The gateway release marker must always be read from the network. Keeping
   // it in the app-shell cache would hide a forced update while online.
@@ -144,17 +208,27 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).then((response) => {
-      const copy = response.clone()
-      void caches.open(cacheName).then((cache) => cache.put(request, copy))
-      return response
-    }).catch(() => caches.match(request).then((cached) => cached ?? caches.match('./'))))
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone()
+          void caches.open(cacheName).then((cache) => cache.put(request, copy))
+          return response
+        })
+        .catch(() => caches.match(request).then((cached) => cached ?? caches.match('./'))),
+    )
     return
   }
 
-  event.respondWith(caches.match(request).then((cached) => cached ?? fetch(request).then((response) => {
-    const copy = response.clone()
-    void caches.open(cacheName).then((cache) => cache.put(request, copy))
-    return response
-  })))
+  event.respondWith(
+    caches.match(request).then(
+      (cached) =>
+        cached ??
+        fetch(request).then((response) => {
+          const copy = response.clone()
+          void caches.open(cacheName).then((cache) => cache.put(request, copy))
+          return response
+        }),
+    ),
+  )
 })

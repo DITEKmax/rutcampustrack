@@ -1,0 +1,29 @@
+{
+  "verdict": "APPROVE",
+  "at": "2026-10-11T22:16:30.033009+00:00",
+  "reviewed_commit": "2003948d83b2603967aa29f6434217c2a29453e1",
+  "frozen_parent": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "scope": "GW01 test-only deterministic NumericDate fixture correction; existing JwtAuthenticationFilterTest.java +53/-3",
+  "blocking_findings": [],
+  "nonblocking_findings": [],
+  "source_verdict": "PASS",
+  "evidence_verdict": "PASS_BOUNDED_WITH_EXPLICIT_UNKNOWN_FINAL_TOOL_METADATA",
+  "test_quality_verdict": "PASS_BOUNDED",
+  "classification": "GW01 TEST_FIXTURE_DEFECT corrected. This local counterexample does not establish a production admission defect.",
+  "accepted_runtime": "Original XML/log evidence: old35 PASS; known defective fixture6 -> 2 meaningful failures000 + 4 passes001/999; final43 PASS/0 failures/0 errors/0 skips. Reviewer did not rerun runtime.",
+  "production_changed": false,
+  "current_whole_numericdate_policy_unchanged": true,
+  "final_test_prelaunch_commit_hash_equal": true,
+  "receipt_manifest_validated": 19,
+  "full_authentication_family_pass": false,
+  "actual_remote_final_ci": "PENDING_ROOT_INTEGRATION_AND_EXACT_REVISION_GATES",
+  "final_tool_session": "UNKNOWN_TOOL_RESULT_TRUNCATED",
+  "final_tool_exit": "UNKNOWN_TOOL_RESULT_TRUNCATED",
+  "remaining_limits": [
+    "Final observed BUILD SUCCESSFUL in34s and original43-case XML do not invent tool exit0 or session ID.",
+    "Full original e093 CI log/merge checkout not independently available locally; safe failed-case/merge receipt and parent NPE packet inspected. Local actual signed raw JSON control independently proves fixture cause.",
+    "Structural prelaunch WIP hash and documented minimal delta are preserved; original full red WIP bytes were not archived in the handed packet, so no red-source byte-equivalence assertion.",
+    "Local JWT pre-check only, live authority/session/client acceptance and final exact remote gates remain separate."
+  ],
+  "next": "Root may integrate this approved test-only commit, preserve immutable author/reviewer receipts, and verify the normal final exact CI/Coverage/Security revision."
+}

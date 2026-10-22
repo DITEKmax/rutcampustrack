@@ -1,0 +1,33 @@
+# Independent Academic refresh SOURCE review
+
+Целый пакет: **CHANGES_REQUESTED** — один P2, ACR-RUNTIME-PIN-001. Отдельный первый этап: **APPROVE_SOURCE_BUILD_ONLY**. Selected/requested gpt-6.1-sol/high; actual model/effort UNKNOWN. Reviewer не автор и не менял producer/source/shared docs.
+
+Проверен original package `/workspace/scratch/rct-validation/current_academic_refresh_prepare`: manifest SHA256 `0b7d2d59eef1fee06f0a8416ef86751e3949a042d7a5007c23aea8e3c9d581bd`; ZIP `930ed856da1a1d442784bebe8f1d24d332d2542fcf9981e69c6246cb3afe5613`. Все18 members exact, ZIP19 including manifest unique/canonical/CRC/exact bytes. Originals не изменены. Контракт e7cbc, CURRENT/decisions/questions/resources, relevant readonly33cb plan, all7 Python sources, templates/schema/HANDOFF и critical original Gradle/wrapper/fixture-inspector/157 runner+boundary/b78 independently opened.
+
+## Finding
+
+**[P2] ACR-RUNTIME-PIN-001**, `run-academic-restart.py:49`: helper pin `e65d7f3bbf4c01671ea682c9a32152ba2f0744d533085769050ebda35f831bf3` отличается от actual sealed runtime-binding.py `7e7579ce554d6a94aaf79d331aeaccfa6611a989def97fa3ec2be7f261028d07`. Actual helper SHA совпадает с manifest и launch-schema. Exact selected comparison из AST даёт true для mismatch; runner обязательно бросит RuntimeError **до helper execution, private ENV и Java**. Actual runtime не запускался. Author должен repin actual frozen helper и добавить смысловой selected-source check всей цепи, сохранить originals в NEW correction. Reviewer не исправляет finding.
+
+BUILD/STAGE не загружают runtime-binding.py и не используют этот неверный pin. Finding не блокирует отдельный первоначальный BUILD под новым Root grant. Runtime SOURCE acceptance пока запрещена; STAGE требует actual BUILD receipt и отдельного grant.
+
+## BUILD boundary
+
+Материальных BUILD blockers не найдено. Exact actual public Git tree frozen96 совпал со всеми525 ledger inputs/2630739B; actual blob UserSpecifications49db verified. Auth sources, tests и Angular не materialize. Сборка ровно Academic bootJar, offline/one worker/no daemon/no parallel, closed child-only environment через существующий wrapper, bash gradlew reachable; Java/wrapper/guard/spec/map hashes совпали со всеми5 pins. Новый shared clone заимствует только retained immutable Git objects; рабочие inputs проверяются nlink1/actor1000/blob до и после. Все7 generateGitProperties outputs идут только в NEW tmp tree, root build script неизменён. Root/object retention до retirement checkout остаётся обязательным.
+
+New namespace atomic0700; exact root/tmp pinned no-follow FD identities подтвердились отдельной readonly approved-context metadata проверкой actor1000/root0; default masked view не принимается. Prefix отсутствовал при review. Gates: tmp total1.5GiB, workspace4GiB, tmp4GiB+1GiB Mongo reserve, shared15GiB/reserve1GiB; net8MiB workspace-growth cap — **sampled stop gate с normal Gradle-cache reuse**, не hard cache isolation или будущий footprint proof. Observer checks resources/RSS2GiB, fresh clock last; b78 stop/settlement и settled+phase_success mandatory before continued phases. Deadline bound900s plus60s cleanup; fresh gate before namespace/subdirectories/sparse-write/dispatch/final receipt. Final full proof/resources prebuilt before last gate. Нет runtime/tests/API/native grant в BUILD template.
+
+Inspect checks bounded current JAR, canonical unique regular/directory members, CRC, complete regular SHA inventory, standard Boot manifest/entrypoint/indices and embedded96, recursive external-clock fixture absence. Это проверка будущего результата: JAR ещё NOT_RUN, source does not prove actual compiled bytecode/native behavior.
+
+## STAGE/runtime boundaries
+
+STAGE отдельно pinned to actual build-result SHA; FULL new app copies, FD-relative O_NOFOLLOW/O_EXCL traversal, copied SHA644/nlink1 and dirs755, no old hardlink/chmod/COW violation. Canonical complete classpath.idx preserves library order and original external clock position. Selected pure control подтверждает exact other6 specs и private ENV pointer/names/settings preservation; only Academic cwd/cp differ. Effective8 map replaces Academic, retains original7 artifact references. Actual full build/stage inventories and original archive preservation need later finite receipts; no original JAR or old payload writes appear in source.
+
+New Academic runner retains original157 authority/config/guard/data-reference chain, actual NEW package/source and full stage/JAR/spec checks before old private ENV read. Exact next02 full durable restart grant separately required; no bootstrap/reset/data/key/volume operation added. Same-UID and sampled resource limits remain qualified. Runtime proof и actual artifact/source review после BUILD/STAGE ещё нужны.
+
+## Independent verification and limitations
+
+`check.py` passed32 independent readonly/static/selected pure checks. Included exact18+ZIP+5 pins+525 current Git inputs, wrong/old grant denials, resource/cap limits, expiry DURING resource preflight, six-host/ENV pointer equality, canonical ZIP/library negatives, exact runtime pin counterexample and BUILD isolation from it. Producer63 pure controls inspected, не исполнены и не объявлены native evidence. Selected pure functions executed from AST with mock resource/clock globals; target module top-level/imports не выполнялись. Own first check attempt had a Clock mock class-scope AttributeError; corrected only reviewer mock, second check native0. No build/checkout/stage/JVM/Node/browser/API/Docker, target runtime import, extraction, network, private ENV/key/data content read or foreign write. Fast readonly Git metadata children waited synchronously, no birth-ticks claim.
+
+Parent measured workspace9396199424/tmp7757000704/shared4853493760 — текущее measurement, не grant. 8MiB workspace stop cap leaves approximately6.99MB above unchanged preDocker9380818650 budget only if all other allocations remain unchanged; watcher cannot guarantee future capacity. Root must remeasure before each grant, preserve exact preDocker and postDocker5GiB barriers after transient disposition. No silent budget relaxation; no simultaneous build/stand lease.
+
+Следующее допустимое действие: Root remeasure capacity/released leases, затем **BUILD-only** fresh exact grant bound to source0b7d and this BUILD review seal; run only launch-schema build_command in approved actor1000/root0 context. Actual successful terminal/settlement/reap/source/JAR proof требуется перед отдельным STAGE grant. Author runtime pin correction и независимый narrow recheck должны завершиться перед любым Academic runtime grant. This SOURCE approval is not actual build/ABI/capacity/client PASS.

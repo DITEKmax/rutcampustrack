@@ -1,0 +1,68 @@
+{
+  "artifact": 11881685073,
+  "producer": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "run": 38536484758,
+  "digest": "sha256:455acaf90179f0e0860c54ecee8f64557121d0efb0e6b5dbe31774e5db677573",
+  "bytes": 499,
+  "phases": {
+    "seed": {
+      "status": "failed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "durationMs": 748,
+          "errorCount": 1,
+          "diagnostics": [
+            {
+              "stage": "ACTOR_LOGIN",
+              "cause": "ACTOR_LOGIN_HTTP",
+              "httpStatus": 429
+            },
+            {
+              "stage": "UNKNOWN",
+              "cause": "REPORTED_CLASS_ERROR",
+              "httpStatus": 0
+            },
+            {
+              "stage": "UNKNOWN",
+              "cause": "REPORTED_FRAME_DATASET_INITIALIZE",
+              "httpStatus": 0
+            }
+          ],
+          "errorLocations": [
+            {
+              "file": "application-recovery.spec.ts",
+              "line": 328
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {},
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [
+    "admit",
+    "attachment",
+    "pending"
+  ],
+  "diagnostic_schema": {
+    "seed": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES"
+}

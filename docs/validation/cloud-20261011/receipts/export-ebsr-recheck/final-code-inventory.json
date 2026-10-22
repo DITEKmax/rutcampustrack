@@ -1,0 +1,64 @@
+{
+  "revision": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "product_revision": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "crosslayer_actual_producer": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "files": [
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "bytes": 23792,
+      "sha256": "a7060d0ec98d5b0be0702a073ba1363f5c17de5bab0d8369f7aa6629da668790",
+      "category": "product",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "bytes": 1373,
+      "sha256": "ff8601e626feab612313f7187a3b013ca9650cbeb4ca68b77343c0ebe23e1db9",
+      "category": "product",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "bytes": 13822,
+      "sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "category": "product",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+      "bytes": 1646,
+      "sha256": "2d2a5f40311f003a7db0367ca9363bf84ec18fa23c4328be4e7d69656240da42",
+      "category": "product",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+      "bytes": 1657,
+      "sha256": "d519948b0fdef72d0f245d8deebdcfc5f7fa93c52dd597960c1f131b9e63039f",
+      "category": "product",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "bytes": 18064,
+      "sha256": "e9176827943824ab5482d164246f5b0a09c5936eaf831f8f680330ba89d0670d",
+      "category": "product",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+      "bytes": 23153,
+      "sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb",
+      "category": "test",
+      "current_equals_commit": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "bytes": 19600,
+      "sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818",
+      "category": "test",
+      "current_equals_commit": true
+    }
+  ],
+  "delta_since_crosslayer_actual": "Two-line signer stub in separate fixed-clock unit class only; product, crosslayer test, harness, and dependencies unchanged"
+}

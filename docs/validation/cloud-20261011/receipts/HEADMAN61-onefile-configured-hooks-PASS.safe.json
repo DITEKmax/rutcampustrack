@@ -1,0 +1,12 @@
+{
+  "native_exit": 0,
+  "hooks": {
+    "Gitleaks secret detection": true,
+    "check for added large files": true,
+    "fix end of files": true,
+    "trim trailing whitespace": true
+  },
+  "all_recorded_births_absent": true,
+  "recorded_births": 7,
+  "spec_a2bf_byteexact": true
+}

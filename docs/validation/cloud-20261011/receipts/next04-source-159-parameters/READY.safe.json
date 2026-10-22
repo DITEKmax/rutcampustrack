@@ -1,0 +1,36 @@
+{
+  "utc": "2026-10-13T03:24:31.642780+00:00",
+  "status": "READY_SOURCE_PARAMETERS_ONLY",
+  "source_manifest": {
+    "path": "/workspace/scratch/rct-validation/current_host_restart_next04_parameters/source/manifest.json",
+    "sha256": "95e43a914cf866e6ccd58b0fcbb305534b9cd7c0580adf2e6e16f2b378266afc"
+  },
+  "prior_review": {
+    "path": "/workspace/scratch/rct-validation/next03_bindings_review/manifest.json",
+    "sha256": "204d37d1465c3751009477b4f89f8ccb3ff99c019229f94743bb452d85d9ca93",
+    "scope": "Priorunchangedalgorithms; onlydeclaredparameterdiff/inverseproofnew, no whole reviewreset"
+  },
+  "current_source_revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "old19_projection": "17equal+2approvedcheckinginputs changed; no runtimeartifactinput changes",
+  "new_fence159": "3ad319c3f5d9412d48981b5aee0c83b99b7bc3a86b383e93d16b00fa93536756",
+  "same8_artifacts_result_commit_spec": [
+    "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643",
+    "10589f902536c9861a20a7fde981e9ad6c2b40a28d8147fcb7818fe3107b3449",
+    "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e"
+  ],
+  "same6Docker8foreground": true,
+  "caps_and_noreset_bootstrap_rebuild_recopy_unchanged": true,
+  "targeted_RAM_controls": 7,
+  "whole_AST_inverse_sources": 5,
+  "resources_preparation_sample": {
+    "utc": "2026-10-13T03:19:29.553564+00:00",
+    "workspace_free": 9431203840,
+    "tmp_free": 7500533760,
+    "shared": 5123825664,
+    "qualification": "SOURCE preparation sample only; fullfresh18metadata required before Rootgrant"
+  },
+  "fresh18_preflight_actual": "NOT_RUN_REQUIRED_BEFORE_ROOT_GRANT",
+  "fresh_preflight_caller_sha256": "d366fd0d04b3ccac0570e535c221f09fdc301234877f1fd39aa3d1d8ce4c5a30",
+  "fresh_private600_grant": "ABSENT_NOT_CREATED",
+  "runtime_API_Docker_JVM_browser": "NOT_RUN"
+}

@@ -1,0 +1,328 @@
+{
+  "source": "/workspace/scratch/rct-validation/ci_academic_graph_compile",
+  "manifest": "split-transfer-manifest.json",
+  "files": [
+    {
+      "path": "security-topology-identical.json",
+      "original_sha256": "1ce1ac766e9430cc0a824c15bdf3cc9e9cef4d7d23377c0682ee529db37b182d",
+      "original_bytes": 39360,
+      "working_sha256": "1ce1ac766e9430cc0a824c15bdf3cc9e9cef4d7d23377c0682ee529db37b182d",
+      "working_bytes": 39360,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-graphs.zip"
+    },
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "f67f8e53a60aeda032b75dfbd7e3cb1d4d0360ffda2f586ba11b97cc8c8eeae7",
+      "original_bytes": 1771,
+      "working_sha256": "f67f8e53a60aeda032b75dfbd7e3cb1d4d0360ffda2f586ba11b97cc8c8eeae7",
+      "working_bytes": 1771,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "c1305f91eca5e79298491c7b0b3ff68f473e5fcb4c9f76e56f3a9012264487da",
+      "original_bytes": 4433,
+      "working_sha256": "c1305f91eca5e79298491c7b0b3ff68f473e5fcb4c9f76e56f3a9012264487da",
+      "working_bytes": 4433,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "cac0c0f0fd8d4545a18837185ef2e6f02679aa3de5ecc9ece087b14160a972df",
+      "original_bytes": 1968,
+      "working_sha256": "cac0c0f0fd8d4545a18837185ef2e6f02679aa3de5ecc9ece087b14160a972df",
+      "working_bytes": 1968,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-bash-command.json",
+      "original_sha256": "57ad1e088aa293b7d19ce8ef1767168d8760eb9341b89dfbf73cb1ab89d25c82",
+      "original_bytes": 892,
+      "working_sha256": "57ad1e088aa293b7d19ce8ef1767168d8760eb9341b89dfbf73cb1ab89d25c82",
+      "working_bytes": 892,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-bash-failure.safe.json",
+      "original_sha256": "9204d8e9a20d0f70c7d4fe2948a6b4ec9930c64d0c0a0c7f86237ddcbe3fceb3",
+      "original_bytes": 504,
+      "working_sha256": "9204d8e9a20d0f70c7d4fe2948a6b4ec9930c64d0c0a0c7f86237ddcbe3fceb3",
+      "working_bytes": 504,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-bash-metrics.ndjson",
+      "original_sha256": "8bb23ad45fbfb73f210078109e7d0057aef44cc880fa0833932cb5dab06d5967",
+      "original_bytes": 186,
+      "working_sha256": "8bb23ad45fbfb73f210078109e7d0057aef44cc880fa0833932cb5dab06d5967",
+      "working_bytes": 186,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-bash-outcome.json",
+      "original_sha256": "50c06503b60701e42a54feeaecd9cc9be97c5e7ac1eda9912c6defccedbede90",
+      "original_bytes": 805,
+      "working_sha256": "50c06503b60701e42a54feeaecd9cc9be97c5e7ac1eda9912c6defccedbede90",
+      "working_bytes": 805,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-bash-own-processes.json",
+      "original_sha256": "09a904758668a9b22e440ccccff3debee9eaedfc27149f53999bcf8e52bcd4af",
+      "original_bytes": 151,
+      "working_sha256": "09a904758668a9b22e440ccccff3debee9eaedfc27149f53999bcf8e52bcd4af",
+      "working_bytes": 151,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-command.json",
+      "original_sha256": "3d10a58a7e9aa86e31802dcf921867147b55857cf1a00cf4d9568eeacc50eb24",
+      "original_bytes": 880,
+      "working_sha256": "3d10a58a7e9aa86e31802dcf921867147b55857cf1a00cf4d9568eeacc50eb24",
+      "working_bytes": 880,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-direct-wrapper-launch.safe.json",
+      "original_sha256": "b1b3a2f1a681745fdd43ba79c6386b1ccfc7e5f1811af325999c60e9e5970e8c",
+      "original_bytes": 291,
+      "working_sha256": "b1b3a2f1a681745fdd43ba79c6386b1ccfc7e5f1811af325999c60e9e5970e8c",
+      "working_bytes": 291,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-graphfix-command.json",
+      "original_sha256": "7d312aa766c42f9385382ec11ddb578b10f050e407161bc5de7e480f951ec61e",
+      "original_bytes": 950,
+      "working_sha256": "7d312aa766c42f9385382ec11ddb578b10f050e407161bc5de7e480f951ec61e",
+      "working_bytes": 950,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-graphfix-metrics.ndjson",
+      "original_sha256": "1662c2cf591e139a9f63189e4c656f2701a629b260403e71c3111c4e75195d6a",
+      "original_bytes": 1116,
+      "working_sha256": "1662c2cf591e139a9f63189e4c656f2701a629b260403e71c3111c4e75195d6a",
+      "working_bytes": 1116,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-graphfix-outcome.json",
+      "original_sha256": "233495187b51228c7600ffeb4a74abd7a631c57e2291fc21f99f5a46fbe1af7a",
+      "original_bytes": 809,
+      "working_sha256": "233495187b51228c7600ffeb4a74abd7a631c57e2291fc21f99f5a46fbe1af7a",
+      "working_bytes": 809,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-graphfix-own-processes.json",
+      "original_sha256": "b4ec115750659fd4076c86acdbe36717c9ea7fb8468fb37e5a5acd85cee03a44",
+      "original_bytes": 335,
+      "working_sha256": "b4ec115750659fd4076c86acdbe36717c9ea7fb8468fb37e5a5acd85cee03a44",
+      "working_bytes": 335,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-ipc-command.json",
+      "original_sha256": "7d312aa766c42f9385382ec11ddb578b10f050e407161bc5de7e480f951ec61e",
+      "original_bytes": 950,
+      "working_sha256": "7d312aa766c42f9385382ec11ddb578b10f050e407161bc5de7e480f951ec61e",
+      "working_bytes": 950,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-ipc-failure.safe.json",
+      "original_sha256": "8f188341bfd399f06bca73bab68353b8398f43432ea1f38e0a57eaafd99d02f8",
+      "original_bytes": 433,
+      "working_sha256": "8f188341bfd399f06bca73bab68353b8398f43432ea1f38e0a57eaafd99d02f8",
+      "working_bytes": 433,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-ipc-metrics.ndjson",
+      "original_sha256": "92b7db005c55bc0a55b8330be5688c89bdf28f7b2aae02559418021f13bd8844",
+      "original_bytes": 1116,
+      "working_sha256": "92b7db005c55bc0a55b8330be5688c89bdf28f7b2aae02559418021f13bd8844",
+      "working_bytes": 1116,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-ipc-outcome.json",
+      "original_sha256": "224c3823ac0883a324160a3d05a4167fc3d113c72119fea2a553f783ad54b729",
+      "original_bytes": 804,
+      "working_sha256": "224c3823ac0883a324160a3d05a4167fc3d113c72119fea2a553f783ad54b729",
+      "working_bytes": 804,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-ipc-own-processes.json",
+      "original_sha256": "9c3849943c7d7da6e628c884b08ff898b3f35923654b95b48b05acf028cfcb18",
+      "original_bytes": 278,
+      "working_sha256": "9c3849943c7d7da6e628c884b08ff898b3f35923654b95b48b05acf028cfcb18",
+      "working_bytes": 278,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-jdk-command.json",
+      "original_sha256": "7d312aa766c42f9385382ec11ddb578b10f050e407161bc5de7e480f951ec61e",
+      "original_bytes": 950,
+      "working_sha256": "7d312aa766c42f9385382ec11ddb578b10f050e407161bc5de7e480f951ec61e",
+      "working_bytes": 950,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-jdk-diagnostic-failure.safe.json",
+      "original_sha256": "f993c93ed4a32ca4421d8b54ce91999701bbe93408e88bf56bc080f9d394f569",
+      "original_bytes": 540,
+      "working_sha256": "f993c93ed4a32ca4421d8b54ce91999701bbe93408e88bf56bc080f9d394f569",
+      "working_bytes": 540,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-jdk-metrics.ndjson",
+      "original_sha256": "cbcc4639813bb88944d60903934fb1d83d3fd375ad45ffca5edaa328b01986ae",
+      "original_bytes": 3534,
+      "working_sha256": "cbcc4639813bb88944d60903934fb1d83d3fd375ad45ffca5edaa328b01986ae",
+      "working_bytes": 3534,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-jdk-outcome.json",
+      "original_sha256": "3e582358199637616acda52f29a2834907b819956149ae72d5608b19123a930f",
+      "original_bytes": 804,
+      "working_sha256": "3e582358199637616acda52f29a2834907b819956149ae72d5608b19123a930f",
+      "working_bytes": 804,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-jdk-own-processes.json",
+      "original_sha256": "5d9b2dc55ad5a16f1188e56401461d8507afcf42b8a6d66125256a62ea343ac9",
+      "original_bytes": 462,
+      "working_sha256": "5d9b2dc55ad5a16f1188e56401461d8507afcf42b8a6d66125256a62ea343ac9",
+      "working_bytes": 462,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "baseline-success.safe.json",
+      "original_sha256": "b452772588bc44ce887edfc9e190f95f24cc3cc5d57e3c89fe89f7503c364c31",
+      "original_bytes": 641,
+      "working_sha256": "b452772588bc44ce887edfc9e190f95f24cc3cc5d57e3c89fe89f7503c364c31",
+      "working_bytes": 641,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "candidate-classpath.json",
+      "original_sha256": "0576cf342f6f7ed2ecb03e924c7a138f80b36d59ee793784a24764b060245269",
+      "original_bytes": 284159,
+      "working_sha256": "5c48f891a103cef1adfa933ff3690c74c438108bd464b621052dae6f42f9cc01",
+      "working_bytes": 31365,
+      "transformation": "lossless exact-original single-member ZIP; original bytes retained, no content editing",
+      "archive": "immutable-source-and-native-receipts.zip",
+      "working_path": "candidate-classpath.json.readable.zip"
+    },
+    {
+      "path": "candidate-jdk-command.json",
+      "original_sha256": "8eb9caa5454bb23b92c0398925a5551faf4b69fd5789478c94f66de81ea2cad3",
+      "original_bytes": 1233,
+      "working_sha256": "8eb9caa5454bb23b92c0398925a5551faf4b69fd5789478c94f66de81ea2cad3",
+      "working_bytes": 1233,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "candidate-jdk-metrics.ndjson",
+      "original_sha256": "fa46370e118aff4d41be646271543e3e66a05271e33b8b58be187bd475c76a0e",
+      "original_bytes": 1860,
+      "working_sha256": "fa46370e118aff4d41be646271543e3e66a05271e33b8b58be187bd475c76a0e",
+      "working_bytes": 1860,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "candidate-jdk-outcome.json",
+      "original_sha256": "c2ee08cd55be8980962d8d5ec13cd002712661ea9f9f80b490b51b2ac1eaf862",
+      "original_bytes": 806,
+      "working_sha256": "c2ee08cd55be8980962d8d5ec13cd002712661ea9f9f80b490b51b2ac1eaf862",
+      "working_bytes": 806,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "candidate-jdk-own-processes.json",
+      "original_sha256": "7e0978232db9f8a48119f4f8496bab4b3864f224b1337383a46e7e7523426813",
+      "original_bytes": 335,
+      "working_sha256": "7e0978232db9f8a48119f4f8496bab4b3864f224b1337383a46e7e7523426813",
+      "working_bytes": 335,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "graph-comparison.final.json",
+      "original_sha256": "3e408373c2a38dce2f2b3e72470b44e9e03fc0d584acccd22b78dda47b75f5e3",
+      "original_bytes": 4637,
+      "working_sha256": "3e408373c2a38dce2f2b3e72470b44e9e03fc0d584acccd22b78dda47b75f5e3",
+      "working_bytes": 4637,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "native-tasks.safe.json",
+      "original_sha256": "d8eb946e7f23a49dd6a634c9499da4136fd1cdfa01a6c2724c193e25c46777f7",
+      "original_bytes": 15379,
+      "working_sha256": "d8eb946e7f23a49dd6a634c9499da4136fd1cdfa01a6c2724c193e25c46777f7",
+      "working_bytes": 15379,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "prelease.json",
+      "original_sha256": "0c892ec1c008fa1e49a9ee3a8a94c0437e6ef383513c31755edb139ca13ad54a",
+      "original_bytes": 200,
+      "working_sha256": "0c892ec1c008fa1e49a9ee3a8a94c0437e6ef383513c31755edb139ca13ad54a",
+      "working_bytes": 200,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    },
+    {
+      "path": "terminal-proof.json",
+      "original_sha256": "f67f8e53a60aeda032b75dfbd7e3cb1d4d0360ffda2f586ba11b97cc8c8eeae7",
+      "original_bytes": 1771,
+      "working_sha256": "f67f8e53a60aeda032b75dfbd7e3cb1d4d0360ffda2f586ba11b97cc8c8eeae7",
+      "working_bytes": 1771,
+      "transformation": "onlyfinalnewlinenormalization",
+      "archive": "immutable-source-and-native-receipts.zip"
+    }
+  ],
+  "immutable_originals": [
+    "immutable-graphs.zip",
+    "immutable-source-and-native-receipts.zip"
+  ],
+  "all_original_members_verified": 43,
+  "source_or_large_view": "read exactmember from listed immutable archives; no newsource/formatting"
+}

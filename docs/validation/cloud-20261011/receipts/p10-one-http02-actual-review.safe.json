@@ -1,0 +1,46 @@
+{
+  "schema": "P10_ONE_HTTP02_INDEPENDENT_FINITE_ACTUAL_REVIEW_V1",
+  "disposition": "ACCEPT_FINITE_SELECTED_CASE",
+  "findings": [],
+  "requested_selected_model": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "parent_P10": "UNKNOWN",
+  "actual_receipt_sha256": "eb08da9a82549003493904cce90384d62a435897cabb9221ab130857df234678",
+  "author_head": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "root_integration_head": "52a95a8f38753f17277de616ebf608cf34937cb9",
+  "source_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "grant_sha256": "3dd282889c8881fc1fa4ace7b12f50cb133836426bd63fd9c9e5cbad103f5162",
+  "format03_receipt_sha256": "9d0c12678454464ba76e8d51c382f814d677efd4d407c717e2fd2e66aa921c28",
+  "plan_sha256": "c2708450cc23f9e175af19b59d08b336a2e94fafff1bd450d08c25f7c2e97047",
+  "manifest_sha256": "24c2bfeee6fed06366d3700292fe6b86c952a2047a1785a0b6784f903e919610",
+  "containers_safe_sha256": "ed7cbac033b76cc35e02fb766fe11a58ea3a61205a1e03f34c3e6138a3b56821",
+  "reused_cleanup_review_sha256": "61f6885fa4cd8a110b8ea430fef35c5b502a38f2874429bb04cb54b67a6ae546",
+  "checks": {
+    "root_receipt_exact": true,
+    "source_head_grant_plan_manifest_current_join": true,
+    "protected18_and_supplement_exact": true,
+    "independent_bounded_XML_exact_canonical_method_one_case": true,
+    "XML_counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "native58493_exit": 0,
+    "original_terminal_exact_except_documented_final_birth_flags": true,
+    "all8_recorded_births_absent_SAFE_fact": true,
+    "foreign_empty_containers_11vols_3networks_exact": true,
+    "current_images_exact_grant_allowlist": true,
+    "own_containers_settled_removed": true,
+    "TMP_authority_absent": true,
+    "final_before_active_margin_seconds": 26.99891
+  },
+  "qualifications": [
+    "selected finite case only; original FAILs retained",
+    "credential sensitivity and current ordinary full Auth CI required",
+    "no universal class order/OS resource isolation/full parent acceptance",
+    "private XML bounded counts-only read; no body/message/stack/system-out/value/hash export",
+    "no new Java/Docker/API/runtime/test execution"
+  ],
+  "report_sha256": "17e37bd4dfc795938edb61ba86fc86aeeb2d41b85e6dd8176e00e6f2e0a8c48b"
+}

@@ -1,0 +1,31 @@
+{
+  "status": "SEALED_CORRECTED_SOURCE_ONLY_PLAN_NATIVE_NOT_RUN",
+  "finding": "NP01-SENS-ORACLE01",
+  "original_zip_sha256": "7f01456b46876f54b6357dcbee45526aa6281b8152e930f5faac9382f6e00412",
+  "entries": [
+    {
+      "path": "PLAN.safe.json",
+      "sha256": "adf9805c37280eb7d30b79782e3fa358cb5585689316c38fb626f89777695a90",
+      "bytes": 12188,
+      "mode": "0600"
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "sha256": "dccb62a64cd3c7627269774ae4f8656285b458a47f5c6a6b5f2c7e627cb181bc",
+      "bytes": 664,
+      "mode": "0600"
+    },
+    {
+      "path": "verify-plan.py",
+      "sha256": "a0152d81deed40ee3e5e2b2555e93954f73c2972994bd4f4c40f4bcc4ab2df8e",
+      "bytes": 7626,
+      "mode": "0600"
+    },
+    {
+      "path": "source-controls.safe.json",
+      "sha256": "300df9240f6e4cc79124da21ddd4a94c1c72953693078540b3469cf79aee5c9f",
+      "bytes": 2748,
+      "mode": "0600"
+    }
+  ]
+}

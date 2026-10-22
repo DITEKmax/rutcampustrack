@@ -1,0 +1,72 @@
+{
+  "11_final_negative_svg_bytes_equal_old_served": true,
+  "svg_inputs": [
+    {
+      "kind": "css",
+      "final_source_value": "background-image:image-set('https://example.invalid/rct-file-marker.png' 1x)",
+      "sha256": "15828b7d2c8f2d818c02bf187898482115eb8417935619983c39eeca03917385",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "css",
+      "final_source_value": "background-image:-webkit-image-set('//example.invalid/rct-file-marker.png' 1x)",
+      "sha256": "edfbba287df805e724c69c0321b2688d8f5394a9dbe69f186e44b9ba183c676a",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "css",
+      "final_source_value": "background-image:image-set('/rct-file-marker.png' 1x)",
+      "sha256": "9cf19260fabdacb3c1b1159bd6a12f2f329a298fb525d82e61bee30a50a69857",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "css",
+      "final_source_value": "background-image:i\\6d age-set('\\2f rct-file-marker.png' 1x)",
+      "sha256": "740935424eaca32bb28692bad83b3dcd3d56b41d02e0dff061a821afad3f8c8d",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "css",
+      "final_source_value": "background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x)",
+      "sha256": "ec9c45362e9c831a9a43bc02fc37ed12e1a6c5606561f9b1efcfd3a1e092ce44",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "css",
+      "final_source_value": "background-image:image-set('/*rct-marker*/#paint' 1x)",
+      "sha256": "f378f42b48506a73fa4b7ae68af4299b7597159ca9f8b48aeafcd0eb551ab656",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "css",
+      "final_source_value": "background-image:image-set('\\27 /rct-file-marker.png' 1x)",
+      "sha256": "688f83d5ab272f9475c2439325703a03d6fcb590852d1c72b12f0b45485bcd61",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "pi",
+      "position": "before-root",
+      "sha256": "5bafee8a1db3a3b6e80c42228e55ad13ad748234b181838af46864db187f869a",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "pi",
+      "position": "after-root",
+      "sha256": "dd9360293a6cadcb958566e7ac42eb9c6d6e39cae97e97d7c69676ed7b42a1d6",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "pi",
+      "position": "relative",
+      "sha256": "8c05c2c11af0d494f09853a3301da3a0f94e76dd1fce52b52dcf3cf0d6446a51",
+      "exact_final_input_equal_red_served": true
+    },
+    {
+      "kind": "pi",
+      "position": "entity-reference",
+      "sha256": "ea157e8723bfc1c01756f3337eb3f195644656a318a537681ccad89201927bef",
+      "exact_final_input_equal_red_served": true
+    }
+  ],
+  "png_inputs": "Exact red/final fixture hash equality and independently checked IHDR/CRC/work counts; no generation/inflation replay"
+}

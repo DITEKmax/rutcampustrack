@@ -1,16 +1,15 @@
 package ru.rutcampustrack.shared.outbox;
 
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.shared.events.IdempotencyStore;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
+import ru.rutcampustrack.shared.events.IdempotencyStore;
 
 class IdempotencyCleanupJobTest {
 
@@ -25,21 +24,20 @@ class IdempotencyCleanupJobTest {
         long deleted = job.runCleanup();
 
         assertThat(deleted).isEqualTo(42L);
-        assertThat(store.lastCutoff)
-                .isEqualTo(fixedNow.minusSeconds(7L * 86400));
+        assertThat(store.lastCutoff).isEqualTo(fixedNow.minusSeconds(7L * 86400));
     }
 
     @Test
     void runCleanup_zeroDeleted_logsNothing() {
-        IdempotencyCleanupJob job = new IdempotencyCleanupJob(
-                new CapturingStore(0L), Clock.systemUTC(), 1);
+        IdempotencyCleanupJob job =
+                new IdempotencyCleanupJob(new CapturingStore(0L), Clock.systemUTC(), 1);
         assertThat(job.runCleanup()).isZero();
     }
 
     @Test
     void retentionDays_mustBePositive() {
-        assertThatThrownBy(() -> new IdempotencyCleanupJob(
-                new CapturingStore(), Clock.systemUTC(), 0))
+        assertThatThrownBy(
+                        () -> new IdempotencyCleanupJob(new CapturingStore(), Clock.systemUTC(), 0))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("retentionDays");
     }

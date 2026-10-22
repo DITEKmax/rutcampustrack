@@ -1,0 +1,69 @@
+{
+  "revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "parent": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "blocking_findings": [],
+  "runtime": "NOT_RUN; actual current suites/new-assertion sensitivity PENDING",
+  "scope": "exact6 reviewed compatibility paths; broker2 exact cb source approval retained",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 571,
+      "sha256": "322327347ddaa3ec8803ccd8fc8c3b81ff6b1bc9e3623bc00a84cb7e430802e0"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 14025,
+      "sha256": "1fd8bac780148789a0a7e722e48daefeca782864ad2c5c8c98927e0ca6151ef8"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 495,
+      "sha256": "eb41e375f0e5b35ca493aaf4e58772eca905e8b67408e3a9202c715c7538bff8"
+    },
+    {
+      "path": "ci-before-evidence.safe.json",
+      "bytes": 2748,
+      "sha256": "3f46a37f56e269c9f6a62d03ca35eb6e3fac15d2c522a0aee2dab0a22e7c389b"
+    },
+    {
+      "path": "critical-source-inventory.json",
+      "bytes": 2382,
+      "sha256": "d69564fff0aadbdc01b97469e06d6ef6b83f8ddc3f25ee8295538d6684d6f12e"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "finite-proof-and-runtime-pending.json",
+      "bytes": 1496,
+      "sha256": "a6cefd643b8216c1e9d967c90fa4902098b3c4ed3d16466ff8b910c04f8ce622"
+    },
+    {
+      "path": "preservation.safe.json",
+      "bytes": 353,
+      "sha256": "d18f830d71f336f69e785bf07805cd5a03ba7bf595fb54d7ec72cce9d026c3aa"
+    },
+    {
+      "path": "source-equivalence-and-scope.json",
+      "bytes": 1790,
+      "sha256": "c153790a96c478bc4316ee6590e1078ae85f028b0eb88f02ac62f49a58194dce"
+    },
+    {
+      "path": "source-inventory.json",
+      "bytes": 3622,
+      "sha256": "8632b4c54c36bee62a0c9361e67775c9a2f58268d646feb384948fb084b579f6"
+    }
+  ],
+  "excluded": [
+    "private-frozen-source/**",
+    "raw XML/logs/properties/stdout/ENV/keys/credential bodies",
+    "author26 source archive copied directly"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN"
+}

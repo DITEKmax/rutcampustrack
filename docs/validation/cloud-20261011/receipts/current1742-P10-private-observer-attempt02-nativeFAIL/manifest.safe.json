@@ -1,0 +1,11 @@
+{
+  "schema": "P10_ATTEMPT02_FINITE_SAFE_MANIFEST_V1",
+  "files": {
+    "settlement.safe.json": "c248552e0eed503671519430731399839b093b8eef32e8607d1de0cb540ca1f3",
+    "case-observation-lifecycle.safe.json": "45e728b7702b135484e40e7c5637f50bbc33152dd7b28f8ae1f94d0fccd6c95c",
+    "terminal.safe.json": "0518ef1e157ea031f9f00521bf2f268f1abf473d43db995f7979c10e2b5bbe89",
+    "process.safe.json": "803bb5e12cbe847c4c9652f82454503c39c2d2b0774509ea6e4314580cca8125",
+    "supervisor.safe.json": "475552f640215a0068f8766b90d6cc3eda9fe46247f2b7acc209f86bc4d80a26"
+  },
+  "private_values_included": false
+}

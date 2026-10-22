@@ -1,0 +1,22 @@
+{
+  "utc": "2026-10-12T05:34:10.681325+00:00",
+  "root_from": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+  "author_final": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "commits": [
+    "9f7b0a1aed69def20efa7c336c108af0073b568e",
+    "cb778b155cab29c02abf294ba2093cf9149bed05"
+  ],
+  "paths": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "53e5908543256940ca473e2421aa3d247c54d9976aa1b7a17f05d07463746050"
+    }
+  ],
+  "review": "receipts/np01-broker-correction-review independentAPPROVE_SOURCE_ONLY",
+  "qualification": "sourceharness integration; actualnewbridgecompile/all7broker scenarios/nativeports/reaping/300sexpiry NOT_RUN; no DONE",
+  "other_ff433_compat6": "not integrated/reviewpending"
+}

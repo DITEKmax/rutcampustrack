@@ -1,18 +1,16 @@
 package ru.rutcampustrack.attendance.ratelimit;
 
+import java.time.Duration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-
 /**
- * Redis-backed deduplication and rate limiting for geo-checkin.
- * Per D-17, D-18, D-19:
- * - acquireDedup: 5-second lock to prevent duplicate submissions
- * - checkRateLimit: max 3 attempts per 60 seconds per user
+ * Redis-backed deduplication and rate limiting for geo-checkin. Per D-17, D-18, D-19: -
+ * acquireDedup: 5-second lock to prevent duplicate submissions - checkRateLimit: max 3 attempts per
+ * 60 seconds per user
  *
- * CRITICAL: Boolean.TRUE.equals(set) — setIfAbsent returns null on connection failure.
- * CRITICAL: count == 1L check for EXPIRE — set TTL only on first increment to avoid race.
+ * <p>CRITICAL: Boolean.TRUE.equals(set) — setIfAbsent returns null on connection failure. CRITICAL:
+ * count == 1L check for EXPIRE — set TTL only on first increment to avoid race.
  */
 @Service
 public class CheckinRateLimiter {
@@ -26,11 +24,11 @@ public class CheckinRateLimiter {
     }
 
     /**
-     * Acquires a deduplication lock for a specific student+lesson combination.
-     * Returns true if the lock was acquired (first call within 5s), false otherwise.
+     * Acquires a deduplication lock for a specific student+lesson combination. Returns true if the
+     * lock was acquired (first call within 5s), false otherwise.
      *
      * @param lessonId the lesson ID
-     * @param userId   the student user ID
+     * @param userId the student user ID
      * @return true if dedup lock acquired, false if already locked or error
      */
     public boolean acquireDedup(Long lessonId, Long userId) {
@@ -40,8 +38,8 @@ public class CheckinRateLimiter {
     }
 
     /**
-     * Checks and enforces rate limit for a user (max 3 checkin attempts per minute).
-     * Returns true if under limit, false if limit exceeded.
+     * Checks and enforces rate limit for a user (max 3 checkin attempts per minute). Returns true
+     * if under limit, false if limit exceeded.
      *
      * @param userId the student user ID
      * @return true if within rate limit, false if exceeded

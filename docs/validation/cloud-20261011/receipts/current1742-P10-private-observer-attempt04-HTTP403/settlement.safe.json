@@ -1,0 +1,57 @@
+{
+  "schema": "P10_ORIGINAL_ARTIFACT_ATTEMPT04_NETWORK_R1_SETTLEMENT_V1",
+  "utc": "2026-10-13T13:44:00.396651+00:00",
+  "tool_chunk": "7e32ca",
+  "tool_session": null,
+  "tool_sandbox_permissions": "require_escalated",
+  "caller_exit": 1,
+  "known_owned_births_including_supervisor": [
+    {
+      "pid": 523728,
+      "start_ticks": 15272164,
+      "known_birth_absent": true
+    },
+    {
+      "pid": 523732,
+      "start_ticks": 15272195,
+      "known_birth_absent": true
+    }
+  ],
+  "all2_births_absent": true,
+  "native_settled_all_reaped": true,
+  "terminal_utc": "2026-10-13T13:42:09.697568+00:00",
+  "cleanup_margin_utc": "2026-10-13T13:45:27.770751+00:00",
+  "terminal_before_cleanup_margin_seconds": 198.073,
+  "absence_checks_before_cleanup_margin": true,
+  "lifecycle": {
+    "schema": "P10_REQUEST_LIFECYCLE_V1",
+    "diagnostic_valid": false,
+    "operation_stage": "URL_OPEN",
+    "exception_code": "HTTP_ERROR",
+    "http_status": 403,
+    "primary_rejection": "BOUNDARY_UNKNOWN",
+    "cleanup_rejection": "NONE",
+    "cleanup_outcome": "REMOVED",
+    "request_reconciliation_required": false,
+    "no_private_message_context_or_values_export": true
+  },
+  "case_projection_and_private_XML_absent": true,
+  "private_request_TMP_authority_absent": true,
+  "18pins_and_clean5dac104e": true,
+  "frozen_abf5_b001_exact": true,
+  "retained_attempt02_response_reused": true,
+  "new_MCP_calls": 0,
+  "adapter_stage": "PRIVATE_REQUEST_UPDATED",
+  "observed_operation": "URL_OPEN",
+  "direct_known_exception": "HTTP_ERROR",
+  "http_status": 403,
+  "HTTP403_reason_expiry_proxy_auth_attribution": "UNKNOWN_NOT_READ",
+  "historical02_and03_CAUSE": "UNKNOWN",
+  "currentP10_CI_failure_cause": "UNKNOWN",
+  "URL_READ_selected_ZIP_XML_not_reached": true,
+  "no_private_message_body_XML_log_URI_hash_or_actual_env_presence_values_export": true,
+  "context": "Only reviewed8key privateforwarding; no value/keypresence measured/exported",
+  "test_product_API_PG_browser_B013_effects": 0,
+  "no_retry": true,
+  "next": "Root disposition of HTTP403 and freshgrant only for changed checking input if authorized; no privateerrorbody interpretation"
+}

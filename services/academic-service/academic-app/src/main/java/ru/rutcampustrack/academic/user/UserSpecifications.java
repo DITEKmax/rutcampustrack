@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.user;
 
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
+import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -11,13 +12,13 @@ import ru.rutcampustrack.academic.entity.UserRoleGrant;
 /**
  * JPA Specifications for dynamic User queries.
  *
- * <p>Used by {@link ru.rutcampustrack.academic.repository.UserRepository} via
- * {@link org.springframework.data.jpa.repository.JpaSpecificationExecutor}.
+ * <p>Used by {@link ru.rutcampustrack.academic.repository.UserRepository} via {@link
+ * org.springframework.data.jpa.repository.JpaSpecificationExecutor}.
  *
- * <p>BUG-006 / Plan 58-01: случай-независимый поиск по ФИО/login/telegramId.
- * Values are parameterized by JPA Criteria API (prepared statements) → защита от
- * SQL injection (T-58-01-01). Дополнительно экранируем спец-символы LIKE (% и _)
- * через escape-char «\\», чтобы пользовательский ввод не расширял паттерн.
+ * <p>BUG-006 / Plan 58-01: случай-независимый поиск по ФИО/login/telegramId. Values are
+ * parameterized by JPA Criteria API (prepared statements) → защита от SQL injection (T-58-01-01).
+ * Дополнительно экранируем спец-символы LIKE (% и _) через escape-char «\\», чтобы пользовательский
+ * ввод не расширял паттерн.
  */
 public final class UserSpecifications {
 
@@ -29,9 +30,9 @@ public final class UserSpecifications {
     }
 
     /**
-     * Case-insensitive contains-match по login / last_name / first_name /
-     * middle_name / telegram_id. Возвращает {@code null} если строка пустая или null —
-     * {@link Specification#where(Specification)} интерпретирует null как «без ограничений».
+     * Case-insensitive contains-match по login / last_name / first_name / middle_name /
+     * telegram_id. Возвращает {@code null} если строка пустая или null — {@link
+     * Specification#where(Specification)} интерпретирует null как «без ограничений».
      */
     public static Specification<User> matchesSearch(String q) {
         if (q == null || q.isBlank()) {
@@ -43,46 +44,47 @@ public final class UserSpecifications {
             Predicate byLogin = cb.like(cb.lower(root.get("login")), pattern, ESCAPE_CHAR);
             Predicate byLastName = cb.like(cb.lower(root.get("lastName")), pattern, ESCAPE_CHAR);
             Predicate byFirstName = cb.like(cb.lower(root.get("firstName")), pattern, ESCAPE_CHAR);
-            Predicate byMiddleName = cb.like(
-                    cb.lower(cb.coalesce(root.get("middleName"), "")),
-                    pattern,
-                    ESCAPE_CHAR);
-            Predicate byEmployeeNumber = cb.like(
-                    cb.lower(cb.coalesce(root.get("employeeNumber"), "")),
-                    pattern,
-                    ESCAPE_CHAR);
+            Predicate byMiddleName =
+                    cb.like(
+                            cb.lower(cb.coalesce(root.get("middleName"), "")),
+                            pattern,
+                            ESCAPE_CHAR);
+            Predicate byEmployeeNumber =
+                    cb.like(
+                            cb.lower(cb.coalesce(root.get("employeeNumber"), "")),
+                            pattern,
+                            ESCAPE_CHAR);
             // telegram_id — BIGINT. Приводим к тексту через Hibernate-функцию `str(...)`
             // (реализуется диалектом как CAST(... AS VARCHAR)). Null-safe через COALESCE
             // на случай user без telegramId.
-            Expression<String> telegramAsString = cb.function(
-                    "str",
-                    String.class,
-                    cb.coalesce(root.get("telegramId"), 0L));
+            Expression<String> telegramAsString =
+                    cb.function("str", String.class, cb.coalesce(root.get("telegramId"), 0L));
             Predicate byTelegram = cb.like(telegramAsString, pattern, ESCAPE_CHAR);
-            return cb.or(byLogin, byLastName, byFirstName, byMiddleName,
-                    byEmployeeNumber, byTelegram);
+            return cb.or(
+                    byLogin, byLastName, byFirstName, byMiddleName, byEmployeeNumber, byTelegram);
         };
     }
 
     /**
-     * Search surface for the subject teacher picker.  Unlike the admin search,
-     * this predicate deliberately does not inspect login or telegram id and
-     * treats the displayed full name as one searchable string, so a query such
-     * as "Иванов Иван" works as the user sees it.
+     * Search surface for the subject teacher picker. Unlike the admin search, this predicate
+     * deliberately does not inspect login or telegram id and treats the displayed full name as one
+     * searchable string, so a query such as "Иванов Иван" works as the user sees it.
      */
     public static Specification<User> matchesTeacherLookup(String q) {
         if (q == null || q.isBlank()) return null;
         String pattern = "%" + escapeLike(q.trim().toLowerCase()) + "%";
         return (root, query, cb) -> {
             Expression<String> middle = cb.coalesce(root.get("middleName"), "");
-            Expression<String> fullName = cb.concat(
-                    cb.concat(root.get("lastName"), " "),
-                    cb.concat(root.get("firstName"), cb.concat(" ", middle)));
+            Expression<String> fullName =
+                    cb.concat(
+                            cb.concat(root.get("lastName"), " "),
+                            cb.concat(root.get("firstName"), cb.concat(" ", middle)));
             Predicate byName = cb.like(cb.lower(fullName), pattern, ESCAPE_CHAR);
-            Predicate byEmployeeNumber = cb.like(
-                    cb.lower(cb.coalesce(root.get("employeeNumber"), "")),
-                    pattern,
-                    ESCAPE_CHAR);
+            Predicate byEmployeeNumber =
+                    cb.like(
+                            cb.lower(cb.coalesce(root.get("employeeNumber"), "")),
+                            pattern,
+                            ESCAPE_CHAR);
             return cb.or(byName, byEmployeeNumber);
         };
     }
@@ -94,21 +96,22 @@ public final class UserSpecifications {
             var subquery = query.subquery(Long.class);
             var grant = subquery.from(UserRoleGrant.class);
             Predicate user = cb.equal(grant.get("userId"), root.get("id"));
-            Predicate roleMatch = cb.equal(cb.lower(grant.get("role")), role.toLowerCase());
+            Predicate roleMatch =
+                    cb.equal(cb.lower(grant.get("role")), role.toLowerCase(Locale.ROOT));
             if (status == null || status.isBlank()) {
                 return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch));
             }
-            Predicate statusMatch = cb.equal(cb.lower(grant.get("status")), status.toLowerCase());
-            return cb.exists(subquery.select(grant.get("id"))
-                    .where(user, roleMatch, statusMatch));
+            Predicate statusMatch =
+                    cb.equal(cb.lower(grant.get("status")), status.toLowerCase(Locale.ROOT));
+            return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch, statusMatch));
         };
     }
 
     /**
      * Exact match по роли. Null → без ограничений.
      *
-     * <p>PG enum {@code user_role = varchar} поддерживается через операторы в
-     * миграции V11 (CREATE OPERATOR для каждого enum-типа).
+     * <p>PG enum {@code user_role = varchar} поддерживается через операторы в миграции V11 (CREATE
+     * OPERATOR для каждого enum-типа).
      */
     public static Specification<User> matchesRole(UserRole role) {
         if (role == null) {
@@ -126,8 +129,8 @@ public final class UserSpecifications {
     }
 
     /**
-     * Экранирует LIKE-спецсимволы {@code %} и {@code _} (а также сам escape-символ)
-     * префиксом {@code '\\'}. Предотвращает pattern-injection от untrusted search input.
+     * Экранирует LIKE-спецсимволы {@code %} и {@code _} (а также сам escape-символ) префиксом
+     * {@code '\\'}. Предотвращает pattern-injection от untrusted search input.
      */
     static String escapeLike(String s) {
         StringBuilder sb = new StringBuilder(s.length() + 4);

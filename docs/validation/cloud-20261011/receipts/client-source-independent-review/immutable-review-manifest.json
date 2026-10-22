@@ -1,0 +1,65 @@
+{
+  "review": "independent original client acceptance source review",
+  "source_commit": "8fe9fe946ded3174796778b33f84385c6f98473b",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "CRA-EXPORT-T01/P2",
+    "CRA-VIEWPORT-T02/P2"
+  ],
+  "actual_model_effort": "UNKNOWN",
+  "runtime": "NOT_RUN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 903,
+      "sha256": "a9368dd66d665de03e4312f603b41e69d54480d845e4af5e30e6e0113f89959a"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1668,
+      "sha256": "2bac97c4eb83b90087668010573550c0413c6b1ba63a56096c8c0dfbeb488340"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 16582,
+      "sha256": "29da75a5a159b5662a66749905d13bb1f64a9807e77f0e262cfd2dedfbb81f76"
+    },
+    {
+      "path": "TMA-signer-alignment.safe.json",
+      "bytes": 1109,
+      "sha256": "94fd8742f407c4dae39311463b06899885966c9c513c202cae7a60bc8a72f1e8"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 1707,
+      "sha256": "c044e19929228be043ddd1f1390f25a4137e29f7273fef723d80afef4ac9e9b4"
+    },
+    {
+      "path": "export-original-counterexamples.safe.json",
+      "bytes": 4456,
+      "sha256": "94da446b5ebda5f4e2abb79caac6ca94993a96e3abcb06967bf961721e3d5721"
+    },
+    {
+      "path": "partial-findings.safe.json",
+      "bytes": 2478,
+      "sha256": "01bc408127b6c23d30d09cb444088f9433f120443851ac71966c476585ad4be2"
+    },
+    {
+      "path": "source-input-inventory.safe.json",
+      "bytes": 13536,
+      "sha256": "5584888a5ae8390a03888dc6084240cbd498af9f5d320c29bf7eb765cfb5705d"
+    },
+    {
+      "path": "source-seal-and-native-receipts.safe.json",
+      "bytes": 4726,
+      "sha256": "c6dd53361709bd4f4d9d4dce65d125265182ebdaf1655c56fe0c3e14f87e44db"
+    },
+    {
+      "path": "viewport-merge.safe.json",
+      "bytes": 1322,
+      "sha256": "dbaf5a733ff82884c9a6d64d72bab86f933c4ec234824787d807461074d76d88"
+    }
+  ],
+  "private_values_or_raw_bodies": false,
+  "originals_immutable_after_seal": true
+}

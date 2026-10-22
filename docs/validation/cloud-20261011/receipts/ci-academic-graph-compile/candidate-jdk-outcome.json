@@ -1,0 +1,25 @@
+{
+  "phase": "candidate",
+  "utc": "2026-10-12T05:06:04.130037+00:00",
+  "native_exit": 0,
+  "stopped": null,
+  "peak": {
+    "utc": "2026-10-12T05:05:27.468957+00:00",
+    "free_bytes": 7205842944,
+    "memory_current": 5500686336,
+    "memory_max": 17179869184,
+    "cpu_max": "400000 100000",
+    "allocation_bytes": 883445760
+  },
+  "after": {
+    "utc": "2026-10-12T05:06:03.647397+00:00",
+    "free_bytes": 7202447360,
+    "memory_current": 4488843264,
+    "memory_max": 17179869184,
+    "cpu_max": "400000 100000",
+    "allocation_bytes": 883445760
+  },
+  "raw_private_log": "/workspace/scratch/rct-validation/ci_academic_graph_compile/candidate-jdk.raw.private.log",
+  "own_processes_remaining": {},
+  "cleanup_qualification": "Only descendants recorded with exact process start-time identities"
+}

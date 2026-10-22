@@ -11,5 +11,4 @@ public record SemesterDeletionCounts(
         long assignments,
         long homeworks,
         long attendanceMarks,
-        long studentRequests) {
-}
+        long studentRequests) {}

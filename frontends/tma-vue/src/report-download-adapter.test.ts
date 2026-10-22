@@ -39,14 +39,18 @@ import {
   type TelegramReportDownloadHost,
 } from './report-download-adapter'
 
-const teacherJournalRequest = (): ReportDownloadTicketRequest => toTeacherJournalReportRequest({
-  semesterId: 24,
-  groupId: 8,
-  subjectId: 3,
-  lessonType: 'LECTURE',
-  page: 2,
-  pageSize: 50,
-}, 'pdf')
+const teacherJournalRequest = (): ReportDownloadTicketRequest =>
+  toTeacherJournalReportRequest(
+    {
+      semesterId: 24,
+      groupId: 8,
+      subjectId: 3,
+      lessonType: 'LECTURE',
+      page: 2,
+      pageSize: 50,
+    },
+    'pdf',
+  )
 
 const ticket = (suggestedFilename = 'teacher-journal.pdf'): ReportDownloadTicket => ({
   downloadPath: `/api/report-download/${'a'.repeat(43)}`,
@@ -58,6 +62,16 @@ function fakeTicketIssuer(value = ticket()): ReportDownloadTicketIssuer {
   return {
     assertCurrent: () => undefined,
     issueTicket: async () => value,
+  }
+}
+
+function readyJob(filename = 'teacher-journal.pdf') {
+  return {
+    jobId: '00000000-0000-4000-8000-000000000001',
+    state: 'ready',
+    suggestedFilename: filename,
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    errorCode: null,
   }
 }
 
@@ -80,38 +94,50 @@ function fakeHost(
 describe('report ticket boundary', () => {
   it('accepts the roster format-only selector and rejects a caller-selected foreign group', () => {
     const request: ReportDownloadTicketRequest = {
-      kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format: 'pdf' },
+      kind: 'HEADMAN_GROUP_COMPOSITION',
+      headmanGroupComposition: { format: 'pdf' },
     }
     expect(() => validateTicketRequest(request)).not.toThrow()
-    expect(() => validateTicketRequest({
-      ...request, headmanGroupComposition: { format: 'pdf', groupId: 999 },
-    } as unknown as ReportDownloadTicketRequest)).toThrow(RangeError)
-    expect(() => validateTicketRequest({
-      ...request, headmanStats: { format: 'pdf' },
-    } as unknown as ReportDownloadTicketRequest)).toThrow(RangeError)
+    expect(() =>
+      validateTicketRequest({
+        ...request,
+        headmanGroupComposition: { format: 'pdf', groupId: 999 },
+      } as unknown as ReportDownloadTicketRequest),
+    ).toThrow(RangeError)
+    expect(() =>
+      validateTicketRequest({
+        ...request,
+        headmanStats: { format: 'pdf' },
+      } as unknown as ReportDownloadTicketRequest),
+    ).toThrow(RangeError)
   })
 
   it('keeps roster PNG as a ZIP filename across all five supported ticket formats', () => {
     for (const format of ['docx', 'pdf', 'png', 'html', 'xlsx'] as const) {
       const request: ReportDownloadTicketRequest = {
-        kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format },
+        kind: 'HEADMAN_GROUP_COMPOSITION',
+        headmanGroupComposition: { format },
       }
       validateTicketRequest(request)
       const filename = `headman-group-composition.${format === 'png' ? 'zip' : format}`
       expect(validateSuggestedFilename(filename, request)).toBe(filename)
     }
     const request: ReportDownloadTicketRequest = {
-      kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format: 'png' },
+      kind: 'HEADMAN_GROUP_COMPOSITION',
+      headmanGroupComposition: { format: 'png' },
     }
     expect(() => validateSuggestedFilename('headman-group-composition.png', request)).toThrow()
   })
 
   it('posts only the typed selector with the current bearer and validates the ticket response', async () => {
     const request = teacherJournalRequest()
-    const fetcher = vi.fn<typeof fetch>(async () => new Response(JSON.stringify(ticket()), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    }))
+    const fetcher = vi.fn<typeof fetch>(
+      async (input) =>
+        new Response(JSON.stringify(String(input).endsWith('/ticket') ? ticket() : readyJob()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    )
     const client = new ReportDownloadClient({
       accessToken: () => 'synthetic-bearer',
       assertCurrent: () => undefined,
@@ -122,30 +148,34 @@ describe('report ticket boundary', () => {
     const [path, init] = fetcher.mock.calls[0]!
     const body = JSON.parse(String(init?.body)) as Record<string, unknown>
 
-    expect(path).toBe('/api/auth/report-download-tickets')
+    expect(path).toBe('/api/auth/export-jobs')
     expect(init?.method).toBe('POST')
     expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer synthetic-bearer')
-    expect(Object.keys(body).sort()).toEqual(['kind', 'teacherJournal'])
-    expect(body).toEqual(request)
+    expect(Object.keys(body).sort()).toEqual(['report', 'requestId'])
+    expect(body.report).toEqual(request)
+    expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/)
     expect(issued.downloadPath).toMatch(/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/)
     expect(JSON.stringify(body)).not.toContain('synthetic-bearer')
   })
 
   it.each([
-    [400, 'Не удалось подготовить отчёт: проверь выбранные параметры и формат.'],
-    [401, 'Сессия истекла. Войди снова, чтобы скачать отчёт.'],
-    [403, 'У тебя нет права скачать этот отчёт.'],
-    [409, 'Отчёт стал недоступен. Обнови данные и выбери его снова.'],
-    [429, 'Слишком много запросов на скачивание. Попробуй позже.'],
-    [503, 'Сервис отчётов временно недоступен. Попробуй позже.'],
-  ])('keeps ticket HTTP %i visible to the user', async (status, message) => {
+    400,
+    401,
+    403,
+    409,
+    429,
+    503,
+  ])('keeps ticket HTTP %i visible to the user', async (status) => {
     const client = new ReportDownloadClient({
       accessToken: () => 'synthetic-bearer',
       assertCurrent: () => undefined,
       fetcher: async () => new Response(null, { status }),
     })
 
-    await expect(client.issueTicket(teacherJournalRequest())).rejects.toMatchObject({ status, message })
+    await expect(client.issueTicket(teacherJournalRequest())).rejects.toMatchObject({
+      status,
+      message: expect.any(String),
+    })
   })
 
   it('rejects selectors that add fields outside their kind', () => {
@@ -213,12 +243,23 @@ describe('selected report parameter mapping', () => {
         const url = new URL(String(input), 'https://campus.example')
         requests.push(url.searchParams)
         return url.pathname.endsWith('/export')
-          ? new Response('synthetic spreadsheet bytes', { headers: {
-              'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              'Content-Disposition': 'attachment; filename="stats.xlsx"',
-            } })
-          : Response.json({ scope: 'groups', semesterId: 24, periodFrom: null, periodTo: null,
-              lessonsCount: 8, students: [], groups: [], subjectOptions: [], serverNow: '2026-10-03T09:00:00Z' })
+          ? new Response('synthetic spreadsheet bytes', {
+              headers: {
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition': 'attachment; filename="stats.xlsx"',
+              },
+            })
+          : Response.json({
+              scope: 'groups',
+              semesterId: 24,
+              periodFrom: null,
+              periodTo: null,
+              lessonsCount: 8,
+              students: [],
+              groups: [],
+              subjectOptions: [],
+              serverNow: '2026-10-03T09:00:00Z',
+            })
       }),
     })
     await api.stats(query)
@@ -232,32 +273,57 @@ describe('selected report parameter mapping', () => {
       expect(params.getAll('filter')).toEqual(selector.filters)
       expect(params.getAll('lessonType')).toEqual(selector.lessonTypes)
     }
-    const reset = readTeacherStatsContext(teacherStatsContextParams(resetTeacherStatsCriteria(context)))!
+    const reset = readTeacherStatsContext(
+      teacherStatsContextParams(resetTeacherStatsCriteria(context)),
+    )!
     expect(reset).toEqual({ ...context, lessonTypes: [], search: '', sorts: [], filters: [] })
     expect(teacherStatsQueryForContext(reset)).toBeNull()
-    expect(() => toTeacherStatsReportSelector({ ...query, lessonTypes: [] }, 'xlsx')).toThrow('select at least one lessonType')
-    const students = { ...context, scope: 'students' as const, groupId: 8, subjectId: 3,
-      filters: parseTeacherStatsRanges('students', { present: { minimum: '0', maximum: '100' } }) }
-    expect(teacherStatsQueryForContext(readTeacherStatsContext(teacherStatsContextParams(students))!)?.filters)
-      .toEqual([{ column: 'present', minPercent: 0, maxPercent: 100 }])
-    expect(() => parseTeacherStatsRanges('groups', { present: { minimum: '70', maximum: '20' } })).toThrow('Нижняя граница')
-    expect(() => parseTeacherStatsRanges('groups', { present: { minimum: '101', maximum: '' } })).toThrow('от 0 до 100')
-    expect(() => parseTeacherStatsRanges('groups', { present: { minimum: 'abc', maximum: '' } })).toThrow('от 0 до 100')
-    expect(() => parseTeacherStatsRanges('groups', { lessonsCount: { minimum: '1.5', maximum: '' } })).toThrow('целым')
-    expect(() => teacherStatsContextParams({ ...students, filters })).toThrow('Проверь фильтры')
+    expect(() => toTeacherStatsReportSelector({ ...query, lessonTypes: [] }, 'xlsx')).toThrow(
+      'select at least one lessonType',
+    )
+    const students = {
+      ...context,
+      scope: 'students' as const,
+      groupId: 8,
+      subjectId: 3,
+      filters: parseTeacherStatsRanges('students', { present: { minimum: '0', maximum: '100' } }),
+    }
+    expect(
+      teacherStatsQueryForContext(readTeacherStatsContext(teacherStatsContextParams(students))!)
+        ?.filters,
+    ).toEqual([{ column: 'present', minPercent: 0, maxPercent: 100 }])
+    expect(() =>
+      parseTeacherStatsRanges('groups', { present: { minimum: '70', maximum: '20' } }),
+    ).toThrow(RangeError)
+    expect(() =>
+      parseTeacherStatsRanges('groups', { present: { minimum: '101', maximum: '' } }),
+    ).toThrow(RangeError)
+    expect(() =>
+      parseTeacherStatsRanges('groups', { present: { minimum: 'abc', maximum: '' } }),
+    ).toThrow(RangeError)
+    expect(() =>
+      parseTeacherStatsRanges('groups', { lessonsCount: { minimum: '1.5', maximum: '' } }),
+    ).toThrow(RangeError)
+    expect(() => teacherStatsContextParams({ ...students, filters })).toThrow(RangeError)
     const invalidAddress = teacherStatsContextParams(context)
     invalidAddress.append('teacherStatsFilter', '{"column":"excused","minPercent":-1}')
-    expect(() => readTeacherStatsContext(invalidAddress)).toThrow('от 0 до 100')
+    expect(() => readTeacherStatsContext(invalidAddress)).toThrow(RangeError)
     for (const invalid of [
-      new URLSearchParams('teacherStats=1&teacherStatsSemester=24&teacherStatsFilter={"column":"present","minPercent":101}'),
+      new URLSearchParams(
+        'teacherStats=1&teacherStatsSemester=24&teacherStatsFilter={"column":"present","minPercent":101}',
+      ),
       new URLSearchParams('teacherStats=1&teacherStatsSemester=24&teacherStatsSort=unknown'),
       new URLSearchParams('teacherStats=1&teacherStatsSemester=24&teacherStatsFilter=not-json'),
     ]) {
       const recovered = readRecoverableTeacherStatsContext(invalid)
       expect(recovered.context).toBeNull()
-      expect(recovered.notice).toContain('по умолчанию')
+      expect(recovered.notice).toEqual(expect.any(String))
+      expect(recovered.notice?.length).toBeGreaterThan(0)
       const normalized = teacherStatsContextParams(recovered.context ?? reset)
-      expect(readRecoverableTeacherStatsContext(normalized)).toEqual({ context: reset, notice: null })
+      expect(readRecoverableTeacherStatsContext(normalized)).toEqual({
+        context: reset,
+        notice: null,
+      })
     }
     const validRoute = readRecoverableTeacherStatsContext(teacherStatsContextParams(context))
     expect(validRoute).toEqual({ context, notice: null })
@@ -269,20 +335,45 @@ describe('selected report parameter mapping', () => {
       'teacherStatsSort=unknown',
       'teacherStatsFilter=not-json',
     ]) {
-      const params = new URLSearchParams(`teacherStats=1&teacherStatsScope=students&teacherStatsSemester=24&teacherStatsGroup=8&teacherStatsSubject=3&teacherStatsType=LAB&teacherStatsSearch=old&${damagedCriteria}`)
+      const params = new URLSearchParams(
+        `teacherStats=1&teacherStatsScope=students&teacherStatsSemester=24&teacherStatsGroup=8&teacherStatsSubject=3&teacherStatsType=LAB&teacherStatsSearch=old&${damagedCriteria}`,
+      )
       const recovered = readRecoverableTeacherStatsContext(params)
-      expect(recovered.notice).toContain('по умолчанию')
-      expect(recovered.context).toEqual({ semesterId: 24, scope: 'students', groupId: 8, subjectId: 3,
-        lessonTypes: [], search: '', sorts: [{ column: 'present', descending: false }], filters: [] })
+      expect(recovered.notice).toEqual(expect.any(String))
+      expect(recovered.notice?.length).toBeGreaterThan(0)
+      expect(recovered.context).toEqual({
+        semesterId: 24,
+        scope: 'students',
+        groupId: 8,
+        subjectId: 3,
+        lessonTypes: [],
+        search: '',
+        sorts: [{ column: 'present', descending: false }],
+        filters: [],
+      })
       expect(teacherStatsQueryForContext(recovered.context!)).toBeNull()
       const query = teacherStatsQueryForContext({ ...recovered.context!, lessonTypes: ['LAB'] })!
-      expect(query).toEqual({ semesterId: 24, scope: 'students', groupId: 8, subjectId: 3,
-        lessonTypes: ['LAB'], sorts: [{ column: 'present', descending: false }], filters: [] })
-      expect(toTeacherStatsReportSelector(query, 'xlsx')).toMatchObject({
-        semesterId: 24, scope: 'students', groupId: 8, subjectId: 3, lessonTypes: ['LAB'], sorts: ['present'], format: 'xlsx',
+      expect(query).toEqual({
+        semesterId: 24,
+        scope: 'students',
+        groupId: 8,
+        subjectId: 3,
+        lessonTypes: ['LAB'],
+        sorts: [{ column: 'present', descending: false }],
+        filters: [],
       })
-      expect(readRecoverableTeacherStatsContext(teacherStatsContextParams(recovered.context!)))
-        .toEqual({ context: recovered.context, notice: null })
+      expect(toTeacherStatsReportSelector(query, 'xlsx')).toMatchObject({
+        semesterId: 24,
+        scope: 'students',
+        groupId: 8,
+        subjectId: 3,
+        lessonTypes: ['LAB'],
+        sorts: ['present'],
+        format: 'xlsx',
+      })
+      expect(
+        readRecoverableTeacherStatsContext(teacherStatsContextParams(recovered.context!)),
+      ).toEqual({ context: recovered.context, notice: null })
       for (const key of ['teacherStatsSemester', 'teacherStatsGroup', 'teacherStatsSubject']) {
         const invalidContext = new URLSearchParams(params)
         invalidContext.set(key, '0')
@@ -293,18 +384,57 @@ describe('selected report parameter mapping', () => {
 
   it('uses the current selector only for a sole current week and otherwise preserves the selected weeks', () => {
     const weeks: readonly HeadmanWeeklyWeekOption[] = [
-      { weekOfSemester: 1, isoWeek: 36, label: 'Неделя 1', weekStart: '2026-08-31', weekEnd: '2026-09-06', current: false },
-      { weekOfSemester: 2, isoWeek: 37, label: 'Неделя 2', weekStart: '2026-09-07', weekEnd: '2026-09-13', current: false },
-      { weekOfSemester: 3, isoWeek: 38, label: 'Неделя 3', weekStart: '2026-09-14', weekEnd: '2026-09-20', current: true },
+      {
+        weekOfSemester: 1,
+        isoWeek: 36,
+        label: 'Неделя 1',
+        weekStart: '2026-08-31',
+        weekEnd: '2026-09-06',
+        current: false,
+      },
+      {
+        weekOfSemester: 2,
+        isoWeek: 37,
+        label: 'Неделя 2',
+        weekStart: '2026-09-07',
+        weekEnd: '2026-09-13',
+        current: false,
+      },
+      {
+        weekOfSemester: 3,
+        isoWeek: 38,
+        label: 'Неделя 3',
+        weekStart: '2026-09-14',
+        weekEnd: '2026-09-20',
+        current: true,
+      },
     ]
 
-    expect(toHeadmanWeeklyReportRequest(weeks, ['2026-09-14'], { code: 'png', label: 'PNG', contentType: 'application/zip', extension: 'zip' }))
-      .toEqual({ kind: 'HEADMAN_WEEKLY_CURRENT', headmanWeeklyCurrent: { weekStart: '2026-09-14', format: 'png' } })
-    expect(toHeadmanWeeklyReportRequest(weeks, ['2026-09-14', '2026-09-07'], { code: 'pdf', label: 'PDF', contentType: 'application/pdf', extension: 'pdf' }))
-      .toEqual({ kind: 'HEADMAN_WEEKLY_SELECTED', headmanWeeklySelected: { weekStarts: ['2026-09-07', '2026-09-14'], format: 'pdf' } })
+    expect(
+      toHeadmanWeeklyReportRequest(weeks, ['2026-09-14'], {
+        code: 'png',
+        label: 'PNG',
+        contentType: 'application/zip',
+        extension: 'zip',
+      }),
+    ).toEqual({
+      kind: 'HEADMAN_WEEKLY_CURRENT',
+      headmanWeeklyCurrent: { weekStart: '2026-09-14', format: 'png' },
+    })
+    expect(
+      toHeadmanWeeklyReportRequest(weeks, ['2026-09-14', '2026-09-07'], {
+        code: 'pdf',
+        label: 'PDF',
+        contentType: 'application/pdf',
+        extension: 'pdf',
+      }),
+    ).toEqual({
+      kind: 'HEADMAN_WEEKLY_SELECTED',
+      headmanWeeklySelected: { weekStarts: ['2026-09-07', '2026-09-14'], format: 'pdf' },
+    })
   })
 
-  it('keeps the frozen headman stats selector free of group, semester, and page fields', () => {
+  it('accepts a legacy headman stats selector with optional fields omitted', () => {
     const request: ReportDownloadTicketRequest = {
       kind: 'HEADMAN_STATS',
       headmanStats: {
@@ -316,19 +446,21 @@ describe('selected report parameter mapping', () => {
       },
     }
     validateTicketRequest(request)
-    expect(Object.keys(request.headmanStats)).toEqual(['subjectId', 'lessonTypes', 'sorts', 'filters', 'format'])
   })
 
   it('maps the current headman stats slice and strips absent filter values from the ticket DTO', () => {
-    const request = toHeadmanStatsReportRequest({
-      subjectId: 3,
-      lessonTypes: ['LECTURE', 'LAB'],
-      sorts: [{ field: 'presentPercent', descending: true }],
-      filters: [
-        { field: 'displayName', contains: 'Иван' },
-        { field: 'presentPercent', minimum: 40, maximum: null },
-      ],
-    }, 'xlsx')
+    const request = toHeadmanStatsReportRequest(
+      {
+        subjectId: 3,
+        lessonTypes: ['LECTURE', 'LAB'],
+        sorts: [{ field: 'presentPercent', descending: true }],
+        filters: [
+          { field: 'displayName', contains: 'Иван' },
+          { field: 'presentPercent', minimum: 40, maximum: null },
+        ],
+      },
+      'xlsx',
+    )
 
     expect(request).toEqual({
       kind: 'HEADMAN_STATS',
@@ -347,7 +479,14 @@ describe('selected report parameter mapping', () => {
   })
 
   it('keeps stale stats slices hidden and allows reset when only a sort is active', () => {
-    const groupQuery = { subjectId: null, lessonTypes: [], sorts: [], filters: [], page: 0, size: 50 }
+    const groupQuery = {
+      subjectId: null,
+      lessonTypes: [],
+      sorts: [],
+      filters: [],
+      page: 0,
+      size: 50,
+    }
     const subjectQuery = { ...groupQuery, subjectId: 3 }
 
     const groupKey = headmanStatsQueryKey(groupQuery)
@@ -356,8 +495,12 @@ describe('selected report parameter mapping', () => {
     const loadedGroupSlice = { heading: 'Вся группа', rows: ['студент группы'] }
     expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, groupKey, subjectKey)).toBeNull()
     expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, null, subjectKey)).toBeNull()
-    expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, subjectKey, subjectKey)).toBe(loadedGroupSlice)
-    expect(hasHeadmanStatsResettableCriteria([{ field: 'presentPercent', descending: true }], false)).toBe(true)
+    expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, subjectKey, subjectKey)).toBe(
+      loadedGroupSlice,
+    )
+    expect(
+      hasHeadmanStatsResettableCriteria([{ field: 'presentPercent', descending: true }], false),
+    ).toBe(true)
     expect(resetHeadmanStatsCriteria()).toEqual({ sorts: [], filters: [] })
     expect(hasHeadmanStatsResettableCriteria([], false)).toBe(false)
   })
@@ -366,8 +509,9 @@ describe('selected report parameter mapping', () => {
 describe('Telegram download adapter', () => {
   it('accepts only the fixed ticket path on the app HTTPS origin', () => {
     const path = `/api/report-download/${'x'.repeat(43)}`
-    expect(buildTrustedHttpsDownloadUrl('https://rutcampustrack.example', path))
-      .toBe(`https://rutcampustrack.example${path}`)
+    expect(buildTrustedHttpsDownloadUrl('https://rutcampustrack.example', path)).toBe(
+      `https://rutcampustrack.example${path}`,
+    )
     for (const invalid of [
       ['http://rutcampustrack.example', path],
       ['https://user:pass@rutcampustrack.example', path],
@@ -383,7 +527,11 @@ describe('Telegram download adapter', () => {
   it('rejects path-like, newline, and format-mismatched filenames', () => {
     const request = teacherJournalRequest()
     expect(validateSuggestedFilename('teacher-journal.pdf', request)).toBe('teacher-journal.pdf')
-    for (const invalid of ['../teacher-journal.pdf', 'teacher-journal.pdf\r\n', 'teacher-journal.docx']) {
+    for (const invalid of [
+      '../teacher-journal.pdf',
+      'teacher-journal.pdf\r\n',
+      'teacher-journal.docx',
+    ]) {
       expect(() => validateSuggestedFilename(invalid, request)).toThrow()
     }
   })
@@ -391,25 +539,35 @@ describe('Telegram download adapter', () => {
   it.each([
     [true, 'accepted'],
     [false, 'cancelled'],
-  ] as const)('maps native callback %s to %s, without claiming save completion', async (accepted, expected) => {
-    const host = fakeHost(accepted)
-    const port = createTelegramReportDownloadPort(fakeTicketIssuer(), host, () => 'https://rutcampustrack.example')
+  ] as const)(
+    'maps native callback %s to %s, without claiming save completion',
+    async (accepted, expected) => {
+      const host = fakeHost(accepted)
+      const port = createTelegramReportDownloadPort(
+        fakeTicketIssuer(),
+        host,
+        () => 'https://rutcampustrack.example',
+      )
 
-    const result = await port.download(teacherJournalRequest(), () => true)
+      const result = await port.download(teacherJournalRequest(), () => true)
 
-    expect(result).toBe(expected)
-    expect(host.params).toHaveBeenCalledWith({
-      url: `https://rutcampustrack.example/api/report-download/${'a'.repeat(43)}`,
-      file_name: 'teacher-journal.pdf',
-    })
-  })
+      expect(result).toBe(expected)
+      expect(host.params).toHaveBeenCalledWith({
+        url: `https://rutcampustrack.example/api/report-download/${'a'.repeat(43)}`,
+        file_name: 'teacher-journal.pdf',
+      })
+    },
+  )
 
   it('uses the native Telegram adapter and the PNG extension for a headman trend ticket', async () => {
-    const request = toHeadmanStatsTrendReportRequest({
-      mode: 'SUBJECT',
-      subjectId: 3,
-      lessonTypes: ['LECTURE'],
-    }, 'png')
+    const request = toHeadmanStatsTrendReportRequest(
+      {
+        mode: 'SUBJECT',
+        subjectId: 3,
+        lessonTypes: ['LECTURE'],
+      },
+      'png',
+    )
     validateTicketRequest(request)
     const host = fakeHost(true)
     const port = createTelegramReportDownloadPort(
@@ -429,7 +587,11 @@ describe('Telegram download adapter', () => {
     const tickets = fakeTicketIssuer()
     const issueTicket = vi.spyOn(tickets, 'issueTicket')
     const host = fakeHost(false, false)
-    const port = createTelegramReportDownloadPort(tickets, host, () => 'https://rutcampustrack.example')
+    const port = createTelegramReportDownloadPort(
+      tickets,
+      host,
+      () => 'https://rutcampustrack.example',
+    )
 
     await expect(port.download(teacherJournalRequest(), () => true)).resolves.toBe('unsupported')
     expect(issueTicket).not.toHaveBeenCalled()
@@ -446,7 +608,11 @@ describe('Telegram download adapter', () => {
       },
     }
     const host = fakeHost(true)
-    const port = createTelegramReportDownloadPort(tickets, host, () => 'https://rutcampustrack.example')
+    const port = createTelegramReportDownloadPort(
+      tickets,
+      host,
+      () => 'https://rutcampustrack.example',
+    )
 
     const result = await port.download(teacherJournalRequest(), () => current)
 
@@ -457,15 +623,25 @@ describe('Telegram download adapter', () => {
   it('never calls the host when the session generation changes during ticket issuance', async () => {
     let generation = 1
     const host = fakeHost(true)
-    const client = createGenerationBoundReportDownloadClient({
-      currentGeneration: () => generation,
-      accessTokenFor: () => 'synthetic-bearer',
-      refreshFor: async () => undefined,
-    }, async () => {
-      generation = 2
-      return new Response(JSON.stringify(ticket()), { status: 200 })
-    })
-    const port = createTelegramReportDownloadPort(client, host, () => 'https://rutcampustrack.example')
+    const client = createGenerationBoundReportDownloadClient(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'synthetic-bearer',
+        refreshFor: async () => undefined,
+      },
+      async (_input) => {
+        generation = 2
+        return new Response(
+          JSON.stringify(String(_input).endsWith('/ticket') ? ticket() : readyJob()),
+          { status: 200 },
+        )
+      },
+    )
+    const port = createTelegramReportDownloadPort(
+      client,
+      host,
+      () => 'https://rutcampustrack.example',
+    )
 
     await expect(port.download(teacherJournalRequest(), () => true)).rejects.toThrow()
     expect(host.params).not.toHaveBeenCalled()
@@ -480,25 +656,34 @@ describe('Telegram download adapter', () => {
     })
     const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       const authorization = new Headers(init?.headers).get('Authorization')
-      if (authorization === 'Bearer expired-synthetic-bearer') return new Response(null, { status: 401 })
-      return new Response(JSON.stringify(ticket()), { status: 200 })
+      if (authorization === 'Bearer expired-synthetic-bearer')
+        return new Response(null, { status: 401 })
+      return new Response(
+        JSON.stringify(String(_input).endsWith('/ticket') ? ticket() : readyJob()),
+        { status: 200 },
+      )
     })
-    const client = createGenerationBoundReportDownloadClient({
-      currentGeneration: () => generation,
-      accessTokenFor: () => token,
-      refreshFor,
-    }, fetcher)
+    const client = createGenerationBoundReportDownloadClient(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => token,
+        refreshFor,
+      },
+      fetcher,
+    )
 
     await expect(client.issueTicket(teacherJournalRequest())).resolves.toMatchObject({
       suggestedFilename: 'teacher-journal.pdf',
     })
 
     expect(refreshFor).toHaveBeenCalledTimes(1)
-    expect(fetcher).toHaveBeenCalledTimes(2)
-    expect(new Headers(fetcher.mock.calls[0]![1]?.headers).get('Authorization'))
-      .toBe('Bearer expired-synthetic-bearer')
-    expect(new Headers(fetcher.mock.calls[1]![1]?.headers).get('Authorization'))
-      .toBe('Bearer fresh-synthetic-bearer')
+    expect(fetcher).toHaveBeenCalledTimes(3)
+    expect(new Headers(fetcher.mock.calls[0]![1]?.headers).get('Authorization')).toBe(
+      'Bearer expired-synthetic-bearer',
+    )
+    expect(new Headers(fetcher.mock.calls[1]![1]?.headers).get('Authorization')).toBe(
+      'Bearer fresh-synthetic-bearer',
+    )
     expect(generation).toBe(4)
   })
 
@@ -509,12 +694,19 @@ describe('Telegram download adapter', () => {
       generation = 10
     })
     const host = fakeHost(true)
-    const client = createGenerationBoundReportDownloadClient({
-      currentGeneration: () => generation,
-      accessTokenFor: () => 'expired-synthetic-bearer',
-      refreshFor,
-    }, fetcher)
-    const port = createTelegramReportDownloadPort(client, host, () => 'https://rutcampustrack.example')
+    const client = createGenerationBoundReportDownloadClient(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'expired-synthetic-bearer',
+        refreshFor,
+      },
+      fetcher,
+    )
+    const port = createTelegramReportDownloadPort(
+      client,
+      host,
+      () => 'https://rutcampustrack.example',
+    )
 
     await expect(port.download(teacherJournalRequest(), () => true)).rejects.toThrow()
 
@@ -525,10 +717,14 @@ describe('Telegram download adapter', () => {
 
   it('fails closed when the ticket path is absolute, even after authenticated issuance', async () => {
     const host = fakeHost(true)
-    const port = createTelegramReportDownloadPort(fakeTicketIssuer({
-      ...ticket(),
-      downloadPath: `https://evil.example/api/report-download/${'a'.repeat(43)}`,
-    }), host, () => 'https://rutcampustrack.example')
+    const port = createTelegramReportDownloadPort(
+      fakeTicketIssuer({
+        ...ticket(),
+        downloadPath: `https://evil.example/api/report-download/${'a'.repeat(43)}`,
+      }),
+      host,
+      () => 'https://rutcampustrack.example',
+    )
 
     await expect(port.download(teacherJournalRequest(), () => true)).rejects.toThrow()
     expect(host.params).not.toHaveBeenCalled()

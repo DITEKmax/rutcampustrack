@@ -1,0 +1,146 @@
+{
+  "schema": "RCT_P06_XML_ENCODING_R1_INDEPENDENT_NARROW_RECHECK_V1",
+  "verdict": "APPROVE_SOURCE_CORRECTION",
+  "resolved_finding": "P06-STATUS-XML-ENCODING-001",
+  "findings": [],
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "prior_whole_review": "/workspace/scratch/rct-validation/p06_one_test_independent_review/outage-status-sensitivity-source-review/REPORT.safe.json",
+  "prior_whole_review_sha256": "a407e7c6a68f8200c8f22b2b6463581fdf39717b1348594b21b86c69327e7246",
+  "corrected_child_sha256": "4fd12123b6715d065eb9f6f8a3eb110a09df925ef00c0c7f6ac2964e92b4b527",
+  "checks": {
+    "ready_sha256": "e3170f2d7a734fb817375e1cb59bcd072c6d8e327ebdfbe2879ea1ba7f035ee3",
+    "manifest_sha256": "39182204c8437e24d2fa8d8e20c02467317810063eadd655b37f02ef8b0318b2",
+    "archive_sha256": "26c4c0fea6eafe29c2b906439f1846685c3de44edecc348f47c0248bb400ad0a",
+    "all_ready_manifest_pins_match": true,
+    "outside_function_AST_exact": true,
+    "old_packet_members_preserved": true,
+    "old_packet_seals_preserved": true,
+    "unchanged_old_files_except_child_PLAN": true,
+    "old_utf16_DTD_accepted": true,
+    "new_same_utf16_DTD_accepted": false,
+    "all23_pass": true,
+    "controls": [
+      {
+        "control": "UTF8",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "JUnit_decl",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "BOM",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "mixedcase_single_quotes",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "XML_whitespace",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "version_only",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "standalone",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "stylesheet_PI",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "UTF8_DTD",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF8_ENTITY",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF16_BOM_DTD",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF16_LE_DTD",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF16_BE_DTD",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF16_plain",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF32_DTD",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "latin1_nonUTF8",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "ASCII_other_decl",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "UTF8_decl_UTF16",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "NUL",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "invalid_UTF8",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "bad_decl",
+        "accepted": false,
+        "expected": false
+      },
+      {
+        "control": "exact_1MiB",
+        "accepted": true,
+        "expected": true
+      },
+      {
+        "control": "over_1MiB",
+        "accepted": false,
+        "expected": false
+      }
+    ],
+    "qualification": "Selected current encoding/declaration/DTD/parse AST and unchanged fstat size expression, synthetic in-RAM XML/metadata only; no full callbacks/privateXML/native/source writes."
+  },
+  "assessment": "Current XML helper decodes strict utf-8-sig, rejects decoded NUL/DOCTYPE/ENTITY, validates any XML declaration against current XML1.0/UTF8 producer grammar, and passes validated text to ET. Alternative bytes cannot trigger XML parser encoding auto-detection. Same previously accepted UTF16-DTD counterexample now rejects. Independent selected Source AST23 controls preserve current UTF8/BOM/legal single-double quotes/whitespace/mixedcaseUTF8/version-only/standalone/stylesheetPI and exact1MiB positives; reject UTF16/32 variants, DTD/entities, nonUTF8/contradictory declarations, invalidUTF8/NUL/malformed declarations/overcap. No raw synthetic XML/body/value hashes emitted.",
+  "influence": "Outside closed_red_xml function AST is exact. Old immutable packet and all old files except corrected child and explanatory PLAN are byte-identical; driver11feb/observer0dec/plan25b/sourcefault/test/class/caps/prior20 controls/separate GREEN unchanged. Existing private copy/closed safe flags and no raw body/hash export preserved. Prior whole Source causality/restoration/resource/privacy review reused; no new framework/product policy/test weakening.",
+  "remaining": "Fresh Root authorization/resource/image bindings/platform approval required before RED effects; separate new GREEN grant after first causal RED plus exact Source/class and original foreign-baseline settlement. Native RED/restore/GREEN NOT_RUN. SIGKILL/hostloss/compiler failure remain UNKNOWN integration blockers. ParentP06 UNKNOWN; B013 journal rights action untouched.",
+  "effects": "Own safe recheck receipt/manifest/archive only. Pure selected AST/RAM synthetic controls, no full callback import/invocation/privateXML/log/keys/body/native/product/shared writes or children."
+}

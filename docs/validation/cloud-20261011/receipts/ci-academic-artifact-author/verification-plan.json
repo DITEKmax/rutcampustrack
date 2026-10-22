@@ -1,0 +1,88 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED_NO_HEAVY_LEASE",
+  "author_commit": "d4b2a533008954691673c263d2a3e57bdc554f84",
+  "author_worktree": "/workspace/rct-worktrees/ci-academic-heap",
+  "required_source": "Fresh frozen integrated Academic source, including accepted NP01 consumers and this exact heap block; root supplies exact SHA and source identity before run",
+  "command_argv": [
+    "./gradlew",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:academic-service:academic-app:test",
+    ":services:academic-service:academic-app:integrationTest",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m",
+    "--console=plain"
+  ],
+  "test_selection": "No --tests filters, no init-script heap override, no engine/filter/assert/report changes",
+  "jvm_budget": {
+    "gradle_heap_bytes": 805306368,
+    "integration_test_heap_bytes": 1073741824,
+    "unit_test_heap": "Unmodified Gradle default512m",
+    "max_workers": 1,
+    "test_forks": "Existing Gradle default1; capture actual process JVM flags during run",
+    "qualification": "Heap caps are not process RSS caps; reserve native/metaspace plus DB/broker/Redis memory and measure peaks"
+  },
+  "observed_source_only_capacity": {
+    "utc": "2026-10-12T03:27:01.881496+00:00",
+    "mem_available_kib": 17415868,
+    "online_cpu": 5,
+    "workspace_free_bytes": 8597274624,
+    "disk_floor_bytes": 4294967296,
+    "condition": "Remeasure immediately before actual lease; current observation is not authorization"
+  },
+  "existing_fixture_resources": [
+    "Own standard Testcontainers postgres:16 / postgres:16-alpine",
+    "Own standard Testcontainers redis:7-alpine",
+    "Own standard Testcontainers rabbitmq:3.13-management-alpine",
+    "Random loopback mapped ports, no reusable foreign DB/queues/volumes"
+  ],
+  "lease_conditions": [
+    "Root explicit current-source/resource lease; one sequential Gradle invocation, maxone testfork",
+    "Before and periodic free-space checks, stop safe allocation before4GiB floor",
+    "Measure own Gradle/test RSS and own fixture resource use; no all-service/app/browser stack",
+    "Preserve existing Testcontainers/JUnit lifecycle and scoped Ryuk cleanup; no global resource cleanup",
+    "Capture private raw log/XML under own receipt directory with redacted publishable summary"
+  ],
+  "required_case_receipts": [
+    "All current Academic integrationTest cases with nonempty discovery and no new skips/executor errors",
+    "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.integrationTestsMustEndWithIT",
+    "Academic unit ArchUnit rules RepositoryNPlusOneGuardTest/ScheduledMustHaveSchedulerLockTest/GrpcClientDeadlineTest",
+    "ru.rutcampustrack.academic.subject.SubjectListDataIT.teacherListDoesNotPublishPendingAdoptionBeforeExactResume",
+    "ru.rutcampustrack.academic.integration.AcademicGrpcIT.getSubjectsByIds_returnsSubjectNamesAndTypes",
+    "Accepted new BotCredentialBrokerBridgeIT once separately authored/reviewed and integrated; wholeAcademicIT retains all old checks"
+  ],
+  "success_evidence": "Native terminal exit0; source SHA and actual-Xmx identity; exact required case identities PASSED; XML totals/errors/skips qualified; absence of executorOOM; own resources cleaned. Later exact current remote CI/Coverage/Security receipts remain required.",
+  "failure_policy": "Retain first current native failure and memory/source context; do not repeat unchanged or weaken architecture discovery. 1GiB is a bounded candidate, not a proven sufficient minimum. Any further heap/task/isolation change needs measured hypothesis and current sole-writer scope.",
+  "runtime_result": "NOT_RUN",
+  "final_author_commit": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "dependency_classpath_proof": {
+    "init_script": "/workspace/scratch/rct-validation/ci_academic_heap/classpath-proof.init.gradle",
+    "syntax_validation": "NOT_RUN_GROOVY_REQUIRES_JVM",
+    "argv_after_compile_before_tests": [
+      "./gradlew",
+      ":services:academic-service:academic-app:ciAcademicClasspathProof",
+      "--init-script",
+      "/workspace/scratch/rct-validation/ci_academic_heap/classpath-proof.init.gradle",
+      "-Dci.academic.classpath.receipt=/workspace/scratch/rct-validation/ci_academic_heap/actual-classpath.json",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "-Dorg.gradle.jvmargs=-Xmx768m",
+      "--console=plain"
+    ],
+    "purpose": "Resolved runtime artifacts and order, Auth producer presence, byte equality of every duplicated canonical academic grpc class, own Academic resources first, actual test heap/fork and both Test classpaths. Script registers only diagnostic task; no Test/main/autoconfig modifications. All runtime NOT_RUN."
+  },
+  "source_file_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "held_candidate": "34c0bd739e5092e693e35a19a144fb9df6970d91 NOT_APPROVED_FOR_ROOT_INTEGRATION_OR_RUNTIME",
+  "corrected_artifact_link": "Academic actualAuthmainartifact TESTedge isTransitive=false; no added external application graph",
+  "containment_proof_plan": [
+    "With root current-source/resource lease, compare baseline heap-only Academic resolved testCompileClasspath/testRuntimeClasspath metadata with candidate under otherwise byte-identical current domain/common/config source. Runtime graph exact delta Auth main/plain artifact; external versions/hash and existing security unchanged.",
+    "On corrected artifact-only link under explicit lease, resolve both graphs and assert delta exactly Auth main/plain artifact; every previous external artifact/version/hash remains. Existing Academic security/crypto/JWT set unchanged; no added starter-security/config/web/AuthAPI/Gateway graph. Auth main compile graph remains unchanged.",
+    "Compile real Auth main and current Academic main/tests including new broker bridge. Missing required type/linker failures are blockers to investigate, never add broad application starters silently.",
+    "Run diagnostic-only classpath-proof.init.gradle: actual Test classpath order, Auth producer class presence, all duplicated canonical grpc class byte hashes equal, Academic own application/profile/logback resource first, unchanged Test unit/integration classpath agreement, actual1gIT/defaultfork1.",
+    "Run full current Academic test+integrationTest without selection filters, retaining naming rule/two merged query cases/current NP01 direct and new broker cases. Verify no unintended BootAuth bootstrap/Flyway/service scan and current signed HTTP paths still pass.",
+    "Capture actual JVM flags/native XML/terminal result/source SHA and own resource cleanup, then current remote CI/Coverage/Security. No runtime PASS inferred from source closure."
+  ]
+}

@@ -1,92 +1,194 @@
 package ru.rutcampustrack.attendance.grpc;
 
-import io.grpc.StatusRuntimeException;
 import io.grpc.Metadata;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
-import ru.rutcampustrack.academic.grpc.GroupRequest;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
-import ru.rutcampustrack.academic.grpc.HeadmanGroupCompositionResponse;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.GroupRequest;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanGroupCompositionResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.StudentProjectionScopeRequest;
+import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
 import ru.rutcampustrack.academic.grpc.SubjectInfo;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsRequest;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
-import ru.rutcampustrack.academic.grpc.StudentProjectionScopeRequest;
-import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsRequest;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
-import ru.rutcampustrack.attendance.student.StudentCheckinException;
 import ru.rutcampustrack.attendance.security.RequestContext;
-import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
+import ru.rutcampustrack.attendance.student.StudentCheckinException;
+import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
+import ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptor;
+import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
+import ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentials;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * gRPC client wrapper for Academic Service.
- * All calls use a 3-second deadline to prevent cascading timeouts.
- * StatusRuntimeException is translated to domain exceptions
- * which are then mapped to HTTP status codes by GlobalExceptionHandler.
+ * gRPC client wrapper for Academic Service. All calls use a 3-second deadline to prevent cascading
+ * timeouts. StatusRuntimeException is translated to domain exceptions which are then mapped to HTTP
+ * status codes by GlobalExceptionHandler.
  */
 @Component
 public class AcademicGrpcClient {
 
+    @Value("${grpc.service-identity.attendance-to-academic-token:}")
+    private String attendanceToAcademicToken;
+
+    @Value("${grpc.client.academic-service.security.authority-override:academic-service}")
+    private String academicAuthority;
+
     /** Semester metadata after the report's existing actor/group admission. */
     public ru.rutcampustrack.academic.grpc.SemesterStateResponse getSemesterState(long semesterId) {
+        var credential =
+                DirectedServiceCredential.tryCreate(
+                                new ServicePrincipal("attendance-service"),
+                                ServicePrincipal.ACADEMIC_SERVICE,
+                                attendanceToAcademicToken)
+                        .orElseThrow(
+                                () ->
+                                        new AcademicServiceUnavailableException(
+                                                "Attendance semester authority has no directed"
+                                                        + " service identity"));
+        var callCredentials =
+                ServiceTokenCallCredentials.forMethod(
+                        credential,
+                        academicAuthority,
+                        ServiceIdentityServerInterceptor.ACADEMIC_GET_SEMESTER_STATE);
         try {
-            var response = stub.withDeadlineAfter(3, TimeUnit.SECONDS).getSemesterState(
-                    ru.rutcampustrack.academic.grpc.SemesterStateRequest.newBuilder().setSemesterId(semesterId).build());
-            if (response.getId() != semesterId) throw new AcademicServiceUnavailableException("Mismatched semester state");
+            var response =
+                    stub.withCallCredentials(callCredentials)
+                            .withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getSemesterState(
+                                    ru.rutcampustrack.academic.grpc.SemesterStateRequest
+                                            .newBuilder()
+                                            .setSemesterId(semesterId)
+                                            .build());
+            if (response.getId() != semesterId)
+                throw new AcademicServiceUnavailableException("Mismatched semester state");
             return response;
         } catch (StatusRuntimeException error) {
             if (error.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Semester", "id", semesterId);
             }
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + error.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + error.getStatus().getCode(),
+                    error.getStatus().getCode());
         }
     }
 
-    public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(long groupId, Long semesterId) {
+    /** Journal state using the original signed actor and Academic's fresh own-group admission. */
+    public ru.rutcampustrack.academic.grpc.SemesterStateResponse getHeadmanJournalSemesterState(
+            long groupId, long semesterId) {
+        String token = requestContext == null ? null : requestContext.getInternalToken();
+        if (token == null || token.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(INTERNAL_TOKEN, token);
+        try {
+            var response =
+                    stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                            .withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getHeadmanJournalSemesterState(
+                                    ru.rutcampustrack.academic.grpc
+                                            .HeadmanJournalSemesterStateRequest.newBuilder()
+                                            .setGroupId(groupId)
+                                            .setSemesterId(semesterId)
+                                            .build());
+            if (response.getId() != semesterId) {
+                throw new AcademicServiceUnavailableException("Mismatched journal semester state");
+            }
+            return response;
+        } catch (StatusRuntimeException error) {
+            switch (error.getStatus().getCode()) {
+                case INVALID_ARGUMENT ->
+                        throw new ru.rutcampustrack.attendance.exception.BadRequestException(
+                                "Некорректный семестр или группа");
+                case NOT_FOUND -> throw new ResourceNotFoundException("Semester", "id", semesterId);
+                case PERMISSION_DENIED ->
+                        throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                                "Отсутствует право просмотра журнала своей группы");
+                case UNAUTHENTICATED ->
+                        throw new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Academic Service отклонил internal-сессию");
+                default ->
+                        throw new AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
+            }
+        }
+    }
+
+    public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(
+            long groupId, Long semesterId) {
         return resolveHeadmanStatsScope(groupId, semesterId, null);
     }
 
-    public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(long groupId, Long semesterId, Long studentId) {
+    public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(
+            long groupId, Long semesterId, Long studentId) {
         String token = requestContext == null ? null : requestContext.getInternalToken();
-        if (token == null || token.isBlank()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                "Подписанная internal-сессия отсутствует");
+        if (token == null || token.isBlank())
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
         Metadata metadata = new Metadata();
         metadata.put(INTERNAL_TOKEN, token);
-        var request = ru.rutcampustrack.academic.grpc.HeadmanStatsScopeRequest.newBuilder().setGroupId(groupId);
+        var request =
+                ru.rutcampustrack.academic.grpc.HeadmanStatsScopeRequest.newBuilder()
+                        .setGroupId(groupId);
         if (semesterId != null) request.setSemesterId(semesterId);
         if (studentId != null) request.setStudentId(studentId);
         try {
             return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
-                    .withDeadlineAfter(3, TimeUnit.SECONDS).resolveHeadmanStatsScope(request.build());
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .resolveHeadmanStatsScope(request.build());
         } catch (StatusRuntimeException error) {
             switch (error.getStatus().getCode()) {
-                case INVALID_ARGUMENT -> throw new ru.rutcampustrack.attendance.exception.BadRequestException("Некорректный семестр");
-                case NOT_FOUND -> throw new ResourceNotFoundException(studentId == null ? "Semester" : "Student/semester", "id", studentId == null ? semesterId : studentId);
-                case PERMISSION_DENIED -> throw new ru.rutcampustrack.attendance.exception.AccessDeniedException("Отсутствует право VIEW_STATS текущей группы");
-                case UNAUTHENTICATED -> throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
-                default -> throw new AcademicServiceUnavailableException("Academic Service unavailable: " + error.getStatus());
+                case INVALID_ARGUMENT ->
+                        throw new ru.rutcampustrack.attendance.exception.BadRequestException(
+                                "Некорректный семестр");
+                case NOT_FOUND ->
+                        throw new ResourceNotFoundException(
+                                studentId == null ? "Semester" : "Student/semester",
+                                "id",
+                                studentId == null ? semesterId : studentId);
+                case PERMISSION_DENIED ->
+                        throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                                "Отсутствует право VIEW_STATS текущей группы");
+                case UNAUTHENTICATED ->
+                        throw new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Academic Service отклонил internal-сессию");
+                default ->
+                        throw new AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -97,58 +199,63 @@ public class AcademicGrpcClient {
     @GrpcClient("academic-service")
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
 
-    @Autowired
-    private RequestContext requestContext;
+    @Autowired private RequestContext requestContext;
 
     public GroupResponse getGroup(Long groupId) {
         try {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getGroup(GroupRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .build());
+                    .getGroup(GroupRequest.newBuilder().setGroupId(groupId).build());
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Group", "id", groupId);
             }
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     public GroupMembersResponse getGroupMembers(Long groupId) {
         try {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getGroupMembers(GroupMembersRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .build());
+                    .getGroupMembers(GroupMembersRequest.newBuilder().setGroupId(groupId).build());
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Group", "id", groupId);
             }
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     /**
-     * Reads a complete historical roster.  The paired fields are mandatory
-     * here; callers must validate the response echoes before materializing any
-     * attendance document.
+     * Reads a complete historical roster. The paired fields are mandatory here; callers must
+     * validate the response echoes before materializing any attendance document.
      */
     public GroupMembersResponse getGroupMembers(Long groupId, LocalDate asOfDate, Long semesterId) {
-        if (groupId == null || groupId <= 0 || asOfDate == null || semesterId == null || semesterId <= 0) {
+        if (groupId == null
+                || groupId <= 0
+                || asOfDate == null
+                || semesterId == null
+                || semesterId <= 0) {
             throw new IllegalArgumentException("groupId, asOfDate and semesterId are required");
         }
         try {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getGroupMembers(GroupMembersRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setAsOfDate(asOfDate.toString())
-                            .setSemesterId(semesterId)
-                            .build());
+                    .getGroupMembers(
+                            GroupMembersRequest.newBuilder()
+                                    .setGroupId(groupId)
+                                    .setAsOfDate(asOfDate.toString())
+                                    .setSemesterId(semesterId)
+                                    .build());
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Group", "id", groupId);
             }
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -157,7 +264,9 @@ public class AcademicGrpcClient {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getCampusGeofence(Empty.getDefaultInstance());
         } catch (StatusRuntimeException e) {
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -169,26 +278,31 @@ public class AcademicGrpcClient {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Semester", "status", "active");
             }
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     public HeadmanCheckResponse isHeadman(Long userId, Long groupId) {
         try {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .isHeadman(HeadmanCheckRequest.newBuilder()
-                            .setUserId(userId)
-                            .setGroupId(groupId)
-                            .build());
+                    .isHeadman(
+                            HeadmanCheckRequest.newBuilder()
+                                    .setUserId(userId)
+                                    .setGroupId(groupId)
+                                    .build());
         } catch (StatusRuntimeException e) {
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     /**
-     * Checks one assistant capability using the exact signed request token.
-     * PERMISSION_DENIED is a normal false result; an invalid session remains
-     * HTTP 401 and transport failure remains HTTP 503 at the caller.
+     * Checks one assistant capability using the exact signed request token. PERMISSION_DENIED is a
+     * normal false result; an invalid session remains HTTP 401 and transport failure remains HTTP
+     * 503 at the caller.
      */
     public boolean hasAssistantPermission(Long groupId, String permission) {
         if (groupId == null || groupId <= 0 || permission == null || permission.isBlank()) {
@@ -196,26 +310,33 @@ public class AcademicGrpcClient {
         }
         String token = requestContext == null ? null : requestContext.getInternalToken();
         if (token == null || token.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Подписанная internal-сессия отсутствует");
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
         }
         Metadata metadata = new Metadata();
         metadata.put(INTERNAL_TOKEN, token);
         try {
             return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                     .withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .checkAssistantPermission(AssistantPermissionCheckRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setPermission(permission)
-                            .build())
+                    .checkAssistantPermission(
+                            AssistantPermissionCheckRequest.newBuilder()
+                                    .setGroupId(groupId)
+                                    .setPermission(permission)
+                                    .build())
                     .getAllowed();
         } catch (StatusRuntimeException error) {
             switch (error.getStatus().getCode()) {
-                case PERMISSION_DENIED -> { return false; }
-                case UNAUTHENTICATED -> throw new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
-                default -> throw new AcademicServiceUnavailableException(
-                        "Academic Service unavailable: " + error.getStatus());
+                case PERMISSION_DENIED -> {
+                    return false;
+                }
+                case UNAUTHENTICATED ->
+                        throw new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Academic Service отклонил internal-сессию");
+                default ->
+                        throw new AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -224,22 +345,29 @@ public class AcademicGrpcClient {
     public HeadmanGroupCompositionResponse getHeadmanGroupComposition(long groupId) {
         String token = requestContext == null ? null : requestContext.getInternalToken();
         if (token == null || token.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
         }
         Metadata metadata = new Metadata();
         metadata.put(INTERNAL_TOKEN, token);
         try {
             return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                     .withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getHeadmanGroupComposition(GroupRequest.newBuilder().setGroupId(groupId).build());
+                    .getHeadmanGroupComposition(
+                            GroupRequest.newBuilder().setGroupId(groupId).build());
         } catch (StatusRuntimeException error) {
             switch (error.getStatus().getCode()) {
-                case PERMISSION_DENIED -> throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
-                        "Выгрузка состава доступна только текущему старосте своей группы");
-                case UNAUTHENTICATED -> throw new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
-                default -> throw new AcademicServiceUnavailableException(
-                        "Academic Service unavailable: " + error.getStatus());
+                case PERMISSION_DENIED ->
+                        throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                                "Выгрузка состава доступна только текущему старосте своей группы");
+                case UNAUTHENTICATED ->
+                        throw new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Academic Service отклонил internal-сессию");
+                default ->
+                        throw new AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -247,19 +375,22 @@ public class AcademicGrpcClient {
     public TeacherSubjectsResponse getTeacherSubjects(Long teacherId, Long semesterId) {
         try {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getTeacherSubjects(TeacherSubjectsRequest.newBuilder()
-                            .setTeacherId(teacherId)
-                            .setSemesterId(semesterId)
-                            .build());
+                    .getTeacherSubjects(
+                            TeacherSubjectsRequest.newBuilder()
+                                    .setTeacherId(teacherId)
+                                    .setSemesterId(semesterId)
+                                    .build());
         } catch (StatusRuntimeException e) {
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     /**
-     * Returns the actor's current teacher assignments, independently of any
-     * historical semester selected by a read report.  Academic applies the
-     * active grant and today's validity window on this existing read boundary.
+     * Returns the actor's current teacher assignments, independently of any historical semester
+     * selected by a read report. Academic applies the active grant and today's validity window on
+     * this existing read boundary.
      */
     public TeacherSubjectsResponse getCurrentTeacherSubjects(Long teacherId) {
         SemesterResponse active = getActiveSemester();
@@ -270,46 +401,51 @@ public class AcademicGrpcClient {
     }
 
     /**
-     * D-26: fetch user's display name for excuse-ticket snapshot.
-     * Returns "Студент #userId" fallback if the user is not found to avoid blocking
-     * ticket creation on transient academic-service outages.
+     * D-26: fetch user's display name for excuse-ticket snapshot. Returns "Студент #userId"
+     * fallback if the user is not found to avoid blocking ticket creation on transient
+     * academic-service outages.
      */
     public String getUserDisplayName(Long userId) {
         try {
-            UserResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getUserById(UserRequest.newBuilder()
-                            .setUserId(userId)
-                            .build());
+            UserResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getUserById(UserRequest.newBuilder().setUserId(userId).build());
             String name = response.getDisplayName();
             return (name == null || name.isBlank()) ? ("Студент #" + userId) : name;
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("User", "id", userId);
             }
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
-    /** Optional audit enrichment after the caller's authorization; never manufactures an ID-based name. */
+    /**
+     * Optional audit enrichment after the caller's authorization; never manufactures an ID-based
+     * name.
+     */
     public String getAuditUserDisplayName(Long userId, io.grpc.Deadline pageDeadline) {
         if (userId == null || userId <= 0 || pageDeadline.isExpired()) return null;
         try {
-            UserResponse response = stub.withDeadline(pageDeadline)
-                    .getUserById(UserRequest.newBuilder().setUserId(userId).build());
+            UserResponse response =
+                    stub.withDeadline(pageDeadline)
+                            .getUserById(UserRequest.newBuilder().setUserId(userId).build());
             if (response.getId() != userId || response.getDisplayName().isBlank()) return null;
             return response.getDisplayName();
         } catch (StatusRuntimeException unavailableOrMissing) {
-            // Name availability must not turn an already-authorized immutable history into an error.
+            // Name availability must not turn an already-authorized immutable history into an
+            // error.
             return null;
         }
     }
 
     public Map<Long, String> getSubjectsByIds(List<Long> subjectIds) {
         return getSubjectDetailsByIds(subjectIds).entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().name(),
-                        (a, b) -> a));
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey, entry -> entry.getValue().name(), (a, b) -> a));
     }
 
     public Map<Long, SubjectDetails> getSubjectDetailsByIds(List<Long> subjectIds) {
@@ -317,34 +453,45 @@ public class AcademicGrpcClient {
             return Map.of();
         }
         try {
-            SubjectsByIdsResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getSubjectsByIds(SubjectsByIdsRequest.newBuilder()
-                            .addAllSubjectIds(subjectIds)
-                            .build());
+            SubjectsByIdsResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getSubjectsByIds(
+                                    SubjectsByIdsRequest.newBuilder()
+                                            .addAllSubjectIds(subjectIds)
+                                            .build());
             return response.getSubjectsList().stream()
-                    .collect(Collectors.toMap(
-                            SubjectInfo::getSubjectId,
-                            subject -> new SubjectDetails(subject.getSubjectName(), subject.getSubjectType()),
-                            (a, b) -> a));
+                    .collect(
+                            Collectors.toMap(
+                                    SubjectInfo::getSubjectId,
+                                    subject ->
+                                            new SubjectDetails(
+                                                    subject.getSubjectName(),
+                                                    subject.getSubjectType(),
+                                                    subject.getGroupId(),
+                                                    subject.getLessonTypesList()),
+                                    (a, b) -> a));
         } catch (StatusRuntimeException e) {
-            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     /**
-     * Resolve the signed student's historical membership and rank cohort.  The
-     * original validated JWT is forwarded to Academic so its authority
-     * service re-checks the same actor and session; claims are never rebuilt
-     * into a weaker synthetic header.
+     * Resolve the signed student's historical membership and rank cohort. The original validated
+     * JWT is forwarded to Academic so its authority service re-checks the same actor and session;
+     * claims are never rebuilt into a weaker synthetic header.
      */
     public StudentProjectionScopeResponse resolveStudentProjectionScope(long semesterId) {
         if (semesterId <= 0) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
                     "semester_id должен быть положительным");
         }
         String token = StudentGrpcIdentity.token();
         if (token == null || token.isBlank()) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_SESSION,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_SESSION,
                     "Подписанная student-сессия отсутствует");
         }
         Metadata metadata = new Metadata();
@@ -352,25 +499,39 @@ public class AcademicGrpcClient {
         try {
             return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                     .withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .resolveStudentProjectionScope(StudentProjectionScopeRequest.newBuilder()
-                            .setSemesterId(semesterId)
-                            .build());
+                    .resolveStudentProjectionScope(
+                            StudentProjectionScopeRequest.newBuilder()
+                                    .setSemesterId(semesterId)
+                                    .build());
         } catch (StatusRuntimeException error) {
             switch (error.getStatus().getCode()) {
-                case UNAUTHENTICATED -> throw new StudentCheckinException(
-                        StudentCheckinException.Code.INVALID_SESSION,
-                        "Academic Service отклонил student-сессию");
-                case PERMISSION_DENIED -> throw new StudentCheckinException(
-                        StudentCheckinException.Code.OUT_OF_SCOPE,
-                        "Семестр не входит в подписанный student scope");
-                case INVALID_ARGUMENT -> throw new StudentCheckinException(
-                        StudentCheckinException.Code.INVALID_REQUEST,
-                        "Academic Service отклонил semester_id");
-                default -> throw new AcademicServiceUnavailableException(
-                        "Academic Service unavailable: " + error.getStatus());
+                case UNAUTHENTICATED ->
+                        throw new StudentCheckinException(
+                                StudentCheckinException.Code.INVALID_SESSION,
+                                "Academic Service отклонил student-сессию");
+                case PERMISSION_DENIED ->
+                        throw new StudentCheckinException(
+                                StudentCheckinException.Code.OUT_OF_SCOPE,
+                                "Семестр не входит в подписанный student scope");
+                case INVALID_ARGUMENT ->
+                        throw new StudentCheckinException(
+                                StudentCheckinException.Code.INVALID_REQUEST,
+                                "Academic Service отклонил semester_id");
+                default ->
+                        throw new AcademicServiceUnavailableException(
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
 
-    public record SubjectDetails(String name, String type) {}
+    public record SubjectDetails(String name, String type, long groupId, List<String> lessonTypes) {
+        public SubjectDetails {
+            lessonTypes = List.copyOf(lessonTypes);
+        }
+
+        public SubjectDetails(String name, String type) {
+            this(name, type, 0L, List.of());
+        }
+    }
 }

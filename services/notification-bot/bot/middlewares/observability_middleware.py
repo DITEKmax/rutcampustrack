@@ -4,9 +4,8 @@
 Вставляет в structlog contextvars:
 
 * ``user_id`` — ``event.from_user.id`` (если есть).
-* ``callback_type`` — класс события (``message``, ``callback_query`` и т.д.)
-  и callback ``data`` первые 60 символов для debug.
-* ``trace_id`` — новый uuid per-update, чтобы все логи одного
+* ``callback_type`` — класс события (``message``, ``callback_query`` и т.д.).
+* Активный OTel span связывает все логи одного
   взаимодействия (message → router → handler → RabbitMQ publish)
   связывались.
 
@@ -17,13 +16,14 @@ Middleware глобальный (регистрируется на ``Dispatcher`
 
 from __future__ import annotations
 
-import uuid
 from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
+from opentelemetry import trace
+from opentelemetry.context import Context
 
-from bot.observability import bind_trace_context
+from bot.observability import bind_trace_context, isolated_log_context
 
 
 class ObservabilityMiddleware(BaseMiddleware):
@@ -37,19 +37,12 @@ class ObservabilityMiddleware(BaseMiddleware):
         user_id = getattr(user, "id", None) if user is not None else None
 
         callback_type = event.__class__.__name__.lower()
-        callback_data: str | None = None
-        # CallbackQuery.data — короткая строка; первые 60 символов достаточно
-        # для отладки без риска утечки PII.
-        raw = getattr(event, "data", None)
-        if isinstance(raw, str):
-            callback_data = raw[:60]
-
-        trace_id = uuid.uuid4().hex
-
-        with bind_trace_context(
-            trace_id,
-            user_id=user_id,
-            callback_type=callback_type,
-            callback_data=callback_data,
+        # An update is a new ingress root; callback data is never telemetry.
+        with trace.get_tracer(__name__).start_as_current_span(
+            "notification-bot.update",
+            context=Context(),
+            record_exception=False,
         ):
-            return await handler(event, data)
+            with isolated_log_context():
+                with bind_trace_context(None, user_id=user_id, callback_type=callback_type):
+                    return await handler(event, data)

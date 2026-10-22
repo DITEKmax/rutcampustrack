@@ -1,6 +1,21 @@
 package ru.rutcampustrack.notification.push;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Encoding;
 import nl.martijndwars.webpush.Notification;
@@ -13,69 +28,51 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
-import java.time.Clock;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.HexFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-/** One provider attempt; central admission and durable retry belong to NotificationPushIntentDispatcher. */
+/**
+ * One provider attempt; central admission and durable retry belong to
+ * NotificationPushIntentDispatcher.
+ */
 @Service
 @Slf4j
 public class WebPushDeliveryService {
 
     /** Events that should create Web Push notifications. */
-    private static final Set<String> PUSH_EVENT_TYPES = Set.of(
-            "lesson.started",
-            "lesson.reminder",
-            "lesson.blocked",
-            "lesson.cancelled",
-            "lesson.one_off.created",
-            "lesson.one_off.cancelled",
-            "homework.published",
-            "homework.updated",
-            "group.renamed",
-            "group.archived",
-            // Студент-таргетированные: доходят только подписчику user_id из payload.
-            "excuse.decided",
-            "late_checkin.decided",
-            "attendance.marked",
-            "homework.weekly_digest",
-            "homework.due_reminder"
-    );
+    private static final Set<String> PUSH_EVENT_TYPES =
+            Set.of(
+                    "lesson.started",
+                    "lesson.reminder",
+                    "lesson.blocked",
+                    "lesson.cancelled",
+                    "lesson.one_off.created",
+                    "lesson.one_off.cancelled",
+                    "homework.published",
+                    "homework.updated",
+                    "group.renamed",
+                    "group.archived",
+                    // Студент-таргетированные: доходят только подписчику user_id из payload.
+                    "excuse.decided",
+                    "late_checkin.decided",
+                    "attendance.marked",
+                    "homework.weekly_digest",
+                    "homework.due_reminder");
 
     /** Events that fan out only to headmen of the group (старостам). */
-    private static final Set<String> HEADMAN_ONLY_EVENT_TYPES = Set.of(
-            "excuse.requested",
-            "late_checkin.requested",
-            "lesson.closed"
-    );
+    private static final Set<String> HEADMAN_ONLY_EVENT_TYPES =
+            Set.of("excuse.requested", "late_checkin.requested", "lesson.closed");
 
     /** Events that are sent to a single subscriber identified by payload.user_id. */
-    private static final Set<String> USER_SCOPED_EVENT_TYPES = Set.of(
-            "excuse.decided",
-            "late_checkin.decided",
-            "attendance.marked",
-            "homework.weekly_digest",
-            "homework.due_reminder"
-    );
+    private static final Set<String> USER_SCOPED_EVENT_TYPES =
+            Set.of(
+                    "excuse.decided",
+                    "late_checkin.decided",
+                    "attendance.marked",
+                    "homework.weekly_digest",
+                    "homework.due_reminder");
 
     private final PushSubscriptionRepository repository;
     private final PushService webPushService;
@@ -87,14 +84,15 @@ public class WebPushDeliveryService {
     private final AcademicGroupMemberClient academicGroupMemberClient;
 
     @Autowired
-    public WebPushDeliveryService(PushSubscriptionRepository repository,
-                                   PushService webPushService,
-                                   ObjectMapper objectMapper,
-                                   MongoTemplate mongoTemplate,
-                                   Clock clock,
-                                   NotificationPreferencesService preferencesService,
-                                   ReminderAttendanceStateService reminderAttendanceStateService,
-                                   AcademicGroupMemberClient academicGroupMemberClient) {
+    public WebPushDeliveryService(
+            PushSubscriptionRepository repository,
+            PushService webPushService,
+            ObjectMapper objectMapper,
+            MongoTemplate mongoTemplate,
+            Clock clock,
+            NotificationPreferencesService preferencesService,
+            ReminderAttendanceStateService reminderAttendanceStateService,
+            AcademicGroupMemberClient academicGroupMemberClient) {
         this.repository = repository;
         this.webPushService = webPushService;
         this.objectMapper = objectMapper;
@@ -105,59 +103,107 @@ public class WebPushDeliveryService {
         this.academicGroupMemberClient = academicGroupMemberClient;
     }
 
-    public WebPushDeliveryService(PushSubscriptionRepository repository,
-                                   PushService webPushService,
-                                   ObjectMapper objectMapper,
-                                   MongoTemplate mongoTemplate,
-                                   Clock clock,
-                                   NotificationPreferencesService preferencesService,
-                                   ReminderAttendanceStateService reminderAttendanceStateService) {
-        this(repository, webPushService, objectMapper, mongoTemplate, clock,
-                preferencesService, reminderAttendanceStateService, null);
+    public WebPushDeliveryService(
+            PushSubscriptionRepository repository,
+            PushService webPushService,
+            ObjectMapper objectMapper,
+            MongoTemplate mongoTemplate,
+            Clock clock,
+            NotificationPreferencesService preferencesService,
+            ReminderAttendanceStateService reminderAttendanceStateService) {
+        this(
+                repository,
+                webPushService,
+                objectMapper,
+                mongoTemplate,
+                clock,
+                preferencesService,
+                reminderAttendanceStateService,
+                null);
     }
 
-    public WebPushDeliveryService(PushSubscriptionRepository repository,
-                                   PushService webPushService,
-                                   ObjectMapper objectMapper,
-                                   MongoTemplate mongoTemplate,
-                                   Clock clock) {
+    public WebPushDeliveryService(
+            PushSubscriptionRepository repository,
+            PushService webPushService,
+            ObjectMapper objectMapper,
+            MongoTemplate mongoTemplate,
+            Clock clock) {
         this(repository, webPushService, objectMapper, mongoTemplate, clock, null, null, null);
     }
 
-    /**
-     * Returns true if this event type should trigger a Web Push notification.
-     */
+    /** Returns true if this event type should trigger a Web Push notification. */
     public boolean shouldPush(String eventType) {
         return PUSH_EVENT_TYPES.contains(eventType)
                 || HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
-                || Set.of("lesson.transferred", "lesson.restored", "lesson.updated", "homework.withdrawn",
-                        "group.membership.changed", "headman.access.changed", "assistant.access.changed", "admin.access.changed",
-                        "semester.activated", "semester.operation.completed", "group.promotion.completed").contains(eventType);
+                || Set.of(
+                                "lesson.transferred",
+                                "lesson.restored",
+                                "lesson.updated",
+                                "homework.withdrawn",
+                                "group.membership.changed",
+                                "headman.access.changed",
+                                "assistant.access.changed",
+                                "admin.access.changed",
+                                "semester.activated",
+                                "semester.operation.completed",
+                                "group.promotion.completed")
+                        .contains(eventType);
     }
 
-    /** Durable dispatcher owns admission, lease and receipts; this method performs one explicit provider attempt. */
-    public int sendToSubscription(PushSubscriptionDocument subscription, String eventType,
-                                  ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item item) throws Exception {
-        String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                .digest(subscription.getEndpoint().getBytes(StandardCharsets.UTF_8)));
-        String body = item.details().stream().limit(3).map(detail ->
-                (detail.label() == null ? "" : detail.label() + ": ") + detail.value()).collect(Collectors.joining("\n"));
+    /**
+     * Durable dispatcher owns admission, lease and receipts; this method performs one explicit
+     * provider attempt.
+     */
+    public int sendToSubscription(
+            PushSubscriptionDocument subscription,
+            String eventType,
+            ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item item)
+            throws Exception {
+        String fingerprint =
+                HexFormat.of()
+                        .formatHex(
+                                MessageDigest.getInstance("SHA-256")
+                                        .digest(
+                                                subscription
+                                                        .getEndpoint()
+                                                        .getBytes(StandardCharsets.UTF_8)));
+        String body =
+                item.details().stream()
+                        .limit(3)
+                        .map(
+                                detail ->
+                                        (detail.label() == null ? "" : detail.label() + ": ")
+                                                + detail.value())
+                        .collect(Collectors.joining("\n"));
         if (body.isBlank()) body = "Открой приложение для подробностей";
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("recipientUserId", subscription.getUserId().toString());
         json.put("subscriptionFingerprint", fingerprint);
-        json.put("title", item.heading()); json.put("body", boundedText(body, 600));
-        json.put("event_type", eventType); json.put("data", Map.of());
+        json.put("title", item.heading());
+        json.put("body", boundedText(body, 600));
+        json.put("event_type", eventType);
+        json.put("data", Map.of());
         if (item.action() != null) {
-            String encoded = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
-                    objectMapper.writeValueAsBytes(Map.of("v", 2, "action", item.action())));
+            String encoded =
+                    java.util.Base64.getUrlEncoder()
+                            .withoutPadding()
+                            .encodeToString(
+                                    objectMapper.writeValueAsBytes(
+                                            Map.of("v", 2, "action", item.action())));
             if (encoded.length() <= 384) json.put("notificationAction", encoded);
         }
-        HttpResponse response = webPushService.send(createNotification(subscription, objectMapper.writeValueAsBytes(json)), Encoding.AES128GCM);
-        if (response == null || response.getStatusLine() == null) throw new IllegalStateException("Push provider returned no status");
+        HttpResponse response =
+                webPushService.send(
+                        createNotification(subscription, objectMapper.writeValueAsBytes(json)),
+                        Encoding.AES128GCM);
+        if (response == null || response.getStatusLine() == null)
+            throw new IllegalStateException("Push provider returned no status");
         int status;
-        try { status = response.getStatusLine().getStatusCode(); }
-        finally { EntityUtils.consumeQuietly(response.getEntity()); }
+        try {
+            status = response.getStatusLine().getStatusCode();
+        } finally {
+            EntityUtils.consumeQuietly(response.getEntity());
+        }
         if (status == 404 || status == 410) repository.deleteByEndpoint(subscription.getEndpoint());
         if (status >= 200 && status < 300) touchLastSeen(List.of(subscription.getEndpoint()));
         return status;
@@ -165,27 +211,44 @@ public class WebPushDeliveryService {
 
     /** Legacy group fanout cannot bypass central admission and the durable worker. */
     @Deprecated
-    public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
+    public CompletableFuture<Void> sendToGroup(
+            long groupId, String eventType, Map<String, Object> payload) {
         return CompletableFuture.failedFuture(legacyUnavailable());
     }
+
     @Deprecated
-    public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload,
-                                              Set<Long> currentAudienceIds) {
+    public CompletableFuture<Void> sendToGroup(
+            long groupId,
+            String eventType,
+            Map<String, Object> payload,
+            Set<Long> currentAudienceIds) {
         return CompletableFuture.failedFuture(legacyUnavailable());
     }
+
     @Deprecated
-    public Set<Long> resolveCurrentAudience(long groupId, String eventType) { throw legacyUnavailable(); }
+    public Set<Long> resolveCurrentAudience(long groupId, String eventType) {
+        throw legacyUnavailable();
+    }
+
     @Deprecated
-    public Set<Long> resolveEligibleAudience(long groupId, String eventType, Map<String, Object> payload) { throw legacyUnavailable(); }
+    public Set<Long> resolveEligibleAudience(
+            long groupId, String eventType, Map<String, Object> payload) {
+        throw legacyUnavailable();
+    }
+
     @Deprecated
-    public Set<Long> resolveReminderAudience(long groupId, Map<String, Object> payload) { throw legacyUnavailable(); }
+    public Set<Long> resolveReminderAudience(long groupId, Map<String, Object> payload) {
+        throw legacyUnavailable();
+    }
+
     private static IllegalStateException legacyUnavailable() {
         return new IllegalStateException("Central durable notification admission is required");
     }
+
     /**
-     * M05 G7 (NEW-148): single bulk {@code $set} обновляет {@code last_seen}
-     * для всех endpoint'ов с успешной доставкой. Одна Mongo-operation на
-     * fanout вместо N save'ов (write amplification × N).
+     * M05 G7 (NEW-148): single bulk {@code $set} обновляет {@code last_seen} для всех endpoint'ов с
+     * успешной доставкой. Одна Mongo-operation на fanout вместо N save'ов (write amplification ×
+     * N).
      */
     private void touchLastSeen(List<String> endpoints) {
         if (endpoints.isEmpty()) {
@@ -198,22 +261,27 @@ public class WebPushDeliveryService {
 
     /**
      * Narrows subscribers to those eligible for this event:
+     *
      * <ul>
-     *   <li>Headman events → only subscriptions whose user is the current Academic headman</li>
-     *   <li>USER_SCOPED events  → only subscriber matching payload.user_id</li>
-     *   <li>Group events → only subscriptions belonging to current Academic members</li>
+     *   <li>Headman events → only subscriptions whose user is the current Academic headman
+     *   <li>USER_SCOPED events → only subscriber matching payload.user_id
+     *   <li>Group events → only subscriptions belonging to current Academic members
      * </ul>
      */
-    private List<PushSubscriptionDocument> filterRecipients(List<PushSubscriptionDocument> subs,
-                                                            String eventType,
-                                                            Map<String, Object> payload,
-                                                            Set<Long> currentAudienceIds) {
+    private List<PushSubscriptionDocument> filterRecipients(
+            List<PushSubscriptionDocument> subs,
+            String eventType,
+            Map<String, Object> payload,
+            Set<Long> currentAudienceIds) {
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
             if (currentAudienceIds == null || currentAudienceIds.isEmpty()) {
                 return List.of();
             }
             return subs.stream()
-                    .filter(s -> s.getUserId() != null && currentAudienceIds.contains(s.getUserId()))
+                    .filter(
+                            s ->
+                                    s.getUserId() != null
+                                            && currentAudienceIds.contains(s.getUserId()))
                     .collect(Collectors.toList());
         }
         if ("attendance.marked".equals(eventType) && !"headman".equals(payload.get("marked_by"))) {
@@ -227,28 +295,33 @@ public class WebPushDeliveryService {
             }
             long userId = userIdNum.longValue();
             return subs.stream()
-                    .filter(s -> s.getUserId() != null && s.getUserId() == userId
-                            && currentAudienceIds != null && currentAudienceIds.contains(s.getUserId()))
+                    .filter(
+                            s ->
+                                    s.getUserId() != null
+                                            && s.getUserId() == userId
+                                            && currentAudienceIds != null
+                                            && currentAudienceIds.contains(s.getUserId()))
                     .collect(Collectors.toList());
         }
         return subs.stream()
-                .filter(s -> s.getUserId() != null && currentAudienceIds != null
-                        && currentAudienceIds.contains(s.getUserId()))
+                .filter(
+                        s ->
+                                s.getUserId() != null
+                                        && currentAudienceIds != null
+                                        && currentAudienceIds.contains(s.getUserId()))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Creates a Web Push Notification for the given subscription and payload.
-     * Protected to allow stubbing in unit tests (avoids real EC key parsing).
+     * Creates a Web Push Notification for the given subscription and payload. Protected to allow
+     * stubbing in unit tests (avoids real EC key parsing).
      */
     protected Notification createNotification(PushSubscriptionDocument sub, byte[] payloadBytes)
             throws Exception {
         return new Notification(sub.getEndpoint(), sub.getP256dh(), sub.getAuth(), payloadBytes);
     }
 
-    /**
-     * Checks for endpoints expired or unregistered at the provider.
-     */
+    /** Checks for endpoints expired or unregistered at the provider. */
     private boolean isExpired(Exception e) {
         if (e instanceof HttpResponseException hre) {
             return hre.getStatusCode() == 404 || hre.getStatusCode() == 410;
@@ -264,21 +337,52 @@ public class WebPushDeliveryService {
     }
 
     private String buildBody(String eventType, Map<String, Object> payload) {
-        return boundedText(presentation(eventType, payload).details().stream()
-                .sorted(java.util.Comparator.comparingInt(detail -> "Исключено занятий".equals(detail.label()) ? 0
-                        : "Исключённое занятие".equals(detail.label()) ? 1 : "Комментарий".equals(detail.label()) ? 2 : 3)).limit(8)
-                .map(detail -> detail.label() + ": " + detail.value()).collect(Collectors.joining(" · ")), 600);
+        return boundedText(
+                presentation(eventType, payload).details().stream()
+                        .sorted(
+                                java.util.Comparator.comparingInt(
+                                        detail ->
+                                                "Исключено занятий".equals(detail.label())
+                                                        ? 0
+                                                        : "Исключённое занятие"
+                                                                        .equals(detail.label())
+                                                                ? 1
+                                                                : "Комментарий"
+                                                                                .equals(
+                                                                                        detail
+                                                                                                .label())
+                                                                        ? 2
+                                                                        : 3))
+                        .limit(8)
+                        .map(detail -> detail.label() + ": " + detail.value())
+                        .collect(Collectors.joining(" · ")),
+                600);
     }
 
-    private ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item presentation(
-            String eventType, Map<String, Object> payload) {
-        var type = ru.rutcampustrack.notification.history.NotificationCatalog.eventType(eventType, payload)
-                .orElseThrow(() -> new IllegalArgumentException("Unsupported notification presentation"));
+    private ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item
+            presentation(String eventType, Map<String, Object> payload) {
+        var type =
+                ru.rutcampustrack.notification.history.NotificationCatalog.eventType(
+                                eventType, payload)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Unsupported notification presentation"));
         String role = HEADMAN_ONLY_EVENT_TYPES.contains(eventType) ? "HEADMAN" : "STUDENT";
         Instant now = Instant.now(clock);
-        var doc = ru.rutcampustrack.notification.history.NotificationHistoryDocument.builder().type(type)
-                .payload(payload).sentAt(now).roleViews(Map.of(role,
-                        ru.rutcampustrack.notification.history.NotificationHistoryDocument.RoleView.builder().orderAt(now).build())).build();
+        var doc =
+                ru.rutcampustrack.notification.history.NotificationHistoryDocument.builder()
+                        .type(type)
+                        .payload(payload)
+                        .sentAt(now)
+                        .roleViews(
+                                Map.of(
+                                        role,
+                                        ru.rutcampustrack.notification.history
+                                                .NotificationHistoryDocument.RoleView.builder()
+                                                .orderAt(now)
+                                                .build()))
+                        .build();
         return new ru.rutcampustrack.notification.history.NotificationCatalog().present(doc, role);
     }
 
@@ -289,12 +393,16 @@ public class WebPushDeliveryService {
     private static List<?> excludedLessons(Map<String, Object> payload) {
         Object raw = payload.get("excluded_lessons");
         if (raw instanceof List<?> lessons && !lessons.isEmpty()) return lessons;
-        // Older producers supplied IDs only. Keep partial approval visible without inventing metadata.
+        // Older producers supplied IDs only. Keep partial approval visible without inventing
+        // metadata.
         Object ids = payload.get("excluded_lesson_ids");
         if (ids instanceof List<?> lessons && !lessons.isEmpty()) return lessons;
         Object occurrences = payload.get("excluded_occurrence_ids");
-        // Occurrence IDs are not lesson IDs: retain the partial verdict with an honest unavailable-detail fallback.
-        return occurrences instanceof List<?> lessons ? java.util.Collections.nCopies(lessons.size(), Map.of()) : List.of();
+        // Occurrence IDs are not lesson IDs: retain the partial verdict with an honest
+        // unavailable-detail fallback.
+        return occurrences instanceof List<?> lessons
+                ? java.util.Collections.nCopies(lessons.size(), Map.of())
+                : List.of();
     }
 
     private static String excludedLessonsBody(Map<String, Object> payload) {
@@ -315,7 +423,8 @@ public class WebPushDeliveryService {
         List<String> parts = new ArrayList<>();
         String date = str(lesson, "date");
         try {
-            if (date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) parts.add(LocalDate.parse(date).toString());
+            if (date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))
+                parts.add(LocalDate.parse(date).toString());
         } catch (DateTimeParseException ignored) {
             // Optional malformed metadata must not prevent delivery of the decision.
         }
@@ -340,15 +449,16 @@ public class WebPushDeliveryService {
     }
 
     private static String boundedText(String value, int limit) {
-        // JSON escapes C0 controls as six ASCII bytes; normalize them before applying the display bound.
+        // JSON escapes C0 controls as six ASCII bytes; normalize them before applying the display
+        // bound.
         String line = value.replaceAll("[\\p{Cc}\\p{Cf}]+", " ").strip();
         return line.length() > limit ? line.substring(0, limit) + "…" : line;
     }
 
     /**
-     * Builds a short lesson reference like «№3, 14:30-16:00» or «№2, 17.04»
-     * using only fields that are guaranteed by the event schema (no subject_name).
-     * Returns {@code fallback} if nothing useful can be built.
+     * Builds a short lesson reference like «№3, 14:30-16:00» or «№2, 17.04» using only fields that
+     * are guaranteed by the event schema (no subject_name). Returns {@code fallback} if nothing
+     * useful can be built.
      */
     private String lessonBody(Map<String, Object> payload, String fallback) {
         String lessonRef = formatLessonRef(payload);
@@ -499,42 +609,71 @@ public class WebPushDeliveryService {
         return a == null || a.isEmpty() ? (b == null ? "" : b) : a;
     }
 
-    private byte[] buildPayloadJson(String title, String body, String eventType, Map<String, Object> payload,
-                                   PushSubscriptionDocument subscription) {
+    private byte[] buildPayloadJson(
+            String title,
+            String body,
+            String eventType,
+            Map<String, Object> payload,
+            PushSubscriptionDocument subscription) {
         try {
             // A retired account/endpoint must not display an already queued message
             // after the browser enrolls a new account. Never expose endpoint/key material.
-            String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(subscription.getEndpoint().getBytes(StandardCharsets.UTF_8)));
+            String fingerprint =
+                    HexFormat.of()
+                            .formatHex(
+                                    MessageDigest.getInstance("SHA-256")
+                                            .digest(
+                                                    subscription
+                                                            .getEndpoint()
+                                                            .getBytes(StandardCharsets.UTF_8)));
             Map<String, Object> data = new LinkedHashMap<>();
-            for (String key : List.of("lesson_id", "group_id", "subject_id", "homework_id", "ticket_id", "request_id",
-                    "user_id", "student_id", "status")) {
+            for (String key :
+                    List.of(
+                            "lesson_id",
+                            "group_id",
+                            "subject_id",
+                            "homework_id",
+                            "ticket_id",
+                            "request_id",
+                            "user_id",
+                            "student_id",
+                            "status")) {
                 Object value = payload.get(key);
                 if (value == null) continue;
                 if (key.endsWith("_id") && !key.equals("ticket_id") && !key.equals("request_id")) {
-                    if (ru.rutcampustrack.notification.history.NotificationCatalog.positiveId(value) != null) data.put(key, value);
-                } else if (value instanceof String text && text.matches("[A-Za-z0-9_:-]{1,128}")) data.put(key, text);
+                    if (ru.rutcampustrack.notification.history.NotificationCatalog.positiveId(value)
+                            != null) data.put(key, value);
+                } else if (value instanceof String text && text.matches("[A-Za-z0-9_:-]{1,128}"))
+                    data.put(key, text);
             }
-            if ("excuse.decided".equals(eventType) && isApproved(payload) && hasExcludedLessons(payload)) {
-                // Full immutable snapshots remain in the outbox/history; push carries only the detail navigation keys.
+            if ("excuse.decided".equals(eventType)
+                    && isApproved(payload)
+                    && hasExcludedLessons(payload)) {
+                // Full immutable snapshots remain in the outbox/history; push carries only the
+                // detail navigation keys.
                 data = new LinkedHashMap<>();
                 for (String key : List.of("ticket_id", "user_id", "student_id", "status")) {
                     if (payload.containsKey(key)) data.put(key, payload.get(key));
                 }
                 data.put("excluded_lesson_count", excludedLessons(payload).size());
             }
-            Map<String, Object> json = new LinkedHashMap<>(Map.of(
-                    "recipientUserId", subscription.getUserId().toString(),
-                    "subscriptionFingerprint", fingerprint,
-                    "title", title,
-                    "body", body,
-                    "event_type", eventType,
-                    "data", data
-            ));
+            Map<String, Object> json =
+                    new LinkedHashMap<>(
+                            Map.of(
+                                    "recipientUserId", subscription.getUserId().toString(),
+                                    "subscriptionFingerprint", fingerprint,
+                                    "title", title,
+                                    "body", body,
+                                    "event_type", eventType,
+                                    "data", data));
             var action = presentation(eventType, payload).action();
             if (action != null) {
-                String encoded = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
-                        objectMapper.writeValueAsBytes(Map.of("v", 2, "action", action)));
+                String encoded =
+                        java.util.Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString(
+                                        objectMapper.writeValueAsBytes(
+                                                Map.of("v", 2, "action", action)));
                 if (encoded.length() <= 384) json.put("notificationAction", encoded);
             }
             return objectMapper.writeValueAsBytes(json);

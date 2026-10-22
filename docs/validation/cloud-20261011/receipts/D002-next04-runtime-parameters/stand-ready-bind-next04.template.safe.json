@@ -1,0 +1,31 @@
+{
+  "schema": "RCT_D002_STEPS_657_COHORT_BIND_V1",
+  "state": "TEMPLATE_UNBOUND_NOT_AUTHORIZATION",
+  "cohort": null,
+  "ready_sha256": "954d2fbb5faea5272f3a5e9924a563e6d66bc786a849b7318a807651d3c6e4b9",
+  "execution_checkout_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "current_academic_source_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "current_academic_payload_source_verified": false,
+  "critical_TLS_Admin_FULL_edge_directspoof": false,
+  "host_cleanup_dispatch_at": null,
+  "receipts": {
+    "artifact_source": {
+      "path": null,
+      "sha256": null
+    },
+    "runtime_mapping": {
+      "path": null,
+      "sha256": null
+    },
+    "critical_readiness": {
+      "path": null,
+      "sha256": null
+    },
+    "host_live8": {
+      "path": null,
+      "sha256": null
+    }
+  },
+  "live8": [],
+  "qualification": "Root must adopt CURRENT159-host cohort four actualSAFEfacts and fresh16unique livewrapper/childbirths/directPPIDs; no source readiness masquerades as liveproof. Authorbase657, actualcheckingSource481, Academic96/other7old908 provenance. Existingschema includes657 authorbase only, not a claim newRoot executesoldcheckingbytes."
+}

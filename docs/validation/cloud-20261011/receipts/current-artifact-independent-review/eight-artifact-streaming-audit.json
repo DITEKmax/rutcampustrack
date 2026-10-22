@@ -1,0 +1,568 @@
+{
+  "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "jars": [
+    {
+      "service": "auth",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "bytes": 100183493,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.auth.AuthApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1530,
+      "source_member_modes": {
+        "0o644": 104,
+        "0o600": 1426
+      },
+      "logical_payload_bytes": 106294683,
+      "new_distinct_SHA_mode_bytes": 106294683,
+      "new_distinct_4KiB_rounded_bytes": 109764608,
+      "library_count": 173,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "academic",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+      "bytes": 99760018,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.academic.AcademicApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1797,
+      "source_member_modes": {
+        "0o644": 104,
+        "0o600": 1693
+      },
+      "logical_payload_bytes": 106876152,
+      "new_distinct_SHA_mode_bytes": 7981226,
+      "new_distinct_4KiB_rounded_bytes": 9011200,
+      "library_count": 183,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "schedule",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "bytes": 93153993,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.schedule.ScheduleApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1515,
+      "source_member_modes": {
+        "0o644": 104,
+        "0o600": 1411
+      },
+      "logical_payload_bytes": 99650746,
+      "new_distinct_SHA_mode_bytes": 1399672,
+      "new_distinct_4KiB_rounded_bytes": 1839104,
+      "library_count": 174,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "attendance",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "bytes": 95976000,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.attendance.AttendanceApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1745,
+      "source_member_modes": {
+        "0o644": 104,
+        "0o600": 1641
+      },
+      "logical_payload_bytes": 103119560,
+      "new_distinct_SHA_mode_bytes": 25862535,
+      "new_distinct_4KiB_rounded_bytes": 26783744,
+      "library_count": 197,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "bff",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "bytes": 50139225,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.mobilebff.MobileBffApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1296,
+      "source_member_modes": {
+        "0o644": 104,
+        "0o600": 1192
+      },
+      "logical_payload_bytes": 56013157,
+      "new_distinct_SHA_mode_bytes": 547421,
+      "new_distinct_4KiB_rounded_bytes": 643072,
+      "library_count": 103,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "gateway",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "bytes": 62093389,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.gateway.GatewayApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 291,
+      "source_member_modes": {
+        "0o644": 105,
+        "0o600": 186
+      },
+      "logical_payload_bytes": 62450858,
+      "new_distinct_SHA_mode_bytes": 13114520,
+      "new_distinct_4KiB_rounded_bytes": 13271040,
+      "library_count": 135,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "notification",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "bytes": 86688703,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.notification.NotificationWebApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1400,
+      "source_member_modes": {
+        "0o644": 76,
+        "0o600": 1324
+      },
+      "logical_payload_bytes": 92519970,
+      "new_distinct_SHA_mode_bytes": 11079469,
+      "new_distinct_4KiB_rounded_bytes": 11493376,
+      "library_count": 185,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916"
+    },
+    {
+      "service": "renderer",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "bytes": 48918520,
+      "unfolded_manifest": {
+        "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+        "Start-Class": "ru.rutcampustrack.documentrenderer.DocumentRendererApplication",
+        "Spring-Boot-Classes": "BOOT-INF/classes/",
+        "Spring-Boot-Lib": "BOOT-INF/lib/",
+        "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+        "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx"
+      },
+      "main_major_version": 65,
+      "CRC_streamed_regular_entries": 1260,
+      "source_member_modes": {
+        "0o644": 104,
+        "0o600": 1156
+      },
+      "logical_payload_bytes": 54580439,
+      "new_distinct_SHA_mode_bytes": 103748,
+      "new_distinct_4KiB_rounded_bytes": 147456,
+      "library_count": 93,
+      "normal_index_omitted_tools_library": [
+        "BOOT-INF/lib/spring-boot-jarmode-tools-3.5.16.jar"
+      ],
+      "git_properties": "N/A canonical7-app generator"
+    }
+  ],
+  "selected_small_nested_dependency_checks": [
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-outbox-0.1.0.jar",
+      "bytes": 26671,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-security-0.1.0.jar",
+      "bytes": 50828,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-events-0.1.0.jar",
+      "bytes": 8224,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "auth",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-outbox-0.1.0.jar",
+      "bytes": 26671,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-events-0.1.0.jar",
+      "bytes": 8224,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-security-0.1.0.jar",
+      "bytes": 50828,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "academic",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-outbox-0.1.0.jar",
+      "bytes": 26671,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-events-0.1.0.jar",
+      "bytes": 8224,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-security-0.1.0.jar",
+      "bytes": 50828,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "schedule",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-outbox-0.1.0.jar",
+      "bytes": 26671,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-events-0.1.0.jar",
+      "bytes": 8224,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-security-0.1.0.jar",
+      "bytes": 50828,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "attendance",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "bff",
+      "member": "BOOT-INF/lib/shared-security-0.1.0.jar",
+      "bytes": 50828,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "bff",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "bff",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "bff",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "gateway",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "gateway",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "gateway",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "gateway",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-outbox-0.1.0.jar",
+      "bytes": 26671,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-events-0.1.0.jar",
+      "bytes": 8224,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-security-0.1.0.jar",
+      "bytes": 50828,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "notification",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    },
+    {
+      "service": "renderer",
+      "member": "BOOT-INF/lib/shared-web-0.1.0.jar",
+      "bytes": 33922,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "renderer",
+      "member": "BOOT-INF/lib/shared-logback-0.1.0.jar",
+      "bytes": 4620,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "renderer",
+      "member": "BOOT-INF/lib/shared-observability-0.1.0.jar",
+      "bytes": 16632,
+      "fixture_names_absent": true,
+      "EducationalTime_present": false
+    },
+    {
+      "service": "renderer",
+      "member": "BOOT-INF/lib/shared-web-api-0.1.0.jar",
+      "bytes": 6482,
+      "fixture_names_absent": true,
+      "EducationalTime_present": true
+    }
+  ],
+  "total_payload_logical_bytes": 681505565,
+  "source_mode_distinct_bytes": 166383274,
+  "source_mode_distinct_4KiB_rounded_bytes": 172953600,
+  "source_zip_modes": {
+    "0o644": 805,
+    "0o600": 10029
+  },
+  "independent_scope": "all8 full file hashes/central metadata/unfolded headers/main/indices/streamed memberSHA+CRC; selected small shared nested metadata. Existing unchanged verifier all-nested absence receipt reused; no nested-600MB allocation/extraction/app launch."
+}

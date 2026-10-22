@@ -1,0 +1,112 @@
+{
+  "state": "EXACT_DIAGNOSED_FORMATTING_SEMANTICS_PROOF",
+  "pass": true,
+  "rows": [
+    {
+      "source": "TS_OBSERVER",
+      "rawBeforeSha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+      "rawAfterSha256": "80db172a5bc8defd789ddf6e47eb8f2eb35015b68fcbe7d8b355c968f626922e",
+      "rawBytesEqual": false,
+      "groupBefore": 0,
+      "groupAfter": 14,
+      "expectedCount": 14,
+      "groupContextsExactlyRecorded": true,
+      "orderedRemainingAstEqual": true,
+      "astBeforeSha256": "fec5c4bc7fb19f09a039cb9031410c56dbd2a432b8fa41c237663324a3d3fb8f",
+      "astAfterSha256": "fec5c4bc7fb19f09a039cb9031410c56dbd2a432b8fa41c237663324a3d3fb8f",
+      "orderedLiteralKindTextEqual": true,
+      "directiveRawBodiesEqual": true,
+      "parseBefore": [],
+      "parseAfter": []
+    },
+    {
+      "source": "JS_COMMONJS",
+      "rawBeforeSha256": "7799a66ff704816a791c62d69a524c050e009924850cf424c2969dbc785bd029",
+      "rawAfterSha256": "f27c975556f95f67dd53a37e4a4af5da74e1c88e578c203d018d5cedc20e59f6",
+      "rawBytesEqual": false,
+      "groupBefore": 0,
+      "groupAfter": 12,
+      "expectedCount": 12,
+      "groupContextsExactlyRecorded": true,
+      "orderedRemainingAstEqual": true,
+      "astBeforeSha256": "4a90718fb0e2f2a672bac2aba3e731b778c6a1007d09266d9b2b75d0c7f626ed",
+      "astAfterSha256": "4a90718fb0e2f2a672bac2aba3e731b778c6a1007d09266d9b2b75d0c7f626ed",
+      "orderedLiteralKindTextEqual": true,
+      "directiveRawBodiesEqual": true,
+      "parseBefore": [],
+      "parseAfter": []
+    },
+    {
+      "source": "JS_ESNEXT",
+      "rawBeforeSha256": "eba055089c3e9d4f10590ada9a0b8b3e0051c4f6c8d615c8f13862100fdd9ca2",
+      "rawAfterSha256": "6f063cc17df7dde734982e46eab0860a234eeeb2e43955ee8272e32e9c4182d6",
+      "rawBytesEqual": false,
+      "groupBefore": 0,
+      "groupAfter": 12,
+      "expectedCount": 12,
+      "groupContextsExactlyRecorded": true,
+      "orderedRemainingAstEqual": true,
+      "astBeforeSha256": "8fff108650d8927516bdb74e020bcd80c54954728ee553522d60d2bfa36028d5",
+      "astAfterSha256": "8fff108650d8927516bdb74e020bcd80c54954728ee553522d60d2bfa36028d5",
+      "orderedLiteralKindTextEqual": true,
+      "directiveRawBodiesEqual": true,
+      "parseBefore": [],
+      "parseAfter": []
+    }
+  ],
+  "commentsEqual": true,
+  "controls": [
+    {
+      "code": "LITERAL",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_TREE_OR_LITERAL_OR_DIRECTIVE"
+    },
+    {
+      "code": "OPERATOR",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_TREE_OR_LITERAL_OR_DIRECTIVE"
+    },
+    {
+      "code": "BRANCH",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_TREE_OR_LITERAL_OR_DIRECTIVE"
+    },
+    {
+      "code": "CALL_STRUCTURE",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_TREE_OR_LITERAL_OR_DIRECTIVE"
+    },
+    {
+      "code": "USE_STRICT_GROUPING",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_STRUCTURE_FLAGS_OR_DIRECTIVE"
+    },
+    {
+      "code": "USE_STRICT_ESCAPE",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_STRUCTURE_FLAGS_OR_DIRECTIVE"
+    },
+    {
+      "code": "PRECEDENCE",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_STRUCTURE_FLAGS_OR_DIRECTIVE"
+    },
+    {
+      "code": "OPTIONAL_CHAIN_BREAK",
+      "stimulusChanged": true,
+      "rejected": true,
+      "reason": "SEMANTIC_STRUCTURE_FLAGS_OR_DIRECTIVE"
+    }
+  ],
+  "metadataIgnored": "ONLY multiLine on ArrayLiteralExpression/Block/ObjectLiteralExpression",
+  "groupingScope": "ONLY exact path/owner/ancestor/operator/underlyingkind ledger04 14TS and12JS; all other parentheses retained; flags/operators/names/literal/directive structures compared",
+  "rawStrict02and03": "FAIL_RETAINED_QUALIFIED",
+  "sourceWrites": false
+}

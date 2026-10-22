@@ -1,0 +1,20 @@
+{
+  "observed_at": "2026-10-13T03:50:55.936220+00:00",
+  "toolChunk": "ce2fdf",
+  "toolNativeExit": 1,
+  "ongoingToolSession": false,
+  "closedStage": "APPROVED_CONTEXT_REQUIRED",
+  "sourceLine": 128,
+  "effectBoundary": "BEFORE_OWN_NAMESPACE_SUPERVISOR_NODE_API",
+  "runNamespaceAbsent": true,
+  "capturedSupervisorBirth": null,
+  "knownOwnedBirths": [],
+  "nodeStarted": false,
+  "APIRequests": false,
+  "loginCredentialsRead": false,
+  "actualToolContext": "with_additional_permissions.network.enabled=true",
+  "automaticApprovalRejected": false,
+  "limitation": "Exact failing UID/gid/rootFS member was not printed by oldcaller. Metadata/context hypothesis only until normal approved context; sourceguard retained.",
+  "oldGrantReuse": false,
+  "current503cause": "UNKNOWN"
+}

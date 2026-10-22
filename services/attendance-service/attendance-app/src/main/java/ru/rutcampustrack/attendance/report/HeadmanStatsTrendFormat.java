@@ -1,11 +1,10 @@
 package ru.rutcampustrack.attendance.report;
 
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Arrays;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
 
 enum HeadmanStatsTrendFormat {
     PNG("png", "Изображение PNG", "image/png", "png"),
@@ -23,10 +22,21 @@ enum HeadmanStatsTrendFormat {
         this.extension = extension;
     }
 
-    String code() { return code; }
-    String label() { return label; }
-    String contentType() { return contentType; }
-    String extension() { return extension; }
+    String code() {
+        return code;
+    }
+
+    String label() {
+        return label;
+    }
+
+    String contentType() {
+        return contentType;
+    }
+
+    String extension() {
+        return extension;
+    }
 
     HeadmanStatsResponse.FormatOption toOption() {
         return new HeadmanStatsResponse.FormatOption(code, label, contentType, extension);

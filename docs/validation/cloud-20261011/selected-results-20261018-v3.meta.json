@@ -1,0 +1,63 @@
+{
+  "version": "v3-КТ1 FROZEN Q033 delta",
+  "utc": "2026-10-18T16:52:57.512904+00:00",
+  "base": "26cbe5912f6683a81780a831609dbddbc26feba4",
+  "goal": "TASK-ADDENDUM-SPLIT-APPS-20261018.md",
+  "historicalV1": {
+    "closed": 23,
+    "total": 25,
+    "closedWeight": 110,
+    "weight": 123,
+    "percent": 89.43
+  },
+  "mandatoryRows": 39,
+  "mandatoryWeight": 196,
+  "closed": 39,
+  "closedWeight": 196,
+  "percent": 100.0,
+  "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
+  "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
+  "riskGate": "All5testedsourcecurrentgatesSUCCESS and independentfinalreviewAPPROVE; D039historicalUNKNOWN limitationaccepted. DoNOTclaimnewscanner/CIexecutiononfinaldocsSHA orproduction/manualPASS; D009sourceidentity+normalpublicationproofrequired.",
+  "previousVersion": "selected-results-20261018-v2.csv",
+  "historicalV2": {
+    "closed": 24,
+    "total": 38,
+    "closedWeight": 114,
+    "weight": 188,
+    "percent": 60.64
+  },
+  "delta": "OwnerQ033/D038 adds ONLYU14.7 weight8 operatorfirstadmin trustroot+2DBrecovery. 38+1=39;188+8=196; no parent-childdoublecredit. Weightfixedbeforeimplementation afterboundedsource design; v1/v2 preserved.",
+  "byCheckpoint": {
+    "КТ2": {
+      "closed": 14,
+      "total": 14,
+      "weight": 71,
+      "denominator": 71,
+      "percent": 100.0
+    },
+    "КТ3": {
+      "closed": 9,
+      "total": 9,
+      "weight": 37,
+      "denominator": 37,
+      "percent": 100.0
+    },
+    "КТ4": {
+      "closed": 15,
+      "total": 15,
+      "weight": 83,
+      "denominator": 83,
+      "percent": 100.0
+    },
+    "КТ5": {
+      "closed": 1,
+      "total": 1,
+      "weight": 5,
+      "denominator": 5,
+      "percent": 100.0
+    }
+  },
+  "latestAccepted": "U25 finalCacheindependentAPPROVE: exactsource0de/all5terminalSUCCESS/gates114c31a5/pairedoriginalD9+bothbot+helperSOURCE_METHOD/PRcheckoutprovenance/38priorclosuresapplicable. 39/39_196/196 selectedCloudplan, notproduction. D039historicalcauseUNKNOWNacceptedlimitation; nooldfixed/environmentalclaim. FinalD009docs-onlyguardedpublication/sourceidentity/readback required forpublisheddelivery.",
+  "statusSnapshotUtc": "2026-10-19T16:44:20.799031+00:00",
+  "acceptanceException": "D039/Q034 owneraccepts historicalCONNECT+Mark500underlyingUNKNOWN diagnosticlimitation ONLYafterallfinalgreen+independentreview; nooldfixed/environmentalclaim; noinventory/weight/denominatorchange"
+}

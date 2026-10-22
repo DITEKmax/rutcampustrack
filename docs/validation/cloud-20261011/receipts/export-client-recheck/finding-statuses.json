@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-11T23:24:26.049097+00:00",
+  "reviewRevision": "a7c86e1bb180c209f0a0c65680040f2ab40d79f1",
+  "sourceVerdict": "APPROVE",
+  "testQualityVerdict": "APPROVE",
+  "newBlockingFindings": [],
+  "runtimeVerdict": "BROWSER_BACKEND_NATIVE_NOT_RUN",
+  "originalReviewPayloadsPreserved": true,
+  "closed": [
+    {
+      "id": "ECR01",
+      "previousSeverity": "P2",
+      "status": "CLOSED",
+      "sourcePaths": [
+        {
+          "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+          "line": 251
+        },
+        {
+          "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+          "line": 475
+        },
+        {
+          "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+          "line": 953
+        }
+      ],
+      "testPath": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "testLine": 199,
+      "evidence": "before2 one actual draft-query assertion failure (old per-file identity qualified); exact final-green-2 handler PASS"
+    },
+    {
+      "id": "ECR02",
+      "previousSeverity": "P2",
+      "status": "CLOSED",
+      "sourcePaths": [
+        {
+          "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+          "line": 106
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+          "line": 16
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+          "line": 142
+        }
+      ],
+      "evidence": "independent filter/grant stimuli; exact content oracle; real unchanged ExportButton known-bad caller grant fixture one relevant FAIL plus3 positive controls; exact default restored green41",
+      "sensitivityLimit": "caller grant propagation only, no product internal guard mutation, no real backend/browser/native credit"
+    },
+    {
+      "id": "ECR03",
+      "previousSeverity": "P3",
+      "status": "CLOSED",
+      "sourcePaths": [
+        {
+          "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+          "line": 698
+        }
+      ],
+      "evidence": "existing carrier-aware helper; actual browser feedback remains NOT_RUN"
+    }
+  ]
+}

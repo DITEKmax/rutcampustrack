@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-12T05:51:24.059345+00:00",
+  "finding": "COWN01",
+  "old_helper_sha256": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+  "new_helper_sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "old_original23_helper_unchanged": true,
+  "scope": "newpureownershippredicate/identityremember only; numericgroup/session not authority",
+  "known_birth_mismatch": "deny beforeadmission; immutable setdefault map; mismatched currentdirect/adoptedchild makesobservationfailure, no falsecomplete",
+  "positive_ownership": "freshsingleinvocation positivePPIDselfadoption, identityfencedtransitiveancestry or alreadyrecordedexactPID/birthticks",
+  "process_identity_control": "pureactualAST, noPIDwrap/reuse/wrongsignal executed",
+  "actualcontrols": "ownstdlibnormal/deadline/two signals/escapeddescendant/callbackfailure/falsegrant passed at thisexactnewSHA",
+  "resource_or_original_mutations": false
+}

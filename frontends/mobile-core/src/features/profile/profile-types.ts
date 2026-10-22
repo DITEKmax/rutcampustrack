@@ -1,10 +1,35 @@
+import type { BrowserLoginApprovalPort } from './browser-login-approval'
+
 export type ProfileRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
-export type ProfileRoleStatus = 'ACTIVE' | 'SUSPENDED' | 'EXPELLED' | 'GRADUATED' | 'DISMISSED' | 'ARCHIVED'
+export type ProfileRoleStatus =
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'EXPELLED'
+  | 'GRADUATED'
+  | 'DISMISSED'
+  | 'ARCHIVED'
 export type ProfileTheme = 'light' | 'dark' | 'system'
 export type ProfileResolvedTheme = 'light' | 'dark'
-export type ProfileRoute = 'schedule' | 'statistics' | 'map' | 'requests' | 'assistant' | 'profile' | 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
+export type ProfileRoute =
+  | 'schedule'
+  | 'statistics'
+  | 'map'
+  | 'requests'
+  | 'assistant'
+  | 'profile'
+  | 'role-switch'
+  | 'appearance'
+  | 'security'
+  | 'sessions'
+  | 'history'
 export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA'
-export type ProfileHistoryType = 'LOGIN' | 'ROLE_CHANGED' | 'CURRENT_LOGOUT' | 'LOGOUT_ALL' | 'PASSWORD_CHANGED' | 'SECURITY_REVOKED'
+export type ProfileHistoryType =
+  | 'LOGIN'
+  | 'ROLE_CHANGED'
+  | 'CURRENT_LOGOUT'
+  | 'LOGOUT_ALL'
+  | 'PASSWORD_CHANGED'
+  | 'SECURITY_REVOKED'
 
 export interface ProfileRoleGrant {
   grantId: string
@@ -29,6 +54,8 @@ export interface ProfileSnapshot {
   userId: string
   displayName: string
   groupLabel?: string | null
+  /** undefined: unavailable/legacy; null: authoritative own profile has no binding. */
+  telegramId?: string | null
   sessionVersion: string
   rolesVersion: string
   activeRole: ProfileRole | null
@@ -112,9 +139,36 @@ export class ProfileRequestError extends Error {
   }
 }
 
+/** Projects only the current account's Telegram binding from the existing own-profile API. */
+export function ownProfileTelegramId(
+  value: unknown,
+  expectedUserId: string,
+): string | null | undefined {
+  const invalid = () =>
+    new ProfileRequestError('UNKNOWN', 'Сервер вернул некорректные данные собственного профиля')
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw invalid()
+  const profile = value as Record<string, unknown>
+  if (
+    typeof profile.id !== 'number' ||
+    !Number.isSafeInteger(profile.id) ||
+    profile.id <= 0 ||
+    String(profile.id) !== expectedUserId
+  )
+    throw invalid()
+  const telegramId = profile.telegramId
+  if (telegramId === null || telegramId === undefined) return telegramId
+  if (typeof telegramId !== 'number' || !Number.isSafeInteger(telegramId) || telegramId <= 0)
+    throw invalid()
+  return String(telegramId)
+}
+
 export interface ProfilePort {
+  browserLoginApproval?: BrowserLoginApprovalPort
   getSnapshot(): Promise<ProfileSnapshot>
-  selectRole(input: { role: ProfileRole; expectedSessionVersion: string }): Promise<ProfileRoleSelection>
+  selectRole(input: {
+    role: ProfileRole
+    expectedSessionVersion: string
+  }): Promise<ProfileRoleSelection>
   listSessions(input?: ProfilePageRequest): Promise<ProfileSessionsPage>
   listHistory(input?: ProfilePageRequest): Promise<ProfileHistoryPage>
   changePassword(input: { currentPassword: string; newPassword: string }): Promise<void>
@@ -123,7 +177,9 @@ export interface ProfilePort {
   recoverPassword?(): void | Promise<void>
   navigate?(route: ProfileRoute): void | Promise<void>
   setTheme?(theme: ProfileTheme): void | Promise<void>
-  onInvalidated?(reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated'): void | Promise<void>
+  onInvalidated?(
+    reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated',
+  ): void | Promise<void>
   onRefreshAlreadyRotated?(error: ProfileRequestError): void | Promise<void>
   isOnline(): boolean
 }
@@ -186,7 +242,9 @@ export function roleInitial(role: ProfileRole): string {
 }
 
 export function truthfulMetadata(...values: readonly (string | null | undefined)[]): string | null {
-  const parts = values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))
+  const parts = values
+    .map((value) => value?.trim())
+    .filter((value): value is string => Boolean(value))
   return parts.length > 0 ? parts.join(' · ') : null
 }
 
@@ -210,15 +268,32 @@ function hasUnpairedSurrogate(value: string): boolean {
   return false
 }
 
-export type PasswordValidationIssue = 'UNPAIRED_SURROGATE' | 'MIN_CODE_POINTS' | 'MAX_UTF8_BYTES' | 'DECIMAL_DIGIT' | 'SPECIAL_CHARACTER'
+export type PasswordValidationIssue =
+  | 'UNPAIRED_SURROGATE'
+  | 'MIN_CODE_POINTS'
+  | 'MAX_UTF8_BYTES'
+  | 'DECIMAL_DIGIT'
+  | 'SPECIAL_CHARACTER'
 
-export function validateNewPassword(value: string, policy: ProfilePasswordPolicy): readonly PasswordValidationIssue[] {
+export function validateNewPassword(
+  value: string,
+  policy: ProfilePasswordPolicy,
+): readonly PasswordValidationIssue[] {
   const issues: PasswordValidationIssue[] = []
   if (hasUnpairedSurrogate(value)) issues.push('UNPAIRED_SURROGATE')
   const codePoints = Array.from(value).length
   if (codePoints < policy.minCodePoints) issues.push('MIN_CODE_POINTS')
-  if (!hasUnpairedSurrogate(value) && new TextEncoder().encode(value).byteLength > policy.maxUtf8Bytes) issues.push('MAX_UTF8_BYTES')
+  if (
+    !hasUnpairedSurrogate(value) &&
+    new TextEncoder().encode(value).byteLength > policy.maxUtf8Bytes
+  )
+    issues.push('MAX_UTF8_BYTES')
   if (policy.requiresDecimalDigit && !/\p{Nd}/u.test(value)) issues.push('DECIMAL_DIGIT')
-  if (!policy.specialCategories.some((category) => (category === 'P' ? /\p{P}/u : /\p{S}/u).test(value))) issues.push('SPECIAL_CHARACTER')
+  if (
+    !policy.specialCategories.some((category) =>
+      (category === 'P' ? /\p{P}/u : /\p{S}/u).test(value),
+    )
+  )
+    issues.push('SPECIAL_CHARACTER')
   return issues
 }

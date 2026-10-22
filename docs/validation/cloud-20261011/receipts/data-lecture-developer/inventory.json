@@ -1,0 +1,23 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "frozen": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "stable_commit": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "files": [
+    {
+      "kind": "Modified",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f"
+    },
+    {
+      "kind": "Created",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821"
+    },
+    {
+      "kind": "Created",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119"
+    }
+  ],
+  "deleted": []
+}

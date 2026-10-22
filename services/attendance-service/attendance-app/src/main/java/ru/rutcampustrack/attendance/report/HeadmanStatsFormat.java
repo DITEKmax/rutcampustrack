@@ -1,12 +1,11 @@
 package ru.rutcampustrack.attendance.report;
 
-import ru.rutcampustrack.attendance.contract.api.ReportApi;
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.FormatOption;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import ru.rutcampustrack.attendance.contract.api.ReportApi;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.FormatOption;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
 
 enum HeadmanStatsFormat {
     DOCX("docx", "Word (.docx)", ReportApi.DOCX_MEDIA_TYPE, "docx"),
@@ -27,10 +26,21 @@ enum HeadmanStatsFormat {
         this.extension = extension;
     }
 
-    String code() { return code; }
-    String label() { return label; }
-    String contentType() { return contentType; }
-    String extension() { return extension; }
+    String code() {
+        return code;
+    }
+
+    String label() {
+        return label;
+    }
+
+    String contentType() {
+        return contentType;
+    }
+
+    String extension() {
+        return extension;
+    }
 
     FormatOption toOption() {
         return new FormatOption(code, label, contentType, extension);
@@ -41,9 +51,12 @@ enum HeadmanStatsFormat {
     }
 
     static HeadmanStatsFormat from(String raw) {
-        if (raw == null || raw.isBlank()) throw new BadRequestException("Не выбран формат выгрузки");
+        if (raw == null || raw.isBlank())
+            throw new BadRequestException("Не выбран формат выгрузки");
         String normalized = raw.trim().toLowerCase(Locale.ROOT);
-        return Arrays.stream(values()).filter(value -> value.code.equals(normalized)).findFirst()
+        return Arrays.stream(values())
+                .filter(value -> value.code.equals(normalized))
+                .findFirst()
                 .orElseThrow(() -> new BadRequestException("Неизвестный формат выгрузки: " + raw));
     }
 }

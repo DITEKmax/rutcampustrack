@@ -1,0 +1,108 @@
+{
+  "kind": "CURRENT_ROSTER503_READONLY_SOURCE_CHAIN",
+  "utc": "2026-10-12T23:40:55.711695+00:00",
+  "head": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "endpointEnum": "LESSON_ROSTER",
+  "method": "GET",
+  "externalPathTemplate": "/api/attendance/reports/lesson/{physicalLessonId}",
+  "gatewayToAttendancePathTemplate": "/attendance/reports/lesson/{physicalLessonId}",
+  "bffOnThisRoute": false,
+  "actualStatus": 503,
+  "actualPublicTypeOrCode": "NOT_CAPTURED",
+  "actualCurrentCases": [
+    61,
+    142
+  ],
+  "student14Passed": true,
+  "deeperCause": "UNKNOWN",
+  "historicalCause": "UNKNOWN",
+  "sequence": [
+    "GATEWAY_INTERNAL_ISSUER",
+    "ATTENDANCE_REPORT_CONTROLLER",
+    "SCHEDULE_GET_LESSON_BY_ID",
+    "ATTENDANCE_LESSON_AUTHORIZATION_WITH_ACADEMIC_PERMISSIONS",
+    "JOURNAL_LESSON_TIMING",
+    "ACADEMIC_HISTORICAL_ROSTER_AND_ECHO_VALIDATION",
+    "ACADEMIC_SEMESTER_STATE_AND_PERMISSIONS",
+    "MONGO_ATTENDANCE_ROWS"
+  ],
+  "source503Candidates": [
+    "GATEWAY_ISSUER_DEPENDENCY",
+    "SCHEDULE_RPC_OR_TRANSFER_UNREADABLE",
+    "ACADEMIC_RPC",
+    "ACADEMIC_HISTORICAL_ECHO_OR_ID_REJECTION",
+    "ACADEMIC_SEMESTER_SHAPE_REJECTION"
+  ],
+  "knownPublicClassifierNextSourceOnly": {
+    "gatewayCode": "DEPENDENCY_UNAVAILABLE",
+    "attendanceType": "https://api.rutcampustrack.ru/problems/service-unavailable",
+    "other": "OTHER",
+    "restriction": "Classify inRAM against exactknownpublic strings; do not emit type/detail/instance/traceId/body/identity or unknown values. No newrequest without fresh Root grant. Keep maxRedirects0/maxRetries0/owned context teardown ifhostdiagnostic authorized."
+  },
+  "sourceReferences": [
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts",
+      "line": 306,
+      "stage": "CLIENT_ROSTER_GET",
+      "sha256": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application.yml",
+      "line": 358,
+      "stage": "DIRECT_ATTENDANCE_ROUTE_STRIP_PREFIX1",
+      "sha256": "fa6f345ef0dba0d8b4a93986585c3b044afb8efdb60dc6d5687fc4e1b5e0d04d"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/ReportApi.java",
+      "line": 146,
+      "stage": "ATTENDANCE_HTTP_CONTRACT",
+      "sha256": "dc57582df3fa5c9a2ec10f0dc0daa9463c357aa27796eee3f432bcd2001cd148"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+      "line": 104,
+      "stage": "REPORT_CONTROLLER",
+      "sha256": "9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "line": 118,
+      "stage": "SCHEDULE_THEN_AUTHORIZATION_ROSTER_BUILD",
+      "sha256": "f66bc69acc044aba1fee986fe091490f4afe8ee89078f4ec13251557180048b9"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "line": 53,
+      "stage": "GET_LESSON_3SECOND_RPC",
+      "sha256": "333aaa9622b4d631122e9c22e51c40fca1293f0cc287798d7acf3adbf82e53cb"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "line": 156,
+      "stage": "HISTORICAL_MEMBERS_3SECOND_RPC",
+      "sha256": "8c0bf5625683daeed46f107d8b7bfd929b44eba8d5d2cc56656c01dd357c0752"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/GlobalExceptionHandler.java",
+      "line": 173,
+      "stage": "ATTENDANCE_PUBLIC_SERVICE_UNAVAILABLE",
+      "sha256": "e0ecafcf4c9f4eea93c7d8d4d499e67f273f0b92496392cffa0fad40f226341e"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java",
+      "line": 540,
+      "stage": "GATEWAY_DEPENDENCY_UNAVAILABLE",
+      "sha256": "695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c"
+    },
+    {
+      "path": "services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/api/exception/ErrorResponse.java",
+      "line": 74,
+      "stage": "PUBLIC_PROBLEM_BASE",
+      "sha256": "7b61e55a6a6efb65cff97a1ff39aff29893cdc512a3cd018d50d29ff2be4c880"
+    }
+  ],
+  "runtimeChecksAdded": false,
+  "apiCallsAdded": false,
+  "productOrFixtureChange": false,
+  "healthyHttpQualification": "BootUP and scheduleHTTP200 do not prove these concrete internalRPCs or historical data contracts."
+}

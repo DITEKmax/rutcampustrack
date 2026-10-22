@@ -1,0 +1,14 @@
+{
+  "xml": "/workspace/scratch/rct-validation/export_resume/ebsr-affected-unit-1-xml/services_auth-service_auth-app_test/TEST-ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest.xml",
+  "sha256": "f45f462283143aed3da49b51edb39ced0f64dcc4751f3a047cb0527412bfe505",
+  "failures": [
+    {
+      "test": "workerAuthorityBoundsItsSignedCapabilityWithoutChangingTheDurableWindow()",
+      "type": "java.lang.NullPointerException",
+      "constructor_rejection_of_null_internal_token": true,
+      "test_line": 59
+    }
+  ],
+  "disposition": "Fixture mock returned null before expiry oracle; not product/sensitivity evidence",
+  "correction": "Two-line nonblank synthetic signer stub only; expiry assertions and product unchanged"
+}

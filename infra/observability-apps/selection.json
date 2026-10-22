@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "scope": "Standalone private operator apps; finite same-origin browser error ingress; one Java JVM",
+  "versions": {
+    "glitchtip": "6.2.6",
+    "pyroscope": "2.4.0",
+    "pyroscope_java": "2.9.2",
+    "homepage": "2.6.0",
+    "sentry_vue": "11.8.0",
+    "sentry_java": "8.61.0"
+  },
+  "official_references": [
+    "https://glitchtip.com/documentation/install",
+    "https://glitchtip.com/assets/compose.sample.yml",
+    "https://gitlab.com/glitchtip/glitchtip-backend/-/tree/v6.2.6",
+    "https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/java/",
+    "https://github.com/grafana/pyroscope/releases/tag/v2.4.0",
+    "https://github.com/grafana/pyroscope/blob/v2.4.0/examples/base-url/nginx.conf",
+    "https://gethomepage.dev/installation/",
+    "https://gethomepage.dev/installation/docker/"
+  ],
+  "operator_config": {
+    "compose": "docker-compose.observability-apps.yml",
+    "business_attachment": "docker-compose.observability-ingress.yml",
+    "secret_file_references": [
+      "RCT_GLITCHTIP_DB_PASSWORD_FILE",
+      "RCT_GLITCHTIP_SECRET_KEY_FILE",
+      "RCT_OBSERVER_HTPASSWD_FILE"
+    ],
+    "plaintext_secret_mount_uid": 5000,
+    "plaintext_secret_file_mode": "0400; readable only by the official GlitchTip container UID5000",
+    "operator_url": "http://localhost:18880 via loopback or authenticated tunnel; existing TLS ingress may terminate before it",
+    "vue_build_dsn": "VITE_GLITCHTIP_DSN=https://<project-1-public-key>@<business-origin>/telemetry/errors/1",
+    "vue_release": "VITE_APP_VERSION=<git SHA or semver>",
+    "java_dsn": "RCT_JAVA_GLITCHTIP_DSN=http://<project-2-public-key>@glitchtip:8000/2",
+    "java_profile_opt_in": "RCT_PROFILING_ENABLED=true"
+  },
+  "limits": {
+    "sidecars_memory_mib": 1376,
+    "sidecars_cpu_cores": 2.5,
+    "retention": {
+      "errors_days": 7,
+      "release_days": 30,
+      "profiles_hours": 24
+    },
+    "error_events_per_project_per_hour": 60,
+    "public_envelope_bytes": 65536,
+    "public_projects": [1],
+    "cpu_sampling": "ITIMER 10ms; uploads10s; stack depth256; allocation/lock off; queue2; one Attendance JVM",
+    "acceptance_cpu_ratio_max": 1.2,
+    "acceptance_profiler_rss_delta_bytes": 67108864,
+    "acceptance_idle_cpu_delta_cores": 0.05,
+    "runtime_disk_floor_bytes": 4294967296,
+    "native_measurements": "Pending the isolated ordinary CI job; limits are not measured consumption"
+  },
+  "pmm": {
+    "selected": false,
+    "additional_benefit_considered": "PostgreSQL statement-level aggregate latency/plan history and MongoDB query-shape analytics would add diagnosis beyond health/resource exporters. The selected 18-week operation is CPU/ZIP/XML rendering and has no demonstrated statement-level bottleneck.",
+    "privacy_and_access": "QAN needs statement/profiler collection and additional database access/configuration. Normalized text/query shapes and examples need a separate privacy decision; no such grants or data collection added.",
+    "resources": "A server plus agents adds another storage/retention and RAM/CPU budget. No PMM benchmark was run and no unsupported memory estimate is treated as measured. Existing Prometheus PostgreSQL/Mongo exporters and Grafana remain active.",
+    "reconsider_when": "A concrete slow SQL/Mongo operation remains unexplained after current latency, exporter, trace and scoped CPU diagnostics."
+  },
+  "capacity_qualification": "Actual Cloud is 16GiB RAM/4 CPU quota with a 4GiB disk floor; a future 32GiB VPS is not current capacity or measured acceptance."
+}

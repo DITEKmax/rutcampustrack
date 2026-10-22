@@ -1,17 +1,21 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
 import ru.rutcampustrack.academic.entity.Homework;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
 @Component
-public class HomeworkAssembler implements RepresentationModelAssembler<Homework, EntityModel<HomeworkResponse>> {
+public class HomeworkAssembler
+        implements RepresentationModelAssembler<Homework, EntityModel<HomeworkResponse>> {
     private final HomeworkLifecycle lifecycle;
-    public HomeworkAssembler(HomeworkLifecycle lifecycle) { this.lifecycle = lifecycle; }
+
+    public HomeworkAssembler(HomeworkLifecycle lifecycle) {
+        this.lifecycle = lifecycle;
+    }
 
     @Override
     public EntityModel<HomeworkResponse> toModel(Homework homework) {
@@ -19,15 +23,16 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
     }
 
     /**
-     * Overload for per-student context — sets the completed flag.
-     * Default toModel(Homework) sets completed=false (headman/admin views).
+     * Overload for per-student context — sets the completed flag. Default toModel(Homework) sets
+     * completed=false (headman/admin views).
      */
     public EntityModel<HomeworkResponse> toModel(Homework homework, boolean completed) {
         return toModel(homework, completed, false);
     }
 
     /** Read selector belongs to the caller's authorized mode, not to effective lifecycle state. */
-    public EntityModel<HomeworkResponse> toModel(Homework homework, boolean completed, boolean archiveRead) {
+    public EntityModel<HomeworkResponse> toModel(
+            Homework homework, boolean completed, boolean archiveRead) {
         HomeworkResponse response = new HomeworkResponse();
         response.setId(homework.getId());
         response.setTitle(homework.getTitle());
@@ -48,8 +53,11 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
         response.setRevision(homework.getRevision());
         response.setArchived(lifecycle.archived(homework));
 
-        return EntityModel.of(response,
-                linkTo(methodOn(HomeworkController.class).getHomework(homework.getId(), archiveRead)).withSelfRel()
-        );
+        return EntityModel.of(
+                response,
+                linkTo(
+                                methodOn(HomeworkController.class)
+                                        .getHomework(homework.getId(), archiveRead))
+                        .withSelfRel());
     }
 }

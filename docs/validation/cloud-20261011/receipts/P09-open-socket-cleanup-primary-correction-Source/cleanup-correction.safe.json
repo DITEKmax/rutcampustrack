@@ -1,0 +1,14 @@
+{
+  "status": "SOURCE_ONLY_NATIVE_NOT_RUN",
+  "original_commit": "a7648c62e34eb75776603ffcc171e8aaf2f54f42",
+  "original_test_sha256": "214c60272df3cbb471bb4cba4fe974c67d5e285d15517401517dc57a5831e607",
+  "corrected_test_sha256": "f8f7f9b37afcc313d80833b1ff9998584685f218ac7b2bc5e4eefb0df6cae52c",
+  "exact_inverse_checks": {
+    "unchanged_imports_fields_before_cleanup": true,
+    "unchanged_exact_join_body": true,
+    "unchanged_locals_except_primary_slot": true,
+    "unchanged_all_noncleanup_helpers_and_config": true,
+    "build_byte_equal_original": true
+  },
+  "qualification": "Finite exact Source-region comparison; not Java/parser/runtime/cleanup PASS."
+}

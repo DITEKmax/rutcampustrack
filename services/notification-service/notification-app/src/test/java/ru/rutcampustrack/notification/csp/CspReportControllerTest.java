@@ -1,27 +1,27 @@
 package ru.rutcampustrack.notification.csp;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.shared.observability.MetricNames;
-
-import java.nio.charset.StandardCharsets;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * M13 G16 — unit tests для {@link CspReportController}.
  *
  * <p>Покрывает:
+ *
  * <ul>
- *   <li>Legacy csp-report format (single violation wrapped в {@code csp-report}).</li>
- *   <li>Legacy format с top-level fields (прокси-rewritten Content-Type).</li>
- *   <li>Modern reports+json format (batch array).</li>
- *   <li>Low-cardinality labels: directive normalized, blocked_uri_host extracted.</li>
- *   <li>Edge cases: null/empty body, non-csp-violation type, unsupported Content-Type.</li>
- *   <li>Specials: "inline"/"eval" blocked-uri → as-is label.</li>
+ *   <li>Legacy csp-report format (single violation wrapped в {@code csp-report}).
+ *   <li>Legacy format с top-level fields (прокси-rewritten Content-Type).
+ *   <li>Modern reports+json format (batch array).
+ *   <li>Low-cardinality labels: directive normalized, blocked_uri_host extracted.
+ *   <li>Edge cases: null/empty body, non-csp-violation type, unsupported Content-Type.
+ *   <li>Specials: "inline"/"eval" blocked-uri → as-is label.
  * </ul>
  */
 class CspReportControllerTest {
@@ -41,7 +41,8 @@ class CspReportControllerTest {
 
     @Test
     void legacyFormat_singleViolation_incrementsCounter() {
-        String json = """
+        String json =
+                """
                 {"csp-report": {
                   "violated-directive": "script-src 'self'",
                   "blocked-uri": "https://evil.example.com/malware.js",
@@ -52,15 +53,19 @@ class CspReportControllerTest {
         var response = controller.receive("application/csp-report", bytes(json));
 
         assertThat(response.getStatusCode().value()).isEqualTo(204);
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "script-src")
-                .tag("blocked_uri_host", "evil.example.com")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "script-src")
+                                .tag("blocked_uri_host", "evil.example.com")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
     void legacyFormat_topLevelFields_incrementsCounter() {
-        String json = """
+        String json =
+                """
                 {
                   "violated-directive": "img-src",
                   "blocked-uri": "http://tracker.example.com/pixel.gif"
@@ -70,15 +75,19 @@ class CspReportControllerTest {
         var response = controller.receive("application/json", bytes(json));
 
         assertThat(response.getStatusCode().value()).isEqualTo(204);
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "img-src")
-                .tag("blocked_uri_host", "tracker.example.com")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "img-src")
+                                .tag("blocked_uri_host", "tracker.example.com")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
     void reportsApiFormat_batchArray_incrementsPerEntry() {
-        String json = """
+        String json =
+                """
                 [
                   {"type": "csp-violation", "body": {
                     "effectiveDirective": "style-src",
@@ -96,17 +105,24 @@ class CspReportControllerTest {
         var response = controller.receive("application/reports+json", bytes(json));
 
         assertThat(response.getStatusCode().value()).isEqualTo(204);
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "style-src")
-                .counter().count()).isEqualTo(1.0);
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "connect-src")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "style-src")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "connect-src")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
     void reportsApiFormat_nonCspViolationType_ignored() {
-        String json = """
+        String json =
+                """
                 [
                   {"type": "network-error", "body": {"url": "https://..."}},
                   {"type": "intervention", "body": {"id": "x"}}
@@ -120,7 +136,8 @@ class CspReportControllerTest {
 
     @Test
     void directiveNormalization_stripsSourceList() {
-        String json = """
+        String json =
+                """
                 {"csp-report": {
                   "violated-directive": "script-src-elem 'self' 'unsafe-inline' https://cdn.example.com",
                   "blocked-uri": "https://ads.example.com/sdk.js"
@@ -129,14 +146,18 @@ class CspReportControllerTest {
 
         controller.receive("application/csp-report", bytes(json));
 
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "script-src-elem")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "script-src-elem")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
     void blockedUri_specialValue_inline_keptAsIs() {
-        String json = """
+        String json =
+                """
                 {"csp-report": {
                   "violated-directive": "script-src",
                   "blocked-uri": "inline"
@@ -145,9 +166,12 @@ class CspReportControllerTest {
 
         controller.receive("application/csp-report", bytes(json));
 
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("blocked_uri_host", "inline")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("blocked_uri_host", "inline")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
@@ -173,28 +197,36 @@ class CspReportControllerTest {
 
     @Test
     void missingDirective_defaultsToUnknown() {
-        String json = """
+        String json =
+                """
                 {"csp-report": {"blocked-uri": "https://example.com/x"}}
                 """;
 
         controller.receive("application/csp-report", bytes(json));
 
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "unknown")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "unknown")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
     void missingBlockedUri_hostDefaultsToUnknown() {
-        String json = """
+        String json =
+                """
                 {"csp-report": {"violated-directive": "font-src"}}
                 """;
 
         controller.receive("application/csp-report", bytes(json));
 
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("blocked_uri_host", "unknown")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("blocked_uri_host", "unknown")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 
     @Test
@@ -219,7 +251,8 @@ class CspReportControllerTest {
 
     @Test
     void directiveCaseNormalizedToLowercase() {
-        String json = """
+        String json =
+                """
                 {"csp-report": {
                   "violated-directive": "SCRIPT-SRC 'self'",
                   "blocked-uri": "https://EVIL.example.com/x"
@@ -230,9 +263,12 @@ class CspReportControllerTest {
 
         // Host lowercased + directive lowercased (Prometheus labels
         // не должны иметь case-sensitive дубли).
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "script-src")
-                .tag("blocked_uri_host", "evil.example.com")
-                .counter().count()).isEqualTo(1.0);
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "script-src")
+                                .tag("blocked_uri_host", "evil.example.com")
+                                .counter()
+                                .count())
+                .isEqualTo(1.0);
     }
 }

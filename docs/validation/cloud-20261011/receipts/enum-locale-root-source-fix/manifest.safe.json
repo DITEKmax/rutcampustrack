@@ -1,0 +1,50 @@
+{
+  "state": "SOURCE_FIX_READY_GREEN_PENDING",
+  "defect": "DF-ENUM-FILTER-LOCALE-001",
+  "source_base": "538af12e280bc0e34b62c99c8823a7bb552d6ea6",
+  "source_after_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "test_unchanged_sha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+  "writer_paths": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java"
+  ],
+  "members": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 2834,
+      "mode": "0o600",
+      "sha256": "19dd1f5b46da68508a6c207036c5c2f3077f59f5252bb7d56db93a5169d6eac9"
+    },
+    {
+      "path": "after-UserSpecifications.java",
+      "bytes": 7042,
+      "mode": "0o600",
+      "sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b"
+    },
+    {
+      "path": "before-UserSpecifications.java",
+      "bytes": 6955,
+      "mode": "0o600",
+      "sha256": "4f62d5ac9724c9524697145734577954fbdf54c68162bd1af5e0166f376e98f9"
+    },
+    {
+      "path": "closed-target-cause.safe.json",
+      "bytes": 1819,
+      "mode": "0o600",
+      "sha256": "c8f68b9c8d970ca342f9931da7e5618b9d4bdafaf37a8d4d938cc81634c7502c"
+    },
+    {
+      "path": "product.public.diff",
+      "bytes": 1503,
+      "mode": "0o600",
+      "sha256": "2088dced5ccee94884f1817ae6df4623308a8c33ba52cc6f0aba6da8a89f5de3"
+    },
+    {
+      "path": "source-preservation.safe.json",
+      "bytes": 3975,
+      "mode": "0o600",
+      "sha256": "672db36e3d1bd2020d7380c99520e76bd255283f186462a70dcd79e04f95f0a7"
+    }
+  ],
+  "native_after_green": "PENDING_STANDARD_CI",
+  "custom_RED_runner": "NOT_USED_NOT_RESUMED"
+}

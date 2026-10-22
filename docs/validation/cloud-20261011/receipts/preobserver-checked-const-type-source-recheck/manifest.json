@@ -1,0 +1,16 @@
+{
+  "scope": "CHECKED_CONST_TYPE_NARROWING_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1438,
+      "sha256": "2aa9f9c5459bbabf750994b48fa2e9e64918af2da99f686c6c644946b33bc802"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2067,
+      "sha256": "8441b63a4d5679dfa0a6b694533994bed195507cddf303cb105579abd6147bca"
+    }
+  ]
+}

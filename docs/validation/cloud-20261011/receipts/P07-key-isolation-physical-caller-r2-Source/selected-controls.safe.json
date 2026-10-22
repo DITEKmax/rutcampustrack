@@ -1,0 +1,43 @@
+{
+  "state": "SELECTED_ACTUAL_AST_RAM_PASS_NATIVE_NOT_RUN",
+  "source_sha256": "0d82b00acc1ca90df2ca0761d40547c9acc11b410ed0d18e60e38af0d7b328cd",
+  "cases": [
+    {
+      "case": "old_matching_label_denied",
+      "status": "PASS"
+    },
+    {
+      "case": "invalid_createdAt_denied",
+      "status": "PASS"
+    },
+    {
+      "case": "future_createdAt_denied",
+      "status": "PASS"
+    },
+    {
+      "case": "missing_timezone_denied",
+      "status": "PASS"
+    },
+    {
+      "case": "nonUTC_timezone_denied",
+      "status": "PASS"
+    },
+    {
+      "case": "fresh_second_precision_admitted",
+      "status": "PASS"
+    },
+    {
+      "case": "fresh_fractional_precision_admitted",
+      "status": "PASS"
+    },
+    {
+      "case": "partial_genpkey_failure_cleans_exact_owned_leaves",
+      "status": "PASS"
+    },
+    {
+      "case": "partial_pkey_failure_cleans_exact_owned_leaves",
+      "status": "PASS"
+    }
+  ],
+  "qualification": "Second-precision CreatedAt admission is not atomic ownership proof; original namespace/sameUID qualifications retained. Original20 unchanged branches not rerun."
+}

@@ -1,42 +1,47 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
 import com.google.rpc.Status;
 import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotService;
 import ru.rutcampustrack.attendance.student.StudentCheckinService;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
 class AttendanceStudentGrpcRequestReadOnlyTest {
 
-    private static final InternalJwtClaims READ_ONLY = new InternalJwtClaims(
-            42L,
-            UUID.fromString("22222222-2222-4222-8222-222222222222"),
-            3L,
-            4L,
-            "STUDENT",
-            "EXPELLED",
-            7L,
-            false,
-            true);
+    private static final InternalJwtClaims READ_ONLY =
+            new InternalJwtClaims(
+                    42L,
+                    UUID.fromString("22222222-2222-4222-8222-222222222222"),
+                    3L,
+                    4L,
+                    "STUDENT",
+                    "EXPELLED",
+                    7L,
+                    false,
+                    true);
 
     @Test
     void readOnlySubmitExcuseIsRejectedBeforeRequestService() throws Exception {
         RecordingObserver observer = new RecordingObserver();
         AttendanceStudentGrpcServiceImpl service = service();
 
-        Context.current().withValue(StudentGrpcIdentity.CLAIMS, READ_ONLY).run(() ->
-                service.submitStudentExcuse(SubmitStudentExcuseCommand.newBuilder()
-                        .setIdempotencyKey("read-only-excuse")
-                        .build(), observer));
+        Context.current()
+                .withValue(StudentGrpcIdentity.CLAIMS, READ_ONLY)
+                .run(
+                        () ->
+                                service.submitStudentExcuse(
+                                        SubmitStudentExcuseCommand.newBuilder()
+                                                .setIdempotencyKey("read-only-excuse")
+                                                .build(),
+                                        observer));
 
         assertReadOnly(observer);
     }
@@ -46,11 +51,16 @@ class AttendanceStudentGrpcRequestReadOnlyTest {
         RecordingObserver observer = new RecordingObserver();
         AttendanceStudentGrpcServiceImpl service = service();
 
-        Context.current().withValue(StudentGrpcIdentity.CLAIMS, READ_ONLY).run(() ->
-                service.submitStudentLateCheckin(SubmitStudentLateCheckinCommand.newBuilder()
-                        .setLessonId(77L)
-                        .setIdempotencyKey("read-only-late")
-                        .build(), observer));
+        Context.current()
+                .withValue(StudentGrpcIdentity.CLAIMS, READ_ONLY)
+                .run(
+                        () ->
+                                service.submitStudentLateCheckin(
+                                        SubmitStudentLateCheckinCommand.newBuilder()
+                                                .setLessonId(77L)
+                                                .setIdempotencyKey("read-only-late")
+                                                .build(),
+                                        observer));
 
         assertReadOnly(observer);
     }
@@ -60,10 +70,15 @@ class AttendanceStudentGrpcRequestReadOnlyTest {
         RecordingObserver observer = new RecordingObserver();
         AttendanceStudentGrpcServiceImpl service = service();
 
-        Context.current().withValue(StudentGrpcIdentity.CLAIMS, READ_ONLY).run(() ->
-                service.cancelStudentRequest(StudentRequestId.newBuilder()
-                        .setRequestId("0123456789abcdef01234567")
-                        .build(), observer));
+        Context.current()
+                .withValue(StudentGrpcIdentity.CLAIMS, READ_ONLY)
+                .run(
+                        () ->
+                                service.cancelStudentRequest(
+                                        StudentRequestId.newBuilder()
+                                                .setRequestId("0123456789abcdef01234567")
+                                                .build(),
+                                        observer));
 
         assertReadOnly(observer);
     }
@@ -101,7 +116,6 @@ class AttendanceStudentGrpcRequestReadOnlyTest {
         }
 
         @Override
-        public void onCompleted() {
-        }
+        public void onCompleted() {}
     }
 }

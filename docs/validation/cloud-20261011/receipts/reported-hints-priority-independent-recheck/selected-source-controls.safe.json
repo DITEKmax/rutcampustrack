@@ -1,0 +1,94 @@
+{
+  "execution": "functions V8 pure RAM on actual selected TS functions with only type erasure; public synthetic serialized TestError inputs; no Node/module/helper/API",
+  "orders": [
+    {
+      "name": "CORE_BEFORE_HINTS",
+      "baseline": 8,
+      "old": 8,
+      "new": 8,
+      "newMatchesBaseline": true,
+      "newTotal": 8,
+      "newAnnotations": 8,
+      "markerAbsent": true,
+      "errorsRetained": true
+    },
+    {
+      "name": "HINTS_BEFORE_CORES",
+      "baseline": 8,
+      "old": 6,
+      "new": 8,
+      "newMatchesBaseline": true,
+      "newTotal": 8,
+      "newAnnotations": 8,
+      "markerAbsent": true,
+      "errorsRetained": true
+    },
+    {
+      "name": "REPEATED_HINTS_BEFORE_LATE_CORE",
+      "baseline": 8,
+      "old": 6,
+      "new": 8,
+      "newMatchesBaseline": true,
+      "newTotal": 8,
+      "newAnnotations": 8,
+      "markerAbsent": true,
+      "errorsRetained": true
+    },
+    {
+      "name": "INTERLEAVED_HINTS_CORES",
+      "baseline": 8,
+      "old": 6,
+      "new": 8,
+      "newMatchesBaseline": true,
+      "newTotal": 8,
+      "newAnnotations": 8,
+      "markerAbsent": true,
+      "errorsRetained": true
+    },
+    {
+      "name": "DIRECT_DECODER_CORE_PRIORITY",
+      "baseline": 8,
+      "old": 6,
+      "new": 8,
+      "newMatchesBaseline": true,
+      "newTotal": 8
+    }
+  ],
+  "discard": [
+    {
+      "name": "ONLY_CORE_NOT_REMOVED",
+      "pass": true,
+      "removed": false
+    },
+    {
+      "name": "UNKNOWN_REPORTED_NOT_REMOVED",
+      "pass": true,
+      "removed": false
+    },
+    {
+      "name": "NONZERO_REPORTED_NOT_REMOVED",
+      "pass": true,
+      "removed": false
+    },
+    {
+      "name": "TRAILING_GARBAGE_NOT_REMOVED",
+      "pass": true,
+      "removed": false
+    },
+    {
+      "name": "KNOWN_REPORTED_REMOVED_ONLY",
+      "pass": true,
+      "removed": true
+    },
+    {
+      "name": "REPORTED_OUTSIDE_32_NOT_REMOVED",
+      "pass": true,
+      "removed": false
+    },
+    {
+      "name": "DECODER_FORGED_STATUS_AND_CATEGORY_CLOSED",
+      "pass": true
+    }
+  ],
+  "producer_native": "NOT_RUN"
+}

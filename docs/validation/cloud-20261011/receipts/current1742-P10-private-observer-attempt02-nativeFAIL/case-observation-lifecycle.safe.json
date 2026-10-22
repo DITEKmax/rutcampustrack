@@ -1,0 +1,9 @@
+{
+  "schema": "P10_REQUEST_LIFECYCLE_V1",
+  "diagnostic_valid": false,
+  "primary_rejection": "BOUNDARY_UNKNOWN",
+  "cleanup_rejection": "NONE",
+  "cleanup_outcome": "REMOVED",
+  "request_reconciliation_required": false,
+  "no_private_message_context_or_values_export": true
+}

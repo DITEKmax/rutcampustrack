@@ -1,0 +1,40 @@
+{
+  "accepted_receipt_sha256": "46ac467149a0d708b39109d5a41429e6159dbbbc093c55295745521ddfcd4457",
+  "zip_sha256": "9f75f4ded9bd4b2ccd64cb3893f0636d11a303b0e726e0804d05ebf1d6bb1530",
+  "total_selected_tests": 44,
+  "classes": [
+    {
+      "class": "ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterTransportTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.grpc.HeadmanJournalSemesterClientTransportTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true
+    }
+  ],
+  "raw_logs_xml_included": false
+}

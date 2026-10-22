@@ -1,0 +1,66 @@
+{
+  "artifact_id": 11782385596,
+  "name": "safe-coverage-outcomes-auth-service-1",
+  "archive_bytes": 16164,
+  "archive_sha256": "12ab567edd87568f54efeaa367508c009fd50d53333da42ed55959fd89e7a237",
+  "producer": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "32ad1b78964b627a9da0227865e5669019e0c6e2",
+        "prHeadSha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+        "service": "auth-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38327779184",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 169,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    },
+    {
+      "metadata": {
+        "checkoutSha": "32ad1b78964b627a9da0227865e5669019e0c6e2",
+        "prHeadSha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+        "service": "auth-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38327779184",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 140,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

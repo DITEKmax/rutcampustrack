@@ -16,7 +16,8 @@ public class MobileInternalJwtConfig {
     }
 
     @Bean
-    InternalJwtValidator internalJwtValidator(PublicKeyProvider provider, InternalJwtProperties properties) {
+    InternalJwtValidator internalJwtValidator(
+            PublicKeyProvider provider, InternalJwtProperties properties) {
         return new InternalJwtValidator(provider, properties);
     }
 }

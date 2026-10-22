@@ -1,0 +1,14 @@
+{
+  "state": "CORRECTED_SOURCE_READY_REQUIRES_TARGETED_RECHECK_AND_FRESH_ROOT_GRANT",
+  "old_source_manifest_sha256": "458a8402bcb1903f967a83966ca52c1906ecbb424d0fe39001a2fc8326d51034",
+  "original_review_manifest": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_review/manifest.safe.json",
+  "original_review_sha256": "ec89afef8a416a7f5c7e0f213ddd71378297617ba0249666913efc16ed00ffdc",
+  "targeted_RAM_cases": 8,
+  "old51_reused_NOT_RERUN": true,
+  "capture_sha256": "10ef7d979e33a4bdd209ed46d1fabf82717b3e51e7efc6386e91c5abbd9107b4",
+  "corrected_parser_sha256": "5b2363fe721f2cf0e8d9ee08c35591c7d474897e9c37bd7799dbf99bbe8923ef",
+  "timestamp_binding_sha256": "3be4bfce8d095d2201e7e7de3619ca99f9f49dc0df4073ff83c4de7d23513ca1",
+  "native_API_log_read": false,
+  "actual_cause": "UNKNOWN",
+  "private_cleanup_drift_disposition": "FAIL_RETAIN_LEAF_RECONCILIATION_REQUIRED"
+}

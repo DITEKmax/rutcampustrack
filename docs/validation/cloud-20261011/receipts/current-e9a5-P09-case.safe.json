@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "checkoutSha": "02b940b1c9b5c9e552ca1a99b1f9438fa4035973",
+    "prHeadSha": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+    "service": "auth-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38484927575",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "case": {
+    "xmlOrdinal": 17,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+    "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+    "sourceSha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43"
+  },
+  "counts": {
+    "PASSED": 172,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "artifact": 11859451766,
+  "finite_only": true
+}

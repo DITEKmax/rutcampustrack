@@ -7,11 +7,9 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 final class TeacherAttendanceGrpcIdentity {
     static final Context.Key<InternalJwtClaims> CLAIMS =
             Context.key("teacher-attendance-internal-jwt-claims");
-    static final Context.Key<String> SIGNED_TOKEN =
-            Context.key("teacher-attendance-signed-token");
+    static final Context.Key<String> SIGNED_TOKEN = Context.key("teacher-attendance-signed-token");
 
-    private TeacherAttendanceGrpcIdentity() {
-    }
+    private TeacherAttendanceGrpcIdentity() {}
 
     static InternalJwtClaims requireClaims() {
         InternalJwtClaims claims = CLAIMS.get();

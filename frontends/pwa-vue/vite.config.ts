@@ -45,12 +45,16 @@ function versionPolicyPlugin(config: ReturnType<typeof runtime>): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'version.json',
-        source: `${JSON.stringify({
-          latest: config.appVersion,
-          minimumSupported: config.minimumSupportedVersion,
-          force: config.forceUpdate,
-          message: 'Доступна новая версия RutTrack. Обнови приложение, чтобы продолжить.',
-        }, null, 2)}\n`,
+        source: `${JSON.stringify(
+          {
+            latest: config.appVersion,
+            minimumSupported: config.minimumSupportedVersion,
+            force: config.forceUpdate,
+            message: 'Доступна новая версия RutTrack. Обнови приложение, чтобы продолжить.',
+          },
+          null,
+          2,
+        )}\n`,
       })
     },
   }
@@ -68,9 +72,16 @@ function appShellPrecachePlugin(): Plugin {
     generateBundle(_, bundle) {
       const generatedFiles = Object.values(bundle)
         .map((output) => output.fileName)
-        .filter((fileName) => fileName !== 'sw.js' && fileName !== 'sw-assets.js' && fileName !== 'version.json')
+        .filter(
+          (fileName) =>
+            fileName !== 'sw.js' && fileName !== 'sw-assets.js' && fileName !== 'version.json',
+        )
         .sort()
-      const precache = ['./', './manifest.webmanifest', ...generatedFiles.map((fileName) => `./${fileName}`)]
+      const precache = [
+        './',
+        './manifest.webmanifest',
+        ...generatedFiles.map((fileName) => `./${fileName}`),
+      ]
       this.emitFile({
         type: 'asset',
         fileName: 'sw-assets.js',
@@ -90,7 +101,11 @@ export default defineConfig(({ mode }) => {
   }
   return {
     base: publicBase(mode),
-  resolve: { alias: { '@rct/mobile-core': fileURLToPath(new URL('../mobile-core/src/index.ts', import.meta.url)) } },
+    resolve: {
+      alias: {
+        '@rct/mobile-core': fileURLToPath(new URL('../mobile-core/src/index.ts', import.meta.url)),
+      },
+    },
     optimizeDeps: browserDependencyOptimization,
     plugins: [vue(), versionPolicyPlugin(config), appShellPrecachePlugin()],
     css: {
@@ -105,10 +120,14 @@ export default defineConfig(({ mode }) => {
     server: {
       ...developmentServer(loadEnv(mode, '.', ''), 5175, config.apiTarget),
       // Workspace dependencies may resolve through a local worktree junction.
-      fs: { allow: [
-        searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
-        realpathSync(fileURLToPath(new URL('../node_modules/@fontsource-variable/onest', import.meta.url))),
-      ] },
+      fs: {
+        allow: [
+          searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
+          realpathSync(
+            fileURLToPath(new URL('../node_modules/@fontsource-variable/onest', import.meta.url)),
+          ),
+        ],
+      },
     },
     preview: {
       port: 5175,

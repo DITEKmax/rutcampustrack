@@ -3,10 +3,12 @@ package ru.rutcampustrack.attendance.contract.dto.report;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Single attendance record entry for student records list (RPRT-04).
- * Plain Java class — no Lombok (contract module rule).
+ * Single attendance record entry for student records list (RPRT-04). Plain Java class — no Lombok
+ * (contract module rule).
  */
-@Schema(description = "Запись истории посещаемости студента: ID пары, предмет, дата, номер, статус, источник, причина")
+@Schema(
+        description =
+                "Запись истории посещаемости студента: ID пары, предмет, дата, номер, статус, источник, причина")
 public class AttendanceRecordEntry {
 
     private final Long lessonId;
@@ -16,17 +18,30 @@ public class AttendanceRecordEntry {
     private final String status;
     private final String symbol;
     private final String source;
+
     /** Human-readable excuse reason; non-null only for EXCUSED / FREE_ATTENDANCE. */
     private final String excuseReason;
 
-    public AttendanceRecordEntry(Long lessonId, Long subjectId, String lessonDate,
-                                  Integer lessonNumber, String status, String symbol, String source) {
+    public AttendanceRecordEntry(
+            Long lessonId,
+            Long subjectId,
+            String lessonDate,
+            Integer lessonNumber,
+            String status,
+            String symbol,
+            String source) {
         this(lessonId, subjectId, lessonDate, lessonNumber, status, symbol, source, null);
     }
 
-    public AttendanceRecordEntry(Long lessonId, Long subjectId, String lessonDate,
-                                  Integer lessonNumber, String status, String symbol, String source,
-                                  String excuseReason) {
+    public AttendanceRecordEntry(
+            Long lessonId,
+            Long subjectId,
+            String lessonDate,
+            Integer lessonNumber,
+            String status,
+            String symbol,
+            String source,
+            String excuseReason) {
         this.lessonId = lessonId;
         this.subjectId = subjectId;
         this.lessonDate = lessonDate;

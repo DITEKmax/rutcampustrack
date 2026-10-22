@@ -1,5 +1,8 @@
 package ru.rutcampustrack.auth.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,23 +16,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * M03a Группа 11: composite (ip, login) rate-limit integration test против реального Redis.
  *
- * <p>Проверяет контракт 01 P0-6: атакующий с одного IP не может DoS-лочить аккаунт
- * жертвы — жертва с другого IP продолжает логиниться.</p>
+ * <p>Проверяет контракт 01 P0-6: атакующий с одного IP не может DoS-лочить аккаунт жертвы — жертва
+ * с другого IP продолжает логиниться.
  */
 class LoginRateLimiterIT extends AbstractIntegrationTest {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @Autowired private TestRestTemplate restTemplate;
 
-    @Autowired
-    private StringRedisTemplate redis;
+    @Autowired private StringRedisTemplate redis;
 
     @AfterEach
     void cleanup() {
@@ -44,18 +41,17 @@ class LoginRateLimiterIT extends AbstractIntegrationTest {
     void fiveFailuresFromOneIp_triggersBlock() {
         HttpHeaders h = new HttpHeaders();
         h.set("X-Forwarded-For", "10.0.0.5");
-        HttpEntity<LoginRequest> body =
-                new HttpEntity<>(new LoginRequest("student", "wrong"), h);
+        HttpEntity<LoginRequest> body = new HttpEntity<>(new LoginRequest("student", "wrong"), h);
 
         for (int i = 0; i < 5; i++) {
-            ResponseEntity<String> r = restTemplate.exchange("/auth/login",
-                    HttpMethod.POST, body, String.class);
+            ResponseEntity<String> r =
+                    restTemplate.exchange("/auth/login", HttpMethod.POST, body, String.class);
             assertThat(r.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         // 6-й запрос должен быть уже заблокирован (OtpRateLimitException → 429)
-        ResponseEntity<String> blocked = restTemplate.exchange("/auth/login",
-                HttpMethod.POST, body, String.class);
+        ResponseEntity<String> blocked =
+                restTemplate.exchange("/auth/login", HttpMethod.POST, body, String.class);
         assertThat(blocked.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
 
         // Redis ключ построен на composite (ip, login)
@@ -69,7 +65,9 @@ class LoginRateLimiterIT extends AbstractIntegrationTest {
         HttpHeaders attackerHeaders = new HttpHeaders();
         attackerHeaders.set("X-Forwarded-For", "9.9.9.9");
         for (int i = 0; i < 5; i++) {
-            restTemplate.exchange("/auth/login", HttpMethod.POST,
+            restTemplate.exchange(
+                    "/auth/login",
+                    HttpMethod.POST,
                     new HttpEntity<>(new LoginRequest("student", "wrong"), attackerHeaders),
                     String.class);
         }
@@ -78,10 +76,12 @@ class LoginRateLimiterIT extends AbstractIntegrationTest {
         // Жертва с корректным паролем через ДРУГОЙ IP должна залогиниться
         HttpHeaders victimHeaders = new HttpHeaders();
         victimHeaders.set("X-Forwarded-For", "1.1.1.1");
-        ResponseEntity<String> victimLogin = restTemplate.exchange("/auth/login",
-                HttpMethod.POST,
-                new HttpEntity<>(new LoginRequest("student", "password"), victimHeaders),
-                String.class);
+        ResponseEntity<String> victimLogin =
+                restTemplate.exchange(
+                        "/auth/login",
+                        HttpMethod.POST,
+                        new HttpEntity<>(new LoginRequest("student", "password"), victimHeaders),
+                        String.class);
 
         assertThat(victimLogin.getStatusCode()).isEqualTo(HttpStatus.OK);
         // Жертвин ключ пуст — она не попадала в корзину атакующего
@@ -95,7 +95,9 @@ class LoginRateLimiterIT extends AbstractIntegrationTest {
         HttpHeaders ipA = new HttpHeaders();
         ipA.set("X-Forwarded-For", "1.1.1.1");
         for (int i = 0; i < 2; i++) {
-            restTemplate.exchange("/auth/login", HttpMethod.POST,
+            restTemplate.exchange(
+                    "/auth/login",
+                    HttpMethod.POST,
                     new HttpEntity<>(new LoginRequest("student", "wrong"), ipA),
                     String.class);
         }
@@ -104,9 +106,12 @@ class LoginRateLimiterIT extends AbstractIntegrationTest {
         // IP-B: successful login → должен очистить только свой ключ
         HttpHeaders ipB = new HttpHeaders();
         ipB.set("X-Forwarded-For", "2.2.2.2");
-        ResponseEntity<String> ok = restTemplate.exchange("/auth/login", HttpMethod.POST,
-                new HttpEntity<>(new LoginRequest("student", "password"), ipB),
-                String.class);
+        ResponseEntity<String> ok =
+                restTemplate.exchange(
+                        "/auth/login",
+                        HttpMethod.POST,
+                        new HttpEntity<>(new LoginRequest("student", "password"), ipB),
+                        String.class);
         assertThat(ok.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         // IP-A counter НЕ затронут (clearFailures per-ip)

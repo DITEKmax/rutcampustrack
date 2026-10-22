@@ -1,0 +1,131 @@
+{
+  "kind": "ACTUAL_NODE06_FINAL_CHECK_PASS",
+  "utc": "2026-10-12T23:27:57.446887+00:00",
+  "toolSession": 3225,
+  "supervisor": {
+    "pid": 408353,
+    "start_ticks": 10139552
+  },
+  "nativeExit": 0,
+  "phases": {
+    "format": 0,
+    "types": 0,
+    "list": 0
+  },
+  "types": {
+    "phase": "SCOPED_TYPES_ONLY",
+    "typescript_version": "5.9.3",
+    "error_count": 0,
+    "diagnostic_codes": [],
+    "root_file_count": 5,
+    "pass": true
+  },
+  "discovery": {
+    "phase": "SOURCE_DISCOVERY_ONLY",
+    "case_count": 3,
+    "unexpected_case_count": 0,
+    "rows": [
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 14,
+        "project": "chromium"
+      },
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 61,
+        "project": "chromium"
+      },
+      {
+        "source": "MOBILE_REAL_SERVER",
+        "line": 142,
+        "project": "chromium"
+      }
+    ],
+    "pass": true
+  },
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 408361,
+      "start_ticks": 10139699,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 408475,
+      "start_ticks": 10140103,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 408561,
+      "start_ticks": 10140962,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 408353,
+      "start_ticks": 10139552,
+      "exactBirthAbsent": true
+    }
+  ],
+  "source4": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "beforeSha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+      "candidateSha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "beforeSha256": "a7fa0e1ab77d24dd1badc98234ad60cbc9c5e0adc5ec507b67325eee30615bfc",
+      "candidateSha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "beforeSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "candidateSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "beforeSha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+      "candidateSha256": "80db172a5bc8defd789ddf6e47eb8f2eb35015b68fcbe7d8b355c968f626922e",
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "root19Exact": true,
+  "sevenPackagePinsExact": true,
+  "candidatePreserved": true,
+  "ownedTmpCacheRemoved": true,
+  "lease": "RELEASED",
+  "outcome": {
+    "pass": true,
+    "settled": true,
+    "completedPhases": 3,
+    "typesAndListRun": true,
+    "peaks": {
+      "owned_rss_bytes": 361660416,
+      "run_allocated_bytes": 2015232,
+      "shared_memory_bytes": 11042664448
+    },
+    "ownedTmpRemoved": true,
+    "sourceWritten": false,
+    "noBrowserApiSeedServiceBuild": true,
+    "nativeClientAcceptance": false
+  },
+  "qualifiedSemantic05Bridge": "Raw AST/emit bytes differ; exact accepted limited normalization plus full remaining AST/literals/comments/directives and eight rejecting controls; strict02/03 failure receipts preserved.",
+  "noSourceWrites": true,
+  "browserApiSeedBuildServiceRun": false,
+  "clientAcceptance": false,
+  "standLease": "SEPARATE_ROOT_AUTHORIZATION_UNCHANGED",
+  "collectorErratum": {
+    "initialKnownBirthCount": 1,
+    "cause": "WRONG_TERMINAL_KEY_IN_OWN_COLLECTOR",
+    "actualTerminalKey": "known_owned_identities",
+    "correctedKnownBirthCount": 4,
+    "nativeResultsUnchanged": true,
+    "initialArchivePreservedSha256": "840f8aa1b1ed17af1d8cda5dd1ae6ebada4a13d7e92da0b0eb11b8b3694c6db0"
+  }
+}

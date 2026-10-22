@@ -1,0 +1,1366 @@
+[
+  {
+    "request_id": "X-01",
+    "story_id": "JS-HEADMAN-19",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "342"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "630"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **X-01** | **Выгрузки — единый механизм.** Серверная генерация по текущему разрезу **со всеми активными фильтрами**; шаблоны с placeholder'ами на сервере; **перечень форматов приходит как данные**: docx · pdf · png · html · **xlsx**; внутри файла — шапка контекста (группа, предмет, типы, период, сколько пар учтено) | `[предложение]` | ч4: п. 21, 112, 113 · ч5: A-10, 116 · ч6: AT6-06, 122, 123 · ч7: A7-28, 132, 133 | Разрезов минимум восемь: две таблицы на 112, две таблицы и график на 113, состав группы 116, три шаблона teacher, два списка admin. **xlsx требует табличной модели отчёта, а не рендера картинки:** png и docx собираются из одного макета, xlsx — нет. **Открытый пункт — график:** данные отдаёт сервер, рисует фронт, но файлы формирует сервер → `png` графика требует **серверной отрисовки** либо только табличных форматов. См. Р-3. ⚠️ Аудит: в файл уходят ПДн всего вуза | ⚠️ есть только headman-weekly |",
+    "story_source_fragment": "**JS-HEADMAN-19**: ✏️ **УТОЧНЕНО (чат 4).** Когда мне нужен отчёт для куратора, я хочу экспортировать журнал или статистику в одном из доступных форматов, с учётом всех активных фильтров.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "X-01",
+    "story_id": "JS-TEACHER-07",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "342"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "374"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **X-01** | **Выгрузки — единый механизм.** Серверная генерация по текущему разрезу **со всеми активными фильтрами**; шаблоны с placeholder'ами на сервере; **перечень форматов приходит как данные**: docx · pdf · png · html · **xlsx**; внутри файла — шапка контекста (группа, предмет, типы, период, сколько пар учтено) | `[предложение]` | ч4: п. 21, 112, 113 · ч5: A-10, 116 · ч6: AT6-06, 122, 123 · ч7: A7-28, 132, 133 | Разрезов минимум восемь: две таблицы на 112, две таблицы и график на 113, состав группы 116, три шаблона teacher, два списка admin. **xlsx требует табличной модели отчёта, а не рендера картинки:** png и docx собираются из одного макета, xlsx — нет. **Открытый пункт — график:** данные отдаёт сервер, рисует фронт, но файлы формирует сервер → `png` графика требует **серверной отрисовки** либо только табличных форматов. См. Р-3. ⚠️ Аудит: в файл уходят ПДн всего вуза | ⚠️ есть только headman-weekly |",
+    "story_source_fragment": "**JS-TEACHER-07**: ✏️ **ВОССТАНОВЛЕНО И РАСШИРЕНО (чат 6).** Когда нужен отчёт для кафедры, я хочу выгрузить журнал посещаемости и сводку в нужном формате.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "X-01",
+    "story_id": "JS-ADMIN-13",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "342"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "253"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **X-01** | **Выгрузки — единый механизм.** Серверная генерация по текущему разрезу **со всеми активными фильтрами**; шаблоны с placeholder'ами на сервере; **перечень форматов приходит как данные**: docx · pdf · png · html · **xlsx**; внутри файла — шапка контекста (группа, предмет, типы, период, сколько пар учтено) | `[предложение]` | ч4: п. 21, 112, 113 · ч5: A-10, 116 · ч6: AT6-06, 122, 123 · ч7: A7-28, 132, 133 | Разрезов минимум восемь: две таблицы на 112, две таблицы и график на 113, состав группы 116, три шаблона teacher, два списка admin. **xlsx требует табличной модели отчёта, а не рендера картинки:** png и docx собираются из одного макета, xlsx — нет. **Открытый пункт — график:** данные отдаёт сервер, рисует фронт, но файлы формирует сервер → `png` графика требует **серверной отрисовки** либо только табличных форматов. См. Р-3. ⚠️ Аудит: в файл уходят ПДн всего вуза | ⚠️ есть только headman-weekly |",
+    "story_source_fragment": "**JS-ADMIN-13**: ✏️ **ЧАСТИЧНО ЗАКРЫТО (чат 7).** Когда нужен официальный отчёт, я хочу экспортировать данные ~~посещаемости в PDF или Excel~~ в любом из заявленных форматов (**docx · pdf · png · html · xlsx**) с фильтрацией.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "X-01",
+    "story_id": "JS-STUDENT-16",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "342"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "751"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **X-01** | **Выгрузки — единый механизм.** Серверная генерация по текущему разрезу **со всеми активными фильтрами**; шаблоны с placeholder'ами на сервере; **перечень форматов приходит как данные**: docx · pdf · png · html · **xlsx**; внутри файла — шапка контекста (группа, предмет, типы, период, сколько пар учтено) | `[предложение]` | ч4: п. 21, 112, 113 · ч5: A-10, 116 · ч6: AT6-06, 122, 123 · ч7: A7-28, 132, 133 | Разрезов минимум восемь: две таблицы на 112, две таблицы и график на 113, состав группы 116, три шаблона teacher, два списка admin. **xlsx требует табличной модели отчёта, а не рендера картинки:** png и docx собираются из одного макета, xlsx — нет. **Открытый пункт — график:** данные отдаёт сервер, рисует фронт, но файлы формирует сервер → `png` графика требует **серверной отрисовки** либо только табличных форматов. См. Р-3. ⚠️ Аудит: в файл уходят ПДн всего вуза | ⚠️ есть только headman-weekly |",
+    "story_source_fragment": "🆕 **JS-STUDENT-16**: Когда мне нужны свои данные вне системы, я хочу выгрузить собственную посещаемость в том же табличном виде с текущими фильтрами.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-05",
+    "story_id": "JS-HEADMAN-12",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "126"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "545"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-05** | **Кросс-групповая идентичность предмета:** общий каталог дисциплин либо явная связка эквивалентных | ч6: A6-03, 123 | Предмет принадлежит группе; «Предмет 1» в УИТ-211 и в УИТ-311 — разные записи. Разрез «по моим группам» не сужается до одного предмета. **Сопоставление по названию запрещено** правилом X-13: «Матанализ» и «Мат. анализ» дадут либо две строки, либо ложное слияние — ошибка в отчёте для кафедры, которую никто не заметит | ❌ |",
+    "story_source_fragment": "**JS-HEADMAN-12**: ✏️ **УТОЧНЕНО (чат 5).** Когда нужно назначить преподавателя, я хочу найти его по табельному номеру **или ФИО** из общего пула преподавателей и привязать к **конкретному типу занятия** предмета своей группы. У одного предмета несколько преподавателей (лекции ведёт один, практики — другой, лабораторные — двое сразу). У преподавателя может быть несколько предметов, в том числе одноимённых у разных групп.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Cross-group identity is not assignment type selection; AC-05 is explicitly retired by R-15."
+  },
+  {
+    "request_id": "AT-41",
+    "story_id": "JS-STUDENT-WEB-07",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "286"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "955"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-41** | **Блокировку даёт только активная заявка.** Отклонение и отмена **не** закрывают пару навсегда; идемпотентность по `(студент, пара)` сохраняется для активных | ч3: A-14, 107 | **Прямо противоречит формулировке ч1** — см. Р-2 | ❌ |",
+    "story_source_fragment": "**JS-STUDENT-WEB-07**: ✏️ **ИЗМЕНЕНО (чат 3).** Когда мне нужно подать тикет на «у», я хочу выбрать пары, прикрепить файл и отправить.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-41",
+    "story_id": "JS-STUDENT-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "286"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "704"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-41** | **Блокировку даёт только активная заявка.** Отклонение и отмена **не** закрывают пару навсегда; идемпотентность по `(студент, пара)` сохраняется для активных | ч3: A-14, 107 | **Прямо противоречит формулировке ч1** — см. Р-2 | ❌ |",
+    "story_source_fragment": "**JS-STUDENT-02**: ✏️ **ИЗМЕНЕНО.** Когда отметка по геолокации не прошла (далеко от кампуса, GPS сбой, но я на паре), заявка старосте на ручную проверку отправляется **автоматически**. Я вижу уведомление, что заявка ушла, кнопка отметки становится неактивной и переходит в состояние «на подтверждении».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-13",
+    "story_id": "JS-HEADMAN-23",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "139"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "656"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-13** | **Происхождение пароля:** `initial` / `headman_reset` + признак «сменён пользователем» | ч5: A-4, 116 · ч7: A7-27, 132 | Без подписи староста передаёт пароль, о природе которого не знает. **Видимость значения — предмет расхождения Р-1** | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-23**: ✏️ **ИЗМЕНЕНО (чат 5).** Когда студент моей группы потерял доступ и не может восстановить пароль через бота, я хочу сбросить ему пароль, чтобы система сгенерировала новый и показала мне его ~~**один раз**~~ **в списке группы — до тех пор, пока студент его не сменит** — для передачи студенту.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-42",
+    "story_id": "JS-SYSTEM-16",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "287"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "894"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-42** | **Инкрементальный расчёт агрегатов** вместо пересчёта на каждый запрос; для тяжёлых выгрузок — режим долгой операции (прогресс либо «пришлём, когда готово») | ч4: п. 20, 112, 113 | Прямая формулировка владельца: «есть значение, и оно инкрементируется, а не считать каждый раз». Вторая половина той же задачи: **пакетная выгрузка роняет сервис** | ❌ |",
+    "story_source_fragment": "🆕 **JS-SYSTEM-16** (чат 2): Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AU-16",
+    "story_id": "JS-ADMIN-20",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "106"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "292"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AU-16** | **Аудит:** факт генерации, показа и сброса пароля; факт выгрузки персональных данных | ч5: U-2, 116 · ч7: A7-27, A7-28, 132 | Раз пароль виден третьему лицу (AC-13), просмотр и генерация должны фиксироваться. На 132 в выгрузку уходят ПДн всего вуза | ❌ |",
+    "story_source_fragment": "**JS-ADMIN-20**: 🆕 Когда преподаватель или студент потерял доступ, я хочу сгенерировать ему ссылку смены пароля либо заново сгенерировать пароль, чтобы вернуть его в систему.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AU-16",
+    "story_id": "JS-HEADMAN-23",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "106"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "656"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AU-16** | **Аудит:** факт генерации, показа и сброса пароля; факт выгрузки персональных данных | ч5: U-2, 116 · ч7: A7-27, A7-28, 132 | Раз пароль виден третьему лицу (AC-13), просмотр и генерация должны фиксироваться. На 132 в выгрузку уходят ПДн всего вуза | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-23**: ✏️ **ИЗМЕНЕНО (чат 5).** Когда студент моей группы потерял доступ и не может восстановить пароль через бота, я хочу сбросить ему пароль, чтобы система сгенерировала новый и показала мне его ~~**один раз**~~ **в списке группы — до тех пор, пока студент его не сменит** — для передачи студенту.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-42",
+    "story_id": "JS-HEADMAN-19",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "287"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "630"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-42** | **Инкрементальный расчёт агрегатов** вместо пересчёта на каждый запрос; для тяжёлых выгрузок — режим долгой операции (прогресс либо «пришлём, когда готово») | ч4: п. 20, 112, 113 | Прямая формулировка владельца: «есть значение, и оно инкрементируется, а не считать каждый раз». Вторая половина той же задачи: **пакетная выгрузка роняет сервис** | ❌ |",
+    "story_source_fragment": "**JS-HEADMAN-19**: ✏️ **УТОЧНЕНО (чат 4).** Когда мне нужен отчёт для куратора, я хочу экспортировать журнал или статистику в одном из доступных форматов, с учётом всех активных фильтров.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-25",
+    "story_id": "JS-STUDENT-12",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "270"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "710"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-25** | **Признак «по паре есть активная заявка» / статус late-checkin в представлении пары** | ч1: 101 · ч3: A-15, 101, 102, 107 | Иначе после перезагрузки страницы кнопка снова выглядит активной, хотя заявка подана; состояние `pending` догоняется отдельным запросом и join'ом по `lessonId` | ⚠️ |",
+    "story_source_fragment": "🆕 **JS-STUDENT-12**: Когда староста заблокировал пару для геоотметок, я хочу видеть, что отметка недоступна и почему, чтобы не пытаться отметиться впустую.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Active-ticket status is distinct from headman blockage. Story directly proves blockage only."
+  },
+  {
+    "request_id": "AT-25",
+    "story_id": "JS-STUDENT-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "270"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "704"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-25** | **Признак «по паре есть активная заявка» / статус late-checkin в представлении пары** | ч1: 101 · ч3: A-15, 101, 102, 107 | Иначе после перезагрузки страницы кнопка снова выглядит активной, хотя заявка подана; состояние `pending` догоняется отдельным запросом и join'ом по `lessonId` | ⚠️ |",
+    "story_source_fragment": "**JS-STUDENT-02**: ✏️ **ИЗМЕНЕНО.** Когда отметка по геолокации не прошла (далеко от кампуса, GPS сбой, но я на паре), заявка старосте на ручную проверку отправляется **автоматически**. Я вижу уведомление, что заявка ушла, кнопка отметки становится неактивной и переходит в состояние «на подтверждении».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-15",
+    "story_id": "JS-STUDENT-27",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "255"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "808"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-15** | **Чтение вложения тикета:** файл + метаданные (имя, размер, тип); доступ автору, согласующему и преподавателю | ч3: A-13, 107 · ч4: п. 15, 112 · ч5: 119 · ч6: AT6-04, 122 | `POST /attendance/excuses/with-file` создаёт заявку с файлом; **получения файла в дайджесте нет**. Хранение на нашей стороне решено в ч3 (отменяет JS-STUDENT-WEB-07 «через бота без хранения») — см. Р-10 | ⚠️ |",
+    "story_source_fragment": "🆕 **JS-STUDENT-27** (чат 3): Когда я прикладываю к тикету документ, я хочу видеть ход загрузки, превью, возможность удалить вложение и понятную причину отказа (размер, формат, сеть).",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-05",
+    "story_id": "JS-TEACHER-14",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "126"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "411"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-05** | **Кросс-групповая идентичность предмета:** общий каталог дисциплин либо явная связка эквивалентных | ч6: A6-03, 123 | Предмет принадлежит группе; «Предмет 1» в УИТ-211 и в УИТ-311 — разные записи. Разрез «по моим группам» не сужается до одного предмета. **Сопоставление по названию запрещено** правилом X-13: «Матанализ» и «Мат. анализ» дадут либо две строки, либо ложное слияние — ошибка в отчёте для кафедры, которую никто не заметит | ❌ |",
+    "story_source_fragment": "**JS-TEACHER-14**: 🆕 Когда я веду один предмет в нескольких группах, я хочу переключить сводку в разрез «по моим группам» — строки-группы с теми же метриками и количеством учтённых пар, — чтобы понять, какая группа проблемная, и провалиться в неё до конкретных студентов.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Story wanted cross-group comparison but R-15 removes one cross-group discipline selection. Preserve per-group subject IDs."
+  },
+  {
+    "request_id": "SC-16",
+    "story_id": "JS-STUDENT-12",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "220"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "710"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-16** | **`blockage` против `geo-block`** — одно и то же или разное | ч4: п. 6, 111 | Два независимых флага дают четыре комбинации, две из которых бессмысленны. Если одно — вывести из обихода; если разное — нужны раздельные термины и контролы. **Требует решения до Figma**; до ответа проектируется один переключатель на базе `blockage` | ✅ обе операции существуют |",
+    "story_source_fragment": "🆕 **JS-STUDENT-12**: Когда староста заблокировал пару для геоотметок, я хочу видеть, что отметка недоступна и почему, чтобы не пытаться отметиться впустую.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AU-10",
+    "story_id": "JS-ADMIN-26",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "100"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "325"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AU-10** | **Контекст сессии одним ответом:** токены + профиль + **роли массивом со статусами** (AC-09) + **эффективные права** (AC-10) + группа + **активный семестр** | ч1: 001, JS-SYSTEM-14 · ч3: AU-10 · ч4: п. 5, все пять экранов · ч7: RoleSwitcher | Сейчас: `POST /auth/login` → `GET /academic/users/me` → `GET /academic/semesters` (+ `public-key`). Без профиля, ролей и прав нельзя ни выбрать целевую главную, ни отрисовать шапку, ни собрать навигацию | ⚠️ |",
+    "story_source_fragment": "**JS-ADMIN-26**: 🆕 Когда я работаю под ролью администратора, я хочу выполнять только административные действия, а для работы старосты или преподавателя явно переключать роль, чтобы не путать области ответственности.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AU-10",
+    "story_id": "JS-ADMIN-19",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "100"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "286"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AU-10** | **Контекст сессии одним ответом:** токены + профиль + **роли массивом со статусами** (AC-09) + **эффективные права** (AC-10) + группа + **активный семестр** | ч1: 001, JS-SYSTEM-14 · ч3: AU-10 · ч4: п. 5, все пять экранов · ч7: RoleSwitcher | Сейчас: `POST /auth/login` → `GET /academic/users/me` → `GET /academic/semesters` (+ `public-key`). Без профиля, ролей и прав нельзя ни выбрать целевую главную, ни отрисовать шапку, ни собрать навигацию | ⚠️ |",
+    "story_source_fragment": "**JS-ADMIN-19**: 🆕 Когда человек, уже заведённый в системе, получает вторую роль, я хочу добавить ему роль к существующей учётной записи, заполнив только недостающие поля, чтобы не создавать второго пользователя на одного человека.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "SC-16",
+    "story_id": "JS-HEADMAN-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "220"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "440"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-16** | **`blockage` против `geo-block`** — одно и то же или разное | ч4: п. 6, 111 | Два независимых флага дают четыре комбинации, две из которых бессмысленны. Если одно — вывести из обихода; если разное — нужны раздельные термины и контролы. **Требует решения до Figma**; до ответа проектируется один переключатель на базе `blockage` | ✅ обе операции существуют |",
+    "story_source_fragment": "**JS-HEADMAN-02**: Когда я хочу запретить студентам отмечаться по геолокации на конкретной паре (например, при подозрении на подмену), я хочу заблокировать пару для геоотметок, чтобы все отметки шли только через меня.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-50",
+    "story_id": "JS-HEADMAN-44",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "300"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "482"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-50** | Обратимость решения по тикету | ч5: T-9, 119 | Обратимо → кнопки без подтверждения и «Изменить решение» в архиве; необратимо → `ConfirmDialog` на одобрение. Не путать с «отклонение не окончательно» — то про повторную подачу студентом | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-44** (чат 5): Когда я одобряю тикет, я хочу, чтобы уже проставленные «+» не заменялись на «у», а такие пары исключались из эффекта — и чтобы я видел это **до** решения, а не гадал, почему часть отметок не изменилась.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-50",
+    "story_id": "JS-HEADMAN-43",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "300"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "476"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-50** | Обратимость решения по тикету | ч5: T-9, 119 | Обратимо → кнопки без подтверждения и «Изменить решение» в архиве; необратимо → `ConfirmDialog` на одобрение. Не путать с «отклонение не окончательно» — то про повторную подачу студентом | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-43** (чат 5): Когда ко мне приходят заявки, я хочу видеть их одной очередью — и тикеты на «у», и тикеты на «н», — с ФИО, причиной, периодом покрытия и количеством пар, чтобы решать не открывая каждую; состав пар я раскрываю только тогда, когда он мне нужен. Решённые заявки я хочу находить в архиве по типу, ФИО и дате.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-50",
+    "story_id": "JS-STUDENT-23",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "300"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "795"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-50** | Обратимость решения по тикету | ч5: T-9, 119 | Обратимо → кнопки без подтверждения и «Изменить решение» в архиве; необратимо → `ConfirmDialog` на одобрение. Не путать с «отклонение не окончательно» — то про повторную подачу студентом | ❌ |",
+    "story_source_fragment": "🆕 **JS-STUDENT-23** (чат 3, по скану ПК-107): Когда я пропустил несколько пар, я хочу выбрать диапазон дат, отметить конкретные пары из этого диапазона и подать по ним **один** тикет — на «у» (с типом причины, комментарием и файлами) или на «н» (оспорить проставленное отсутствие).",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "MAP-07",
+    "story_id": "JS-ADMIN-25",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "329"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "320"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **MAP-07** | **Перечень аудиторий этажа** | `[нет API]` | ч4: п. 40 (задача) · ч7: A7-40 (отложено) | Номер, назначение, порядок; выборка по паре «корпус, этаж». **Предмет расхождения Р-5:** ч4 переводил ограничение A11Y в задачу, ч7 отложил наполнение → ограничение возвращается | ❌ отложено |",
+    "story_source_fragment": "**JS-ADMIN-25**: 🆕 Когда схема корпуса устарела, я хочу заменить файл, сохранив запись об этаже, чтобы пользователи увидели новую версию без пересоздания записи.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Replacing a plan is not room catalogue; R-05 defers MAP-07."
+  },
+  {
+    "request_id": "AC-07",
+    "story_id": "JS-TEACHER-09",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "128"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "387"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-07** ✅ **решено 12.08 (Р-26)** | **Третье измерение в связи: преподаватель × предмет × группа × семестр × ТИП ЗАНЯТИЯ** | ч5: A-1, 116.1, 117 (блокирующее) · ч6: A6-01, 121, 122, 123 (блокирующее) | Лекции ведёт один преподаватель, практики другой, лабораторные двое. Сейчас `subjects/{id}/teachers/{teacherId}` и `assignments` связывают преподавателя с **предметом целиком**. Для teacher это не неудобство, а **неработоспособность роли**: «мои пары дня» отобрать не из чего (SC-03), строки «Предмет 1 · ЛК» и «Предмет 1 · ЛЗ» неразличимы, «типа нет» не отличается от «тип есть, но веду не я» | ⚠️ |",
+    "story_source_fragment": "**JS-TEACHER-09**: 🆕 Когда я захожу в систему, я хочу сразу видеть свои группы и свои пары «предмет × тип занятия», чтобы одним нажатием попасть в нужный журнал или в статистику нужной группы.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-07",
+    "story_id": "JS-HEADMAN-12",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "128"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "545"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-07** ✅ **решено 12.08 (Р-26)** | **Третье измерение в связи: преподаватель × предмет × группа × семестр × ТИП ЗАНЯТИЯ** | ч5: A-1, 116.1, 117 (блокирующее) · ч6: A6-01, 121, 122, 123 (блокирующее) | Лекции ведёт один преподаватель, практики другой, лабораторные двое. Сейчас `subjects/{id}/teachers/{teacherId}` и `assignments` связывают преподавателя с **предметом целиком**. Для teacher это не неудобство, а **неработоспособность роли**: «мои пары дня» отобрать не из чего (SC-03), строки «Предмет 1 · ЛК» и «Предмет 1 · ЛЗ» неразличимы, «типа нет» не отличается от «тип есть, но веду не я» | ⚠️ |",
+    "story_source_fragment": "**JS-HEADMAN-12**: ✏️ **УТОЧНЕНО (чат 5).** Когда нужно назначить преподавателя, я хочу найти его по табельному номеру **или ФИО** из общего пула преподавателей и привязать к **конкретному типу занятия** предмета своей группы. У одного предмета несколько преподавателей (лекции ведёт один, практики — другой, лабораторные — двое сразу). У преподавателя может быть несколько предметов, в том числе одноимённых у разных групп.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-16",
+    "story_id": "JS-ADMIN-15",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "142"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "264"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-16** | **Статус группы `draft`** (без назначенного старосты) как значение статуса, параметр фильтра и счётчик вкладки | ч7: A7-07, 133 | «Староста пуст → черновик» не переживёт ни пагинации, ни серверной фильтрации, ни счётчика. Требует подтверждения: возвращается ли в черновики группа, потерявшая старосту после активации | ❌ |",
+    "story_source_fragment": "**JS-ADMIN-15**: 🆕 Когда я создал группу, но старосты в ней ещё нет, я хочу видеть её в отдельном разрезе «черновики», чтобы отличать нерабочие группы от действующих и не терять их в общем списке.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-07",
+    "story_id": "JS-TEACHER-10",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "128"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "391"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-07** ✅ **решено 12.08 (Р-26)** | **Третье измерение в связи: преподаватель × предмет × группа × семестр × ТИП ЗАНЯТИЯ** | ч5: A-1, 116.1, 117 (блокирующее) · ч6: A6-01, 121, 122, 123 (блокирующее) | Лекции ведёт один преподаватель, практики другой, лабораторные двое. Сейчас `subjects/{id}/teachers/{teacherId}` и `assignments` связывают преподавателя с **предметом целиком**. Для teacher это не неудобство, а **неработоспособность роли**: «мои пары дня» отобрать не из чего (SC-03), строки «Предмет 1 · ЛК» и «Предмет 1 · ЛЗ» неразличимы, «типа нет» не отличается от «тип есть, но веду не я» | ⚠️ |",
+    "story_source_fragment": "**JS-TEACHER-10**: 🆕 Когда я хочу понять, что у меня сегодня, я хочу видеть список пар выбранного дня — группа, предмет, тип занятия, время, аудитория и пометка, если пара разовая или перенесённая, — и листать дни, а нажав на пару, увидеть посещаемость **именно этой пары за этот день**.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "MAP-07",
+    "story_id": "JS-ADMIN-24",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "329"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "315"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **MAP-07** | **Перечень аудиторий этажа** | `[нет API]` | ч4: п. 40 (задача) · ч7: A7-40 (отложено) | Номер, назначение, порядок; выборка по паре «корпус, этаж». **Предмет расхождения Р-5:** ч4 переводил ограничение A11Y в задачу, ч7 отложил наполнение → ограничение возвращается | ❌ отложено |",
+    "story_source_fragment": "**JS-ADMIN-24**: 🆕 Когда часть схем загружена не полностью, я хочу видеть по каждому этажу, какого файла не хватает, чтобы понимать, где карта не работает.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "PNG/SVG completeness does not define structured room catalogue; R-05 defers MAP-07."
+  },
+  {
+    "request_id": "MAP-07",
+    "story_id": "JS-ADMIN-23",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "329"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "309"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **MAP-07** | **Перечень аудиторий этажа** | `[нет API]` | ч4: п. 40 (задача) · ч7: A7-40 (отложено) | Номер, назначение, порядок; выборка по паре «корпус, этаж». **Предмет расхождения Р-5:** ч4 переводил ограничение A11Y в задачу, ч7 отложил наполнение → ограничение возвращается | ❌ отложено |",
+    "story_source_fragment": "**JS-ADMIN-23**: 🆕 Когда я загружаю план корпуса, я хочу указать номер корпуса и этажа и прикрепить два файла — svg для показа и png для скачивания, чтобы схема появилась на экране карты у студентов, старост и преподавателей.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Uploading a plan does not require structured room catalogue; R-05 defers MAP-07."
+  },
+  {
+    "request_id": "MAP-07",
+    "story_id": "JS-STUDENT-24",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "329"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "815"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **MAP-07** | **Перечень аудиторий этажа** | `[нет API]` | ч4: п. 40 (задача) · ч7: A7-40 (отложено) | Номер, назначение, порядок; выборка по паре «корпус, этаж». **Предмет расхождения Р-5:** ч4 переводил ограничение A11Y в задачу, ч7 отложил наполнение → ограничение возвращается | ❌ отложено |",
+    "story_source_fragment": "🆕 **JS-STUDENT-24** (чат 3, по скану ПК-105): Когда мне нужно найти аудиторию, я хочу выбрать корпус и этаж, посмотреть схему с возможностью приблизить и подвинуть её, и при желании скачать схему себе.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "X-02",
+    "story_id": "JS-TEACHER-13",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "343"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "407"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **X-02** | **Конфигурируемый набор фильтров и сортировок как данные** + сортировка, фильтрация и пагинация **на сервере** | `[предложение]` | ч4: п. 35, 113, 114 · ч5: T-4, 119 · ч6: 122 · ч7: A7-04, 132, 133 | Формулировка владельца: «на бэкенде добавляется, на фронте рисуется, так что может меняться» — фронт список колонок не зашивает. Клиентская сортировка по неполной странице даёт неверный порядок | ❌ |",
+    "story_source_fragment": "**JS-TEACHER-13**: 🆕 Когда я смотрю сводку по группе, я хочу сортировать её по любому столбцу, чтобы быстро увидеть тех, у кого дела хуже всех.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "X-02",
+    "story_id": "JS-HEADMAN-30",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "343"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "640"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **X-02** | **Конфигурируемый набор фильтров и сортировок как данные** + сортировка, фильтрация и пагинация **на сервере** | `[предложение]` | ч4: п. 35, 113, 114 · ч5: T-4, 119 · ч6: 122 · ч7: A7-04, 132, 133 | Формулировка владельца: «на бэкенде добавляется, на фронте рисуется, так что может меняться» — фронт список колонок не зашивает. Клиентская сортировка по неполной странице даёт неверный порядок | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-30** (чат 4, по скану ПК-113): Когда я анализирую группу, я хочу фильтровать и сортировать таблицу по любой колонке, чтобы находить проблемные случаи.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "SC-08",
+    "story_id": "JS-STUDENT-12",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "207"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "710"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-08** | **Полнота представления пары — сведённый перечень признаков:** статус (`planned`/`active`/`closed`/`cancelled`) · признак **блокировки старостой** · признак **гео-блокировки** · происхождение (`regular`/`one-off`/**перенесена**, с указанием откуда) · номер пары в дне · аудитория · **признак смены аудитории + прежнее значение** · **причина отмены** · признак наличия привязанного дз. Те же поля — **внутри ответа журнала**, а не только в расписании | ч1: 101, 102 (гео-флаг, причина отмены, смена аудитории, происхождение) · ч3: S-3, S-4 · ч4: п. 4, 111, 112 · ч5: S-11, S-12, 118 · ч6: S6-02, 121 | Самый дублируемый пункт массива — просили все четыре роли. Без гео-флага кнопка «Отметиться» показывается активной там, где отметка запрещена. Без статуса нельзя выбрать текущую пару для счётчиков, объяснить автоматические `н`, отличить будущую пару от неотмеченной (в будущей ячейке кружков быть не должно). Без причины отмены зачёркнутая пара немая | ⚠️ |",
+    "story_source_fragment": "🆕 **JS-STUDENT-12**: Когда староста заблокировал пару для геоотметок, я хочу видеть, что отметка недоступна и почему, чтобы не пытаться отметиться впустую.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "SC-01",
+    "story_id": "JS-HEADMAN-21",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "195"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "506"
+    },
+    "evidence_kind": "closed-decision-R-25",
+    "association_basis": "closed R-25 decision; request and story scopes are explicitly connected",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-01** ✅ **решено 12.08 (Р-25)** | **Перенос пары одной операцией:** на старом месте пара помечена перенесённой, на новом стоит та же пара, **привязанное дз переезжает и остаётся актуальным**, отметки не теряются | ч1: 102 (отображение), действие старосты · ч3: S-2 · ч4: п. 26, 114 · ч5: S-1, 118, 117 (блокирующее) · ч6: S6-02, 121 | **Поднято в четырёх чатах.** Обходной путь непригоден дважды: отмена **стирает отметки** и отправляет дз в архив, а две операции без транзакции рвут расписание при обрыве. Есть только отмена и создание разовой | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-21**: Когда пара переносится на другой день или время, я хочу выполнить перенос одним действием, чтобы студенты увидели пару на новом месте с пометкой о переносе, а статистика посчиталась корректно.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-26",
+    "story_id": "JS-STUDENT-06",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "271"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "727"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-26** | **Авто-эскалация одной серверной операцией + идемпотентность по `(студент, пара)`.** Лимит общий для авто- и ручной заявки | ч1: 101 | Если собирать двумя вызовами, при обрыве студент остаётся с «н» и **без заявки, а повторить нечем**: ручная кнопка на карточке текущей пары убрана. Идемпотентность даёт «одну заявку на пару» ключом, а не поведением фронта | ⚠️ |",
+    "story_source_fragment": "**JS-STUDENT-06**: ✏️ **ИЗМЕНЕНО.** Когда пара прошла, у меня стоит `absent`, и я **не пытался** отметиться, я хочу нажать «Был, но забыл отметиться», чтобы старосте пришёл запрос на подтверждение. При подтверждении статус меняется на `present` с источником `late_checkin`.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-26",
+    "story_id": "JS-STUDENT-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "271"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "704"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-26** | **Авто-эскалация одной серверной операцией + идемпотентность по `(студент, пара)`.** Лимит общий для авто- и ручной заявки | ч1: 101 | Если собирать двумя вызовами, при обрыве студент остаётся с «н» и **без заявки, а повторить нечем**: ручная кнопка на карточке текущей пары убрана. Идемпотентность даёт «одну заявку на пару» ключом, а не поведением фронта | ⚠️ |",
+    "story_source_fragment": "**JS-STUDENT-02**: ✏️ **ИЗМЕНЕНО.** Когда отметка по геолокации не прошла (далеко от кампуса, GPS сбой, но я на паре), заявка старосте на ручную проверку отправляется **автоматически**. Я вижу уведомление, что заявка ушла, кнопка отметки становится неактивной и переходит в состояние «на подтверждении».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "SC-01",
+    "story_id": "JS-HEADMAN-16",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "195"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "585"
+    },
+    "evidence_kind": "closed-decision-R-25",
+    "association_basis": "closed R-25 decision; request and story scopes are explicitly connected",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-01** ✅ **решено 12.08 (Р-25)** | **Перенос пары одной операцией:** на старом месте пара помечена перенесённой, на новом стоит та же пара, **привязанное дз переезжает и остаётся актуальным**, отметки не теряются | ч1: 102 (отображение), действие старосты · ч3: S-2 · ч4: п. 26, 114 · ч5: S-1, 118, 117 (блокирующее) · ч6: S6-02, 121 | **Поднято в четырёх чатах.** Обходной путь непригоден дважды: отмена **стирает отметки** и отправляет дз в архив, а две операции без транзакции рвут расписание при обрыве. Есть только отмена и создание разовой | ❌ |",
+    "story_source_fragment": "**JS-HEADMAN-16**: Когда преподаватель задал домашнее задание, я хочу опубликовать его для группы: текст задания + ссылка (на облако, Git-репозиторий или чат), чтобы все студенты получили уведомление.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "SC-08",
+    "story_id": "JS-STUDENT-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "207"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "704"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-08** | **Полнота представления пары — сведённый перечень признаков:** статус (`planned`/`active`/`closed`/`cancelled`) · признак **блокировки старостой** · признак **гео-блокировки** · происхождение (`regular`/`one-off`/**перенесена**, с указанием откуда) · номер пары в дне · аудитория · **признак смены аудитории + прежнее значение** · **причина отмены** · признак наличия привязанного дз. Те же поля — **внутри ответа журнала**, а не только в расписании | ч1: 101, 102 (гео-флаг, причина отмены, смена аудитории, происхождение) · ч3: S-3, S-4 · ч4: п. 4, 111, 112 · ч5: S-11, S-12, 118 · ч6: S6-02, 121 | Самый дублируемый пункт массива — просили все четыре роли. Без гео-флага кнопка «Отметиться» показывается активной там, где отметка запрещена. Без статуса нельзя выбрать текущую пару для счётчиков, объяснить автоматические `н`, отличить будущую пару от неотмеченной (в будущей ячейке кружков быть не должно). Без причины отмены зачёркнутая пара немая | ⚠️ |",
+    "story_source_fragment": "**JS-STUDENT-02**: ✏️ **ИЗМЕНЕНО.** Когда отметка по геолокации не прошла (далеко от кампуса, GPS сбой, но я на паре), заявка старосте на ручную проверку отправляется **автоматически**. Я вижу уведомление, что заявка ушла, кнопка отметки становится неактивной и переходит в состояние «на подтверждении».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-51",
+    "story_id": "JS-HEADMAN-12",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "182"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "545"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-51** | Табельный номер в представлении преподавателя | ч5: A-11, 116.1 | JS-HEADMAN-12 строит поиск именно на нём | ❌ |",
+    "story_source_fragment": "**JS-HEADMAN-12**: ✏️ **УТОЧНЕНО (чат 5).** Когда нужно назначить преподавателя, я хочу найти его по табельному номеру **или ФИО** из общего пула преподавателей и привязать к **конкретному типу занятия** предмета своей группы. У одного предмета несколько преподавателей (лекции ведёт один, практики — другой, лабораторные — двое сразу). У преподавателя может быть несколько предметов, в том числе одноимённых у разных групп.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AU-14",
+    "story_id": "JS-ADMIN-10",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "104"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "225"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AU-14** | **Состав доказательства для необратимых операций — два уровня:** `password` (удаление группы, семестра, схемы) и `password + otp` (удаление предмета) | ч5: A-7, 116.1 · ч7: A7-38, 133, 134, 135 | **Решение ч7: это один механизм, а не два.** Кодовая фраза «как в GitHub» (JS-ADMIN-10) как отдельная механика отменяется | ❌ |",
+    "story_source_fragment": "**JS-ADMIN-10**: ✏️ **ИЗМЕНЕНО (чат 7).** Когда нужно удалить ~~ошибочно созданный~~ **любой** семестр, я хочу подтвердить действие ~~вводом кодовой фразы (как в GitHub при удалении репозитория)~~ **вводом пароля администратора** и увидеть предпросмотр последствий, чтобы исключить случайное удаление.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AU-10",
+    "story_id": "JS-SYSTEM-14",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "100"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "874"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AU-10** | **Контекст сессии одним ответом:** токены + профиль + **роли массивом со статусами** (AC-09) + **эффективные права** (AC-10) + группа + **активный семестр** | ч1: 001, JS-SYSTEM-14 · ч3: AU-10 · ч4: п. 5, все пять экранов · ч7: RoleSwitcher | Сейчас: `POST /auth/login` → `GET /academic/users/me` → `GET /academic/semesters` (+ `public-key`). Без профиля, ролей и прав нельзя ни выбрать целевую главную, ни отрисовать шапку, ни собрать навигацию | ⚠️ |",
+    "story_source_fragment": "🆕 **JS-SYSTEM-14**: Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "SC-10",
+    "story_id": "JS-SYSTEM-05",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "209"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "880"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **SC-10** | **Метаданные недели:** границы недели, **порядковый номер от начала семестра**, чётность, границы семестра | ч1: 102 · ч3: S-5 · ч4: п. 16, 112 · ч5: S-3, 117, 118 | JS-SYSTEM-05 постановил, что считает сервер. **Фронт чётность не считает ни при каких условиях.** Требуется проверка, что второй реализации нет: чётность фигурирует в конструкторе (117), шапке журнала (112), пейджере недель (118) и генерации серий — расхождение **уводит расписание всей группы** | ❌ |",
+    "story_source_fragment": "**JS-SYSTEM-05**: Когда староста добавляет слот в расписание (предмет + день + номер пары + чётность), система автоматически генерирует все конкретные даты `lessons` на весь семестр на основе дат семестра и чётности недель.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "NT-03",
+    "story_id": "JS-SYSTEM-10",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "312"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "905"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **NT-03** | **События уровня «агрегат по паре» и «счётчик заявок» в WS** | `[предложение]` | ч4: п. 10, 111 | В JS-SYSTEM-10 таких событий нет; связано с AT-43 | ⚠️ канал есть |",
+    "story_source_fragment": "**JS-SYSTEM-10**: Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Direct row association explicitly says these aggregate WS events are absent from story catalogue; transport choice must not become new event acceptance."
+  },
+  {
+    "request_id": "AT-22",
+    "story_id": "JS-SYSTEM-07",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "267"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "886"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-22** | **Источник отметки (`source`):** `student_geo` / `headman` / `auto_scheduler` / `teacher_override` / `late_checkin`, время отметки, кто изменил | ч4: п. 3, 111, 112, 113 · ч6: AT6-01, 122 | После закрытия пары журнал автоматически заполняется `н` (JS-SYSTEM-07). Без источника **староста не отличит автопростановку от собственного решения**, преподаватель примет машинное «н» за факт и сделает вывод о студенте. Три-четыре потребителя | ⚠️ |",
+    "story_source_fragment": "**JS-SYSTEM-07**: Когда пара переходит в статус `closed` (по времени окончания), система автоматически проставляет `absent` всем студентам группы, у которых нет отметки за эту пару. Староста получает уведомление: «Сессия отметки завершена».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-15",
+    "story_id": "JS-STUDENT-WEB-07",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "255"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "955"
+    },
+    "evidence_kind": "direct-request-row",
+    "association_basis": "literal stable-story citation in the request row",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-15** | **Чтение вложения тикета:** файл + метаданные (имя, размер, тип); доступ автору, согласующему и преподавателю | ч3: A-13, 107 · ч4: п. 15, 112 · ч5: 119 · ч6: AT6-04, 122 | `POST /attendance/excuses/with-file` создаёт заявку с файлом; **получения файла в дайджесте нет**. Хранение на нашей стороне решено в ч3 (отменяет JS-STUDENT-WEB-07 «через бота без хранения») — см. Р-10 | ⚠️ |",
+    "story_source_fragment": "**JS-STUDENT-WEB-07**: ✏️ **ИЗМЕНЕНО (чат 3).** Когда мне нужно подать тикет на «у», я хочу выбрать пары, прикрепить файл и отправить.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "EXPLICIT_SOURCE_ASSOCIATION",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-26",
+    "story_id": "JS-HEADMAN-05",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "271"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "466"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-26** | **Авто-эскалация одной серверной операцией + идемпотентность по `(студент, пара)`.** Лимит общий для авто- и ручной заявки | ч1: 101 | Если собирать двумя вызовами, при обрыве студент остаётся с «н» и **без заявки, а повторить нечем**: ручная кнопка на карточке текущей пары убрана. Идемпотентность даёт «одну заявку на пару» ключом, а не поведением фронта | ⚠️ |",
+    "story_source_fragment": "**JS-HEADMAN-05**: ✏️ **ИЗМЕНЕНО.** Когда студент не смог отметиться по геолокации, заявка на ручную проверку приходит мне **автоматически**. Если я подтверждаю — статус меняется на `present` с источником `late_checkin`, если отклоняю — остаётся `absent`.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-12",
+    "story_id": "JS-HEADMAN-05",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "252"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "466"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-12** | **Личный разрез заявок late-checkin («мои заявки»)** | ч3: A-6, 107 | Есть только `pending` и `group/{groupId}` — оба для старосты. Личного разреза нет вообще | ❌ |",
+    "story_source_fragment": "**JS-HEADMAN-05**: ✏️ **ИЗМЕНЕНО.** Когда студент не смог отметиться по геолокации, заявка на ручную проверку приходит мне **автоматически**. Если я подтверждаю — статус меняется на `present` с источником `late_checkin`, если отклоняю — остаётся `absent`.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Request is student personal history; story is headman receive/decide. Source audience differs."
+  },
+  {
+    "request_id": "AT-12",
+    "story_id": "JS-STUDENT-06",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "252"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "727"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-12** | **Личный разрез заявок late-checkin («мои заявки»)** | ч3: A-6, 107 | Есть только `pending` и `group/{groupId}` — оба для старосты. Личного разреза нет вообще | ❌ |",
+    "story_source_fragment": "**JS-STUDENT-06**: ✏️ **ИЗМЕНЕНО.** Когда пара прошла, у меня стоит `absent`, и я **не пытался** отметиться, я хочу нажать «Был, но забыл отметиться», чтобы старосте пришёл запрос на подтверждение. При подтверждении статус меняется на `present` с источником `late_checkin`.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-12",
+    "story_id": "JS-STUDENT-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "252"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "704"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-12** | **Личный разрез заявок late-checkin («мои заявки»)** | ч3: A-6, 107 | Есть только `pending` и `group/{groupId}` — оба для старосты. Личного разреза нет вообще | ❌ |",
+    "story_source_fragment": "**JS-STUDENT-02**: ✏️ **ИЗМЕНЕНО.** Когда отметка по геолокации не прошла (далеко от кампуса, GPS сбой, но я на паре), заявка старосте на ручную проверку отправляется **автоматически**. Я вижу уведомление, что заявка ушла, кнопка отметки становится неактивной и переходит в состояние «на подтверждении».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-31",
+    "story_id": "JS-HEADMAN-24",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "276"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "666"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-31** | **Пары диапазона с готовым признаком `canDispute` + причина отказа** (активная заявка · пара отменена · пара не прошла · уже «у» · «н» проставлен вручную). Правило считает **сервер**: ручное «н» оспаривать нельзя, автоматическое можно | ч3: A-2, A-3, 107 | Сейчас фронт джойнит расписание + отметки + (несуществующие) данные о тикетах — 3 источника на каждую смену диапазона плюс N+1. Источник отметки может пополниться — две реализации правила разойдутся | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-24** (чат 3): Когда я точно знаю, что студента не было на паре, я ставлю «н» вручную — и такую пару студент оспорить уже не может. Если студент всё равно пытается захватить такие пары в тикет, после трёх попыток за семестр возможность подавать тикеты на «н» у него пропадает, а я могу снять эту блокировку из управления студентами группы.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-11",
+    "story_id": "JS-STUDENT-02",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "251"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "704"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-11** | **Счётчик попыток захвата пары:** `attemptsUsed` / `attemptsLimit` (3 на семестр), флаг блокировки на пользователе + **операция снятия блокировки старостой** | ч3: A-4, A-5, 107 · ч5: T-1, 116, 119 | Фронту нужно **как данные, а не как ошибка после отправки** — иначе кнопка недоступна молча. На 116 без этого колонка пустая и **экран врёт**: староста не видит, что студент заблокирован. На клиенте невычислимо | ❌ |",
+    "story_source_fragment": "**JS-STUDENT-02**: ✏️ **ИЗМЕНЕНО.** Когда отметка по геолокации не прошла (далеко от кампуса, GPS сбой, но я на паре), заявка старосте на ручную проверку отправляется **автоматически**. Я вижу уведомление, что заявка ушла, кнопка отметки становится неактивной и переходит в состояние «на подтверждении».",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "R-02 automatic geo escalation is unlimited; manual petition limit is separate. Shared limit must not be inferred."
+  },
+  {
+    "request_id": "AT-11",
+    "story_id": "JS-HEADMAN-24",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "251"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "666"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-11** | **Счётчик попыток захвата пары:** `attemptsUsed` / `attemptsLimit` (3 на семестр), флаг блокировки на пользователе + **операция снятия блокировки старостой** | ч3: A-4, A-5, 107 · ч5: T-1, 116, 119 | Фронту нужно **как данные, а не как ошибка после отправки** — иначе кнопка недоступна молча. На 116 без этого колонка пустая и **экран врёт**: староста не видит, что студент заблокирован. На клиенте невычислимо | ❌ |",
+    "story_source_fragment": "🆕 **JS-HEADMAN-24** (чат 3): Когда я точно знаю, что студента не было на паре, я ставлю «н» вручную — и такую пару студент оспорить уже не может. Если студент всё равно пытается захватить такие пары в тикет, после трёх попыток за семестр возможность подавать тикеты на «н» у него пропадает, а я могу снять эту блокировку из управления студентами группы.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-31",
+    "story_id": "JS-STUDENT-23",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "276"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "795"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-31** | **Пары диапазона с готовым признаком `canDispute` + причина отказа** (активная заявка · пара отменена · пара не прошла · уже «у» · «н» проставлен вручную). Правило считает **сервер**: ручное «н» оспаривать нельзя, автоматическое можно | ч3: A-2, A-3, 107 | Сейчас фронт джойнит расписание + отметки + (несуществующие) данные о тикетах — 3 источника на каждую смену диапазона плюс N+1. Источник отметки может пополниться — две реализации правила разойдутся | ❌ |",
+    "story_source_fragment": "🆕 **JS-STUDENT-23** (чат 3, по скану ПК-107): Когда я пропустил несколько пар, я хочу выбрать диапазон дат, отметить конкретные пары из этого диапазона и подать по ним **один** тикет — на «у» (с типом причины, комментарием и файлами) или на «н» (оспорить проставленное отсутствие).",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-35",
+    "story_id": "JS-ADMIN-15",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "161"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "264"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-35** | **Назначение старосты — операция на группе.** Единственность проверяется на стороне группы, а не флагом на пользователе; каскад деактивации помощников предыдущего — на сервере, с возвратом количества затронутых | ч7: A7-20, 133 | Иначе два параллельных запроса дают двух старост | ❌ |",
+    "story_source_fragment": "**JS-ADMIN-15**: 🆕 Когда я создал группу, но старосты в ней ещё нет, я хочу видеть её в отдельном разрезе «черновики», чтобы отличать нерабочие группы от действующих и не терять их в общем списке.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-09",
+    "story_id": "JS-SYSTEM-14",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "135"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "874"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-09** | **Роль — массив, статус принадлежит роли** (`active · expelled · graduated · suspended · dismissed · archived`). Один аккаунт несёт до четырёх ролей при одном логине | ч7: A7-01, 131, 132, вход, RoleSwitcher | Модель «студент + флаг `is_headman`» не даёт собрать ни колонки «Роль»/«Статус», ни `RoleSwitcher`, ни счётчики 131 (человек считается и как студент, и как преподаватель). Клиентская склейка нескольких записей создаст **два аккаунта на одно лицо**. См. Р-6 | ⚠️ |",
+    "story_source_fragment": "🆕 **JS-SYSTEM-14**: Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-09",
+    "story_id": "JS-ADMIN-26",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "135"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "325"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-09** | **Роль — массив, статус принадлежит роли** (`active · expelled · graduated · suspended · dismissed · archived`). Один аккаунт несёт до четырёх ролей при одном логине | ч7: A7-01, 131, 132, вход, RoleSwitcher | Модель «студент + флаг `is_headman`» не даёт собрать ни колонки «Роль»/«Статус», ни `RoleSwitcher`, ни счётчики 131 (человек считается и как студент, и как преподаватель). Клиентская склейка нескольких записей создаст **два аккаунта на одно лицо**. См. Р-6 | ⚠️ |",
+    "story_source_fragment": "**JS-ADMIN-26**: 🆕 Когда я работаю под ролью администратора, я хочу выполнять только административные действия, а для работы старосты или преподавателя явно переключать роль, чтобы не путать области ответственности.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-09",
+    "story_id": "JS-ADMIN-19",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "135"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "286"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-09** | **Роль — массив, статус принадлежит роли** (`active · expelled · graduated · suspended · dismissed · archived`). Один аккаунт несёт до четырёх ролей при одном логине | ч7: A7-01, 131, 132, вход, RoleSwitcher | Модель «студент + флаг `is_headman`» не даёт собрать ни колонки «Роль»/«Статус», ни `RoleSwitcher`, ни счётчики 131 (человек считается и как студент, и как преподаватель). Клиентская склейка нескольких записей создаст **два аккаунта на одно лицо**. См. Р-6 | ⚠️ |",
+    "story_source_fragment": "**JS-ADMIN-19**: 🆕 Когда человек, уже заведённый в системе, получает вторую роль, я хочу добавить ему роль к существующей учётной записи, заполнив только недостающие поля, чтобы не создавать второго пользователя на одного человека.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-09",
+    "story_id": "JS-HEADMAN-01",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "249"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "425"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-09** | **Снятие отметки:** возврат ячейки в «нет данных» | ч4: п. 11, 111, 112 | `PUT /attendance/lessons/{lessonId}/students/{userId}` умеет только присвоить одно из трёх значений. Механика: повторное нажатие на выбранный кружок снимает статус — **без операции снятия «пусто» из отмеченного состояния недостижимо** | ⚠️ |",
+    "story_source_fragment": "**JS-HEADMAN-01**: ✏️ **ИЗМЕНЕНО (чат 4).** Когда пара идёт, я хочу отметить посещаемость студентов вручную через Telegram-бота или веб-панель, выбрав пару из расписания и проставив статусы **по одному студенту**.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-35",
+    "story_id": "JS-ADMIN-07",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "161"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "203"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-35** | **Назначение старосты — операция на группе.** Единственность проверяется на стороне группы, а не флагом на пользователе; каскад деактивации помощников предыдущего — на сервере, с возвратом количества затронутых | ч7: A7-20, 133 | Иначе два параллельных запроса дают двух старост | ❌ |",
+    "story_source_fragment": "**JS-ADMIN-07**: Когда старосту нужно сменить, я хочу снять флаг `is_headman` с текущего старосты и назначить нового, чтобы права передались корректно. При смене старосты все помощники предыдущего старосты автоматически деактивируются.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AC-35",
+    "story_id": "JS-ADMIN-06",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "161"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "201"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AC-35** | **Назначение старосты — операция на группе.** Единственность проверяется на стороне группы, а не флагом на пользователе; каскад деактивации помощников предыдущего — на сервере, с возвратом количества затронутых | ч7: A7-20, 133 | Иначе два параллельных запроса дают двух старост | ❌ |",
+    "story_source_fragment": "**JS-ADMIN-06**: Когда я назначаю старосту группе, я хочу выбрать студента из состава группы и установить ему флаг `is_headman`, чтобы он получил расширенные права.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  },
+  {
+    "request_id": "AT-09",
+    "story_id": "JS-HEADMAN-WEB-05",
+    "request_evidence": {
+      "source": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "line": "249"
+    },
+    "story_evidence": {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "line": "1001"
+    },
+    "evidence_kind": "reconciliation-semantic-candidate",
+    "association_basis": "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "request_id_at_line": true,
+    "story_id_at_line": true,
+    "request_source_fragment": "| **AT-09** | **Снятие отметки:** возврат ячейки в «нет данных» | ч4: п. 11, 111, 112 | `PUT /attendance/lessons/{lessonId}/students/{userId}` умеет только присвоить одно из трёх значений. Механика: повторное нажатие на выбранный кружок снимает статус — **без операции снятия «пусто» из отмеченного состояния недостижимо** | ⚠️ |",
+    "story_source_fragment": "**JS-HEADMAN-WEB-05**: ✏️ **ИЗМЕНЕНО (чат 4, покрыто ПК-112).** Когда я открываю журнал, я хочу видеть посещаемость группы **за неделю целиком** и, отдельно, **по выбранному предмету**, и менять статусы прямо в таблице.",
+    "source_identity_status": "VERIFIED",
+    "accepted_link_status": "CANDIDATE",
+    "semantic_residual_gap": "Association supports a related clause only; full request semantics/roles/client/errors require concrete contract packet. No candidate is promoted to accepted."
+  }
+]

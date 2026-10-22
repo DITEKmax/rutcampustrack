@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-12T11:12:25.294208+00:00",
+  "scope": "ROOT-EMPTY-STALE-INDEXLOCK",
+  "outcome": "QUARANTINED_EXACT_NOT_DELETED",
+  "original_mtime": "2026-10-12T10:50:11.856346+00:00",
+  "original_inode": 1844712,
+  "mode": "0o600",
+  "bytes": 0,
+  "owner_pids": [],
+  "origin": "UNKNOWN; formatter knownonlyread-onlyGit calls no attribution",
+  "index_before_after_sha256": "6da6b667c0148b7e189b50a18a46a4169b26a94f05fd66cbac6c79994fb47fdf",
+  "WIP_source_reset_or_index_mutation": false,
+  "quarantine": "/workspace/scratch/rct-validation/root_git_lock_quarantine/original-empty-index.lock"
+}

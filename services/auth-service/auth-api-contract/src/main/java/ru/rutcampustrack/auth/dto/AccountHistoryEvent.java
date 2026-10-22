@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-
 import java.time.Instant;
 import java.util.Objects;
 
@@ -16,8 +15,7 @@ public record AccountHistoryEvent(
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant occurredAt,
         @Schema(nullable = true) String authMethod,
         @Schema(nullable = true) String clientLabel,
-        @Schema(nullable = true) String locationLabel
-) {
+        @Schema(nullable = true) String locationLabel) {
     public AccountHistoryEvent {
         requirePositiveDecimal(id, "id");
         requireUppercase(type, "type");

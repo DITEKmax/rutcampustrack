@@ -1,0 +1,18 @@
+{
+  "phase": "normal-green",
+  "native_exit": 0,
+  "status": "PASS",
+  "cases": [
+    {
+      "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+      "class": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+      "outcome": "PASS"
+    }
+  ],
+  "xml_sha256": "55f33100133608d17c6c684517c6ff6974fa66249b8a1898954b3f529f17d644",
+  "xml_bytes": 35563,
+  "tests": "1",
+  "failures": "0",
+  "errors": "0",
+  "skipped": "0"
+}

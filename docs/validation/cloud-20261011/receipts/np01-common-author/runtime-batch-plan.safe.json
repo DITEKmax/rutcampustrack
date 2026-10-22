@@ -1,0 +1,87 @@
+{
+  "status": "PREPARED; all runtime/codegen NOT_RUN; awaiting explicit root resource grant",
+  "source_commit": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "resource_scope": "One sequential Gradle maxworker1 pipeline, Gradle JVM768MiB/test JVM768MiB/maxParallelForks1; own disposable postgres:16-alpine labeled rct.owner=np01-contract-20261011; no Redis/Rabbit/app/browser/provider/network services. Root floor4GiB immediate+periodic and exact own-resource cleanup; no shared cache/image deletion.",
+  "prelaunch": "Fresh df/memory/CPU/process/cloudenvironment metadata, exact allinputs byte hashes and test native/command/source bridge. Abort below floor before launch; monitor while running; preserve failure/NOT_RUN distinct.",
+  "java_codegen_command": [
+    "./gradlew",
+    ":services:academic-service:academic-app:generateProto",
+    ":services:auth-service:auth-app:generateProto",
+    "--no-daemon",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m"
+  ],
+  "compile_command": [
+    "./gradlew",
+    ":services:academic-service:academic-app:compileTestJava",
+    "--no-daemon",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+    "--system-prop=org.gradle.java.compile-classpath-packaging=true"
+  ],
+  "green_command": [
+    "./gradlew",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+    "--tests",
+    "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+    "--no-daemon",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+    "--system-prop=org.gradle.java.compile-classpath-packaging=true"
+  ],
+  "test_heap_control": "Use authorized temporary init only if existing integrationTest heap exceeds768; otherwise normal task settings; no tracked configuration edits.",
+  "green_oracles": [
+    "Full57clean schema +validate+repeat0/metadataonly/no FK",
+    "HistoricalV56 valid durableteacher synthetic datasets bound unchanged and unlinked changed =>V57 defaults1, password/binding data retained, all56historychecksum rows unchanged",
+    "Actual tuple equality vs change =>exactly1 advance independent credentials/binding, externalcounterwrite denied",
+    "Rollback vs commit versions/invalidation/manual sameTX outbox; qualification DBlocal not actualAuthproducer",
+    "IN_FLIGHT/UNCERTAIN invalidated retained/listable; immutablefirstfence and stable renderrevision",
+    "SANITIZED denied unresolved, DELETED/ABSENT confirmed permitted unresolved, late receipt cannot revoke cleanedstate",
+    "SANITIZED permitted CONFIRMED_EDIT/NO_EDIT",
+    "Unlink/archive/finaldelete metadata retained originalUID/chat/message; cleanupstillpossible",
+    "Immutablecardtuple/attempt/CAS/terminal receipts; unknownstates/missingreceipt/nullinvalidation denied",
+    "Bothgenerationoverflow no wrap/tuple mutation",
+    "Actual concurrentpasswordwrites wait onuserlock, versions1->2->3, firstcardinvalidation2 retained",
+    "Stalecleanup CAS afterrendersettlement updates0; refreshedCAS updates1"
+  ],
+  "known_fault_sensitivity": [
+    {
+      "mutation_env": "RCT_NP01_MUTATION=generations",
+      "test": "actualTupleChangesAdvanceOnlyTheirOwnGeneration",
+      "disposable_only_fault": "DROP TRIGGER users_credential_generations ON users",
+      "safe_expected": "credential version2",
+      "safe_known_bad_actual": "version1",
+      "expected_process_exit": 1
+    },
+    {
+      "mutation_env": "RCT_NP01_MUTATION=invalidation",
+      "test": "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence",
+      "disposable_only_fault": "DROP TRIGGER users_invalidate_bot_credential_messages ON users",
+      "safe_expected": "old IN_FLIGHT card PENDING/listable",
+      "safe_known_bad_actual": "NOT_REQUIRED",
+      "expected_process_exit": 1
+    },
+    {
+      "mutation_env": "RCT_NP01_MUTATION=sanitation",
+      "test": "sanitationIsRejectedWhileRenderIsInFlightOrUncertain",
+      "disposable_only_fault": "DROP CONSTRAINT bot_credential_messages_sanitation_settled",
+      "safe_expected": "unresolved SANITIZED throws; PENDING remains",
+      "safe_known_bad_actual": "unsafeCLEANED accepted",
+      "expected_process_exit": 1
+    },
+    {
+      "mutation_env": "RCT_NP01_MUTATION=identity",
+      "test": "identityAttemptCasAndTerminalReceiptsCannotBeRewritten",
+      "disposable_only_fault": "DROP TRIGGER bot_credential_messages_lifecycle ON bot_credential_messages",
+      "safe_expected": "message_id rewrite throws",
+      "safe_known_bad_actual": "knowncard identity reassigned",
+      "expected_process_exit": 1
+    }
+  ],
+  "sensitivity_rules": "Same preserved accepted assertions/sourcebytes, one selectedcase per mutant; actual exit/native/XML/count/status/output safeclassification saved immediately before next task overwrites results. No fixed product-byte mutation; exact isolated database knownfault only. Each owncontainer standardstop in AfterAll.",
+  "python_codegen": "Config owner minimal reproducible scoped generator required for currentpins/relativeimport; ownoutputs only afterrootlease. No manualgeneratedadaptation. Exact newgenerated inventory/descriptor +legacy wire roundtrips +Pythonimport after generator available.",
+  "acceptance_limit": "These commonDB/contract results do not replace independentsecurity/migrationreview or realAcademicTLS+Pythonbot+Authoutbox+syntheticprovider proof owned coordinated domain/integration task. No globalDONE/liveTelegram claim.",
+  "test_hygiene_bridge": "Compared5a only two trailing spaces removed, no tokens/testsemantics/productbytes changed."
+}

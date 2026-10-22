@@ -1,0 +1,46 @@
+{
+  "source_independent_expected_ms": 30000,
+  "monotonic_observation_cap_ms": 5000,
+  "slack_ms": 250,
+  "minimum_at_cap_ms": 24750,
+  "advertised_expiry_issuance_bracket": true,
+  "real_expiry_wait_cap_seconds": 32,
+  "real_expiry_http_404_and_logout_finally": true,
+  "phases": {
+    "red": {
+      "session": 86023,
+      "native_exit": 1,
+      "testcases": 1,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "testcase_seconds": 2.369,
+      "remaining_ms": 993,
+      "elapsed_ms": 209,
+      "minimum_ms": 29541,
+      "safe_xml_sha256": "f868a81ee4d77f92ae6af942696758d7b93111e3cbcae41c53162af25faaa4a8",
+      "test_sha256": "0169c535ed3a0f9a2d431c8c657f1cb3079219372a4ed477e5ff80228d4a21c8",
+      "raw_xml_sha256_recorded": "be7513fcade0291fe9554d9aeaa27e413bc4a80121b030ee844f2116671fc25b",
+      "raw_log_sha256_recorded": "c2a96426717e677467eb880977477faed9b167c0c5d0c772c333fcc7ba6b89ef"
+    },
+    "green": {
+      "session": 48663,
+      "native_exit": 0,
+      "testcases": 1,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "testcase_seconds": 31.905,
+      "remaining_ms": 29923,
+      "elapsed_ms": 168,
+      "minimum_ms": 29582,
+      "safe_xml_sha256": "91c206d59bd0210cbc519cd7ac6a652d0252bafd5c78b3d7799c6126d5eb6019",
+      "test_sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51",
+      "raw_xml_sha256_recorded": "c1f464d9bb7fe85734ff0d50438b6685ab0e7309219e4c7ebd6e379d9d89c829",
+      "raw_log_sha256_recorded": "4ddb4dfd101b70563a5116ffc95712b81fed9110b3d41f572a1c00bc08001702"
+    }
+  },
+  "meaningful_red": "Corrected independent Redis lifetime lower bound fails after preceding advertised expiry and observation assertions pass; no setup/syntax error or skip.",
+  "green": "Real 30s Redis expiry/key absence/HTTP404/finally logout per exact selected executed source and one-case PASS.",
+  "scope_limit": "Bounded lifetime regression oracle, not exact millisecond lifetime certification or new user latency SLA."
+}

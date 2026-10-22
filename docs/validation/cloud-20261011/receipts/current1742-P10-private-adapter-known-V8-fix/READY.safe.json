@@ -1,0 +1,21 @@
+{
+  "schema": "P10_ADAPTER_URL_SOURCE_FIX_V1",
+  "state": "SOURCE_READY_NO_NATIVE_AUTHORITY",
+  "delta": "Exact failed predicate chain contains unsupported URL constructor in actual V8; remove only constructor-based JS shape checks, keep existing actual18 nested reference/artifactID/string checks and unchanged child fullURL validation. Store result immediately and fixed stage after each successful predicate.",
+  "controls": "Canonical synthetic exactoldchain rejects at constructor; correctedchain accepts; no network/writer/originalresult effects. Initial serializable store referenceidentity proof mistake preserved, structurally corrected.",
+  "historical_actual_response_failure_predicate": "UNKNOWN",
+  "original_actual_attempt01_receipt_sha256": "ff9573c45be88530eda16642ecbc37fd9ebd6bb2117d8631b5715e181d864904",
+  "frozen_observer_manifest": "fdc76b32c62b874f458fa303a7f66091aba77518efbdeb040ffed9be9f226a56",
+  "frozen_observer_zip": "7967ed89797314fcade41613c2f91bd950a128dffd63b7f75249450752156d31",
+  "response_handling": "Never export real result/URI/URL or exception/context. Existing actual18 private request writer only, after fresh Root grant. Fixed stage remains in RAM even rejection.",
+  "old_grant": "Never reused",
+  "case_cause": "UNKNOWN",
+  "B013": "UNTOUCHED",
+  "next": "Root accepts targeted Source fix then new fresh grant; no blind retry",
+  "files": {
+    "v8-controls-attempt01.safe.json": "4866d0cfbf5f9baa154f59790316551637badf06465c91b1b439dcf3c9731acf",
+    "v8-controls.safe.json": "8f3ac5f2e80e78e9b4981f50b5fb4561ce18577ccdd6f64ccc89eefe3895eda8",
+    "failed-predicate-chain.js.source": "2daf37bfa80f5f536bfc36092fc041e643bb17db18e5f0bb906bf2da846315b4",
+    "corrected-predicate-chain.js.source": "873d7776b98b95329e5cbcc98bbd1b0cdd5e4558d24c7fc16e7bdbfc0f88b8df"
+  }
+}

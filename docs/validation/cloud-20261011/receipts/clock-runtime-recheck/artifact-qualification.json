@@ -1,0 +1,8 @@
+{
+  "only_safe_review_outputs": true,
+  "raw_xml_log_bodies_copied": false,
+  "known_privacy_marker_copied": false,
+  "reviewer_product_or_root_writes": false,
+  "reviewer_runtime_replay_or_mutation": false,
+  "prior_sealed16_preserved": true
+}

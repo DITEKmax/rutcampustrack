@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T07:47:02.559770+00:00",
+  "writer": "ci_academic_heap sameformattersolewriter",
+  "scope": "exacttwo whitespace-sensitive SVG text nodes only HeadmanStatsTrendChart.vue andTeacherJournalChart.vue",
+  "decision": "Permit targeted prettier-ignore immediately before each exact text node, readable multilineattributes but originalinline literal28\u0441\u0435\u043d\u0442. EXACTcompiler-visible bytes. Do notignoreentirecomponent/template orweakenlint/check. Document actualPrettier strictWhitespace changes originaltext\u2192spacedtext asreason.",
+  "checks": "originalvsformatted SFCcompile+exactstatictext comparison,963format/checkallothernodes; comment-onlyskip explicit, no trim-to-match. Sameop&&/|| normalizeonlysameoperator/orderedoperands; no commutation/mixedop simplification",
+  "commits": "81ec Vueonlysemiconfig separatetooling; exact2literalpreservation separatemeaning-preservation smallcommit BEFORE mechanical798, withsourcebeforeafter preservationproof",
+  "resource": "sameNode512m/128MiB no JavaPythonSQLheavy"
+}

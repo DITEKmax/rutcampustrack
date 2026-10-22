@@ -1,0 +1,282 @@
+{
+  "Goal": "One actual PWA HEADMAN cancel\u2192journal/homeworkarchive\u2192restore/reload test; backend NOT_RUN",
+  "Context": {
+    "head": "3e89c61b282233f4bda2db693bde939a83968bc2",
+    "model": "requested/selected Sol6.1 high; actual UNKNOWN",
+    "sourcepins": {
+      "docs/validation/cloud-20261011/TASK-CONTRACT.md": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+      ".agent/orchestration-v2/RULES.md": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "tests/e2e/fixtures/mobile-dataset.ts": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0",
+      "tests/e2e/fixtures/pwa-auth.ts": "d274bb494923253dd9d770d62caac6ac2072f428809c8a3990e33fd05d4f5d15",
+      "tests/e2e/fixtures/artifact-privacy.ts": "12c5c0cb6b8a49c815c763812177a76aa4d186e1873f6fa0ef341066a1dbaa67",
+      "tests/e2e/fixtures/safe-reporter.ts": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336",
+      "tests/e2e/specs/mobile-real-server.spec.ts": "17c87bf3a249cd2af837e67dff95f9c00d9f9a550018f8ddeed49cd3afb17af7",
+      "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue": "1a4f3b7add5d4e0de42a54b1ddc7b0300443134f89eda8cb1696a41c502ae3df",
+      "frontends/mobile-core/src/features/headman-journal/headman-journal-client.ts": "dc195696ccce6a6fe0c9df236633cba7590f3d2020cf912a4de6e1bd07f360ae",
+      "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java": "4f3bf7ba2033ae7b03e162544a1f8a4788b44eb49fba8b73695baa050defab79",
+      "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java": "ce21e00634da8326fd8386be27f0bc89e5f8e1d610ecfa3bcf0717223c648205",
+      "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java": "910f2fd70474175ff8cdae8a4158fb9545e48749c8a70a3755e8dfa81591e20c",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java": "cf13ed2e36f58ee84327b49731df86b50f5bd25507de771a4103736c6a9424fb",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java": "1ede2a9f96a32483697ea13096385d4ae5b4bf057dd6396ddc6559908f751253",
+      "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/ScheduleActionRecordedEvent.java": "66308e0916310404227ebfcc8e269ef025d556ea29c197c391f2d40262da1ded"
+    },
+    "test_sha256": "1478c562b92dc65790074450436314f4b61d7cf1ad40882faee9c05bd8b2d5b5"
+  },
+  "Scope": {
+    "writer": "/workspace/rct-worktrees/q07-lesson-cancel-20261014",
+    "branch": "codex/q07-lesson-cancel-20261014",
+    "created": [
+      "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts"
+    ],
+    "commit": "b2582c5e23a2c4dadddd6d181668047faa5c76df",
+    "worktree_clean": true
+  },
+  "Required": "Fresh MobileDataset; ACTIVE own firstslot; actualCAS PRESENT plus UI excuse PNG; helper/foreign deny-noeffect; Vuecancel/restore; boundarchive/datecontrol; identity/provenance/revision; retained facts/no duplicate lifecycle read",
+  "Constraints": "source-only; unchanged clock/private artifact protections; no product changes; Root integration/review required",
+  "Patterns": "MobileDataset/Actor/admit/loginPwa/selectPwaRole/assistantPermissionCodes/SafeReporter/artifactprivacy reused",
+  "Acceptance": {
+    "status": "SOURCE_READY_ROOT_REVIEW_AND_INTEGRATION_REQUIRED",
+    "backend": "NOT_RUN",
+    "limits": "One-off unchanged-assignment journey only; no whole Q07/metrics/changedteacher proof",
+    "runtime": "NOT_RUN",
+    "sensitivity": "No new runtime sensitivity executed; reused finite independent seams recorded in q07_finite_acceptance/outcome.safe.json; no whole Q07 claim"
+  },
+  "Verification": {
+    "commands": [
+      {
+        "phase": "format-apply",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "/workspace/rct-worktrees/q07-lesson-cancel-20261014/tests/e2e/specs/mobile-lesson-lifecycle.spec.ts"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/format-apply.private.log"
+      },
+      {
+        "phase": "format-idempotency",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "/workspace/rct-worktrees/q07-lesson-cancel-20261014/tests/e2e/specs/mobile-lesson-lifecycle.spec.ts"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/format-idempotency.private.log"
+      },
+      {
+        "phase": "format-check",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "/workspace/rct-worktrees/q07-lesson-cancel-20261014/tests/e2e/specs/mobile-lesson-lifecycle.spec.ts"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/format-check.private.log"
+      },
+      {
+        "phase": "targeted-tsc",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+          "--noEmit",
+          "--project",
+          "/tmp/q07-cancel-check-f3z5snpo/tsconfig.json"
+        ],
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/targeted-tsc.private.log"
+      },
+      {
+        "phase": "normal-hooks",
+        "argv": [
+          "uv",
+          "--offline",
+          "tool",
+          "run",
+          "--from",
+          "pre-commit==4.6.2",
+          "pre-commit",
+          "run",
+          "--files",
+          "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts"
+        ],
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/normal-hooks.private.log"
+      },
+      {
+        "phase": "commit",
+        "argv": [
+          "git",
+          "commit",
+          "-m",
+          "test: cover headman lesson cancellation and restoration"
+        ],
+        "deadline_seconds": 120,
+        "private_log": "/workspace/scratch/rct-validation/q07_cancel_restore_writer/commit.private.log"
+      }
+    ],
+    "errors": [],
+    "active_native": null,
+    "session": {
+      "id": 15916,
+      "state": "closed",
+      "exit": 0
+    },
+    "checks": [
+      {
+        "phase": "format-apply",
+        "direct_pid": 644003,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644003,
+            "start_ticks": 20804278
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-idempotency",
+        "direct_pid": 644014,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644014,
+            "start_ticks": 20804338
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "format-check",
+        "direct_pid": 644025,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644025,
+            "start_ticks": 20804385
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "direct_pid": 644036,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644036,
+            "start_ticks": 20804430
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "normal-hooks",
+        "direct_pid": 644231,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644231,
+            "start_ticks": 20811773
+          },
+          {
+            "pid": 644243,
+            "start_ticks": 20811777
+          },
+          {
+            "pid": 644271,
+            "start_ticks": 20811808
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "commit",
+        "direct_pid": 644367,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 644367,
+            "start_ticks": 20811926
+          },
+          {
+            "pid": 644409,
+            "start_ticks": 20811931
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 644409,
+            "start_ticks": 20811931,
+            "native_exit": 0
+          }
+        ],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "tmp_removed": true,
+    "link_removed": true,
+    "finish_tmp_removed": true,
+    "source_review_notes": [
+      "OneOffLessonWriter restore writes planned; LessonStatusTransitionJob may activate the same firstslot before GET. New spec accepts only PLANNED/ACTIVE after actualrestore, preserves canonical identity and occurrenceRevision, asserts action snapshot planned.",
+      "ReportService top-level editable false while CANCELLED; afterrestore CANCELLED tombstone may have editable true in DTO but Vue canWrite rejects CANCELLED. NoLive checks assert tombstone/no prior revision/no excuse/file metadata.",
+      "Actions compare only retained cancel/restore lifecycle facts acrossreload; unrelated delayed action deliveries are not presumed stable.",
+      "Standard cached normal hooks: four applicable PASS; YAML/JSON not applicable to one TS file; normal git commit0, no hook bypass."
+    ],
+    "total_native_elapsed_seconds": 0,
+    "terminal_free_bytes": 5654228992
+  },
+  "DoNot": "No browser/server/Docker/Java/PG/network/SDK/install/push/main/merge/Ready/deploy/production/Angular/newweb/credentials/subagents; B013/B014 FROZEN; Q012 unrelated"
+}

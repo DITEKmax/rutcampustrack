@@ -1,0 +1,82 @@
+{
+  "utc": "2026-10-12T23:32:15.405342+00:00",
+  "cohort": "restart-20261012-next02",
+  "effective8_artifacts": [
+    {
+      "service": "auth",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "unchanged": true
+    },
+    {
+      "service": "academic",
+      "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "jar": "/tmp/rct-academic-refresh-20261012-attempt01/checkout/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+      "app": "/tmp/rct-academic-refresh-20261012-attempt01/app"
+    },
+    {
+      "service": "schedule",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "unchanged": true
+    },
+    {
+      "service": "attendance",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "unchanged": true
+    },
+    {
+      "service": "bff",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "unchanged": true
+    },
+    {
+      "service": "gateway",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "unchanged": true
+    },
+    {
+      "service": "notification",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "unchanged": true
+    },
+    {
+      "service": "renderer",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "unchanged": true
+    }
+  ],
+  "Academic_current_producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "Academic_current_JAR_sha256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+  "Academic_full1797_verified_stage_result": {
+    "path": "/tmp/rct-academic-refresh-20261012-attempt01/stage-result.safe.json",
+    "sha256": "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643"
+  },
+  "Academic_final_commit": {
+    "path": "/tmp/rct-academic-refresh-20261012-attempt01/stage-committed.safe.json",
+    "sha256": "10589f902536c9861a20a7fde981e9ad6c2b40a28d8147fcb7818fe3107b3449"
+  },
+  "Academic_source89d6_review0c62_preserved": true,
+  "other7_payloads": "Retained immutable908 source/artifact producers, originalCOWfence; no activewriter/metadata preflightverified, newfullhashnotrepeated",
+  "Vue22_public_paths": "/workspace/scratch/rct-validation/current_vue_stage/frontend",
+  "Vue_genuine_bundle_SW_SHA_via_TLS_actual": true,
+  "Renderer_native_image": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+  "clock_fixture_jar": "/workspace/scratch/rct-validation/real_client_runtime/teaching-clock-eec3/clock-fixture.jar",
+  "teaching_clock_file": "/workspace/scratch/rct-validation/current_host_config_v4/teaching-clock/current-instant",
+  "teaching_instant": "2026-10-12T06:00:00.000Z",
+  "security_clock": "Real serverUTC separate",
+  "private_values_published": false
+}

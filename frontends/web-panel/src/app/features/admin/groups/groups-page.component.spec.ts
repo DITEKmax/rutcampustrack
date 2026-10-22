@@ -89,9 +89,6 @@ describe('GroupsPageComponent', () => {
     usersReq.flush(mockUsersResponse(students));
   }
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
 
   it('ngOnInit загружает активные группы по умолчанию (status=ACTIVE)', () => {
     component.ngOnInit();

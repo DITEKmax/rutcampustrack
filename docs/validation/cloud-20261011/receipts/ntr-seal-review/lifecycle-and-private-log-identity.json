@@ -1,0 +1,88 @@
+{
+  "attempts_sha256": "2ed44bc8d12685821a60f1255abb216b012ec0f8d714844675936e52ff41840f",
+  "safe_lifecycle_projection": [
+    {
+      "time": "2026-10-11T23:09:27.698001+00:00",
+      "action": "NTR01_source_ready_runtime_queued"
+    },
+    {
+      "time": "2026-10-11T23:19:29.151935+00:00",
+      "action": "NTR01_actual_control_red_prelaunch",
+      "phase": "red"
+    },
+    {
+      "time": "2026-10-11T23:19:50.406753+00:00",
+      "action": "NTR01_red_process_pointer",
+      "session": 86023,
+      "status": "RUNNING"
+    },
+    {
+      "time": "2026-10-11T23:20:47.125222+00:00",
+      "action": "NTR01_red_terminal",
+      "phase": "red",
+      "session": 86023,
+      "native_exit": 1
+    },
+    {
+      "time": "2026-10-11T23:20:47.126610+00:00",
+      "action": "NTR01_exact_test_restore"
+    },
+    {
+      "time": "2026-10-11T23:21:31.233820+00:00",
+      "action": "NTR01_restored_green_prelaunch",
+      "phase": "green"
+    },
+    {
+      "time": "2026-10-11T23:21:39.062643+00:00",
+      "action": "NTR01_green_process_pointer",
+      "session": 48663,
+      "status": "RUNNING"
+    },
+    {
+      "time": "2026-10-11T23:22:39.102139+00:00",
+      "action": "NTR01_green_source_still_exact",
+      "session": 48663,
+      "status": "RUNNING"
+    },
+    {
+      "time": "2026-10-11T23:23:33.579681+00:00",
+      "action": "NTR01_green_terminal",
+      "phase": "green",
+      "session": 48663,
+      "native_exit": 0
+    },
+    {
+      "time": "2026-10-11T23:23:33.642851+00:00",
+      "action": "NTR01_terminal_cleanup_release"
+    },
+    {
+      "time": "2026-10-11T23:24:20.171078+00:00",
+      "action": "NTR01_owned_container_XML_cleanup_proof"
+    },
+    {
+      "time": "2026-10-11T23:26:21.641983+00:00",
+      "action": "NTR01_stable_test_only_correction"
+    }
+  ],
+  "native_exit_provenance": "Exact author original terminal receipts/append-only lifecycle, independently parsed; reviewer did not run or replay runtime.",
+  "logs": [
+    {
+      "phase": "red",
+      "path": "/workspace/rct-worktrees/notification-provider/.agent/evidence/notification-provider/NTR01-control-red.log",
+      "sha256": "c2a96426717e677467eb880977477faed9b167c0c5d0c772c333fcc7ba6b89ef",
+      "build_marker": "BUILD FAILED in 48s",
+      "raw_copied": false
+    },
+    {
+      "phase": "green",
+      "path": "/workspace/rct-worktrees/notification-provider/.agent/evidence/notification-provider/NTR01-restored-green.log",
+      "sha256": "4ddb4dfd101b70563a5116ffc95712b81fed9110b3d41f572a1c00bc08001702",
+      "build_marker": "BUILD SUCCESSFUL in 1m 27s",
+      "raw_copied": false
+    }
+  ],
+  "current_raw_green_xml_sha256": "c1f464d9bb7fe85734ff0d50438b6685ab0e7309219e4c7ebd6e379d9d89c829",
+  "raw_green_xml_hash_matches_record": true,
+  "raw_red_xml": "Original historical SHA retained; Gradle selected XML overwritten by green. No independent original red raw XML availability claim.",
+  "raw_logs_or_properties_or_application_streams_copied": false
+}

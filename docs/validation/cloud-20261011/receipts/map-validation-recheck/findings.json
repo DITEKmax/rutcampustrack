@@ -1,0 +1,61 @@
+{
+  "verdict": "APPROVE",
+  "blocking_findings": [],
+  "closures": [
+    {
+      "id": "MVR01",
+      "prior_severity": "P2",
+      "status": "CORRECTED",
+      "file": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "line": 623,
+      "related_lines": [
+        628,
+        643,
+        656,
+        661,
+        669
+      ],
+      "oracle": "Four whole-document PI negative cases; same final input bytes old201/PGasset1/GET200 then final400/no publication; XML declaration/localPI positive",
+      "correction": "Inspect parsed Document and securely parse/check xml-stylesheet pseudoattributes before/after root",
+      "accepted_basis": "135-admin-map.md:147, MAP04; D004 defers legend only"
+    },
+    {
+      "id": "MVR02",
+      "prior_severity": "P2",
+      "status": "CORRECTED",
+      "file": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "line": 735,
+      "related_lines": [
+        62,
+        762,
+        784,
+        809,
+        835,
+        847,
+        862
+      ],
+      "oracle": "Seven exact oldadmitted/stored/served SVGs now400/no writes; local image-set/type/escapedquote positive",
+      "correction": "Iterative raw-token resource scanner respecting comments/string escapes/type descriptors; inspect normal/vendor image-set strings",
+      "accepted_basis": "135-admin-map.md:147 accepted external-resource ban"
+    },
+    {
+      "id": "MVR03",
+      "prior_severity": "P2",
+      "status": "CORRECTED",
+      "file": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "line": 528,
+      "related_lines": [
+        533,
+        534,
+        537,
+        541,
+        544,
+        546
+      ],
+      "oracle": "Three finite oldoverbudget201/PGasset1/GET200 now budget-specific400/no writes; exact byte/rowlimit positives; Adam7aggregate and overflowheader controls",
+      "correction": "Overflow-safe pre-inflation decoded-byte/pass-row resource budgets retain streaming and wide positive",
+      "accepted_basis": "canonical owner D008 2026-10-11 PNG resource budget"
+    }
+  ],
+  "scope": "MVR01-03 source security/resource correction, test quality and recorded bounded runtime evidence"
+}

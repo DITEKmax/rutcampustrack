@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.map;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,19 +11,16 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.*;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
-
 @Service
 public class CampusMapDeletionTransaction {
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+
     private final CampusMapAdminRepository catalog;
     private final CampusMapDeletionRepository deletion;
 
-    public CampusMapDeletionTransaction(CampusMapAdminRepository catalog, CampusMapDeletionRepository deletion) {
+    public CampusMapDeletionTransaction(
+            CampusMapAdminRepository catalog, CampusMapDeletionRepository deletion) {
         this.catalog = catalog;
         this.deletion = deletion;
     }
@@ -30,22 +31,29 @@ public class CampusMapDeletionTransaction {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public DeletionResult delete(DeletionTarget type, long id, long ownerId, DeleteRequest request) {
-        adminAccess.mutation(null,"CAMPUS_MAP_MANAGE");
+    public DeletionResult delete(
+            DeletionTarget type, long id, long ownerId, DeleteRequest request) {
+        adminAccess.mutation(null, "CAMPUS_MAP_MANAGE");
         adminAccess.require("DATA_DELETE");
         catalog.lockCatalogForWrite();
         var prior = deletion.receipt(request.operationId());
         if (prior.isPresent()) {
             var receipt = prior.get();
-            if (!"INVENTORY".equals(receipt.actionKind()) || receipt.ownerId() != ownerId || receipt.type() != type || receipt.targetId() != id
+            if (!"INVENTORY".equals(receipt.actionKind())
+                    || receipt.ownerId() != ownerId
+                    || receipt.type() != type
+                    || receipt.targetId() != id
                     || !receipt.digest().equals(request.previewDigest())) {
-                throw new ConflictException("operationId", request.operationId(), "Операция удаления уже занята");
+                throw new ConflictException(
+                        "operationId", request.operationId(), "Операция удаления уже занята");
             }
             return completed(type, id, request);
         }
         DeletionPreview current = snapshot(type, id, true);
         if (!current.previewDigest().equals(request.previewDigest())) {
-            throw new ConflictException("previewDigest", request.previewDigest(),
+            throw new ConflictException(
+                    "previewDigest",
+                    request.previewDigest(),
                     "Данные изменились. Запроси новый предварительный просмотр удаления");
         }
         if (type == DeletionTarget.FLOOR) deletion.deleteFloor(id);
@@ -60,7 +68,9 @@ public class CampusMapDeletionTransaction {
         return planSnapshot(buildingCode, floorCode, format).preview();
     }
 
-    /** Resolve the original identity for Auth, including retries after pointer clear or code reuse. */
+    /**
+     * Resolve the original identity for Auth, including retries after pointer clear or code reuse.
+     */
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public long planConfirmationTarget(long ownerId, PlanDeleteRequest request) {
         var prior = deletion.receipt(request.operationId());
@@ -73,7 +83,8 @@ public class CampusMapDeletionTransaction {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public PlanDeletionResult deletePlan(long confirmedFloorId, long ownerId, PlanDeleteRequest request) {
+    public PlanDeletionResult deletePlan(
+            long confirmedFloorId, long ownerId, PlanDeleteRequest request) {
         adminAccess.mutation(null, "CAMPUS_MAP_MANAGE");
         adminAccess.require("DATA_DELETE");
         catalog.lockCatalogForWrite();
@@ -86,19 +97,40 @@ public class CampusMapDeletionTransaction {
         var snapshot = deletionSnapshot(request);
         if (snapshot.floor().id() != confirmedFloorId) throw stalePlan(request);
         var revision = catalog.advanceCatalogRevision();
-        CampusMapFormat removed = request.format() == null ? null : CampusMapFormat.valueOf(request.format().name().toUpperCase(java.util.Locale.ROOT));
-        boolean hasOther = removed != null && snapshot.slots().stream()
-                .anyMatch(slot -> slot.format() != removed && slot.state() == CampusMapFormatState.READY);
+        CampusMapFormat removed =
+                request.format() == null
+                        ? null
+                        : CampusMapFormat.valueOf(
+                                request.format().name().toUpperCase(java.util.Locale.ROOT));
+        boolean hasOther =
+                removed != null
+                        && snapshot.slots().stream()
+                                .anyMatch(
+                                        slot ->
+                                                slot.format() != removed
+                                                        && slot.state()
+                                                                == CampusMapFormatState.READY);
         if (!hasOther) {
             catalog.clearCurrentPlan(confirmedFloorId);
         } else {
             long version = catalog.highestPlanVersion(confirmedFloorId) + 1L;
-            if (version <= 0) throw new ConflictException("version", version, "Номер версии схемы исчерпан");
-            long successor = catalog.insertPlan(confirmedFloorId, version, revision.id(), snapshot.plan().label());
+            if (version <= 0)
+                throw new ConflictException("version", version, "Номер версии схемы исчерпан");
+            long successor =
+                    catalog.insertPlan(
+                            confirmedFloorId, version, revision.id(), snapshot.plan().label());
             for (CampusMapFormat format : CampusMapFormat.values()) {
                 if (format == removed) {
-                    catalog.insertSlot(successor, format, CampusMapFormatState.ABSENT,
-                            format == CampusMapFormat.PNG ? "image/png" : "image/svg+xml", null, 0, null, null, null);
+                    catalog.insertSlot(
+                            successor,
+                            format,
+                            CampusMapFormatState.ABSENT,
+                            format == CampusMapFormat.PNG ? "image/png" : "image/svg+xml",
+                            null,
+                            0,
+                            null,
+                            null,
+                            null);
                 } else {
                     catalog.copySlot(snapshot.plan().id(), successor, format);
                 }
@@ -106,15 +138,23 @@ public class CampusMapDeletionTransaction {
             catalog.publishPlan(successor);
             catalog.pointFloorAt(confirmedFloorId, successor);
         }
-        deletion.insertPlanReceipt(request.operationId(), ownerId, confirmedFloorId, request.previewDigest(),
-                request.buildingCode(), request.floorCode(), request.format() == null ? null : request.format().name());
+        deletion.insertPlanReceipt(
+                request.operationId(),
+                ownerId,
+                confirmedFloorId,
+                request.previewDigest(),
+                request.buildingCode(),
+                request.floorCode(),
+                request.format() == null ? null : request.format().name());
         return planCompleted(request);
     }
 
     private PlanSnapshot deletionSnapshot(PlanDeleteRequest request) {
         try {
-            var snapshot = planSnapshot(request.buildingCode(), request.floorCode(), request.format());
-            if (!snapshot.preview().previewDigest().equals(request.previewDigest())) throw stalePlan(request);
+            var snapshot =
+                    planSnapshot(request.buildingCode(), request.floorCode(), request.format());
+            if (!snapshot.preview().previewDigest().equals(request.previewDigest()))
+                throw stalePlan(request);
             return snapshot;
         } catch (ResourceNotFoundException missing) {
             throw stalePlan(request);
@@ -122,65 +162,146 @@ public class CampusMapDeletionTransaction {
     }
 
     private PlanSnapshot planSnapshot(String buildingCode, String floorCode, Format format) {
-        var floor = catalog.findActiveFloorByCodes(buildingCode, floorCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Схема", "floorCode", floorCode));
-        var plan = catalog.findCurrentPlan(floor.id()).filter(row -> row.publishedAt() != null)
-                .orElseThrow(() -> new ResourceNotFoundException("Схема", "floorCode", floorCode));
+        var floor =
+                catalog.findActiveFloorByCodes(buildingCode, floorCode)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Схема", "floorCode", floorCode));
+        var plan =
+                catalog.findCurrentPlan(floor.id())
+                        .filter(row -> row.publishedAt() != null)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Схема", "floorCode", floorCode));
         var slots = catalog.findSlots(plan.id());
-        var selected = slots.stream().filter(slot -> slot.state() == CampusMapFormatState.READY
-                && (format == null || slot.format().name().equalsIgnoreCase(format.name()))).toList();
-        if (selected.isEmpty()) throw new ResourceNotFoundException("Формат схемы", "format", format);
-        // Codes, immutable identity and all current slots make replacement/rename stale. Counts are excluded.
-        String value = "PLAN_CLEAR:" + buildingCode.length() + ":" + buildingCode + ":"
-                + floorCode.length() + ":" + floorCode + ":" + floor.id() + ":" + floor.buildingId()
-                + ":" + plan.id() + ":" + format + ":" + plan.label().length() + ":" + plan.label()
-                + ":" + catalog.latestCatalogRevision();
-        for (var slot : slots.stream().sorted(java.util.Comparator.comparing(row -> row.format().name())).toList()) {
-            value += ":" + slot.format() + ":" + slot.state() + ":" + slot.assetId() + ":" + slot.bytes()
-                    + ":" + (slot.sha256() == null ? "null" : HexFormat.of().formatHex(slot.sha256()));
+        var selected =
+                slots.stream()
+                        .filter(
+                                slot ->
+                                        slot.state() == CampusMapFormatState.READY
+                                                && (format == null
+                                                        || slot.format()
+                                                                .name()
+                                                                .equalsIgnoreCase(format.name())))
+                        .toList();
+        if (selected.isEmpty())
+            throw new ResourceNotFoundException("Формат схемы", "format", format);
+        // Codes, immutable identity and all current slots make replacement/rename stale. Counts are
+        // excluded.
+        String value =
+                "PLAN_CLEAR:"
+                        + buildingCode.length()
+                        + ":"
+                        + buildingCode
+                        + ":"
+                        + floorCode.length()
+                        + ":"
+                        + floorCode
+                        + ":"
+                        + floor.id()
+                        + ":"
+                        + floor.buildingId()
+                        + ":"
+                        + plan.id()
+                        + ":"
+                        + format
+                        + ":"
+                        + plan.label().length()
+                        + ":"
+                        + plan.label()
+                        + ":"
+                        + catalog.latestCatalogRevision();
+        for (var slot :
+                slots.stream()
+                        .sorted(java.util.Comparator.comparing(row -> row.format().name()))
+                        .toList()) {
+            value +=
+                    ":"
+                            + slot.format()
+                            + ":"
+                            + slot.state()
+                            + ":"
+                            + slot.assetId()
+                            + ":"
+                            + slot.bytes()
+                            + ":"
+                            + (slot.sha256() == null
+                                    ? "null"
+                                    : HexFormat.of().formatHex(slot.sha256()));
         }
-        var preview = new PlanDeletionPreview(buildingCode, floorCode, format, plan.label(), selected.size(),
-                selected.stream().mapToLong(CampusMapAdminRepository.SlotRow::bytes).sum(), digest(value));
+        var preview =
+                new PlanDeletionPreview(
+                        buildingCode,
+                        floorCode,
+                        format,
+                        plan.label(),
+                        selected.size(),
+                        selected.stream().mapToLong(CampusMapAdminRepository.SlotRow::bytes).sum(),
+                        digest(value));
         return new PlanSnapshot(floor, plan, slots, preview);
     }
 
-    private static void requirePlanReceipt(CampusMapDeletionRepository.Receipt receipt, long ownerId, PlanDeleteRequest request) {
-        if (!"PLAN_CLEAR".equals(receipt.actionKind()) || receipt.ownerId() != ownerId || receipt.type() != DeletionTarget.FLOOR
+    private static void requirePlanReceipt(
+            CampusMapDeletionRepository.Receipt receipt, long ownerId, PlanDeleteRequest request) {
+        if (!"PLAN_CLEAR".equals(receipt.actionKind())
+                || receipt.ownerId() != ownerId
+                || receipt.type() != DeletionTarget.FLOOR
                 || !java.util.Objects.equals(receipt.buildingCode(), request.buildingCode())
                 || !java.util.Objects.equals(receipt.floorCode(), request.floorCode())
-                || !java.util.Objects.equals(receipt.format(), request.format() == null ? null : request.format().name())
+                || !java.util.Objects.equals(
+                        receipt.format(), request.format() == null ? null : request.format().name())
                 || !receipt.digest().equals(request.previewDigest())) {
-            throw new ConflictException("operationId", request.operationId(), "Операция удаления уже занята");
+            throw new ConflictException(
+                    "operationId", request.operationId(), "Операция удаления уже занята");
         }
     }
 
     private static ConflictException stalePlan(PlanDeleteRequest request) {
-        return new ConflictException("previewDigest", request.previewDigest(), "Схема изменилась. Запроси новый предварительный просмотр удаления");
+        return new ConflictException(
+                "previewDigest",
+                request.previewDigest(),
+                "Схема изменилась. Запроси новый предварительный просмотр удаления");
     }
 
     private static PlanDeletionResult planCompleted(PlanDeleteRequest request) {
-        return new PlanDeletionResult(request.operationId(), request.buildingCode(), request.floorCode(), request.format(), "COMPLETED");
+        return new PlanDeletionResult(
+                request.operationId(),
+                request.buildingCode(),
+                request.floorCode(),
+                request.format(),
+                "COMPLETED");
     }
 
-    private record PlanSnapshot(CampusMapAdminRepository.FloorRow floor, CampusMapAdminRepository.PlanRow plan,
-                                java.util.List<CampusMapAdminRepository.SlotRow> slots, PlanDeletionPreview preview) { }
+    private record PlanSnapshot(
+            CampusMapAdminRepository.FloorRow floor,
+            CampusMapAdminRepository.PlanRow plan,
+            java.util.List<CampusMapAdminRepository.SlotRow> slots,
+            PlanDeletionPreview preview) {}
 
     private DeletionPreview snapshot(DeletionTarget type, long id, boolean lock) {
         long buildingId;
         String label;
         Long currentVersion = null;
         if (type == DeletionTarget.FLOOR) {
-            var floor = (lock ? catalog.findFloorForUpdate(id)
-                    : catalog.findActiveFloors(null).stream().filter(row -> row.id() == id).findFirst())
-                    .filter(CampusMapAdminRepository.FloorRow::active)
-                    .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", id));
+            var floor =
+                    (lock
+                                    ? catalog.findFloorForUpdate(id)
+                                    : catalog.findActiveFloors(null).stream()
+                                            .filter(row -> row.id() == id)
+                                            .findFirst())
+                            .filter(CampusMapAdminRepository.FloorRow::active)
+                            .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", id));
             buildingId = floor.buildingId();
             label = floor.label();
             currentVersion = floor.currentVersionId();
         } else {
             buildingId = id;
-            label = catalog.findActiveBuilding(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", id)).label();
+            label =
+                    catalog.findActiveBuilding(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", id))
+                            .label();
         }
         catalog.findActiveBuilding(buildingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", buildingId));
@@ -188,16 +309,43 @@ public class CampusMapDeletionTransaction {
         if (type == DeletionTarget.BUILDING && counts.remainingFloors() != 0) {
             throw new ConflictException("buildingId", id, "Сначала удали все этажи корпуса");
         }
-        String digest = digest(type + ":" + id + ":" + buildingId + ":" + currentVersion + ":"
-                + label.length() + ":" + label + ":" + counts);
-        return new DeletionPreview(type, Long.toString(id), Long.toString(buildingId), label,
-                counts.versions(), counts.assets(), counts.bytes(), counts.opens(), counts.remainingFloors(), digest);
+        String digest =
+                digest(
+                        type
+                                + ":"
+                                + id
+                                + ":"
+                                + buildingId
+                                + ":"
+                                + currentVersion
+                                + ":"
+                                + label.length()
+                                + ":"
+                                + label
+                                + ":"
+                                + counts);
+        return new DeletionPreview(
+                type,
+                Long.toString(id),
+                Long.toString(buildingId),
+                label,
+                counts.versions(),
+                counts.assets(),
+                counts.bytes(),
+                counts.opens(),
+                counts.remainingFloors(),
+                digest);
     }
 
     private static String digest(String value) {
-        try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                .digest(value.getBytes(StandardCharsets.UTF_8))); }
-        catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+        try {
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException(impossible);
+        }
     }
 
     private static DeletionResult completed(DeletionTarget type, long id, DeleteRequest request) {

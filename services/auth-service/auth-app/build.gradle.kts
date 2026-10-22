@@ -62,12 +62,21 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(project(":services:api-gateway"))
+    testImplementation("org.springframework:spring-webflux")
+    // Real Auth logout -> already-open Notification socket, without Notification data stores.
+    testImplementation(project(":services:notification-service:notification-app")) {
+        isTransitive = false
+    }
+    testImplementation("org.springframework.boot:spring-boot-starter-websocket")
+    testImplementation(platform("org.springframework.cloud:spring-cloud-dependencies:2025.0.3"))
+    testImplementation("org.springframework.cloud:spring-cloud-gateway-server")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:rabbitmq")
-    testImplementation("org.flywaydb:flyway-core")
-    testRuntimeOnly("org.flywaydb:flyway-database-postgresql")
+    implementation("org.flywaydb:flyway-core")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule + ArchUnit
@@ -86,6 +95,10 @@ dependencies {
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
         exclude(group = "io.grpc", module = "grpc-netty-shaded")
     }
+    // Private TLS own-credential receiver; the existing Academic protobuf wire is reused.
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
     implementation("io.grpc:grpc-netty")
     implementation("com.google.protobuf:protobuf-java")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
@@ -96,6 +109,10 @@ sourceSets {
         proto {
             srcDir(rootProject.file("proto"))
             include("academic.proto")
+            include("auth_authority.proto")
+            include("auth_data_authority.proto")
+            include("auth_identity_operations.proto")
+            include("auth_security_capabilities.proto")
         }
     }
 }

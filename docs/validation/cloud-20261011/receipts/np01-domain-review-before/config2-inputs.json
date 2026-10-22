@@ -1,0 +1,14 @@
+[
+  {
+    "path": "services/academic-service/academic-app/src/main/resources/application.yml",
+    "sha256": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+    "bytes": 5430,
+    "revision": "5d564870e631a276d88ac5a4b97463929f9b6687"
+  },
+  {
+    "path": "services/notification-bot/bot/config.py",
+    "sha256": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+    "bytes": 5138,
+    "revision": "5d564870e631a276d88ac5a4b97463929f9b6687"
+  }
+]

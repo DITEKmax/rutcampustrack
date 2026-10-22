@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-12T04:49:25.308228+00:00",
+  "producer_sha": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "stage": "intermediate checkpoint rootdocs/evidence",
+  "run": "cached mandatory precommit all staged files",
+  "session_id": 45437,
+  "native_exit": 0,
+  "gates": {
+    "Gitleaks": "PASS",
+    "YAML": "PASS",
+    "JSON": "PASS",
+    "large_files": "PASS",
+    "EOF": "PASS",
+    "trailing_whitespace": "PASS"
+  },
+  "prior_native_exit": 1,
+  "correction": "sourceSHA mapping explicitfields2663; all source-hash values64hex/semanticsidentical; source copiedpatches preserved in immutable archive/lossless wrappers; machineEOF views normalized",
+  "product_acceptance": "IN_PROGRESS",
+  "runtime": "NOT implied by source/document gates"
+}

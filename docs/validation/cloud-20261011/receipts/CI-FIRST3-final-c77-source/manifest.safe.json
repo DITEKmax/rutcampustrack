@@ -1,0 +1,34 @@
+{
+  "entries": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 2725,
+      "sha256": "96bd225fc56da5a347ca93f72f6cd395773b33be7ac6405f178bf066e5c39319"
+    },
+    {
+      "path": "SOURCE.safe.json",
+      "bytes": 2224,
+      "sha256": "7cd085fba19dcc08d144361e2ad1e162371748a07aa1f421dc47622ac44a56d3"
+    },
+    {
+      "path": "source/.github/workflows/ci.yml",
+      "bytes": 16222,
+      "sha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce"
+    },
+    {
+      "path": "source/tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "bytes": 899,
+      "sha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3"
+    },
+    {
+      "path": "source/tests/e2e/fixtures/first3-observer.ts",
+      "bytes": 30725,
+      "sha256": "80db172a5bc8defd789ddf6e47eb8f2eb35015b68fcbe7d8b355c968f626922e"
+    },
+    {
+      "path": "source/tests/e2e/playwright.first3.config.ts",
+      "bytes": 2137,
+      "sha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde"
+    }
+  ]
+}

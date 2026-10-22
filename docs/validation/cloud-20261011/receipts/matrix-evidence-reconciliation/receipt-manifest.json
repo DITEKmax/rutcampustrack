@@ -1,0 +1,101 @@
+{
+  "status": "IMMUTABLE_BOUNDED_RECONCILIATION",
+  "created_at": "2026-10-11T21:40:07.383339+00:00",
+  "files": [
+    {
+      "file": "CURRENT.md",
+      "sha256": "7a2f6d7d7335183438c51d2517fc4325f4e31cb567d50eaf0c808872624aed1c",
+      "bytes": 1563
+    },
+    {
+      "file": "actual-run-manifests.json",
+      "sha256": "6f9ecb4c0c97eaa6efed34f6ab189ed2f71546daa810a08683ca92e60a61a413",
+      "bytes": 34337
+    },
+    {
+      "file": "boundary-coverage.json",
+      "sha256": "b4e11c77d762e72de57a15894886895c1371c614d29423cf17f073eed4169c8b",
+      "bytes": 92212
+    },
+    {
+      "file": "coverage-checks.json",
+      "sha256": "08ea44b0fe8f80f05cb4885a7f93605b0ddb2d045faebf6efcd080227666ba3c",
+      "bytes": 524
+    },
+    {
+      "file": "dispositions.py",
+      "sha256": "82d61ad56ee2eb17fd5b6e23137cd8b7cdd54f3baa6750c068756916906b5693",
+      "bytes": 20898
+    },
+    {
+      "file": "effective-source-overlays.json",
+      "sha256": "db8b57ce0554985b114c0df98ddd0c423b7031201b563279d314053e11a53f94",
+      "bytes": 17305
+    },
+    {
+      "file": "family-coverage.json",
+      "sha256": "69778ebfd1c7a17a6046eee3817a0e34b99a14d99b9f1b38d22356107f63ad44",
+      "bytes": 1057373
+    },
+    {
+      "file": "findings.md",
+      "sha256": "c8bfa65355dc5433526e7e961cba99d632533a662e12c88655520737800d4fa4",
+      "bytes": 7473
+    },
+    {
+      "file": "known-test-assertion-catalog.json",
+      "sha256": "b1eeee0157b95a41c811738e301d379ea4168206314a9a21feb29663267783c7",
+      "bytes": 1617592
+    },
+    {
+      "file": "proposed-case-updates.json",
+      "sha256": "63d004418077a9136fce25615ee70c04b4bb84bd89f65e542ce8ac81f4e13397",
+      "bytes": 82722
+    },
+    {
+      "file": "queue.py",
+      "sha256": "7fcc88fb0646290815e788296b0efe8ef9a3918a6a2f55d93127732c6eca0728",
+      "bytes": 32150
+    },
+    {
+      "file": "reconcile.py",
+      "sha256": "dcb1a9e246af2192f09ab2bcb91e94469de01f14ba195ce83f0cc7cf79f8ee94",
+      "bytes": 29281
+    },
+    {
+      "file": "remaining-execution-queue.json",
+      "sha256": "3c61c78abec8cc79698b22b8f88ef145254c85a0313413f99fb529c06e079961",
+      "bytes": 337956
+    },
+    {
+      "file": "request-scope-reconciliation.json",
+      "sha256": "7644980b1b0481ec0d24cf63ca3723534ba443e42e7c06aa221f68dab783641e",
+      "bytes": 346638
+    },
+    {
+      "file": "research-dispositions.json",
+      "sha256": "a950f9b73e6b37674c22cfdd31ae2f4616b45eac9338d659e9d1a3b75ced3adf",
+      "bytes": 29041
+    },
+    {
+      "file": "schema-owner-L08.json",
+      "sha256": "ef4661c8cea843251445d1d0987cfd11a3d0d7cd112141b81b5611034233067a",
+      "bytes": 2615
+    },
+    {
+      "file": "source-equivalence.json",
+      "sha256": "e62955616fdc777f6093c09a564d10bba2488596a2455ef5c83b2d0409b95f15",
+      "bytes": 28760
+    },
+    {
+      "file": "source-ledger.json",
+      "sha256": "44dccc2187080f458a777ef6e6c5450cf0dc8816c09c86419cbb426fa1cf6400",
+      "bytes": 22354
+    },
+    {
+      "file": "verdict.json",
+      "sha256": "090313326b0ca4bba96e02c92d2c03a2caab2f93bcf7ba93296bff989895eec6",
+      "bytes": 1203
+    }
+  ]
+}

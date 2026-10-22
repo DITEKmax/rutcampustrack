@@ -1,0 +1,74 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "finding": "DATA157-DOCKER-OLD156",
+  "selected_model_effort": "Sol6.1/high",
+  "actual_model_effort": "UNKNOWN",
+  "count": 9,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 254,
+      "mode": "0o600",
+      "sha256": "8d292a8abbd9d10f2bad183b91438375ef07f97df790bbd462410f190fc0669e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 4311,
+      "mode": "0o600",
+      "sha256": "4b92d0ca3399b5b02cb425cc0bb30c61544e901b153d1084f40f4710de0efad0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 599,
+      "mode": "0o600",
+      "sha256": "342ad3a35b798d582963f03d78514a43a2d2b5258ca5a05d8cf24afa34e83212"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/check-source.py",
+      "relative_path": "check-source.py",
+      "bytes": 16224,
+      "mode": "0o600",
+      "sha256": "001f0708623bed44ddc0b58b4e6acfce8272dfec1a97855e6010a5a538ebe068"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/findings.safe.json",
+      "relative_path": "findings.safe.json",
+      "bytes": 1450,
+      "mode": "0o600",
+      "sha256": "85f02c1bf3357bb5366c106e935b75714f8e0e3a93aac8d656732811760334f9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/independent-source-checks.safe.json",
+      "relative_path": "independent-source-checks.safe.json",
+      "bytes": 222287,
+      "mode": "0o600",
+      "sha256": "f6e4b01d49d3a9024c1fcfee3984a8ecd2a28ddaad857eef95e6a5528691a2e9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/input-ledger.json",
+      "relative_path": "input-ledger.json",
+      "bytes": 2258,
+      "mode": "0o600",
+      "sha256": "578863ae8b170038d30d58d01d7a3a16ae946b2e013abe8d7b37c1150035c788"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/metadata-only.safe.json",
+      "relative_path": "metadata-only.safe.json",
+      "bytes": 205,
+      "mode": "0o600",
+      "sha256": "83ff35b5244f3f0daecf879bd84a8e2a9f1e5a9795dbd12b9b7a5efe96eaa184"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/resource-snapshot.safe.json",
+      "relative_path": "resource-snapshot.safe.json",
+      "bytes": 301,
+      "mode": "0o600",
+      "sha256": "9bd272514af4b83e5b5765cc5bef6cb00d3795d2e49f74cc999b11a72ed79618"
+    }
+  ],
+  "private_inputs_included": false,
+  "runtime": false
+}

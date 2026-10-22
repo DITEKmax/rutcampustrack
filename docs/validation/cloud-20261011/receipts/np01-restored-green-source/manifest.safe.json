@@ -1,0 +1,62 @@
+{
+  "status": "GREEN_CALLER_SOURCE_READY_PENDING_FRESH_REVIEW_NATIVE_NOT_RUN",
+  "original_fault_caller_zip_sha256": "075a2b77ee06a8e5d051aba98ca1348c08d62e4595052a93f2fb4a1b105da9cc",
+  "original_sourceprep_zip_sha256": "8384a33ae7cdaf43a7036d4fc0409cd96c412824ffab48c77834033c5771d313",
+  "native_red_restoration_zip_sha256": "c41ae9bc1ce06735c7283ace40deda64f93d6429ceae848cf02ef4a564695695",
+  "entries": [
+    {
+      "path": "run-stage.py",
+      "sha256": "fa15991b08217fe5b2a2afc8473e902e8f989d18e80b0a3e7a8b891938b42180",
+      "bytes": 13512,
+      "mode": "0600"
+    },
+    {
+      "path": "caller-boundary.py",
+      "sha256": "774bfb9cf73d24eaf9aac271eef1402fafa3a7f4b959eb5fef2203f2bc3aa9b6",
+      "bytes": 8070,
+      "mode": "0600"
+    },
+    {
+      "path": "native-procedure.safe.json",
+      "sha256": "0cc21bc0140a7c01c21922229092757e3028399d025c04c27e3e9174a081a3b6",
+      "bytes": 8867,
+      "mode": "0600"
+    },
+    {
+      "path": "pure-controls.py",
+      "sha256": "d3bc392e46535489a590fbb7eace5a4824ac30e7516a10caca0d2304c0c1a8b1",
+      "bytes": 13005,
+      "mode": "0600"
+    },
+    {
+      "path": "pure-controls-final.safe.json",
+      "sha256": "9af7eb8f48efa1dc6e48f4c5804000db135177c55b3353790b7d59281ab1d03b",
+      "bytes": 7311,
+      "mode": "0600"
+    },
+    {
+      "path": "gradle-task-rerun.safe.json",
+      "sha256": "babea4055419a89af5a6b9c55457d7ba7ad8cd666c27e2dff2461b84aaa586f6",
+      "bytes": 1232,
+      "mode": "0600"
+    },
+    {
+      "path": "source-prep.safe.json",
+      "sha256": "22858e94672004915a3d9d214cadfec9cb9f7c0c6967f5fe3965105f8d7c4392",
+      "bytes": 750,
+      "mode": "0600"
+    },
+    {
+      "path": "caller-source-delta.patch",
+      "sha256": "828f489d1441845f7fb5651e7c9fad0b608abfcafefb0bb6ec384fffc77380b5",
+      "bytes": 5483,
+      "mode": "0600"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "a608e5d347e1f97b76b5823bae686f4686d816e31f950ee028cd8e14c84c8790",
+      "bytes": 3168,
+      "mode": "0600"
+    }
+  ]
+}

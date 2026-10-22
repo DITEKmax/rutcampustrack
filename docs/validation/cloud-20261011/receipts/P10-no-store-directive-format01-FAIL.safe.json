@@ -1,0 +1,97 @@
+{
+  "schema": "P10_ORACLE_FORMAT_PARTIAL_ACTUAL01_V1",
+  "utc": "2026-10-13T16:52:32.162814+00:00",
+  "session": 11799,
+  "start_chunk": "a989a2",
+  "final_chunk": "d9103f",
+  "grant_sha256": "1a4243c0b8aff45adc7b056b05811e94709a36238ec7247d9f30ae81e494b447",
+  "terminal": {
+    "direct_pid": 532173,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 532173,
+        "start_ticks": 16397860,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532174,
+        "start_ticks": 16397866,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532206,
+        "start_ticks": 16398010,
+        "same_birth_absent": true
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false,
+    "utc": "2026-10-13T16:50:08.431106+00:00",
+    "peaks": {
+      "memory": 5867872256,
+      "min_workspace_free": 7015026688,
+      "owned_rss": 593567744,
+      "log_bytes": 499
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": false,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "births": [
+    {
+      "pid": 532169,
+      "start_ticks": 16397824,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532173,
+      "start_ticks": 16397860,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532174,
+      "start_ticks": 16397866,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532206,
+      "start_ticks": 16398010,
+      "same_birth_absent": true
+    }
+  ],
+  "all_births_fresh_absent": true,
+  "TMP_absent": true,
+  "authority_absent": true,
+  "source_sha256": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "all_18_inputs_match": true,
+  "protected_pins": 17,
+  "closed_marker_counts": {
+    "RCT_P06_FORMAT_TARGETS_1": 1,
+    "BUILD SUCCESSFUL": 1,
+    "BUILD FAILED": 0,
+    "spotlessJavaApply": 1,
+    "spotlessJavaCheck": 0
+  },
+  "check_NOT_RUN": true,
+  "child_exit_receipt_absent": true,
+  "source_checking_cause": {
+    "enum": "MISSING_JAVA_TARGETS_SCHEMA_FIELD",
+    "field": "java_targets",
+    "child_public_line": 119,
+    "field_present": false,
+    "prior_canonical_field_present": true,
+    "selected_source_lookup_KeyError": true,
+    "qualified": "Successful apply unchanged18pins then unconditional missing field lookup before check. Child exception stderr discarded by b78, so actual exception receipt unavailable; Source causal branch proof."
+  },
+  "final_before_margin": true,
+  "final_before_hard_stop": true,
+  "no_private_log_text_hash_or_values_export": true,
+  "product_test_HTTP": "NOT_RUN; no product failure classification or blind formatter retry"
+}

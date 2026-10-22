@@ -1,0 +1,47 @@
+[
+  {
+    "filename": "review-packet.md",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "findings.md",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "inventory.json",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "tested-final-source-manifest.json",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "artifact-scan-final.json",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "resource-cleanup-final.json",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "historic-8a9-command-recovery.json",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "CURRENT.md",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  },
+  {
+    "filename": "attempts.ndjson",
+    "root_matches_declared": true,
+    "root_matches_original": true
+  }
+]

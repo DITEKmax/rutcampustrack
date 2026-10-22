@@ -1,0 +1,74 @@
+{
+  "time": "2026-10-12T05:29:27.290048+00:00",
+  "scope": "READ_ONLY exactcapacity/source staging review",
+  "input_author_manifest_sha256": "be3853df8f62a968c9e0e0171f70e4fa0b4435bcddce5b2b6e93b8c30f756a6b",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 373,
+      "sha256": "57819ee144d2db83b6cf2de0fc6a323c45bf40ff144e490603941e2529ccb32f"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 4830,
+      "sha256": "c27ff550271dd6f79b3e4bff4cba4f65d8a67bf76f4338860adf2fe07c408311"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 1818,
+      "sha256": "e1b650809dc11b679ba47ed43f7407f6dce99f75e6198825c6bc7cac9b6a6d62"
+    },
+    {
+      "path": "check.py",
+      "bytes": 5448,
+      "sha256": "f52f913a33393b087f3abbf27bd31afb0cfbad734de70e80ff214debc0b89854"
+    },
+    {
+      "path": "criteria.json",
+      "bytes": 1778,
+      "sha256": "5477377d4da421f0d3be517c933fb188b10d0ec32fa0a71da52be1692d5dfb36"
+    },
+    {
+      "path": "findings-provisional.json",
+      "bytes": 1379,
+      "sha256": "93fc760c766f33ff5a3d0b60d244ae4787efd477f389fcbb1af1acac0d8e5fa8"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 3507,
+      "sha256": "d027b3852239929d80594c40115f08d72139649ffe6c17ff36f725d4e0de50a2"
+    },
+    {
+      "path": "independent-candidate-check.json",
+      "bytes": 8328,
+      "sha256": "ee9b7537538a67a7761560215bbf155070cb6bb5001f7fa036b74217e4471ceb"
+    },
+    {
+      "path": "independent-staging-check.json",
+      "bytes": 4670,
+      "sha256": "935ddd387fd0569d7557e7be693cf54fea18579be8f88b6796d9a8076def4876"
+    },
+    {
+      "path": "phase-budget-strict.json",
+      "bytes": 1202,
+      "sha256": "3059ab66cd6fbf9d306b647a369e64815663f46ee916d9a51fe4356a22ab5857"
+    },
+    {
+      "path": "phase-budget.json",
+      "bytes": 919,
+      "sha256": "ba5963637039d62d43bea56aa93c7cfa3016f2ce56d95032aa5813969e716c6c"
+    },
+    {
+      "path": "stage_check.py",
+      "bytes": 6473,
+      "sha256": "e4f20fb2c1dd787cac014acd182f9213e7b6f1e478b41725d38c91ffb36f7674"
+    },
+    {
+      "path": "strict-selection-review.json",
+      "bytes": 2114914,
+      "sha256": "806fce1d2bdae0ccb3fd2a4d9c83bae6c0987a16c27372b67c4b221f96ba2c63"
+    }
+  ],
+  "resource_mutations": false,
+  "own_processes": []
+}

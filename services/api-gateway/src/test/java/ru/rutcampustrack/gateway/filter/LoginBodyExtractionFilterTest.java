@@ -1,6 +1,11 @@
 package ru.rutcampustrack.gateway.filter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -12,36 +17,38 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class LoginBodyExtractionFilterTest {
 
-    private final LoginBodyExtractionFilter filter = new LoginBodyExtractionFilter(new ObjectMapper());
+    private final LoginBodyExtractionFilter filter =
+            new LoginBodyExtractionFilter(new ObjectMapper());
 
     @Test
     void validBodyIsReplayedExactlyOnceAndLoginIsNormalized() {
         String body = "{\"login\":\" İUser \"}";
-        MockServerHttpRequest request = MockServerHttpRequest.post("/api/auth/login")
-                .header(HttpHeaders.TRANSFER_ENCODING, "chunked")
-                .body(body);
+        MockServerHttpRequest request =
+                MockServerHttpRequest.post("/api/auth/login")
+                        .header(HttpHeaders.TRANSFER_ENCODING, "chunked")
+                        .body(body);
         AtomicInteger calls = new AtomicInteger();
         AtomicReference<ServerWebExchange> captured = new AtomicReference<>();
         AtomicReference<byte[]> replay = new AtomicReference<>();
 
-        filter.filter(MockServerWebExchange.from(request), exchange -> {
-            calls.incrementAndGet();
-            captured.set(exchange);
-            return DataBufferUtils.join(exchange.getRequest().getBody()).doOnNext(buffer -> {
-                byte[] bytes = new byte[buffer.readableByteCount()];
-                buffer.read(bytes);
-                replay.set(bytes);
-                DataBufferUtils.release(buffer);
-            }).then();
-        }).block();
+        filter.filter(
+                        MockServerWebExchange.from(request),
+                        exchange -> {
+                            calls.incrementAndGet();
+                            captured.set(exchange);
+                            return DataBufferUtils.join(exchange.getRequest().getBody())
+                                    .doOnNext(
+                                            buffer -> {
+                                                byte[] bytes = new byte[buffer.readableByteCount()];
+                                                buffer.read(bytes);
+                                                replay.set(bytes);
+                                                DataBufferUtils.release(buffer);
+                                            })
+                                    .then();
+                        })
+                .block();
 
         assertThat(calls).hasValue(1);
         assertThat(replay.get()).isEqualTo(body.getBytes(StandardCharsets.UTF_8));
@@ -57,19 +64,27 @@ class LoginBodyExtractionFilterTest {
     void emptyAndMalformedBodiesReachDownstreamOnce() {
         AtomicInteger emptyCalls = new AtomicInteger();
         AtomicReference<ServerWebExchange> emptyExchange = new AtomicReference<>();
-        filter.filter(MockServerWebExchange.from(MockServerHttpRequest.post("/api/auth/login").build()), exchange -> {
-            emptyCalls.incrementAndGet();
-            emptyExchange.set(exchange);
-            return Mono.empty();
-        }).block();
+        filter.filter(
+                        MockServerWebExchange.from(
+                                MockServerHttpRequest.post("/api/auth/login").build()),
+                        exchange -> {
+                            emptyCalls.incrementAndGet();
+                            emptyExchange.set(exchange);
+                            return Mono.empty();
+                        })
+                .block();
 
         AtomicInteger malformedCalls = new AtomicInteger();
         AtomicReference<ServerWebExchange> malformedExchange = new AtomicReference<>();
-        filter.filter(MockServerWebExchange.from(MockServerHttpRequest.post("/api/auth/login").body("{bad")), exchange -> {
-            malformedCalls.incrementAndGet();
-            malformedExchange.set(exchange);
-            return Mono.empty();
-        }).block();
+        filter.filter(
+                        MockServerWebExchange.from(
+                                MockServerHttpRequest.post("/api/auth/login").body("{bad")),
+                        exchange -> {
+                            malformedCalls.incrementAndGet();
+                            malformedExchange.set(exchange);
+                            return Mono.empty();
+                        })
+                .block();
 
         assertThat(emptyCalls).hasValue(1);
         assertThat(emptyExchange.get().getRequest().getHeaders().getContentLength()).isZero();
@@ -79,16 +94,20 @@ class LoginBodyExtractionFilterTest {
 
     @Test
     void knownOversizeBodyReturns413WithoutDownstreamCall() {
-        MockServerHttpRequest request = MockServerHttpRequest.post("/api/auth/login")
-                .header(HttpHeaders.CONTENT_LENGTH, "4097")
-                .build();
+        MockServerHttpRequest request =
+                MockServerHttpRequest.post("/api/auth/login")
+                        .header(HttpHeaders.CONTENT_LENGTH, "4097")
+                        .build();
         AtomicInteger calls = new AtomicInteger();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        filter.filter(exchange, ignored -> {
-            calls.incrementAndGet();
-            return Mono.empty();
-        }).block();
+        filter.filter(
+                        exchange,
+                        ignored -> {
+                            calls.incrementAndGet();
+                            return Mono.empty();
+                        })
+                .block();
 
         assertThat(calls).hasValue(0);
         assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
@@ -99,16 +118,20 @@ class LoginBodyExtractionFilterTest {
     void chunkedOversizeBodyReturns413WithoutDownstreamCall() {
         DefaultDataBufferFactory factory = DefaultDataBufferFactory.sharedInstance;
         DataBuffer first = factory.wrap(new byte[4096]);
-        DataBuffer second = factory.wrap(new byte[]{1});
-        MockServerHttpRequest request = MockServerHttpRequest.post("/api/auth/login")
-                .body(reactor.core.publisher.Flux.just(first, second));
+        DataBuffer second = factory.wrap(new byte[] {1});
+        MockServerHttpRequest request =
+                MockServerHttpRequest.post("/api/auth/login")
+                        .body(reactor.core.publisher.Flux.just(first, second));
         AtomicInteger calls = new AtomicInteger();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        filter.filter(exchange, ignored -> {
-            calls.incrementAndGet();
-            return Mono.empty();
-        }).block();
+        filter.filter(
+                        exchange,
+                        ignored -> {
+                            calls.incrementAndGet();
+                            return Mono.empty();
+                        })
+                .block();
 
         assertThat(calls).hasValue(0);
         assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);

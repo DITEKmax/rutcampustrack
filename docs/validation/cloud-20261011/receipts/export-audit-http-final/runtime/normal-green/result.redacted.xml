@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="ru.rutcampustrack.auth.integration.ExportJobHttpIT" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-12T02:55:36" hostname="993a1bc854c1" time="3.279">
+  <testcase name="realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()" classname="ru.rutcampustrack.auth.integration.ExportJobHttpIT" time="3.279" />
+  </testsuite>

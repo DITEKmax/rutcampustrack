@@ -1,0 +1,19 @@
+# CT01–06 author corrections
+
+Stable source target `9acc0f7028658132b0d4ad8dc10f1a4860f77dd1`; clean worktree. Baseline `3908fad9624f97aec8891fc79338ceb6b0616bf3`; reviewed-before `20ee882f8e2291dbf47e6cc3379141d42e9bf8c3`.
+
+Two coherent correction commits: `01a65ecc4e4ae9c762ab16ce66c601bf91253460` formatter inventory/gate documentation; `9acc0f7028658132b0d4ad8dc10f1a4860f77dd1` authority flows and private artifact handling. Changes apply to author-owned tooling/E2E only. No production authorization or UI source changed.
+
+CT01/03: helper keeps STUDENT, reads actual permission-option array with MARK_ATTENDANCE, performs browser mark and verifies durable PRESENT/report revision before revoke. After DELETE, same token cannot perform opposite mutation; authoritative report remains PRESENT, UI capability disappears, permission array is empty. Counterexample with a leaked MARK_ATTENDANCE code causes the exact empty-array expectation to fail; object-shaped fallback is rejected.
+
+CT02: two same-proof admissions yield current TEACHER session. Suspending sole teacher grant yields legitimate TMA200 with fresh neutral session, null activeRole, nonselectable SUSPENDED grant. Teacher feature owner/navigation are absent; role selection returns ROLE_NOT_SELECTABLE403 and protected teacher read/attendance write return BOOTSTRAP_SCOPE_DENIED403. Grant is restored in finally. Runtime acceptance remains NOT_RUN.
+
+CT04: broad fixtures-directory exclusion replaced by reviewed byte-payload prefixes; all nine tracked handwritten tests/e2e/fixtures/*.ts reach Prettier, including request/signing/browser/new privacy helpers. Real inventory has6313 entries:1517 Java/105 Python/6 SQL/954 Prettier. Historical Flyway targets0; canonical landing/dist targets6. Receipt corrected-format-summary.json.
+
+CT05: automatic root check→spotlessCheck wiring retained, honestly documented as intentionally active. Root check is expected to require the future frozen-semantic mechanical pass; neither lint nor a gate was disabled. Gradle config/graph/runtime remains NOT_RUN without a lease.
+
+CT06: dedicated allowlist reporter records project/file/line/status/timing/error counts and locations only, suppresses raw steps/errors/stdout/stderr, and overwrites in-scope attached contexts with safe metadata. Before credentials are created, dataset rejects alternate/additional reporters, debug logging or enabled trace/video/screenshots. afterEach sanitizes test errors before automatic contexts. Browser-free pinned Playwright control reproduces Fill-title inclusion of a public random marker, then exercises success output, failed call diagnostics, failed fixture setup and actual permission-counterexample handling. Launcher captures child stdout/stderr without forwarding and scans every emitted file. PASS: marker absent, original leak reproduced, two successful controls and two intentional expected diagnostic failures retained,5 artifacts; no browser started. Intentional expected failures occur only in reporter controls, never in product acceptance. This proves the bounded artifact boundary, not real backend behavior.
+
+Scoped TypeScript, targeted Prettier, Node parser checks, explicit --list --reporter=list16-case discovery and git diff --check PASS. Default safe reporter emits no discovery titles, so explicit list reporter is used only for --list (dataset not instantiated). Existing broad legacy Angular TS2345 is unchanged. No heavy processes/services/browser/Gradle/container launch, no push, no mass formatting, no UI edit. Current design skill read at main task docs path; D002–D005/Q004 restored.
+
+Clock fixture proposal remains source-only at clock-fixture-proposal.md, awaiting review/assignment; no implementation mixed into the stable correction target. Next root requests fresh independent recheck, then assigns isolated runtime. Source checks are preparation and cannot be recorded as client PASS.

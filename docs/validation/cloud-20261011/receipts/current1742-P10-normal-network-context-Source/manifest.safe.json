@@ -1,0 +1,19 @@
+{
+  "schema": "P10_NETWORK_R1_SOURCE_MANIFEST_V1",
+  "files": {
+    "PLAN.md": "109b2a26c5ceedbdc48664ce25868f085f7e35e14b04c76e22a3c54ac3825c87",
+    "READY.safe.json": "9ee0c9327076d47f896b39629e119775debd5550ac080b1f3a854fddb3e7cd5a",
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "controls-network-only.py": "07ba01c818639feae86f1519b1fb295b9091613bf4600747364236a4f245f708",
+    "grant-template.private.json": "5060e2d7d64ba7f5360a507d0184281b00899c5fdaef4eb2dfc590f88191194e",
+    "green-plan.safe.json": "09d72a7d1011d177d205358031445a9544fca0a6de2c1e8e178498e62cc2576e",
+    "logged-green-child.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "network-controls.safe.json": "ed5f0f16c5e71edaef298f9721daf23a56b9ef8a29175cf72c49ab518ef490fe",
+    "run-green-owned.py": "4611344f9af8a48b0e695545c4053994c1f72591929553b3336df4e2a8d311c9",
+    "source-delta.patch": "18c7c48bad8a3f686a5959c0e2be595c647a2e7e13e3a94f4fcd71edd55c1e7f",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "source-proof.safe.json": "38ad8194c93d91f7e6369a5c0ee6900318c4af0dff3ee9d0cb738ea161a64c04"
+  },
+  "private_runtime_data_excluded": true
+}

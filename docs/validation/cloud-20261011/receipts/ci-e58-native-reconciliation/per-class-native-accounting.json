@@ -1,0 +1,2150 @@
+[
+  {
+    "file": "safe-integration-outcomes-api-gateway-1.json",
+    "classes": [
+      {
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "counts": {
+          "SKIPPED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+        "counts": {
+          "PASSED": 6
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-integration-outcomes-attendance-service-1.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+        "counts": {
+          "PASSED": 21
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.AttendanceSemesterDeletionDataIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.EventIdempotentIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.events.AttendanceMarkedContractIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.excuse.ExcuseEventContractIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.AdminActivityGrpcIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.UserImpactIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.CheckinIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.LateCheckinPerformanceIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.MongoIndexIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.OutboxAtomicityIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.PaginationCapIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.RabbitConsumerIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.integration.StartupOrphanCleanupRemovedIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+        "counts": {
+          "PASSED": 27
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+        "counts": {
+          "PASSED": 42
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-integration-outcomes-auth-service-1.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.export.ExportJobsIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.ActuatorIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.ActuatorSpanFilterIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.AuthIT",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.BcryptDoSMitigationIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+        "counts": {
+          "PASSED": 18
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.LoginRateLimiterIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.LogoutLifecycleIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.SameSiteCookieContractIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.TmaIT",
+        "counts": {
+          "PASSED": 16
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.integration.WsTicketIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+        "counts": {
+          "PASSED": 33
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-integration-outcomes-notification-service-1.json",
+    "classes": [
+      {
+        "classname": "ru.rutcampustrack.notification.NotificationLoggingIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.OpenApiSnapshotIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.csp.CspReportIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.event.EventIdempotentIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.exception.NotificationErrorHandlingIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationMongoIndexesIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationStateV2IT",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.push.PushSubscriptionCleanupJobIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.security.SecurityIdorIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.ws.StompIntegrationIT",
+        "counts": {
+          "PASSED": 3
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-integration-outcomes-schedule-service-1.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.event.EventIdempotentIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.events.LessonBlockedContractIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.events.LessonCancelledContractIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.events.LessonStartedContractIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+        "counts": {
+          "PASSED": 13
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.EntityMappingIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "counts": {
+          "PASSED": 24
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.LessonCancelEventIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.LessonPerformanceIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.PaginationCapIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "counts": {
+          "PASSED": 29
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.SecuritySmokeIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.integration.ShedLockSmokeIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+        "counts": {
+          "PASSED": 11
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-it-academic.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+        "counts": {
+          "PASSED": 14
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.admin.AdminPermissionRpcIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.assignment.AssignmentReplacementIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+        "counts": {
+          "FAILED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+        "counts": {
+          "PASSED": 19
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.dashboard.DashboardInvalidationIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.events.GroupUpdatedContractIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.events.HomeworkNotificationContractIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.export.AdminRegistryExportsIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.AdministrativeNotificationGroupCycleIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkBindingArchiveIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkBindingTransferIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkControllerIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkMigrationIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkTeacherReadIT",
+        "counts": {
+          "PASSED": 24
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "counts": {
+          "PASSED": 21
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.AcademicPerformanceIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.ActuatorIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.CacheIT",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.EntityMappingIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.EventIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.GroupRenameEventIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.HeadmanStatsScopeIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.HealthDegradationIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.OpenApiErrorResponsesIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.OutboxCleanupIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.PaginationCapIT",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.RbacCacheIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.RestApiIT",
+        "counts": {
+          "PASSED": 12
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+        "counts": {
+          "PASSED": 37
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+        "counts": {
+          "PASSED": 18
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+        "counts": {
+          "PASSED": 14
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT",
+        "counts": {
+          "PASSED": 16
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.notification.NotificationAudienceIT",
+        "counts": {
+          "PASSED": 28
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.security.AcademicUserContextFilterIT",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.security.AcademicUserContextFilterStrictModeIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.security.SecurityIdorIT",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.subject.SubjectSchemaIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserByIdsApiIT",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserRepositorySearchIT",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserRepositorySortIT",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserSearchIT",
+        "counts": {
+          "PASSED": 7
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-unit-academic.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.admin.AuthConfirmationErrorsTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.config.LowercaseEnumConverterTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.config.SubjectTypeUserTypeTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.config.WebConfigEnumConversionTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.dashboard.DashboardActivityServiceTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.exception.GlobalExceptionHandlerTest",
+        "counts": {
+          "PASSED": 12
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.golden.DisplayNameGoldenTest",
+        "counts": {
+          "PASSED": 12
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.golden.DisplayNamePropertyTest",
+        "counts": {
+          "PASSED": 101
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupArchivalServiceTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupNameParserTest",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupPromotionServiceTest",
+        "counts": {
+          "PASSED": 16
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.group.GroupServiceTest",
+        "counts": {
+          "PASSED": 26
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest",
+        "counts": {
+          "PASSED": 12
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.HistoricalMembershipGrpcTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.InMemoryHeadmanRateLimiterTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.RedisHeadmanRateLimiterTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+        "counts": {
+          "PASSED": 26
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.grpc.TeacherAcademicReadGrpcServiceTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkNotificationJobTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkServiceTest",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.homework.HomeworkStudentServiceTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.map.CampusMapOwnerHmacProviderTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.map.CampusMapReadServiceTest",
+        "counts": {
+          "PASSED": 70
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.map.CampusMapUsageServiceTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.migration.MigrationConcurrentlyTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.security.RoleCheckAspectTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.semester.SemesterServiceTest",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest",
+        "counts": {
+          "PASSED": 19
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserServiceConflictTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserServiceListTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserServicePatchProfileTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.academic.user.UserServiceTelegramRequiredTest",
+        "counts": {
+          "PASSED": 9
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-unit-outcomes-api-gateway-1.json",
+    "classes": [
+      {
+        "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpFilterTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "counts": {
+          "PASSED": 63
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.filter.StudentRequestsNoStoreFilterTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+        "counts": {
+          "PASSED": 23
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-unit-outcomes-attendance-service-1.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.checkin.CheckinServiceTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.EventConsumerTest",
+        "counts": {
+          "PASSED": 16
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.LessonEventServiceParallelTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.LessonEventServiceTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.event.LessonGenerationMergeTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.excuse.ExcuseEventPublisherTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.geofence.GeoUtilsTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.geofence.GeofenceServiceTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.AcademicGrpcClientTest",
+        "counts": {
+          "PASSED": 17
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.AttendanceSemesterDeletionGrpcSecurityTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcRequestReadOnlyTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcClientTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.StudentGrpcBoundaryTest",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.StudentRequestGrpcErrorsTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.StudentRequestGrpcMapperTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcServiceTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinEventContractTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinServiceTest",
+        "counts": {
+          "PASSED": 21
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.marking.MarkingServiceTest",
+        "counts": {
+          "PASSED": 17
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiterTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.DocxRendererTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanGroupCompositionServiceTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanStatsRendererTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanStatsTrendRendererTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanSubjectJournalServiceTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyTemplateSmokeTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.ReportControllerMvcTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+        "counts": {
+          "PASSED": 34
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.studentprojection.AttendanceMetricCalculatorTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceDocxRendererTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportServiceTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportServiceTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotServiceTest",
+        "counts": {
+          "PASSED": 12
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.studentrequest.HeadmanRequestControllerMvcTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest",
+        "counts": {
+          "PASSED": 18
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-unit-outcomes-auth-service-1.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.config.LowercaseEnumConverterTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+        "counts": {
+          "PASSED": 9
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.controller.PasswordResetValidationExceptionHandlerTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.AuthServiceRepositoryFailureTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+        "counts": {
+          "PASSED": 11
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+        "counts": {
+          "PASSED": 13
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.RedisReportDownloadTicketStoreContextTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.service.TmaServiceTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.session.ActiveRolePolicyTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+        "counts": {
+          "PASSED": 13
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+        "counts": {
+          "PASSED": 11
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-unit-outcomes-notification-service-1.json",
+    "classes": [
+      {
+        "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+        "counts": {
+          "PASSED": 7
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+        "counts": {
+          "PASSED": 14
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.WebSocketConfigTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+        "counts": {
+          "PASSED": 15
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.event.EventConsumerTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.event.ExportReadyEventConsumerTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.event.GroupEventTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.exception.NotificationUnavailableBoundaryTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+        "counts": {
+          "PASSED": 5
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+        "counts": {
+          "PASSED": 17
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationHistoryEventProcessorTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+        "counts": {
+          "PASSED": 6
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.history.NotificationV2SerializationTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.preferences.NotificationPreferencesServiceTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.push.PushSubscriptionRepositoryTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+        "counts": {
+          "PASSED": 3
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.security.NotificationSignedContextTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+        "counts": {
+          "PASSED": 4
+        }
+      }
+    ]
+  },
+  {
+    "file": "safe-unit-outcomes-schedule-service-1.json",
+    "classes": [
+      {
+        "classname": "<unresolved:ordinal-only>",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.arch.ScheduledLockRuleNegativeTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.config.SchedulingConfigStructureTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+        "counts": {
+          "PASSED": 22
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+        "counts": {
+          "PASSED": 201
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+        "counts": {
+          "PASSED": 8
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.item.ScheduleItemEntityTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.lesson.LessonControllerTransferTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+        "counts": {
+          "PASSED": 10
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.lesson.LessonSlotTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.migration.MigrationConcurrentlyTest",
+        "counts": {
+          "PASSED": 2
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+        "counts": {
+          "PASSED": 4
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest",
+        "counts": {
+          "PASSED": 1
+        }
+      },
+      {
+        "classname": "ru.rutcampustrack.schedule.week.AcademicWeekPolicyControllerTest",
+        "counts": {
+          "PASSED": 4
+        }
+      }
+    ]
+  }
+]

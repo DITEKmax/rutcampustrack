@@ -9,15 +9,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
-
 import java.time.OffsetDateTime;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
 
 /** Immutable idempotency/history row for one group in one completed spring cycle. */
 @Entity
-@Table(name = "group_promotion_cycle_record", uniqueConstraints = @UniqueConstraint(
-        name = "group_promotion_cycle_semester_group_uq",
-        columnNames = {"cycle_semester_id", "group_id"}))
+@Table(
+        name = "group_promotion_cycle_record",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "group_promotion_cycle_semester_group_uq",
+                        columnNames = {"cycle_semester_id", "group_id"}))
 public class GroupPromotionCycleRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,10 +49,14 @@ public class GroupPromotionCycleRecord {
 
     protected GroupPromotionCycleRecord() {}
 
-    public GroupPromotionCycleRecord(Long cycleSemesterId, Long groupId,
-                                     PromotionPreviewItem.Action action,
-                                     String fromName, String toName,
-                                     long studentCount, OffsetDateTime processedAt) {
+    public GroupPromotionCycleRecord(
+            Long cycleSemesterId,
+            Long groupId,
+            PromotionPreviewItem.Action action,
+            String fromName,
+            String toName,
+            long studentCount,
+            OffsetDateTime processedAt) {
         this.cycleSemesterId = cycleSemesterId;
         this.groupId = groupId;
         this.action = action;
@@ -60,12 +66,35 @@ public class GroupPromotionCycleRecord {
         this.processedAt = processedAt;
     }
 
-    public Long getId() { return id; }
-    public Long getCycleSemesterId() { return cycleSemesterId; }
-    public Long getGroupId() { return groupId; }
-    public PromotionPreviewItem.Action getAction() { return action; }
-    public String getFromName() { return fromName; }
-    public String getToName() { return toName; }
-    public long getStudentCount() { return studentCount; }
-    public OffsetDateTime getProcessedAt() { return processedAt; }
+    public Long getId() {
+        return id;
+    }
+
+    public Long getCycleSemesterId() {
+        return cycleSemesterId;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public PromotionPreviewItem.Action getAction() {
+        return action;
+    }
+
+    public String getFromName() {
+        return fromName;
+    }
+
+    public String getToName() {
+        return toName;
+    }
+
+    public long getStudentCount() {
+        return studentCount;
+    }
+
+    public OffsetDateTime getProcessedAt() {
+        return processedAt;
+    }
 }

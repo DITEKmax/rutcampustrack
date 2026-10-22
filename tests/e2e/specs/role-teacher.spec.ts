@@ -1,7 +1,7 @@
+import { expectWebPanelRoute } from '../fixtures/web-panel-route';
 import { test, expect } from '@playwright/test';
 import { TEST_USERS } from '../fixtures/users';
 import { loginAs } from '../fixtures/auth';
-import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
 
 /**
  * M08 Группа 5 (P2-8/5) — role-teacher golden paths.
@@ -19,9 +19,7 @@ test.describe('Role: TEACHER', () => {
     // в TEACHER_ROUTES только dashboard/journal/stats. Заменено на /journal.
     const paths = ['/teacher/journal', '/teacher/stats'];
     for (const path of paths) {
-      await page.goto(path);
-      await expect(page).toHaveURL(new RegExp(path));
-      await assertNoA11yCriticalOrSerious(page);
+      await expectWebPanelRoute(page, path);
     }
   });
 

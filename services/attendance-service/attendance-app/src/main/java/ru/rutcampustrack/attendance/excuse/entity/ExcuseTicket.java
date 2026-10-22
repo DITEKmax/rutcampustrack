@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
@@ -16,9 +18,8 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * MongoDB document for excuse tickets (Phase 59, D-01, D-02).
- * Collection: excuse_tickets.
- * Lombok allowed in app module (entity).
+ * MongoDB document for excuse tickets (Phase 59, D-01, D-02). Collection: excuse_tickets. Lombok
+ * allowed in app module (entity).
  */
 @Data
 @Builder
@@ -27,8 +28,7 @@ import java.util.List;
 @Document(collection = "excuse_tickets")
 public class ExcuseTicket {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     @Field("student_id")
     private Long studentId;
@@ -42,7 +42,10 @@ public class ExcuseTicket {
     @Field("lesson_ids")
     private List<Long> lessonIds;
 
-    /** Known membership retained before a selected decision narrows the effective targets; no metadata is invented. */
+    /**
+     * Known membership retained before a selected decision narrows the effective targets; no
+     * metadata is invented.
+     */
     @Field("original_lesson_ids")
     private List<Long> originalLessonIds;
 
@@ -53,8 +56,10 @@ public class ExcuseTicket {
     /** Immutable schedule data used by archive/detail reads after schedule changes. */
     @Field("lesson_snapshots")
     private List<StudentLessonSnapshotDocument> lessonSnapshots;
+
     @Field("decision_selection")
-    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument decisionSelection;
+    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument
+            decisionSelection;
 
     @Field("excuse_type")
     private ExcuseType excuseType;
@@ -84,4 +89,36 @@ public class ExcuseTicket {
 
     @Field("updated_at")
     private Instant updatedAt;
+
+    /**
+     * Current projection after an explicit destructive operation; original evidence stays above.
+     */
+    @Field("effective_lesson_snapshots")
+    private List<StudentLessonSnapshotDocument> effectiveLessonSnapshots;
+
+    @Field("effective_original_lesson_ids")
+    private List<Long> effectiveOriginalLessonIds;
+
+    @Field("effective_decision_selection")
+    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument
+            effectiveDecisionSelection;
+
+    @Field("subject_coverage_adjustments")
+    private List<
+                    ru.rutcampustrack.attendance.studentrequest.entity
+                            .SubjectCoverageAdjustmentDocument>
+            subjectCoverageAdjustments;
+
+    public List<StudentLessonSnapshotDocument> getLessonSnapshots() {
+        return effectiveLessonSnapshots == null ? lessonSnapshots : effectiveLessonSnapshots;
+    }
+
+    public List<Long> getOriginalLessonIds() {
+        return effectiveOriginalLessonIds == null ? originalLessonIds : effectiveOriginalLessonIds;
+    }
+
+    public ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument
+            getDecisionSelection() {
+        return effectiveDecisionSelection == null ? decisionSelection : effectiveDecisionSelection;
+    }
 }

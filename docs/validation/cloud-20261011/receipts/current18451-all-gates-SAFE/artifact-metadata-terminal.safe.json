@@ -1,0 +1,363 @@
+[
+  {
+    "run": 38313867449,
+    "artifacts": [
+      {
+        "id": 11776640486,
+        "name": "safe-unit-outcomes-attendance-service-1",
+        "size_in_bytes": 15208,
+        "digest": "sha256:ceb26e4160370469f42bf2cca5dc2feeacf8ae167a32b0fe1563394da2ced9be",
+        "expired": false,
+        "created_at": "2026-10-12T22:03:01Z",
+        "updated_at": "2026-10-12T22:03:01Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776615440,
+        "name": "safe-unit-outcomes-auth-service-1",
+        "size_in_bytes": 7795,
+        "digest": "sha256:fd2bd92e113309a57187f602aa2fabd391dd456f41cc8398b989259e2cff59a6",
+        "expired": false,
+        "created_at": "2026-10-12T22:02:32Z",
+        "updated_at": "2026-10-12T22:02:32Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776586173,
+        "name": "safe-integration-outcomes-auth-service-1",
+        "size_in_bytes": 8306,
+        "digest": "sha256:1785af68215d5726696cc9219fcab7de7e9c2df9dd42b9f14dc36651a6dffa4a",
+        "expired": false,
+        "created_at": "2026-10-12T22:06:42Z",
+        "updated_at": "2026-10-12T22:06:42Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776550309,
+        "name": "safe-unit-outcomes-academic-service-1",
+        "size_in_bytes": 15174,
+        "digest": "sha256:3f65387cb379d0e04a9aa55ccdc868ab8725075f461eeb823351e9e4f05a6389",
+        "expired": false,
+        "created_at": "2026-10-12T22:00:38Z",
+        "updated_at": "2026-10-12T22:00:38Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776465577,
+        "name": "safe-integration-outcomes-api-gateway-1",
+        "size_in_bytes": 1341,
+        "digest": "sha256:118e0b51e09c95d0f7df07258bf4729ece722a4d2e076246887f2b62ccde373f",
+        "expired": false,
+        "created_at": "2026-10-12T22:01:25Z",
+        "updated_at": "2026-10-12T22:01:25Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776420931,
+        "name": "safe-integration-outcomes-attendance-service-1",
+        "size_in_bytes": 12444,
+        "digest": "sha256:acc5315a349f1b6d1be351f32a0f3ac8c09fb02db9116276d0caff8fc0e389a0",
+        "expired": false,
+        "created_at": "2026-10-12T22:03:35Z",
+        "updated_at": "2026-10-12T22:03:35Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776258646,
+        "name": "safe-integration-outcomes-academic-service-1",
+        "size_in_bytes": 21432,
+        "digest": "sha256:57a6957025a66cef0f32ad4fa7ac691b409c7398e439979aeb8507028627db1f",
+        "expired": false,
+        "created_at": "2026-10-12T22:14:41Z",
+        "updated_at": "2026-10-12T22:14:41Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776166660,
+        "name": "safe-unit-outcomes-schedule-service-1",
+        "size_in_bytes": 5406,
+        "digest": "sha256:4e8d1a689a1384f435708639fec161c64bd4df784fa4dd3f513018f9d165d796",
+        "expired": false,
+        "created_at": "2026-10-12T22:02:12Z",
+        "updated_at": "2026-10-12T22:02:12Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775912440,
+        "name": "safe-unit-outcomes-api-gateway-1",
+        "size_in_bytes": 6218,
+        "digest": "sha256:0787918916cc1cab8a4f6c3379a499f1aab9b639896b68a87d062a57d2ea180d",
+        "expired": false,
+        "created_at": "2026-10-12T22:01:27Z",
+        "updated_at": "2026-10-12T22:01:27Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775887553,
+        "name": "safe-unit-outcomes-notification-service-1",
+        "size_in_bytes": 7630,
+        "digest": "sha256:ef8b229daf10c8e170c443d52d7a038cbf094f16bc554f369c935a8d0407f9e7",
+        "expired": false,
+        "created_at": "2026-10-12T22:01:54Z",
+        "updated_at": "2026-10-12T22:01:54Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775872534,
+        "name": "safe-integration-outcomes-notification-service-1",
+        "size_in_bytes": 4167,
+        "digest": "sha256:7bb5cc3ee4e5546fe159df15ba828e8288c6f743f28693d99d02048468fc337d",
+        "expired": false,
+        "created_at": "2026-10-12T22:02:09Z",
+        "updated_at": "2026-10-12T22:02:09Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775587903,
+        "name": "safe-integration-outcomes-schedule-service-1",
+        "size_in_bytes": 10767,
+        "digest": "sha256:ca75a3cb67c49be1ee1ada21d6c441b46891b7141570899dfbdf0cad1dc69a03",
+        "expired": false,
+        "created_at": "2026-10-12T22:02:29Z",
+        "updated_at": "2026-10-12T22:02:29Z",
+        "workflow_run": {
+          "id": 38313867449,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      }
+    ]
+  },
+  {
+    "run": 38313867586,
+    "artifacts": [
+      {
+        "id": 11776745374,
+        "name": "jacoco-attendance-service",
+        "size_in_bytes": 140622,
+        "digest": "sha256:4cfb4f5665ad0347997f935531a8009311fc0d1560560adf22737318e8211a02",
+        "expired": false,
+        "created_at": "2026-10-12T22:05:01Z",
+        "updated_at": "2026-10-12T22:05:01Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776626099,
+        "name": "jacoco-auth-service",
+        "size_in_bytes": 50291,
+        "digest": "sha256:3480fb085f7309151c713fbf62570972b66cf3d38e02c295473df5d4f9a74fff",
+        "expired": false,
+        "created_at": "2026-10-12T22:06:24Z",
+        "updated_at": "2026-10-12T22:06:24Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776542650,
+        "name": "jacoco-academic-service",
+        "size_in_bytes": 145661,
+        "digest": "sha256:1028ce6ad834c19db53a57f86c333a5419771b428d580d91f5e3c978aae7e324",
+        "expired": false,
+        "created_at": "2026-10-12T22:13:41Z",
+        "updated_at": "2026-10-12T22:13:41Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776500257,
+        "name": "pytest-coverage-bot",
+        "size_in_bytes": 9087,
+        "digest": "sha256:2d61f20622c65bdeef5e1c16e7cebe3b4414e42286f483f0c8ee68071cd263bb",
+        "expired": false,
+        "created_at": "2026-10-12T21:59:47Z",
+        "updated_at": "2026-10-12T21:59:47Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776496138,
+        "name": "safe-coverage-outcomes-attendance-service-1",
+        "size_in_bytes": 27730,
+        "digest": "sha256:18d6c9313fe83737203ac9fea803045f8132864c1f3274e4dd8e12f16b5bfc2e",
+        "expired": false,
+        "created_at": "2026-10-12T22:04:59Z",
+        "updated_at": "2026-10-12T22:04:59Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776381618,
+        "name": "safe-coverage-outcomes-auth-service-1",
+        "size_in_bytes": 16169,
+        "digest": "sha256:867058636d37b9a0689d76d7bc09a52316ef6a80369b3b3b12332cf5fb4b35ae",
+        "expired": false,
+        "created_at": "2026-10-12T22:06:23Z",
+        "updated_at": "2026-10-12T22:06:23Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776368064,
+        "name": "safe-coverage-outcomes-academic-service-1",
+        "size_in_bytes": 36671,
+        "digest": "sha256:614ac70ad012dbb1df4c4326e81dcaeeb5a7c26b2eba779a8590396d7eba6988",
+        "expired": false,
+        "created_at": "2026-10-12T22:13:40Z",
+        "updated_at": "2026-10-12T22:13:40Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776311842,
+        "name": "safe-coverage-outcomes-schedule-service-1",
+        "size_in_bytes": 16256,
+        "digest": "sha256:d7a5aab6e6f7c21c7f9044708f1f3e68d5511651d90e6fdc269247c285ac2bf6",
+        "expired": false,
+        "created_at": "2026-10-12T22:05:14Z",
+        "updated_at": "2026-10-12T22:05:14Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11776112134,
+        "name": "jacoco-schedule-service",
+        "size_in_bytes": 60431,
+        "digest": "sha256:6ac7b198bfce7259f525794bf70c10eeb15690244c501427602d01781c18a64c",
+        "expired": false,
+        "created_at": "2026-10-12T22:05:16Z",
+        "updated_at": "2026-10-12T22:05:16Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775979175,
+        "name": "diff-coverage",
+        "size_in_bytes": 779624,
+        "digest": "sha256:981e3b4a1cd669e3a48852a3b8e720ebb4e7d0989b278bfce454070e90ba42da",
+        "expired": false,
+        "created_at": "2026-10-12T22:14:50Z",
+        "updated_at": "2026-10-12T22:14:50Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775937506,
+        "name": "safe-coverage-outcomes-notification-service-1",
+        "size_in_bytes": 11854,
+        "digest": "sha256:aa51370168c5d23a08d952765e310fb6d9d23a00c79b1a3235917b3ef58d119a",
+        "expired": false,
+        "created_at": "2026-10-12T22:03:05Z",
+        "updated_at": "2026-10-12T22:03:05Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775762647,
+        "name": "jacoco-api-gateway",
+        "size_in_bytes": 18289,
+        "digest": "sha256:cf964ee336a85139672035b06fe48d4a5dc0fc05910d1a86b2f7ece0cf5291ce",
+        "expired": false,
+        "created_at": "2026-10-12T22:00:48Z",
+        "updated_at": "2026-10-12T22:00:48Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775677616,
+        "name": "safe-coverage-outcomes-api-gateway-1",
+        "size_in_bytes": 7632,
+        "digest": "sha256:2c119a0c37e5950fc30c2bdbcc7fad3645899e2720c1b2dbc068b25044245de1",
+        "expired": false,
+        "created_at": "2026-10-12T22:00:47Z",
+        "updated_at": "2026-10-12T22:00:47Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775493065,
+        "name": "vitest-lcov-mobile-vue",
+        "size_in_bytes": 4884409,
+        "digest": "sha256:774a0b60313d295fed7cddbe0f23b4260cdf3e59fe16893a00e900c059a33ee6",
+        "expired": false,
+        "created_at": "2026-10-12T22:02:20Z",
+        "updated_at": "2026-10-12T22:02:20Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      },
+      {
+        "id": 11775488185,
+        "name": "jacoco-notification-service",
+        "size_in_bytes": 29722,
+        "digest": "sha256:44368e1490a93e32090241a3534d0bda89f5380391cf4296f292771e76590ada",
+        "expired": false,
+        "created_at": "2026-10-12T22:03:06Z",
+        "updated_at": "2026-10-12T22:03:06Z",
+        "workflow_run": {
+          "id": 38313867586,
+          "head_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+        }
+      }
+    ]
+  }
+]

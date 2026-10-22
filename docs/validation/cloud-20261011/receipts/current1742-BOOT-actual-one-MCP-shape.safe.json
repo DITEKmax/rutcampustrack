@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-13T15:31:58.548970+00:00",
+  "scope": "BOOT_ORIGINAL_CAPTURED_CARRIER_ONE_RAM_SHAPE_ANALYSIS",
+  "result": "ONE_MCP_RETURN_TEXT_NOT_LOG_SOURCE_HYPOTHESIS",
+  "payload_kind": "NON_JSON_TEXT",
+  "payload_text_chars": 17,
+  "carrier_bytes": 154,
+  "qualification": "Only exactknownowner154B/currentgrant privateRAMread, no rawtext/log/hash/key/value exported; no originalparser/MCP re-run. Native consume1settled/rawcleanup/carrierretained as designed. ActualfullSDKresponse clearedperrecipe; unknownstructuredfields unavailable, causeFIRST3UNKNOWN."
+}

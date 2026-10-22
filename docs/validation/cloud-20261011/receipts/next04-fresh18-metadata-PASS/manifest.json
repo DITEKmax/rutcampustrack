@@ -1,0 +1,16 @@
+{
+  "scope": "NEXT04_FRESH18_METADATA_TERMINAL",
+  "files": [
+    {
+      "path": "preflight.safe.json",
+      "sha256": "a7c87794ff805e92c2b30a7c33333cce274962cacaec7fbbfaf22ee1172acea6",
+      "bytes": 13484
+    },
+    {
+      "path": "tool-outcome.safe.json",
+      "sha256": "2519847f5d6348a352f7f160431dea94715e977759ed6358cc070dfeba112de1",
+      "bytes": 1210
+    }
+  ],
+  "runtime": "NOT_RUN"
+}

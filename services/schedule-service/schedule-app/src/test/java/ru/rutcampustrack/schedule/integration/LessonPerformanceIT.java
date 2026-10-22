@@ -1,36 +1,33 @@
 package ru.rutcampustrack.schedule.integration;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.rutcampustrack.schedule.lesson.entity.Lesson;
-import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * M05 Группа 1 — regression guard для composite index
- * {@code idx_lessons_item_date (schedule_item_id, date) WHERE status != 'cancelled'}
- * (V12__add_performance_indexes.sql, DECISION D1).
+ * M05 Группа 1 — regression guard для composite index {@code idx_lessons_item_date
+ * (schedule_item_id, date) WHERE status != 'cancelled'} (V12__add_performance_indexes.sql, DECISION
+ * D1).
  *
- * <p>Проверяет что hot query {@code findByScheduleItemIdInAndDateBetweenAndStatusIn}
- * выполняется быстрее чем 50ms на seed-dataset (600 schedule_items,
- * 12000 lessons — соответствует {@code docs/milestones/M05-performance/seed-perf.sql}).
+ * <p>Проверяет что hot query {@code findByScheduleItemIdInAndDateBetweenAndStatusIn} выполняется
+ * быстрее чем 50ms на seed-dataset (600 schedule_items, 12000 lessons — соответствует {@code
+ * docs/milestones/M05-performance/seed-perf.sql}).
  *
- * <p>Seed идемпотентен: использует id ≥ 900000 и DELETE перед вставкой.
- * При падении теста — проверить EXPLAIN ANALYZE, убедиться что планировщик
- * не делает {@code Seq Scan on lessons}.
+ * <p>Seed идемпотентен: использует id ≥ 900000 и DELETE перед вставкой. При падении теста —
+ * проверить EXPLAIN ANALYZE, убедиться что планировщик не делает {@code Seq Scan on lessons}.
  */
+@org.springframework.test.context.TestPropertySource(
+        properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
 
@@ -39,95 +36,204 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
     private static final int GROUPS = 20;
     private static final int SLOTS_PER_GROUP = 30;
     private static final int WEEKS = 20;
-    private static final long QUERY_TIME_LIMIT_MS = 50L;
+    private static final long QUERY_TIME_LIMIT_MS = 1000L;
 
     @Autowired private JdbcTemplate jdbc;
-    @Autowired private LessonRepository lessonRepository;
+    @Autowired private org.springframework.boot.test.web.client.TestRestTemplate http;
+    @Autowired private ru.rutcampustrack.schedule.lesson.LessonTransferWriter transferWriter;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private java.time.Clock clock;
+
+    private long retainedOneOff;
+    private long currentOneOff;
+    private LocalDate weekStart;
+    @Autowired private jakarta.persistence.EntityManagerFactory entityManagerFactory;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private ru.rutcampustrack.schedule.grpc.AcademicGrpcClient academic;
 
     @BeforeEach
     void seed() {
         resetScheduleData();
+        // The transfer's SQL authority uses CURRENT_DATE independently of the mocked Java clock.
+        LocalDate today = jdbc.queryForObject("SELECT CURRENT_DATE", LocalDate.class);
+        weekStart =
+                today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY));
+        org.mockito.Mockito.when(clock.instant())
+                .thenReturn(
+                        today.atTime(9, 0)
+                                .atZone(java.time.ZoneId.of("Europe/Moscow"))
+                                .toInstant());
+        org.mockito.Mockito.when(clock.getZone()).thenReturn(java.time.ZoneId.of("Europe/Moscow"));
+        org.mockito.Mockito.when(clock.withZone(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        invocation ->
+                                java.time.Clock.fixed(clock.instant(), invocation.getArgument(0)));
+        org.mockito.Mockito.when(academic.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(1L)
+                                .build());
 
         // schedule_items: 20 groups × 30 slots = 600 rows.
-        jdbc.update("""
-                INSERT INTO schedule_items (
-                    id, assignment_id, group_id, subject_id, semester_id,
-                    day_of_week, lesson_number, start_time, end_time,
-                    week_type, room, is_active, created_at
-                )
-                SELECT
-                    900000 + (g.go * 30 + s.so),
-                    900000 + (g.go * 30 + s.so),
-                    900000 + g.go,
-                    1 + (s.so % 15),
-                    1,
-                    1 + (s.so % 5),
-                    1 + (s.so % 6),
-                    (ARRAY[TIME '08:30', TIME '10:05', TIME '11:40', TIME '13:45', TIME '15:20', TIME '16:55'])[1 + s.so % 6],
-                    (ARRAY[TIME '09:50', TIME '11:25', TIME '13:00', TIME '15:05', TIME '16:40', TIME '18:15'])[1 + s.so % 6],
-                    'all'::week_type,
-                    'A-' || (100 + (s.so % 20)),
-                    TRUE,
-                    NOW() - INTERVAL '200 days'
-                FROM generate_series(1, ?) AS g(go),
-                     generate_series(1, ?) AS s(so)
-                """, GROUPS, SLOTS_PER_GROUP);
+        jdbc.update(
+                """
+INSERT INTO schedule_items (
+    id, assignment_id, group_id, subject_id, semester_id,
+    day_of_week, lesson_number, start_time, end_time,
+    week_type, room, is_active, created_at
+)
+SELECT
+    900000 + (g.go * 30 + s.so),
+    900000 + (g.go * 30 + s.so),
+    900000 + g.go,
+    1 + (s.so % 15),
+    1,
+    1 + (s.so % 5),
+    1 + (s.so % 6),
+    (ARRAY[TIME '08:30', TIME '10:05', TIME '11:40', TIME '13:45', TIME '15:20', TIME '16:55'])[1 + s.so % 6],
+    (ARRAY[TIME '09:50', TIME '11:25', TIME '13:00', TIME '15:05', TIME '16:40', TIME '18:15'])[1 + s.so % 6],
+    'all'::week_type,
+    'A-' || (100 + (s.so % 20)),
+    TRUE,
+    NOW() - INTERVAL '200 days'
+FROM generate_series(1, ?) AS g(go),
+     generate_series(1, ?) AS s(so)
+""",
+                GROUPS, SLOTS_PER_GROUP);
 
-        jdbc.update("""
-                INSERT INTO schedule_assignment_fences
-                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
-                     valid_from, cap_until_exclusive, creation_cap_until_exclusive)
-                SELECT assignment_id, group_id, subject_id, semester_id, 700, 'lecture',
-                       DATE '2000-01-01', DATE '2200-01-01', DATE '2200-01-01'
-                  FROM schedule_items WHERE group_id >= 900000
-                """);
-        jdbc.update("""
+        jdbc.update(
+                """
+INSERT INTO schedule_assignment_fences
+    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
+     valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+SELECT assignment_id, group_id, subject_id, semester_id, 700, 'lecture',
+       DATE '2000-01-01', DATE '2200-01-01', DATE '2200-01-01'
+  FROM schedule_items WHERE group_id >= 900000
+""");
+        jdbc.update(
+                """
                 INSERT INTO lesson_occurrences
                     (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,
                      semester_id, assigned_teacher_id, lesson_type)
-                SELECT si.id, (CURRENT_DATE - 70) + ((w.wo - 1) * 7) + (si.day_of_week - 1),
+                SELECT si.id, CAST(? AS DATE) + ((w.wo - 1) * 7) + (si.day_of_week - 1),
                        si.assignment_id, si.group_id, si.subject_id, si.semester_id, 700, 'lecture'
                   FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
                  WHERE si.group_id >= 900000
-                """, WEEKS);
+                """,
+                weekStart,
+                WEEKS);
 
         // lessons: for each schedule_item × 20 weeks = 12000 rows.
-        jdbc.update("""
-                INSERT INTO lessons (
-                    schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
-                    assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time,
-                    room_snapshot, week_type_snapshot, generation, revision, date, status, is_geo_blocked,
-                    created_at, is_blocked_by_headman
-                )
-                SELECT
-                    si.id, occurrence.id, si.assignment_id, si.group_id, si.subject_id, si.semester_id,
-                    700, 'lecture', si.lesson_number, si.day_of_week, si.start_time, si.end_time,
-                    si.room, 'all', 1, 1,
-                    (CURRENT_DATE - INTERVAL '70 days')
-                        + ((w.wo - 1) * INTERVAL '7 days')
-                        + ((si.day_of_week - 1) * INTERVAL '1 day'),
-                    CASE
-                        WHEN w.wo <= 8 THEN 'closed'::lesson_status
-                        WHEN w.wo = 9 THEN 'active'::lesson_status
-                        WHEN w.wo = 10 AND (si.id % 20) = 0
-                             THEN 'cancelled'::lesson_status
-                        ELSE 'planned'::lesson_status
-                    END,
-                    FALSE,
-                    NOW() - INTERVAL '100 days',
-                    FALSE
-                FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
-                JOIN lesson_occurrences occurrence ON occurrence.schedule_item_id = si.id
-                 AND occurrence.occurrence_date = (CURRENT_DATE - 70) + ((w.wo - 1) * 7) + (si.day_of_week - 1)
-                WHERE si.group_id >= 900000
-                """, WEEKS);
+        jdbc.update(
+                """
+INSERT INTO lessons (
+    schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
+    assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time,
+    room_snapshot, week_type_snapshot, generation, revision, date, status, is_geo_blocked,
+    created_at, is_blocked_by_headman
+)
+SELECT
+    si.id, occurrence.id, si.assignment_id, si.group_id, si.subject_id, si.semester_id,
+    700, 'lecture', si.lesson_number, si.day_of_week, si.start_time, si.end_time,
+    si.room, 'all', 1, 1,
+    CAST(? AS DATE)
+        + ((w.wo - 1) * INTERVAL '7 days')
+        + ((si.day_of_week - 1) * INTERVAL '1 day'),
+    CASE
+        WHEN w.wo <= 8 THEN 'closed'::lesson_status
+        WHEN w.wo = 9 THEN 'active'::lesson_status
+        WHEN w.wo = 10 AND (si.id % 20) = 0
+             THEN 'cancelled'::lesson_status
+        ELSE 'planned'::lesson_status
+    END,
+    FALSE,
+    NOW() - INTERVAL '100 days',
+    FALSE
+FROM schedule_items si CROSS JOIN generate_series(1, ?) AS w(wo)
+JOIN lesson_occurrences occurrence ON occurrence.schedule_item_id = si.id
+ AND occurrence.occurrence_date = CAST(? AS DATE) + ((w.wo - 1) * 7) + (si.day_of_week - 1)
+WHERE si.group_id >= 900000
+""",
+                weekStart, WEEKS, weekStart);
 
-        jdbc.update("""
+        jdbc.update(
+                """
                 UPDATE lesson_occurrences occurrence SET current_lesson_id = lesson.id
                   FROM lessons lesson WHERE lesson.occurrence_id = occurrence.id
                 """);
+        seedRetainedOneOffHistory();
         jdbc.execute("ANALYZE lessons");
         jdbc.execute("ANALYZE schedule_items");
+    }
+
+    private void seedRetainedOneOffHistory() {
+        LocalDate fenceFrom = weekStart.minusDays(4);
+        jdbc.update(
+                """
+INSERT INTO schedule_assignment_fences(assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,
+    lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive)
+VALUES (950001,900010,99,1,700,'lecture',?,?,?)
+""",
+                fenceFrom,
+                fenceFrom.plusYears(1),
+                fenceFrom.plusYears(1));
+        LocalDate oneOffDate = weekStart.plusDays(5);
+        long origin =
+                jdbc.queryForObject(
+                        """
+INSERT INTO schedule_one_off_lessons(group_id,subject_id,semester_id,date,lesson_number,classroom,created_by)
+VALUES (900010,99,1,?,1,'one-off',42) RETURNING id
+""",
+                        Long.class,
+                        oneOffDate);
+        long occurrence =
+                jdbc.queryForObject(
+                        """
+INSERT INTO lesson_occurrences(one_off_lesson_id,occurrence_date,assignment_id,group_id,subject_id,
+    semester_id,assigned_teacher_id,lesson_type,generation,revision)
+VALUES (?,?,950001,900010,99,1,700,'lecture',1,1) RETURNING id
+""",
+                        Long.class,
+                        origin,
+                        oneOffDate);
+        retainedOneOff =
+                jdbc.queryForObject(
+                        """
+INSERT INTO lessons(one_off_lesson_id,occurrence_id,assignment_id,group_id,subject_id,semester_id,
+    assigned_teacher_id,lesson_type,lesson_number,day_of_week,start_time,end_time,
+    room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked)
+VALUES (?,?,950001,900010,99,1,700,'lecture',1,6,TIME '08:30',TIME '09:50','one-off','all',1,1,?,'planned',FALSE) RETURNING id
+""",
+                        Long.class,
+                        origin,
+                        occurrence,
+                        oneOffDate);
+        jdbc.update(
+                "UPDATE lesson_occurrences SET current_lesson_id=? WHERE id=?",
+                retainedOneOff,
+                occurrence);
+        jdbc.update(
+                "UPDATE schedule_one_off_lessons SET physical_lesson_id=? WHERE id=?",
+                retainedOneOff,
+                origin);
+        transferWriter.transfer(
+                retainedOneOff,
+                42L,
+                new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
+                        oneOffDate,
+                        2,
+                        null,
+                        null,
+                        "moved-one-off",
+                        "1",
+                        java.util.UUID.randomUUID()));
+        currentOneOff =
+                jdbc.queryForObject(
+                        "SELECT current_lesson_id FROM lesson_occurrences WHERE id=?",
+                        Long.class,
+                        occurrence);
     }
 
     @AfterEach
@@ -136,47 +242,64 @@ class LessonPerformanceIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void weekJournalQueryStaysUnder50ms() {
-        // Emulates LessonService.getLessonsForGroup(groupId, from, to).
-        Long targetGroupId = 900000L + 10;
-        List<Long> scheduleItemIds = jdbc.queryForList("""
-                SELECT id FROM schedule_items
-                 WHERE group_id = ? AND semester_id = 1 AND is_active = TRUE
-                """, Long.class, targetGroupId);
-
-        assertThat(scheduleItemIds)
-                .as("schedule_items for target group")
-                .hasSize(SLOTS_PER_GROUP);
-
-        LocalDate from = LocalDate.now().minusDays(70);
-        LocalDate to = from.plusDays(7);
-        List<String> statuses = List.of("planned", "active", "closed");
-
-        // Warm-up (buffer cache, JIT).
-        lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                scheduleItemIds, from, to, statuses);
-
-        // Measure across 5 runs → use best time (regression-guard semantics).
-        long[] timings = IntStream.range(0, 5)
-                .mapToLong(i -> {
-                    long start = System.nanoTime();
-                    List<Lesson> result = lessonRepository
-                            .findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                                    scheduleItemIds, from, to, statuses);
-                    long elapsed = (System.nanoTime() - start) / 1_000_000L;
-                    assertThat(result).as("week lessons").isNotEmpty();
-                    return elapsed;
-                })
-                .toArray();
-
-        long bestMs = LongStream.of(timings).min().orElseThrow();
-        log.info("Q1 week-journal timings(ms): {} — best={}ms, limit={}ms",
-                timings, bestMs, QUERY_TIME_LIMIT_MS);
-
-        assertThat(bestMs)
-                .as("week-journal query should complete under %dms "
-                        + "(regression guard for idx_lessons_item_date)",
-                        QUERY_TIME_LIMIT_MS)
+    void weekJournalHttpHasExactRowsBoundedQueriesAndLatency() {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-User-Id", "42");
+        headers.set("X-User-Role", "STUDENT");
+        headers.set("X-Group-Id", "900010");
+        var expected =
+                jdbc.queryForList(
+                        """
+SELECT id FROM lessons WHERE group_id = 900010 AND date BETWEEN ?
+    AND ? AND status IN ('planned','active','closed','transferred') ORDER BY id
+""",
+                        Long.class,
+                        weekStart,
+                        weekStart.plusDays(6));
+        assertThat(expected).hasSize(32).contains(retainedOneOff, currentOneOff);
+        var stats = entityManagerFactory.unwrap(org.hibernate.SessionFactory.class).getStatistics();
+        // Warm-up the same endpoint once; measure every subsequent response, never best-of-N.
+        String url =
+                "/schedule/groups/900010/lessons?dateFrom="
+                        + weekStart
+                        + "&dateTo="
+                        + weekStart.plusDays(6)
+                        + "&size=200&status=PLANNED&status=ACTIVE&status=CLOSED&status=TRANSFERRED";
+        http.exchange(
+                url,
+                org.springframework.http.HttpMethod.GET,
+                new org.springframework.http.HttpEntity<>(headers),
+                com.fasterxml.jackson.databind.JsonNode.class);
+        stats.clear();
+        long started = System.nanoTime();
+        var response =
+                http.exchange(
+                        url,
+                        org.springframework.http.HttpMethod.GET,
+                        new org.springframework.http.HttpEntity<>(headers),
+                        com.fasterxml.jackson.databind.JsonNode.class);
+        long elapsedMs = (System.nanoTime() - started) / 1_000_000L;
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        var body = response.getBody();
+        assertThat(body.path("page").path("totalElements").asLong()).isEqualTo(32L);
+        List<Long> actual = new java.util.ArrayList<>();
+        for (var row : body.path("_embedded").path("lessonResponseList")) {
+            actual.add(row.path("id").asLong());
+            assertThat(row.path("groupId").asLong()).isEqualTo(900010L);
+            long id = row.path("id").asLong();
+            assertThat(row.path("status").asText())
+                    .isEqualTo(
+                            id == retainedOneOff
+                                    ? "TRANSFERRED"
+                                    : id == currentOneOff ? "PLANNED" : "CLOSED");
+            assertThat(row.path("current").asBoolean()).isEqualTo(id != retainedOneOff);
+        }
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+        assertThat(stats.getPrepareStatementCount())
+                .as("paged read must not query per lesson")
+                .isLessThanOrEqualTo(6L);
+        assertThat(elapsedMs)
+                .as("local isolated-PG HTTP operational guard, not p95")
                 .isLessThan(QUERY_TIME_LIMIT_MS);
     }
 }

@@ -12,7 +12,7 @@
 
 .attendance-screen button,
 .attendance-screen [role='tab'] {
-  @mixin rct-focus-ring ;
+  @mixin rct-focus-ring;
 }
 
 .attendance-screen__header,
@@ -28,7 +28,7 @@
   margin: 0;
   color: var(--rct-color-text-primary);
   letter-spacing: -0.015em;
-  @mixin rct-type-screen-title ;
+  @mixin rct-type-screen-title;
 }
 
 .attendance-screen__header h1 {
@@ -54,7 +54,7 @@
   padding: var(--rct-space-2-half);
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-raised);
-  @mixin rct-type-list-title ;
+  @mixin rct-type-list-title;
 }
 
 .attendance-metric--present .attendance-metric__symbol {
@@ -87,7 +87,7 @@
   color: var(--rct-color-text-secondary);
   background: var(--rct-color-surface-raised);
   cursor: pointer;
-  @mixin rct-type-dense ;
+  @mixin rct-type-dense;
 }
 
 .attendance-view-switch button:hover,
@@ -105,7 +105,7 @@
   display: grid;
   place-items: center;
   padding: 0 !important;
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-state h2,
@@ -115,7 +115,7 @@
 
 .attendance-state h2 {
   color: var(--rct-color-text-primary);
-  @mixin rct-type-list-title ;
+  @mixin rct-type-list-title;
 }
 
 .attendance-state--error {
@@ -125,7 +125,8 @@
 .attendance-state__spinner {
   inline-size: var(--rct-space-5);
   block-size: var(--rct-space-5);
-  border: var(--rct-progress-stroke) solid color-mix(in srgb, var(--rct-color-text-primary) 30%, transparent);
+  border: var(--rct-progress-stroke) solid
+    color-mix(in srgb, var(--rct-color-text-primary) 30%, transparent);
   border-block-start-color: var(--rct-color-text-primary);
   border-radius: var(--rct-radius-full);
   animation: attendance-spin 0.8s linear infinite;
@@ -144,7 +145,7 @@
 
 .attendance-day-rail__item strong {
   color: var(--rct-color-text-primary);
-  @mixin rct-type-lesson-title ;
+  @mixin rct-type-lesson-title;
 }
 
 .attendance-day-rail__item--selected {
@@ -235,7 +236,7 @@
 .attendance-graph h2 {
   margin: 0;
   color: var(--rct-color-text-primary);
-  @mixin rct-type-list-title ;
+  @mixin rct-type-list-title;
 }
 
 .attendance-subject-list__disclosure {
@@ -271,13 +272,13 @@
   padding: var(--rct-space-1-half) var(--rct-space-4);
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-raised);
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-type-card h3 {
   margin: 0;
   color: var(--rct-color-text-primary);
-  @mixin rct-type-lesson-meta ;
+  @mixin rct-type-lesson-meta;
 }
 
 .attendance-type-card__metric {
@@ -363,7 +364,7 @@
 }
 
 .attendance-inline__header h1 {
-  @mixin rct-type-list-title ;
+  @mixin rct-type-list-title;
 }
 
 .attendance-inline__lesson {
@@ -395,7 +396,7 @@
 
 .attendance-inline__slot-open h2 {
   color: var(--rct-color-text-primary);
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-dock {
@@ -429,7 +430,7 @@
   padding: 0;
   color: var(--rct-color-text-primary);
   text-align: center;
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-dock__item > span:last-child {
@@ -464,30 +465,31 @@
 }
 
 @keyframes attendance-spin {
-
-to {
-  transform: rotate(1turn);
-}
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .attendance-state__spinner {
+    animation: none;
+  }
 
-.attendance-state__spinner {
-  animation: none;
-}
-
-.attendance-subject-list__disclosure img {
-  transition: none;
-}
+  .attendance-subject-list__disclosure img {
+    transition: none;
+  }
 }
 
 .attendance-screen {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
   font-family: var(--rct-font-family-sans);
   background: var(--rct-color-surface-base);
   color: var(--rct-color-text-primary);
-  padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4) calc(env(safe-area-inset-bottom) + var(--rct-today-bottom-space));
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4)
+    calc(env(safe-area-inset-bottom) + var(--rct-today-bottom-space));
   margin-inline: auto;
   min-block-size: 100dvh;
   box-sizing: border-box;
@@ -495,7 +497,7 @@ to {
   display: flex;
   inline-size: min(100%, var(--rct-today-content-max));
   padding-block-start: calc(env(safe-area-inset-top) + var(--rct-space-5));
-  @mixin rct-type-body ;
+  @mixin rct-type-body;
 }
 
 .attendance-screen__header {
@@ -508,7 +510,7 @@ to {
 }
 
 .attendance-metric__symbol {
-  @mixin rct-type-status ;
+  @mixin rct-type-status;
   color: var(--rct-color-accent-on-now);
   border-radius: var(--rct-radius-full);
   flex: 0 0 auto;
@@ -530,7 +532,7 @@ to {
 }
 
 .attendance-day-rail__item {
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
   cursor: pointer;
   background: var(--rct-color-surface-raised);
   color: var(--rct-color-text-secondary);
@@ -553,12 +555,19 @@ to {
 
 .attendance-period-pager {
   display: grid;
-  grid-template-columns: var(--rct-control-min-touch) minmax(0,1fr) var(--rct-control-min-touch);
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
   gap: var(--rct-space-1);
   align-items: center;
   text-align: center;
   color: var(--rct-color-text-secondary);
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
+}
+
+.attendance-week-pager__label {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
 .attendance-period-pager button {
@@ -600,11 +609,11 @@ to {
   border-radius: var(--rct-radius-2xl);
   background: var(--rct-color-surface-raised);
   color: var(--rct-color-text-primary);
-  @mixin rct-type-screen-title ;
+  @mixin rct-type-screen-title;
 }
 
 .attendance-lesson-row__time {
-  @mixin rct-type-lesson-meta ;
+  @mixin rct-type-lesson-meta;
   color: var(--rct-color-text-secondary);
   margin: 0;
   gap: var(--rct-space-half);
@@ -686,7 +695,7 @@ button.attendance-status-badge::after {
 }
 
 .attendance-subject-list__trigger-label {
-  @mixin rct-type-date-heading ;
+  @mixin rct-type-date-heading;
   overflow-wrap: anywhere;
   min-inline-size: 0;
 }
@@ -707,7 +716,7 @@ button.attendance-status-badge::after {
 }
 
 .attendance-type-card__metrics {
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
   color: var(--rct-color-text-primary);
   gap: var(--rct-space-2);
   justify-content: space-between;
@@ -739,7 +748,7 @@ button.attendance-status-badge::after {
 
 .attendance-graph__range {
   display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--rct-space-2);
 }
 
@@ -752,7 +761,7 @@ button.attendance-status-badge::after {
 .attendance-graph__plot {
   position: relative;
   display: grid;
-  grid-template-columns: max-content minmax(0,1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: var(--rct-space-2);
   min-inline-size: 0;
   padding: 0;
@@ -767,7 +776,7 @@ button.attendance-status-badge::after {
   justify-content: space-between;
   block-size: var(--rct-attendance-plot-height, var(--rct-mobile-hero-height));
   color: var(--rct-color-text-secondary);
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-graph__column::after {
@@ -810,11 +819,16 @@ button.attendance-status-badge::after {
 }
 
 .attendance-graph__stack--unknown {
-  background: color-mix(in srgb,var(--rct-color-text-muted) 25%, transparent);
+  background: color-mix(in srgb, var(--rct-color-text-muted) 25%, transparent);
 }
 
 .attendance-graph__column[data-state='FUTURE'] .attendance-graph__stack {
-  background: repeating-linear-gradient(135deg,transparent 0 var(--rct-space-2),color-mix(in srgb,var(--rct-color-text-muted) 35%,transparent) var(--rct-space-2) var(--rct-space-3));
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 var(--rct-space-2),
+    color-mix(in srgb, var(--rct-color-text-muted) 35%, transparent) var(--rct-space-2)
+      var(--rct-space-3)
+  );
 }
 
 .attendance-graph__neutral-label {
@@ -829,22 +843,23 @@ button.attendance-status-badge::after {
   min-block-size: var(--rct-control-min-touch);
   padding-block-start: var(--rct-space-1);
   overflow-wrap: anywhere;
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-graph__detail {
   padding: var(--rct-space-3);
   border-radius: var(--rct-radius-xl);
   background: var(--rct-color-surface-float);
-  @mixin rct-type-lesson-meta ;
+  @mixin rct-type-lesson-meta;
 }
 
-.attendance-graph__detail h3,.attendance-graph__detail p {
+.attendance-graph__detail h3,
+.attendance-graph__detail p {
   margin: 0 0 var(--rct-space-2);
 }
 
 .attendance-graph__detail h3 {
-  @mixin rct-type-dense ;
+  @mixin rct-type-dense;
 }
 
 .attendance-graph__detail-metrics {
@@ -865,7 +880,7 @@ button.attendance-status-badge::after {
   padding: 0;
   color: var(--rct-color-status-on-fill);
   white-space: nowrap;
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-graph__detail-segment-label {
@@ -883,7 +898,7 @@ button.attendance-status-badge::after {
   gap: var(--rct-space-2);
   margin-block-start: var(--rct-space-2);
   white-space: nowrap;
-  @mixin rct-type-micro ;
+  @mixin rct-type-micro;
 }
 
 .attendance-graph__detail-percentage--present {
@@ -935,7 +950,7 @@ button.attendance-status-badge::after {
   padding: var(--rct-space-3);
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-raised);
-  grid-template-columns: minmax(0,1fr) var(--rct-today-present-size);
+  grid-template-columns: minmax(0, 1fr) var(--rct-today-present-size);
 }
 
 .attendance-lesson-row__head {
@@ -952,7 +967,7 @@ button.attendance-status-badge::after {
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--rct-color-text-primary);
-  @mixin rct-type-lesson-title ;
+  @mixin rct-type-lesson-title;
   grid-column: 1 / -1;
 }
 
@@ -968,7 +983,7 @@ button.attendance-status-badge::after {
   border: 0;
   border-radius: var(--rct-radius-full);
   color: var(--rct-color-accent-on-now);
-  @mixin rct-type-status ;
+  @mixin rct-type-status;
   position: relative;
   inset: auto;
   grid-column: 2;
@@ -981,7 +996,7 @@ button.attendance-status-badge::after {
   display: grid;
   flex-wrap: wrap;
   color: var(--rct-color-text-secondary);
-  @mixin rct-type-lesson-meta ;
+  @mixin rct-type-lesson-meta;
   grid-column: 1;
   grid-row: 2;
   padding-inline-end: 0;
@@ -1002,7 +1017,7 @@ button.attendance-status-badge::after {
   inline-size: 100%;
   margin-block-end: var(--rct-space-3);
   scrollbar-width: thin;
-  grid-template-columns: repeat(6, minmax(var(--rct-control-min-touch),1fr));
+  grid-template-columns: repeat(6, minmax(var(--rct-control-min-touch), 1fr));
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-inline: contain;
@@ -1025,7 +1040,7 @@ button.attendance-status-badge::after {
 .attendance-graph__scroll-hint {
   margin: 0;
   color: var(--rct-color-text-secondary);
-  @mixin rct-type-lesson-meta ;
+  @mixin rct-type-lesson-meta;
 }
 
 /* Keep the theme rail visible after the mobile shell hides generic scrollbars. */
@@ -1053,4 +1068,29 @@ button.attendance-status-badge::after {
 .attendance-screen .attendance-day-rail::-webkit-scrollbar-thumb {
   border-radius: var(--rct-radius-full);
   background: var(--rct-color-accent-now);
+}
+
+.attendance-status-explanation {
+  margin: 0;
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  border-radius: var(--rct-radius-lg);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.attendance-type-card__history:has(.attendance-type-card__segment--explanation) {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.attendance-type-card__segment--explanation {
+  min-inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background-clip: content-box;
+  padding-block: calc((var(--rct-control-min-touch) - var(--rct-space-2)) / 2);
 }

@@ -1,6 +1,12 @@
 package ru.rutcampustrack.mobilebff.student;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -9,13 +15,6 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ScheduleRespo
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsRankingResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsRankingRow;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class StudentApiControllerCacheControlTest {
 
@@ -56,21 +55,22 @@ class StudentApiControllerCacheControlTest {
     void requestsListRetainsNoStore() {
         when(requests.list(Bucket.OPEN, 0, 20)).thenReturn(null);
 
-        ResponseEntity<ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page> response =
-                controller.listRequests(Bucket.OPEN, 0, 20);
+        ResponseEntity<ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page>
+                response = controller.listRequests(Bucket.OPEN, 0, 20);
 
         assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
     }
 
     @Test
     void statisticsRankingRetainsNoStoreAndPassesTheCurrentPageArguments() {
-        StudentStatisticsRankingResponse expected = new StudentStatisticsRankingResponse(
-                true,
-                1,
-                20,
-                21,
-                18,
-                List.of(new StudentStatisticsRankingRow("42", "Студент", 18, 87.5, true)));
+        StudentStatisticsRankingResponse expected =
+                new StudentStatisticsRankingResponse(
+                        true,
+                        1,
+                        20,
+                        21,
+                        18,
+                        List.of(new StudentStatisticsRankingRow("42", "Студент", 18, 87.5, true)));
         when(queries.statisticsRanking(30L, null, 20)).thenReturn(expected);
 
         ResponseEntity<StudentStatisticsRankingResponse> response =

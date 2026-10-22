@@ -1,0 +1,36 @@
+{
+  "completed_utc": "2026-10-12T00:44:08.188775+00:00",
+  "reviewer": "fingerprint_review",
+  "status": "COMPLETE_INDEPENDENT_SCOPED_REVIEW",
+  "verdict": "APPROVE",
+  "reviewed_commit": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+  "parent": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "review_sha256": "f52f370bb5b6c48c1450152934860237eac00d88cdbbb45ca772b1935033e640",
+  "findings_sha256": "65878ee56ad605f036b5c802a7862ed170fd6ddab071279dc2c926834e3b9cd7",
+  "audit_command": "python3 /workspace/scratch/rct-validation/fingerprint_review/audit.py",
+  "audit_native_exit": 0,
+  "source_inputs_byte_mode_Git_verified": 6985,
+  "publication_scanner_native_exit": 0,
+  "publication_scanner_findings": 0,
+  "product_config_edits": 0,
+  "children": 0,
+  "heavy_operations": 0,
+  "prior_NTR_package": "UNCHANGED",
+  "private_author_reports_logs": "NOT_OPENED_OR_COPIED",
+  "own_private_redacted_publication_report": "EXCLUDED_FROM_TRANSFER",
+  "helper_attempts": [
+    {
+      "attempt": 1,
+      "native_exit": 1,
+      "cause": "Own helper assumed new filesystem0644; original mode0600 due author umask. Git mode100644 unchanged."
+    },
+    {
+      "attempt": 2,
+      "native_exit": 0,
+      "cause": "Actual new filesystem mode recorded; complete independent6985-byte/mode/Git audit PASS."
+    }
+  ],
+  "whole_project_security_or_DONE": false,
+  "existing_remote_security": "FAIL until actual new current receipts",
+  "next": "Root sole exact ignore integration and mandatory hooks/current gates"
+}

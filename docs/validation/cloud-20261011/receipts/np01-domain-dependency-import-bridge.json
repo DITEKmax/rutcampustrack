@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-12T02:37:33.418520+00:00",
+  "domain_author_before": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+  "domain_after_import": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "root_dependency_producer": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "all24_domain_inputs_exact": true,
+  "all12_common_config_inputs_exact": true,
+  "imported_root_commits": [
+    "e70c0053355f3e2fc5754a98945d1281df0cc8d8",
+    "b2fe1956cc84abaf3378cf77f87aadfbfdb1b6c9",
+    "b0adad082fe77cef2a2629492b5dce305e6567a8",
+    "942b98808b1f15ea1261b306f4ea6df8d6b5d587",
+    "a2f272f5c246f3f5df8f00c8cb4cb19468946b25",
+    "528bd3ae964b8022b28b0b020813d1211ad66add",
+    "04ba00026310f41049ecb4a15345a601b0986602",
+    "3e4a96154e9fbb447f1e61c854803055d4dd81c5",
+    "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362"
+  ],
+  "worktree": "/workspace/rct-worktrees/np01-domain-bot",
+  "author_writer": "np01_domain_bot resumedownership afterrootimport",
+  "runtime": "NOT_RUN; newlease next"
+}

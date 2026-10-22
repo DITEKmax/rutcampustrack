@@ -1,0 +1,24 @@
+# Exact host capacity and staging review
+
+Verdict: **CHANGES_REQUESTED_EXACT_SELECTION_BOUNDARY**. This is READ_ONLY source/metadata review. Actual recovered space is **0 B**; staging, keys, containers, JVM/native/browser runtime are NOT_RUN. Requested Sol6.1/high; actual UNKNOWN.
+
+Original author manifest `be3853df8f62a968c9e0e0171f70e4fa0b4435bcddce5b2b6e93b8c30f756a6b` and all36files match. Root immutable archive `b15c87f420d35b8b1b41350537f2f84692ca480493c6f95ebe64bbcd2db59c25` reproduces all original members plus manifest. All72 current/original/Renderer/guard safe receipt files remain unchanged. No Rootdocs/source/privatekey/envvalues mutated or output. Original CI731 archive remains unchanged.
+
+The11 candidate worktree heads and reference client-acceptance/eec3 are independently tracked-clean. All4422 metadata rows match lstat; candidates are regular, globally distinct nlink1 inodes on the reference device. Both paths have no traversal/symlink ancestry, matching size/mode/UID/GID and claimed SHA.3696 initially nonexcluded candidate/reference SHA pairs independently streamed with1MiB buffers; strict3575 is an exact verified subset. No protected content values were output. ActiveRoot/np01-domain-bot/ci-academic excluded; unselected historicalci-academic-candidates not counted.
+
+P2 CAP-B01: selection includes539 `.agent` paths149,360,640B and77 explicit evidence paths11,444,224B. P2 CAP-B02:231 tracked generateddist paths67,268,608B are counted despite stated derived exclusions. Root explicitly chose safer boundaries: exclude all.agent/evidence/receipts/validation/test-results/build/dist/dependencies; landingdist exception cannotcount before acceptedsource/builderprovenance. A corrected own plan must retain original36diagnostics and publish new exact rows, rather than relax protection. Under that boundary only**3575pairs/944,234,496allocatedB potential** remain. Exact allowed/excluded paths are in strict-selection-review.json; this review list is not mutation permission.
+
+All8current908BootJAR hashes,10,834 regular entry SHA/size/modes, unique standard4layer membership and unchanged launcher/unfoldedmanifest/main/index verified without extraction.2937uniqueSHA/targetmode/size tuples =166,383,274logicalB and172,953,600rounded4KiBfileB.378directories includes370internalpaths+8approots. OriginalJAR600 remains600; proposedNEWpublic644 anddirs755 need separate measured staging.72sealedfiles unchanged. Originalnativeimage/appUSER/tool/readability/tmp/runtime remains unexecuted. ExistingknownJDKprovenance correction must reach any future staged spec: recordedhost binary is Temurin21, Debian is OS.
+
+| Phase | Conservative requirement |
+| --- | ---: |
+| Staging before Docker allocation:4GiBfloor+192MiBfinal+128MiBtransient |4,630,511,616B |
+| Runtime after transient release:4GiBfloor+192MiBfinal+9copies2,707,241,745B+1GiBgrowth |8,277,277,457B |
+| Peak for strictly nonoverlapping phases |8,277,277,457B |
+| Original sum retained as historicalconservativeplan |8,411,495,185B |
+
+Snapshot2026-10-12T05:29:27.290048+00:00: free**7,184,449,536B**; even fullstrictpotential recovery leaves**148,593,425B deficit** against runtime reserve. This is potential arithmetic, not recovered or reservedspace. The128MiBtransient must not be added to laterDockerallocation when fullstaging completes first and everyextractor/tempfile is released; conversely anyoverlap restores the summedrequirement. Global growth, inode/directory/actualVFSallocation, openfds and measuredstatvfs can invalidate potential. Remeasure beforeeach mutation/stage/startup phase; no enoughcapacity/startupclaim.
+
+Atomic pair plan is conditionally sound only after Root explicit frozenhandoff of candidate AND reference, exactmetadata/SHA/head/path checks before each pair, siblingNEWlink then atomic replace, postchecks and realstatvfs. Record intentionalinode/mtime/nlink changes: all4422 candidate mtimes currently differ from theirreference. Track knownownreference nlink increments across reusedreferencefiles, preserve exactpartial/interruptedtemporaries, and never inferfreegain while originals remainopen. COW before anylater edit/build/formatter/chmod applies on either side; no inodewidepermissionschange. Unknown/changingpairs stop without broadened selection. Recoverydedup, stage dedup and additionalOWNscopes are nonadditive to prioroverlapping494/424plans.
+
+Next: Root creates correctedstrictsourceplan/additionalreleasedOWNscope candidates and reviews that delta; Rootalone selects exactfreeze/recoverygrant. Measureactualfreegain and retainedbytes/modes/heads, then separately grant fullstaging with phasebarriers and actualpublicpayload seal. Keys/runner/routes/TLS/data/apps/browser remain separately reviewed and authorized. No active owned process/session/daemon or mutation remains in this review.

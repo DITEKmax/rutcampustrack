@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-11T22:52:52.523983+00:00",
+  "run": "red-mvr-05",
+  "cwd": "/workspace/rct-worktrees/file-boundaries",
+  "argv": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "*CampusMapFileBoundaryIT.documentLevelStylesheetCannotPublishExternalResources",
+    "--tests",
+    "*CampusMapFileBoundaryIT.cssImageSetCannotPublishQuotedExternalResource",
+    "--tests",
+    "*CampusMapFileBoundaryIT.xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted",
+    "--tests",
+    "*CampusMapFileBoundaryIT.pngOverAcceptedProcessingBudgetCannotPublishAnyInventoryOrFile",
+    "--tests",
+    "*CampusMapFileBoundaryIT.pngExactlyAtAcceptedProcessingBudgetRemainsStoredAndServed",
+    "--max-workers=1",
+    "--no-daemon",
+    "--console=plain"
+  ],
+  "head": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "hashes": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java": "48ccc00b7cb2485705d0ae2461d11db83a316e0a4eaf4a7ab33b062dff56b41f",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675"
+  },
+  "lease": "FILES2 max-workers1",
+  "owned_resource_label": "rct.package=file-boundaries-20261011",
+  "status": "RUNNING",
+  "native_launcher_pid": 115060
+}

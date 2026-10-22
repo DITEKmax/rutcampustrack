@@ -1,0 +1,64 @@
+{
+  "utc": "2026-10-12T17:59:46.695874+00:00",
+  "count": 8,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "size": 1247,
+      "mode": "0o600",
+      "sha256": "c54e77e259e5cc1253ae421f52024679aa6f0e405378a905074831d068be1287"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "size": 1608,
+      "mode": "0o600",
+      "sha256": "8e29bb0ef20b3700fa829e66361695795bdfd64b4fac22f0d0db1d9b88ec5c41"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/next-native-ready.safe.json",
+      "relative_path": "next-native-ready.safe.json",
+      "size": 1184,
+      "mode": "0o600",
+      "sha256": "948e0313c39a2acd059313b445e1b9a8fea9a1f46465d7b54b8e128d5b9e178b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/prefix-launch.safe.json",
+      "relative_path": "prefix-launch.safe.json",
+      "size": 312,
+      "mode": "0o600",
+      "sha256": "4a7e71f6928bc4c77f3188df7913f5c8dc050093165648a9ddf0ef09dda57c62"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/prefix-partial.safe.json",
+      "relative_path": "prefix-partial.safe.json",
+      "size": 2684,
+      "mode": "0o600",
+      "sha256": "1d3db57f829bfa82ac64e2c2677e43b78322216dca8a169176765a127cec853e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/prefix-terminal.safe.json",
+      "relative_path": "prefix-terminal.safe.json",
+      "size": 2978,
+      "mode": "0o600",
+      "sha256": "55f4fe3e0e05bed1a2e66c337fbb532154513d1c0ee71e0b0000cf2c1c9ea2f4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/preflight.safe.json",
+      "relative_path": "preflight.safe.json",
+      "size": 617,
+      "mode": "0o600",
+      "sha256": "a584e39a858b37b4b127f27d6944f27c0f2edb8d670bdd7482ecac4c8a832c37"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-extract01/terminal-seal/selected-copy-verification.safe.json",
+      "relative_path": "selected-copy-verification.safe.json",
+      "size": 7082,
+      "mode": "0o600",
+      "sha256": "9de72759dfe5eb3fc2bcce61348f47e1fc22e6770d59c6b514909d14157688c0"
+    }
+  ],
+  "private_grants_and_DSO_binary_payload_excluded": true,
+  "lease": "RELEASED"
+}

@@ -1,0 +1,476 @@
+{
+  "utc": "2026-10-13T05:10:22.439488+00:00",
+  "source_commit": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "selected_classes": [
+    {
+      "class": "ru.rutcampustrack.academic.grpc.HeadmanJournalSemesterTransportTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true,
+      "xml_sha256": "4ac4871e22300aac5698c8ef770d75b994e901e870257bc5b62e37053b9e9b81",
+      "methods": [
+        {
+          "name": "signedJournalActorReachesRosterButScheduleSemesterStateRejectsBeforeRepository()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.grpc.HeadmanJournalSemesterClientTransportTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true,
+      "xml_sha256": "51511464f724c0d5444fab85f589075722042cb5acf482e78e2fcc86cb7254ac",
+      "methods": [
+        {
+          "name": "originalSignedActorReachesNewMethodAndAdmissionFailuresKeepTheirHttpMeaning()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true,
+      "xml_sha256": "6e10ae41a6a70914278fb94526a67ec9d78e571b5ef7285bfe9e7ff003c14ea1",
+      "methods": [
+        {
+          "name": "teacherStatsEmptyStudentBatchStillRejectsForeignGroup()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsFutureOnlyKeepsRequestedSemesterAndReturnsNoData()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "lessonAttendance_sameDayBeforeStart_isNotEditable()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsUsesClosedLessonsAndServerSideMetricCounts()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "authorizeTeacherWithDifferentSubjectAllowsLessonInCurrentGroup()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherGroupStatsRejectsForeignGroupAndOtherAuthorizedGroupLesson()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherNoDataKeepsSubjectMetadataWhenSelectedTypeHasNoLessons()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "dashboard_forgotToCheckinCountedFromLateCheckinSource()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_percentageCalculation()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_failsClosedWhenScheduleAuthorityIsMalformed()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsBothScopesRejectIncompleteSelectionBeforeMetricReads()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "authorizeTeacherWithHistoricalDifferentSubjectAllowsCurrentGroup()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_cancelledExcluded()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "authorizeHeadmanOrTeacher_regularStudentThrows403()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsKeepsHistoricalScheduleLessonForCurrentGroupAuthority()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "lessonAttendance_hidesExpiredJournalAttachmentMetadata()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "dashboard_weeklyGroupsByWeekOfSemester()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "dashboard_topMissedSortedByAbsentDescAndCapped()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "lessonAttendance_missingStudentShowsAbsent()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherGroupStatsFiltersHistoricalSubjectAndTypeWithHistoricalDenominator()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsAppliesServerFilterBeforeReturningRows()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsEmptyBatchUsesCurrentAuthorityAndReturnsSelectedGroup()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "getJournal_cellIncludesLessonId()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "authorizeTeacherWithDifferentGroupDeniesLesson()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_excludesAuthoritativeCancelledAndTransferredLessons()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_emptyRecords()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_subjectNameResolvedViaGrpc()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsRejectsIncompleteGroupProjectionAsDependencyFailure()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsKeepsSelectedGroupWithNoClosedLessons()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_overallAggregation()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "teacherStatsRejectsLessonOutsideSelectedStudentScope()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "stats_allCancelled()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "lessonAttendance_missingSemester_failsClosedWithoutCurrentRosterFallback()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "authorizeTeacherWithCurrentAssignmentAllowsMatchingLesson()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "fresh_after_grant_issued": true,
+      "xml_sha256": "169b2e92b1637409e73dde59d0f5597211401d051e199fba21d9cc1b9b45aa35",
+      "methods": [
+        {
+          "name": "overviewKeepsMembershipUnfilteredAndCountsOnlyStartedTodayPairs()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "explicitArchivedSemesterUsesFullDayGridAndPersonalHistoricalCohortWithoutActiveFallback()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "authoritativeHistoricalMemberWithNoLessonsGetsEmptySelectedPeriodCalendar()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "currentViewStatsAssistantGetsFilteredCanonicalMetricsAndUnpagedExportUntilRevoked()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "headmanFlagStillRequiresFreshActiveHeadmanGrantForReadAndExport()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "studentDetailRequiresFreshViewStatsAndRejectsForeignStudentId()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "clearedHistoryKeepsApprovedTicketAndServerLessonMetadataWhileArchiveBlocksWrites()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        },
+        {
+          "name": "trendUsesSummedHistoricalPairsSharedGridAndNullForEmptyBucketsAndDetailIsPersonal()",
+          "failure": false,
+          "error": false,
+          "skipped": false
+        }
+      ]
+    }
+  ],
+  "total_selected_tests": 44,
+  "compile_both_main_test": {
+    ":services:academic-service:academic-app:compileJava": true,
+    ":services:attendance-service:attendance-app:compileJava": true,
+    ":services:academic-service:academic-app:compileTestJava": true,
+    ":services:attendance-service:attendance-app:compileTestJava": true
+  },
+  "accepted_isolated_green": true,
+  "source13_protected2_intact": true,
+  "clean_worktree": true,
+  "all14_exact_births_absent": true,
+  "identities": [
+    {
+      "pid": 483406,
+      "start_ticks": 12176133,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483407,
+      "start_ticks": 12176137,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483449,
+      "start_ticks": 12176248,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483512,
+      "start_ticks": 12177930,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483516,
+      "start_ticks": 12177950,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483537,
+      "start_ticks": 12179168,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483540,
+      "start_ticks": 12179182,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483554,
+      "start_ticks": 12181158,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483557,
+      "start_ticks": 12181175,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483585,
+      "start_ticks": 12182737,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483617,
+      "start_ticks": 12182973,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483652,
+      "start_ticks": 12183551,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483683,
+      "start_ticks": 12183803,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 483402,
+      "start_ticks": 12176115,
+      "exact_birth_absent": true
+    }
+  ],
+  "private_tmp_removed": true,
+  "parent_envelope_removed": true,
+  "terminal": {
+    "direct_pid": 483406,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 483406,
+        "start_ticks": 12176133
+      },
+      {
+        "pid": 483407,
+        "start_ticks": 12176137
+      },
+      {
+        "pid": 483449,
+        "start_ticks": 12176248
+      },
+      {
+        "pid": 483512,
+        "start_ticks": 12177930
+      },
+      {
+        "pid": 483516,
+        "start_ticks": 12177950
+      },
+      {
+        "pid": 483537,
+        "start_ticks": 12179168
+      },
+      {
+        "pid": 483540,
+        "start_ticks": 12179182
+      },
+      {
+        "pid": 483554,
+        "start_ticks": 12181158
+      },
+      {
+        "pid": 483557,
+        "start_ticks": 12181175
+      },
+      {
+        "pid": 483585,
+        "start_ticks": 12182737
+      },
+      {
+        "pid": 483617,
+        "start_ticks": 12182973
+      },
+      {
+        "pid": 483652,
+        "start_ticks": 12183551
+      },
+      {
+        "pid": 483683,
+        "start_ticks": 12183803
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T05:07:31.304762+00:00",
+    "peaks": {
+      "memory": 7561568256,
+      "min_workspace_free": 8257949696,
+      "owned_rss": 1708015616,
+      "log_bytes": 18206
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "qualification": "Actual isolated wire and relevant report unit GREEN. Fresh SQL/grant/archive IT/mutation/realstand roster200/client/currentgates remain OPEN."
+}

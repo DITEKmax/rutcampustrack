@@ -1,0 +1,22 @@
+{
+  "schema": "P10_SOURCE_CONTROLS_V1",
+  "qualification": "Pure public Source inverse and RAM input checks; no Java/compiler/HTTP/runtime proof.",
+  "controls": {
+    "whole_inverse_old_file_exact": true,
+    "old_test_count_unchanged": true,
+    "positive_minimum_12_scalars": true,
+    "positive_maximum_72_utf8": true,
+    "negative_11_scalars_other_requirements_valid": true,
+    "negative_73_bytes_other_requirements_valid": true,
+    "malformed_escaped_lone_high_surrogate_reaches_json_decode": true,
+    "malformed_other_requirements_valid": true,
+    "distinct_change_wrong_credential_same_size": true,
+    "distinct_reset_wrong_credential_same_utf8_size": true,
+    "owned_login_length_within_schema_32": true,
+    "no_new_print_or_logger": true,
+    "same_reset_ticket_after_all_negatives": true,
+    "cleanup_tries_both_actors_and_preserves_primary": true
+  },
+  "original_test_count": 8,
+  "new_test_count": 9
+}

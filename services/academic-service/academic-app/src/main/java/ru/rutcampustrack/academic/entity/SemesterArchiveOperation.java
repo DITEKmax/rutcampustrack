@@ -9,19 +9,18 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveOperationState;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
-import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
 import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPriorState;
-import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 
 @Entity
 @Table(name = "semester_archive_operations")
@@ -160,11 +159,12 @@ public class SemesterArchiveOperation {
     @Column(name = "row_version", nullable = false)
     private long rowVersion;
 
-    public SemesterArchiveOperation(UUID operationId,
-                                    UUID idempotencyKey,
-                                    long actorId,
-                                    long semesterId,
-                                    SemesterArchiveAction action) {
+    public SemesterArchiveOperation(
+            UUID operationId,
+            UUID idempotencyKey,
+            long actorId,
+            long semesterId,
+            SemesterArchiveAction action) {
         this.operationId = operationId;
         this.idempotencyKey = idempotencyKey;
         this.actorId = actorId;
@@ -179,13 +179,23 @@ public class SemesterArchiveOperation {
     }
 
     public SemesterDeletionCounts deletionCounts() {
-        if (scheduleTemplatesCount == null || oneOffLessonsCount == null || lessonsCount == null
-                || assignmentsCount == null || homeworksCount == null
-                || attendanceMarksCount == null || studentRequestsCount == null) {
+        if (scheduleTemplatesCount == null
+                || oneOffLessonsCount == null
+                || lessonsCount == null
+                || assignmentsCount == null
+                || homeworksCount == null
+                || attendanceMarksCount == null
+                || studentRequestsCount == null) {
             return null;
         }
-        return new SemesterDeletionCounts(scheduleTemplatesCount, oneOffLessonsCount, lessonsCount,
-                assignmentsCount, homeworksCount, attendanceMarksCount, studentRequestsCount);
+        return new SemesterDeletionCounts(
+                scheduleTemplatesCount,
+                oneOffLessonsCount,
+                lessonsCount,
+                assignmentsCount,
+                homeworksCount,
+                attendanceMarksCount,
+                studentRequestsCount);
     }
 
     public void setDeletionCounts(SemesterDeletionCounts counts) {

@@ -1,0 +1,7 @@
+{
+  "manifest_sha256": "42a2d450f6746ea21112518ed676250973ad1de2d98a05383f58e96d59cdc519",
+  "safe_files_unchanged": 14,
+  "verdict": "CHANGES_REQUESTED",
+  "finding": "NP01-COMPAT01 P2",
+  "runtime": "NOT_RUN"
+}

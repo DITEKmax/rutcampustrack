@@ -1,0 +1,23 @@
+{
+  "schema": "P09_CLEANUP_RECHECK_SEAL_V1",
+  "verdict": "APPROVE_SOURCE",
+  "files": {
+    "REPORT.md": {
+      "sha256": "cb7ebb8ed23ee19f9f620885f1e48178e408b370cf57797355a444013c697934",
+      "bytes": 3904
+    },
+    "REPORT.safe.json": {
+      "sha256": "12556243ef83164170f11ed76b869a2d143ad8e1a3fa4aaf574a8275c924c01e",
+      "bytes": 1243
+    },
+    "controls.safe.json": {
+      "sha256": "45e9dbe3dd994ae4562f6fd5c64541f7fdc3ca394e59075f8efc448b6389518e",
+      "bytes": 1560
+    },
+    "source-checks.py": {
+      "sha256": "758219dc98cf97b90151adf4aa4e51d4adca17d4566b6a92decc0a0f80be2403",
+      "bytes": 5562
+    }
+  },
+  "private_runtime_data": "NONE"
+}

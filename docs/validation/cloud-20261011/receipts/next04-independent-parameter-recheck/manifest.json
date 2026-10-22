@@ -1,0 +1,16 @@
+{
+  "scope": "NEXT04_FIXED_PARAMETERS_AND159_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 2455,
+      "sha256": "ce360030aaf8d61379a0ddb5e2aa88cb863034fc1e2ac4a440f5a825501e2445"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2104,
+      "sha256": "e21687826b14a97371dbe856e23fcf9fb5fc9babce8122bef42bab81e13caeae"
+    }
+  ]
+}

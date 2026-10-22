@@ -1,0 +1,96 @@
+{
+  "schema": "RCT_P06_COMPILE_ACTUAL_V1",
+  "utc": "2026-10-13T07:24:26.655596+00:00",
+  "tool_session": 99356,
+  "tool_exit": 0,
+  "source_commit": "4db89b1876ee7aa8a80b021dabdb7e664a4a0da3",
+  "test_sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+  "exact2_fresh_compile_completion_counts": [
+    1,
+    1
+  ],
+  "native0": true,
+  "source16_plus_private_init_pins_preserved": true,
+  "all6_births_absent": true,
+  "identities": [
+    {
+      "pid": 494565,
+      "start_ticks": 12994103,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 494566,
+      "start_ticks": 12994107,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 494608,
+      "start_ticks": 12994282,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 494699,
+      "start_ticks": 12997101,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 494703,
+      "start_ticks": 12997124,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 494561,
+      "start_ticks": 12994078,
+      "exact_birth_absent": true
+    }
+  ],
+  "private_tmp_envelope_removed": true,
+  "terminal": {
+    "direct_pid": 494565,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 494565,
+        "start_ticks": 12994103
+      },
+      {
+        "pid": 494566,
+        "start_ticks": 12994107
+      },
+      {
+        "pid": 494608,
+        "start_ticks": 12994282
+      },
+      {
+        "pid": 494699,
+        "start_ticks": 12997101
+      },
+      {
+        "pid": 494703,
+        "start_ticks": 12997124
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T07:23:26.627516+00:00",
+    "peaks": {
+      "memory": 6794698752,
+      "min_workspace_free": 8167866368,
+      "owned_rss": 1206530048,
+      "log_bytes": 4235
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "lease": "RELEASED",
+  "worktree_clean": true,
+  "qualification": "Auth main/test compilation and required compile dependencies only; no selected test/XML/PG/API/DB/Docker/P06-family acceptance. Raw private compilerlog only bounded fixed marker projection; no raw bodies/errors/hash emitted.",
+  "parent_disposition": "UNKNOWN"
+}

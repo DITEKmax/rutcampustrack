@@ -43,11 +43,15 @@
                 </provider>
                 <mdc>
                     <includeMdcKeyName>traceId</includeMdcKeyName>
+                    <includeMdcKeyName>spanId</includeMdcKeyName>
+                    <includeMdcKeyName>requestId</includeMdcKeyName>
+                    <includeMdcKeyName>originTraceId</includeMdcKeyName>
+                    <includeMdcKeyName>eventId</includeMdcKeyName>
                     <includeMdcKeyName>userId</includeMdcKeyName>
                     <includeMdcKeyName>eventType</includeMdcKeyName>
                 </mdc>
                 <pattern>
-                    <pattern>{"service":"${SERVICE_NAME}"}</pattern>
+                    <pattern>{"service":"${SERVICE_NAME}","environment":"${DEPLOYMENT_ENVIRONMENT:-local}","version":"${SERVICE_VERSION:-unknown}","instance":"${HOSTNAME:-unknown}"}</pattern>
                 </pattern>
                 <stackTrace>
                     <fieldName>stack</fieldName>

@@ -1,16 +1,15 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
 import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
-import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "semesters")

@@ -1,0 +1,85 @@
+{
+  "original_seals": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+      "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "entries": 24,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+      "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+      "entries": 29,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "entries": 6,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+      "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+      "entries": 13,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_plan/manifest.json",
+      "sha256": "be3853df8f62a968c9e0e0171f70e4fa0b4435bcddce5b2b6e93b8c30f756a6b",
+      "entries": 36,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/manifest.json",
+      "sha256": "486729fbf44eb6770a7504686831f614e15a2d949255a932c2b830b0da18a0a8",
+      "entries": 23,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/manifest.json",
+      "sha256": "4c2702f30182f291919b79d0d2b55bb8f917b94bd983f59f96bf7770b6485dcf",
+      "entries": 31,
+      "exact": true
+    }
+  ],
+  "original_safe_files": 162,
+  "old_reviews": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_review/manifest.json",
+      "sha256": "9b62cd7bab7a27c77de3a2048b527cab8d808d5e866fb705c93bf5271feddbcd",
+      "entries": 23,
+      "exact": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_correction_review/manifest.json",
+      "sha256": "c30e728599e56e9bf3617522fe8c9c258b432ce7cf9a48c05f07fe515df85664",
+      "entries": 11,
+      "exact": true
+    }
+  ],
+  "tracked_source": 7350,
+  "installed_dependencies": 8272,
+  "dependency_pathset_exact": true,
+  "jars": 16,
+  "vue_files": 22,
+  "full_byte_mode_target_identity": true,
+  "old_processes_observed_only": [
+    {
+      "pid": 201385,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201350,
+      "start_ticks": 3269929
+    },
+    {
+      "pid": 201430,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201403,
+      "start_ticks": 3273261
+    }
+  ],
+  "old_process_mutations": false,
+  "original_rebuild_or_mutation": false
+}

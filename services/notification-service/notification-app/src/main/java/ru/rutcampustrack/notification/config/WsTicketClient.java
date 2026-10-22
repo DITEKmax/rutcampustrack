@@ -2,26 +2,29 @@ package ru.rutcampustrack.notification.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.client.RestClient;
+
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
+import ru.rutcampustrack.auth.dto.ExportJobModels;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
- * M03b Группа 4: клиент для consume WebSocket ticket из auth-service.
- * Вызывается {@code TicketHandshakeInterceptor} перед handshake'ом.
+ * M03b Группа 4: клиент для consume WebSocket ticket из auth-service. Вызывается {@code
+ * TicketHandshakeInterceptor} перед handshake'ом.
  *
- * <p>Защита: POST с header {@code X-Internal-Issuer-Secret} —
- * {@code InternalIssuerSecretFilter} в auth-service validates match.
- * 404 → ticket not found / already consumed / expired. Другие — rejected.</p>
+ * <p>Защита: POST с header {@code X-Internal-Issuer-Secret} — {@code InternalIssuerSecretFilter} в
+ * auth-service validates match. 404 → ticket not found / already consumed / expired. Другие —
+ * rejected.
  */
 @Component
 public class WsTicketClient {
@@ -33,27 +36,47 @@ public class WsTicketClient {
 
     private final RestClient restClient;
     private final String internalSecret;
+    private final RestClient reportClient;
+    private final String reportAdmissionToken;
 
     public WsTicketClient(WsTicketProperties properties) {
+        this(properties, "http://academic-service:9091", "");
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public WsTicketClient(
+            WsTicketProperties properties,
+            @org.springframework.beans.factory.annotation.Value(
+                            "${rutcampustrack.export-jobs.academic-service-url:http://academic-service:9091}")
+                    String academicUrl,
+            @org.springframework.beans.factory.annotation.Value(
+                            "${grpc.service-identity.notification-to-academic-token:}")
+                    String reportAdmissionToken) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
         requestFactory.setReadTimeout(READ_TIMEOUT);
-        this.restClient = RestClient.builder()
-                .baseUrl(properties.authServiceUrl())
-                .requestFactory(requestFactory)
-                .build();
+        this.restClient =
+                RestClient.builder()
+                        .baseUrl(properties.authServiceUrl())
+                        .requestFactory(requestFactory)
+                        .build();
         this.internalSecret = properties.internalIssuerSecret();
+        this.reportClient =
+                RestClient.builder().baseUrl(academicUrl).requestFactory(requestFactory).build();
+        this.reportAdmissionToken = reportAdmissionToken;
     }
 
     public Optional<ConsumeWsTicketResponse> consume(String ticket) {
         try {
-            ConsumeWsTicketResponse response = restClient.post()
-                    .uri("/internal/consume-ws-ticket")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(INTERNAL_SECRET_HEADER, internalSecret)
-                    .body(new ConsumeWsTicketRequest(ticket))
-                    .retrieve()
-                    .body(ConsumeWsTicketResponse.class);
+            ConsumeWsTicketResponse response =
+                    restClient
+                            .post()
+                            .uri("/internal/consume-ws-ticket")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header(INTERNAL_SECRET_HEADER, internalSecret)
+                            .body(new ConsumeWsTicketRequest(ticket))
+                            .retrieve()
+                            .body(ConsumeWsTicketResponse.class);
             if (response != null) {
                 response.admissionRequest();
             }
@@ -79,15 +102,38 @@ public class WsTicketClient {
         return admit(identity, "/internal/auth/admit-dashboard-session");
     }
 
+    public boolean admitExport(UUID jobId, WsSessionAdmissionRequest identity) {
+        if (!ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential.isCanonicalToken(
+                reportAdmissionToken)) return false;
+        try {
+            return reportClient
+                            .post()
+                            .uri("/academic/internal/export-jobs/admit")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("X-Service-Token", reportAdmissionToken)
+                            .body(new ExportJobModels.Admit(jobId, identity))
+                            .retrieve()
+                            .toBodilessEntity()
+                            .getStatusCode()
+                            .value()
+                    == 204;
+        } catch (RestClientException failure) {
+            log.debug("Export session admission rejected ({})", failure.getClass().getSimpleName());
+            return false;
+        }
+    }
+
     private boolean admit(WsSessionAdmissionRequest identity, String path) {
         try {
-            var response = restClient.post()
-                    .uri(path)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(INTERNAL_SECRET_HEADER, internalSecret)
-                    .body(identity)
-                    .retrieve()
-                    .toBodilessEntity();
+            var response =
+                    restClient
+                            .post()
+                            .uri(path)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header(INTERNAL_SECRET_HEADER, internalSecret)
+                            .body(identity)
+                            .retrieve()
+                            .toBodilessEntity();
             return response.getStatusCode().value() == 204;
         } catch (RestClientResponseException e) {
             if (e.getStatusCode().value() == 401) {

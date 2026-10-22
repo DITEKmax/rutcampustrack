@@ -1,0 +1,15 @@
+{
+  "stable_commit": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "selected_unique_acceptance_cases": 7,
+  "L05": "pagePASS / baseline publicationFAIL / corrected pending-resumePASS",
+  "L06": "actualclientPASS / sameNetty counterfeit expectedFAIL / restoredactualPASS",
+  "L07": "concurrentcommandPASS",
+  "L08": "fencedsnapshot + 2atomicfailurePASS",
+  "unexpected_failures_remaining": 0,
+  "skips": 0,
+  "fresh_review": "PENDING",
+  "resources": "TERMINAL RELEASED",
+  "evidence": "run-manifest.json and per-attempt results/XML",
+  "limits": "bounded HTTP/JPA with controlledSchedule; real Nettyclient controlledpersistence; production service/JDBC realPG; no fullstack Auth/PWA/distributed claims",
+  "initial_page_source_equivalence": "UNKNOWN; historical initial pagePASS remains observed, do not claim exact committed-source page check"
+}

@@ -1,0 +1,202 @@
+package ru.rutcampustrack.academic.adminattendance;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
+import ru.rutcampustrack.academic.contract.dto.adminattendance.AdminAttendanceReportModels.*;
+import ru.rutcampustrack.academic.export.RegistryDocumentClient;
+import ru.rutcampustrack.academic.export.RegistryTableRenderer;
+import ru.rutcampustrack.academic.security.RequestContext;
+
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Generation is bound to one owned durable job; Academic commits the immutable export audit fact.
+ */
+@Service
+public class AdminAttendanceExportService {
+    private final AdminAttendanceReportService reports;
+    private final AcademicAdminAccess access;
+    private final JdbcTemplate jdbc;
+    private final RequestContext context;
+    private final ObjectMapper mapper;
+    private final RegistryTableRenderer renderer;
+    private final RegistryDocumentClient documents;
+
+    public AdminAttendanceExportService(
+            AdminAttendanceReportService reports,
+            AcademicAdminAccess access,
+            JdbcTemplate jdbc,
+            RequestContext context,
+            ObjectMapper mapper,
+            RegistryTableRenderer renderer,
+            RegistryDocumentClient documents) {
+        this.reports = reports;
+        this.access = access;
+        this.jdbc = jdbc;
+        this.context = context;
+        this.mapper = mapper;
+        this.renderer = renderer;
+        this.documents = documents;
+    }
+
+    public List<FormatOption> formats() {
+        reports.requireCurrentAccess();
+        return formatOptions();
+    }
+
+    private static List<FormatOption> formatOptions() {
+        return List.of(
+                new FormatOption("html", "HTML", "text/html", "html"),
+                new FormatOption("pdf", "PDF", "application/pdf", "pdf"),
+                new FormatOption(
+                        "docx",
+                        "DOCX",
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        "docx"),
+                new FormatOption(
+                        "xlsx",
+                        "XLSX",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "xlsx"),
+                new FormatOption("png", "PNG, архив страниц", "application/zip", "zip"));
+    }
+
+    public Download generate(Export query, UUID jobId, UUID leaseId) {
+        return generate(query, jobId, leaseId, null);
+    }
+
+    public Download generate(
+            Export query,
+            UUID jobId,
+            UUID leaseId,
+            ru.rutcampustrack.academic.exportjobs.ExportJobService.GroupAttendanceReadScope scope) {
+        if (scope == null) reports.requireCurrentAccess();
+        else {
+            scope.requireBinding(jobId, leaseId, context.getClaims(), query);
+            scope.check();
+        }
+        requireJob(query, jobId, leaseId);
+        var report =
+                scope == null
+                        ? reports.full(
+                                query.semesterId(), query.search(), query.sort(), query.direction())
+                        : reports.fullForReport(query, scope);
+        List<List<Object>> rows =
+                report.rows().stream()
+                        .map(
+                                row ->
+                                        List.<Object>of(
+                                                row.groupName(),
+                                                percentage(row.presentPercent()),
+                                                percentage(row.presentOrExcusedPercent()),
+                                                row.countedLessons(),
+                                                row.presentCount(),
+                                                row.absentCount(),
+                                                row.excusedCount(),
+                                                row.opportunities()))
+                        .toList();
+        var table =
+                new RegistryTableRenderer.Table(
+                        "Посещаемость групп",
+                        List.of(
+                                "Семестр: " + report.semester().name(),
+                                "Период: "
+                                        + report.semester().dateFrom()
+                                        + " — "
+                                        + report.semester().dateTo(),
+                                "Поиск: " + report.search(),
+                                "Порядок: " + report.sort() + " " + report.direction(),
+                                "Учтены завершённые неотменённые пары; нет данных отличается от"
+                                        + " 0%"),
+                        List.of(
+                                "Группа",
+                                "%+",
+                                "%(+ и у)",
+                                "Учтено пар",
+                                "+",
+                                "н",
+                                "у",
+                                "Отметок в знаменателе"),
+                        rows);
+        byte[] content =
+                switch (query.format()) {
+                    case html -> renderer.html(table);
+                    case docx -> renderer.docx(table);
+                    case xlsx -> renderer.xlsx(table);
+                    case pdf, png ->
+                            documents.convert(renderer.docx(table), query.format() == Format.png);
+                };
+        if (content == null || content.length == 0)
+            throw AdminAttendanceReportService.unavailable();
+        if (content.length > 20 * 1024 * 1024)
+            throw new ResponseStatusException(
+                    HttpStatus.PAYLOAD_TOO_LARGE, "Файл превышает допустимый размер");
+        // Recheck both the live capability and exact lease after potentially slow rendering.
+        if (scope == null) reports.requireCurrentAccess();
+        else {
+            scope.requireBinding(jobId, leaseId, context.getClaims(), query);
+            reports.recheckReport(query, report, scope);
+        }
+        requireJob(query, jobId, leaseId);
+        var format =
+                (scope == null ? formats() : formatOptions())
+                        .stream()
+                                .filter(value -> value.code().equals(query.format().name()))
+                                .findFirst()
+                                .orElseThrow();
+        return new Download(
+                "admin-group-attendance." + format.extension(),
+                format.mime(),
+                content,
+                rows.size());
+    }
+
+    private void requireJob(Export query, UUID jobId, UUID leaseId) {
+        if (query == null || jobId == null || leaseId == null || context.getClaims() == null)
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Требуется текущее задание выгрузки");
+        var claims = context.getClaims();
+        var rows =
+                jdbc.query(
+                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs WHERE"
+                            + " user_id=? AND identity->'actor'->>'rolesVersion'=? AND session_id=?"
+                            + " AND identity->'actor'->>'sessionVersion'=? AND job_id=? AND"
+                            + " lease_id=? AND identity->'report'->>'kind'=? AND state='preparing'"
+                            + " AND lease_until>NOW() AND expires_at>NOW()",
+                        (rs, n) -> rs.getString("selector"),
+                        "adminGroupAttendance",
+                        claims.userId(),
+                        Long.toString(claims.rolesVersion()),
+                        claims.sessionId(),
+                        Long.toString(claims.sessionVersion()),
+                        jobId,
+                        leaseId,
+                        "ADMIN_GROUP_ATTENDANCE");
+        try {
+            if (rows.size() != 1
+                    || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query)))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Разрез задания изменился");
+        } catch (JsonProcessingException invalid) {
+            throw AdminAttendanceReportService.unavailable();
+        }
+    }
+
+    private static Object percentage(Double value) {
+        return value == null ? "Нет данных" : value;
+    }
+
+    public record Download(String filename, String contentType, byte[] content, int rowCount) {
+        @Override
+        public String toString() {
+            return "AdminAttendanceDownload[rows=" + rowCount + "]";
+        }
+    }
+}

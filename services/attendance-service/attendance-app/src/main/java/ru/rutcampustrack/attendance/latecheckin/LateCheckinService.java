@@ -6,13 +6,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
@@ -21,9 +22,9 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
-import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
@@ -37,24 +38,24 @@ import java.util.Objects;
 /**
  * Business logic for late-checkin requests.
  *
- * Flow:
- *  1. Student's geo-checkin failed (out of zone / time / rate limited).
- *  2. Student calls {@link #createRequest(Long)} — we validate the lesson is ACTIVE
- *     and belongs to their group, then publish {@code late_checkin.requested}.
- *  3. notification-bot sends an inline-keyboard message to the group's headman.
- *  4. Headman presses approve/reject — the bot publishes {@code late_checkin.decision}
- *     which is consumed by {@link LateCheckinDecisionConsumer} and applied via
- *     {@link #applyDecision(String, Long, boolean)}.
- *  5. On approval: attendance document is upserted (PRESENT, source=LATE_CHECKIN).
- *     On rejection: no attendance change.
- *  6. {@code late_checkin.decided} is published so the student receives a Telegram notice.
+ * <p>Flow: 1. Student's geo-checkin failed (out of zone / time / rate limited). 2. Student calls
+ * {@link #createRequest(Long)} — we validate the lesson is ACTIVE and belongs to their group, then
+ * publish {@code late_checkin.requested}. 3. notification-bot sends an inline-keyboard message to
+ * the group's headman. 4. Headman presses approve/reject — the bot publishes {@code
+ * late_checkin.decision} which is consumed by {@link LateCheckinDecisionConsumer} and applied via
+ * {@link #applyDecision(String, Long, boolean)}. 5. On approval: attendance document is upserted
+ * (PRESENT, source=LATE_CHECKIN). On rejection: no attendance change. 6. {@code
+ * late_checkin.decided} is published so the student receives a Telegram notice.
  */
 @Service
 public class LateCheckinService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
-    @org.springframework.beans.factory.annotation.Autowired
-    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(
+            ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) {
+        this.requestActions = actions;
+    }
 
     private static final String LESSON_STATUS_ACTIVE = "active";
     private static final String LESSON_STATUS_CLOSED = "closed";
@@ -72,17 +73,18 @@ public class LateCheckinService {
     private final PairWriteCoordinator pairWriteCoordinator;
     private final SemesterCacheService semesterCacheService;
 
-    public LateCheckinService(LateCheckinRepository repository,
-                              RequestContext requestContext,
-                              ScheduleGrpcClient scheduleGrpcClient,
-                              AcademicGrpcClient academicGrpcClient,
-                              AttendanceRepository attendanceRepository,
-                              AttendanceWritePort attendanceWritePort,
-                              LateCheckinEventPublisher eventPublisher,
-                              BusinessMetrics businessMetrics,
-                              Clock clock,
-                              PairWriteCoordinator pairWriteCoordinator,
-                              SemesterCacheService semesterCacheService) {
+    public LateCheckinService(
+            LateCheckinRepository repository,
+            RequestContext requestContext,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            AttendanceRepository attendanceRepository,
+            AttendanceWritePort attendanceWritePort,
+            LateCheckinEventPublisher eventPublisher,
+            BusinessMetrics businessMetrics,
+            Clock clock,
+            PairWriteCoordinator pairWriteCoordinator,
+            SemesterCacheService semesterCacheService) {
         this.repository = repository;
         this.requestContext = requestContext;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -100,7 +102,8 @@ public class LateCheckinService {
     public LateCheckinRequest createRequest(Long lessonId) {
         if (requestContext.isHeadman()) {
             throw new ConflictException(
-                    "Староста отмечает себя через журнал посещаемости, а не через запрос к старосте");
+                    "Староста отмечает себя через журнал посещаемости, а не через запрос к"
+                            + " старосте");
         }
 
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
@@ -108,78 +111,87 @@ public class LateCheckinService {
             throw new BadRequestException("Занятие не принадлежит вашей группе");
         }
         if (lesson.getSemesterId() <= 0) {
-            throw new ScheduleServiceUnavailableException("Schedule returned a lesson without a positive semester");
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned a lesson without a positive semester");
         }
         String lessonStatus = lesson.getStatus() == null ? "" : lesson.getStatus();
-        boolean statusAllowed = LESSON_STATUS_ACTIVE.equalsIgnoreCase(lessonStatus)
-                || LESSON_STATUS_CLOSED.equalsIgnoreCase(lessonStatus);
+        boolean statusAllowed =
+                LESSON_STATUS_ACTIVE.equalsIgnoreCase(lessonStatus)
+                        || LESSON_STATUS_CLOSED.equalsIgnoreCase(lessonStatus);
         if (!statusAllowed) {
-            throw new BadRequestException("Запрос можно создать только для идущей или уже прошедшей пары");
+            throw new BadRequestException(
+                    "Запрос можно создать только для идущей или уже прошедшей пары");
         }
 
         lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
         if (lesson.getSemesterId() <= 0) {
-            throw new ScheduleServiceUnavailableException("Schedule returned a lesson without a positive semester");
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned a lesson without a positive semester");
         }
         Instant now = clock.instant();
 
         // Already marked present — don't waste headman's time
-        attendanceRepository.findByLessonIdAndUserId(lessonId, requestContext.getUserId())
+        attendanceRepository
+                .findByLessonIdAndUserId(lessonId, requestContext.getUserId())
                 .filter(doc -> doc.getStatus() == AttendanceStatus.PRESENT)
-                .ifPresent(doc -> {
-                    throw new ConflictException("Вы уже отмечены на этом занятии");
-                });
+                .ifPresent(
+                        doc -> {
+                            throw new ConflictException("Вы уже отмечены на этом занятии");
+                        });
 
         // Dedup: no second PENDING for same (student, lesson)
-        boolean duplicate = repository.existsByStudentIdAndLessonIdAndStatus(
-                requestContext.getUserId(), lessonId, LateCheckinRequestStatus.PENDING);
+        boolean duplicate =
+                repository.existsByStudentIdAndLessonIdAndStatus(
+                        requestContext.getUserId(), lessonId, LateCheckinRequestStatus.PENDING);
         if (duplicate) {
             throw new ConflictException("Запрос на эту пару уже отправлен");
         }
 
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
-        String subjectName = academicGrpcClient
-                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId())).get(lesson.getSubjectId());
+        String subjectName =
+                academicGrpcClient
+                        .getSubjectsByIds(java.util.List.of(lesson.getSubjectId()))
+                        .get(lesson.getSubjectId());
 
-        pairWriteCoordinator.lock(lesson.getSemesterId(), requestContext.getUserId(), lessonId,
-                lesson.getGroupId(), now);
+        pairWriteCoordinator.lock(
+                lesson.getSemesterId(),
+                requestContext.getUserId(),
+                lessonId,
+                lesson.getGroupId(),
+                now);
 
-        LateCheckinRequest request = LateCheckinRequest.builder()
-                .studentId(requestContext.getUserId())
-                .groupId(requestContext.getGroupId())
-                .lessonId(lessonId)
-                .subjectId(lesson.getSubjectId())
-                .semesterId(lesson.getSemesterId())
-                .lessonNumber(lesson.getLessonNumber())
-                .lessonDate(LocalDate.parse(lesson.getDate()))
-                .studentName(studentName)
-                .status(LateCheckinRequestStatus.PENDING)
-                .origin(LateCheckinRequestOrigin.MANUAL)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        LateCheckinRequest request =
+                LateCheckinRequest.builder()
+                        .studentId(requestContext.getUserId())
+                        .groupId(requestContext.getGroupId())
+                        .lessonId(lessonId)
+                        .subjectId(lesson.getSubjectId())
+                        .semesterId(lesson.getSemesterId())
+                        .lessonNumber(lesson.getLessonNumber())
+                        .lessonDate(LocalDate.parse(lesson.getDate()))
+                        .studentName(studentName)
+                        .status(LateCheckinRequestStatus.PENDING)
+                        .origin(LateCheckinRequestOrigin.MANUAL)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
 
         LateCheckinRequest saved = repository.save(request);
 
         LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
         eventPublisher.publishRequested(
-                saved,
-                lessonDate,
-                lesson.getLessonNumber(),
-                lesson.getSubjectId(),
-                subjectName
-        );
+                saved, lessonDate, lesson.getLessonNumber(), lesson.getSubjectId(), subjectName);
 
         // M04 Группа 8 — late_checkin.created.
-        businessMetrics.lateCheckinCreatedCounter().increment();
+        businessMetrics.incrementAfterCommit(businessMetrics.lateCheckinCreatedCounter());
 
         return saved;
     }
 
     /**
-     * List PENDING requests for the headman's own group. Caller must be STUDENT+is_headman;
-     * the controller enforces the role via {@code @RequireRole}, this method enforces the
-     * is_headman flag defensively so the query can never leak requests from another group.
+     * List PENDING requests for the headman's own group. Caller must be STUDENT+is_headman; the
+     * controller enforces the role via {@code @RequireRole}, this method enforces the is_headman
+     * flag defensively so the query can never leak requests from another group.
      */
     public List<LateCheckinRequest> listPendingForHeadman() {
         Long groupId = requestContext.getGroupId();
@@ -192,20 +204,20 @@ public class LateCheckinService {
     }
 
     /**
-     * Headman history view: pending and decided requests updated during the last
-     * 30 days. This keeps approved/rejected cards visible after a decision, the
-     * same way the excuse-ticket page behaves.
+     * Headman history view: pending and decided requests updated during the last 30 days. This
+     * keeps approved/rejected cards visible after a decision, the same way the excuse-ticket page
+     * behaves.
      */
     public Page<LateCheckinRequest> listGroupRequestsForHeadman(
-            Long groupId,
-            Pageable pageable,
-            LateCheckinRequestStatus status
-    ) {
+            Long groupId, Pageable pageable, LateCheckinRequestStatus status) {
         if (groupId == null || requestContext.getGroupId() == null) {
-            throw new AccessDeniedException("РЎС‚Р°СЂРѕСЃС‚Р° РЅРµ РїСЂРёРІСЏР·Р°РЅ Рє РіСЂСѓРїРїРµ");
+            throw new AccessDeniedException(
+                    "РЎС‚Р°СЂРѕСЃС‚Р° РЅРµ РїСЂРёРІСЏР·Р°РЅ Рє РіСЂСѓРїРїРµ");
         }
         if (!Objects.equals(groupId, requestContext.getGroupId())) {
-            throw new AccessDeniedException("РќРµР»СЊР·СЏ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ Р·Р°РїСЂРѕСЃС‹ С‡СѓР¶РѕР№ РіСЂСѓРїРїС‹");
+            throw new AccessDeniedException(
+                    "РќРµР»СЊР·СЏ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ Р·Р°РїСЂРѕСЃС‹ С‡СѓР¶РѕР№"
+                            + " РіСЂСѓРїРїС‹");
         }
         requireExcuseManagement(groupId);
 
@@ -221,8 +233,10 @@ public class LateCheckinService {
 
     /** Read the persisted request after the canonical decision adapter commits it. */
     public LateCheckinRequest getRequestById(String requestId) {
-        return repository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        return repository
+                .findById(requestId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
     }
 
     private Pageable withDefaultSort(Pageable pageable) {
@@ -235,23 +249,27 @@ public class LateCheckinService {
         return PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                Sort.by(Sort.Direction.DESC, "updatedAt")
-        );
+                Sort.by(Sort.Direction.DESC, "updatedAt"));
     }
 
     /**
-     * Apply a headman's decision submitted from a web client (web-panel / PWA / mini-app).
-     * Guard: only a headman of the request's own group may decide. Delegates to the same
-     * idempotent {@link #applyDecision} used by the RabbitMQ consumer, using the authenticated
-     * headman's user_id as {@code decisionBy}.
+     * Apply a headman's decision submitted from a web client (web-panel / PWA / mini-app). Guard:
+     * only a headman of the request's own group may decide. Delegates to the same idempotent {@link
+     * #applyDecision} used by the RabbitMQ consumer, using the authenticated headman's user_id as
+     * {@code decisionBy}.
      *
-     * @return the decided request (APPROVED or REJECTED), or the already-decided request
-     *         if called twice (idempotent).
+     * @return the decided request (APPROVED or REJECTED), or the already-decided request if called
+     *     twice (idempotent).
      */
     @Transactional
     public LateCheckinRequest applyDecisionFromWeb(String requestId, boolean approved) {
-        LateCheckinRequest request = repository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        LateCheckinRequest request =
+                repository
+                        .findById(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "LateCheckinRequest", "id", requestId));
         if (!Objects.equals(request.getGroupId(), requestContext.getGroupId())) {
             throw new AccessDeniedException("Запрос принадлежит другой группе");
         }
@@ -273,17 +291,22 @@ public class LateCheckinService {
     }
 
     /**
-     * Apply a headman's decision received via RabbitMQ from the notification-bot.
-     * Idempotent — duplicate deliveries to an already-decided request are ignored.
+     * Apply a headman's decision received via RabbitMQ from the notification-bot. Idempotent —
+     * duplicate deliveries to an already-decided request are ignored.
      *
-     * @param requestId  the Mongo id of the LateCheckinRequest
+     * @param requestId the Mongo id of the LateCheckinRequest
      * @param decisionBy positive internal academic user_id from notification-bot
-     * @param approved   true → APPROVED + attendance upsert; false → REJECTED
+     * @param approved true → APPROVED + attendance upsert; false → REJECTED
      */
     @Transactional
     public void applyDecision(String requestId, Long decisionBy, boolean approved) {
-        LateCheckinRequest initial = repository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        LateCheckinRequest initial =
+                repository
+                        .findById(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "LateCheckinRequest", "id", requestId));
 
         // Duplicate or stale delivery is a no-op and must not acquire the pair lock.
         if (initial.getStatus() != LateCheckinRequestStatus.PENDING) {
@@ -301,37 +324,60 @@ public class LateCheckinService {
     }
 
     private void applyAuthorizedDecision(String requestId, Long decisionBy, boolean approved) {
-        LateCheckinRequest initial = repository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        LateCheckinRequest initial =
+                repository
+                        .findById(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "LateCheckinRequest", "id", requestId));
 
         if (initial.getSemesterId() == null || initial.getSemesterId() <= 0) {
-            throw new ScheduleServiceUnavailableException("Late-check-in request has no authoritative semester");
+            throw new ScheduleServiceUnavailableException(
+                    "Late-check-in request has no authoritative semester");
         }
-        LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(
-                initial.getLessonId(), initial.getGroupId());
+        LessonResponse lesson =
+                scheduleGrpcClient.requireAttendanceMutationReady(
+                        initial.getLessonId(), initial.getGroupId());
         if (lesson.getSemesterId() != initial.getSemesterId()) {
-            throw new ScheduleServiceUnavailableException("Schedule lesson semester does not match the request snapshot");
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule lesson semester does not match the request snapshot");
         }
         LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
-        String subjectName = academicGrpcClient
-                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId())).get(lesson.getSubjectId());
+        String subjectName =
+                academicGrpcClient
+                        .getSubjectsByIds(java.util.List.of(lesson.getSubjectId()))
+                        .get(lesson.getSubjectId());
 
         Instant now = clock.instant();
-        pairWriteCoordinator.lock(initial.getSemesterId(), initial.getStudentId(),
-                initial.getLessonId(), initial.getGroupId(), now);
-        LateCheckinRequest request = repository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        pairWriteCoordinator.lock(
+                initial.getSemesterId(),
+                initial.getStudentId(),
+                initial.getLessonId(),
+                initial.getGroupId(),
+                now);
+        LateCheckinRequest request =
+                repository
+                        .findById(requestId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "LateCheckinRequest", "id", requestId));
 
-        // Idempotency/race: a geo retry or another delivery may have decided it after authorization.
+        // Idempotency/race: a geo retry or another delivery may have decided it after
+        // authorization.
         if (request.getStatus() != LateCheckinRequestStatus.PENDING) {
             return;
         }
 
-        java.util.Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(request);
-        request.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
-        request.setResolutionReason(approved
-                ? LateCheckinResolutionReason.HEADMAN_APPROVED
-                : LateCheckinResolutionReason.HEADMAN_REJECTED);
+        java.util.Map<String, Object> auditBefore =
+                ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(request);
+        request.setStatus(
+                approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
+        request.setResolutionReason(
+                approved
+                        ? LateCheckinResolutionReason.HEADMAN_APPROVED
+                        : LateCheckinResolutionReason.HEADMAN_REJECTED);
         request.setDecisionBy(decisionBy);
         request.setDecisionAt(now);
         request.setUpdatedAt(now);
@@ -340,18 +386,20 @@ public class LateCheckinService {
 
         if (approved) {
             attendanceWritePort.markWithLesson(
-                    saved.getStudentId(), saved.getLessonId(), saved.getGroupId(),
-                    saved.getSubjectId(), saved.getSemesterId(), saved.getLessonNumber(), saved.getLessonDate(),
-                    AttendanceStatus.PRESENT, AttendanceSource.LATE_CHECKIN, decisionBy);
+                    saved.getStudentId(),
+                    saved.getLessonId(),
+                    saved.getGroupId(),
+                    saved.getSubjectId(),
+                    saved.getSemesterId(),
+                    saved.getLessonNumber(),
+                    saved.getLessonDate(),
+                    AttendanceStatus.PRESENT,
+                    AttendanceSource.LATE_CHECKIN,
+                    decisionBy);
         }
 
         if (requestActions != null) requestActions.late(saved, auditBefore, decisionBy, null, now);
         eventPublisher.publishDecided(
-                saved,
-                lessonDate,
-                lesson.getLessonNumber(),
-                lesson.getSubjectId(),
-                subjectName
-        );
+                saved, lessonDate, lesson.getLessonNumber(), lesson.getSubjectId(), subjectName);
     }
 }

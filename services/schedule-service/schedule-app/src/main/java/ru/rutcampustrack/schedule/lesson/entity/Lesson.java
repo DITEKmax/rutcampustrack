@@ -1,25 +1,23 @@
 package ru.rutcampustrack.schedule.lesson.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-
 /**
- * JPA entity for the lessons table.
- * A concrete lesson occurrence on a specific date, derived from a ScheduleItem.
+ * JPA entity for the lessons table. A concrete lesson occurrence on a specific date, derived from a
+ * ScheduleItem.
  *
- * Column mapping notes:
- * - status: PostgreSQL lesson_status custom enum -> LessonStatus via EnumConverters.LessonStatusConverter (autoApply=true).
- * - date: DATE -> LocalDate (no timezone needed — calendar date only).
- * - closed_at: nullable TIMESTAMPTZ -> OffsetDateTime (null until lesson closes).
- * - UNIQUE (schedule_item_id, date): the idempotency anchor for LSSN-03 — insert ON CONFLICT DO NOTHING
- *   prevents duplicate lessons when generation is retried.
- * - No @ManyToOne — scheduleItemId stored as Long per project convention.
+ * <p>Column mapping notes: - status: PostgreSQL lesson_status custom enum -> LessonStatus via
+ * EnumConverters.LessonStatusConverter (autoApply=true). - date: DATE -> LocalDate (no timezone
+ * needed — calendar date only). - closed_at: nullable TIMESTAMPTZ -> OffsetDateTime (null until
+ * lesson closes). - UNIQUE (schedule_item_id, date): the idempotency anchor for LSSN-03 — insert ON
+ * CONFLICT DO NOTHING prevents duplicate lessons when generation is retried. - No @ManyToOne —
+ * scheduleItemId stored as Long per project convention.
  */
 @Entity
 @Table(name = "lessons")
@@ -95,9 +93,11 @@ public class Lesson {
 
     /** V17 physical identity makes even a NULL room an authoritative snapshot. */
     public String resolveRoom(String templateRoom) {
-        boolean canonical = occurrenceId != null && occurrenceId > 0
-                && (assignmentId == null || assignmentId > 0)
-                && ((scheduleItemId != null) != (oneOffLessonId != null));
+        boolean canonical =
+                occurrenceId != null
+                        && occurrenceId > 0
+                        && (assignmentId == null || assignmentId > 0)
+                        && ((scheduleItemId != null) != (oneOffLessonId != null));
         return canonical || roomSnapshot != null ? roomSnapshot : templateRoom;
     }
 
@@ -114,9 +114,7 @@ public class Lesson {
     private Long revision = 1L;
 
     /** Filled by snapshot readers; V17's current pointer is the durable source. */
-    @Setter
-    @Transient
-    private boolean current = true;
+    @Setter @Transient private boolean current = true;
 
     @Setter
     @Column(nullable = false)
@@ -143,17 +141,14 @@ public class Lesson {
     private String cancelReason;
 
     /**
-     * M09 G5 (02 P2-11/5) — user_id старосты/админа, отменившего пару.
-     * NULL для строк, отменённых до миграции V13.
+     * M09 G5 (02 P2-11/5) — user_id старосты/админа, отменившего пару. NULL для строк, отменённых
+     * до миграции V13.
      */
     @Setter
     @Column(name = "cancelled_by")
     private Long cancelledBy;
 
-    /**
-     * M09 G5 (02 P2-11/5) — момент отмены UTC. NULL для строк,
-     * отменённых до миграции V13.
-     */
+    /** M09 G5 (02 P2-11/5) — момент отмены UTC. NULL для строк, отменённых до миграции V13. */
     @Setter
     @Column(name = "cancelled_at")
     private OffsetDateTime cancelledAt;
@@ -167,9 +162,8 @@ public class Lesson {
     private OffsetDateTime closedAt;
 
     /**
-     * Marker idempotent-публикации midpoint-напоминания
-     * ({@code lesson.reminder}). Job выставляет в момент публикации;
-     * NULL означает "ещё не отправлено". См. {@code LessonReminderJob}.
+     * Marker idempotent-публикации midpoint-напоминания ({@code lesson.reminder}). Job выставляет в
+     * момент публикации; NULL означает "ещё не отправлено". См. {@code LessonReminderJob}.
      */
     @Setter
     @Column(name = "reminder_midpoint_sent_at")

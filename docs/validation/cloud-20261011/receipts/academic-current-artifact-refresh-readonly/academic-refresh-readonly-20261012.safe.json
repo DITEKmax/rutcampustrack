@@ -1,0 +1,136 @@
+{
+  "scope": "READ_ONLY_SOURCE_RESOURCE_ONLY",
+  "utc": "2026-10-12T19:57:55.837802+00:00",
+  "root_head": "538af12e280bc0e34b62c99c8823a7bb552d6ea6",
+  "artifact_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "production_fix": "NOT_CONFIRMED_OR_APPLIED; current UserSpecifications original4f62",
+  "measured_resources": {
+    "workspace_free": 9401106432,
+    "tmp_free": 7757004800,
+    "shared_memory_current": 4800122880,
+    "unchanged_preDocker_envelope": 9380818650,
+    "workspace_margin": 20287782,
+    "floor": 4294967296,
+    "postDocker_beforehosts_min": 5368709120,
+    "shared_stop": 16106127360,
+    "shared_reserve": 1073741824
+  },
+  "source_identity": {
+    "build.gradle.kts": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+    "settings.gradle.kts": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
+    "gradle/libs.versions.toml": "31f2c8b6a39801380de5674b74517b0707f1acc2bb3ac06f2ee767c9000dcdb8",
+    "gradle/wrapper/gradle-wrapper.properties": "ff27f2701f204c648a4322fcc1cbd1126764f9538d59c06532d014eaf7ff2b08",
+    "services/academic-service/academic-app/build.gradle.kts": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java": "4f62d5ac9724c9524697145734577954fbdf54c68162bd1af5e0166f376e98f9"
+  },
+  "production_dependency_closure": {
+    "modules": [
+      "services/academic-service/academic-app",
+      "services/academic-service/academic-api-contract",
+      "services/shared/shared-web",
+      "services/shared/shared-web-api",
+      "services/shared/shared-outbox",
+      "services/shared/shared-events",
+      "services/shared/shared-security",
+      "services/shared/shared-observability",
+      "services/shared/shared-logback"
+    ],
+    "root_proto_codegen": true,
+    "changed_paths_vs_producer": 398,
+    "counts": {
+      "services/academic-service/academic-api-contract": 95,
+      "services/academic-service/academic-app": 237,
+      "services/shared/shared-events": 7,
+      "services/shared/shared-logback": 1,
+      "services/shared/shared-observability": 9,
+      "services/shared/shared-outbox": 14,
+      "services/shared/shared-security": 15,
+      "services/shared/shared-web-api": 2,
+      "services/shared/shared-web": 18
+    },
+    "all_changed_paths_java": true,
+    "build_configs_proto_resources_byte_unchanged": true,
+    "UserSpecifications_manual_diff": "comments/whitespace only; same default-locale role/status calls; no general398path semantic assertion"
+  },
+  "bound_academic_jar": {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+    "logical_bytes": 99760018,
+    "allocated_bytes": 99766272,
+    "mode": "0o600",
+    "original_sealed_sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+    "fresh_jar_hash_not_rerun": true,
+    "other7_original_jars_preserve": true
+  },
+  "stage_footprints": {
+    "full_academic_app": {
+      "regular_paths": 1797,
+      "unique_inodes": 1797,
+      "logical_bytes": 106876152,
+      "allocated_bytes": 110944256,
+      "max_nlink": 16
+    },
+    "classes": {
+      "regular_paths": 1511,
+      "unique_inodes": 1511,
+      "logical_bytes": 10774782,
+      "allocated_bytes": 14221312,
+      "max_nlink": 14
+    },
+    "libs": {
+      "regular_paths": 183,
+      "unique_inodes": 183,
+      "logical_bytes": 95679876,
+      "allocated_bytes": 96071680,
+      "max_nlink": 16
+    }
+  },
+  "minimal_build_procedure": {
+    "dependency": "Root confirms causal defect, author fixes/reviews/tests, integrates and freezes new exact revision before build grant",
+    "production_task": ":services:academic-service:academic-app:bootJar",
+    "argv": [
+      "/usr/bin/python3",
+      "/workspace/rct-cloud-setup/run-gradle.py",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      ":services:academic-service:academic-app:bootJar"
+    ],
+    "cwd": "NEW task-owned frozen checkout, preferably /tmp on its separate filesystem; not existing producer908 or Root",
+    "jdk": "/workspace/rct-cloud-setup/jdk21; genuine Temurin21.0.12.1+1",
+    "ordinary_wrapper_runs_bash_gradlew": true,
+    "guard": "current reviewed b78 bounded foreground owner guard, not original build-only.py",
+    "root_generator_side_effect": "generateGitProperties writes all7 source/main/resources/git.properties in own checkout; processResources depends on it",
+    "preserve_inputs": "Original8JARs, stage, all source/seals; no tests/Auth task/full8 build/dependency install/source patch/old alias writes",
+    "cache": "reuse pinned existing GRADLE_USER_HOME, no dependency or global config changes; exact future allowed env names, no inherited Java/Spring override"
+  },
+  "future_artifact_acceptance": [
+    "Fresh production JAR source/current embedded git metadata/unfolded manifest/standard loader/layers/classpath indices",
+    "CRC/direct nested JAR and recursive fixture-absence checks",
+    "All8 mapping shows onlyAcademic producer replaced; other7 exact original SHA preserved",
+    "New full Academic payload preferred; current nativeRenderer image/application untouched",
+    "Classes-plus-resources-only option conditional on byte equality of every loader/manifest/indices/layer/native/nested-library entry outside BOOT-INF/classes; no assumed shared JAR equality",
+    "New ordinary public files644/dirs755; no old600 hardlink chmod or old linked stage overwrite",
+    "NEW narrow host-spec/runner/manifest binding required: current157 runner hardcodes original v5 host-service-specs and sealedconfig; grant alone cannot select new cwd/classpath"
+  ],
+  "resource_proposal": {
+    "workspace_new_jar_alone_deficit": 79478490,
+    "workspace_full_jar_plus_payload_extra": 210710528,
+    "preferred_minimal_representation": "NEW exact Academic JAR and full standard app payload on /tmp, with source-grounded narrow Academic cwd/classpath binding; preserve all original workspace archives/stage. Existing separate filesystem permits genuine full copy without relying on cross-device hardlinks.",
+    "proposed_upper_cap_all_new_tmp_bytes": 1610612736,
+    "cap_is_gate_not_actual_estimate": true,
+    "tmp_free_after_cap": 6146392064,
+    "tmp_floor_plus_existing_Mongo_growth_reserve": 5368709120,
+    "future_checkout_build_cache_transient_actual": "UNKNOWN before exact future allocation preflight; stop if cap/floor/reserve fails. No allocation now.",
+    "mandatory": "No overlap between build and Docker/stand; owned native children reaped, build transient fullyreleased before Docker; then fresh actual workspace/tmp/shared and unchanged9.38GB/preDocker plus measured postDocker>=5GiB. Additional retained workspace bytes require explicit budget accounting/recovery, never silent relaxation."
+  },
+  "restart_next_step": "After confirmed fix/currentAcademic artifacts+source review: new exact157 correction1e7/reviewbe10 grant, old5vols/current157DB/key unchanged, no reset/rebootstrap. Fresh Docker6, nativeMongo, Academic migrations/checksums then remaining6 host Java; actualTLS/Admin/FULL/edge/spoof readiness and separate browser grant. No current runtime grant.",
+  "limitations": [
+    "No production defect inferred from test status alone",
+    "Readonly metadata/source check only; no new build/JAR/stage/current artifact PASS",
+    "No Docker/JVM/Node/app/browser/network/privateENV/key/database-content read or directory creation"
+  ],
+  "prior_read_failures": "Some guessed non-Kotlin/runner paths were absent; actual Kotlin and selected157 run-service-restart.py inspected; no mutation"
+}

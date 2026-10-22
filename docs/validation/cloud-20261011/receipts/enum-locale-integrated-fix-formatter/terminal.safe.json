@@ -1,0 +1,33 @@
+{
+  "scope": "FORMAT_CHECK_ONLY",
+  "native": {
+    "direct_pid": 374438,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 374438,
+        "start_ticks": 8955800
+      },
+      {
+        "pid": 374470,
+        "start_ticks": 8955910
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "source_unchanged": true,
+  "private_tmp_removed": true,
+  "peaks": {
+    "rss": 725417984,
+    "disk_delta": 4071424,
+    "shared_growth": 714752000
+  },
+  "tests_API_Docker": "NOT_RUN"
+}

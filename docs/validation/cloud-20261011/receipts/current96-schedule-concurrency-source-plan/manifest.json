@@ -1,0 +1,61 @@
+{
+  "verdict": "SOURCE_DIAGNOSTIC_PLAN_ONLY",
+  "actual_Coverage_cause": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 316,
+      "mode": "0o600",
+      "sha256": "5e48163e3d0a2d0ff41c96ecf471a48cfb82e55a4742aa2ac087ed6ae2fdd597"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 7012,
+      "mode": "0o600",
+      "sha256": "cb5df974d2d573b2e39c0f74be454f779e4e0af7b80d78733f80f52a025385f8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/PLAN.safe.json",
+      "relative_path": "PLAN.safe.json",
+      "bytes": 2733,
+      "mode": "0o600",
+      "sha256": "db49522beb13c759cf7ff99813258b081f25afa85518de36f87a704db394b0b9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 270,
+      "mode": "0o600",
+      "sha256": "dcfd1836cdc6090741b2d70815e187d3dda53f7149dab3715c967860e06c89ab"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/check-source.py",
+      "relative_path": "check-source.py",
+      "bytes": 6721,
+      "mode": "0o600",
+      "sha256": "32aac2143edd78316a5a8683207cb5b74fb18a60404f6777bad1d4ffc0b3e3e8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/source-checks.safe.json",
+      "relative_path": "source-checks.safe.json",
+      "bytes": 1554,
+      "mode": "0o600",
+      "sha256": "f19e001025fac14e0fdf310ea036784ca264e1a612fc35785ccab3299b3870b5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_cov_concurrency_source_plan/source-ledger.safe.json",
+      "relative_path": "source-ledger.safe.json",
+      "bytes": 5459,
+      "mode": "0o600",
+      "sha256": "fc5f41dbc49cf00189048c41655d03b1bdfb1318ecdc30d48d021cbfe12c3c2e"
+    }
+  ],
+  "count": 7,
+  "no_native_or_source_mutation": true,
+  "raw_or_private_bodies_included": false,
+  "original_3e3a_08d4_unchanged": true,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

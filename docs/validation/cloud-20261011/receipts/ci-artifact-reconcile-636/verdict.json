@@ -1,0 +1,32 @@
+{
+  "state": "BOUNDED_RECONCILIATION_COMPLETE",
+  "producerHead": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "actualCIcheckout": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+  "currentSourceReviewed": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "nativeArchives": 12,
+  "nativeArchivesTotalBytes": 110081,
+  "caseOutcomes": {
+    "SKIPPED": 3,
+    "PASSED": 2478
+  },
+  "namedSourceMethods": 1781,
+  "ordinalOnly": 700,
+  "uniqueIdentifiedTestSources": 322,
+  "proposedCaseUpdates": [
+    {
+      "id": "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY",
+      "from": "UNKNOWN",
+      "to": "PASS",
+      "producerRevision": "63647fc9b63175e1e32b0773d57affc637ea1065"
+    }
+  ],
+  "unmappedResults": "Catalogue only; no source/oracle acceptance for uninspected tests. Gateway3 skips remain no-PASS; ordinal-only cases cannot be mapped to named methods.",
+  "currentRuntime": "NOT_RUN",
+  "fullAcceptance": "UNKNOWN",
+  "suiteReruns": 0,
+  "wholeFamilyPassPromotions": 0,
+  "wholeBoundaryPassPromotions": 0,
+  "trackedWrites": 0,
+  "parentMatrixWrites": 0,
+  "transportBlockers": []
+}

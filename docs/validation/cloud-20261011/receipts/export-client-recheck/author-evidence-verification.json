@@ -1,0 +1,636 @@
+{
+  "reviewRuntime": "NOT_RUN; selected author receipts reused",
+  "final41ExactPrelaunchMatch": true,
+  "types3ExactPrelaunchMatch": true,
+  "grantFixtureSensitivityClaim": "known-bad caller grant binding to unchanged real ExportButton; not internal guard mutation",
+  "oldTypes1CurrentCredit": false,
+  "checks": [
+    {
+      "phase": "frontend-ecr-before-2",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-before-2-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-before-2-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-before-2.log",
+      "startSHA256": "aed4683de5a4b46f7d3ac7778d6208af92031154b87642c23d6b8bfe69c45105",
+      "resultSHA256": "e57ae2235aa907aea53384bb411978bfde253f594b2fb94cf946d5827d776c30",
+      "logSHA256": "3650e9171992d0669be01ec505e95c08fc47e931292e1f63ebce8b1782c0c946",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "f19a7e5e417a3422ed2f7022ba1dec3d752739b7bea2110c183b9442f73311f9",
+      "endWipHash": "f19a7e5e417a3422ed2f7022ba1dec3d752739b7bea2110c183b9442f73311f9",
+      "wipStable": true,
+      "sourceFilesUnchangedDuringRun": null,
+      "exitCode": 1,
+      "status": "FAIL",
+      "command": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--maxWorkers=1",
+        "mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+        "mobile-core/src/shared/components/export-button.test.ts",
+        "mobile-core/src/shared/async-export.test.ts",
+        "--reporter=junit",
+        "--outputFile=/workspace/scratch/rct-validation/export_developer/frontend-ecr-before-2.xml"
+      ],
+      "testFixtureControls": {},
+      "durationSeconds": 4.040624,
+      "prelaunchManifest": {
+        "status": "ABSENT_OLD_RUN_WIP_DIGEST_ONLY",
+        "oldProductExactPerFileIdentity": "NOT_INDEPENDENTLY_PROVEN"
+      },
+      "xml": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-before-2.xml",
+        "sha256": "e240f04adf39b82c289dd3a018e0bb296449f3a93b9048ca705526d943b93cda",
+        "suiteCount": 3,
+        "tests": 29,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "failedTests": [
+          {
+            "name": "user export follows the displayed registry > keeps an unapplied search draft out of the export, then exports the successfully applied search",
+            "assertion": "draft query was present in exported request; expected absent"
+          }
+        ]
+      }
+    },
+    {
+      "phase": "frontend-ecr-final-sensitivity-red-1",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-sensitivity-red-1-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-sensitivity-red-1-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-sensitivity-red-1.log",
+      "startSHA256": "ba4a1f55352df1d919f606404d4da31a7ef07cc8661ed908777453a1b3001022",
+      "resultSHA256": "894323d8f17d0534b05a4a0c4a2d4b032c93236fc5e15957350ef7ae4f41bbfc",
+      "logSHA256": "5da8608f8e6635386ea02c2c9c175505b460e89622cffe61b903206579962de5",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "25064a4b61362dd6208bfe46f9624c4521a036403623f51787f5c923c236814b",
+      "endWipHash": "25064a4b61362dd6208bfe46f9624c4521a036403623f51787f5c923c236814b",
+      "wipStable": true,
+      "sourceFilesUnchangedDuringRun": true,
+      "exitCode": 1,
+      "status": "FAIL",
+      "command": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--maxWorkers=1",
+        "mobile-core/src/shared/components/export-button.test.ts",
+        "--reporter=junit",
+        "--outputFile=/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-sensitivity-red-1.xml"
+      ],
+      "testFixtureControls": {
+        "RCT_EXPORT_CLIENT_GUARD_FIXTURE": "grant-gap"
+      },
+      "durationSeconds": 2.162036,
+      "prelaunchManifest": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-sensitivity-red-1-source-manifest.json",
+        "sha256": "fa720192ac82111fe7b7507d2afa91f3fd4e87843b5fa85b7bfcdb5e374f3978",
+        "recordedSHA256": "fa720192ac82111fe7b7507d2afa91f3fd4e87843b5fa85b7bfcdb5e374f3978",
+        "hashMatches": true,
+        "sourceCount": 1143,
+        "correctionFiles": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "prelaunchSHA256": "38370320db26b04a622d9e8b6bc470bf56b1c08c77269e0b14be8f8f9781d3ab",
+            "frozenSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "matches": false
+          },
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "prelaunchSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "frozenSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+            "prelaunchSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "frozenSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+            "prelaunchSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "frozenSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+            "prelaunchSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "frozenSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+            "prelaunchSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "frozenSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "matches": true
+          }
+        ],
+        "dependencies": [
+          {
+            "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+            "prelaunchSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "currentSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+            "prelaunchSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "currentSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+            "prelaunchSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "currentSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "matches": true
+          }
+        ]
+      },
+      "xml": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-sensitivity-red-1.xml",
+        "sha256": "becdb63c6f7f6c5b5da0ac3eb58bcbf91b60749ebe3a14c2092bbe80fd27a9b6",
+        "suiteCount": 1,
+        "tests": 4,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "failedTests": [
+          {
+            "name": "export action state and scope > invalidates a preparing operation on grant loss alone and ignores its late completion",
+            "assertion": "current() remained true after grant loss; expected false"
+          }
+        ]
+      }
+    },
+    {
+      "phase": "frontend-ecr-final-green-2",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-green-2-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-green-2-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-green-2.log",
+      "startSHA256": "f995592645ea4a4ef526b043e482a5c0b1b1ca5ee15794af91e778f006b241de",
+      "resultSHA256": "0e7cf85b970a7a943088b168853da7ca962a41586bafe2f4626e02959488c48b",
+      "logSHA256": "e7b76e815769d8d83fc004c94d885fd5d3f07ad6101f7cbbf09084fb0231ee0d",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "2f306423cd11dc0c18d2644fdd3699e71a709db27ec345d9701c2c4af49a2112",
+      "endWipHash": "2f306423cd11dc0c18d2644fdd3699e71a709db27ec345d9701c2c4af49a2112",
+      "wipStable": true,
+      "sourceFilesUnchangedDuringRun": true,
+      "exitCode": 0,
+      "status": "PASS",
+      "command": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--maxWorkers=1",
+        "mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+        "mobile-core/src/shared/components/export-button.test.ts",
+        "mobile-core/src/shared/async-export.test.ts",
+        "mobile-core/src/features/headman-stats/headman-stats-screen.test.ts",
+        "--reporter=junit",
+        "--outputFile=/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-green-2.xml"
+      ],
+      "testFixtureControls": {},
+      "durationSeconds": 7.993997,
+      "prelaunchManifest": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-green-2-source-manifest.json",
+        "sha256": "2e6326a8f30740bf600a1f5b425b1f242dc68d2562da073ca32e6b141b606876",
+        "recordedSHA256": "2e6326a8f30740bf600a1f5b425b1f242dc68d2562da073ca32e6b141b606876",
+        "hashMatches": true,
+        "sourceCount": 1143,
+        "correctionFiles": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "prelaunchSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "frozenSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "prelaunchSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "frozenSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+            "prelaunchSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "frozenSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+            "prelaunchSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "frozenSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+            "prelaunchSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "frozenSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+            "prelaunchSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "frozenSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "matches": true
+          }
+        ],
+        "dependencies": [
+          {
+            "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+            "prelaunchSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "currentSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+            "prelaunchSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "currentSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+            "prelaunchSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "currentSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "matches": true
+          }
+        ]
+      },
+      "xml": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-final-green-2.xml",
+        "sha256": "16415bb447bc1143891ac8797ed0e2c69d0ac74cef8617c0dae8bf9870f3c7ff",
+        "suiteCount": 4,
+        "tests": 41,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failedTests": []
+      }
+    },
+    {
+      "phase": "frontend-ecr-types-1",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-1-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-1-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-1.log",
+      "startSHA256": "759d0b93daaa98cd3d6af08e98455e0c235165d6e5765cebc33c473b22a3b696",
+      "resultSHA256": "f10d3df3083e08a49f4df77545f3ba40a8e5ec05368634839f7cd6424e2b97e1",
+      "logSHA256": "ebab77f294b796b1dcaa3b75cbeaae27ba5f74b16eeba7e4f6b5044b3470706c",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "d32bf3a3e7937c21012d99e774d6e0cc33075a36313f2580575593e3cfb32ea2",
+      "endWipHash": "25064a4b61362dd6208bfe46f9624c4521a036403623f51787f5c923c236814b",
+      "wipStable": false,
+      "sourceFilesUnchangedDuringRun": false,
+      "exitCode": 2,
+      "status": "FAIL",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "testFixtureControls": {},
+      "durationSeconds": 38.397584,
+      "prelaunchManifest": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-1-source-manifest.json",
+        "sha256": "42dbd54b068236cd75194e7915b11542bf7492c6c2cc43454926f227cbf8a45e",
+        "recordedSHA256": "42dbd54b068236cd75194e7915b11542bf7492c6c2cc43454926f227cbf8a45e",
+        "hashMatches": true,
+        "sourceCount": 1143,
+        "correctionFiles": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "prelaunchSHA256": "38370320db26b04a622d9e8b6bc470bf56b1c08c77269e0b14be8f8f9781d3ab",
+            "frozenSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "matches": false
+          },
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "prelaunchSHA256": "e66976812dc095952bb1d59fa7d4c86575887fc09799c7cad43e26592a08c9fd",
+            "frozenSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "matches": false
+          },
+          {
+            "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+            "prelaunchSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "frozenSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+            "prelaunchSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "frozenSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+            "prelaunchSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "frozenSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+            "prelaunchSHA256": "87aee3b982a23ac2eb706b0b159480d25bc6861ccff938d11d3ccee742913bb4",
+            "frozenSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "matches": false
+          }
+        ],
+        "dependencies": [
+          {
+            "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+            "prelaunchSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "currentSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+            "prelaunchSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "currentSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+            "prelaunchSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "currentSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "matches": true
+          }
+        ]
+      }
+    },
+    {
+      "phase": "frontend-ecr-types-3",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-3-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-3-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-3.log",
+      "startSHA256": "ac93d6b8acd9a5256946208067c6a48a1d96a5980e94f3f0dce5b5671b1fe504",
+      "resultSHA256": "9b0b4cb1ddf606df215ce32a2af83aa5b7737409d767e97b462f1a7cfd70ae57",
+      "logSHA256": "38c66c42664db7eb97ba0611bb244082e4ae848677941142774f94fc11f307b1",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "2f306423cd11dc0c18d2644fdd3699e71a709db27ec345d9701c2c4af49a2112",
+      "endWipHash": "2f306423cd11dc0c18d2644fdd3699e71a709db27ec345d9701c2c4af49a2112",
+      "wipStable": true,
+      "sourceFilesUnchangedDuringRun": true,
+      "exitCode": 0,
+      "status": "PASS",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "testFixtureControls": {},
+      "durationSeconds": 37.750147,
+      "prelaunchManifest": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-types-3-source-manifest.json",
+        "sha256": "2e6326a8f30740bf600a1f5b425b1f242dc68d2562da073ca32e6b141b606876",
+        "recordedSHA256": "2e6326a8f30740bf600a1f5b425b1f242dc68d2562da073ca32e6b141b606876",
+        "hashMatches": true,
+        "sourceCount": 1143,
+        "correctionFiles": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "prelaunchSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "frozenSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "prelaunchSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "frozenSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+            "prelaunchSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "frozenSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+            "prelaunchSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "frozenSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+            "prelaunchSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "frozenSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+            "prelaunchSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "frozenSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "matches": true
+          }
+        ],
+        "dependencies": [
+          {
+            "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+            "prelaunchSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "currentSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+            "prelaunchSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "currentSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+            "prelaunchSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "currentSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "matches": true
+          }
+        ]
+      }
+    },
+    {
+      "phase": "frontend-ecr-lint-2",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-2-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-2-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-2.log",
+      "startSHA256": "f31e5d7d80f9900afdd93c15ce0483c956ef6674151c02ee40b729db0a17ca04",
+      "resultSHA256": "0f35f99ad11af3cd273c8a9280721f39dbcc2526d46e877f91883188d6aae6ce",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "25064a4b61362dd6208bfe46f9624c4521a036403623f51787f5c923c236814b",
+      "endWipHash": "25064a4b61362dd6208bfe46f9624c4521a036403623f51787f5c923c236814b",
+      "wipStable": true,
+      "sourceFilesUnchangedDuringRun": true,
+      "exitCode": 0,
+      "status": "PASS",
+      "command": [
+        "./node_modules/.bin/eslint",
+        "mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+        "mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+        "mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+        "mobile-core/src/shared/async-export.test.ts",
+        "mobile-core/src/shared/components/export-button.test.ts",
+        "mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+        "--max-warnings=0"
+      ],
+      "testFixtureControls": {},
+      "durationSeconds": 4.073821,
+      "prelaunchManifest": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-2-source-manifest.json",
+        "sha256": "fa720192ac82111fe7b7507d2afa91f3fd4e87843b5fa85b7bfcdb5e374f3978",
+        "recordedSHA256": "fa720192ac82111fe7b7507d2afa91f3fd4e87843b5fa85b7bfcdb5e374f3978",
+        "hashMatches": true,
+        "sourceCount": 1143,
+        "correctionFiles": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "prelaunchSHA256": "38370320db26b04a622d9e8b6bc470bf56b1c08c77269e0b14be8f8f9781d3ab",
+            "frozenSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "matches": false
+          },
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "prelaunchSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "frozenSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+            "prelaunchSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "frozenSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+            "prelaunchSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "frozenSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+            "prelaunchSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "frozenSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+            "prelaunchSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "frozenSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "matches": true
+          }
+        ],
+        "dependencies": [
+          {
+            "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+            "prelaunchSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "currentSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+            "prelaunchSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "currentSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+            "prelaunchSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "currentSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "matches": true
+          }
+        ]
+      }
+    },
+    {
+      "phase": "frontend-ecr-lint-3",
+      "startPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-3-start.json",
+      "resultPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-3-result.json",
+      "logPath": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-3.log",
+      "startSHA256": "9c06ab3e0322222f32c2c27e8ee5f969fc5248121fcb7e444e0f88762d602321",
+      "resultSHA256": "a43d2e425db428cb1a6658d3be55e30ce6ad307a6dcd5b631a92aae3beecb613",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logHashMatches": true,
+      "head": "f2631845a04054befe50f3a2d4196a90beb77956",
+      "startWipHash": "2f306423cd11dc0c18d2644fdd3699e71a709db27ec345d9701c2c4af49a2112",
+      "endWipHash": "2f306423cd11dc0c18d2644fdd3699e71a709db27ec345d9701c2c4af49a2112",
+      "wipStable": true,
+      "sourceFilesUnchangedDuringRun": true,
+      "exitCode": 0,
+      "status": "PASS",
+      "command": [
+        "./node_modules/.bin/eslint",
+        "mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+        "--max-warnings=0"
+      ],
+      "testFixtureControls": {},
+      "durationSeconds": 2.262827,
+      "prelaunchManifest": {
+        "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-lint-3-source-manifest.json",
+        "sha256": "2e6326a8f30740bf600a1f5b425b1f242dc68d2562da073ca32e6b141b606876",
+        "recordedSHA256": "2e6326a8f30740bf600a1f5b425b1f242dc68d2562da073ca32e6b141b606876",
+        "hashMatches": true,
+        "sourceCount": 1143,
+        "correctionFiles": [
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+            "prelaunchSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "frozenSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+            "prelaunchSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "frozenSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+            "prelaunchSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "frozenSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+            "prelaunchSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "frozenSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+            "prelaunchSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "frozenSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+            "prelaunchSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "frozenSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+            "matches": true
+          }
+        ],
+        "dependencies": [
+          {
+            "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+            "prelaunchSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "currentSHA256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+            "prelaunchSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "currentSHA256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+            "matches": true
+          },
+          {
+            "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+            "prelaunchSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "currentSHA256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+            "matches": true
+          }
+        ]
+      }
+    }
+  ],
+  "redToFinalFrontendManifestDiffPaths": [
+    "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts"
+  ],
+  "redToFinalDiffOutsideExecutedSensitivityScope": true
+}

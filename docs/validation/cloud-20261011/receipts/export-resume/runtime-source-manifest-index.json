@@ -1,0 +1,9 @@
+{
+  "harness_sha256": "86940ed0af96574f3aa18317c9e633ddabb7bd4b2bbde04abfdac54636ef1e7c",
+  "wrapper_sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+  "compile_after_2_inputs": 1853,
+  "manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+  "source_ready_files": 8,
+  "source_ready_sha256": "3f2c7a39daecf9bd01969b50fca95127f6b327706283193cb828fd99b71d0e34",
+  "known_bad_source_copies": "before3-source, original untracked test restored byte-exact from original SHA, tracked sources from exact0af9 Git blobs"
+}

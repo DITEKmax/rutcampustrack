@@ -1,0 +1,20 @@
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java
+@@ -2218,8 +2218,15 @@
+                         state == null
+                                 ? "NONE"
+                                 : switch (state) {
+-                                    case "40P01", "55P03", "40001", "23502", "23503", "23505",
+-                                            "23514", "P0001" -> state;
++                                    case "40P01",
++                                            "55P03",
++                                            "40001",
++                                            "23502",
++                                            "23503",
++                                            "23505",
++                                            "23514",
++                                            "P0001" ->
++                                            state;
+                                     default -> "OTHER";
+                                 };
+             }

@@ -1,0 +1,78 @@
+{
+  "six_final_sources": [
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+      "final_current_equal_frozen": true
+    },
+    {
+      "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+      "final_current_equal_frozen": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "final_current_equal_frozen": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+      "final_current_equal_frozen": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+      "final_current_equal_frozen": true
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "final_current_equal_frozen": true
+    }
+  ],
+  "common3_config2": [
+    {
+      "path": "proto/academic.proto",
+      "current_equal_previous_consulted": true,
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "current_equal_previous_consulted": true,
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "current_equal_previous_consulted": true,
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/application.yml",
+      "current_equal_previous_consulted": true,
+      "sha256": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+      "bytes": 5430
+    },
+    {
+      "path": "services/notification-bot/bot/config.py",
+      "current_equal_previous_consulted": true,
+      "sha256": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+      "bytes": 5138
+    }
+  ],
+  "prior_immutable_reviews": [
+    {
+      "review": "export_ebsr_recheck",
+      "manifest_sha256": "ca386bb82eeb35a3c72873a95f3fd9a37a5578312ad98395f7f89d689460b13a",
+      "unchanged_safe_files": 34
+    },
+    {
+      "review": "export_merged_repository_review",
+      "manifest_sha256": "c517f22f8583d0e21577038005c11356d093f15709ed290285da1c009e05c048",
+      "unchanged_safe_files": 12
+    },
+    {
+      "review": "np01_domain_review",
+      "manifest_sha256": "42a2d450f6746ea21112518ed676250973ad1de2d98a05383f58e96d59cdc519",
+      "unchanged_safe_files": 14
+    }
+  ],
+  "runtime": "NOT_RUN"
+}

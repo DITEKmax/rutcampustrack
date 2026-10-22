@@ -1,0 +1,43 @@
+{
+  "source": "/workspace/scratch/rct-validation/export_audit_independent_review",
+  "manifest": "sealed-manifest.safe.json",
+  "files": [
+    {
+      "path": "review.safe.json",
+      "original_sha256": "0b07723b8a6957c1c414f77054faae4397fda4671012d38260b044b84f818430",
+      "original_bytes": 10539,
+      "working_sha256": "0b07723b8a6957c1c414f77054faae4397fda4671012d38260b044b84f818430",
+      "working_bytes": 10539,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification.safe.json",
+      "original_sha256": "613e4e6ba8d3273a3522affc254b63dca5e5c43d9f47dea0ce02362a6965e622",
+      "original_bytes": 6767,
+      "working_sha256": "613e4e6ba8d3273a3522affc254b63dca5e5c43d9f47dea0ce02362a6965e622",
+      "working_bytes": 6767,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-evidence.py",
+      "original_sha256": "e6298f16f75d063f559f4cc45ba81458933ea5271e67a420c9b0f8bcdffaf695",
+      "original_bytes": 11781,
+      "working_sha256": "e6298f16f75d063f559f4cc45ba81458933ea5271e67a420c9b0f8bcdffaf695",
+      "working_bytes": 11781,
+      "transformation": "byte equal; copied source losslessly wrapped",
+      "working_path": "verify-evidence.py.readable.zip",
+      "working_archive_member": "verify-evidence.py",
+      "working_container_sha256": "9bdc6f04d3342d3ceaf0988bb8f1f6f34bd2ed2d03b508164618dd55e1a4e47a",
+      "working_container_bytes": 4220
+    },
+    {
+      "path": "sealed-manifest.safe.json",
+      "original_sha256": "e0e2389960bf29632ead19a07d2222c2b660d47ebd4a7ee87868f9b02f09864f",
+      "original_bytes": 583,
+      "working_sha256": "e0e2389960bf29632ead19a07d2222c2b660d47ebd4a7ee87868f9b02f09864f",
+      "working_bytes": 583,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

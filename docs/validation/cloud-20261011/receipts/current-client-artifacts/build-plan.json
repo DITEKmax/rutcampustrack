@@ -1,0 +1,88 @@
+{
+  "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "grant": "ARTIFACT_BUILD1 BUILD_ONLY",
+  "phases": [
+    {
+      "id": "boot8",
+      "cwd": "/workspace/rct-worktrees/client-current-artifacts",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        "--offline",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+        ":services:auth-service:auth-app:bootJar",
+        ":services:academic-service:academic-app:bootJar",
+        ":services:schedule-service:schedule-app:bootJar",
+        ":services:attendance-service:attendance-app:bootJar",
+        ":services:mobile-bff:mobile-bff-app:bootJar",
+        ":services:api-gateway:bootJar",
+        ":services:notification-service:notification-app:bootJar",
+        ":services:document-renderer-service:document-renderer-app:bootJar"
+      ],
+      "public_env": {
+        "GRADLE_USER_HOME": "/workspace/.gradle"
+      }
+    },
+    {
+      "id": "pwa",
+      "cwd": "/workspace/rct-worktrees/client-current-artifacts/frontends",
+      "argv": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "@rct/pwa-vue"
+      ],
+      "public_env": {
+        "VITE_MOBILE_FIXTURE_MODE": "false",
+        "VITE_PUBLIC_BASE": "/app/",
+        "VITE_APP_VERSION": "0.0.0",
+        "VITE_MIN_SUPPORTED_VERSION": "",
+        "VITE_FORCE_UPDATE": "true",
+        "NODE_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=768",
+        "npm_config_cache": "/workspace/scratch/rct-validation/current_client_artifacts/npm-cache",
+        "npm_config_userconfig": "/workspace/scratch/rct-validation/current_client_artifacts/empty-user.npmrc"
+      }
+    },
+    {
+      "id": "tma",
+      "cwd": "/workspace/rct-worktrees/client-current-artifacts/frontends",
+      "argv": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "@rct/tma-vue"
+      ],
+      "public_env": {
+        "VITE_MOBILE_FIXTURE_MODE": "false",
+        "VITE_PUBLIC_BASE": "/mini-app/",
+        "NODE_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=768",
+        "npm_config_cache": "/workspace/scratch/rct-validation/current_client_artifacts/npm-cache",
+        "npm_config_userconfig": "/workspace/scratch/rct-validation/current_client_artifacts/empty-user.npmrc"
+      }
+    }
+  ],
+  "allocation_limit": 1610612736,
+  "floor_bytes": 4294967296,
+  "reserve_bytes": 1073741824,
+  "source_allocated_preflight": 409034752,
+  "installed_deps_original_entries": 8272,
+  "new_node_namespace": "Ignored symlinks/new .bin/@rct only; current core source aliases; no package install/lock edits",
+  "forbidden": [
+    "test/integrationTest",
+    "app/JAR execution",
+    "layertools/extraction/staging",
+    "keys",
+    "Docker/container/network",
+    "browser",
+    "product/source/config/generated tracked edits"
+  ],
+  "wrapper_sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95"
+}

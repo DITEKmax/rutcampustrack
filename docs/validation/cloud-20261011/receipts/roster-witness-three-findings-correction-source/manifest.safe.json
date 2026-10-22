@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "path": "before-witness.cjs",
+      "bytes": 6918,
+      "mode": "0o600",
+      "sha256": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769"
+    },
+    {
+      "path": "witness-detail-lookup.cjs",
+      "bytes": 10840,
+      "mode": "0o600",
+      "sha256": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c"
+    },
+    {
+      "path": "controls.cjs",
+      "bytes": 7584,
+      "mode": "0o600",
+      "sha256": "c533faac243b9af7b1742a6fca3901a1bbe80042e030fa1cb24709e3fdb01398"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 3199,
+      "mode": "0o600",
+      "sha256": "686528dfaa9858a11d44908d4927e9d1e26db1abf5072aac18bb1a15a393286b"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 1794,
+      "mode": "0o600",
+      "sha256": "8b2ff45628f1501680cd67cad231d8339bfee3ad5dc906aa24b3ffe8eb72cb2f"
+    }
+  ],
+  "native": "NOT_RUN",
+  "sourceOnly": true
+}

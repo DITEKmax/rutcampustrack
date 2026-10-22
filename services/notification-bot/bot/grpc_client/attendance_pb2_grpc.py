@@ -25,6 +25,84 @@ if _version_not_supported:
     )
 
 
+class AttendanceAdminActivityGrpcServiceStub(object):
+    """Aggregate-only ADMIN read. Signed identity is re-authorized against Academic
+    DASHBOARD_VIEW for every call; arbitrary caller-selected ranges are forbidden.
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.GetActivity = channel.unary_unary(
+                '/rutcampustrack.attendance.AttendanceAdminActivityGrpcService/GetActivity',
+                request_serializer=bot_dot_grpc__client_dot_attendance__pb2.AdminActivityQuery.SerializeToString,
+                response_deserializer=bot_dot_grpc__client_dot_attendance__pb2.AdminActivitySnapshot.FromString,
+                _registered_method=True)
+
+
+class AttendanceAdminActivityGrpcServiceServicer(object):
+    """Aggregate-only ADMIN read. Signed identity is re-authorized against Academic
+    DASHBOARD_VIEW for every call; arbitrary caller-selected ranges are forbidden.
+    """
+
+    def GetActivity(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_AttendanceAdminActivityGrpcServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'GetActivity': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetActivity,
+                    request_deserializer=bot_dot_grpc__client_dot_attendance__pb2.AdminActivityQuery.FromString,
+                    response_serializer=bot_dot_grpc__client_dot_attendance__pb2.AdminActivitySnapshot.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'rutcampustrack.attendance.AttendanceAdminActivityGrpcService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('rutcampustrack.attendance.AttendanceAdminActivityGrpcService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class AttendanceAdminActivityGrpcService(object):
+    """Aggregate-only ADMIN read. Signed identity is re-authorized against Academic
+    DASHBOARD_VIEW for every call; arbitrary caller-selected ranges are forbidden.
+    """
+
+    @staticmethod
+    def GetActivity(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.attendance.AttendanceAdminActivityGrpcService/GetActivity',
+            bot_dot_grpc__client_dot_attendance__pb2.AdminActivityQuery.SerializeToString,
+            bot_dot_grpc__client_dot_attendance__pb2.AdminActivitySnapshot.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
 class AttendanceStudentGrpcServiceStub(object):
     """Internal JS-STUDENT-01-r1 boundary. Identity is a validated signed internal JWT
     in gRPC metadata; client-supplied identity fields are deliberately absent.
@@ -80,6 +158,16 @@ class AttendanceStudentGrpcServiceStub(object):
                 '/rutcampustrack.attendance.AttendanceStudentGrpcService/DownloadStudentRequestAttachment',
                 request_serializer=bot_dot_grpc__client_dot_attendance__pb2.StudentRequestAttachmentId.SerializeToString,
                 response_deserializer=bot_dot_grpc__client_dot_attendance__pb2.StudentRequestAttachmentDownload.FromString,
+                _registered_method=True)
+        self.GetStudentAttendanceProjection = channel.unary_unary(
+                '/rutcampustrack.attendance.AttendanceStudentGrpcService/GetStudentAttendanceProjection',
+                request_serializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceProjectionRequest.SerializeToString,
+                response_deserializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceProjectionResponse.FromString,
+                _registered_method=True)
+        self.GetStudentAttendanceRanking = channel.unary_unary(
+                '/rutcampustrack.attendance.AttendanceStudentGrpcService/GetStudentAttendanceRanking',
+                request_serializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceRankingRequest.SerializeToString,
+                response_deserializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceRankingResponse.FromString,
                 _registered_method=True)
 
 
@@ -142,6 +230,18 @@ class AttendanceStudentGrpcServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetStudentAttendanceProjection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetStudentAttendanceRanking(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AttendanceStudentGrpcServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -189,6 +289,16 @@ def add_AttendanceStudentGrpcServiceServicer_to_server(servicer, server):
                     servicer.DownloadStudentRequestAttachment,
                     request_deserializer=bot_dot_grpc__client_dot_attendance__pb2.StudentRequestAttachmentId.FromString,
                     response_serializer=bot_dot_grpc__client_dot_attendance__pb2.StudentRequestAttachmentDownload.SerializeToString,
+            ),
+            'GetStudentAttendanceProjection': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetStudentAttendanceProjection,
+                    request_deserializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceProjectionRequest.FromString,
+                    response_serializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceProjectionResponse.SerializeToString,
+            ),
+            'GetStudentAttendanceRanking': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetStudentAttendanceRanking,
+                    request_deserializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceRankingRequest.FromString,
+                    response_serializer=bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceRankingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -446,6 +556,60 @@ class AttendanceStudentGrpcService(object):
             metadata,
             _registered_method=True)
 
+    @staticmethod
+    def GetStudentAttendanceProjection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.attendance.AttendanceStudentGrpcService/GetStudentAttendanceProjection',
+            bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceProjectionRequest.SerializeToString,
+            bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceProjectionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetStudentAttendanceRanking(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.attendance.AttendanceStudentGrpcService/GetStudentAttendanceRanking',
+            bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceRankingRequest.SerializeToString,
+            bot_dot_grpc__client_dot_attendance__pb2.StudentAttendanceRankingResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
 
 class AttendanceRequestBotGrpcServiceStub(object):
     """Separate service for notification-bot attachment reads. It has its own
@@ -557,6 +721,162 @@ class AttendanceRequestBotGrpcService(object):
             '/rutcampustrack.attendance.AttendanceRequestBotGrpcService/ResolveRequestNotification',
             bot_dot_grpc__client_dot_attendance__pb2.ResolveRequestNotificationRequest.SerializeToString,
             bot_dot_grpc__client_dot_attendance__pb2.ResolveRequestNotificationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class AttendanceUserImpactGrpcServiceStub(object):
+    """Directed, read-only semester deletion preview. The caller authenticates with
+    the existing internal service credential; no student identity is accepted.
+    Directed read-only user impact. snapshot_digest identifies the returned count,
+    not a durable version or an atomic snapshot shared with Academic.
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.PreviewUserImpact = channel.unary_unary(
+                '/rutcampustrack.attendance.AttendanceUserImpactGrpcService/PreviewUserImpact',
+                request_serializer=bot_dot_grpc__client_dot_attendance__pb2.UserImpactRequest.SerializeToString,
+                response_deserializer=bot_dot_grpc__client_dot_attendance__pb2.UserImpactSnapshot.FromString,
+                _registered_method=True)
+
+
+class AttendanceUserImpactGrpcServiceServicer(object):
+    """Directed, read-only semester deletion preview. The caller authenticates with
+    the existing internal service credential; no student identity is accepted.
+    Directed read-only user impact. snapshot_digest identifies the returned count,
+    not a durable version or an atomic snapshot shared with Academic.
+    """
+
+    def PreviewUserImpact(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_AttendanceUserImpactGrpcServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'PreviewUserImpact': grpc.unary_unary_rpc_method_handler(
+                    servicer.PreviewUserImpact,
+                    request_deserializer=bot_dot_grpc__client_dot_attendance__pb2.UserImpactRequest.FromString,
+                    response_serializer=bot_dot_grpc__client_dot_attendance__pb2.UserImpactSnapshot.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'rutcampustrack.attendance.AttendanceUserImpactGrpcService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('rutcampustrack.attendance.AttendanceUserImpactGrpcService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class AttendanceUserImpactGrpcService(object):
+    """Directed, read-only semester deletion preview. The caller authenticates with
+    the existing internal service credential; no student identity is accepted.
+    Directed read-only user impact. snapshot_digest identifies the returned count,
+    not a durable version or an atomic snapshot shared with Academic.
+    """
+
+    @staticmethod
+    def PreviewUserImpact(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.attendance.AttendanceUserImpactGrpcService/PreviewUserImpact',
+            bot_dot_grpc__client_dot_attendance__pb2.UserImpactRequest.SerializeToString,
+            bot_dot_grpc__client_dot_attendance__pb2.UserImpactSnapshot.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class AttendanceSemesterDeletionGrpcServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.PreviewSemesterDeletion = channel.unary_unary(
+                '/rutcampustrack.attendance.AttendanceSemesterDeletionGrpcService/PreviewSemesterDeletion',
+                request_serializer=bot_dot_grpc__client_dot_attendance__pb2.SemesterDeletionPreviewRequest.SerializeToString,
+                response_deserializer=bot_dot_grpc__client_dot_attendance__pb2.SemesterDeletionParticipantPreview.FromString,
+                _registered_method=True)
+
+
+class AttendanceSemesterDeletionGrpcServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def PreviewSemesterDeletion(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_AttendanceSemesterDeletionGrpcServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'PreviewSemesterDeletion': grpc.unary_unary_rpc_method_handler(
+                    servicer.PreviewSemesterDeletion,
+                    request_deserializer=bot_dot_grpc__client_dot_attendance__pb2.SemesterDeletionPreviewRequest.FromString,
+                    response_serializer=bot_dot_grpc__client_dot_attendance__pb2.SemesterDeletionParticipantPreview.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'rutcampustrack.attendance.AttendanceSemesterDeletionGrpcService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('rutcampustrack.attendance.AttendanceSemesterDeletionGrpcService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class AttendanceSemesterDeletionGrpcService(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def PreviewSemesterDeletion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.attendance.AttendanceSemesterDeletionGrpcService/PreviewSemesterDeletion',
+            bot_dot_grpc__client_dot_attendance__pb2.SemesterDeletionPreviewRequest.SerializeToString,
+            bot_dot_grpc__client_dot_attendance__pb2.SemesterDeletionParticipantPreview.FromString,
             options,
             channel_credentials,
             insecure,

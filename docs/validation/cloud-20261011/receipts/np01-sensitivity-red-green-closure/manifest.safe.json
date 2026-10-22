@@ -1,0 +1,68 @@
+{
+  "status": "CAUSAL_RED_EXACT_RESTORE_CHRONOLOGICAL_NORMAL_GREEN_NATIVE_PASS_WITH_OWN_CLEANUP",
+  "entries": [
+    {
+      "path": "pre-native-docker-volume-inventory.safe.json",
+      "sha256": "ba6b0cf418de42018b8a1f1675e82b481b8177f3ab98f3c5cb59b7174b7aa32b",
+      "bytes": 4452,
+      "mode": "0600"
+    },
+    {
+      "path": "observe-metadata.py",
+      "sha256": "b2e24a32a5838d6c4fdac7f950dbcdbb7db9eb71574be1ce4338ec874d0c68b6",
+      "bytes": 3272,
+      "mode": "0600"
+    },
+    {
+      "path": "docker-native-observations.safe.ndjson",
+      "sha256": "4c0fa3ceeee69bb103aee0abdba4ed1a478b59c0ff732e8464724c8602e3960b",
+      "bytes": 38070,
+      "mode": "0600"
+    },
+    {
+      "path": "observer-terminal.safe.json",
+      "sha256": "642435dd47017611a42783c90612de0f1205b2697642e185d2c5566e88ee9fc1",
+      "bytes": 596,
+      "mode": "0600"
+    },
+    {
+      "path": "post-native-cleanup-before-volume-disposal.safe.json",
+      "sha256": "d558a9a3d8775047003179a494ac73268586f428df900fc97af9fafec1a8433c",
+      "bytes": 7436,
+      "mode": "0600"
+    },
+    {
+      "path": "post-green-source-capacity.safe.json",
+      "sha256": "a3d6deca2f9fdd4ac6f821beab8ac01d086e5e592fdb9457ad31001b7f3f37ca",
+      "bytes": 2694,
+      "mode": "0600"
+    },
+    {
+      "path": "native-green-chronology.safe.json",
+      "sha256": "13b6bc93dea092ee353e25224f2661857c3d1bb95ce3b69720a08db9535f24b7",
+      "bytes": 10084,
+      "mode": "0600"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "d36762b46a83ef407163128c94d7729543ee65d3df2a874d684a1e1c781e5988",
+      "bytes": 2504,
+      "mode": "0600"
+    },
+    {
+      "path": "native-terminal.safe.json",
+      "sha256": "dd12bb5761da9bc4e9a2158fbfb85692b987f33ada3a4328938e5f8638ca7bfc",
+      "bytes": 1001,
+      "mode": "0600"
+    },
+    {
+      "path": "actual-restored-class.safe.json",
+      "sha256": "1d9dd41351cb8fc4d0bed2ff6ff5505ced33ff0206f9f2f867a4bb111064f18e",
+      "bytes": 533,
+      "mode": "0600"
+    }
+  ],
+  "rawXML_stdout_grants_nonces_fixture_values_archived": false,
+  "original_red_packet_sha256": "c41ae9bc1ce06735c7283ace40deda64f93d6429ceae848cf02ef4a564695695",
+  "green_source_packet_sha256": "baf78c4f8ca5c7f71aca66220fbc19cdb634c1df2b58c26a5ae79478cc92c765"
+}

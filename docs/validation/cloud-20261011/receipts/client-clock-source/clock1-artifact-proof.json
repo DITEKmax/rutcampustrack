@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-11T21:24:59.618575+00:00",
+  "revision": "049ab4e3b9629177decad650e4846fd36638f78c",
+  "external_jar": {
+    "path": "/workspace/rct-worktrees/client-runtime/build/e2e-clock/clock-fixture.jar",
+    "sha256": "6a474b4f95e9bdde92acff655a2a7f0d3120e369a3f9ea240eb8a1908dcf6806",
+    "bytes": 4108,
+    "classes": [
+      "ru/rutcampustrack/e2e/ClockInitializer.class",
+      "ru/rutcampustrack/e2e/FileClock.class"
+    ],
+    "no_control_or_spring_bundling": true
+  },
+  "source_sha256": {
+    "build.gradle.kts": "3f724cfff6a014a6efc27f83e4f436a977b06f0bdd317d235a3b348c96ff3568",
+    "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/ClockInitializer.java": "cf59b1878eb5098ed9fdc8e26ef5bfdbf737b503429ed6b638630b16d5c1fa32",
+    "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java": "8df7cc0a9df24db5c67ca706bf38f46a926fe1eeef9edcbcf93b113c4f906f95",
+    "tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java": "67c50997c1b7713f81adb072da6427bac36b17cd1fc0dbbb4c2cb9c745422ace"
+  },
+  "compile_control_session": 7108,
+  "compile_control_exit": 0,
+  "pure_controls": "PASS optin/marker/file/excluded_service/primary_context/file-update/Moscow",
+  "security_consumer_isolation": "BLOCKING CC01; existing successful control output does not prove this",
+  "four_production_bootjar_isolation": "UNKNOWN NOT_BUILT",
+  "apps_browser_fullstack": "NOT_RUN PROHIBITED pending review/correction"
+}

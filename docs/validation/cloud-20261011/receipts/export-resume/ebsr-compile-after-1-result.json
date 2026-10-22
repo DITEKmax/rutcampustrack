@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-12T00:31:09.155458+00:00",
+  "phase": "ebsr-compile-after-1",
+  "head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "wipHash": "b18f90d68bbc2695c5f35ad2b11f3c34589190c106e345899cf4beb9d69f462a",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-api-contract:compileJava",
+    ":services:api-gateway:compileJava",
+    ":services:auth-service:auth-app:compileJava",
+    ":services:auth-service:auth-app:compileTestJava",
+    ":services:api-gateway:compileTestJava",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "FAIL",
+  "sourceManifest": "ebsr-compile-after-1-source-manifest.json",
+  "sourceManifestSHA256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+  "testFixtureControls": {},
+  "diskFreeBeforeBytes": 5097259008,
+  "diskFreeAfterBytes": 5097246720,
+  "exitCode": 1,
+  "finished": "2026-10-12T00:31:11.244654+00:00",
+  "logSHA256": "198a92153a499d1674c72554679332967171693b5f90a3c9078f839c97c6b4c4",
+  "sourceFilesUnchangedDuringRun": true,
+  "taskExecution": {}
+}

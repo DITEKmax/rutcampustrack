@@ -1,0 +1,2 @@
+{"at": "2026-10-11T20:42:50.759403+00:00", "kind": "partial-static-inventory", "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88", "runtime": "NOT_RUN", "files_only": "ownscratch", "counts": {"java-enums": 140, "proto-enums": 30, "ts-candidates": 54, "sql-enums": 11}}
+{"at": "2026-10-11T20:50:45.600064+00:00", "kind": "targeted-source-mapping-complete", "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88", "runtime": "NOT_RUN", "outcome": "boundedmechanism/inventory+sixcounterexamplecandidates", "no_new_policy_questions": true, "shared_writes": false}

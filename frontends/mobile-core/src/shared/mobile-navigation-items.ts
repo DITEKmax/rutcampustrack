@@ -23,7 +23,9 @@ export interface StudentNavigationOptions {
  * implementation are enabled; the remaining accepted placeholders stay
  * visibly unavailable instead of claiming product coverage.
  */
-export function createStudentNavigationItems(options: StudentNavigationOptions = {}): MobileBottomNavItems {
+export function createStudentNavigationItems(
+  options: StudentNavigationOptions = {},
+): MobileBottomNavItems {
   const homeworkEnabled = options.homeworkEnabled === true
   const attendanceEnabled = options.attendanceEnabled === true
   const moreEnabled = options.moreEnabled === true
@@ -66,7 +68,13 @@ export function createStudentNavigationItems(options: StudentNavigationOptions =
 export function createTeacherNavigationItems(profileEnabled = true): MobileBottomNavItems {
   return [
     { id: 'teacher-home', label: 'Сегодня', icon: teacherTodayTab, route: 'teacher-home' },
-    { id: 'teacher-attendance', label: 'Учёт', accessibleLabel: 'Посещаемость', icon: teacherAttendanceTab, route: 'teacher-attendance' },
+    {
+      id: 'teacher-attendance',
+      label: 'Учёт',
+      accessibleLabel: 'Посещаемость',
+      icon: teacherAttendanceTab,
+      route: 'teacher-attendance',
+    },
     { id: 'teacher-stats', label: 'Итоги', icon: teacherStatsTab, route: 'teacher-stats' },
     { id: 'teacher-map', label: 'Карта', icon: teacherMapTab, route: 'teacher-map' },
     {
@@ -83,8 +91,19 @@ export function createTeacherNavigationItems(profileEnabled = true): MobileBotto
 export function createHeadmanNavigationItems(profileEnabled = true): MobileBottomNavItems {
   return [
     { id: 'headman-today', label: 'Сегодня', icon: todayTabActive, route: 'headman-today' },
-    { id: 'headman-attendance', label: 'Учёт', accessibleLabel: 'Посещаемость', icon: attendanceTab, route: 'headman-attendance' },
-    { id: 'headman-requests', label: 'Заявки', icon: headmanRequestsTab, route: 'headman-requests' },
+    {
+      id: 'headman-attendance',
+      label: 'Учёт',
+      accessibleLabel: 'Посещаемость',
+      icon: attendanceTab,
+      route: 'headman-attendance',
+    },
+    {
+      id: 'headman-requests',
+      label: 'Заявки',
+      icon: headmanRequestsTab,
+      route: 'headman-requests',
+    },
     { id: 'headman-more', label: 'Ещё', icon: moreTab, route: 'headman-more' },
     {
       id: 'profile',

@@ -1,0 +1,88 @@
+{
+  "at": "2026-10-12T02:33:09.048549+00:00",
+  "root_parent": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "author_rows": [
+    {
+      "author_commit": "1dbee1831e58477b7ea455e0220751fda09284a0",
+      "paths": [
+        "event-schemas/password.changed.json",
+        "proto/academic.proto",
+        "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql"
+      ]
+    },
+    {
+      "author_commit": "5a028710f6d7cddfef0d6815fa4f7dd2d5d1fc5e",
+      "paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+      ]
+    },
+    {
+      "author_commit": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+      ]
+    },
+    {
+      "author_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+      ]
+    },
+    {
+      "author_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "paths": [
+        "services/notification-bot/bot/grpc_client/academic_pb2.py",
+        "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+      ]
+    },
+    {
+      "author_commit": "5d564870e631a276d88ac5a4b97463929f9b6687",
+      "paths": [
+        "services/academic-service/academic-app/src/main/resources/application.yml",
+        "services/notification-bot/bot/config.py"
+      ]
+    },
+    {
+      "author_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+      "paths": [
+        "scripts/generate-bot-proto.py"
+      ]
+    },
+    {
+      "author_commit": "f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+      "paths": [
+        "scripts/format-authored.mjs"
+      ]
+    },
+    {
+      "author_commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "paths": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/coverage.yml"
+      ]
+    }
+  ],
+  "paths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/coverage.yml",
+    "event-schemas/password.changed.json",
+    "proto/academic.proto",
+    "scripts/format-authored.mjs",
+    "scripts/generate-bot-proto.py",
+    "services/academic-service/academic-app/src/main/resources/application.yml",
+    "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+    "services/notification-bot/bot/config.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+  ],
+  "source_reviews": [
+    "common28edAPPROVE/d869",
+    "generator84dAPPROVE/5fdd",
+    "classifierf09APPROVE/aff2",
+    "CI579APPROVE/9f2a",
+    "config5d domainreviewconsulted2paths"
+  ],
+  "runtime": "17DB/4relevantfaults/restored4 +normal904Java/twoPython/legacywire qualified; domain NOT_RUN",
+  "policy": "normal individualcherry-picks preserve meaning/format separation; no shared-doc/source rewrite"
+}

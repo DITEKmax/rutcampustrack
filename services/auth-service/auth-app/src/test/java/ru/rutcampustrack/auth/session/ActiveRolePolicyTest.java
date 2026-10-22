@@ -1,14 +1,13 @@
 package ru.rutcampustrack.auth.session;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
-
-import java.time.Instant;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ActiveRolePolicyTest {
 
@@ -60,13 +59,14 @@ class ActiveRolePolicyTest {
         RoleGrant foreign = grant(7, AuthRole.STUDENT, RoleStatus.ACTIVE, 14L, 8);
         ActiveRolePolicy.Evaluation foreignResult = policy.evaluate(7, List.of(foreign));
         assertThat(foreignResult.code()).isEqualTo(ActiveRolePolicy.Code.FOREIGN_GRANT);
-        ActiveRolePolicy.Selection foreignSelection = policy.select(
-                7, AuthRole.STUDENT, List.of(foreign));
+        ActiveRolePolicy.Selection foreignSelection =
+                policy.select(7, AuthRole.STUDENT, List.of(foreign));
         assertThat(foreignSelection.code()).isEqualTo(ActiveRolePolicy.Code.FOREIGN_GRANT);
 
         RoleGrant first = grant(8, AuthRole.STUDENT, RoleStatus.ACTIVE, 14L);
         RoleGrant duplicateRole = grant(9, AuthRole.STUDENT, RoleStatus.GRADUATED, 14L);
-        ActiveRolePolicy.Evaluation duplicateResult = policy.evaluate(7, List.of(first, duplicateRole));
+        ActiveRolePolicy.Evaluation duplicateResult =
+                policy.evaluate(7, List.of(first, duplicateRole));
         assertThat(duplicateResult.code()).isEqualTo(ActiveRolePolicy.Code.DUPLICATE_GRANT);
     }
 
@@ -74,7 +74,8 @@ class ActiveRolePolicyTest {
         return grant(id, role, status, groupId, 7);
     }
 
-    private static RoleGrant grant(long id, AuthRole role, RoleStatus status, Long groupId, long userId) {
+    private static RoleGrant grant(
+            long id, AuthRole role, RoleStatus status, Long groupId, long userId) {
         return new RoleGrant(id, userId, role, status, groupId, CREATED, CREATED);
     }
 }

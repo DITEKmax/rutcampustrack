@@ -1,0 +1,53 @@
+# Merge only with docker-compose.e2e.yml in an explicitly owned disposable project.
+# Directory bind preserves atomic current-instant inode replacement. No security service mount.
+x-teaching-clock-mount: &teaching-clock-mount
+  type: bind
+  source: ${RCT_E2E_TEACHING_CLOCK_DIR:?prepare an absolute disposable teaching-clock directory}
+  target: /run/rct-e2e-clock
+  read_only: true
+  bind:
+    create_host_path: false
+services:
+  auth-service:
+    environment:
+      AUTH_PASSWORD_RESET_URL: https://localhost:8443/app/password-reset
+  academic-service:
+    volumes:
+      - *teaching-clock-mount
+    entrypoint:
+      - java
+      - -Drct.e2e.clock.enabled=true
+      - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
+      - -cp
+      - /app/BOOT-INF/classes:/app/BOOT-INF/lib/*:/run/rct-e2e-clock/clock-fixture.jar
+      - ru.rutcampustrack.academic.AcademicApplication
+  schedule-service:
+    volumes:
+      - *teaching-clock-mount
+    entrypoint:
+      - java
+      - -Drct.e2e.clock.enabled=true
+      - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
+      - -cp
+      - /app/BOOT-INF/classes:/app/BOOT-INF/lib/*:/run/rct-e2e-clock/clock-fixture.jar
+      - ru.rutcampustrack.schedule.ScheduleApplication
+  attendance-service:
+    volumes:
+      - *teaching-clock-mount
+    entrypoint:
+      - java
+      - -Drct.e2e.clock.enabled=true
+      - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
+      - -cp
+      - /app/BOOT-INF/classes:/app/BOOT-INF/lib/*:/run/rct-e2e-clock/clock-fixture.jar
+      - ru.rutcampustrack.attendance.AttendanceApplication
+  mobile-bff:
+    volumes:
+      - *teaching-clock-mount
+    entrypoint:
+      - java
+      - -Drct.e2e.clock.enabled=true
+      - -Drct.e2e.clock.file=/run/rct-e2e-clock/current-instant
+      - -cp
+      - /app/BOOT-INF/classes:/app/BOOT-INF/lib/*:/run/rct-e2e-clock/clock-fixture.jar
+      - ru.rutcampustrack.mobilebff.MobileBffApplication

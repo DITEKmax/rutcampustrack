@@ -1,0 +1,12 @@
+{
+  "phase": "types",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/typecheck-safe.cjs"
+  ],
+  "deadlineSeconds": 180,
+  "grantPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/private/node-final-check-grant06.json",
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "diagnosticPublicSourceOnly": false
+}

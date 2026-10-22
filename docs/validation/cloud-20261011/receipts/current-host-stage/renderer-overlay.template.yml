@@ -1,0 +1,15 @@
+# Source-only future runtime input; no launch/key/data/container grant here.
+services:
+  document-renderer-service:
+    image: sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f
+    pull_policy: never
+    volumes:
+      - type: bind
+        source: /workspace/scratch/rct-validation/current_host_stage/payload/renderer/app
+        target: /app
+        read_only: true
+        bind:
+          create_host_path: false
+# Keep existing native image USER app, WORKDIR /app, ENTRYPOINT java JarLauncher,
+# native JRE/LibreOffice/Poppler/fonts, writable default /tmp and original probes.
+# Numeric UID/tmp/native tools/conversions require the separate future runtime grant.

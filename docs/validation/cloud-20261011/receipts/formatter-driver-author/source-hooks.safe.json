@@ -1,0 +1,26 @@
+{
+  "native_exit": 0,
+  "argv": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "scripts/format-authored.mjs"
+  ],
+  "hooks": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...........................................(no files to check)Skipped",
+    "check json...........................................(no files to check)Skipped",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "offline_cached": true,
+  "raw_mode": "600",
+  "qualification": "No-files skips are not runtimePASS; no install or rules weakening"
+}

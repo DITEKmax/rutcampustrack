@@ -1,14 +1,14 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
-import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 
 /** Personal semester detail; ticket bodies, causes and attachments are intentionally absent. */
 public record HeadmanStatsStudentDetailResponse(
@@ -22,8 +22,11 @@ public record HeadmanStatsStudentDetailResponse(
         EmptyState emptyState,
         HeadmanStatsResponse.Sources sources,
         HeadmanStatsResponse.TicketCounts lateCheckin,
-        HeadmanStatsResponse.TicketCounts excuse
-) {
+        HeadmanStatsResponse.TicketCounts excuse,
+        @Schema(
+                        types = {"object", "null"},
+                        implementation = Rank.class)
+                Rank rank) {
     public HeadmanStatsStudentDetailResponse {
         context = Objects.requireNonNull(context, "context");
         student = Objects.requireNonNull(student, "student");
@@ -38,14 +41,83 @@ public record HeadmanStatsStudentDetailResponse(
         excuse = Objects.requireNonNull(excuse, "excuse");
     }
 
-    /** Existing callers retain empty additive counters until they supply the semester calculation. */
-    public HeadmanStatsStudentDetailResponse(HeadmanStatsResponse.Context context, Student student, Metrics metrics,
-                                            List<SubjectMetrics> subjects, List<WeekMetrics> weeks,
-                                            TicketPage<LateCheckinTicket> lateCheckins, TicketPage<ExcuseTicketEntry> excuses,
-                                            EmptyState emptyState) {
-        this(context, student, metrics, subjects, weeks, lateCheckins, excuses, emptyState,
+    public record Rank(
+            @Schema(
+                            types = {"integer", "null"},
+                            format = "int32")
+                    Integer position,
+            int participantCount,
+            boolean available,
+            Visibility visibility) {
+        public Rank {
+            Objects.requireNonNull(visibility, "visibility");
+            if (participantCount < 0
+                    || available
+                            && (position == null || position < 1 || position > participantCount)
+                    || !available && position != null
+                    || visibility == Visibility.HIDDEN && (available || participantCount != 0)) {
+                throw new IllegalArgumentException("Invalid target rank");
+            }
+        }
+    }
+
+    public enum Visibility {
+        VISIBLE,
+        HIDDEN
+    }
+
+    /** Compatible pre-rank constructor; absent rank means the server did not supply it. */
+    public HeadmanStatsStudentDetailResponse(
+            HeadmanStatsResponse.Context context,
+            Student student,
+            Metrics metrics,
+            List<SubjectMetrics> subjects,
+            List<WeekMetrics> weeks,
+            TicketPage<LateCheckinTicket> lateCheckins,
+            TicketPage<ExcuseTicketEntry> excuses,
+            EmptyState emptyState,
+            HeadmanStatsResponse.Sources sources,
+            HeadmanStatsResponse.TicketCounts lateCheckin,
+            HeadmanStatsResponse.TicketCounts excuse) {
+        this(
+                context,
+                student,
+                metrics,
+                subjects,
+                weeks,
+                lateCheckins,
+                excuses,
+                emptyState,
+                sources,
+                lateCheckin,
+                excuse,
+                null);
+    }
+
+    /**
+     * Existing callers retain empty additive counters until they supply the semester calculation.
+     */
+    public HeadmanStatsStudentDetailResponse(
+            HeadmanStatsResponse.Context context,
+            Student student,
+            Metrics metrics,
+            List<SubjectMetrics> subjects,
+            List<WeekMetrics> weeks,
+            TicketPage<LateCheckinTicket> lateCheckins,
+            TicketPage<ExcuseTicketEntry> excuses,
+            EmptyState emptyState) {
+        this(
+                context,
+                student,
+                metrics,
+                subjects,
+                weeks,
+                lateCheckins,
+                excuses,
+                emptyState,
                 new HeadmanStatsResponse.Sources(0, 0, 0, 0),
-                new HeadmanStatsResponse.TicketCounts(0, 0, 0), new HeadmanStatsResponse.TicketCounts(0, 0, 0));
+                new HeadmanStatsResponse.TicketCounts(0, 0, 0),
+                new HeadmanStatsResponse.TicketCounts(0, 0, 0));
     }
 
     public record Student(long id, String displayName) {
@@ -55,8 +127,11 @@ public record HeadmanStatsStudentDetailResponse(
         }
     }
 
-    public record SubjectMetrics(long subjectId, String subjectName, Metrics metrics,
-                                 List<LessonTypeMetrics> lessonTypes) {
+    public record SubjectMetrics(
+            long subjectId,
+            String subjectName,
+            Metrics metrics,
+            List<LessonTypeMetrics> lessonTypes) {
         public SubjectMetrics {
             if (subjectId <= 0) throw new IllegalArgumentException("Invalid subject identity");
             subjectName = Objects.requireNonNullElse(subjectName, "");
@@ -73,21 +148,31 @@ public record HeadmanStatsStudentDetailResponse(
         }
     }
 
-    public record WeekMetrics(LocalDate weekStart, LocalDate from, LocalDate to,
-                              HeadmanStatsTrendResponse.TrendMetric present,
-                              HeadmanStatsTrendResponse.TrendMetric presentOrExcused) {
+    public record WeekMetrics(
+            LocalDate weekStart,
+            LocalDate from,
+            LocalDate to,
+            HeadmanStatsTrendResponse.TrendMetric present,
+            HeadmanStatsTrendResponse.TrendMetric presentOrExcused) {
         public WeekMetrics {
             weekStart = Objects.requireNonNull(weekStart, "weekStart");
             from = Objects.requireNonNull(from, "from");
             to = Objects.requireNonNull(to, "to");
-            if (to.isBefore(from)) throw new IllegalArgumentException("Invalid personal trend week");
+            if (to.isBefore(from))
+                throw new IllegalArgumentException("Invalid personal trend week");
             present = Objects.requireNonNull(present, "present");
             presentOrExcused = Objects.requireNonNull(presentOrExcused, "presentOrExcused");
         }
     }
 
-    public record TicketPage<T>(int page, int size, long totalElements, int totalPages,
-                                boolean hasPrevious, boolean hasNext, List<T> items) {
+    public record TicketPage<T>(
+            int page,
+            int size,
+            long totalElements,
+            int totalPages,
+            boolean hasPrevious,
+            boolean hasNext,
+            List<T> items) {
         public TicketPage {
             if (page < 0 || size < 1 || totalElements < 0 || totalPages < 0) {
                 throw new IllegalArgumentException("Invalid ticket page");
@@ -96,10 +181,17 @@ public record HeadmanStatsStudentDetailResponse(
         }
     }
 
-    public record LateCheckinTicket(String id, LocalDate lessonDate, Long subjectId,
-                                    String subjectName, String lessonType, Integer lessonNumber,
-                                    Instant submittedAt, Instant decidedAt,
-                                    LateCheckinRequestStatus status, LateCheckinRequestOrigin origin) {
+    public record LateCheckinTicket(
+            String id,
+            LocalDate lessonDate,
+            Long subjectId,
+            String subjectName,
+            String lessonType,
+            Integer lessonNumber,
+            Instant submittedAt,
+            Instant decidedAt,
+            LateCheckinRequestStatus status,
+            LateCheckinRequestOrigin origin) {
         public LateCheckinTicket {
             id = Objects.requireNonNull(id, "id");
             lessonDate = Objects.requireNonNull(lessonDate, "lessonDate");
@@ -110,8 +202,12 @@ public record HeadmanStatsStudentDetailResponse(
         }
     }
 
-    public record ExcuseTicketEntry(String id, Instant submittedAt, Instant decidedAt,
-                                    ExcuseTicketStatus status, List<TicketLesson> lessons) {
+    public record ExcuseTicketEntry(
+            String id,
+            Instant submittedAt,
+            Instant decidedAt,
+            ExcuseTicketStatus status,
+            List<TicketLesson> lessons) {
         public ExcuseTicketEntry {
             id = Objects.requireNonNull(id, "id");
             status = Objects.requireNonNull(status, "status");
@@ -119,8 +215,12 @@ public record HeadmanStatsStudentDetailResponse(
         }
     }
 
-    public record TicketLesson(long lessonId, LocalDate lessonDate, String subjectName,
-                               String lessonType, Integer lessonNumber) {
+    public record TicketLesson(
+            long lessonId,
+            LocalDate lessonDate,
+            String subjectName,
+            String lessonType,
+            Integer lessonNumber) {
         public TicketLesson {
             if (lessonId <= 0) throw new IllegalArgumentException("Invalid lesson identity");
             lessonDate = Objects.requireNonNull(lessonDate, "lessonDate");

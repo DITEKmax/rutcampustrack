@@ -1,0 +1,14 @@
+{
+  "REPORT.safe.json": {
+    "sha256": "0222ad90aa38301668f6f5a46e17b35cd6851341e88624d0d0424945514a1888",
+    "bytes": 1087
+  },
+  "parameter.delta.patch": {
+    "sha256": "662495fc5f93496976005838412cb14cfdae2629ca82af83ce408bb685ec1f9b",
+    "bytes": 663
+  },
+  "strict-browser-schema.py": {
+    "sha256": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e",
+    "bytes": 7319
+  }
+}

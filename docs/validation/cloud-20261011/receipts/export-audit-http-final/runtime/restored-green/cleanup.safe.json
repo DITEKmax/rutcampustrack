@@ -1,0 +1,12 @@
+{
+  "time": "2026-10-12T03:01:38.535145+00:00",
+  "own_session": "4177516f-dd97-4d75-b097-54f26ccec952",
+  "own3_ids_absent": [
+    "347b6524b8241f149ae1b3c5b44c7fad31651cc93a5dc1749bd065b4fc770efc",
+    "c2646a56daa55d557c66c47d38944807cbdc87c0fbf9e6b410a94d2461483ccc",
+    "4462d453867788efb7bf85afdc46637fe44df34a148b1f8424cd5aa614fdfd3f"
+  ],
+  "method": "standard Testcontainers/Ryuk; no manual resource deletion",
+  "foreign_resources_preserved": [],
+  "current_free_bytes": 9483030528
+}

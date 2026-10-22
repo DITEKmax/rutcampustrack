@@ -1,0 +1,9 @@
+{
+  "safe_review_outputs_only": true,
+  "injected_privacy_marker_copied": false,
+  "raw_xml_or_test_properties_streams_failure_bodies_copied": false,
+  "runtime_or_mutation_executed_by_reviewer": false,
+  "products_author_worktrees_root_docs_written": false,
+  "model_actual": "UNKNOWN",
+  "verdict_scope": "Three separate SOURCE approvals; actual CI/client/runtime graph/JAR acceptance remains separate."
+}

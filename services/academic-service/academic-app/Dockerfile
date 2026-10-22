@@ -18,6 +18,9 @@ COPY proto proto
 # M13 G25.5 — shared modules (academic-app транзитивно зависит от shared-*).
 COPY services/shared services/shared
 
+COPY services/auth-service/auth-api-contract/build.gradle.kts services/auth-service/auth-api-contract/
+COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-contract/src
+
 # API contract module
 COPY services/academic-service/academic-api-contract/build.gradle.kts \
      services/academic-service/academic-api-contract/
@@ -30,9 +33,9 @@ COPY services/academic-service/academic-app/build.gradle.kts \
 COPY services/academic-service/academic-app/src \
      services/academic-service/academic-app/src
 
-# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
-# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service without sharing daemon state.
+# BuildKit serializes only writers using the same service cache.
+RUN --mount=type=cache,id=rct-gradle-academic,target=/root/.gradle,sharing=locked \
     chmod +x gradlew && ./gradlew :services:academic-service:academic-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers

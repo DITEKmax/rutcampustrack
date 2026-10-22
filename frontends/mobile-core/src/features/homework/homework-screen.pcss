@@ -14,7 +14,8 @@
   inline-size: min(calc(100% - 2 * var(--rct-space-4)), var(--rct-mobile-content-width));
   min-block-size: 100dvh;
   margin-inline: auto;
-  padding-block: calc(env(safe-area-inset-top) + var(--rct-space-5)) calc(env(safe-area-inset-bottom) + 6.75rem);
+  padding-block: calc(env(safe-area-inset-top) + var(--rct-space-5))
+    calc(env(safe-area-inset-bottom) + 6.75rem);
   gap: var(--rct-space-3);
 }
 
@@ -41,6 +42,98 @@
   line-height: 1.35;
   cursor: pointer;
   @mixin rct-focus-ring;
+}
+
+.homework-period-panel {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+.homework-period-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--rct-space-1);
+}
+
+.homework-period-tabs button,
+.homework-period-pager button,
+.homework-calendar button {
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: 0;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-1);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  font-size: var(--rct-font-size-caption);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.homework-period-tabs button[aria-selected='true'],
+.homework-calendar button[aria-pressed='true'] {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+.homework-period-tabs button:disabled,
+.homework-period-pager button:disabled,
+.homework-calendar button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.homework-period-pager {
+  display: grid;
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
+  align-items: center;
+  gap: var(--rct-space-2);
+}
+
+.homework-period-pager output {
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-size: var(--rct-font-size-caption);
+}
+
+.homework-calendar-scroll {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  @mixin rct-focus-ring;
+}
+
+.homework-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(var(--rct-control-min-touch), 1fr));
+  min-inline-size: calc(7 * var(--rct-control-min-touch) + 6 * var(--rct-space-1));
+  gap: var(--rct-space-1);
+  text-align: center;
+  font-size: var(--rct-font-size-micro);
+}
+
+.homework-calendar button {
+  min-inline-size: var(--rct-control-min-touch);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.homework-calendar button[aria-current='date'] {
+  outline: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+}
+
+.homework-calendar button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--rct-font-size-micro);
+}
+
+.homework-empty-day {
+  margin: 0;
+  color: var(--rct-color-text-secondary);
 }
 
 .homework-previous {
@@ -112,6 +205,12 @@
   white-space: pre-line;
 }
 
+.homework-card__description a {
+  color: var(--rct-color-text-primary);
+  text-decoration: underline;
+  @mixin rct-focus-ring;
+}
+
 .homework-card__title {
   font-size: var(--rct-font-size-caption);
 }
@@ -161,6 +260,19 @@
   -webkit-mask-size: contain;
 }
 
+.homework-material__label {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.homework-material__hostname {
+  overflow-wrap: anywhere;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-micro);
+  font-weight: var(--rct-font-weight-regular);
+}
+
 .homework-material-error {
   flex: 1;
   color: var(--rct-color-danger-text);
@@ -188,7 +300,6 @@
   block-size: var(--rct-control-min-touch);
   mask-size: contain;
   -webkit-mask-size: contain;
-
 }
 
 .homework-expand__icon--open {
@@ -243,10 +354,30 @@
   }
 }
 
-
-.homework-screen .student-warning { gap: var(--rct-space-4); }
-.homework-skeleton { display: grid; gap: var(--rct-space-3); }
-.homework-skeleton__card { display: grid; gap: var(--rct-space-3); border-radius: var(--rct-radius-2xl); padding: var(--rct-space-4); background: var(--rct-color-surface-raised); }
-.homework-skeleton__line { block-size: var(--rct-space-4); border-radius: var(--rct-radius-full); background: var(--rct-color-surface-float); }
-.homework-skeleton__line:first-child { inline-size: 70%; }
-.homework-skeleton__track { block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1)); border-radius: var(--rct-radius-full); background: var(--rct-color-surface-float); }
+.homework-screen .student-warning {
+  gap: var(--rct-space-4);
+}
+.homework-skeleton {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+.homework-skeleton__card {
+  display: grid;
+  gap: var(--rct-space-3);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+.homework-skeleton__line {
+  block-size: var(--rct-space-4);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}
+.homework-skeleton__line:first-child {
+  inline-size: 70%;
+}
+.homework-skeleton__track {
+  block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1));
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}

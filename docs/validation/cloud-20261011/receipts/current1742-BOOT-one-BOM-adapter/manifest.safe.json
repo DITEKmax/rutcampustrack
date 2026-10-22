@@ -1,0 +1,24 @@
+{
+  "state": "ONE_BOM_SOURCE_CORRECTION_READY_INDEPENDENT_RECHECK",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "existing_interface_sha256": "312cbee0aebbb97e935509ed7b03bae282c53efcb9017d847b7c8877ac71a57f",
+  "actual_schema": "ROOT_OBSERVED_SC_CONTENT_STRING_INITIAL_UFEFF_280748_UNITS",
+  "operation": "Only one initial UFEFF removed; entire remainder preserved. Double/interior/nonTimestamp/unknown/error/ambiguous denied. Delegate unchanged interface312 framing. Return privatePayload RAM only and safe bomRemoved boolean. Root pins both Sources; no SDK refetch/parser change. e7a6/b78/encoder unchanged. Root fresh transfer grant after independent recheck.",
+  "actual_source_effects": "None; public synthetic V8/RAM directed control only",
+  "directed_groups": 1,
+  "cause": "UNKNOWN",
+  "entries": [
+    {
+      "path": "control.safe.json",
+      "bytes": 358,
+      "sha256": "e4b89d0629304f6ccc8a8d0216307d8cacfdc7278ea140d493ae4fcd6859e787"
+    },
+    {
+      "path": "interface-bom-r1.js",
+      "bytes": 1987,
+      "sha256": "66aacd7f7a3b8423b17d8d0db851539c5c4cd3f462966122ee6ca40005364a72"
+    }
+  ]
+}

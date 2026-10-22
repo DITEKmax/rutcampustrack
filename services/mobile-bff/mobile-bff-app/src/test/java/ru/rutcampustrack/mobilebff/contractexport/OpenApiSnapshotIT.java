@@ -1,9 +1,26 @@
 package ru.rutcampustrack.mobilebff.contractexport;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,62 +36,45 @@ import ru.rutcampustrack.mobilebff.student.StudentCheckinFacade;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest(
         classes = MobileBffApplication.class,
         properties = {
-                "springdoc.api-docs.path=/api-docs",
-                "springdoc.enable-hateoas=false",
-                "spring.autoconfigure.exclude="
-                        + "ru.rutcampustrack.shared.web.autoconfigure.SharedWebAutoConfiguration"
-        }
-)
+            "springdoc.api-docs.path=/api-docs",
+            "springdoc.enable-hateoas=false",
+            "spring.autoconfigure.exclude="
+                    + "ru.rutcampustrack.shared.web.autoconfigure.SharedWebAutoConfiguration"
+        })
 @AutoConfigureMockMvc
 class OpenApiSnapshotIT {
 
-    private static final Path SNAPSHOT_PATH = Path.of("../../..", "docs", "openapi", "mobile-bff.json")
-            .toAbsolutePath().normalize();
+    private static final Path SNAPSHOT_PATH =
+            Path.of("../../..", "docs", "openapi", "mobile-bff.json").toAbsolutePath().normalize();
     private static final InternalJwtTestFactory JWT = new InternalJwtTestFactory();
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @MockitoBean
-    private PublicKeyProvider publicKeyProvider;
+    @MockitoBean private PublicKeyProvider publicKeyProvider;
 
-    @MockitoBean
-    private StudentCheckinFacade checkins;
+    @MockitoBean private StudentCheckinFacade checkins;
 
     @BeforeEach
     void setUpRuntimeSeam() {
         when(publicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
-        when(checkins.checkin(anyLong(), anyString(), any())).thenThrow(new MobileBffException(
-                HttpStatus.NOT_FOUND, ProblemCode.LESSON_NOT_FOUND, "Пара не найдена"));
+        when(checkins.checkin(anyLong(), anyString(), any()))
+                .thenThrow(
+                        new MobileBffException(
+                                HttpStatus.NOT_FOUND,
+                                ProblemCode.LESSON_NOT_FOUND,
+                                "Пара не найдена"));
     }
 
     @Test
     void apiDocsMatchCanonicalSnapshot() throws Exception {
-        String body = mockMvc.perform(get("/api-docs"))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+        String body =
+                mockMvc.perform(get("/api-docs"))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(StandardCharsets.UTF_8);
         assertThat(body).isNotBlank();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -84,9 +84,13 @@ class OpenApiSnapshotIT {
         assertThat(root.at("/info/version").asText()).isEqualTo("JS-STUDENT-01-r1");
         assertThat(root.at("/paths/~1api~1v1~1student~1today/get")).isNotEmpty();
         assertThat(root.at("/paths/~1api~1v1~1student~1schedule/get")).isNotEmpty();
-        assertThat(root.at("/paths/~1api~1v1~1student~1lessons~1{lessonId}~1checkin/post")).isNotEmpty();
-        assertThat(root.at("/paths/~1api~1v1~1student~1requests~1excuse/post/requestBody/required")
-                .asBoolean()).isTrue();
+        assertThat(root.at("/paths/~1api~1v1~1student~1lessons~1{lessonId}~1checkin/post"))
+                .isNotEmpty();
+        assertThat(
+                        root.at(
+                                        "/paths/~1api~1v1~1student~1requests~1excuse/post/requestBody/required")
+                                .asBoolean())
+                .isTrue();
         assertThat(root.at("/components/schemas/GeoInput/oneOf")).hasSize(2);
         assertThat(root.at("/components/schemas/CoordinatesGeo/type").asText()).isEqualTo("object");
         assertThat(root.at("/components/schemas/CoordinatesGeo/required").toString())
@@ -95,18 +99,26 @@ class OpenApiSnapshotIT {
                 .isEqualTo("[\"COORDINATES\"]");
         assertThat(root.at("/components/schemas/UnavailableGeo/properties/kind/enum").toString())
                 .isEqualTo("[\"UNAVAILABLE\"]");
-        assertThat(root.at("/components/schemas/TodayLesson/properties/attendance/nullable").asBoolean())
+        assertThat(
+                        root.at("/components/schemas/TodayLesson/properties/attendance/nullable")
+                                .asBoolean())
                 .isTrue();
-        assertThat(root.at("/components/schemas/StudentCheckinAck/properties/request/nullable").asBoolean())
+        assertThat(
+                        root.at("/components/schemas/StudentCheckinAck/properties/request/nullable")
+                                .asBoolean())
                 .isTrue();
         assertThat(root.at("/components/schemas/Room/properties/previous/nullable").asBoolean())
                 .isTrue();
-        assertThat(root.at("/components/schemas/MobileProblemDetails/properties/extras/additionalProperties/type")
-                .asText()).isEqualTo("string");
+        assertThat(
+                        root.at(
+                                        "/components/schemas/MobileProblemDetails/properties/extras/additionalProperties/type")
+                                .asText())
+                .isEqualTo("string");
 
-        ObjectWriter writer = mapper.writer()
-                .with(SerializationFeature.INDENT_OUTPUT)
-                .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+        ObjectWriter writer =
+                mapper.writer()
+                        .with(SerializationFeature.INDENT_OUTPUT)
+                        .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         String actual = normalizeLineEndings(writer.writeValueAsString(root) + "\n");
 
         if (Boolean.getBoolean("openapi.snapshot.update")) {
@@ -116,7 +128,10 @@ class OpenApiSnapshotIT {
         }
 
         assertThat(SNAPSHOT_PATH).exists();
-        assertThat(actual).isEqualTo(normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8)));
+        assertThat(actual)
+                .isEqualTo(
+                        normalizeLineEndings(
+                                Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8)));
     }
 
     private static String normalizeLineEndings(String value) {
@@ -125,20 +140,24 @@ class OpenApiSnapshotIT {
 
     @Test
     void bothValidGeoKindsReachTheContractSeam() throws Exception {
-        mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
-                        .header("X-Internal-Token", studentToken())
-                        .header("Idempotency-Key", "contract-key-0001")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
+        mockMvc.perform(
+                        post("/api/v1/student/lessons/77/checkin")
+                                .header("X-Internal-Token", studentToken())
+                                .header("Idempotency-Key", "contract-key-0001")
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        """
                                 {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
                                 """))
                 .andExpect(status().isNotFound());
 
-        mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
-                        .header("X-Internal-Token", studentToken())
-                        .header("Idempotency-Key", "contract-key-0002")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
+        mockMvc.perform(
+                        post("/api/v1/student/lessons/77/checkin")
+                                .header("X-Internal-Token", studentToken())
+                                .header("Idempotency-Key", "contract-key-0002")
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        """
                                 {"geo":{"kind":"UNAVAILABLE","reason":"TIMEOUT"}}
                                 """))
                 .andExpect(status().isNotFound());
@@ -146,20 +165,24 @@ class OpenApiSnapshotIT {
 
     @Test
     void missingOrNullCoordinateIsRejectedBeforeTheSeam() throws Exception {
-        mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
-                        .header("X-Internal-Token", studentToken())
-                        .header("Idempotency-Key", "contract-key-0003")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
+        mockMvc.perform(
+                        post("/api/v1/student/lessons/77/checkin")
+                                .header("X-Internal-Token", studentToken())
+                                .header("Idempotency-Key", "contract-key-0003")
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        """
                                 {"geo":{"kind":"COORDINATES","longitude":37.618423}}
                                 """))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
-                        .header("X-Internal-Token", studentToken())
-                        .header("Idempotency-Key", "contract-key-0004")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
+        mockMvc.perform(
+                        post("/api/v1/student/lessons/77/checkin")
+                                .header("X-Internal-Token", studentToken())
+                                .header("Idempotency-Key", "contract-key-0004")
+                                .contentType(APPLICATION_JSON)
+                                .content(
+                                        """
                                 {"geo":{"kind":"COORDINATES","latitude":null,"longitude":37.618423}}
                                 """))
                 .andExpect(status().isBadRequest());
@@ -167,60 +190,80 @@ class OpenApiSnapshotIT {
 
     @Test
     void clientInputFailuresUseTypedProblemDetails() throws Exception {
-        expectProblem(post("/api/v1/student/lessons/77/checkin")
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
                         .contentType(APPLICATION_JSON)
-                        .content("""
+                        .content(
+                                """
                                 {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
                                 """),
-                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_IDEMPOTENCY_KEY);
+                HttpStatus.BAD_REQUEST,
+                ProblemCode.INVALID_IDEMPOTENCY_KEY);
 
-        expectProblem(post("/api/v1/student/lessons/77/checkin")
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "short-key")
                         .contentType(APPLICATION_JSON)
-                        .content("""
+                        .content(
+                                """
                                 {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
                                 """),
-                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_IDEMPOTENCY_KEY);
+                HttpStatus.BAD_REQUEST,
+                ProblemCode.INVALID_IDEMPOTENCY_KEY);
 
-        expectProblem(post("/api/v1/student/lessons/77/checkin")
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0005")
                         .contentType(APPLICATION_JSON)
                         .content("{\"geo\":"),
-                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST);
+                HttpStatus.BAD_REQUEST,
+                ProblemCode.INVALID_REQUEST);
 
-        expectProblem(post("/api/v1/student/lessons/77/checkin")
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0006")
                         .contentType(APPLICATION_JSON)
-                        .content("""
+                        .content(
+                                """
                                 {"geo":{"kind":"UNEXPECTED"}}
                                 """),
-                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST);
+                HttpStatus.BAD_REQUEST,
+                ProblemCode.INVALID_REQUEST);
 
-        expectProblem(post("/api/v1/student/lessons/77/checkin")
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0007")
                         .contentType(APPLICATION_JSON)
-                        .content("""
+                        .content(
+                                """
                                 {"geo":{"kind":"COORDINATES","latitude":99,"longitude":37.618423}}
                                 """),
-                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST);
+                HttpStatus.BAD_REQUEST,
+                ProblemCode.INVALID_REQUEST);
 
-        expectProblem(post("/api/v1/student/lessons/77/checkin")
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0008")
                         .contentType(APPLICATION_JSON)
-                        .content("""
+                        .content(
+                                """
                                 {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
                                 """),
-                HttpStatus.NOT_FOUND, ProblemCode.LESSON_NOT_FOUND);
+                HttpStatus.NOT_FOUND,
+                ProblemCode.LESSON_NOT_FOUND);
     }
 
-    private void expectProblem(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request,
-                               HttpStatus expectedStatus, ProblemCode code) throws Exception {
+    private void expectProblem(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request,
+            HttpStatus expectedStatus,
+            ProblemCode code)
+            throws Exception {
         mockMvc.perform(request)
                 .andExpect(status().is(expectedStatus.value()))
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
@@ -228,7 +271,15 @@ class OpenApiSnapshotIT {
     }
 
     private static String studentToken() {
-        return JWT.validToken(100L, UUID.fromString("88888888-8888-4888-8888-888888888888"),
-                1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
+        return JWT.validToken(
+                100L,
+                UUID.fromString("88888888-8888-4888-8888-888888888888"),
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                10L,
+                false,
+                false);
     }
 }

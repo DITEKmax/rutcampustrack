@@ -1,0 +1,22 @@
+{
+  "head": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+  "parent": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "branch": "codex/server-validation-20261011",
+  "baseline_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_remote_PR_head_equal": true,
+  "readback": "separate real gitlsremote+authenticatedofficialPRGET equalhead/mainunchanged",
+  "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "merged": false,
+  "target": "main",
+  "advertised_merge": "189b857d9cc2a21f4c818b3915b7ce07034245ac",
+  "actual_checkout": "UNKNOWN_PENDING_CURRENT_CI_ARTIFACT",
+  "Source_paths": 13,
+  "commit_paths": 33,
+  "exact_reviewed_Source_pin_match": true,
+  "normal_hooks": "all33paths stagedbefore normal6precommithooks; allPASS then normalcommit/push",
+  "native": "48139exit0/settled/reaped",
+  "current_runs": "NOT_READ_YET",
+  "new_actual_client_cases": "NOT_RUN",
+  "no_angular_api_proto_db_changes": true
+}

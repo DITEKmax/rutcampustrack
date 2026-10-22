@@ -6,11 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 /**
- * M04 Группа 8 — регистрация bean'а {@link BusinessMetrics} для
- * auth-service. Используется в {@code AuthService.login}/{@code logout},
- * {@code OtpService.request}/{@code verify} для инкремента counter'ов
- * {@code auth.login}, {@code auth.logout}, {@code otp.request},
- * {@code otp.verify}.
+ * M04 Группа 8 — регистрация bean'а {@link BusinessMetrics} для auth-service. Используется в {@code
+ * AuthService.login}/{@code logout}, {@code OtpService.request}/{@code verify} для инкремента
+ * counter'ов {@code auth.login}, {@code auth.logout}, {@code otp.request}, {@code otp.verify}.
  */
 @Configuration
 public class ObservabilityConfig {

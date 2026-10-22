@@ -1,0 +1,59 @@
+{
+  "correction_revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+  "bridge_revision": "dc9acc4385c756ce7bf070f248feadc7c4dba234",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "runtime": "NOT_RUN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 578,
+      "sha256": "eb22b267e6b17d65001ded9aa03e5394d2d19237961670a69bdb5fdb5540f7f7"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 12496,
+      "sha256": "bb63a65486b1a16b1e9680903c341d4ed9207409e6dc5be813d91394486c2d42"
+    },
+    {
+      "path": "check.py",
+      "bytes": 915,
+      "sha256": "658a06564e96485bdc5b3ce2b439c8a399d0f0d6012e87bc4729d1d3eb585d2c"
+    },
+    {
+      "path": "final-source-and-seals-proof.json",
+      "bytes": 2722,
+      "sha256": "0bbde82547aa10956c66f3763aa0a18f9a9d438d19d02d5c28976a3fdfad74e2"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 411,
+      "sha256": "f8e08a2670880d6f00d209cbbc65c2474840acbe80bd0d5694f0c5f5e62b6da9"
+    },
+    {
+      "path": "previous-first22-seal.json",
+      "bytes": 213,
+      "sha256": "2c7d2f64e1ca1e73eb0d5a1683de24e4c8212b0a95b2e5c7ecf84a7a8cf8420e"
+    },
+    {
+      "path": "revision-bridge.json",
+      "bytes": 3078,
+      "sha256": "77745d698957173c15ba5c8aabe5ec680fba7f6b3bbce156d994ffeb4e1194eb"
+    },
+    {
+      "path": "semantic-checks.json",
+      "bytes": 801,
+      "sha256": "ab4edfbea6faacfe8c196b9c3f834d8a587f78742742fbae7c54b950ec4ad4ec"
+    },
+    {
+      "path": "source-inventory.json",
+      "bytes": 1873,
+      "sha256": "c95f3193e1d8c06d07c32f2c79b7f1e9a5bed09dcdfca636f632f24bd2121c8e"
+    },
+    {
+      "path": "verification-dependencies.json",
+      "bytes": 827,
+      "sha256": "684f1216bae50bbd6a2274a6a5ab6c3501b1c51b8b5baa79bfb18c03ef2baca5"
+    }
+  ],
+  "excluded": "private-frozen-source; no source copies, synthetic values or runtime raw logs/XML/properties bundled"
+}

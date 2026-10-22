@@ -13,6 +13,8 @@ service AcademicGrpcService {
   rpc CheckAdminPermission (AdminPermissionCheckRequest) returns (AdminPermissionCheckResponse);
   // Fresh signed current-group statistics authority, catalog and selected semester.
   rpc ResolveHeadmanStatsScope (HeadmanStatsScopeRequest) returns (HeadmanStatsScopeResponse);
+  // Fresh own-group journal admission, separate from the Schedule-only state RPC.
+  rpc GetHeadmanJournalSemesterState (HeadmanJournalSemesterStateRequest) returns (SemesterStateResponse);
   // Fresh own-group roster for HEADMAN exports; signed identity is mandatory.
   rpc GetHeadmanGroupComposition (GroupRequest) returns (HeadmanGroupCompositionResponse);
 
@@ -62,8 +64,19 @@ service AcademicGrpcService {
   // Получить пользователя по Telegram ID (для бота)
   rpc GetUserByTelegramId (UserByTelegramIdRequest) returns (UserByTelegramIdResponse);
 
-  // Read homework for a student's group in a date range (for Telegram bot).
+  // Dedicated notification-bot TLS/directed-identity capability; generic profiles remain redacted.
+  rpc GetOwnBotInitialCredentials (BotOwnInitialCredentialsRequest)
+      returns (BotOwnInitialCredentialsResponse);
+
+  // Closed metadata-only lifecycle for exact own initial-credential cards.
+  rpc ManageOwnBotCredentialMessages (BotCredentialMessagesRequest)
+      returns (BotCredentialMessagesResponse);
+
+  // Read own homework with a signed student identity and its admitted semester scope.
   rpc GetHomeworksForWeek (HomeworksForWeekRequest) returns (HomeworksForWeekResponse);
+
+  // Directed notification-bot own-read; all academic scope is derived from live authority.
+  rpc GetOwnBotHomeworksForWeek (BotOwnHomeworksForWeekRequest) returns (HomeworksForWeekResponse);
 
   // Set a student's desired completion state for one homework item.
   // The actor is taken from the signed internal JWT metadata, never from the request.
@@ -142,6 +155,7 @@ message HeadmanStatsScopeResponse {
   optional HeadmanStatsSemester selected_semester = 5;
   int64 membership_active = 6;
   int64 membership_total = 7;
+  StudentProjectionScopeResponse student_rank_scope = 8; // admitted target, authorized group only
 }
 
 message GroupRequest {
@@ -276,6 +290,11 @@ message SemesterStateRequest {
   int64 semester_id = 1;
 }
 
+message HeadmanJournalSemesterStateRequest {
+  int64 group_id = 1;
+  int64 semester_id = 2;
+}
+
 message SemesterStateResponse {
   int64 id = 1;
   bool active = 2;
@@ -377,6 +396,9 @@ message SubjectInfo {
   int64 subject_id = 1;
   string subject_name = 2;
   string subject_type = 3;
+  // Additive report scope metadata. A missing group must fail closed for the new consumer.
+  int64 group_id = 4;
+  repeated string lesson_types = 5;
 }
 
 message UserByTelegramIdRequest {
@@ -408,6 +430,15 @@ message HomeworksForWeekRequest {
   bool include_completed_today = 6;
   string completed_today_from = 7;
   string completed_today_to = 8;
+}
+
+message BotOwnHomeworksForWeekRequest {
+  int64 telegram_sender_id = 1;
+  int64 expected_user_id = 2;
+  int64 expected_roles_version = 3;
+  string date_from = 4;
+  string date_to = 5;
+  int64 expected_telegram_binding_version = 6; // positive live Auth binding fence
 }
 
 message HomeworksForWeekResponse {
@@ -601,3 +632,130 @@ message AdminPermissionCheckRequest {
   bool full_only = 2;
 }
 message AdminPermissionCheckResponse { bool allowed = 1; }
+
+// UNKNOWN/absent modes and enum values are rejected, never interpreted as permission.
+enum BotCredentialReadMode {
+  BOT_CREDENTIAL_READ_MODE_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_READ_MODE_SNAPSHOT = 1; // both expected versions must be zero
+  BOT_CREDENTIAL_READ_MODE_RECHECK = 2; // both expected versions must be positive
+}
+
+message BotOwnInitialCredentialsRequest {
+  int64 telegram_sender_id = 1; // positive and equal to the verified private chat
+  int64 private_chat_id = 2;
+  int64 expected_user_id = 3;
+  int64 expected_telegram_binding_version = 4;
+  int64 expected_credentials_version = 5;
+  BotCredentialReadMode mode = 6;
+}
+
+message BotOwnInitialCredentialsResponse {
+  // Fresh exact UID/binding, unarchived account and valid ACTIVE own durable grant.
+  // Default-role activation is separate from this authority decision.
+  bool found = 1;
+  int64 user_id = 2;
+  string login = 3; // blank when not eligible
+  string initial_password = 4; // blank when not eligible; never changed password/hash
+  bool password_changed = 5;
+  int64 telegram_binding_version = 6;
+  int64 credentials_version = 7;
+  bool eligible = 8; // found plus unchanged password and nonempty accepted initial
+}
+
+enum BotCredentialRenderState {
+  BOT_CREDENTIAL_RENDER_STATE_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_RENDER_STATE_IN_FLIGHT = 1;
+  BOT_CREDENTIAL_RENDER_STATE_CONFIRMED_EDIT = 2;
+  BOT_CREDENTIAL_RENDER_STATE_NO_EDIT = 3;
+  BOT_CREDENTIAL_RENDER_STATE_UNCERTAIN = 4;
+}
+
+enum BotCredentialCleanupState {
+  BOT_CREDENTIAL_CLEANUP_STATE_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_CLEANUP_STATE_NOT_REQUIRED = 1;
+  BOT_CREDENTIAL_CLEANUP_STATE_PENDING = 2;
+  BOT_CREDENTIAL_CLEANUP_STATE_CLEANED = 3;
+}
+
+message BotCredentialMessageReference {
+  int64 record_id = 1;
+  int64 user_id = 2;
+  int64 private_chat_id = 3;
+  int64 message_id = 4;
+  int64 telegram_binding_version = 5;
+  int64 credentials_version = 6;
+  int64 record_revision = 7; // mutable metadata CAS; positive after REGISTER
+  int64 render_revision = 8; // immutable single render attempt, unaffected by invalidation
+  BotCredentialRenderState render_state = 9;
+  BotCredentialCleanupState cleanup_state = 10;
+  int64 invalidated_credentials_version = 11; // zero only while not invalidated
+}
+
+message RegisterBotCredentialMessage {
+  // Original positive identity/versions only; record/revisions/state/invalidation must be absent.
+  BotCredentialMessageReference message = 1;
+}
+
+message ListInvalidatedBotCredentialMessages {
+  int64 user_id = 1;
+  int64 invalidated_credentials_version = 2; // fixed event fence, inclusive
+  string event_id = 3; // canonical UUID, correlation only; never authority
+  int64 after_record_id = 4;
+  int32 page_size = 5; // 1..200; iterate all pages, no card count/lifetime policy
+}
+
+enum BotCredentialRenderOutcome {
+  BOT_CREDENTIAL_RENDER_OUTCOME_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_RENDER_OUTCOME_CONFIRMED_EDIT = 1;
+  BOT_CREDENTIAL_RENDER_OUTCOME_NO_EDIT = 2;
+  BOT_CREDENTIAL_RENDER_OUTCOME_UNCERTAIN = 3;
+}
+
+message CompleteBotCredentialMessageRender {
+  // Exact immutable tuple and positive render_revision identify the original permit.
+  // record_revision may predate atomic invalidation; it is not the render-attempt fence.
+  BotCredentialMessageReference message = 1;
+  BotCredentialRenderOutcome outcome = 2;
+}
+
+enum BotCredentialCleanupOutcome {
+  BOT_CREDENTIAL_CLEANUP_OUTCOME_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_CLEANUP_OUTCOME_DELETED = 1;
+  BOT_CREDENTIAL_CLEANUP_OUTCOME_ABSENT = 2;
+  BOT_CREDENTIAL_CLEANUP_OUTCOME_SANITIZED = 3;
+}
+
+message CompleteBotCredentialMessageCleanup {
+  // Exact immutable tuple plus current record_revision CAS; no arbitrary message IDs.
+  BotCredentialMessageReference message = 1;
+  int64 invalidated_credentials_version = 2;
+  string event_id = 3;
+  // DELETED/ABSENT may settle unresolved rendering; SANITIZED only a definite settled render.
+  // Failed/uncertain provider cleanup has no success outcome and keeps durable PENDING state.
+  BotCredentialCleanupOutcome outcome = 4;
+}
+
+message BotCredentialMessagesRequest {
+  oneof command {
+    RegisterBotCredentialMessage register = 1;
+    ListInvalidatedBotCredentialMessages list_invalidated = 2;
+    CompleteBotCredentialMessageCleanup complete_cleanup = 3;
+    CompleteBotCredentialMessageRender complete_render = 4;
+  }
+}
+
+enum BotCredentialMessageDisposition {
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_REGISTERED = 1; // sole one-time render permission
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_INVALIDATED_LIST = 2;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_COMPLETED = 3;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_RENDER_COMPLETED = 4;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_REQUIRED = 5;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_ALREADY_REGISTERED = 6; // never grants another render
+}
+
+message BotCredentialMessagesResponse {
+  BotCredentialMessageDisposition disposition = 1;
+  repeated BotCredentialMessageReference messages = 2;
+  int64 next_after_record_id = 3; // zero when the fixed invalidation fence is exhausted
+}

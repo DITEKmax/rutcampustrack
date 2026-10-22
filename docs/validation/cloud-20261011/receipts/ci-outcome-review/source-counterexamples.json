@@ -1,0 +1,44 @@
+{
+  "proof_kind": "INDEPENDENT_SOURCE_LEVEL_COUNTEREXAMPLES; no fixtures/run/mutation executed by reviewer",
+  "finding_id": "CIO01",
+  "reports": {
+    "collector_arguments": [
+      "--service",
+      "academic-service",
+      "--task",
+      "test"
+    ],
+    "selected_lexical_directory": "/synthetic-checkout/services/academic-service/academic-app/build/test-results/test",
+    "linked_ancestor": "test directory -> /synthetic-checkout/services/academic-service/academic-app/build/test-results/integrationTest",
+    "regular_leaf": "TEST-SubjectListDataIT.xml",
+    "leaf_is_symlink": false,
+    "leaf_resolved_is_relative_to_checkout": true,
+    "canonical_selected_task_is_test": false,
+    "existing_branch_at_lines169_174": "Both guards accept the regular leaf; read_bytes executes.",
+    "possible_row": {
+      "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "method": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals",
+      "status": "PASSED",
+      "metadata_task": "test",
+      "actual_xml_task": "integrationTest"
+    },
+    "source_identity_reason": "The registry covers every tracked Java test declaration in the module, including SubjectListDataIT. Its current method presence was independently parsed, so cross-task row need not remain ordinal-only."
+  },
+  "source": {
+    "tracked_lexical_path": "services/api-gateway/src/test/java/example/tests/SafeCases.java",
+    "linked_ancestor": "example/tests directory -> an outside-checkout directory containing regular SafeCases.java",
+    "git_ls_files": "Still returns the tracked lexical path from the index",
+    "leaf_is_symlink": false,
+    "existing_branch_at_lines107_112": "is_symlink does not reject; read_bytes/decode/declaration/hash proceeds on outside-checkout bytes",
+    "current_checkout_identity": "git rev-parse HEAD remains the original checkout; outside source bytes are not that checkout source"
+  },
+  "existing_control_gap": {
+    "file": "/workspace/rct-worktrees/ci-evidence/tests/harness/test_ci_test_outcomes.py",
+    "lines": [
+      196,
+      202
+    ],
+    "covers": "direct TEST-symlink.xml file only",
+    "missing": "symlinked parent directory in report/source path"
+  }
+}

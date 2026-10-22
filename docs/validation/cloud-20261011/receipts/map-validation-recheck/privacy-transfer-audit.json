@@ -1,0 +1,18 @@
+{
+  "exact_original_copy": true,
+  "XML_properties": 0,
+  "original_copies": 37,
+  "source_snapshots": 5,
+  "artifact_origin": "Synthetic controlled test marker inputs only; example.invalid and ownPG/MVC receipts",
+  "credential_pattern_hits": {},
+  "reviewed_patterns": [
+    "pem_private",
+    "auth_header",
+    "postgres_password_query",
+    "aws_access_key",
+    "real_bot_token_shape"
+  ],
+  "synthetic_fixture_strings": "Existing tests include synthetic password literals; no live credentials sourced",
+  "scope": "No environment/auth/config/secret file read; no claims of exhaustive secret scanner",
+  "safe_relative_paths": true
+}

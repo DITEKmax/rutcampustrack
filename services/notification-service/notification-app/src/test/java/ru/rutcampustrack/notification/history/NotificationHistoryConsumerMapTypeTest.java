@@ -1,16 +1,15 @@
 package ru.rutcampustrack.notification.history;
 
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.notification.contract.enums.NotificationType;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import ru.rutcampustrack.notification.contract.enums.NotificationType;
 
 /**
- * Юнит-тест маппера event_type → NotificationType (M10 G3 D6 + G9 H1).
- * Гарантирует, что разрешённые групповые и личные события маппятся.
+ * Юнит-тест маппера event_type → NotificationType (M10 G3 D6 + G9 H1). Гарантирует, что разрешённые
+ * групповые и личные события маппятся.
  */
 class NotificationHistoryConsumerMapTypeTest {
 
@@ -24,59 +23,75 @@ class NotificationHistoryConsumerMapTypeTest {
 
     @Test
     void mapsExcuseDecidedApproved() {
-        assertThat(NotificationHistoryEventProcessor.mapType("excuse.decided",
-                Map.of("status", "approved")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "excuse.decided", Map.of("status", "approved")))
                 .contains(NotificationType.EXCUSE_APPROVED);
     }
 
     @Test
     void mapsExcuseDecidedRejected() {
         // G9 H1: до hot-patch'а REJECTED тихо терялся как APPROVED.
-        assertThat(NotificationHistoryEventProcessor.mapType("excuse.decided",
-                Map.of("status", "rejected")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "excuse.decided", Map.of("status", "rejected")))
                 .contains(NotificationType.EXCUSE_REJECTED);
     }
 
     @Test
     void malformedDecisionCannotBecomeFalseApproval() {
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> NotificationHistoryEventProcessor.mapType("excuse.decided", EMPTY))
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> NotificationHistoryEventProcessor.mapType("excuse.decided", EMPTY))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void skipsLateCheckinDecisionCommand() {
-        assertThat(NotificationHistoryEventProcessor.mapType("late_checkin.decision",
-                Map.of("approved", true, "request_id", "req-1")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "late_checkin.decision",
+                                Map.of("approved", true, "request_id", "req-1")))
                 .isEmpty();
     }
 
     @Test
     void mapsLateCheckinDecidedApproved() {
-        assertThat(NotificationHistoryEventProcessor.mapType("late_checkin.decided",
-                Map.of("status", "approved")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "late_checkin.decided", Map.of("status", "approved")))
                 .contains(NotificationType.LATE_CHECKIN_APPROVED);
     }
 
     @Test
     void mapsLateCheckinDecidedRejected() {
-        assertThat(NotificationHistoryEventProcessor.mapType("late_checkin.decided",
-                Map.of("status", "rejected")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "late_checkin.decided", Map.of("status", "rejected")))
                 .contains(NotificationType.LATE_CHECKIN_REJECTED);
     }
 
     @Test
     void recordsActualCancellationWithoutFalseApproval() {
-        assertThat(NotificationHistoryEventProcessor.mapType("late_checkin.decided",
-                Map.of("status", "cancelled", "resolution_reason", "geo_confirmed")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "late_checkin.decided",
+                                Map.of(
+                                        "status",
+                                        "cancelled",
+                                        "resolution_reason",
+                                        "geo_confirmed")))
                 .contains(NotificationType.LATE_CHECKIN_CANCELLED);
-        assertThat(NotificationHistoryEventProcessor.mapType("excuse.decided", Map.of("status", "cancelled")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "excuse.decided", Map.of("status", "cancelled")))
                 .contains(NotificationType.EXCUSE_CANCELLED);
     }
 
     @Test
     void mapsAttendanceMarkedByHeadman() {
-        assertThat(NotificationHistoryEventProcessor.mapType("attendance.marked",
-                Map.of("marked_by", "headman")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "attendance.marked", Map.of("marked_by", "headman")))
                 .contains(NotificationType.ATTENDANCE_MARKED_BY_HEADMAN);
     }
 
@@ -95,16 +110,18 @@ class NotificationHistoryConsumerMapTypeTest {
     @Test
     void skipsAttendanceMarkedBySelf() {
         // Self check-in — собственное действие студента, не уведомление.
-        assertThat(NotificationHistoryEventProcessor.mapType("attendance.marked",
-                Map.of("marked_by", "self")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "attendance.marked", Map.of("marked_by", "self")))
                 .isEmpty();
     }
 
     @Test
     void skipsAttendanceMarkedByAuto() {
         // Авто-absent при закрытии пары — служебная запись, не уведомление.
-        assertThat(NotificationHistoryEventProcessor.mapType("attendance.marked",
-                Map.of("marked_by", "auto")))
+        assertThat(
+                        NotificationHistoryEventProcessor.mapType(
+                                "attendance.marked", Map.of("marked_by", "auto")))
                 .isEmpty();
     }
 
@@ -123,13 +140,15 @@ class NotificationHistoryConsumerMapTypeTest {
                 .contains(NotificationType.LESSON_CLOSED);
         assertThat(NotificationHistoryEventProcessor.mapType("homework.published", EMPTY))
                 .contains(NotificationType.HOMEWORK_PUBLISHED);
-        assertThat(NotificationHistoryEventProcessor.mapType("lesson.reminder", EMPTY)).contains(NotificationType.LESSON_REMINDER);
+        assertThat(NotificationHistoryEventProcessor.mapType("lesson.reminder", EMPTY))
+                .contains(NotificationType.LESSON_REMINDER);
     }
 
     @Test
     void skipsSystemEvents() {
         assertThat(NotificationHistoryEventProcessor.mapType("otp.requested", EMPTY)).isEmpty();
-        assertThat(NotificationHistoryEventProcessor.mapType("group.renamed", EMPTY)).contains(NotificationType.GROUP_RENAMED);
+        assertThat(NotificationHistoryEventProcessor.mapType("group.renamed", EMPTY))
+                .contains(NotificationType.GROUP_RENAMED);
         assertThat(NotificationHistoryEventProcessor.mapType("alert.fired", EMPTY)).isEmpty();
     }
 

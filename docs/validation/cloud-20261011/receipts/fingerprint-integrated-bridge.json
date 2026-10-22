@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-12T00:48:11.527276+00:00",
+  "author_sha": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+  "integrated_sha": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "stable_patch_id": "a706f2b74d6c826f229f98f1514fa946e1b02771",
+  "verdict": "EXACT_PATCH_PASS",
+  "independent_review": "receipts/fingerprint-review/completion.json",
+  "review_manifest_sha256": "ddf4aa27b8592dc27edfaf1c61465e9cc0813ae774683d05500aa094fc8e5665",
+  "author_manifest_sha256": "b52ecde3bf819ecbf1743854f4f1e2e24d7b692d63a907b11f8678dc7226851f",
+  "source_gate_run": 74427,
+  "source_gates": "fourapplicablePASS/JSON-YAMLnoapplicablefiles",
+  "remote_security": "existing636FAIL; no newcurrentrun yet"
+}

@@ -1,0 +1,147 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/accepted-source-inbound-refs.json",
+    "bytes": 3,
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/affected-address-map.json",
+    "bytes": 113337,
+    "sha256": "50cac07c59afeea18df4e76897abe6149d222b8d37aac88441a18489a9dc3ea9"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/affected-source-records.json",
+    "bytes": 214363,
+    "sha256": "dab2277486d11a3284c6991196bb07a7915c2971bcf55bfb280113f2ef472b69"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/check-dependencies.py",
+    "bytes": 2392,
+    "sha256": "cf9a9a6fe08637340db76de7871612b4dfe346a1c0e1a63258c8e57b15c78aed"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L30927.bytes",
+    "bytes": 2259,
+    "sha256": "8a06f3f8cf968a26899b41225e9268ea30d1564a1f92f0c1791f4183c27c0ccd"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L31277.bytes",
+    "bytes": 2081,
+    "sha256": "17a8d45bbe8ab3e916fbfd5ef775ad52e3dd1085504b0bea525a0d9cee15d359"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L31800.bytes",
+    "bytes": 2288,
+    "sha256": "0cbbd596d9e53c45f48988b96c2fa1b8cbcbbfa88e20098966c244f4fa279a01"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L32269.bytes",
+    "bytes": 2408,
+    "sha256": "68df7d6c271f6a9f305586eebb042a2753c94658ab51c3d2af9644ae49dd9caa"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L33933.bytes",
+    "bytes": 3173,
+    "sha256": "d64cf562796cb99bdc599e4d03ca16143baaf43d622ab51f608906284617b39f"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L34417.bytes",
+    "bytes": 3113,
+    "sha256": "9260acfe372d4595654c13911a108e475aa88bd449b7cd2b71efdd6bdd25125a"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L34609.bytes",
+    "bytes": 1573,
+    "sha256": "9b26046104088c348a918f0da96686bc24795e209304136e0a777d87e16bafbc"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L34690.bytes",
+    "bytes": 2195,
+    "sha256": "bfee76c77486f99991c8b726aa415a37d29c5574c432cfba0e6651d9269654a6"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-block-L34811.bytes",
+    "bytes": 645,
+    "sha256": "fc172d3d4c116e913ac2fd93f354e04918ec1c623b655cedf395ec652e55ddfb"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-record-1.txt",
+    "bytes": 2082,
+    "sha256": "bcec4fa9d62c8a9eb20e8b6ae3adfe937cb16acf2ecbac22c947a4658e66b17d"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-record-2.txt",
+    "bytes": 2289,
+    "sha256": "dec64fb4607082d1fbf5522986b9eab74d0c97686b6516717d6836470b945744"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-record-3.txt",
+    "bytes": 2409,
+    "sha256": "312a7639a7ac5c52c4362512b70b4b4b23812e2cbd8ce330812f7a794342b605"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-record-4.txt",
+    "bytes": 1574,
+    "sha256": "01767de76f2e7721eeda126384723c2a7144275322d212911d5341829521095c"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/corrupt-record-5.txt",
+    "bytes": 2196,
+    "sha256": "4b808b996b7d2e17adeffe33d6cb5fd8ef7c5a403f4161486593af3a200908aa"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/findings.md",
+    "bytes": 10352,
+    "sha256": "aca5ecf22203dd861ce402d13d82cefd7a1050e4212bffc75fdb232749e14642"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/intact-entry-summary.json",
+    "bytes": 98,
+    "sha256": "fde963127cad1002a6120b42305db8c436570ddc84145d5209b44368b6304ac6"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/manifest.original-corrupt.bytes",
+    "bytes": 3903712,
+    "sha256": "7e4232fadec1c563c283373b96b2718a3dc1892e3d3db97663642723a206eb91"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/manifest.restored-proposal.yaml",
+    "bytes": 4482250,
+    "sha256": "8ca2d21468f2adbf8470e13fbb909b61b773a48a46367851c8fbeda4e944b094"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/partial-provenance.json",
+    "bytes": 453,
+    "sha256": "e0ffe113c832c0f26a2a98181bea0f90bb09ac2918e655daa0b14219ac5eba5c"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/proposal-validation.json",
+    "bytes": 2161,
+    "sha256": "6e7d824f921f41cbfa7b0613dece6dae12089fabb1ebfb1881cfb66863964f98"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/propose-restoration.py",
+    "bytes": 5365,
+    "sha256": "246f3f1c73f97bd979624a23db9ea8d63a9a77b330ce6a82be252f10272aeee0"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/restoration.patch",
+    "bytes": 628641,
+    "sha256": "918250427df91c2d10f66c5dc6eb9bdc6a431a95e1bb3f423cd9244f3fb317cb"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/strict-validation.json",
+    "bytes": 5786,
+    "sha256": "dda55266a431bcbe110b56bb32be3abf97f736db4896cb0ce57944bd7e9e58dc"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/surviving-hash-observations.json",
+    "bytes": 3563,
+    "sha256": "a7733cbdd7e2fbdf68513834ad57283bd5e795e7fcc55b8fbbd978ca5268b21e"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/source_manifest_recovery/target-observations.json",
+    "bytes": 136249,
+    "sha256": "77e71e261c091587093f8d86cc785b4e43d27801fd976a4cd11e10639a0f856c"
+  }
+]

@@ -1,0 +1,98 @@
+{
+  "utc": "2026-10-13T00:57:16.494441+00:00",
+  "scope": "SELECTED_SOURCE_AST_RAM_ONLY",
+  "checks": [
+    {
+      "case": "restart-boundary.py_syntax_and_original_SHA_preserved",
+      "pass": true
+    },
+    {
+      "case": "docker-up-restart.py_syntax_and_original_SHA_preserved",
+      "pass": true
+    },
+    {
+      "case": "run-mongo-restart.py_syntax_and_original_SHA_preserved",
+      "pass": true
+    },
+    {
+      "case": "run-mongo-restart.py_AST_byteexact_unchanged",
+      "pass": true
+    },
+    {
+      "case": "run-service-restart.py_syntax_and_original_SHA_preserved",
+      "pass": true
+    },
+    {
+      "case": "run-service-restart.py_AST_byteexact_unchanged",
+      "pass": true
+    },
+    {
+      "case": "run-academic-restart.py_syntax_and_original_SHA_preserved",
+      "pass": true
+    },
+    {
+      "case": "actual158_positive",
+      "pass": true,
+      "expected_accept": true,
+      "actual_accept": true
+    },
+    {
+      "case": "old157_parameters_rejected",
+      "pass": true,
+      "expected_accept": false,
+      "actual_accept": false
+    },
+    {
+      "case": "wrong_grant_SHA_rejected",
+      "pass": true,
+      "expected_accept": false,
+      "actual_accept": false
+    },
+    {
+      "case": "wrong_actual_SHA_rejected",
+      "pass": true,
+      "expected_accept": false,
+      "actual_accept": false
+    },
+    {
+      "case": "missing_metadata_node_rejected",
+      "pass": true,
+      "expected_accept": false,
+      "actual_accept": false
+    },
+    {
+      "case": "extra_metadata_node_rejected",
+      "pass": true,
+      "expected_accept": false,
+      "actual_accept": false
+    },
+    {
+      "case": "duplicate_at158_rejected",
+      "pass": true,
+      "expected_accept": false,
+      "actual_accept": false
+    },
+    {
+      "case": "actual_old157_consumer_rejects_new158_parameters",
+      "pass": true
+    },
+    {
+      "case": "new_own_self_positive",
+      "pass": true,
+      "actual_accept": true
+    },
+    {
+      "case": "wrong_manifest_rejects_before_helper",
+      "pass": true,
+      "actual_accept": false
+    },
+    {
+      "case": "wrong_self_rejects_before_helper",
+      "pass": true,
+      "actual_accept": false
+    }
+  ],
+  "all_pass": true,
+  "full_metadata158_actual_preflight_reused": true,
+  "runtime_extraction_JVM_API_private_reads": false
+}

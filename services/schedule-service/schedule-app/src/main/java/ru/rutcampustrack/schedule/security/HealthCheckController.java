@@ -1,15 +1,14 @@
 package ru.rutcampustrack.schedule.security;
 
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 
-import java.util.Map;
-
 /**
- * Placeholder endpoint for Phase 10 security smoke test.
- * Will be superseded by real schedule endpoints in Phase 11.
+ * Placeholder endpoint for Phase 10 security smoke test. Will be superseded by real schedule
+ * endpoints in Phase 11.
  */
 @RestController
 public class HealthCheckController {

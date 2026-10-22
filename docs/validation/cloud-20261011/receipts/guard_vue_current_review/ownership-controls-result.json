@@ -1,0 +1,29 @@
+{
+  "native_exit": 0,
+  "kind": "PURE_ACTUAL_AST_NO_PROCESS_OR_SIGNAL",
+  "old_helper_SHA": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+  "new_helper_SHA": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "old_exact_reviewer_foreign_chosen": {
+    "100": {
+      "pid": 100,
+      "state": "S",
+      "ppid": 999,
+      "pgrp": 100,
+      "session": 100,
+      "start_ticks": 20
+    }
+  },
+  "new_foreign_result": {},
+  "unknown_numeric_group_foreign_rejected": true,
+  "known_birth_mismatch_denied_even_direct_parent": true,
+  "known_identity_never_overwritten": true,
+  "changed_ancestor_doesnot_admit_foreign_child": true,
+  "owned_positive_direct_ancestry_escaped_adopted_Z": [
+    100,
+    300,
+    400,
+    500
+  ],
+  "original_reviewed_source_unchanged": true,
+  "actual_PID_reuse_or_wrong_signal": "NOT_RUN"
+}

@@ -10,8 +10,7 @@ public record HeadmanRequestDecisionRequest(
         @Size(max = 1000) String reason,
         String expectedRevision,
         List<String> excludedOccurrenceIds,
-        String requestKey
-) {
+        String requestKey) {
     public HeadmanRequestDecisionRequest(HeadmanRequestDecision decision, String reason) {
         this(decision, reason, null, null, null);
     }

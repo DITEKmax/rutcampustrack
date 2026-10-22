@@ -1,8 +1,8 @@
 package ru.rutcampustrack.auth.session.model;
 
 /**
- * Status belongs to one role grant. Only ACTIVE is selectable; terminal and
- * suspended grants remain visible for the owner's read-only view.
+ * Status belongs to one role grant. Only ACTIVE is selectable; terminal and suspended grants remain
+ * visible for the owner's read-only view.
  */
 public enum RoleStatus {
     ACTIVE(false, true),

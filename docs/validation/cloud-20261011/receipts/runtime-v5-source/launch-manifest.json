@@ -1,0 +1,299 @@
+{
+  "utc": "2026-10-12T12:08:23.838482+00:00",
+  "status": "SOURCE_READY_FOR_INDEPENDENT_REVIEW",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "bytes": 493,
+      "mode": "0o600",
+      "sha256": "d8cae1b8ade47d9e30c75111417883cf475d73adbdf29f5eb14f161cea6ec24e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 6801,
+      "mode": "0o600",
+      "sha256": "c8532aca3958c64b2368552644ee3ddd5eccd8b2a4a2607638b0e7a3222481d8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 348,
+      "mode": "0o600",
+      "sha256": "da30589ca4a6086ec57e22cad26433d56c1e80b3363ff7487ef3cc9df57fedf7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/capacity.safe.json",
+      "relative_path": "capacity.safe.json",
+      "bytes": 535,
+      "mode": "0o600",
+      "sha256": "afde24bfc32074766f3670c50431ce880294a234ecbef0249300faaea9f3a71c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/data-renderer-edge.compose.yml",
+      "relative_path": "data-renderer-edge.compose.yml",
+      "bytes": 5229,
+      "mode": "0o644",
+      "sha256": "7c08b4804c517f70e91b7cdd2a2a61ad5a4d1408982b632a7fef608e6b05f421"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/edge-default.conf",
+      "relative_path": "edge-default.conf",
+      "bytes": 4667,
+      "mode": "0o644",
+      "sha256": "a93a7cf85ba5e9b84c281b1a53b6fc44782fb783fad75a83841b29a7f3248041"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/CURRENT.json",
+      "relative_path": "feasibility/CURRENT.json",
+      "bytes": 223,
+      "mode": "0o600",
+      "sha256": "13cc9f3dfe9ff2a5929ca8f030958513406395aaa189f6ddf9efcce1670a350a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/cleanup.safe.json",
+      "relative_path": "feasibility/cleanup.safe.json",
+      "bytes": 561,
+      "mode": "0o600",
+      "sha256": "f37e13f2b96afafabe544eb8de7a7b8de14126d28d5ffcfb558790896b170655"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/copied-public-files.safe.json",
+      "relative_path": "feasibility/copied-public-files.safe.json",
+      "bytes": 1108,
+      "mode": "0o600",
+      "sha256": "246d5b3161f8f4ddf8d8abbe742dd2d9b47aae275359273d08a7f3678e38d494"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/created-only.safe.json",
+      "relative_path": "feasibility/created-only.safe.json",
+      "bytes": 512,
+      "mode": "0o600",
+      "sha256": "2224a400ebe69bc9a192d6a4395a754171258e1804c4154db7cfbcf41a3f80b2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/extract-native.py",
+      "relative_path": "feasibility/extract-native.py",
+      "bytes": 6288,
+      "mode": "0o600",
+      "sha256": "e3f5529bacdbe8bed5242e2a2c0f1a96f71b8b6a8bde4565441093677c62c0f6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/extraction-partial.safe.json",
+      "relative_path": "feasibility/extraction-partial.safe.json",
+      "bytes": 1381,
+      "mode": "0o600",
+      "sha256": "1b177e85d3640def3334a2c7ec6df7f23c6a447e6e1f070779460bfd4827918e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/launch.safe.json",
+      "relative_path": "feasibility/launch.safe.json",
+      "bytes": 625,
+      "mode": "0o600",
+      "sha256": "2d04196421a0e3fed41506318109aaf846f8cf9e652b8bc2cd6f02ad79ee7646"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/native-version-ELF.safe.json",
+      "relative_path": "feasibility/native-version-ELF.safe.json",
+      "bytes": 12154,
+      "mode": "0o600",
+      "sha256": "cbe2e33bbcc65225efc4c87dff3d9c38589e980d6f78bcc6f8e4d04460a1c96e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/probe-native-owned.py",
+      "relative_path": "feasibility/probe-native-owned.py",
+      "bytes": 1345,
+      "mode": "0o600",
+      "sha256": "6d3cc3a9b1cf8a3daf2877851d1ea2e02b880c7211d436d0650000d19c6f11b1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/probe-process.safe.json",
+      "relative_path": "feasibility/probe-process.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "91c87601982b2c6bc0c347ca3f3ecaa4b90bb235b8f3f944293167515ca476ae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/probe-terminal.safe.json",
+      "relative_path": "feasibility/probe-terminal.safe.json",
+      "bytes": 646,
+      "mode": "0o600",
+      "sha256": "b8c000aa9de331202e216a953d6186df6ce9e4753f0a975875ecca46cd98ea75"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/process-cleanup.safe.json",
+      "relative_path": "feasibility/process-cleanup.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "5c75abeaa6faa35e28b363ea4d5cab3c0acbde700c69e17cf35073fc9951158b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/process-copy-entrypoint-sh.safe.json",
+      "relative_path": "feasibility/process-copy-entrypoint-sh.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "413e88b3942bbd1f40c758e16654da3ea001c1639c8f25bf6200ea7a0d15da89"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/process-copy-mongod.safe.json",
+      "relative_path": "feasibility/process-copy-mongod.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "8a2b65c47df1b11208b0bfc101adcad47e512c9c6f687b80ab95d72820b4bc75"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/process-copy-mongosh.safe.json",
+      "relative_path": "feasibility/process-copy-mongosh.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "8fc30b59c03c3c3e77c4f696b34bac3dbd358fa0cfe090f484c17ee8b5d6ba21"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/process-copy-run-sh.safe.json",
+      "relative_path": "feasibility/process-copy-run-sh.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "afab7be6ced0ceea8b9ab12e2857133ec586345c4970cbbd25cfc3f340f24074"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/process-create.safe.json",
+      "relative_path": "feasibility/process-create.safe.json",
+      "bytes": 147,
+      "mode": "0o600",
+      "sha256": "39a4b315759614bf855dc849fb74ea540c38dcca04f4becaef74ddd6667e17d1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/public-native-control.py",
+      "relative_path": "feasibility/public-native-control.py",
+      "bytes": 3107,
+      "mode": "0o600",
+      "sha256": "afa5f59710f5f47382dfbaa72426dc6bb38a13a0add7c2fdc9b710cce07c39a1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/steps.safe.json",
+      "relative_path": "feasibility/steps.safe.json",
+      "bytes": 3937,
+      "mode": "0o600",
+      "sha256": "498521e508a9003f2ecadca2d132b31200617873b621691dae823a7f0b57c961"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/feasibility/terminal.safe.json",
+      "relative_path": "feasibility/terminal.safe.json",
+      "bytes": 344,
+      "mode": "0o600",
+      "sha256": "198bf5695138cee0826f44c62ac257fa96d440cc497af60d175bb2e0a011fd4e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/host-service-specs.json",
+      "relative_path": "host-service-specs.json",
+      "bytes": 96104,
+      "mode": "0o644",
+      "sha256": "8da6354c0d132975e4ec4f6172fb90484edc8975bb5e08e797824245f71d082a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/launch-commands-v5.json",
+      "relative_path": "launch-commands-v5.json",
+      "bytes": 1450,
+      "mode": "0o600",
+      "sha256": "9be9a1e01ae0872827403539412f88582bb5ae4f5d75f96e60ac887fb219777c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/launch-grant.template.json",
+      "relative_path": "launch-grant.template.json",
+      "bytes": 960,
+      "mode": "0o600",
+      "sha256": "4e0bdccef7aa61524450f9cef7c4a3427fce27cda0e5e651bd79de5515c74be5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/minimal-diff.safe.json",
+      "relative_path": "minimal-diff.safe.json",
+      "bytes": 1260,
+      "mode": "0o600",
+      "sha256": "23b0b1ae8cac52450a7f65856026736ae00c3231a48210f66c354d974e21b3fb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/mongo-bootstrap.js",
+      "relative_path": "mongo-bootstrap.js",
+      "bytes": 976,
+      "mode": "0o644",
+      "sha256": "1e4f95d2d3c3620f059d840c381e5ea151d387ee1e03b8ee1522adb08ae47810"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/mongo-init-app-users.js",
+      "relative_path": "mongo-init-app-users.js",
+      "bytes": 1629,
+      "mode": "0o644",
+      "sha256": "bcf64a78471e3cb46e1053bd5df0f1f486f7058a550b0e91e462ae0772d958e5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/mongo-spec.json",
+      "relative_path": "mongo-spec.json",
+      "bytes": 812,
+      "mode": "0o644",
+      "sha256": "ef24ed9e1acb2259204b22eec1ef4036b31762dbf3ad351405dca2b684f3702d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/prepare-v5.py",
+      "relative_path": "prepare-v5.py",
+      "bytes": 6889,
+      "mode": "0o600",
+      "sha256": "6f5294eba6b22a14b0c1189fee99702752ff5a9a36c946a3dc2512a633a169f2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/private-copy.safe.json",
+      "relative_path": "private-copy.safe.json",
+      "bytes": 734,
+      "mode": "0o644",
+      "sha256": "db4e80b2c1bda19f9fd5fcc2e560f57fd539286a3fa8ed6b311175c1399f9e03"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/run-mongo.py",
+      "relative_path": "run-mongo.py",
+      "bytes": 9665,
+      "mode": "0o600",
+      "sha256": "a87d8a6bf7d9e87c40b693c863bf84378e3a16fe468e8aec5544a86cff0e89d5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/run-service-v5.py",
+      "relative_path": "run-service-v5.py",
+      "bytes": 6261,
+      "mode": "0o644",
+      "sha256": "4c6ef3a0afe8538690369179f14f091b8877cb99e0e95b0c5614246318d9e8d6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/source-checkpoint.safe.json",
+      "relative_path": "source-checkpoint.safe.json",
+      "bytes": 1661,
+      "mode": "0o600",
+      "sha256": "227e93d4b26ba371e7bf86233556046675a65e58bb94e211a3a2eb447bffdb2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/tool-provenance.json",
+      "relative_path": "tool-provenance.json",
+      "bytes": 1172,
+      "mode": "0o644",
+      "sha256": "5d8d5887185c3a0de1b1fd9eab398801b364d44f1e58e71cb7360c7e87968f12"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/validate-v5.py",
+      "relative_path": "validate-v5.py",
+      "bytes": 7810,
+      "mode": "0o600",
+      "sha256": "dd0516099ddae7fa2fd059eadbc8178b920193af3761155638dd07ef13b9e559"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v5/validation-v5.safe.json",
+      "relative_path": "validation-v5.safe.json",
+      "bytes": 8772,
+      "mode": "0o600",
+      "sha256": "e452bc84c4c3754156b027763737861b408d1fb0be85901a5920ef14516fa5bc"
+    }
+  ],
+  "private_files_excluded": true,
+  "native_binaries_excluded_from_archive": true,
+  "source_controls": 96,
+  "actual_applications": 0,
+  "model_requested_selected": "Sol6.1/high",
+  "actual_model_effort": "UNKNOWN"
+}

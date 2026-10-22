@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-13T05:47:11.300918+00:00",
+  "verdict": "APPROVE_SOURCE_MINIMAL_CANONICAL_HELPER_BINDING",
+  "reviewer": "root-independent-of-helper-author",
+  "checks": [
+    "hints-controls onlyonecanonicaldirnamearg exactinverse",
+    "priority-controls onlyonecanonicaldirnamearg exactinverse",
+    "caller only2PLANfilename replacements exactinverse",
+    "same2TS/pins/9phaseoracles/callbacks/caps",
+    "allbefore/current variants useWfixtures canonicaldatasetFile producerlayout",
+    "snapshotSource read/file/cache/VMfilename unchanged"
+  ],
+  "qualification": "Source-only review; originalNodeFAIL retained; nativeold6/new8 stillrequired, reader4RAM reused no fullrecorder claim. No Sourceclassifier/privacyguard/status changes."
+}

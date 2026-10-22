@@ -1,0 +1,2259 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+    "prHeadSha": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+    "service": "api-gateway",
+    "task": "test",
+    "job": "java-unit-test",
+    "runId": "38212208080",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "ecaf3dec7b934d21461796e5516b6c4c95818391b69d161457f21f233ab9eecd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "093cbb0b2a4fbfb68c21f7b30935028415e4c72e6a066f3ac609228f403b7531",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "feea090c1844240ee44dbd3adc6408541a793b745f769d8bc68b70a0c1a81f41",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "c3958c41819c6326c0f6d79cd8382ecbe9ca71d351e9da55269b38c7914ad1dd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 63,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 63,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 5,
+      "sha256": "9fdcb51bb86afccc0f5f73e4a16b5a52ca7dc09dd8a2b057485f0fc7113b6a9b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 6,
+      "sha256": "127b31a47e4f1c75dfd076d080cefe950952158fc9479cf428eaeba188abd06a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 9,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 7,
+      "sha256": "4d87a3d546bec2b94859282a35d2e595692c6326ec26765f54c247bbf68c5ab5",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 8,
+      "sha256": "f712d581971fab44601212e7a30ef4786f445b77cbb2477be4b454d7a5a8ccf3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 9,
+      "sha256": "abda97ba15eed52b4fa8cfc0ac78a260a3b6e4de8a5e01860b9a68d05ee092e5",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 10,
+      "sha256": "ab9d7e5f8c9929b9eafdd01d36f9a322dcd71ce0664febdefc43352156bcbddd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 11,
+      "sha256": "5bd771045c94577f32ffef699d64127da5779f9d769af01e0c64445e6079d0a5",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 10,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 10,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 12,
+      "sha256": "81db48d24adb126f56d80df604a5004b577585aa71215e6e7a172f897c3b3a30",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 13,
+      "sha256": "e524a24b381caff49453e967c824bccca0dba46b63e29058e34b8af89687268a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 14,
+      "sha256": "8c270b895b448392d7616dc43c8a85c1e431adb922b07bd6308b22e3d9ce08d3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 15,
+      "sha256": "27ce9cbaace4cd315f2e5bf737c123d92f4571ea7047d6a78804c04f56b7127e",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 11,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 11,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 16,
+      "sha256": "e87a471a487a74a1f7837efe1055abdb2636f640d955d8b83c79b7162c792cba",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 23,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 23,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpFilterTest",
+      "method": "untrustedPeerCannotSelectForwardingIdentityOrTrustedMetadata",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+      "sourceSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpFilterTest",
+      "method": "trustedEdgeNormalizesIdentityAndForwardingHeaders",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+      "sourceSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpFilterTest",
+      "method": "orderRunsBeforeAuthAndRequestsFilters",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+      "sourceSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+      "method": "rejectsNonLiteralAndAmbiguousForwardedForms",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+      "sourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+      "method": "untrustedOrNullPeerIgnoresForwardingHeaders",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+      "sourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+      "method": "propertiesRejectBlankInvalidAndRequiredEmptyTrust",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+      "sourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+      "method": "trustedPeerRejectsCommaChainAndBlankDuplicateLine",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+      "sourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+      "method": "trustedPeerAcceptsOneRawXffLineAndCanonicalizesIt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+      "sourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+      "method": "canonicalizesIpv4Ipv6AndMappedIpv6Literals",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+      "sourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+      "method": "getPublicKey_whenKeyNotLoaded_throwsIllegalStateException",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+      "sourceSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+      "method": "invalidReplacementKeepsLastGoodKeyAndRetriesThirtySecondsAfterCompletion",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+      "sourceSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+      "method": "parsePemPublicKey_validPem_returnsPublicKey",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+      "sourceSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+      "method": "overlappingRefreshIsSkippedAndDeadlineStartsWhenFetchCompletes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+      "sourceSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+      "method": "coldStartFailureRecoversOnBoundedRetryAndSuccessfulFetchesRemainHourly",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+      "sourceSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "malformedJwt_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validAccess_withoutGroupId_passes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validBootstrap_onProtectedRoute_isDeniedBeforeAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "qrGuestAdmissionIsLimitedToThreeExactPostRoutes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "bootstrapSelectedRevokeAllowsOnlyExactDeleteTargetRoute",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 24,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 25,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 26,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 27,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 28,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 29,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 30,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 31,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 32,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 33,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 34,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 35,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 36,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 37,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 38,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 39,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 40,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 41,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 42,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 43,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 44,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 45,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 46,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 47,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "optionsRequest_stripsClientIdentityHeadersAndPassesThrough",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 48,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "missingOrMalformedBearer_onPostLogout_remainsIdempotentAndUnauthenticated",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 49,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validAccess_onPostLogout_setsExpectationsForLiveAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 50,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validAccess_withOptionalGroupIdString_passesWithoutLegacyGroupHeader",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 51,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "publicRoute_login_passesThroughWithoutJwt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 52,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validAccess_protectedRoute_setsPrivateExpectationsAndStripsIdentityHeaders",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 53,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "refreshTokenUse_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 54,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "expiredAccess_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 55,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "missingTokenUse_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 56,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "publicRoute_otp_passesThroughWithoutJwt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 57,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validAccess_headmanRoleIsRecognizedWithoutLocalAuthorization",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 58,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "validBootstrap_onAllowedLogoutPassesWithoutAdmissionExpectations",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 59,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "invalidRole_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 60,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "missingAuthorizationHeader_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 61,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": "authHeaderWithoutBearerPrefix_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 62,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 63,
+      "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "knownOversizeBodyReturns413WithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+      "sourceSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "orderIsAfterJwtAndBeforeInternalIssuer",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+      "sourceSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "chunkedOversizeBodyReturns413WithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+      "sourceSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "validBodyIsReplayedExactlyOnceAndLoginIsNormalized",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+      "sourceSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "emptyAndMalformedBodiesReachDownstreamOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+      "sourceSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "nonApiRequest_passesThrough",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "forcePolicy_allowsExactLatestVersion",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "forcePolicy_doesNotApplyMinimumWhenLatestMatchesExactly",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "optionsRequest_passesThrough",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "orderRunsBeforeJwtAuth",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "forcePolicy_blocksAnyNonLatestCommitVersion",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "minimumSupportedVersion_blocksOlderSemanticVersionWithoutForce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "missingPwaVersionHeader_passesThrough",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+      "method": "disabledPolicy_passesThrough",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+      "sourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest",
+      "method": "chunkedBodyIsCountedAndOverflowMapsTo413",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+      "sourceSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest",
+      "method": "factoryUsesExactTransportDefault",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+      "sourceSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest",
+      "method": "chunkedBodyAtLimitReachesDownstream",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+      "sourceSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest",
+      "method": "knownOversizeIsRejectedBeforeDownstreamSubscription",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+      "sourceSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.filter.StudentRequestsNoStoreFilterTest",
+      "method": "orderIsBeforeAuthentication",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+      "sourceSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.filter.StudentRequestsNoStoreFilterTest",
+      "method": "neighboringPathIsNotMatched",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+      "sourceSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.filter.StudentRequestsNoStoreFilterTest",
+      "method": "exactRouteAndDescendantsAreNoStoreBeforeDownstream",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+      "sourceSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+      "sourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+      "sourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+      "sourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+      "sourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+      "sourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+      "sourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+      "sourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+      "method": "dependencyFailureReportsOnlySafeRetryCodeAndNeverCommitsPartialBytes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+      "sourceSha256": "f06f84172b353df2ee26bbd62fa2f29166306df7d1a04bfbad60f78b31a17403"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+      "method": "anActiveClaimPreventsDuplicateScheduledWorkAndShutdownCancelsIt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+      "sourceSha256": "f06f84172b353df2ee26bbd62fa2f29166306df7d1a04bfbad60f78b31a17403"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+      "method": "readyCommitReceivesBytesAndPrivilegeFlagOnlyAfterGenerationCompletes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+      "sourceSha256": "f06f84172b353df2ee26bbd62fa2f29166306df7d1a04bfbad60f78b31a17403"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+      "method": "nonPositiveTimeout_failsFast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+      "sourceSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+      "method": "emptySecret_failsFast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+      "sourceSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+      "method": "validSecretAndTimeout_passes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+      "sourceSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+      "method": "shortSecret_failsFast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+      "sourceSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+      "method": "defaults_haveNoCacheOrLegacyToggle",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+      "sourceSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+      "method": "authorityUnavailableCode_isDependencyUnavailable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+      "sourceSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+      "method": "eachCall_reachesAdmission_andBodyContainsOnlyAccessToken",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+      "sourceSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+      "method": "statusOnlyOrUnknownError_isDependencyUnavailable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+      "sourceSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+      "method": "acceptedDenialCodes_areMappedWithoutUpstreamDetail",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+      "sourceSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+      "method": "malformedOrAlternateTypedSuccess_isDependencyUnavailable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+      "sourceSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "headmanAdmission_withoutGroupId_returns503WithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "explicitNullInternalGroupId_returns503WithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "malformedInternalTimeClaim_returns503WithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "filterOrder_isAfterJwtAuth",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "validAdmission_forwardsSignedInternalTokenAndSanitizesLegacyIdentity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "authorityDenial_returnsTypedPublicResponseWithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "noAccessTokenAttribute_passesThroughWithoutAuthorityCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "fractionalInternalExpiration_returns503WithoutDownstreamCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "validAdmission_withoutGroupId_acceptsAbsentOptionalGroupId",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "missingAccessExpectations_returns503WithoutAuthorityCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+      "method": "downstreamFailure_isPropagatedWithOriginalIdentity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "teacherJournalUsesOnlyFixedBffExportAndStoredQuery",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "downstream422IsPreservedAndItsBodyIsNotForwarded",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "headmanStatsUsesFixedAttendanceRouteAndReturnsBoundAttachmentWithTelegramCors",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "alteredRosterFormatCannotUseOriginalBindingOrReachBackend",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "unknownCapabilityReturnsNotFoundWithoutBackendCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "nonGetOverrideQueryAndRangeFailBeforeTicketRedemption",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "teacherStatsHtmlUsesDynamicAcceptAndStillValidatesActualMediaType",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "missingRegistryPrivilegeMetadataNeverProducesAFile",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "downstreamPermissionDenialIsPreservedAndItsBodyIsNotForwarded",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "readyJobCapabilityReadsCommittedBytesWithoutCallingAnyGenerator",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "teacherStatsHtmlRejectsUnexpectedDownstreamMediaType",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "publicAttemptBudgetStopsUnknownTicketCallsBeforeAuthAndUsesCanonicalPeer",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+      "method": "headmanTrendPngUsesFixedAttendanceRouteAndRealImageMime",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "sourceSha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417"
+    }
+  ],
+  "summary": {
+    "PASSED": 168,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

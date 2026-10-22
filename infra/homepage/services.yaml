@@ -1,0 +1,16 @@
+- Диагностика:
+    - Ошибки:
+        href: /glitchtip/
+        description: Ошибки Vue и Java, версии, стеки и повторения
+    - Профили:
+        href: /pyroscope/
+        description: CPU-профили операции формирования отчёта
+    - Grafana:
+        href: https://ruttrack.site/grafana/
+        description: Метрики, логи и связанные трассы; отдельный вход оператора
+    - Prometheus:
+        href: https://ruttrack.site/prometheus/
+        description: Запросы метрик и состояние targets
+    - Alertmanager:
+        href: https://ruttrack.site/alertmanager/
+        description: Состояние оповещений

@@ -21,7 +21,8 @@ COPY services/mobile-bff/mobile-bff-app/build.gradle.kts \
 COPY services/mobile-bff/mobile-bff-app/src \
      services/mobile-bff/mobile-bff-app/src
 
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service; serialize writers to that cache.
+RUN --mount=type=cache,id=rct-gradle-mobile-bff,target=/root/.gradle,sharing=locked \
     sed -i 's/\r$//' gradlew && chmod +x gradlew && ./gradlew :services:mobile-bff:mobile-bff-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract Spring Boot layers
@@ -32,7 +33,7 @@ RUN java -Djarmode=layertools -jar app.jar extract
 
 # Stage 3: Non-root runtime
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S -g 10007 app && adduser -S -u 10007 app -G app
 WORKDIR /app
 
 COPY --from=extractor /app/dependencies/ ./

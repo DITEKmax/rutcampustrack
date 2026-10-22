@@ -35,17 +35,20 @@
           "decimals": 1,
           "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 80 }] },
-          "unit": "s"
+          "unit": "s",
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
       "gridPos": { "h": 3, "w": 6, "x": 0, "y": 1 },
       "id": 52,
       "maxDataPoints": 100,
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["mean"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(process_uptime_seconds{application=\"$application\", instance=~\"$instance\"})", "format": "time_series", "legendFormat": "", "refId": "A", "step": 14400 }],
-      "title": "Uptime",
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "min(process_uptime_seconds{application=\"$application\", instance=~\"$instance\"})", "format": "time_series", "legendFormat": "", "refId": "A", "step": 14400,
+        "instant": true,
+        "range": false }],
+      "title": "Lowest instance uptime",
       "type": "stat"
     },
     {
@@ -56,18 +59,22 @@
           "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }],
           "max": 100, "min": 0,
           "thresholds": { "mode": "absolute", "steps": [{ "color": "rgba(50, 172, 45, 0.97)", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 70 }, { "color": "rgba(245, 54, 54, 0.9)", "value": 90 }] },
-          "unit": "percent"
+          "unit": "percent",
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
       "gridPos": { "h": 6, "w": 5, "x": 6, "y": 1 },
       "id": 58,
       "maxDataPoints": 100,
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(jvm_memory_used_bytes{application=\"$application\", instance=~\"$instance\", area=\"heap\"})*100/sum(jvm_memory_max_bytes{application=\"$application\",instance=~\"$instance\", area=\"heap\"})", "format": "time_series", "legendFormat": "", "refId": "A", "step": 14400 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "100 * sum by (instance) (jvm_memory_used_bytes{application=\"$application\", instance=~\"$instance\", area=\"heap\"}) / sum by (instance) (jvm_memory_max_bytes{application=\"$application\", instance=~\"$instance\", area=\"heap\"} > 0)", "format": "time_series", "legendFormat": "{{instance}}", "refId": "A", "step": 14400,
+        "instant": true,
+        "range": false }],
       "title": "Heap Used",
-      "type": "stat"
+      "type": "stat",
+      "description": "All heap pools count in used bytes; positive max values define capacity per instance. No defined heap max is NO DATA."
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
@@ -77,48 +84,57 @@
           "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }, { "options": { "from": -1e+32, "result": { "text": "N/A" }, "to": 0 }, "type": "range" }],
           "max": 100, "min": 0,
           "thresholds": { "mode": "absolute", "steps": [{ "color": "rgba(50, 172, 45, 0.97)", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 70 }, { "color": "rgba(245, 54, 54, 0.9)", "value": 90 }] },
-          "unit": "percent"
+          "unit": "percent",
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
       "gridPos": { "h": 6, "w": 5, "x": 11, "y": 1 },
       "id": 60,
       "maxDataPoints": 100,
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(jvm_memory_used_bytes{application=\"$application\", instance=~\"$instance\", area=\"nonheap\"})*100/sum(jvm_memory_max_bytes{application=\"$application\",instance=~\"$instance\", area=\"nonheap\"})", "format": "time_series", "legendFormat": "", "refId": "A", "step": 14400 }],
-      "title": "Non-Heap Used",
-      "type": "stat"
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "100 * sum by (instance) (jvm_memory_used_bytes{application=\"$application\", instance=~\"$instance\", area=\"nonheap\"} and jvm_memory_max_bytes{application=\"$application\", instance=~\"$instance\", area=\"nonheap\"} > 0) / sum by (instance) (jvm_memory_max_bytes{application=\"$application\", instance=~\"$instance\", area=\"nonheap\"} > 0)", "format": "time_series", "legendFormat": "{{instance}}", "refId": "A", "step": 14400,
+        "instant": true,
+        "range": false }],
+      "title": "Bounded non-heap pools used",
+      "type": "stat",
+      "description": "All heap pools count in used bytes; positive max values define capacity per instance. No defined heap max is NO DATA."
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 6, "w": 8, "x": 16, "y": 1 },
       "id": 66,
       "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
       "targets": [
         { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "process_files_open_files{application=\"$application\", instance=~\"$instance\"}", "legendFormat": "Open Files", "refId": "A" },
-        { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "process_files_max{application=\"$application\", instance=~\"$instance\"}", "legendFormat": "Max Files", "refId": "B" }
+        { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "process_files_max_files{application=\"$application\", instance=~\"$instance\"}", "legendFormat": "Max Files", "refId": "B" }
       ],
       "title": "Process Open Files",
       "type": "timeseries"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "dateTimeFromNow" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "dateTimeFromNow",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 3, "w": 6, "x": 0, "y": 4 },
       "id": 56,
       "maxDataPoints": 100,
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["first"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "avg(process_start_time_seconds{application=\"$application\", instance=~\"$instance\"})*1000", "legendFormat": "", "refId": "A", "step": 14400 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "avg(process_start_time_seconds{application=\"$application\", instance=~\"$instance\"})*1000", "legendFormat": "", "refId": "A", "step": 14400,
+        "instant": true,
+        "range": false }],
       "title": "Start time",
       "type": "stat"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "percentunit",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 7 },
       "id": 95,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -132,7 +148,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 7 },
       "id": 96,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -154,7 +171,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 15 },
       "id": 85,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -171,7 +189,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
       "id": 88,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -188,7 +207,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
       "id": 50,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -199,7 +219,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 31 },
       "id": 80,
       "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -210,7 +231,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 39 },
       "id": 82,
       "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -224,7 +246,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 39 },
       "id": 83,
       "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -238,22 +261,24 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 46 },
       "id": 68,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
       "targets": [
         { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "jvm_threads_daemon_threads{instance=~\"$instance\", application=\"$application\"}", "legendFormat": "Daemon", "refId": "A" },
-        { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "jvm_threads_live{instance=~\"$instance\", application=\"$application\"}", "legendFormat": "Live", "refId": "B" },
-        { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "jvm_threads_peak{instance=~\"$instance\", application=\"$application\"}", "legendFormat": "Peak", "refId": "C" }
+        { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "jvm_threads_live_threads{instance=~\"$instance\", application=\"$application\"}", "legendFormat": "Live", "refId": "B" },
+        { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "jvm_threads_peak_threads{instance=~\"$instance\", application=\"$application\"}", "legendFormat": "Peak", "refId": "C" }
       ],
       "title": "Threads",
       "type": "timeseries"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "Bps",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 46 },
       "id": 78,
       "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -262,7 +287,7 @@
         { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "irate(jvm_gc_memory_allocated_bytes_total{instance=~\"$instance\", application=\"$application\"}[5m])", "legendFormat": "allocated", "refId": "A" },
         { "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "irate(jvm_gc_memory_promoted_bytes_total{instance=~\"$instance\", application=\"$application\"}[5m])", "legendFormat": "promoted", "refId": "B" }
       ],
-      "title": "Memory Allocate/Promote",
+      "title": "Memory allocation / promotion rate",
       "type": "timeseries"
     },
     {
@@ -275,25 +300,28 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "ops",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 10, "w": 12, "x": 0, "y": 55 },
       "id": 74,
       "options": { "legend": { "calcs": ["mean","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
       "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "irate(jvm_gc_pause_seconds_count{instance=~\"$instance\", application=\"$application\"}[5m])", "legendFormat": "{{action}} [{{cause}}]", "refId": "A" }],
-      "title": "GC Count",
+      "title": "GC collections per second",
       "type": "timeseries"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "s" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "s",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 10, "w": 12, "x": 12, "y": 55 },
       "id": 76,
       "options": { "legend": { "calcs": ["mean","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
       "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "irate(jvm_gc_pause_seconds_sum{instance=~\"$instance\", application=\"$application\"}[5m])", "legendFormat": "{{action}} [{{cause}}]", "refId": "A" }],
-      "title": "GC Stop the World Duration",
-      "type": "timeseries"
+      "title": "GC pause time per second",
+      "type": "timeseries",
+      "description": "Seconds spent paused per second, not a per-GC latency."
     },
     {
       "collapsed": false,
@@ -305,19 +333,23 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 66 },
       "id": 44,
       "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
+      "options": { "colorMode": "none", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "hikaricp_connections{instance=~\"$instance\", application=\"$application\", pool=\"$hikaricp\"}", "legendFormat": "", "refId": "A" }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "hikaricp_connections{instance=~\"$instance\", application=\"$application\", pool=\"$hikaricp\"}", "legendFormat": "", "refId": "A",
+        "instant": true,
+        "range": false }],
       "title": "Connections Size",
       "type": "stat"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never", "stacking": { "group": "A", "mode": "normal" } }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never", "stacking": { "group": "A", "mode": "normal" } }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 8, "w": 20, "x": 4, "y": 66 },
       "id": 36,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -340,18 +372,20 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "reqps",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 24, "x": 0, "y": 81 },
       "id": 4,
       "options": { "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
       "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "irate(http_server_requests_seconds_count{instance=~\"$instance\", application=\"$application\", uri!~\".*actuator.*\"}[5m])", "legendFormat": "{{method}} [{{status}}] - {{uri}}", "refId": "A" }],
-      "title": "Request Count",
+      "title": "HTTP request rate",
       "type": "timeseries"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "s" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "s",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 24, "x": 0, "y": 88 },
       "id": 2,
       "options": { "legend": { "calcs": ["mean","max","min"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -370,19 +404,23 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "locale",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 96 },
       "id": 28,
       "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
+      "options": { "colorMode": "none", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(tomcat_global_error_total{instance=~\"$instance\", application=\"$application\"})", "legendFormat": "", "refId": "A" }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(tomcat_global_error_total{instance=~\"$instance\", application=\"$application\"})", "legendFormat": "", "refId": "A",
+        "instant": true,
+        "range": false }],
       "title": "Total Error Count",
       "type": "stat"
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 9, "x": 4, "y": 96 },
       "id": 24,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -393,7 +431,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "Bps",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 11, "x": 13, "y": 96 },
       "id": 26,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -407,7 +446,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 13, "x": 0, "y": 103 },
       "id": 30,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -429,7 +469,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 111 },
       "id": 6,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -440,7 +481,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 111 },
       "id": 10,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -451,7 +493,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 8, "x": 0, "y": 118 },
       "id": 14,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -462,7 +505,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 8, "x": 8, "y": 118 },
       "id": 16,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
@@ -473,7 +517,8 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "none",
+        "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 8, "x": 16, "y": 118 },
       "id": 20,
       "options": { "legend": { "calcs": ["mean","lastNotNull","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },

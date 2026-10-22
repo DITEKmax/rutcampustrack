@@ -1,0 +1,128 @@
+[
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+    "sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+    "bytes": 14065,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+    "sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+    "bytes": 3381,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+    "sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+    "bytes": 5343,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Subject.java",
+    "sha256": "a61713173f8331674e2c0bb5e4146571ab6bd3cdc18d5b855d96e1043d0600ce",
+    "bytes": 915,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+    "sha256": "fea33cfe019f9cedc2e89715ce57a1648ef64954df167761ae2fd45970301f7f",
+    "bytes": 77247,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": false,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/AdminRegistryExportService.java",
+    "sha256": "ac55bb6d900e411cf6fed1b086e82b16f3df405796d4eaead970256cf382d478",
+    "bytes": 12312,
+    "existed_in_root_before": false,
+    "unchanged_from_root_before": false,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+    "sha256": "50b58f7423aa1e4996b89555a1c637369dd45c5a125c24a300351e0fa4d5d995",
+    "bytes": 19960,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": false,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+    "sha256": "920bcd8f49ecfb199a040732181515ae428ebed4386e364dc40c49e44717f1c7",
+    "bytes": 31934,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": false,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "bytes": 10364,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": false,
+    "same_as_author": false
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+    "sha256": "ac5d454c23c9b98826ea4930b0208a2a659cb4a740eb83401ec41514f4b83ebe",
+    "bytes": 32233,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": false,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql",
+    "sha256": "52c1782848b5c333975f9162d56f544a053c12207018876bc6e1d5881b42dca3",
+    "bytes": 8987,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/resources/db/migration/V34__assignment_replacement_operation.sql",
+    "sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+    "bytes": 9317,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/resources/db/migration/V49__assignment_closure_unassigned.sql",
+    "sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+    "bytes": 6655,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": true,
+    "existed_in_author": true,
+    "same_as_author": true
+  },
+  {
+    "path": "proto/academic.proto",
+    "sha256": "33d15cb27f4812b16ff1bca9a1dd73acf1d18af4c595c5507f5989c766abcc49",
+    "bytes": 17104,
+    "existed_in_root_before": true,
+    "unchanged_from_root_before": false,
+    "existed_in_author": true,
+    "same_as_author": true
+  }
+]

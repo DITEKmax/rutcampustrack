@@ -5,23 +5,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Абстрактный JPA {@link MappedSuperclass} для consumer-side dedup
- * таблицы {@code event_consumer_processed} (M13 G8).
+ * Абстрактный JPA {@link MappedSuperclass} для consumer-side dedup таблицы {@code
+ * event_consumer_processed} (M13 G8).
  *
- * <p>Конкретные сервисы (academic, schedule) объявляют подкласс с
- * {@code @Entity} + {@code @Table(name = "event_consumer_processed")}.
- * Схема таблицы — Flyway миграции V18 (academic) / V14 (schedule).
+ * <p>Конкретные сервисы (academic, schedule) объявляют подкласс с {@code @Entity} +
+ * {@code @Table(name = "event_consumer_processed")}. Схема таблицы — Flyway миграции V18 (academic)
+ * / V14 (schedule).
  *
- * <p>Composite PK ({@code consumer_id}, {@code event_id}) — идентифицирует
- * уникальную пару «consumer обработал этот event». UNIQUE constraint
- * на эту пару даёт атомарный insert-or-fail в {@code JpaIdempotencyStore.tryClaim}.
+ * <p>Composite PK ({@code consumer_id}, {@code event_id}) — идентифицирует уникальную пару
+ * «consumer обработал этот event». UNIQUE constraint на эту пару даёт атомарный insert-or-fail в
+ * {@code JpaIdempotencyStore.tryClaim}.
  */
 @MappedSuperclass
 @IdClass(IdempotencyEntity.PK.class)
@@ -38,8 +37,7 @@ public abstract class IdempotencyEntity {
     @Column(name = "processed_at", nullable = false, updatable = false)
     private Instant processedAt;
 
-    protected IdempotencyEntity() {
-    }
+    protected IdempotencyEntity() {}
 
     @PrePersist
     void onCreate() {
@@ -73,15 +71,14 @@ public abstract class IdempotencyEntity {
     }
 
     /**
-     * Composite PK class — требование JPA для {@code @IdClass}. Должен
-     * иметь public no-arg конструктор + equals/hashCode.
+     * Composite PK class — требование JPA для {@code @IdClass}. Должен иметь public no-arg
+     * конструктор + equals/hashCode.
      */
     public static class PK implements Serializable {
         private String consumerId;
         private UUID eventId;
 
-        public PK() {
-        }
+        public PK() {}
 
         public PK(String consumerId, UUID eventId) {
             this.consumerId = consumerId;
@@ -100,8 +97,7 @@ public abstract class IdempotencyEntity {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof PK pk)) return false;
-            return Objects.equals(consumerId, pk.consumerId)
-                    && Objects.equals(eventId, pk.eventId);
+            return Objects.equals(consumerId, pk.consumerId) && Objects.equals(eventId, pk.eventId);
         }
 
         @Override

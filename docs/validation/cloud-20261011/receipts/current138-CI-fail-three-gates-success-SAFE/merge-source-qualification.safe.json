@@ -1,0 +1,18 @@
+{
+  "actualCoverageMerge": {
+    "sha": "32ad1b78964b627a9da0227865e5669019e0c6e2",
+    "tree": "b184da6236aa015b5534cad294bc14e0048d1dfd",
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "138b5d03c882ccb2baa8cbbee712883f50cd167c"
+    ]
+  },
+  "producer": {
+    "sha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+    "tree": "b184da6236aa015b5534cad294bc14e0048d1dfd",
+    "parents": [
+      "0114c520bb3e596f001724fd89ec2c7f4aedb1bb"
+    ]
+  },
+  "mergeTreeEqualsHead": true
+}

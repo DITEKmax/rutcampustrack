@@ -1,0 +1,151 @@
+{
+  "known_bad_product": "cf6d1a238441cc1b122e205e160aa23a741a3942 (all62 source bytes equal at actual before3 HEAD0af9)",
+  "before_original_result": "/workspace/scratch/rct-validation/export_developer/ebsr-runtime-before-3-result.json",
+  "before_original_sha256": "3c074e8fd64f0d579b8d580f7a8df715673e77b8610482de44eec6a2cd97bd3b",
+  "green_after_producer": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "final_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "cases": [
+    {
+      "method": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes",
+      "case": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes()",
+      "finding": "EBSR01",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "ready",
+        "error"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "case": "[1] wire=8",
+      "finding": "EBSR03",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [],
+      "before_actual": "Decoder completed without required exception",
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "case": "[2] wire=\"8\"",
+      "finding": "EBSR03",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [],
+      "before_actual": "Decoder completed without required exception",
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "case": "[3] wire=null",
+      "finding": "EBSR03",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [],
+      "before_actual": "Decoder completed without required exception",
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation",
+      "case": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation()",
+      "finding": "EBSR04",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "unavailableLiveRegistryAuthorityCannotIssueACapability",
+      "case": "unavailableLiveRegistryAuthorityCannotIssueACapability()",
+      "finding": "EBSR04",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "503 SERVICE_UNAVAILABLE",
+        "200 OK"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes",
+      "case": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes()",
+      "finding": "EBSR02",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "404 NOT_FOUND",
+        "500 INTERNAL_SERVER_ERROR"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "legacyRegistryIssuanceRequiresSelectedAdminBeforeCapabilityStorage",
+      "case": "[1] user=teacher",
+      "finding": "EBSR04",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "legacyRegistryIssuanceRequiresSelectedAdminBeforeCapabilityStorage",
+      "case": "[2] user=student",
+      "finding": "EBSR04",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "actualAuthKindBoundaryRejectsOrdinalAndNumericString",
+      "case": "[1] wire=8",
+      "finding": "EBSR03",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "400 BAD_REQUEST",
+        "202 ACCEPTED"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    },
+    {
+      "method": "actualAuthKindBoundaryRejectsOrdinalAndNumericString",
+      "case": "[2] wire=\"8\"",
+      "finding": "EBSR03",
+      "before_outcome": "FAIL_ACCEPTED_RULE",
+      "before_expected_actual": [
+        "400 BAD_REQUEST",
+        "202 ACCEPTED"
+      ],
+      "before_actual": null,
+      "after_outcome": "PASS",
+      "after_producer_head": "e258af8f7b836814ad47aed3ded46060594f8567"
+    }
+  ],
+  "qualified_meaningful_controls": 11,
+  "excluded_fixture": "limitedWithoutViewGrants original empty permission array violated admin_access_state before HTTP; not a product red/sensitivity result",
+  "later_fixture_only_failures": [
+    "after2 jobId vs canonical job_id SQL selector",
+    "unit1 unstubbed mocked signer null DTO token"
+  ],
+  "restoration": "Product source corrections frozenb45; test-only successors explicit; final-run-source-bridge.json qualifies exact hashes",
+  "limits": "Selective meaningful known-bad source/cases, not exhaustive production mutation; synthetic HTTP file backend and mocked Rabbit are explicit"
+}

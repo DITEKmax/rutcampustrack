@@ -18,8 +18,13 @@ export async function executeNotificationAction(
   const captured = { ...current() }
   const isCurrent = (): boolean => {
     const now = current()
-    return now.online && now.generation === captured.generation && now.userId === captured.userId
-      && now.role === captured.role && now.authorityKey === captured.authorityKey
+    return (
+      now.online &&
+      now.generation === captured.generation &&
+      now.userId === captured.userId &&
+      now.role === captured.role &&
+      now.authorityKey === captured.authorityKey
+    )
   }
   if (!captured.online || !captured.userId || captured.role !== action.role) return false
   const opened = await port.open(action, isCurrent)

@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-12T09:37:59.297527+00:00",
+  "operation": "narrow_new_duplicate_cleanup_and_source_scope_correction",
+  "attempt01_native_exit": 0,
+  "attempt01_executed_source_sha256": "7efbc625686fc7cc46dd7561557b807bf727afe9f5c887c92b663954a7f245a8",
+  "qualification": "Directory iteration initially read/copied own original VAPID PEM, beyond necessary ENV copies; no values or private digest disclosed; original key unchanged. Exact NEW redundant copy removed before seal.",
+  "removed_exact_NEW_owned_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/vapid-p256.key",
+  "original_VAPID_key_path": "/workspace/scratch/rct-validation/current_host_config/private/vapid-p256.key",
+  "final_generation_source_filter": "only .json/.env private input copies; all original private keys metadata-only",
+  "four_current_new_token_values_not_regenerated": true,
+  "corrected_source_full_generation_rerun": false,
+  "final_private_copy_count": 9,
+  "original39_and_originalprivate_preserved": true,
+  "actual_privatekey_READ_in_attempt01": "OWN VAPID ONLY; other RSA/TLS/keyID not read",
+  "applications_keys_regeneration_external_ENV_network": "NOT_RUN"
+}

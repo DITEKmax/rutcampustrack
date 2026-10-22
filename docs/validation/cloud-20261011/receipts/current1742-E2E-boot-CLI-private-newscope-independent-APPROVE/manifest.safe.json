@@ -1,0 +1,19 @@
+{
+  "schema": "RCT_BOOT_CLI_NARROW_INDEPENDENT_SOURCE_MANIFEST_V1",
+  "utc": "2026-10-13T13:07:02.359257+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "findings": [],
+  "actual_log_API_native_private_read": false,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 4188,
+      "sha256": "92086a67aa580a114a8784bc1a92751d5252cfe69a3f512c9467b4d8f28ad22f"
+    },
+    {
+      "path": "verification.safe.json",
+      "bytes": 2551,
+      "sha256": "727e3338b0ab318203cf0d6ffc8a98f9ab816c9c008a08f5d35d5d2a1780f9bf"
+    }
+  ]
+}

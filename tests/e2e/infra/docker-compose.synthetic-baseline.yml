@@ -1,0 +1,25 @@
+# Explicit disposable browser baseline only. Never merge into a production project.
+# Each callback runs under its own Flyway migrator before that application's startup.
+services:
+  auth-service:
+    environment:
+      SPRING_FLYWAY_LOCATIONS: classpath:db/auth-migration,filesystem:/run/rct-e2e-baseline
+      SPRING_FLYWAY_INIT_SQLS: SET rct.e2e.synthetic_baseline = '${RCT_E2E_SYNTHETIC_BASELINE:?explicit disposable browser baseline required}'
+    volumes:
+      - type: bind
+        source: ./tests/e2e/infra/baseline/auth
+        target: /run/rct-e2e-baseline
+        read_only: true
+        bind:
+          create_host_path: false
+  academic-service:
+    environment:
+      SPRING_FLYWAY_LOCATIONS: classpath:db/academic-migration,filesystem:/run/rct-e2e-baseline
+      SPRING_FLYWAY_INIT_SQLS: SET rct.e2e.synthetic_baseline = '${RCT_E2E_SYNTHETIC_BASELINE:?explicit disposable browser baseline required}'
+    volumes:
+      - type: bind
+        source: ./tests/e2e/infra/baseline/academic
+        target: /run/rct-e2e-baseline
+        read_only: true
+        bind:
+          create_host_path: false

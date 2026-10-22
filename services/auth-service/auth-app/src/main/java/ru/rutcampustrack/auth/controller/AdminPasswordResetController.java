@@ -19,11 +19,14 @@ public final class AdminPasswordResetController implements AdminPasswordResetApi
     }
 
     @Override
-    public ResponseEntity<AdminPasswordResetLinkResponse> issueLink(long userId, Authentication authentication) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
+    public ResponseEntity<AdminPasswordResetLinkResponse> issueLink(
+            long userId, Authentication authentication) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
             throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
         }
-        return ResponseEntity.status(201).cacheControl(CacheControl.noStore())
+        return ResponseEntity.status(201)
+                .cacheControl(CacheControl.noStore())
                 .body(service.issueLink(principal, userId));
     }
 }

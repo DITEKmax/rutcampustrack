@@ -1,0 +1,559 @@
+[
+  {
+    "id": "L01",
+    "family_id": "RESEARCH-L01",
+    "disposition": "CONFIRMED_FIXED_BOUNDED",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "BOT-DELIVERY",
+      "SHARED-OUTBOX"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-L01-ACADEMIC-BROKER-ACCEPTANCE"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Scoped confirms and persistent senderconfig sourceequivalent; actualAcademic block/NACK proves PENDING/recovery. Remaining consumer/routing/provider distinct; no architecture replacement.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L02",
+    "family_id": "RESEARCH-L02",
+    "disposition": "CONFIRMED_FIXED_BOUNDED",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ATTENDANCE-CACHE"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-L02-SEMESTER-AUTHORITATIVE-READ"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Perread authority and actualNetty+Mongo requestdomain changedsemester/outage proven; DR01 optional projection containment distinct. RealAcademicactivation/client unexecuted.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L03",
+    "family_id": "RESEARCH-L03",
+    "disposition": "PARTIAL_EXISTING_MECHANISM_QR_SUFFICIENT",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-PASSWORD-OTP",
+      "SHARED-SECURITY-ERRORS"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-L03-QR-REDACTION"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "QR hypothesis disproved with actualrouteadvisor and meaningful fixturecontrol. NewOTP/reportproof leak fixes have actualred/partialgreens but security2 stable review pending; nowholeL03PASS.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L04",
+    "family_id": "RESEARCH-L04",
+    "disposition": "CONFIRMED_FIXED_AUTH_ACADEMIC_ONLY",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-CACHE-DTO",
+      "MIGRATIONS"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-SD02-LOCALE-AUTH-ACADEMIC"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "tr-TR stable existingnamecodes Auth/Academic and actualHTTPknown/unknown proven. Noordinal/numericmigration; remainingSchedule/Mongo/BFFandcode/null/legacy/transition paths independent.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L05",
+    "family_id": "RESEARCH-L05",
+    "disposition": "OPTIONAL_OPTIMIZATION_UNCONFIRMED",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": false,
+    "remaining_queue_ids": [
+      "ACADEMIC-ASSIGNMENT",
+      "ACADEMIC-CACHE-DTO"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Static2*N is not measured productperformance defect. Do not require1/10/50query-count/SLA campaign, JOINFETCH/DataLoader/interface rewrite. Accepted listdata/scope correctness stays required; DATA3 teacherlist exposure candidate is PREPARED/unadmitted, notDEFECT.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L06",
+    "family_id": "RESEARCH-L06",
+    "disposition": "REQUIRED_GUARDS_OPTIONAL_BATCH_OPTIMIZATION",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "SCHEDULE-TRANSFER-CANCEL",
+      "ATTENDANCE-CHECKIN",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-PARTICIPANTS"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Existing peritem afterbatch safeguards may protect transfer snapshots. Actual mutabletransfer/partialsnapshot failclosed checks required; RPCcount reduction/GraphQL/batchcontract redesign optional without measured acceptedneed.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L07",
+    "family_id": "RESEARCH-L07",
+    "disposition": "REQUIRED_CONCURRENCY_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-ADMIN",
+      "ACADEMIC-GROUPS",
+      "ACADEMIC-SEMESTER",
+      "ACADEMIC-ASSIGNMENT",
+      "SCHEDULE-TRANSFER-CANCEL",
+      "ATTENDANCE-CHECKIN",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-PARTICIPANTS"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Existing PESSIMISTIC/Version/CAS notbugbyannotation. Actual competing lastFULL, assignmentoverlap, transfer/deletion/archive/restore/requestquota and heldactor races typedwinner/conflict+rollback, no500; no blanketSerializable.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "L08",
+    "family_id": "RESEARCH-L08",
+    "disposition": "ADEQUATE_DIFFERENT_VALID_SHARED_SCHEMA",
+    "parent_runtime_status": "PASS_NARROW_COMPOSED",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Existing MainRESEARCH-L08 PASS remains: AcademicsoleFlyway/Authdisabled, exactsharedtuple/rollback native657 plus retainedV56→57 upgrade andV57ownershipsupplement; V58onlydashboardtable. No DBsplit/Saga/2PC obligation. LaterMIGRATIONS/finalgates separate. receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.ed226cd_public_retired_schema_existing_evidence_join",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P01",
+    "family_id": "RESEARCH-P01",
+    "disposition": "ALREADY_USED_NO_EXTRA_ARCHITECTURE_OBLIGATION",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": false,
+    "remaining_queue_ids": [
+      "ACADEMIC-ADMIN",
+      "ACADEMIC-ASSIGNMENT"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "ConstructorDI and requestcontext used. Domain realoperation/actorisolation alreadyrequired in families; no specialcontextLoads, serviceinterface orModelMapper adoption.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P02",
+    "family_id": "RESEARCH-P02",
+    "disposition": "ALREADY_USED_CONTRACT_RUNTIME_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-ASSIGNMENT",
+      "ACADEMIC-CACHE-DTO",
+      "ATTENDANCE-READ-REPORT",
+      "BFF-CONTRACT-HTTP"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "DTO/API separation sourceused; actual privatefield/JSON/proto/TScompatibility and generatedcontract consumption stillrequired.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P03",
+    "family_id": "RESEARCH-P03",
+    "disposition": "PARTIAL_VALIDATION_ACTUAL_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-ADMIN",
+      "ACADEMIC-ASSIGNMENT",
+      "ACADEMIC-HOMEWORK",
+      "ACADEMIC-MAP",
+      "SCHEDULE-CLOCK-GENERATION",
+      "ATTENDANCE-CHECKIN",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-READ-REPORT",
+      "NOTIFICATION-PREFERENCES-HISTORY",
+      "BFF-CONTRACT-HTTP"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "ReviewedTMA/QR/locale/renderer negative boundaries PASS children. Other applicable public malformed/null/foreign requests typed4xx+no partialstate notcoveredbybrowserrequired/mockcalls.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P04",
+    "family_id": "RESEARCH-P04",
+    "disposition": "REQUIRED_DATA_CONCURRENCY_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-ADMIN",
+      "ACADEMIC-GROUPS",
+      "ACADEMIC-SEMESTER",
+      "ACADEMIC-ASSIGNMENT",
+      "ACADEMIC-HOMEWORK",
+      "ACADEMIC-MAP",
+      "SCHEDULE-CLOCK-GENERATION",
+      "SCHEDULE-TRANSFER-CANCEL",
+      "ATTENDANCE-CHECKIN",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-READ-REPORT",
+      "ATTENDANCE-PARTICIPANTS",
+      "NOTIFICATION-PREFERENCES-HISTORY"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "UNIQUE/FK/CHECK andCAS/locks sourceused. Actual sameinvariant races and shared rollback require selected realDB assertions, notannotation proof.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P05",
+    "family_id": "RESEARCH-P05",
+    "disposition": "REQUIRED_LOCAL_TX_AND_NETWORK_PARTICIPANTS_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-ADMIN",
+      "ACADEMIC-GROUPS",
+      "ACADEMIC-SEMESTER",
+      "ACADEMIC-ASSIGNMENT",
+      "ACADEMIC-HOMEWORK",
+      "ACADEMIC-MAP",
+      "SCHEDULE-CLOCK-GENERATION",
+      "SCHEDULE-TRANSFER-CANCEL",
+      "ATTENDANCE-CHECKIN",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-PARTICIPANTS",
+      "NOTIFICATION-PREFERENCES-HISTORY",
+      "SHARED-OUTBOX"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "TransactionTemplate/separatebeans/phasedparticipants differentvalid. Localstate/outboxfaultrollback and durable networkretry/replay are separate oracles; one@Transactional notcrossserviceatomicity.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P06",
+    "family_id": "RESEARCH-P06",
+    "disposition": "PARTIAL_LIVE_AUTHORITY_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-SESSION",
+      "AUTH-QR-TMA",
+      "ACADEMIC-ADMIN",
+      "NOTIFICATION-WS-PUSH",
+      "BOT-DELIVERY",
+      "BFF-CONTRACT-HTTP"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Fresh helpergrant/TMA sequentialchange shown; selectedrole/revoke/passwordreset/durable restart/outage realAuth+clientstillrequired. Neutralbootstrap notselectedaccess.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P07",
+    "family_id": "RESEARCH-P07",
+    "disposition": "PARTIAL_SIGNED_PROOF_BOUNDARIES_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-QR-TMA",
+      "AUTH-WS-TICKET",
+      "NOTIFICATION-WS-PUSH",
+      "SHARED-SECURITY-ERRORS"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "ActualTMAinvalid and purposevalidator sourceused; algorithm/issuer/audience/calleridentity/tokenpurpose current protectedtrust paths stillselectedchecks; noprivatekeydistribution.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P08",
+    "family_id": "RESEARCH-P08",
+    "disposition": "REQUIRED_COOKIE_CLIENT_ORIGIN_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-SESSION",
+      "AUTH-QR-TMA",
+      "AUTH-WS-TICKET",
+      "NOTIFICATION-WS-PUSH"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Existing HttpOnly/Secure/Strict/path cookies vsBearer differentvalid; actualissue/clear/origin/CORS/CSRF acrossPWA/TMAloginrefreshlogout remains; no blanketJWT exemption.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P09",
+    "family_id": "RESEARCH-P09",
+    "disposition": "REQUIRED_OPEN_SOCKET_REVOKE_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-WS-TICKET",
+      "NOTIFICATION-WS-PUSH",
+      "BOT-DELIVERY"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "TicketTTL30s/Luasinglewinner+outboundliveadmission sourceused. Actualsame-ticketconcurrency and openedprivateWSafterrevoke event denial, logout-beforeconsume required.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P10",
+    "family_id": "RESEARCH-P10",
+    "disposition": "REQUIRED_CREDENTIALS_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-PASSWORD-OTP",
+      "AUTH-QR-TMA",
+      "ACADEMIC-ADMIN"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "ExistingBCrypt/current12codepoints72UTF8bytes policy and acceptedinitialdisplay preserved. Actualchange/reset/hashclear/grants/Unicode/rate cases +newsecurityreview required; nolecture5–20policy.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P11",
+    "family_id": "RESEARCH-P11",
+    "disposition": "REQUIRED_BODYBOUND_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-PASSWORD-OTP",
+      "AUTH-QR-TMA",
+      "SHARED-SECURITY-ERRORS"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "4096hardreadbound sourceused; fixed/chunkedoversized actual413 before expensiveprocessing, directAuthreachability stillrequired; noContentLength-onlyproof.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P12",
+    "family_id": "RESEARCH-P12",
+    "disposition": "PARTIAL_BROKER_ACCEPTANCE_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-HOMEWORK",
+      "SCHEDULE-TRANSFER-CANCEL",
+      "ATTENDANCE-CHECKIN",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-PARTICIPANTS",
+      "NOTIFICATION-PREFERENCES-HISTORY",
+      "BOT-DELIVERY",
+      "SHARED-OUTBOX"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-L01-ACADEMIC-BROKER-ACCEPTANCE"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Realbrokeracceptance retained; same-tx rollback/durableconsumerclaim/effect/ACK/redelivery/restart remains acrossacceptedconsumerboundaries; noexactly-onceexternalproviderpromise.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P13",
+    "family_id": "RESEARCH-P13",
+    "disposition": "PARTIAL_CURRENT_SEMESTER_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-GROUPS",
+      "ACADEMIC-SEMESTER",
+      "ACADEMIC-CACHE-DTO",
+      "ATTENDANCE-CACHE",
+      "NOTIFICATION-PREFERENCES-HISTORY",
+      "BOT-DELIVERY"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-L02-SEMESTER-AUTHORITATIVE-READ"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "L02perread actualseam sufficientchangedcache; other scopedcoldwarm/mutation/rollback/role-revoke/cacheDTO+preferences needactual; roster intentionallyuncached.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P14",
+    "family_id": "RESEARCH-P14",
+    "disposition": "DIFFERENT_VALID_CACHE_WHITELIST_RUNTIME_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-CACHE-DTO"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Localmapper explicitcollection/date/BigDecimal whitelist andru.rutcampustrack prefix found, notglobalPrimary. ExistingCacheIT asserts scopedentries/TTL/eviction; it does not show foreignpolymorphicrejection. Need direct serializer actualallowedroundtrip+foreign@classnegative once, no broadObjecttyping.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P15",
+    "family_id": "RESEARCH-P15",
+    "disposition": "REQUIRED_REGISTRY_COMPOSITE_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-GROUPS",
+      "ACADEMIC-CACHE-DTO",
+      "ATTENDANCE-READ-REPORT"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Serverfilter/page/count/sortallowlist/idtie-breaker sourceused; jointORwithin/ANDacross/stableties/unknownsort actual, fullunpagedexportuses samecriteria; LIKE notfulltextpromise.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P16",
+    "family_id": "RESEARCH-P16",
+    "disposition": "PARTIAL_NATIVE_FILES_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-MAP",
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-READ-REPORT",
+      "NOTIFICATION-WS-PUSH",
+      "BFF-CONTRACT-HTTP",
+      "RENDERER"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-RENDERER-NATIVE-PDF-PNG"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Nativebytes/pageorder verified; scopedETag200304newversion and download MIME/UTF8name/ticket/livegrant/no-store realchain anddistinctexportmodels remaining.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P17",
+    "family_id": "RESEARCH-P17",
+    "disposition": "PARTIAL_SAFE_ERRORS_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "AUTH-PASSWORD-OTP",
+      "NOTIFICATION-WS-PUSH",
+      "BOT-DELIVERY",
+      "BFF-CONTRACT-HTTP",
+      "SHARED-SECURITY-ERRORS"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-L03-QR-REDACTION"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "QR andrenderer genericerrors actualbounded; newOTP/reportproof/no-store package reviewpending; remaining relevantpublicerrors/logfields/trace/noSQLstackcredentials notwholepass.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P18",
+    "family_id": "RESEARCH-P18",
+    "disposition": "REQUIRED_CLEAN_UPGRADE_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "ACADEMIC-SEMESTER",
+      "ACADEMIC-HOMEWORK",
+      "ACADEMIC-MAP",
+      "ACADEMIC-CACHE-DTO",
+      "SCHEDULE-CLOCK-GENERATION",
+      "ATTENDANCE-PARTICIPANTS",
+      "MIGRATIONS",
+      "RECOVERY"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Hibernatevalidate/Flyway used. Realdisposable clean/upgrade historicaldata+checksums/constraints/indices/sequence compatibility; norepair/cleantohideFAIL.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P19",
+    "family_id": "RESEARCH-P19",
+    "disposition": "PARTIAL_RENDERER_DEADLINE_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "RENDERER",
+      "HEALTH-OUTAGE",
+      "RECOVERY"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-RF04-ACTUAL-GRPC-CANCEL-DEADLINE"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "Ownedprocess timeout/cancel actual. Healthsource/mocktests notrouteduseroutage/recovery; currentDB/Rabbit/authority/renderer routes +privateActuator actualrequired; no inventedSLA.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P20",
+    "family_id": "RESEARCH-P20",
+    "disposition": "DIFFERENT_VALID_RESTORE_RUNTIME_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "RECOVERY"
+    ],
+    "accepted_partial_child_ids": [],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "quiescedpgdump/mongodump/fileschecksummed freshrestore sourceused. Validators/unitloopback never applicationPASS; actual restoredhistoricalfiles/schema/sequences/indices andpendingretry once required onlydisposable.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  },
+  {
+    "id": "P21",
+    "family_id": "RESEARCH-P21",
+    "disposition": "PARTIAL_TARGETED_RPC_RUNTIME_UNKNOWN",
+    "parent_runtime_status": "UNKNOWN",
+    "blocking_additional_architecture_or_metric_required": false,
+    "accepted_correctness_oracles_required": true,
+    "remaining_queue_ids": [
+      "SCHEDULE-TRANSFER-CANCEL",
+      "BOT-DELIVERY",
+      "BFF-CONTRACT-HTTP",
+      "SHARED-SECURITY-ERRORS",
+      "HEALTH-OUTAGE"
+    ],
+    "accepted_partial_child_ids": [
+      "CASE-RF04-ACTUAL-GRPC-CANCEL-DEADLINE"
+    ],
+    "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "repo_evidence_and_limits": "ActualrendererNettycancel/deadline pluscachecontrolledRPC retained; protectedJWT/caller→target→method/TLS andchangedconsumercompatibility/sourcepolicy separate. Renderer existingstaticsecret/private_net distinct; noallRPC/mTLSblanket.",
+    "historical_research_source_read": "Complete included owner research brief and reused original research receipts; raw ZIP lecture archives not personally reopened in this reconciliation."
+  }
+]

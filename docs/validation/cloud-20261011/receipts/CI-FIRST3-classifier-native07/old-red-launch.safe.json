@@ -1,0 +1,11 @@
+{
+  "phase": "old-red",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-roster-classifier/classifier-controls.cjs"
+  ],
+  "deadlineSeconds": 180,
+  "expectedNativeExit": 1,
+  "sourceCommit": "c77de975cd8ac949611cae70cb515a9daa818c6c"
+}

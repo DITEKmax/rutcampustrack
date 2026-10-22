@@ -1,0 +1,24 @@
+{
+  "phase": "before-global",
+  "native_exit": 1,
+  "status": "ACTUAL_FAIL",
+  "cases": [
+    {
+      "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+      "class": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "expected_scalar": 1,
+      "actual_scalar": 2,
+      "source_lines": [
+        "ExportJobHttpIT.java:85"
+      ]
+    }
+  ],
+  "xml_sha256": "e30d8f0bf9673c3a7e8d26b4cbabf4c2fc46e82806190e6433ef4429fccacb97",
+  "xml_bytes": 36163,
+  "tests": "1",
+  "failures": "1",
+  "errors": "0",
+  "skipped": "0"
+}

@@ -1,0 +1,71 @@
+{
+  "status": "PASS_SOURCE_ONLY_CLASSIFIER",
+  "rootRevision": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "trackedPaths": 7334,
+  "before": {
+    "excluded": 4634,
+    "prettier": 967,
+    "sql": 6,
+    "python": 140,
+    "java": 1587
+  },
+  "after": {
+    "excluded": 4671,
+    "prettier": 963,
+    "sql": 6,
+    "python": 113,
+    "java": 1581
+  },
+  "exactChangedPaths": 37,
+  "verifiedSourceCopies": 33,
+  "preservedRegistries": 4,
+  "javaExactlyMatchesActualSpotless": true,
+  "actualCurrentJavaTargets": 1581,
+  "historicalC4JavaTargets": 1549,
+  "sixSqlTargetsPreserved": true,
+  "maintainedPositiveControls": [
+    [
+      "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+      "python"
+    ],
+    [
+      "scripts/generate-bot-proto.py",
+      "python"
+    ],
+    [
+      "docs/validation/cloud-20261011/receipts/fingerprint-review/maintained-new-helper.py",
+      "python"
+    ],
+    [
+      "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/maintained-helper.java",
+      "java"
+    ],
+    [
+      "docs/validation/cloud-20261011/receipts/maintained/package.json",
+      "prettier"
+    ],
+    [
+      "tests/e2e/fixtures/artifact-privacy.ts",
+      "prettier"
+    ],
+    [
+      "tests/e2e/fixtures/mobile-dataset.ts",
+      "prettier"
+    ],
+    [
+      "frontends/landing/dist/index.html",
+      "prettier"
+    ],
+    [
+      "frontends/mobile-core/src/styles/tokens.pcss",
+      "prettier"
+    ],
+    [
+      "frontends/pwa-vue/src/App.vue",
+      "prettier"
+    ]
+  ],
+  "immutableIdentityUnknownAndMaintained": "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+  "parserRulesVersionsDriversUnchanged": true,
+  "massFormatting": "NOT_RUN"
+}

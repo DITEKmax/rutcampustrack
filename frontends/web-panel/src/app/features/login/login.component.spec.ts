@@ -1,3 +1,6 @@
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { render, screen, fireEvent, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -89,142 +92,113 @@ describe('LoginComponent', () => {
   });
 
   it('on valid submit, calls AuthApi.login with { login, password }', async () => {
-    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
-      of({ accessToken: TEACHER_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
-    );
-    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
-      id: 1,
-      role: 'TEACHER',
-      isHeadman: false,
-      groupId: null,
-    });
-
     await render(LoginComponent, {
-      providers: [
-        { provide: AuthApi, useValue: mockAuthApi },
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-      ],
+      providers: [AuthApi, AuthService, provideHttpClient(), provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter }],
     });
-
+    const http = TestBed.inject(HttpTestingController);
+    const auth = TestBed.inject(AuthService);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
     await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
-
-    expect(mockAuthApi.login).toHaveBeenCalledWith({
-      login: 'teacher00001',
-      password: 'password123',
-    });
+    const request = http.expectOne('/api/auth/login');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual({ login: 'teacher00001', password: 'password123' });
+    request.flush({ accessToken: TEACHER_TOKEN, expiresIn: 3600 });
+    expect(auth.accessToken()).toBe(TEACHER_TOKEN);
+    expect(auth.currentUser()).toMatchObject({ id: 1, role: 'TEACHER', isHeadman: false, groupId: null });
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/teacher/dashboard');
+    http.verify();
   });
 
   it('on successful login, calls AuthService.setTokens and navigates to /teacher/dashboard for TEACHER role', async () => {
-    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
-      of({ accessToken: TEACHER_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
-    );
-    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
-      id: 1,
-      role: 'TEACHER',
-      isHeadman: false,
-      groupId: null,
-    });
-
     await render(LoginComponent, {
-      providers: [
-        { provide: AuthApi, useValue: mockAuthApi },
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-      ],
+      providers: [AuthApi, AuthService, provideHttpClient(), provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter }],
     });
-
+    const http = TestBed.inject(HttpTestingController);
+    const auth = TestBed.inject(AuthService);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
     await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
-
-    expect(mockAuthService.setAccessToken).toHaveBeenCalledWith(TEACHER_TOKEN);
+    const request = http.expectOne('/api/auth/login');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual({ login: 'teacher00001', password: 'password123' });
+    request.flush({ accessToken: TEACHER_TOKEN, expiresIn: 3600 });
+    expect(auth.accessToken()).toBe(TEACHER_TOKEN);
+    expect(auth.currentUser()).toMatchObject({ id: 1, role: 'TEACHER', isHeadman: false, groupId: null });
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/teacher/dashboard');
+    http.verify();
   });
 
   it('on successful login with ADMIN role, navigates to /admin/dashboard', async () => {
-    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
-      of({ accessToken: ADMIN_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
-    );
-    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
-      id: 2,
-      role: 'ADMIN',
-      isHeadman: false,
-      groupId: null,
-    });
-
     await render(LoginComponent, {
-      providers: [
-        { provide: AuthApi, useValue: mockAuthApi },
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-      ],
+      providers: [AuthApi, AuthService, provideHttpClient(), provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter }],
     });
-
+    const http = TestBed.inject(HttpTestingController);
+    const auth = TestBed.inject(AuthService);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'admin');
     await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
-
+    const request = http.expectOne('/api/auth/login');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual({ login: 'admin', password: 'password123' });
+    request.flush({ accessToken: ADMIN_TOKEN, expiresIn: 3600 });
+    expect(auth.accessToken()).toBe(ADMIN_TOKEN);
+    expect(auth.currentUser()).toMatchObject({ id: 2, role: 'ADMIN', isHeadman: false, groupId: null });
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/admin/dashboard');
+    http.verify();
   });
 
   it('on successful login with plain STUDENT role, navigates to /student/dashboard', async () => {
-    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
-      of({ accessToken: STUDENT_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
-    );
-    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
-      id: 3,
-      role: 'STUDENT',
-      isHeadman: false,
-      groupId: 5,
-    });
-
     await render(LoginComponent, {
-      providers: [
-        { provide: AuthApi, useValue: mockAuthApi },
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-      ],
+      providers: [AuthApi, AuthService, provideHttpClient(), provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter }],
     });
-
+    const http = TestBed.inject(HttpTestingController);
+    const auth = TestBed.inject(AuthService);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'student00001');
     await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
-
+    const request = http.expectOne('/api/auth/login');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual({ login: 'student00001', password: 'password123' });
+    request.flush({ accessToken: STUDENT_TOKEN, expiresIn: 3600 });
+    expect(auth.accessToken()).toBe(STUDENT_TOKEN);
+    expect(auth.currentUser()).toMatchObject({ id: 3, role: 'STUDENT', isHeadman: false, groupId: 5 });
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/student/dashboard');
+    http.verify();
   });
 
   it('on successful login with headman STUDENT role, navigates to /headman/dashboard', async () => {
-    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
-      of({ accessToken: HEADMAN_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
-    );
-    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
-      id: 4,
-      role: 'STUDENT',
-      isHeadman: true,
-      groupId: 5,
-    });
-
     await render(LoginComponent, {
-      providers: [
-        { provide: AuthApi, useValue: mockAuthApi },
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-      ],
+      providers: [AuthApi, AuthService, provideHttpClient(), provideHttpClientTesting(),
+        { provide: Router, useValue: mockRouter }],
     });
-
+    const http = TestBed.inject(HttpTestingController);
+    const auth = TestBed.inject(AuthService);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'headman01');
     await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
-
+    const request = http.expectOne('/api/auth/login');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual({ login: 'headman01', password: 'password123' });
+    request.flush({ accessToken: HEADMAN_TOKEN, expiresIn: 3600 });
+    expect(auth.accessToken()).toBe(HEADMAN_TOKEN);
+    expect(auth.currentUser()).toMatchObject({ id: 4, role: 'STUDENT', isHeadman: true, groupId: 5 });
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/headman/dashboard');
+    http.verify();
   });
 
   it('on 401 error, shows error message for wrong credentials', async () => {

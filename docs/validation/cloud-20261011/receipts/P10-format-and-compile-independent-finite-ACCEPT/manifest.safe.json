@@ -1,0 +1,7 @@
+{
+  "schema": "RCT_FINITE_ACTUAL_RECHECK_MANIFEST_V1",
+  "files": {
+    "REPORT.safe.json": "1301d3fae510c0e85ff59f913eebeabe242df582cb772c23366629c66ec1f967"
+  },
+  "excluded": "No private raw runtime output or credentials"
+}

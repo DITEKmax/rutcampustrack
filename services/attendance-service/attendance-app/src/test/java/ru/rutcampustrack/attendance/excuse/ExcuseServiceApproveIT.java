@@ -1,5 +1,10 @@
 package ru.rutcampustrack.attendance.excuse;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,22 +22,14 @@ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 import ru.rutcampustrack.attendance.security.RequestContext;
 
-import java.time.Instant;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-
 /**
  * Integration test for the D-16 cascade (AC-5).
  *
- * Verifies that approving an excuse ticket:
- *   - creates/updates an AttendanceDocument for every lessonId;
- *   - maps ILLNESS/SUMMONS/etc. → EXCUSED and FREE_ATTENDANCE → FREE_ATTENDANCE;
- *   - overwrites a pre-existing document's status;
- *   - leaves attendance untouched on REJECTED.
+ * <p>Verifies that approving an excuse ticket: - creates/updates an AttendanceDocument for every
+ * lessonId; - maps ILLNESS/SUMMONS/etc. → EXCUSED and FREE_ATTENDANCE → FREE_ATTENDANCE; -
+ * overwrites a pre-existing document's status; - leaves attendance untouched on REJECTED.
  *
- * Uses real MongoDB via Testcontainers (requires Docker Desktop).
+ * <p>Uses real MongoDB via Testcontainers (requires Docker Desktop).
  */
 class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
 
@@ -40,14 +37,11 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
     private static final Long HEADMAN_ID = 777L;
     private static final Long GROUP_ID = 10L;
 
-    @Autowired
-    private ExcuseService excuseService;
+    @Autowired private ExcuseService excuseService;
 
-    @Autowired
-    private ExcuseRepository excuseRepository;
+    @Autowired private ExcuseRepository excuseRepository;
 
-    @MockitoBean
-    private RequestContext requestContext;
+    @MockitoBean private RequestContext requestContext;
 
     @BeforeEach
     void setUp() {
@@ -60,27 +54,38 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
         Mockito.when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         Mockito.when(requestContext.isHeadman()).thenReturn(true);
         Mockito.when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
-        Mockito.when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID)).thenReturn(
-                ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
-        Mockito.when(scheduleGrpcClient.requireAttendanceMutationReady(
-                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.eq(GROUP_ID)))
-                .thenAnswer(inv -> ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
-                        .setId(inv.getArgument(0)).setGroupId(GROUP_ID).setSemesterId(1L).build());
+        Mockito.when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder()
+                                .setIsHeadman(true)
+                                .build());
+        Mockito.when(
+                        scheduleGrpcClient.requireAttendanceMutationReady(
+                                org.mockito.ArgumentMatchers.anyLong(),
+                                org.mockito.ArgumentMatchers.eq(GROUP_ID)))
+                .thenAnswer(
+                        inv ->
+                                ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
+                                        .setId(inv.getArgument(0))
+                                        .setGroupId(GROUP_ID)
+                                        .setSemesterId(1L)
+                                        .build());
     }
 
     private ExcuseTicket persistSubmittedTicket(ExcuseType type, List<Long> lessonIds) {
         Instant now = Instant.now();
-        ExcuseTicket ticket = ExcuseTicket.builder()
-                .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
-                .semesterId(1L)
-                .studentName("Иванов Иван")
-                .lessonIds(lessonIds)
-                .excuseType(type)
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .studentId(STUDENT_ID)
+                        .groupId(GROUP_ID)
+                        .semesterId(1L)
+                        .studentName("Иванов Иван")
+                        .lessonIds(lessonIds)
+                        .excuseType(type)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
         return excuseRepository.save(ticket);
     }
 
@@ -91,22 +96,25 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
     void approve_illnessTicket_createsExcusedAttendanceForEachLesson() {
         ExcuseTicket ticket = persistSubmittedTicket(ExcuseType.ILLNESS, List.of(11L, 12L, 13L));
 
-        ExcuseTicket result = excuseService.updateStatus(
-                ticket.getId(),
-                new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "ok"));
+        ExcuseTicket result =
+                excuseService.updateStatus(
+                        ticket.getId(),
+                        new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "ok"));
 
         assertThat(result.getStatus()).isEqualTo(ExcuseTicketStatus.APPROVED);
 
         List<AttendanceDocument> docs = attendanceRepository.findAll();
         assertThat(docs).hasSize(3);
-        assertThat(docs).allSatisfy(d -> {
-            assertThat(d.getUserId()).isEqualTo(STUDENT_ID);
-            assertThat(d.getGroupId()).isEqualTo(GROUP_ID);
-            assertThat(d.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
-            assertThat(d.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
-            assertThat(d.getCreatedAt()).isNotNull();
-            assertThat(d.getUpdatedAt()).isNotNull();
-        });
+        assertThat(docs)
+                .allSatisfy(
+                        d -> {
+                            assertThat(d.getUserId()).isEqualTo(STUDENT_ID);
+                            assertThat(d.getGroupId()).isEqualTo(GROUP_ID);
+                            assertThat(d.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
+                            assertThat(d.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+                            assertThat(d.getCreatedAt()).isNotNull();
+                            assertThat(d.getUpdatedAt()).isNotNull();
+                        });
         assertThat(docs.stream().map(AttendanceDocument::getLessonId).toList())
                 .containsExactlyInAnyOrder(11L, 12L, 13L);
     }
@@ -118,15 +126,18 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
     void approve_freeAttendanceTicket_createsFreeAttendanceDocuments() {
         ExcuseTicket ticket = persistSubmittedTicket(ExcuseType.FREE_ATTENDANCE, List.of(21L, 22L));
 
-        excuseService.updateStatus(ticket.getId(),
+        excuseService.updateStatus(
+                ticket.getId(),
                 new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "грант"));
 
         List<AttendanceDocument> docs = attendanceRepository.findAll();
         assertThat(docs).hasSize(2);
-        assertThat(docs).allSatisfy(d -> {
-            assertThat(d.getStatus()).isEqualTo(AttendanceStatus.FREE_ATTENDANCE);
-            assertThat(d.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
-        });
+        assertThat(docs)
+                .allSatisfy(
+                        d -> {
+                            assertThat(d.getStatus()).isEqualTo(AttendanceStatus.FREE_ATTENDANCE);
+                            assertThat(d.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+                        });
     }
 
     // -----------------------------------------------------------------------
@@ -136,8 +147,10 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
     void reject_doesNotTouchAttendance() {
         ExcuseTicket ticket = persistSubmittedTicket(ExcuseType.OTHER, List.of(31L, 32L));
 
-        ExcuseTicket result = excuseService.updateStatus(ticket.getId(),
-                new UpdateExcuseStatusRequest(ExcuseTicketStatus.REJECTED, "недостаточно"));
+        ExcuseTicket result =
+                excuseService.updateStatus(
+                        ticket.getId(),
+                        new UpdateExcuseStatusRequest(ExcuseTicketStatus.REJECTED, "недостаточно"));
 
         assertThat(result.getStatus()).isEqualTo(ExcuseTicketStatus.REJECTED);
         assertThat(attendanceRepository.findAll()).isEmpty();
@@ -149,20 +162,22 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
     @Test
     void approve_preservesExistingPresentAttendance() {
         Instant past = Instant.now().minusSeconds(3600);
-        AttendanceDocument preExisting = AttendanceDocument.builder()
-                .lessonId(41L)
-                .userId(STUDENT_ID)
-                .groupId(GROUP_ID)
-                .status(AttendanceStatus.PRESENT)
-                .source(AttendanceSource.STUDENT_GEO)
-                .createdAt(past)
-                .updatedAt(past)
-                .build();
+        AttendanceDocument preExisting =
+                AttendanceDocument.builder()
+                        .lessonId(41L)
+                        .userId(STUDENT_ID)
+                        .groupId(GROUP_ID)
+                        .status(AttendanceStatus.PRESENT)
+                        .source(AttendanceSource.STUDENT_GEO)
+                        .createdAt(past)
+                        .updatedAt(past)
+                        .build();
         attendanceRepository.save(preExisting);
 
         ExcuseTicket ticket = persistSubmittedTicket(ExcuseType.SUMMONS, List.of(41L));
 
-        excuseService.updateStatus(ticket.getId(),
+        excuseService.updateStatus(
+                ticket.getId(),
                 new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "повестка"));
 
         List<AttendanceDocument> docs = attendanceRepository.findAll();
@@ -172,8 +187,9 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
         assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
         assertThat(updated.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
         // createdAt preserved (Mongo truncates to millisecond precision, so compare via isCloseTo)
-        assertThat(updated.getCreatedAt()).isCloseTo(past, within(1, java.time.temporal.ChronoUnit.MILLIS));
-        assertThat(updated.getUpdatedAt()).isCloseTo(past,
-                within(1, java.time.temporal.ChronoUnit.MILLIS));
+        assertThat(updated.getCreatedAt())
+                .isCloseTo(past, within(1, java.time.temporal.ChronoUnit.MILLIS));
+        assertThat(updated.getUpdatedAt())
+                .isCloseTo(past, within(1, java.time.temporal.ChronoUnit.MILLIS));
     }
 }

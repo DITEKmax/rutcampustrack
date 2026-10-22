@@ -44,62 +44,51 @@ async def test_get_group_members():
     assert result[1].telegram_id == 222
 
 
+def _changing_roster():
+    current = {42: [_make_student(1, 111)], 43: [_make_student(3, 333)]}
+
+    async def read(request, **kwargs):
+        response = MagicMock()
+        response.students = current[request.group_id]
+        return response
+
+    stub = MagicMock(GetGroupMembers=AsyncMock(side_effect=read))
+    return _make_client_with_stub(stub), current, stub
+
+
 @pytest.mark.asyncio
 async def test_cache_hit():
-    """Second call returns cached result; stub called only once."""
-    students = [_make_student(1, 111)]
-    response = MagicMock()
-    response.students = students
-
-    stub = MagicMock()
-    stub.GetGroupMembers = AsyncMock(return_value=response)
-
-    client = _make_client_with_stub(stub)
-    await client.get_group_members(42)
-    await client.get_group_members(42)
-
-    stub.GetGroupMembers.assert_called_once()
+    client, current, stub = _changing_roster()
+    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=0):
+        assert [s.user_id for s in await client.get_group_members(42)] == [1]
+    current[42] = [_make_student(2, 222)]
+    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=299):
+        assert [s.user_id for s in await client.get_group_members(42)] == [1]
+    stub.GetGroupMembers.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_cache_expired():
-    """After TTL elapses, stub is called again (total 2 times)."""
-    students = [_make_student(1, 111)]
-    response = MagicMock()
-    response.students = students
-
-    stub = MagicMock()
-    stub.GetGroupMembers = AsyncMock(return_value=response)
-
-    client = _make_client_with_stub(stub)
-
-    # First call at t=0
-    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=0.0):
-        await client.get_group_members(42)
-
-    # Second call at t=301 (past 300 s TTL)
-    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=301.0):
-        await client.get_group_members(42)
-
-    assert stub.GetGroupMembers.call_count == 2
+    client, current, _ = _changing_roster()
+    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=0):
+        assert [s.user_id for s in await client.get_group_members(42)] == [1]
+    current[42] = [_make_student(2, 222)]
+    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=300):
+        assert [s.user_id for s in await client.get_group_members(42)] == [2]
+        assert [s.user_id for s in await client.get_group_members(43)] == [3]
 
 
 @pytest.mark.asyncio
 async def test_cache_invalidate():
-    """After invalidate(), next call hits stub again (total 2 times)."""
-    students = [_make_student(1, 111)]
-    response = MagicMock()
-    response.students = students
-
-    stub = MagicMock()
-    stub.GetGroupMembers = AsyncMock(return_value=response)
-
-    client = _make_client_with_stub(stub)
-    await client.get_group_members(42)
-    client.invalidate(42)
-    await client.get_group_members(42)
-
-    assert stub.GetGroupMembers.call_count == 2
+    client, current, _ = _changing_roster()
+    with patch("bot.grpc_client.academic_client.time.monotonic", return_value=0):
+        assert [s.user_id for s in await client.get_group_members(42)] == [1]
+        assert [s.user_id for s in await client.get_group_members(43)] == [3]
+        current[42] = [_make_student(2, 222)]
+        current[43] = [_make_student(4, 444)]
+        client.invalidate(42)
+        assert [s.user_id for s in await client.get_group_members(42)] == [2]
+        assert [s.user_id for s in await client.get_group_members(43)] == [3]
 
 
 @pytest.mark.asyncio

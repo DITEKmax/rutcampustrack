@@ -1,0 +1,89 @@
+{
+  "state": "SOURCE_ONLY_NO_NATIVE_AUTHORITY",
+  "utc": "2026-10-13T11:44:45.459758+00:00",
+  "root_contract_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "base_manifest_sha256": "458a8402bcb1903f967a83966ca52c1906ecbb424d0fe39001a2fc8326d51034",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/CURRENT.md",
+      "relative": "CURRENT.md",
+      "bytes": 267,
+      "mode": "0o600",
+      "sha256": "19c3506e78348500ee925970fdd9aa4890f2dbc917235f2b8051d26c95c821f2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/HANDOFF.md",
+      "relative": "HANDOFF.md",
+      "bytes": 3507,
+      "mode": "0o600",
+      "sha256": "18e298ef27aa08a057356eded3882b420902d11ce9a07295a322f40a0e3ad890"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/READY.safe.json",
+      "relative": "READY.safe.json",
+      "bytes": 903,
+      "mode": "0o600",
+      "sha256": "89fc7df33c65b165310c4ddb8e3e254cf88649d97d9db8444d97c2d86ff9ad8a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/binding.actual.safe.json",
+      "relative": "binding.actual.safe.json",
+      "bytes": 427,
+      "mode": "0o600",
+      "sha256": "3be4bfce8d095d2201e7e7de3619ca99f9f49dc0df4073ff83c4de7d23513ca1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/capture-job-private.py",
+      "relative": "capture-job-private.py",
+      "bytes": 4067,
+      "mode": "0o600",
+      "sha256": "10ef7d979e33a4bdd209ed46d1fabf82717b3e51e7efc6386e91c5abbd9107b4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/check-metadata-drift.py",
+      "relative": "check-metadata-drift.py",
+      "bytes": 3926,
+      "mode": "0o600",
+      "sha256": "d2b3628759518ca7708502d2a0158dc8969ec6e49307480daebfabfba5b83387"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/closed-boot-parser.py",
+      "relative": "closed-boot-parser.py",
+      "bytes": 6593,
+      "mode": "0o600",
+      "sha256": "5b2363fe721f2cf0e8d9ee08c35591c7d474897e9c37bd7799dbf99bbe8923ef"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/delta.safe.json",
+      "relative": "delta.safe.json",
+      "bytes": 486,
+      "mode": "0o600",
+      "sha256": "e8df4dcb53756d045f7be16fe8d92bd447d7508e59813d067159aa48a198933b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/grant.template.safe.json",
+      "relative": "grant.template.safe.json",
+      "bytes": 760,
+      "mode": "0o600",
+      "sha256": "75056e51203791c9c28c8336f80d551438633d12597b9cc1674a56a5518ec2c9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/metadata-drift-controls.safe.json",
+      "relative": "metadata-drift-controls.safe.json",
+      "bytes": 2047,
+      "mode": "0o600",
+      "sha256": "ef2e22a2a5237aa56b26796290dd5348be2c5d40657b62c161159b76ffedd3df"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r1/metadata-parent.safe.json",
+      "relative": "metadata-parent.safe.json",
+      "bytes": 360,
+      "mode": "0o600",
+      "sha256": "839d79c8189a4049c77137402b13f80df61e9b4f4239bfa47f6fdc2a6b71c567"
+    }
+  ],
+  "private_files_included": false,
+  "native_read": "NOT_RUN",
+  "only_semantic_delta": "consume_private cleanup metadata + preserve primary error",
+  "parameters_delta": "actual timestamps + sibling effective paths/private FD identity"
+}

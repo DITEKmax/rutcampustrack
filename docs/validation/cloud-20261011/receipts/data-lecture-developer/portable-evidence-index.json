@@ -1,0 +1,203 @@
+{
+  "included": "suite metadata/classname/case/status and original hashes only; raw properties/request/stdout excluded",
+  "xml": [
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "a0b896cb37b89b47e78cddfdf45da5eb78674f0ff9dfdf902a756c56817c3bed",
+      "portable_member": "control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "053e1760b511a020e123b06a512cb6e8d079741d4db0b6d64ffd94c64564d57f",
+      "portable_member": "control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "5d9cb602a8baac35213a536e3bb8999b8e200956c2cf994ad92c07fdef514fe4",
+      "portable_member": "control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "sha256": "85ab8f0fae5a4940462080c14133a1b654d70ac3151d18d6c7ffd2e02f722cb3",
+      "portable_member": "control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "sha256": "ae6f6c0ab1a5681f26591a1cdfef4c3de98028060c3e19fdabdddb6df49f1b4a",
+      "portable_member": "control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "a4fb18b79420c80d34ea9ae1780568f42df9a582f2f14f3e61ae230362e2bc37",
+      "portable_member": "existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "89610d6407c246b2ec63e35ff001243140765179d3cfbbec297387bc008eb842",
+      "portable_member": "existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "sha256": "0e02480157d5b5dec7d7385357e4f4b2783c7118efcaaade53e12bde7490a896",
+      "portable_member": "existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "testcases": 2
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "bdfb5e1a99b906c1f7e7a39c92efc38e0791e6486fc9571d9459431f0f9d5701",
+      "portable_member": "existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml",
+      "sha256": "bbe76661894a81914e4fbdb2343701e33dfb3ee2e5ffdcc3d63ef6b9ad8a0206",
+      "portable_member": "existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+      "sha256": "af1b743dda33cb4ee8fc88c577894ca42a5512ec91bb088c2233cfa8980c6ded",
+      "portable_member": "existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+      "testcases": 3
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "c876be774f6a5e6481f92f596b5880cce593bc4b7ef451b6efa142d081241358",
+      "portable_member": "existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "sha256": "f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97",
+      "portable_member": "existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "testcases": 3
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "6fcbe2576c82d4f6859c915ca41ba5b042ef7a8e8250f644549852cb777d6c3f",
+      "portable_member": "green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "811812f1e59d646f9b8d7410011a24f38316308a9be7dea2a6f67d992b08549f",
+      "portable_member": "green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "sha256": "977cb33fcd1a9192d163d12102b4834a7779d1c9059acebecf29cdd42db38845",
+      "portable_member": "green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "testcases": 2
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "8ec24957a2ba9437b46cff435c428c16b88f8557651ac3a6cc43c14d602aaae5",
+      "portable_member": "green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "sha256": "fa3dae6b36cb5d1914090c1a31ad0a029a84c79dd6e553e20b22ef26f9bff103",
+      "portable_member": "green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "be3fac58564e4217ee0e8bf2a47c1bf04fcde4ff30813b31282750ea9976b2e7",
+      "portable_member": "green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "1e7b4210e33a409c8bd9e827598575c00bd2c356bf666a800e606284c39c2d3f",
+      "portable_member": "green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "25f4b10f565970e5a7168d11578de868589b9fe94d6af9aaa5a93145ff6fffdb",
+      "portable_member": "green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "sha256": "6333e6c03377a2a9963b64b7c5665d4cd7741a3b765354930545fcd8bdefbb54",
+      "portable_member": "green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "sha256": "6d5366a68738ec91580cab12a1bc10e5bee92b3a6276c566d1a0203573462f77",
+      "portable_member": "green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "18e5a4fd37e2170dd5779fe876f4e7b5df77b14580290d33a018bc8c414a42ae",
+      "portable_member": "initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "84840d6bf2b3a9bb4573d3830920d3bb3360e9c8b29a57c37be31da4f2168d34",
+      "portable_member": "initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "sha256": "a3658dc8048b6b3f756a5f849c27da35863374cbee0754274ddb7e0a3f8cb86a",
+      "portable_member": "initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "testcases": 2
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "3b2c7f3f0d88d9d930ca1520087833b8c68bd6d9bc6a6a0afca32cb8b3145f1c",
+      "portable_member": "initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "sha256": "124679373a01a80a4cdc834c55b1b969efce5fa19fddf580f5f712c9ad6176a6",
+      "portable_member": "initial-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "testcases": 2
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "f2cfe183f1ccd673547d0573b0441fc5ab410153fc7f7df4f44630f42d9b10bf",
+      "portable_member": "initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "04db1d0919d0ace0f11c55d738f3933dd5dbbe9b58755f82741c27a21a2d6bc2",
+      "portable_member": "initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "7ec0f8d15869243beb25798cbf747aa9eb0e06f334e31b7085526a40d1313358",
+      "portable_member": "initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "sha256": "ba36c6e4d457a58e0cd4c411bb40b3402dd163ef7dafda6ab24f79b616c8352e",
+      "portable_member": "initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "testcases": 1
+    },
+    {
+      "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "sha256": "14659ad1eed833f7873f34d8130c9194b867814da6cfdca5e184b985a3eb5034",
+      "portable_member": "initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "testcases": 1
+    }
+  ]
+}

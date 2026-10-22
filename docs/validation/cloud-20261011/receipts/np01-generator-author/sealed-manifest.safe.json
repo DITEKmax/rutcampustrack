@@ -1,0 +1,34 @@
+{
+  "verification.safe.json": {
+    "sha256": "e8ddb27ba63679d9116c5caffecbad7bacf68e927cbefae06868dc074e759bb4",
+    "bytes": 1691
+  },
+  "verify-generator.py": {
+    "sha256": "b88c17183d47fd2a8f94f4357f874fc3a1a07212b5fc5fbf484f10be54709201",
+    "bytes": 5015
+  },
+  "pinned-venv-freeze.safe.json": {
+    "sha256": "b81dfc8b246c82138091f32db6079d9bcf18645bf34ce322e2480dceff27eea0",
+    "bytes": 5166
+  },
+  "venv-file-integrity.safe.json": {
+    "sha256": "13c0e3216c092650c6273ae1617175d76a1861d1e15a841df502b5b615551a5a",
+    "bytes": 575153
+  },
+  "generator-verification.safe.json": {
+    "sha256": "2fd3b95549870ea8b98dd6e3121d5ed80a083f8e12faebc872d3d90aeefbe2e7",
+    "bytes": 4914
+  },
+  "commit-checks.safe.json": {
+    "sha256": "15befb0db4a204ad660503a33e14a003cd370003c7e8375026e48247ca33b712",
+    "bytes": 203
+  },
+  "verify-config-pinned.py": {
+    "sha256": "bfc84753dc01d88cb5c053d238d9fe22ec25efe347262fb02c5de3bcd6fd93ea",
+    "bytes": 6142
+  },
+  "summary.safe.json": {
+    "sha256": "95b25bacf10ef1c5ca4111b3c5981f07dc13791d029efe9393494bfcecb9deba",
+    "bytes": 1689
+  }
+}

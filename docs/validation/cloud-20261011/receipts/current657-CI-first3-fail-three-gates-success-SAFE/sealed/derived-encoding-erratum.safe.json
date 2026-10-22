@@ -1,0 +1,30 @@
+{
+  "state": "DERIVED_ENCODING_ERRATUM",
+  "scope": "Public Unicode job name transport only; no native outcomes altered.",
+  "superseded": [
+    {
+      "path": "metadata-checkpoint01.safe.json",
+      "sha256": "08d587c4c81f6a89d119fe670a92cc6899fc9891186138e9b48787bb52a4a314",
+      "bytes": 81262,
+      "retained_locally": true,
+      "publishedZip": false
+    },
+    {
+      "path": "metadata-checkpoint02.safe.json",
+      "sha256": "26401966e3cd0ddd61a476442105b908d8f0426745531838cca165fab3998590",
+      "bytes": 89793,
+      "retained_locally": true,
+      "publishedZip": false
+    },
+    {
+      "path": "metadata-terminal.safe.json",
+      "sha256": "c38a4015830c457caf669906e872eca7ed627ff41260a580008bcebcdc0afeba",
+      "bytes": 84747,
+      "retained_locally": true,
+      "publishedZip": false
+    }
+  ],
+  "authoritative": "metadata-terminal-v2.safe.json",
+  "repair": "JS metadata nonASCII code points escaped as JSON Unicode before ASCII transport; fresh terminal API metadata used.",
+  "native_SAFE_bodies_unchanged": true
+}

@@ -1,0 +1,57 @@
+{
+  "time": "2026-10-12T03:02:48.279441+00:00",
+  "lease": "EXPORT_AUDIT1",
+  "state": "RELEASED",
+  "four_foreground_runners": [
+    {
+      "phase": "before-global",
+      "runner_pid": 185548,
+      "proc_entry_exists": false
+    },
+    {
+      "phase": "normal-green",
+      "runner_pid": 186740,
+      "proc_entry_exists": false
+    },
+    {
+      "phase": "duplicate-current",
+      "runner_pid": 188491,
+      "proc_entry_exists": false
+    },
+    {
+      "phase": "restored-green",
+      "runner_pid": 190043,
+      "proc_entry_exists": false
+    }
+  ],
+  "own_observed_java_pids": [
+    185559,
+    185599,
+    185705,
+    186750,
+    186790,
+    187017,
+    188502,
+    188542,
+    188644,
+    190054,
+    190094,
+    190233
+  ],
+  "own_active_Java_process_count": 0,
+  "foreign_and_oldzombie_java_metadata": [
+    "11771       1 java            Z",
+    "33249       1 java            Z",
+    "33286       1 java            Z",
+    "149519       1 java            Z",
+    "149559       1 java            Z",
+    "163814       1 java            Z"
+  ],
+  "own_all12_container_ids_standardcleaned": true,
+  "no_manualcleanup_no_foreignmutations": true,
+  "source_HEAD": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "status": "?? frontends/node_modules",
+  "free_bytes": 9480380416,
+  "remaining": "independent safe review/rootintegration/newremoteall3gates; no further authorheavyallocation",
+  "diagnostic": "prior native6885c4 inspection wrongly asserted globalnoJava and stopped before receipt write; foreign activeDOMAIN allowed, corrected ownership-only check"
+}

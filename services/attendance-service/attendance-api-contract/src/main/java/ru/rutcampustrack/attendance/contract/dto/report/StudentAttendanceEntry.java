@@ -6,24 +6,29 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * Nested DTO representing one student's attendance status in a lesson attendance list (RPRT-01).
  * Plain Java class — no Lombok (contract module rule).
  */
-@Schema(description = "Запись посещаемости студента в списке пары: ID, имя, статус, символ, источник, причина excuse")
+@Schema(
+        description =
+                "Запись посещаемости студента в списке пары: ID, имя, статус, символ, источник, причина excuse")
 public class StudentAttendanceEntry {
 
     private final Long userId;
     private final String displayName;
     private final String status;
     private final String symbol;
+
     /**
-     * v9.0: attendance source (student_geo / headman / auto_scheduler / late_checkin / headman_excuse).
-     * NULL when the student has no attendance document yet (auto-absent only).
+     * v9.0: attendance source (student_geo / headman / auto_scheduler / late_checkin /
+     * headman_excuse). NULL when the student has no attendance document yet (auto-absent only).
      * Used by PWA/Mini-App headman sheet to show "ст" badge for self-marked students.
      */
     private final String source;
+
     /**
-     * Human-readable excuse reason shown next to "у" in lesson rosters.
-     * Non-null only when status is EXCUSED / FREE_ATTENDANCE via the excuse cascade.
+     * Human-readable excuse reason shown next to "у" in lesson rosters. Non-null only when status
+     * is EXCUSED / FREE_ATTENDANCE via the excuse cascade.
      */
     private final String excuseReason;
+
     private final String excuseType;
     private final String comment;
     private final String attachmentId;
@@ -36,46 +41,151 @@ public class StudentAttendanceEntry {
     private final HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket;
 
     public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol) {
-        this(userId, displayName, status, symbol, null, null,
-                null, null, null, null, null, null, false, null);
+        this(
+                userId,
+                displayName,
+                status,
+                symbol,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null);
     }
 
-    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
-                                  String source) {
-        this(userId, displayName, status, symbol, source, null,
-                null, null, null, null, null, null, false, null);
+    public StudentAttendanceEntry(
+            Long userId, String displayName, String status, String symbol, String source) {
+        this(
+                userId,
+                displayName,
+                status,
+                symbol,
+                source,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null);
     }
 
-    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
-                                  String source, String excuseReason) {
-        this(userId, displayName, status, symbol, source, excuseReason,
-                null, null, null, null, null, null, false, null);
+    public StudentAttendanceEntry(
+            Long userId,
+            String displayName,
+            String status,
+            String symbol,
+            String source,
+            String excuseReason) {
+        this(
+                userId,
+                displayName,
+                status,
+                symbol,
+                source,
+                excuseReason,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null);
     }
 
-    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
-                                  String source, String excuseReason, String excuseType,
-                                  String comment, String attachmentId, String attachmentName,
-                                  String attachmentContentType, Long attachmentSize,
-                                  boolean editable, String editBlockedReason) {
-        this(userId, displayName, status, symbol, source, excuseReason, excuseType, comment,
-                attachmentId, attachmentName, attachmentContentType, attachmentSize, editable, editBlockedReason, null);
+    public StudentAttendanceEntry(
+            Long userId,
+            String displayName,
+            String status,
+            String symbol,
+            String source,
+            String excuseReason,
+            String excuseType,
+            String comment,
+            String attachmentId,
+            String attachmentName,
+            String attachmentContentType,
+            Long attachmentSize,
+            boolean editable,
+            String editBlockedReason) {
+        this(
+                userId,
+                displayName,
+                status,
+                symbol,
+                source,
+                excuseReason,
+                excuseType,
+                comment,
+                attachmentId,
+                attachmentName,
+                attachmentContentType,
+                attachmentSize,
+                editable,
+                editBlockedReason,
+                null);
     }
 
-    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
-                                  String source, String excuseReason, String excuseType,
-                                  String comment, String attachmentId, String attachmentName,
-                                  String attachmentContentType, Long attachmentSize,
-                                  boolean editable, String editBlockedReason, String markRevision) {
-        this(userId, displayName, status, symbol, source, excuseReason, excuseType, comment, attachmentId,
-                attachmentName, attachmentContentType, attachmentSize, editable, editBlockedReason, markRevision, null);
+    public StudentAttendanceEntry(
+            Long userId,
+            String displayName,
+            String status,
+            String symbol,
+            String source,
+            String excuseReason,
+            String excuseType,
+            String comment,
+            String attachmentId,
+            String attachmentName,
+            String attachmentContentType,
+            Long attachmentSize,
+            boolean editable,
+            String editBlockedReason,
+            String markRevision) {
+        this(
+                userId,
+                displayName,
+                status,
+                symbol,
+                source,
+                excuseReason,
+                excuseType,
+                comment,
+                attachmentId,
+                attachmentName,
+                attachmentContentType,
+                attachmentSize,
+                editable,
+                editBlockedReason,
+                markRevision,
+                null);
     }
 
-    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
-                                  String source, String excuseReason, String excuseType,
-                                  String comment, String attachmentId, String attachmentName,
-                                  String attachmentContentType, Long attachmentSize,
-                                  boolean editable, String editBlockedReason, String markRevision,
-                                  HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket) {
+    public StudentAttendanceEntry(
+            Long userId,
+            String displayName,
+            String status,
+            String symbol,
+            String source,
+            String excuseReason,
+            String excuseType,
+            String comment,
+            String attachmentId,
+            String attachmentName,
+            String attachmentContentType,
+            Long attachmentSize,
+            boolean editable,
+            String editBlockedReason,
+            String markRevision,
+            HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket) {
         this.userId = userId;
         this.displayName = displayName;
         this.status = status;
@@ -150,6 +260,11 @@ public class StudentAttendanceEntry {
         return editBlockedReason;
     }
 
-    public String getMarkRevision() { return markRevision; }
-    public HeadmanStatsStudentLessonsResponse.ApprovedTicket getApprovedTicket() { return approvedTicket; }
+    public String getMarkRevision() {
+        return markRevision;
+    }
+
+    public HeadmanStatsStudentLessonsResponse.ApprovedTicket getApprovedTicket() {
+        return approvedTicket;
+    }
 }

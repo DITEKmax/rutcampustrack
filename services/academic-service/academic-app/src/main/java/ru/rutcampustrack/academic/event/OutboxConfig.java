@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.event;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
+import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
@@ -10,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.rutcampustrack.academic.map.CampusMapUsageCleanupJob;
+import ru.rutcampustrack.academic.map.CampusMapUsageRepository;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import ru.rutcampustrack.shared.events.IdempotencyStore;
 import ru.rutcampustrack.shared.outbox.IdempotencyCleanupJob;
@@ -20,24 +24,19 @@ import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import ru.rutcampustrack.shared.outbox.jpa.JpaIdempotencyStore;
 import ru.rutcampustrack.shared.outbox.jpa.JpaOutboxStorage;
-import ru.rutcampustrack.academic.map.CampusMapUsageCleanupJob;
-import ru.rutcampustrack.academic.map.CampusMapUsageRepository;
-
-import javax.sql.DataSource;
-import java.time.Clock;
 
 /**
  * Собирает outbox-инфраструктуру в academic-service (M02 Группа 5).
  *
  * <p>Разделено на два {@code @Configuration}-подкласса:
+ *
  * <ul>
- *   <li>{@link Storage} — активен всегда (в том числе {@code @ActiveProfiles("test")}).
- *       Поставляет {@link OutboxStorage} + {@link LockProvider} — нужны
- *       {@code DomainEventListener} и тестам, пишущим в outbox.</li>
- *   <li>{@link Publisher} — guarded {@code @Profile("!test")}. Запускает
- *       {@code @Scheduled} tick публикатора. В тестах не стартует, чтобы
- *       не тикать автоматически — тесты сами дёргают
- *       {@code OutboxPublisherJob.publishBatch()}.</li>
+ *   <li>{@link Storage} — активен всегда (в том числе {@code @ActiveProfiles("test")}). Поставляет
+ *       {@link OutboxStorage} + {@link LockProvider} — нужны {@code DomainEventListener} и тестам,
+ *       пишущим в outbox.
+ *   <li>{@link Publisher} — guarded {@code @Profile("!test")}. Запускает {@code @Scheduled} tick
+ *       публикатора. В тестах не стартует, чтобы не тикать автоматически — тесты сами дёргают
+ *       {@code OutboxPublisherJob.publishBatch()}.
  * </ul>
  */
 @Configuration
@@ -81,9 +80,8 @@ public class OutboxConfig {
     @EnableSchedulerLock(defaultLockAtMostFor = "PT5M")
     public static class Publisher {
         @Bean
-        public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage,
-                                                     OutboxEventSender sender,
-                                                     MeterRegistry meterRegistry) {
+        public OutboxPublisherJob outboxPublisherJob(
+                OutboxStorage storage, OutboxEventSender sender, MeterRegistry meterRegistry) {
             return new OutboxPublisherJob(storage, sender, meterRegistry);
         }
 

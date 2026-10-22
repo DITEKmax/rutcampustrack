@@ -15,14 +15,6 @@ describe('SubjectChartComponent', () => {
     }).compileComponents();
   });
 
-  it('creates the component', () => {
-    const fixture = TestBed.createComponent(SubjectChartComponent);
-    const comp = fixture.componentInstance;
-    comp.chartData = sampleData;
-    comp.subjectName = 'Математика';
-    fixture.detectChanges();
-    expect(comp).toBeTruthy();
-  });
 
   it('renders the subject name in the chart heading', () => {
     const fixture = TestBed.createComponent(SubjectChartComponent);
@@ -52,5 +44,10 @@ describe('SubjectChartComponent', () => {
     comp.ngOnChanges();
     expect(comp.barChartData.datasets).toHaveLength(3);
     expect(comp.barChartData.labels).toEqual(['Иванов', 'Петров']);
+    expect(comp.barChartData.datasets.map(({ label, data }) => ({ label, data }))).toEqual([
+      { label: 'Присутствовал', data: [5, 7] },
+      { label: 'Уваж. причина', data: [1, 1] },
+      { label: 'Отсутствовал', data: [2, 0] },
+    ]);
   });
 });

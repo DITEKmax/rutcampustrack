@@ -16,20 +16,30 @@ public final class LessonTransferParticipantAppliedEvent extends DomainEvent {
             boolean retryable,
             @JsonProperty("transfer_payload_hash") String payloadHash,
             @JsonProperty("source_lesson_id") Long sourceLessonId,
-            @JsonProperty("target_lesson_id") Long targetLessonId
-    ) { }
+            @JsonProperty("target_lesson_id") Long targetLessonId) {}
 
-    public LessonTransferParticipantAppliedEvent(Object source,
-                                                  String operationId,
-                                                  int batchIndex,
-                                                  String result,
-                                                  String errorCode,
-                                                  boolean retryable,
-                                                  String payloadHash,
-                                                  long sourceLessonId,
-                                                  long targetLessonId) {
-        super(source, "lesson.transfer.participant.applied", new Payload(
-                operationId, "ACADEMIC", batchIndex, result, errorCode, retryable,
-                payloadHash, sourceLessonId, targetLessonId));
+    public LessonTransferParticipantAppliedEvent(
+            Object source,
+            String operationId,
+            int batchIndex,
+            String result,
+            String errorCode,
+            boolean retryable,
+            String payloadHash,
+            long sourceLessonId,
+            long targetLessonId) {
+        super(
+                source,
+                "lesson.transfer.participant.applied",
+                new Payload(
+                        operationId,
+                        "ACADEMIC",
+                        batchIndex,
+                        result,
+                        errorCode,
+                        retryable,
+                        payloadHash,
+                        sourceLessonId,
+                        targetLessonId));
     }
 }

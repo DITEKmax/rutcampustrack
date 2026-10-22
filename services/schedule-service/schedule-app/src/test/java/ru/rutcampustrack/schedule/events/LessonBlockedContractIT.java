@@ -1,12 +1,22 @@
 package ru.rutcampustrack.schedule.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
@@ -20,36 +30,18 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import org.junit.jupiter.api.BeforeEach;
-import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
-
-/**
- * Contract test: blockLessonByHeadman() -> lesson.blocked outbox event.
- */
+/** Contract test: blockLessonByHeadman() -> lesson.blocked outbox event. */
 class LessonBlockedContractIT extends AbstractScheduleIntegrationTest {
 
-    @Autowired
-    LessonService lessonService;
+    @Autowired LessonService lessonService;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @MockitoBean
-    RequestContext requestContext;
+    @MockitoBean RequestContext requestContext;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -79,16 +71,15 @@ class LessonBlockedContractIT extends AbstractScheduleIntegrationTest {
 
         lessonService.blockLessonByHeadman(lesson.getId());
 
-        Optional<OutboxRecord> blocked = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.blocked".equals(r.eventType()))
-                .findFirst();
+        Optional<OutboxRecord> blocked =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.blocked".equals(r.eventType()))
+                        .findFirst();
         assertThat(blocked).isPresent();
 
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "lesson.blocked.json", blocked.get().payload());
-        assertThat(errors)
-                .as("lesson.blocked payload должен соответствовать schema")
-                .isEmpty();
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("lesson.blocked.json", blocked.get().payload());
+        assertThat(errors).as("lesson.blocked payload должен соответствовать schema").isEmpty();
 
         JsonNode payload = mapper.readTree(blocked.get().payload()).get("payload");
         assertThat(payload.get("lesson_id").asLong()).isEqualTo(lesson.getId());

@@ -2,26 +2,27 @@ package ru.rutcampustrack.shared.observability;
 
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
 /**
- * QA6 — health-check для downstream gRPC-сервиса. Триггерит соединение
- * через {@link ManagedChannel#getState(boolean)} (передаёт {@code true},
- * чтобы канал начал реконнект если был {@code IDLE}).
+ * QA6 — health-check для downstream gRPC-сервиса. Триггерит соединение через {@link
+ * ManagedChannel#getState(boolean)} (передаёт {@code true}, чтобы канал начал реконнект если был
+ * {@code IDLE}).
  *
  * <p>Маппинг состояний:
+ *
  * <ul>
- *   <li>{@code READY} → {@link Health#up()}.</li>
- *   <li>{@code IDLE} / {@code CONNECTING} → {@link Health#unknown()}
- *       (только запустились, ещё нет данных).</li>
- *   <li>{@code TRANSIENT_FAILURE} / {@code SHUTDOWN} → {@link Health#down()}.</li>
+ *   <li>{@code READY} → {@link Health#up()}.
+ *   <li>{@code IDLE} / {@code CONNECTING} → {@link Health#unknown()} (только запустились, ещё нет
+ *       данных).
+ *   <li>{@code TRANSIENT_FAILURE} / {@code SHUTDOWN} → {@link Health#down()}.
  * </ul>
  *
  * <p>Сервис регистрирует bean per-downstream:
+ *
  * <pre>{@code
  * @Bean
  * HealthIndicator academicGrpcHealthIndicator(@Qualifier("academicChannel") ManagedChannel ch) {
@@ -39,7 +40,8 @@ public class GrpcClientHealthIndicator implements HealthIndicator {
         this(downstream, channel, 200L);
     }
 
-    public GrpcClientHealthIndicator(String downstream, ManagedChannel channel, long stateProbeWaitMillis) {
+    public GrpcClientHealthIndicator(
+            String downstream, ManagedChannel channel, long stateProbeWaitMillis) {
         this.downstream = Objects.requireNonNull(downstream, "downstream");
         this.channel = Objects.requireNonNull(channel, "channel");
         this.stateProbeWaitMillis = stateProbeWaitMillis;
@@ -48,26 +50,25 @@ public class GrpcClientHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         ConnectivityState state = channel.getState(true);
-        Health.Builder builder = switch (state) {
-            case READY -> Health.up();
-            case IDLE, CONNECTING -> {
-                if (stateProbeWaitMillis > 0) {
-                    try {
-                        channel.notifyWhenStateChanged(state, () -> {
-                        });
-                        TimeUnit.MILLISECONDS.sleep(stateProbeWaitMillis);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+        Health.Builder builder =
+                switch (state) {
+                    case READY -> Health.up();
+                    case IDLE, CONNECTING -> {
+                        if (stateProbeWaitMillis > 0) {
+                            try {
+                                channel.notifyWhenStateChanged(state, () -> {});
+                                TimeUnit.MILLISECONDS.sleep(stateProbeWaitMillis);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                            ConnectivityState after = channel.getState(false);
+                            yield after == ConnectivityState.READY ? Health.up() : Health.unknown();
+                        }
+                        yield Health.unknown();
                     }
-                    ConnectivityState after = channel.getState(false);
-                    yield after == ConnectivityState.READY ? Health.up() : Health.unknown();
-                }
-                yield Health.unknown();
-            }
-            case TRANSIENT_FAILURE, SHUTDOWN -> Health.down();
-        };
-        return builder
-                .withDetail("downstream", downstream)
+                    case TRANSIENT_FAILURE, SHUTDOWN -> Health.down();
+                };
+        return builder.withDetail("downstream", downstream)
                 .withDetail("state", state.name())
                 .build();
     }

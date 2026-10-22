@@ -1,15 +1,14 @@
 package ru.rutcampustrack.schedule.contract.dto.oneoff;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.hateoas.RepresentationModel;
-
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import org.springframework.hateoas.RepresentationModel;
 
 /**
- * Response DTO for one-off lessons with HATEOAS links (Phase 60-03, D-04).
- * Extends RepresentationModel for HATEOAS Level 3 compliance.
- * No Lombok — contract modules use plain Java classes with explicit constructors and getters.
+ * Response DTO for one-off lessons with HATEOAS links (Phase 60-03, D-04). Extends
+ * RepresentationModel for HATEOAS Level 3 compliance. No Lombok — contract modules use plain Java
+ * classes with explicit constructors and getters.
  */
 @Schema(description = "Разовая пара вне шаблона расписания с HATEOAS-ссылками (Phase 60-03, D-04)")
 public class OneOffLessonResponse extends RepresentationModel<OneOffLessonResponse> {
@@ -27,9 +26,17 @@ public class OneOffLessonResponse extends RepresentationModel<OneOffLessonRespon
 
     public OneOffLessonResponse() {}
 
-    public OneOffLessonResponse(Long id, Long physicalLessonId, Long groupId, Long subjectId, Long semesterId,
-                                LocalDate date, Short lessonNumber, String classroom,
-                                Long createdBy, OffsetDateTime createdAt) {
+    public OneOffLessonResponse(
+            Long id,
+            Long physicalLessonId,
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            LocalDate date,
+            Short lessonNumber,
+            String classroom,
+            Long createdBy,
+            OffsetDateTime createdAt) {
         this.id = id;
         this.physicalLessonId = physicalLessonId;
         this.groupId = groupId;
@@ -42,15 +49,46 @@ public class OneOffLessonResponse extends RepresentationModel<OneOffLessonRespon
         this.createdAt = createdAt;
     }
 
-    public Long getId() { return id; }
-    @Schema(description = "Текущий канонический ID физической пары для ДЗ, посещаемости и статистики. Повтор создания возвращает тот же logical ID и текущий physical ID; отмена не означает активность пары.")
-    public Long getPhysicalLessonId() { return physicalLessonId; }
-    public Long getGroupId() { return groupId; }
-    public Long getSubjectId() { return subjectId; }
-    public Long getSemesterId() { return semesterId; }
-    public LocalDate getDate() { return date; }
-    public Short getLessonNumber() { return lessonNumber; }
-    public String getClassroom() { return classroom; }
-    public Long getCreatedBy() { return createdBy; }
-    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public Long getId() {
+        return id;
+    }
+
+    @Schema(
+            description =
+                    "Текущий канонический ID физической пары для ДЗ, посещаемости и статистики. Повтор создания возвращает тот же logical ID и текущий physical ID; отмена не означает активность пары.")
+    public Long getPhysicalLessonId() {
+        return physicalLessonId;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public Long getSubjectId() {
+        return subjectId;
+    }
+
+    public Long getSemesterId() {
+        return semesterId;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public Short getLessonNumber() {
+        return lessonNumber;
+    }
+
+    public String getClassroom() {
+        return classroom;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

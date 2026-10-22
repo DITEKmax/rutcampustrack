@@ -3,9 +3,10 @@ package ru.rutcampustrack.academic.group;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.event.GroupArchivedEvent;
 import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
+import ru.rutcampustrack.academic.event.GroupArchivedEvent;
 import ru.rutcampustrack.academic.exception.ConflictException;
 
 import java.time.Clock;
@@ -18,19 +19,17 @@ import java.util.regex.Pattern;
 /**
  * Архивация группы при выпуске (BUG-006-6 / план 58-06).
  *
- * <p>Архивированная группа получает суффикс {@code " (выпуск YYYY)"} в имя
- * (год берётся из {@link Clock} — для тестируемости), флаг {@code is_active=false}
- * и метку {@code archived_at=now()}. После коммита публикуется
- * {@link GroupArchivedEvent} для downstream-сервисов.
+ * <p>Архивированная группа получает суффикс {@code " (выпуск YYYY)"} в имя (год берётся из {@link
+ * Clock} — для тестируемости), флаг {@code is_active=false} и метку {@code archived_at=now()}.
+ * После коммита публикуется {@link GroupArchivedEvent} для downstream-сервисов.
  *
- * <p>Clock инжектируется отдельно от {@link java.time.OffsetDateTime#now()}, чтобы
- * юнит-тесты и {@code GroupPromotionService} могли зафиксировать дату без таймшифтов.
+ * <p>Clock инжектируется отдельно от {@link java.time.OffsetDateTime#now()}, чтобы юнит-тесты и
+ * {@code GroupPromotionService} могли зафиксировать дату без таймшифтов.
  */
 @Service
 public class GroupArchivalService {
 
-    private static final Pattern ARCHIVE_SUFFIX = Pattern.compile(
-            "^ \\(выпуск (\\d{4})\\)$");
+    private static final Pattern ARCHIVE_SUFFIX = Pattern.compile("^ \\(выпуск (\\d{4})\\)$");
 
     private final ApplicationEventPublisher publisher;
     private final Clock clock;
@@ -41,8 +40,8 @@ public class GroupArchivalService {
     }
 
     /**
-     * Архивировать группу. Если уже архивирована — {@link IllegalStateException}
-     * (идемпотентность через выброс: promotion не должен архивировать дважды).
+     * Архивировать группу. Если уже архивирована — {@link IllegalStateException} (идемпотентность
+     * через выброс: promotion не должен архивировать дважды).
      */
     @Transactional
     public void archive(Group group) {
@@ -61,7 +60,13 @@ public class GroupArchivalService {
     }
 
     @Transactional
-    public void archiveAutomaticallyForCycle(Group group, int graduationYear, long cycleSemesterId) {
+    public void archiveByActor(Group group, int graduationYear, Long actorUserId) {
+        archive(group, graduationYear, actorUserId, null);
+    }
+
+    @Transactional
+    public void archiveAutomaticallyForCycle(
+            Group group, int graduationYear, long cycleSemesterId) {
         archive(group, graduationYear, null, cycleSemesterId);
     }
 
@@ -72,23 +77,23 @@ public class GroupArchivalService {
         group.setName(buildArchivedName(group.getName(), graduationYear));
         group.setActive(false);
         group.setArchivedAt(OffsetDateTime.now(clock));
-        publisher.publishEvent(cycleSemesterId == null
-                ? new GroupArchivedEvent(this, group.getId(), group.getName(), actorUserId)
-                : GroupArchivedEvent.automaticCycle(this, group.getId(), group.getName(), cycleSemesterId));
+        publisher.publishEvent(
+                cycleSemesterId == null
+                        ? new GroupArchivedEvent(this, group.getId(), group.getName(), actorUserId)
+                        : GroupArchivedEvent.automaticCycle(
+                                this, group.getId(), group.getName(), cycleSemesterId));
         publisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
-    /**
-     * Построить архивное имя группы: {@code "<active> (выпуск YYYY)"}.
-     */
+    /** Построить архивное имя группы: {@code "<active> (выпуск YYYY)"}. */
     public String buildArchivedName(String active, int year) {
         return active + " (выпуск " + year + ")";
     }
 
     /**
-     * Validate the exact reversible name written by this service.  The split
-     * code is returned for conflict checks; course and duration columns are
-     * deliberately left untouched because old rows may not know them.
+     * Validate the exact reversible name written by this service. The split code is returned for
+     * conflict checks; course and duration columns are deliberately left untouched because old rows
+     * may not know them.
      */
     public RestorableName restorableName(Group group) {
         String archivedName = group.getName();
@@ -114,20 +119,17 @@ public class GroupArchivalService {
         String numericCode = group.getNumericCode();
         if ((alphabeticCode == null) != (numericCode == null)
                 || (alphabeticCode != null
-                && !Objects.equals(activeName, alphabeticCode + "-" + numericCode))) {
+                        && !Objects.equals(activeName, alphabeticCode + "-" + numericCode))) {
             throw notRestorable(group);
         }
         return new RestorableName(activeName, alphabeticCode, numericCode, graduationYear);
     }
 
     public record RestorableName(
-            String name,
-            String alphabeticCode,
-            String numericCode,
-            int graduationYear) {}
+            String name, String alphabeticCode, String numericCode, int graduationYear) {}
 
     private ConflictException notRestorable(Group group) {
-        return new ConflictException("archived", group.getId(),
-                "Архивное имя группы нельзя восстановить автоматически");
+        return new ConflictException(
+                "archived", group.getId(), "Архивное имя группы нельзя восстановить автоматически");
     }
 }

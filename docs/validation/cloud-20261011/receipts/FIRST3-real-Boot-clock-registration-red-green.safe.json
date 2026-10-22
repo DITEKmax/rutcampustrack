@@ -1,0 +1,377 @@
+{
+  "base": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+  "branch": "codex/first3-clock-bean-selection-20261013",
+  "worktree": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+  "boot_registration_source_finding": {
+    "boot_version": "3.5.16",
+    "cached_jar_sha256": "2d5b16632402b840b0425ed52610071890bf8cb24c6c49af343bbde574123265",
+    "DelegatingApplicationContextInitializer_present": false,
+    "legacy_property_class_reference_count": 0,
+    "spring_factories_ApplicationContextInitializer_has_delegating": false,
+    "external_fixture_resources_registered": false,
+    "existing_control": "Calls new ClockInitializer.initialize(context) directly; does not test Boot discovery.",
+    "runtime_classpath": "Production BootMain plus external clock-fixture.jar and old system property in compose override.",
+    "mechanism": "Legacy property has no handler in Boot3.5.16; standard SpringFactoriesLoader initializer registration needed in external jar.",
+    "qualification": "Source+cachedactualdependency finding; current runtime startup selectedclock still not directly observed.",
+    "prepared_existing_control": "ClockFixtureControl real SpringApplication(NONE)+existing default real educational bean context; same legacyproperty; asserts FileClock and exact fixtureinstant, real Clock unchanged."
+  },
+  "boot_registration_red": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "e2eClockFixtureJar",
+      "e2eClockFixtureControl"
+    ],
+    "terminal": {
+      "direct_pid": 601113,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 601113,
+          "start_ticks": 18999232
+        },
+        {
+          "pid": 601152,
+          "start_ticks": 18999369
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "facts": {
+      "native_exit": 1,
+      "assertion_failed": false,
+      "failure_at_real_boot_fileclock_oracle": false,
+      "compile_control_completed": false,
+      "boot_control_executed": false,
+      "capture_bytes": 942,
+      "capture_limit_exceeded": false
+    },
+    "seconds": 22.71,
+    "peaks": {
+      "rss": 751484928,
+      "shared": 6231756800
+    },
+    "private_tmp_absent": true,
+    "raw_output": "Bounded RAM only discarded; no raw logs or artifacts",
+    "source_sha256": "f799328e652e33dd82ebbc93a7b729f89e7879b1c8ceda8286e11e2476a8cd69",
+    "own_daemon_projection": [
+      {
+        "pid": 601152,
+        "bytes": 27598,
+        "codes": [
+          "DEPENDENCY_RESOLUTION"
+        ],
+        "exception_classes": [
+          "java.io.EOFException",
+          "java.lang.IllegalStateException"
+        ]
+      }
+    ],
+    "closed_dependency_cause": [
+      {
+        "pid": 601152,
+        "configurations": [
+          ":e2eClockCompileClasspath"
+        ],
+        "static_dependency_coordinates": [],
+        "module_version_empty": false
+      }
+    ],
+    "static_resolution_flags": {
+      "bad_project_variant": false,
+      "could_not_resolve_project": false,
+      "consumer_java17": false,
+      "dependency_java21": false,
+      "java_toolchain_missing": false,
+      "missing_project_directory": false,
+      "depmissing_shared_web_api": false,
+      "gradle_artifact_problem": false,
+      "available_java_versions": []
+    }
+  },
+  "boot_red_precompile_diagnostic": {
+    "changed_diagnostic_condition": "Capture closed actual precompile categories and dependency/config/source symbols after first oracle-only projection lost cause. Own daemon lacked concrete failure details. No code/caller/protection change.",
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "e2eClockFixtureJar",
+      "e2eClockFixtureControl"
+    ],
+    "terminal": {
+      "direct_pid": 602416,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 602416,
+          "start_ticks": 19026917
+        },
+        {
+          "pid": 602471,
+          "start_ticks": 19027105
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "facts": {
+      "native_exit": 1,
+      "categories": [
+        "DEPENDENCY_RESOLUTION"
+      ],
+      "static_spring_dependencies": [],
+      "configuration_names": [
+        ":e2eClockCompileClasspath"
+      ],
+      "public_build_lines": [],
+      "compile_control_completed": false,
+      "boot_control_executed": false,
+      "failure_at_real_boot_fileclock_oracle": false,
+      "capture_bytes": 942,
+      "overflow": false,
+      "known_diagnostic_phrases": [
+        "Could not determine"
+      ]
+    },
+    "seconds": 21.22,
+    "private_tmp_absent": true,
+    "raw_output": "Bounded RAM discarded; no raw output stored",
+    "confirmed_precompile_cause": {
+      "kind": "JAVA_TOOLCHAIN_MISSING_COMPILER",
+      "source_task": ":compileE2eClockJava",
+      "source_property": "javaCompiler",
+      "selected_installation": "/usr/lib/jvm/java-21-openjdk-amd64",
+      "missing_capability": "JAVA_COMPILER",
+      "classification": "Checking caller JAVA_HOME selected existing JRE-only installation; not product or Maven cache failure."
+    }
+  },
+  "boot_registration_red_actual": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "e2eClockFixtureJar",
+      "e2eClockFixtureControl"
+    ],
+    "java_home": "/workspace/rct-cloud-setup/jdk21",
+    "terminal": {
+      "direct_pid": 604070,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 604070,
+          "start_ticks": 19040275
+        },
+        {
+          "pid": 604104,
+          "start_ticks": 19040403
+        },
+        {
+          "pid": 604176,
+          "start_ticks": 19041587
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "facts": {
+      "native_exit": 1,
+      "oracle_assertion": true,
+      "failure_at_real_boot_fileclock_oracle": true,
+      "compile_control_completed": true,
+      "boot_control_executed": true,
+      "capture_bytes": 1532
+    },
+    "seconds": 14.56,
+    "private_tmp_absent": true,
+    "source_sha256": "f799328e652e33dd82ebbc93a7b729f89e7879b1c8ceda8286e11e2476a8cd69"
+  },
+  "current_fixture_correction": {
+    "base": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+    "state": "REAL_BOOT_REGISTRATION_GREEN_SOURCE_READY",
+    "modified": {
+      "build.gradle.kts": "7fa3f6eee0be78380348f74c68f1ab7e76f537b30ca982d5e315fec2b9332c19",
+      "tests/e2e/infra/docker-compose.clock-fixture.yml": "ef73aee6aade53fdccf41fb9678ff3dc01454319425c000ed491e9531a6e3085",
+      "tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java": "cae519f7118106875fb0abebdd505dd5db06cc538012e9b8037d8f50e1fa6be9"
+    },
+    "created": {
+      "tests/e2e/backend-clock/src/main/resources/META-INF/spring.factories": "0750a7630d4271f2288e8101981ee74094b06efe8431c029764cb2f49871a2bc"
+    },
+    "product_changes": false,
+    "optional_report_test": "Own new fixture removed; exact e9a5 source restored. Boot default+primary control covers meaningful enrollment risk.",
+    "cause": "Boot3.5.16 removed handler for context.initializer.classes; fixture needed standard factories discovery. Real SpringApplication old-metadata control fails exactly selected FileClock assertion.",
+    "runtime_current_browser": "Not rerun; currentCI with actualfixturecorrection required before claiming browser acceptance.",
+    "source_pins": {
+      "build.gradle.kts": "7fa3f6eee0be78380348f74c68f1ab7e76f537b30ca982d5e315fec2b9332c19",
+      "tests/e2e/infra/docker-compose.clock-fixture.yml": "ef73aee6aade53fdccf41fb9678ff3dc01454319425c000ed491e9531a6e3085",
+      "tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java": "44e0b383a1ae6a920d0e1183f4b3a067f388c081af2fb4f16bf88c7f966e85bc",
+      "tests/e2e/backend-clock/src/main/resources/META-INF/spring.factories": "0750a7630d4271f2288e8101981ee74094b06efe8431c029764cb2f49871a2bc"
+    }
+  },
+  "boot_registration_green": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "-PspotlessIdeHook=/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java",
+      "spotlessJavaApply",
+      "spotlessJavaCheck",
+      "e2eClockFixtureJar",
+      "e2eClockFixtureControl"
+    ],
+    "java_home": "/workspace/rct-cloud-setup/jdk21",
+    "terminal": {
+      "direct_pid": 604782,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 604782,
+          "start_ticks": 19059491
+        },
+        {
+          "pid": 604814,
+          "start_ticks": 19059616
+        },
+        {
+          "pid": 604902,
+          "start_ticks": 19062422
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "facts": {
+      "native_exit": 0,
+      "boot_control_executed": true,
+      "control_pass_message": true,
+      "build_success": true,
+      "formatter_apply_check_completed": true,
+      "formatter_source_already_exact": false,
+      "capture_bytes": 1108
+    },
+    "packaged_fixture": {
+      "spring_factories_exact": true,
+      "initializer_class_present": true,
+      "file_clock_class_present": true,
+      "control_class_excluded": true,
+      "external_jar_bytes": 4362,
+      "external_jar_sha256": "af2734c3d93cf78a9e855b34417c01125a71bdda969603e5f02e986c8e24ff81"
+    },
+    "seconds": 30.5,
+    "peaks": {
+      "rss": 945606656,
+      "shared": 6429253632
+    },
+    "private_tmp_absent": true,
+    "raw_output": "Bounded ownprivate output inspected only for scope, deleted with ownTMP; no retained raw artifact"
+  },
+  "formatter_exact_idempotency": {
+    "command": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "--rerun-tasks",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "-PspotlessIdeHook=/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java",
+      "spotlessJavaApply",
+      "spotlessJavaCheck"
+    ],
+    "native_exit": 0,
+    "terminal": {
+      "direct_pid": 605030,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 605030,
+          "start_ticks": 19070132
+        },
+        {
+          "pid": 605062,
+          "start_ticks": 19070230
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "before_sha256": "44e0b383a1ae6a920d0e1183f4b3a067f388c081af2fb4f16bf88c7f966e85bc",
+    "after_sha256": "44e0b383a1ae6a920d0e1183f4b3a067f388c081af2fb4f16bf88c7f966e85bc",
+    "exact": true,
+    "seconds": 17.29,
+    "private_tmp_absent": true,
+    "reason_for_repeat": "Explicit scoped exact idempotency after first formatter changed source; no repeated Boot/control/product tests."
+  },
+  "state": "CAUSAL_ACTUAL_BOOT_RED_CORRECTED_GREEN_INDEPENDENT_APPROVE",
+  "acceptance_limits": "External E2E registration only; genuine headman61/helper142 and currentordinaryCI pending",
+  "review": "FIRST3-real-Boot-clock-registration-independent-review.safe.md",
+  "observed_at": "2026-10-14T00:16:46.112514+00:00",
+  "root_acceptance": {
+    "at": "2026-10-14T00:18:03.506819+00:00",
+    "author_commit": "dbb2b3577355541aacbf3b5dd8ce402a12ee3c8e",
+    "integrated_sha": "069f267ddd6cd12ee4c4fc3108970d8a3533e1b9",
+    "source_sha256": {
+      "build.gradle.kts": "7fa3f6eee0be78380348f74c68f1ab7e76f537b30ca982d5e315fec2b9332c19",
+      "tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java": "44e0b383a1ae6a920d0e1183f4b3a067f388c081af2fb4f16bf88c7f966e85bc",
+      "tests/e2e/infra/docker-compose.clock-fixture.yml": "ef73aee6aade53fdccf41fb9678ff3dc01454319425c000ed491e9531a6e3085",
+      "tests/e2e/backend-clock/src/main/resources/META-INF/spring.factories": "0750a7630d4271f2288e8101981ee74094b06efe8431c029764cb2f49871a2bc"
+    },
+    "source_identity": true,
+    "review": "independentAPPROVE",
+    "genuine61_142_and_currentCI": "PENDING"
+  }
+}

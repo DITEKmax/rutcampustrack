@@ -6,19 +6,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
+import java.time.Instant;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ru.rutcampustrack.shared.outbox.OutboxStatus;
 
-import java.time.Instant;
-
 /**
  * Абстрактный JPA MappedSuperclass для outbox-записей (M02 Группа 4).
  *
- * <p>Конкретные сервисы (academic, schedule) объявляют подклассы с
- * {@code @Entity} + {@code @Table(name = "academic_outbox" | "schedule_outbox")}.
- * Схема таблицы — см. Flyway миграции V16/V11 (Группа 3). Поля полностью
- * совпадают с таблицей:
+ * <p>Конкретные сервисы (academic, schedule) объявляют подклассы с {@code @Entity} +
+ * {@code @Table(name = "academic_outbox" | "schedule_outbox")}. Схема таблицы — см. Flyway миграции
+ * V16/V11 (Группа 3). Поля полностью совпадают с таблицей:
  *
  * <pre>
  *   id BIGSERIAL PK
@@ -32,15 +30,14 @@ import java.time.Instant;
  * </pre>
  *
  * <p>Status хранится в БД lowercase — CLAUDE.md правило. JPA делает
- * {@code @Enumerated(EnumType.STRING)} с uppercase name'ом enum'а, поэтому
- * используем явный getter/setter на String и конвертируем в enum вручную.
- * Это позволяет обойти constraint CHECK (pending/sent/failed) без
- * LowercaseEnumConverter (чтобы shared-outbox не зависел от academic-
+ * {@code @Enumerated(EnumType.STRING)} с uppercase name'ом enum'а, поэтому используем явный
+ * getter/setter на String и конвертируем в enum вручную. Это позволяет обойти constraint CHECK
+ * (pending/sent/failed) без LowercaseEnumConverter (чтобы shared-outbox не зависел от academic-
  * специфичного конвертера).
  *
- * <p>Payload — JSONB в PG. Hibernate достаточно {@code columnDefinition =
- * "jsonb"} на String-поле — драйвер PostgreSQL сам маппит. Сериализация
- * события → JSON делается в caller (Группа 5), outbox сам по JSON не ходит.
+ * <p>Payload — JSONB в PG. Hibernate достаточно {@code columnDefinition = "jsonb"} на String-поле —
+ * драйвер PostgreSQL сам маппит. Сериализация события → JSON делается в caller (Группа 5), outbox
+ * сам по JSON не ходит.
  */
 @MappedSuperclass
 public abstract class OutboxEntity {
@@ -71,8 +68,7 @@ public abstract class OutboxEntity {
     @Column(name = "sent_at")
     private Instant sentAt;
 
-    protected OutboxEntity() {
-    }
+    protected OutboxEntity() {}
 
     @PrePersist
     void onCreate() {

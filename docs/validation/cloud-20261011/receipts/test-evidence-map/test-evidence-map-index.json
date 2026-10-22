@@ -1,0 +1,502 @@
+{
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "status": "SOURCE_MAP_READY_RUNTIME_NOT_RUN",
+  "model_metadata": {
+    "requested_model": "gpt-6.1-sol",
+    "requested_reasoning": "high",
+    "actual_model": "UNKNOWN",
+    "actual_reasoning": "UNKNOWN"
+  },
+  "research_map": [
+    {
+      "id": "L01",
+      "verification_groups": [
+        "BOT-DELIVERY",
+        "SHARED-OUTBOX"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L02",
+      "verification_groups": [
+        "ATTENDANCE-CACHE"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L03",
+      "verification_groups": [
+        "AUTH-PASSWORD-OTP",
+        "SHARED-SECURITY-ERRORS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L04",
+      "verification_groups": [
+        "ACADEMIC-CACHE-DTO",
+        "MIGRATIONS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L05",
+      "verification_groups": [
+        "ACADEMIC-ASSIGNMENT",
+        "ACADEMIC-CACHE-DTO"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L06",
+      "verification_groups": [
+        "SCHEDULE-TRANSFER-CANCEL",
+        "ATTENDANCE-CHECKIN",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-PARTICIPANTS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L07",
+      "verification_groups": [
+        "ACADEMIC-ADMIN",
+        "ACADEMIC-GROUPS",
+        "ACADEMIC-SEMESTER",
+        "ACADEMIC-ASSIGNMENT",
+        "SCHEDULE-TRANSFER-CANCEL",
+        "ATTENDANCE-CHECKIN",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-PARTICIPANTS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "L08",
+      "verification_groups": [
+        "AUTH-SESSION",
+        "ACADEMIC-CACHE-DTO",
+        "MIGRATIONS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P01",
+      "verification_groups": [
+        "ACADEMIC-ADMIN",
+        "ACADEMIC-ASSIGNMENT"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P02",
+      "verification_groups": [
+        "ACADEMIC-ASSIGNMENT",
+        "ACADEMIC-CACHE-DTO",
+        "ATTENDANCE-READ-REPORT",
+        "BFF-CONTRACT-HTTP"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P03",
+      "verification_groups": [
+        "ACADEMIC-ADMIN",
+        "ACADEMIC-ASSIGNMENT",
+        "ACADEMIC-HOMEWORK",
+        "ACADEMIC-MAP",
+        "SCHEDULE-CLOCK-GENERATION",
+        "ATTENDANCE-CHECKIN",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-READ-REPORT",
+        "NOTIFICATION-PREFERENCES-HISTORY",
+        "BFF-CONTRACT-HTTP"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P04",
+      "verification_groups": [
+        "ACADEMIC-ADMIN",
+        "ACADEMIC-GROUPS",
+        "ACADEMIC-SEMESTER",
+        "ACADEMIC-ASSIGNMENT",
+        "ACADEMIC-HOMEWORK",
+        "ACADEMIC-MAP",
+        "SCHEDULE-CLOCK-GENERATION",
+        "SCHEDULE-TRANSFER-CANCEL",
+        "ATTENDANCE-CHECKIN",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-READ-REPORT",
+        "ATTENDANCE-PARTICIPANTS",
+        "NOTIFICATION-PREFERENCES-HISTORY"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P05",
+      "verification_groups": [
+        "ACADEMIC-ADMIN",
+        "ACADEMIC-GROUPS",
+        "ACADEMIC-SEMESTER",
+        "ACADEMIC-ASSIGNMENT",
+        "ACADEMIC-HOMEWORK",
+        "ACADEMIC-MAP",
+        "SCHEDULE-CLOCK-GENERATION",
+        "SCHEDULE-TRANSFER-CANCEL",
+        "ATTENDANCE-CHECKIN",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-PARTICIPANTS",
+        "NOTIFICATION-PREFERENCES-HISTORY",
+        "SHARED-OUTBOX"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P06",
+      "verification_groups": [
+        "AUTH-SESSION",
+        "AUTH-QR-TMA",
+        "ACADEMIC-ADMIN",
+        "NOTIFICATION-WS-PUSH",
+        "BOT-DELIVERY",
+        "BFF-CONTRACT-HTTP"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P07",
+      "verification_groups": [
+        "AUTH-QR-TMA",
+        "AUTH-WS-TICKET",
+        "NOTIFICATION-WS-PUSH",
+        "SHARED-SECURITY-ERRORS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P08",
+      "verification_groups": [
+        "AUTH-SESSION",
+        "AUTH-QR-TMA",
+        "AUTH-WS-TICKET",
+        "NOTIFICATION-WS-PUSH"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P09",
+      "verification_groups": [
+        "AUTH-WS-TICKET",
+        "NOTIFICATION-WS-PUSH",
+        "BOT-DELIVERY"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P10",
+      "verification_groups": [
+        "AUTH-PASSWORD-OTP",
+        "AUTH-QR-TMA",
+        "ACADEMIC-ADMIN"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P11",
+      "verification_groups": [
+        "AUTH-PASSWORD-OTP",
+        "AUTH-QR-TMA",
+        "SHARED-SECURITY-ERRORS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P12",
+      "verification_groups": [
+        "ACADEMIC-HOMEWORK",
+        "SCHEDULE-TRANSFER-CANCEL",
+        "ATTENDANCE-CHECKIN",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-PARTICIPANTS",
+        "NOTIFICATION-PREFERENCES-HISTORY",
+        "BOT-DELIVERY",
+        "SHARED-OUTBOX"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P13",
+      "verification_groups": [
+        "ACADEMIC-GROUPS",
+        "ACADEMIC-SEMESTER",
+        "ACADEMIC-CACHE-DTO",
+        "ATTENDANCE-CACHE",
+        "NOTIFICATION-PREFERENCES-HISTORY",
+        "BOT-DELIVERY"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P14",
+      "verification_groups": [
+        "ACADEMIC-CACHE-DTO"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P15",
+      "verification_groups": [
+        "ACADEMIC-GROUPS",
+        "ACADEMIC-CACHE-DTO",
+        "ATTENDANCE-READ-REPORT"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P16",
+      "verification_groups": [
+        "ACADEMIC-MAP",
+        "ATTENDANCE-REQUESTS",
+        "ATTENDANCE-READ-REPORT",
+        "NOTIFICATION-WS-PUSH",
+        "BFF-CONTRACT-HTTP",
+        "RENDERER"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P17",
+      "verification_groups": [
+        "AUTH-PASSWORD-OTP",
+        "NOTIFICATION-WS-PUSH",
+        "BOT-DELIVERY",
+        "BFF-CONTRACT-HTTP",
+        "SHARED-SECURITY-ERRORS"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P18",
+      "verification_groups": [
+        "ACADEMIC-SEMESTER",
+        "ACADEMIC-HOMEWORK",
+        "ACADEMIC-MAP",
+        "ACADEMIC-CACHE-DTO",
+        "SCHEDULE-CLOCK-GENERATION",
+        "ATTENDANCE-PARTICIPANTS",
+        "MIGRATIONS",
+        "RECOVERY"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P19",
+      "verification_groups": [
+        "RENDERER",
+        "HEALTH-OUTAGE",
+        "RECOVERY"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P20",
+      "verification_groups": [
+        "RECOVERY"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    },
+    {
+      "id": "P21",
+      "verification_groups": [
+        "SCHEDULE-TRANSFER-CANCEL",
+        "BOT-DELIVERY",
+        "BFF-CONTRACT-HTTP",
+        "SHARED-SECURITY-ERRORS",
+        "HEALTH-OUTAGE"
+      ],
+      "runtime_status": "NOT_RUN",
+      "disposition": "source-level candidate map; root diagnostic/author receipts supply actual verdict"
+    }
+  ],
+  "count_note": "All29 authoritative research IDs L01–L08 and P01–P21 mapped. Counts are inventory, never feature or readiness numerators.",
+  "global_limits": [
+    "Source map uses baseline main tree; security8a9d111d/delivery worktree tests not integrated yet. Reopen affected originals after integration; preserve sufficient existing receipts instead of repeated PASS.",
+    "Method/assertion spans lexical; last span can include helpers. Named source anchors and actual original review are primary evidence; inventory completeness is not semantic coverage.",
+    "Existing Testcontainers disabledWithoutDocker/Assumptions mean infrastructure unavailability may skip. XML skips cannot be acceptance PASS.",
+    "D004 excludes map legend criterion only; all other map paths retained. JS-STUDENT-16/AT-17 unconfirmed proposal is not an accepted missing function."
+  ],
+  "verification_command_gate": "Commands are source-derived intent; root approves ordering/resources under existing authorization. Deduplicate Gradle module tasks and reuse sufficient existing exact-revision receipts.",
+  "groups_files": [
+    {
+      "path": "groups/group-01.json",
+      "group_id": "AUTH-SESSION",
+      "sha256": "02ea45a041276cdccaa13427d5b1b13a6d66d91683f559c3380764178eb058b9"
+    },
+    {
+      "path": "groups/group-02.json",
+      "group_id": "AUTH-PASSWORD-OTP",
+      "sha256": "24054210ad5ff52264b488b83c0d661f9a4f7d5a17136849adb8b4dabe00e4c9"
+    },
+    {
+      "path": "groups/group-03.json",
+      "group_id": "AUTH-QR-TMA",
+      "sha256": "e954c54bbdc04bbd5d38fb50315be326aed2a1c3d8b2fb14baa94b795f94b0da"
+    },
+    {
+      "path": "groups/group-04.json",
+      "group_id": "AUTH-WS-TICKET",
+      "sha256": "346ed24dd97725610831b98c24910944da63028329297138684df03831a022f9"
+    },
+    {
+      "path": "groups/group-05.json",
+      "group_id": "ACADEMIC-ADMIN",
+      "sha256": "7952c173352375f10fc725471950538a617bbf94d6b30c1331457980d56a1cdd"
+    },
+    {
+      "path": "groups/group-06.json",
+      "group_id": "ACADEMIC-GROUPS",
+      "sha256": "d0b0b7f11d0e76a7b8b4778313a636704a7707d11eab60dc1a9d4817cfe3bfe9"
+    },
+    {
+      "path": "groups/group-07.json",
+      "group_id": "ACADEMIC-SEMESTER",
+      "sha256": "e3dae80539471f60fcc06a93854d79aa45a45d8a41d1f298d2549f6ce6441e9b"
+    },
+    {
+      "path": "groups/group-08.json",
+      "group_id": "ACADEMIC-ASSIGNMENT",
+      "sha256": "d3e87f0c2fb7db239dfbbb6060d4573b54bd485278863f3ae232332272402a1e"
+    },
+    {
+      "path": "groups/group-09.json",
+      "group_id": "ACADEMIC-HOMEWORK",
+      "sha256": "5b32676d96ee1a2bbb907b7332d473260ceb6d7e9d77f6e64273aabf6e38f02c"
+    },
+    {
+      "path": "groups/group-10.json",
+      "group_id": "ACADEMIC-MAP",
+      "sha256": "bf56194c02ba85ac5ac11a7e7ac9292c6564664c3bc9b41e01af40eb8d95a1c8"
+    },
+    {
+      "path": "groups/group-11.json",
+      "group_id": "ACADEMIC-CACHE-DTO",
+      "sha256": "3cb23bb07b587b2a8087e3b3e24ca9124aa07f415c30122c7e65c2b8cdb601b3"
+    },
+    {
+      "path": "groups/group-12.json",
+      "group_id": "SCHEDULE-CLOCK-GENERATION",
+      "sha256": "8b0226161c6f18f7f48b09aa244778921f5190b42b17d31f6039df65100f2fa0"
+    },
+    {
+      "path": "groups/group-13.json",
+      "group_id": "SCHEDULE-TRANSFER-CANCEL",
+      "sha256": "7ce2b156faa0a359cb596ef47cacbe4c962ab9fbcb94c4c9a02f3f76d3337e8f"
+    },
+    {
+      "path": "groups/group-14.json",
+      "group_id": "ATTENDANCE-CHECKIN",
+      "sha256": "6e436ca0dda022a02d9da8009d835270e2d4442fe9fda58331c0b26e4a89415a"
+    },
+    {
+      "path": "groups/group-15.json",
+      "group_id": "ATTENDANCE-REQUESTS",
+      "sha256": "a16a03d947cb6b910cde6098d40e2737eef7b55316b0033bd39911fb50c685c8"
+    },
+    {
+      "path": "groups/group-16.json",
+      "group_id": "ATTENDANCE-READ-REPORT",
+      "sha256": "4467de945cc1aa0ede42b9f1a83aabb8988ca3a48037ef7643a5ec67b1e8ee24"
+    },
+    {
+      "path": "groups/group-17.json",
+      "group_id": "ATTENDANCE-PARTICIPANTS",
+      "sha256": "334be59fa0ae6590844738d4cd8cd6618a4d43c9e1023d3c85975bdf1e8c858d"
+    },
+    {
+      "path": "groups/group-18.json",
+      "group_id": "ATTENDANCE-CACHE",
+      "sha256": "26b175c48293b4e62160db7296e4056d882728c64825a05078551d5681de8f77"
+    },
+    {
+      "path": "groups/group-19.json",
+      "group_id": "NOTIFICATION-PREFERENCES-HISTORY",
+      "sha256": "09f02390d7cc177d285f403f1db6c8c26df47847f459034d53f0ddad9615cf1e"
+    },
+    {
+      "path": "groups/group-20.json",
+      "group_id": "NOTIFICATION-WS-PUSH",
+      "sha256": "ad0e5dad0ee33777294ae1a97bc89e08ca78f3c7fa05a911cb6de10b82ee922b"
+    },
+    {
+      "path": "groups/group-21.json",
+      "group_id": "BOT-DELIVERY",
+      "sha256": "026e98795a2ae75c01c788655111f07cebb18565653e97937e916cc997204e8d"
+    },
+    {
+      "path": "groups/group-22.json",
+      "group_id": "BFF-CONTRACT-HTTP",
+      "sha256": "fd270a042c108b25f1a475a1cdf8083ce2ddf7f4e990c0e41541d2ccf54782a9"
+    },
+    {
+      "path": "groups/group-23.json",
+      "group_id": "RENDERER",
+      "sha256": "de3eab32df16f389bf9f17ffdb0c6920c3cae001f9ea77a1f1c119a3707111e2"
+    },
+    {
+      "path": "groups/group-24.json",
+      "group_id": "SHARED-SECURITY-ERRORS",
+      "sha256": "14d73903a6bca4216d768c1fcbc515151a25d562c09ae40c54836a11c29e5781"
+    },
+    {
+      "path": "groups/group-25.json",
+      "group_id": "SHARED-OUTBOX",
+      "sha256": "265ca23bfa799af25a853299773122dc679fc6cfe2ba9f3ef6f288a8f0ad1a75"
+    },
+    {
+      "path": "groups/group-26.json",
+      "group_id": "MIGRATIONS",
+      "sha256": "87aa7cb89d93ad091b04c743f76a28510233b26cd0054a388616b360b0c6d597"
+    },
+    {
+      "path": "groups/group-27.json",
+      "group_id": "HEALTH-OUTAGE",
+      "sha256": "65ce97abe40f67fadb640bfce0243ea80ce987ea9303179d610be01c1f4e2dd5"
+    },
+    {
+      "path": "groups/group-28.json",
+      "group_id": "RECOVERY",
+      "sha256": "fa29530a0590de6218d8a5507ef5d3fbe29fd87e6da69a3b63f375071eb16500"
+    }
+  ],
+  "original_fullmap_sha256": "47d618db0c84283508dec4021fd0946eb5abf86b741893c3ff87cf1185d2d2c2",
+  "split_reason": "preservecomplete28groups evidence underexisting1024KBnewfilegate without weakening"
+}

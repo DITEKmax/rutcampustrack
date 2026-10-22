@@ -1,0 +1,22 @@
+{
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "residualFinding": "ROSTER-WITNESS-ADMISSION-CLEANUP-002",
+  "r1HelperSHA256": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c",
+  "delta": "Only loginAttempted recorded before await fetch; cleanup cookie inspection applies to attempted or issued login, confirmed only matching own logout204/cookie removal+dispose. Classifier001/pagination003 bytes unchanged.",
+  "files": {
+    "before-r1-witness.cjs": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c",
+    "witness-detail-lookup.cjs": "4c4ad5626636b50d3183052ded3d4f342ce8bb15ab2b9645fd3b60d45cc997be",
+    "cleanup-control.cjs": "4b676053d0064c0091bab226a400f6ae98851c7a1367de77107c6081d41c05c8",
+    "delta.patch": "5c08fa4401713b68b4411b06265b00720137da686797ac9512b3fed57eab9102"
+  },
+  "nativeCommands": [
+    [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/cleanup-control.cjs"
+    ]
+  ],
+  "resourceBudget": "FreshRoot only,60s+30cleanup/512managedheap/1GiB sampledsoftRSS/32MiB sampledTMP, no API/browser/credentials forcontrols. FutureAPI separate grant.",
+  "actual503cause": "UNKNOWN",
+  "native": "NOT_RUN"
+}

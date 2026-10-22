@@ -1,16 +1,5 @@
 package ru.rutcampustrack.schedule.lesson;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.event.LessonDeletedEvent;
-import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
-import ru.rutcampustrack.schedule.lesson.entity.Lesson;
-import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
-import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
-import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
-
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -18,18 +7,27 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.event.LessonDeletedEvent;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
 
 /**
  * Service responsible for generating Lesson entities from ScheduleItem templates.
  *
- * Week parity and public names are owned by {@link AcademicWeekPolicy}.
- * They do not depend on semester start or the first_week_type column.
+ * <p>Week parity and public names are owned by {@link AcademicWeekPolicy}. They do not depend on
+ * semester start or the first_week_type column.
  *
- * Параметр `firstWeekType` в публичных методах оставлен для обратной
- * совместимости сигнатур/контрактов, но более НЕ влияет на результат.
+ * <p>Параметр `firstWeekType` в публичных методах оставлен для обратной совместимости
+ * сигнатур/контрактов, но более НЕ влияет на результат.
  *
- * Satisfies LSSN-01 (generate lessons for a schedule item) and
- * LSSN-02 (week parity algorithm).
+ * <p>Satisfies LSSN-01 (generate lessons for a schedule item) and LSSN-02 (week parity algorithm).
  */
 @Service
 public class LessonGenerationService {
@@ -41,36 +39,38 @@ public class LessonGenerationService {
     public LessonGenerationService(
             LessonRepository lessonRepository,
             Clock clock,
-            ApplicationEventPublisher eventPublisher
-    ) {
+            ApplicationEventPublisher eventPublisher) {
         this.lessonRepository = lessonRepository;
         this.clock = clock;
         this.eventPublisher = eventPublisher;
     }
 
     /**
-     * Publishes {@link LessonDeletedEvent} for the given ids (no-op if empty).
-     * Called right before a physical delete so downstream consumers (attendance-
-     * service) can drop records keyed to the about-to-vanish lesson ids.
-     * The {@code @TransactionalEventListener(AFTER_COMMIT)} in DomainEventListener
-     * ensures the message is dispatched only if the surrounding transaction commits.
+     * Publishes {@link LessonDeletedEvent} for the given ids (no-op if empty). Called right before
+     * a physical delete so downstream consumers (attendance- service) can drop records keyed to the
+     * about-to-vanish lesson ids. The {@code @TransactionalEventListener(AFTER_COMMIT)} in
+     * DomainEventListener ensures the message is dispatched only if the surrounding transaction
+     * commits.
      */
     private void publishDeleted(List<Long> ids, long semesterId) {
         if (ids == null || ids.isEmpty()) return;
         if (semesterId <= 0) {
-            throw new IllegalArgumentException("lesson.deleted requires an authoritative semester scope");
+            throw new IllegalArgumentException(
+                    "lesson.deleted requires an authoritative semester scope");
         }
         eventPublisher.publishEvent(new LessonDeletedEvent(this, ids, semesterId));
     }
 
     /**
-     * Computes all lesson dates for a given schedule item template within [semesterStart, semesterEnd].
+     * Computes all lesson dates for a given schedule item template within [semesterStart,
+     * semesterEnd].
      *
-     * @param semesterStart    First day of the semester (inclusive)
-     * @param semesterEnd      Last day of the semester (inclusive)
-     * @param firstWeekType    IGNORED — retained for signature backwards compatibility.
-     *                         Parity is now derived solely from ISO week number.
-     * @param dayOfWeek        1=Monday .. 6=Saturday (schedule_items convention, aligned with java.time.DayOfWeek)
+     * @param semesterStart First day of the semester (inclusive)
+     * @param semesterEnd Last day of the semester (inclusive)
+     * @param firstWeekType IGNORED — retained for signature backwards compatibility. Parity is now
+     *     derived solely from ISO week number.
+     * @param dayOfWeek 1=Monday .. 6=Saturday (schedule_items convention, aligned with
+     *     java.time.DayOfWeek)
      * @param templateWeekType The schedule item's week type: ALL, ODD, or EVEN
      * @return ordered list of LocalDate occurrences
      */
@@ -107,12 +107,12 @@ public class LessonGenerationService {
     }
 
     /**
-     * Generates Lesson entities for a ScheduleItem and persists them.
-     * Lessons are created with status=PLANNED and isGeoBlocked=false.
+     * Generates Lesson entities for a ScheduleItem and persists them. Lessons are created with
+     * status=PLANNED and isGeoBlocked=false.
      *
-     * @param item          The schedule item template
+     * @param item The schedule item template
      * @param semesterStart Semester start date
-     * @param semesterEnd   Semester end date
+     * @param semesterEnd Semester end date
      * @param firstWeekType Parity of the first semester week
      */
     @Transactional
@@ -126,15 +126,15 @@ public class LessonGenerationService {
     }
 
     /**
-     * Deletes PLANNED lessons from `fromDate` onward and re-generates them.
-     * Used when a ScheduleItem is updated (day, time, room, weekType) and
-     * the generated lessons need to be refreshed for the remaining semester.
+     * Deletes PLANNED lessons from `fromDate` onward and re-generates them. Used when a
+     * ScheduleItem is updated (day, time, room, weekType) and the generated lessons need to be
+     * refreshed for the remaining semester.
      *
-     * @param item          Updated schedule item
+     * @param item Updated schedule item
      * @param semesterStart Semester start date (needed for parity anchor)
-     * @param semesterEnd   Semester end date
+     * @param semesterEnd Semester end date
      * @param firstWeekType Parity of the first semester week
-     * @param fromDate      Only regenerate dates on or after this date
+     * @param fromDate Only regenerate dates on or after this date
      */
     @Transactional
     public void regenerateFromDate(
@@ -148,15 +148,14 @@ public class LessonGenerationService {
     }
 
     /**
-     * Reconciliation variant of {@link #regenerateFromDate}: wipes BOTH
-     * PLANNED and CANCELLED lessons before reinsert. Used by
-     * {@link IsoParityReconciler} to avoid duplicate-key collisions on the
-     * {@code UNIQUE (schedule_item_id, date)} constraint when the prior
-     * generation left a future-dated CANCELLED occurrence on the same day
-     * that the ISO-anchored algorithm now wants to regenerate.
+     * Reconciliation variant of {@link #regenerateFromDate}: wipes BOTH PLANNED and CANCELLED
+     * lessons before reinsert. Used by {@link IsoParityReconciler} to avoid duplicate-key
+     * collisions on the {@code UNIQUE (schedule_item_id, date)} constraint when the prior
+     * generation left a future-dated CANCELLED occurrence on the same day that the ISO-anchored
+     * algorithm now wants to regenerate.
      *
-     * Not used by headman-driven updates — those call {@link #regenerateFromDate}
-     * so freshly-cancelled slots are preserved.
+     * <p>Not used by headman-driven updates — those call {@link #regenerateFromDate} so
+     * freshly-cancelled slots are preserved.
      */
     @Transactional
     public void regenerateFromDateForReconciliation(
@@ -170,12 +169,12 @@ public class LessonGenerationService {
     }
 
     /**
-     * Deletes all PLANNED lessons for a schedule item starting from today.
-     * Called by ScheduleItemService.deleteScheduleItem so that disabling a
-     * template also clears future planned occurrences from the calendar
-     * (Bug: «удалил из матрицы — осталось в "Парах на 2 недели"»).
+     * Deletes all PLANNED lessons for a schedule item starting from today. Called by
+     * ScheduleItemService.deleteScheduleItem so that disabling a template also clears future
+     * planned occurrences from the calendar (Bug: «удалил из матрицы — осталось в "Парах на 2
+     * недели"»).
      *
-     * Past lessons are intentionally preserved — they may carry attendance.
+     * <p>Past lessons are intentionally preserved — they may carry attendance.
      */
     @Transactional
     public void deletePlannedLessonsFromToday(Long scheduleItemId) {
@@ -188,14 +187,18 @@ public class LessonGenerationService {
 
     private List<Lesson> buildLessons(Long scheduleItemId, List<LocalDate> dates) {
         OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
-        return dates.stream().map(date -> {
-            Lesson lesson = new Lesson();
-            lesson.setScheduleItemId(scheduleItemId);
-            lesson.setDate(date);
-            lesson.setStatus(ru.rutcampustrack.schedule.contract.enums.LessonStatus.PLANNED);
-            lesson.setGeoBlocked(false);
-            lesson.setCreatedAt(now);
-            return lesson;
-        }).toList();
+        return dates.stream()
+                .map(
+                        date -> {
+                            Lesson lesson = new Lesson();
+                            lesson.setScheduleItemId(scheduleItemId);
+                            lesson.setDate(date);
+                            lesson.setStatus(
+                                    ru.rutcampustrack.schedule.contract.enums.LessonStatus.PLANNED);
+                            lesson.setGeoBlocked(false);
+                            lesson.setCreatedAt(now);
+                            return lesson;
+                        })
+                .toList();
     }
 }

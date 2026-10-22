@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/ci731_receipts/safe-receipts.zip",
+    "sha256": "1fb8fe681df8b632750b8e37b391d3139c82efaef338891c46865f74039069eb",
+    "unchanged": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/safe-review.zip",
+    "sha256": "d8772fb32bd3b4f013b2fed58fe79816265778cee99eb7c7d5a6811f18c66c5c",
+    "unchanged": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/safe-aliases.zip",
+    "sha256": "ee7d1b8faa1887faeb039bcf2a8eb9c9bc77caa077289efc3d4aeea3f5f12bb5",
+    "unchanged": true
+  }
+]

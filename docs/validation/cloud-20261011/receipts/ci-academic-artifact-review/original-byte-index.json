@@ -1,0 +1,95 @@
+{
+  "source": "/workspace/scratch/rct-validation/ci_academic_resource_review",
+  "manifest": "transfer-manifest.json",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "original_sha256": "a2ec6f9434c7dfaab95815bcb493494c4274b1a1c811334064791b090f11e90e",
+      "original_bytes": 8355,
+      "working_sha256": "a2ec6f9434c7dfaab95815bcb493494c4274b1a1c811334064791b090f11e90e",
+      "working_bytes": 8355,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "author-seal-audit.json",
+      "original_sha256": "844925dc8d5a6bda083a48cff2a0a8e9b54af3ec2f3d34c5e9696c1eb12a3b3d",
+      "original_bytes": 5730,
+      "working_sha256": "844925dc8d5a6bda083a48cff2a0a8e9b54af3ec2f3d34c5e9696c1eb12a3b3d",
+      "working_bytes": 5730,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "input-source-identities.json",
+      "original_sha256": "5b9f15c8259d4ee6f8506815bb6da2b01252104fa38aed32cfba40117e02a36f",
+      "original_bytes": 4398,
+      "working_sha256": "5b9f15c8259d4ee6f8506815bb6da2b01252104fa38aed32cfba40117e02a36f",
+      "working_bytes": 4398,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "mandatory-runtime-proof-plan.json",
+      "original_sha256": "99294049e53aed0b85c73c6f188fc0dd509f7b2ded335dee956b9473dd466fd9",
+      "original_bytes": 9255,
+      "working_sha256": "99294049e53aed0b85c73c6f188fc0dd509f7b2ded335dee956b9473dd466fd9",
+      "working_bytes": 9255,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "needed-auth-source-closure.json",
+      "original_sha256": "b296e1973ec10b7d19e93b2af09d6dcd79b1e9e37b8d386ee6d7bcd981854975",
+      "original_bytes": 9448,
+      "working_sha256": "b296e1973ec10b7d19e93b2af09d6dcd79b1e9e37b8d386ee6d7bcd981854975",
+      "working_bytes": 9448,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "review.py",
+      "original_sha256": "017e6753b289ae3f7080f8c60c1231a131f21950e15fa1bcd16b7519f1723ed6",
+      "original_bytes": 10916,
+      "working_sha256": "017e6753b289ae3f7080f8c60c1231a131f21950e15fa1bcd16b7519f1723ed6",
+      "working_bytes": 10916,
+      "transformation": "byte equal; copied source losslessly wrapped",
+      "working_path": "review.py.readable.zip",
+      "working_archive_member": "review.py",
+      "working_container_sha256": "7c555451e6884fa93784353f52345f44b5b6d67bae37fbdfcc8ff0b089f52504",
+      "working_container_bytes": 4828
+    },
+    {
+      "path": "reviewed-build.gradle.kts.txt",
+      "original_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+      "original_bytes": 6129,
+      "working_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+      "working_bytes": 6129,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "reviewed-net.patch",
+      "original_sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb",
+      "original_bytes": 1144,
+      "working_sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb",
+      "working_bytes": 1144,
+      "transformation": "byte equal; copied source losslessly wrapped",
+      "working_path": "reviewed-net.patch.readable.zip",
+      "working_archive_member": "reviewed-net.patch",
+      "working_container_sha256": "efe6b169e7b0a86dfd88e7be41b8f052ee68b6692459ff7f1d2158ea88bb100b",
+      "working_container_bytes": 672
+    },
+    {
+      "path": "source-verdict.json",
+      "original_sha256": "b3649cda463eefc4ab540a8b1063c20df780954c9d047cd8ac79abcdea4e4c02",
+      "original_bytes": 2241,
+      "working_sha256": "b3649cda463eefc4ab540a8b1063c20df780954c9d047cd8ac79abcdea4e4c02",
+      "working_bytes": 2241,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "d21b0b3ff04de54f2edda74800f3e9ac2dc8e10f866c12513b9379a1a3b1ec1b",
+      "original_bytes": 1580,
+      "working_sha256": "d21b0b3ff04de54f2edda74800f3e9ac2dc8e10f866c12513b9379a1a3b1ec1b",
+      "working_bytes": 1580,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

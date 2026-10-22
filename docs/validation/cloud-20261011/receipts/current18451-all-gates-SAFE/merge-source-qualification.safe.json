@@ -1,0 +1,27 @@
+{
+  "actualMerge": {
+    "sha": "db57c30f1c27722985733f9b023bc4795854a307",
+    "tree": "2bb126f60d9b5e84f623bbbc75b19eb0e6e99f6f",
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "18451c9dacc08625f038313ef2d62e36b3ba6423"
+    ]
+  },
+  "producer": {
+    "sha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+    "tree": "2bb126f60d9b5e84f623bbbc75b19eb0e6e99f6f",
+    "parents": [
+      "db177beeb9660f5a17d7fadf660e024e28f9f4b9"
+    ]
+  },
+  "PR": {
+    "number": 2,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "head": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "base_ref": "main"
+  },
+  "mergeTreeEqualsHead": true
+}

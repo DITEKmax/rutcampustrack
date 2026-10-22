@@ -1,0 +1,12 @@
+{
+  "phase": "CORRECTION_AND_NEW_HARNESS_SOURCE_RECHECK",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "baseline_domain_revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "new_bridge_revision": "dc9acc4385c756ce7bf070f248feadc7c4dba234",
+  "correction_revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+  "finding": "NP01-COMPAT01 CORRECTION_SOURCE_RECHECKED_RUNTIME_PENDING",
+  "runtime": "NOT_RUN",
+  "source_writes": 0,
+  "children": 0,
+  "next": "Receive independently inspect actual COMPAT before/after and native exact-source domain/Auth/bridge/sensitivity evidence"
+}

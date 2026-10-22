@@ -1,0 +1,42 @@
+{
+  "phase": "tma",
+  "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "cwd": "/workspace/rct-worktrees/client-current-artifacts/frontends",
+  "argv": [
+    "npm",
+    "run",
+    "build",
+    "--workspace",
+    "@rct/tma-vue"
+  ],
+  "started_utc": "2026-10-12T04:22:00.052511+00:00",
+  "state": "TERMINAL",
+  "resource_before": {
+    "free_bytes": 7331110912,
+    "shared_memory_current": 5036924928,
+    "shared_memory_max": 17179869184,
+    "conservative_new_scope_bytes": 1239044096
+  },
+  "raw_log_private_only": true,
+  "child_pid": 201403,
+  "latest_resources": {
+    "free_bytes": 7327260672,
+    "shared_memory_current": 6043144192,
+    "shared_memory_max": 17179869184,
+    "conservative_new_scope_bytes": 1242894336
+  },
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "group_members_after": [],
+  "ended_utc": "2026-10-12T04:22:30.306604+00:00",
+  "resource_after": {
+    "free_bytes": 7327145984,
+    "shared_memory_current": 5040881664,
+    "shared_memory_max": 17179869184,
+    "conservative_new_scope_bytes": 1243009024
+  },
+  "own_WT_allocated_bytes": 1239117824,
+  "own_scratch_allocated_bytes": 3530752,
+  "raw_log_sha256": "6691cded53a2cf6c2698b1dd5d26dec66b113c67b8816628909c4ddb77e0dbc0",
+  "all7350_tracked_source_hashes_unchanged": true
+}

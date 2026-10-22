@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-11T22:59:56.432614+00:00",
+  "verdict": "APPROVE",
+  "approval_kind": "SOURCE_ONLY",
+  "blocking_findings": [],
+  "needed_correction": "NONE",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "reviewer_execution": "LIGHT read/parser/hash only; no tests/Gradle/Docker/generation/typecheck/apps/browser/mutations",
+  "findings": "findings.md",
+  "scope": "CIO01 correction and original three-path safe outcome collector package",
+  "base": "b6114f4084f757d04d166ab995b57b4f4697042f",
+  "target": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+  "closed_findings": [
+    {
+      "id": "CIO01",
+      "severity": "P2",
+      "disposition": "CLOSED_SOURCE",
+      "path": "/workspace/rct-worktrees/ci-evidence/scripts/collect-ci-test-outcomes.py",
+      "lines": [
+        101,
+        126,
+        186,
+        190
+      ],
+      "counterexample": "Tracked source parent -> outside bytes; report test directory -> integrationTest/another service/outside checkout. Every linked ancestor is now rejected before glob/read/hash.",
+      "oracle": "No linked source canonical identity; linked report UNINSPECTABLE_RESULTS without cases/XML hashes.",
+      "validation": "Actual meaningful6red assertions/native1; corrected13green/native0; current committed source+prelaunch hashes and safe log hashes independently verified."
+    }
+  ],
+  "evidence": [
+    "source-identities.json",
+    "workflow-preservation.json",
+    "ci-evidence-reconciliation.json",
+    "opened-sources.json"
+  ],
+  "not_granted": [
+    "Actual remoteCIupload/nativeartifact readback",
+    "Independent XMLproducer source/freshness attestation",
+    "FinalCI/product/client acceptance"
+  ]
+}

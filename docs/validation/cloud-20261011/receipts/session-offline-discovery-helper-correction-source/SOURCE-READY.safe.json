@@ -1,0 +1,54 @@
+{
+  "state": "READY_SOURCE_ONLY_NOT_RUN",
+  "finding": "SO-DISCOVERY-GATE-001",
+  "utc": "2026-10-13T01:46:11.476532+00:00",
+  "scope": "own scratch discovery-reporter.cjs only; no TS2/Root product or original assertion change",
+  "before_sha256": "bf0c9742c44dcf35b8ccc5d4355df784516574cf6a8ac671a9ed0dc0a233ba28",
+  "after_sha256": "d9164f8e4f2289cf4e56af388ecf96b16b146211dc25661566bf958c58f47f57",
+  "whole_bytes_inverse_exact": true,
+  "new_controls_sha256": "6e5cf019517595e41ea16cffac140d0b243d83567f5927023b31769077e45898",
+  "controls": [
+    "ZERO_CASES",
+    "ONE_CASE",
+    "WRONG_LINE"
+  ],
+  "exact2_positive_evidence": {
+    "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/actual-node01/REPORT.safe.json",
+    "sha256": "d5dc9308083e113d2e11a42dc297f55ea2ce6165915fe6030107cbd575aaf057",
+    "qualification": "Retained actual exacttwo PASS unaffected; controls do not replay full discovery."
+  },
+  "two_ts_preserved": true,
+  "native_status": "NOT_RUN",
+  "planned_argv": [
+    [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/discovery-gate-correction/controls.cjs",
+      "before"
+    ],
+    [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/discovery-gate-correction/controls.cjs",
+      "after"
+    ]
+  ],
+  "expected_results": {
+    "before": "native1 +count3/failedControls3/knownBeforeCounterexampletrue/discoveryPassfalse on every row",
+    "after": "native0 +count3/failedControls0/passtrue/all rows rejectedtrue"
+  },
+  "run_namespace": "/workspace/scratch/rct-validation/client_session_offline_acceptance/runs/attempt-91",
+  "requested_budget": {
+    "per_phase_seconds": 30,
+    "total_active_seconds": 120,
+    "cleanup_seconds": 60,
+    "node_managed_heap_mib": 512,
+    "owned_rss_sampled_soft_bytes": 1073741824,
+    "own_tmp_transform_sampled_bytes": 33554432,
+    "workspace_tmp_floor_bytes": 4294967296,
+    "shared_stop_bytes": 16106127360,
+    "shared_memory_reserve_bytes": 1073741824
+  },
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "no_full_recheck": "No formatter/types/full --list/browser/API/seed/stand/credentials/sourcewrites in native phase. Existingb78/r1 callbacks only parameter changes. Fresh Root grant required."
+}

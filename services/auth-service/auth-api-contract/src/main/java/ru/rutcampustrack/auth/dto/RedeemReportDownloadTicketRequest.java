@@ -7,6 +7,9 @@ import jakarta.validation.constraints.Pattern;
 /** Internal-only request body; the ticket is never accepted from caller headers. */
 @Schema(description = "Internal report-ticket redemption request")
 public record RedeemReportDownloadTicketRequest(
-        @NotBlank @Pattern(regexp = "[A-Za-z0-9_-]{43}") String ticket
-) {
+        @NotBlank @Pattern(regexp = "[A-Za-z0-9_-]{43}") String ticket) {
+    @Override
+    public String toString() {
+        return "RedeemReportDownloadTicketRequest[ticket=<redacted>]";
+    }
 }

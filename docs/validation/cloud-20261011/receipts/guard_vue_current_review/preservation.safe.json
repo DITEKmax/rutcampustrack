@@ -1,0 +1,124 @@
+{
+  "status": "PASS_TARGETED_PRESERVATION",
+  "receipts": [
+    {
+      "category": "accepted_source_and_stage_seals",
+      "manifest": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/manifest.json",
+      "sha256": "ff9f2c4121641cd7b530a9eb57919e83051492a666328ed9f649d91e2004c968",
+      "bytes": 5555,
+      "safe_members_SHA_bytes_verified": 24
+    },
+    {
+      "category": "accepted_source_and_stage_seals",
+      "manifest": "/workspace/scratch/rct-validation/current_artifact_correction_v2_review/manifest.json",
+      "sha256": "64715bd8880fb714f45f3cd3a719a442fc43384018e3067ce1c3a7dc321459ee",
+      "bytes": 1838,
+      "safe_members_SHA_bytes_verified": 10
+    },
+    {
+      "category": "accepted_source_and_stage_seals",
+      "manifest": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+      "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "bytes": 5578,
+      "safe_members_SHA_bytes_verified": 24
+    },
+    {
+      "category": "accepted_source_and_stage_seals",
+      "manifest": "/workspace/scratch/rct-validation/current_host_stage/manifest.json",
+      "sha256": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+      "bytes": 10066,
+      "safe_members_SHA_bytes_verified": 26
+    },
+    {
+      "category": "accepted_source_and_stage_seals",
+      "manifest": "/workspace/scratch/rct-validation/current_vue_stage/manifest.json",
+      "sha256": "59dc74c777dbbb6e5d074474e548b682d05dd523bd9817088cf32ed232cd05bf",
+      "bytes": 12332,
+      "safe_members_SHA_bytes_verified": 13
+    },
+    {
+      "category": "accepted_source_and_stage_seals",
+      "manifest": "/workspace/scratch/rct-validation/physical_dedup1/manifest.json",
+      "sha256": "70bd8a7d4aadd226913551dd852e701d6cf2d0df54671fc89c84f3e1e78db687",
+      "bytes": 9627,
+      "safe_members_SHA_bytes_verified": 36
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/export_ebsr_recheck/immutable-review-manifest.json",
+      "sha256": "ca386bb82eeb35a3c72873a95f3fd9a37a5578312ad98395f7f89d689460b13a",
+      "bytes": 6128,
+      "safe_members_SHA_bytes_verified": 34
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/export_merged_repository_review/immutable-review-manifest.json",
+      "sha256": "c517f22f8583d0e21577038005c11356d093f15709ed290285da1c009e05c048",
+      "bytes": 2323,
+      "safe_members_SHA_bytes_verified": 12
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/np01_domain_review/immutable-review-manifest.json",
+      "sha256": "42a2d450f6746ea21112518ed676250973ad1de2d98a05383f58e96d59cdc519",
+      "bytes": 2501,
+      "safe_members_SHA_bytes_verified": 14
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/np01_domain_recheck/immutable-review-manifest.json",
+      "sha256": "3c2fcab3183fa3a226beddadd7f049226d768dde4c37a92a401a3af15da53815",
+      "bytes": 1889,
+      "safe_members_SHA_bytes_verified": 10
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_review/immutable-review-manifest.json",
+      "sha256": "2ad5ab1ff74906023921b5424d2e0c15f476f81f6eb97efc872d27b14767aa26",
+      "bytes": 1999,
+      "safe_members_SHA_bytes_verified": 11
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/np01_domain_runtime_review/immutable-review-manifest.json",
+      "sha256": "f729cab6bd72fd9d17b6e307262cb66c4120ff814d9ce261dcbd9096a6f392e1",
+      "bytes": 2132,
+      "safe_members_SHA_bytes_verified": 11
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/np01_broker_source_review/immutable-review-manifest.json",
+      "sha256": "40775e778fbdd67b71a94d6faba23fd8ff731d24d8c7ee38d000e82e87eecc12",
+      "bytes": 2610,
+      "safe_members_SHA_bytes_verified": 13
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/np01_broker_correction_review/immutable-review-manifest.json",
+      "sha256": "4eac0bb9550ee03e3cbaf2ad592300f77fecde2152d3d52caa559cef78baf96c",
+      "bytes": 1884,
+      "safe_members_SHA_bytes_verified": 8
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/ci731_compatibility_review/immutable-review-manifest.json",
+      "sha256": "395f7f89c703805a406902f600e6e9b8769dde51374cb3dcdb8832aedd6d7aeb",
+      "bytes": 2246,
+      "safe_members_SHA_bytes_verified": 10
+    },
+    {
+      "category": "prior_own_immutable_reviews",
+      "manifest": "/workspace/scratch/rct-validation/current_host_stage_review/immutable-review-manifest.json",
+      "sha256": "71c62d47338a05dbcda5f6f00ce435f6fad9f1f0e87a3c1a0f3e5958dce36a01",
+      "bytes": 2109,
+      "safe_members_SHA_bytes_verified": 9
+    }
+  ],
+  "prior_own_reviews": 10,
+  "prior_own_safe_members": 132,
+  "accepted_old_source_stage_safe_members": 133,
+  "guard14_Vue13_rechecked_after_controls": true,
+  "source_history_full7350_dependencies8272_JAR16_rehash": "NOT_REPEATED; preserved accepted proofs",
+  "old_archives_manifests_rewritten": false,
+  "old_payload_source_key_changes": false
+}

@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { nestedRoute, createMobileNavigationStack, rootRoute } from '../src/shared/navigation.ts'
-import { shouldShowHostBack, shouldShowMobileDock, shouldShowProductBack } from '../src/shared/shell-contract.ts'
+import {
+  shouldShowHostBack,
+  shouldShowMobileDock,
+  shouldShowProductBack,
+} from '../src/shared/shell-contract.ts'
 import { PwaHostAdapter } from '../../pwa-vue/src/pwa-host.ts'
 
 test('navigation stack returns from nested route to its root and then stops', () => {
@@ -17,7 +21,10 @@ test('navigation stack returns from nested route to its root and then stops', ()
 test('initial nested route seeds its owning root before the detail', () => {
   const stack = createMobileNavigationStack(nestedRoute('homework', 'homework/detail', 'detail'))
 
-  assert.deepEqual(stack.entries.map((route) => route.id), ['homework', 'homework/detail'])
+  assert.deepEqual(
+    stack.entries.map((route) => route.id),
+    ['homework', 'homework/detail'],
+  )
   assert.equal(stack.back()?.id, 'homework')
   assert.equal(stack.back(), null)
 })
@@ -27,7 +34,10 @@ test('cross-root nested navigation starts the owning root history', () => {
 
   stack.push(nestedRoute('homework', 'homework/detail', 'detail'))
 
-  assert.deepEqual(stack.entries.map((route) => route.id), ['homework', 'homework/detail'])
+  assert.deepEqual(
+    stack.entries.map((route) => route.id),
+    ['homework', 'homework/detail'],
+  )
   assert.equal(stack.back()?.id, 'homework')
   assert.equal(stack.back(), null)
 })
@@ -37,14 +47,19 @@ test('replacing a root with a nested route also preserves its owning root', () =
 
   stack.replace(nestedRoute('homework', 'homework/detail', 'detail'))
 
-  assert.deepEqual(stack.entries.map((route) => route.id), ['homework', 'homework/detail'])
+  assert.deepEqual(
+    stack.entries.map((route) => route.id),
+    ['homework', 'homework/detail'],
+  )
   assert.equal(stack.back()?.id, 'homework')
 })
 
 test('external stack mutations notify subscribers once and can be unsubscribed', () => {
   const stack = createMobileNavigationStack(rootRoute('today'))
   let notifications = 0
-  const unsubscribe = stack.subscribe(() => { notifications += 1 })
+  const unsubscribe = stack.subscribe(() => {
+    notifications += 1
+  })
 
   stack.push(nestedRoute('today', 'today/checkin', 'task'))
   stack.replace(nestedRoute('today', 'today/checkin-confirm', 'task'))
@@ -61,7 +76,10 @@ test('root navigation clears the previous nested route', () => {
 
   stack.goRoot('profile')
 
-  assert.deepEqual(stack.entries.map((route) => route.id), ['profile'])
+  assert.deepEqual(
+    stack.entries.map((route) => route.id),
+    ['profile'],
+  )
 })
 
 test('profile detail navigation returns to profile root and keeps one owning stack', () => {
@@ -70,7 +88,10 @@ test('profile detail navigation returns to profile root and keeps one owning sta
   stack.goRoot('profile')
   stack.push(nestedRoute('profile', 'profile/sessions', 'detail'))
 
-  assert.deepEqual(stack.entries.map((route) => route.id), ['profile', 'profile/sessions'])
+  assert.deepEqual(
+    stack.entries.map((route) => route.id),
+    ['profile', 'profile/sessions'],
+  )
   assert.equal(stack.back()?.id, 'profile')
   assert.equal(stack.back(), null)
 })
@@ -106,13 +127,17 @@ test('shell visibility owns dock and Back by route surface and keyboard', () => 
     ['headman-more/schedule/form', 'editor'],
   ]) {
     const stack = createMobileNavigationStack(rootRoute('headman-more'))
-    if (surface === 'editor') stack.push(nestedRoute('headman-more', 'headman-more/schedule/list', 'task'))
+    if (surface === 'editor')
+      stack.push(nestedRoute('headman-more', 'headman-more/schedule/list', 'task'))
     stack.push(nestedRoute('headman-more', id, surface))
     assert.equal(shouldShowProductBack(stack.current, pwa.backOwner), true)
     assert.equal(shouldShowMobileDock(stack.current, false), false)
     assert.equal(shouldShowProductBack(stack.current, 'host'), false)
     assert.equal(shouldShowHostBack(stack.current, 'host'), true)
-    assert.equal(stack.back()?.id, surface === 'editor' ? 'headman-more/schedule/list' : 'headman-more')
+    assert.equal(
+      stack.back()?.id,
+      surface === 'editor' ? 'headman-more/schedule/list' : 'headman-more',
+    )
     if (surface === 'editor') assert.equal(stack.back()?.id, 'headman-more')
     assert.equal(stack.back(), null)
   }

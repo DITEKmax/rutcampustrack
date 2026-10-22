@@ -1,0 +1,23 @@
+{
+  "utc": "2026-10-12T07:09:53.904511+00:00",
+  "lease": "FORMAT_PRETTIER1_LIGHT",
+  "worktree_head": "f1b3bcc95de44069fb5b1be3f5d1af7b5eb10f11",
+  "source_root": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "writer": "ci_academic_heap sole scripts/format-authored.mjs exact11tooling +963Prettier mechanicalscope",
+  "exact11_review": "Root independentlyread actualproposal/currentcounts/provenance; only11copiedimmutablemachine manifest paths, old41/8291remainingclassifications preserved; no blanket authoredsource exclusions",
+  "sequence": "same1file tooling commit then separate mechanical Prettier commit; pendingNP2 corrections nowexactimported",
+  "source2_correction_imported": true,
+  "commands": [
+    "node scripts/format-authored.mjs prettier --write",
+    "node scripts/format-authored.mjs prettier --check"
+  ],
+  "node_memory_mib": 512,
+  "disk_growth_cap": 134217728,
+  "disk_floor": 4294967296,
+  "shared_memory_stop": 16106127360,
+  "parallelism": "one Node light phase whileNPoneGradleCOMPILE1 andhostPythonstage; measuredshared4.6G+NP1G+Node0.5G+stage0.128G <17G-reserve1G; diskstage320M+compile512M+Node128M<1GiB vs8.60G available",
+  "deps": "ignoredfrontends/node_modules readonlysymlink toverifiedsame-lock artifactdependency tree forPrettierONLY; no installedthirdparty/cache/lockchanges. Laterlint/build requiresowncurrent@rct links/currentSource aliases, cannotvalidateoldworkspacecore accidentally",
+  "COW": "freshstat beforeeachwrite, all12153immutablefence; current2680targets nlink1/zero fenceintersection. Atomic COW/journal ifanyshared, doNOT touchotherWT/Root",
+  "verification": "actualformat/check/parser, JSON/YAMLvalues/tokenimports/Vuecompiler template whitespace/stylevalues strict unchanged; selectedinventory/unselected/locks/generated/Flyway/fixtures exact; sourcehooks private logs safe counts, no newtestperline",
+  "not_granted": "Java/Gradle/Python/SQLwrite orbuild/test/npm/WebUI function/sourcepolicy. PinnedformatVMtools installation is authorized separately as lightweightneededdeps in ownworkspacecache up to64MiB if notavailable, no versionfallback. No JVM/Docker/browser."
+}

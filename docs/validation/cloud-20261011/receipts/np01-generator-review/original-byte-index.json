@@ -1,0 +1,31 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_common_review",
+  "manifest": "sealed-generator-manifest.safe.json",
+  "files": [
+    {
+      "path": "generator-artifact-check.safe.json",
+      "original_sha256": "d61e3150a334974c7d4d060bd4a5e91871ec90bb85bf9798493f41cc39903008",
+      "original_bytes": 1770,
+      "working_sha256": "d61e3150a334974c7d4d060bd4a5e91871ec90bb85bf9798493f41cc39903008",
+      "working_bytes": 1770,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "generator-review.safe.json",
+      "original_sha256": "2a1c5ffaf78ec3a0f23600326a2d743ff97d6290f2b8513c4444f3371f91d793",
+      "original_bytes": 5182,
+      "working_sha256": "2a1c5ffaf78ec3a0f23600326a2d743ff97d6290f2b8513c4444f3371f91d793",
+      "working_bytes": 5182,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-generator-manifest.safe.json",
+      "original_sha256": "5fdd7cfa84fe4418e2d115273be05aaa4a3073798fdc42a49f85f5bcfd4b2242",
+      "original_bytes": 451,
+      "working_sha256": "5fdd7cfa84fe4418e2d115273be05aaa4a3073798fdc42a49f85f5bcfd4b2242",
+      "working_bytes": 451,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

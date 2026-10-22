@@ -1,15 +1,12 @@
 package ru.rutcampustrack.gateway.clientip;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.mock.web.server.MockServerWebExchange;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 
 class TrustedClientIpResolverTest {
 
@@ -27,20 +24,29 @@ class TrustedClientIpResolverTest {
 
     @Test
     void rejectsNonLiteralAndAmbiguousForwardedForms() {
-        assertThat(List.of(
-                "unknown", "203.0.113.7:443", "[2001:db8::1]", "2001:db8::1%eth0",
-                "203.0.113.7, 198.51.100.4", "", "203.0.113.999"))
-                .allSatisfy(value -> assertThat(TrustedClientIpResolver.canonicalizeLiteral(value))
-                        .isEmpty());
+        assertThat(
+                        List.of(
+                                "unknown",
+                                "203.0.113.7:443",
+                                "[2001:db8::1]",
+                                "2001:db8::1%eth0",
+                                "203.0.113.7, 198.51.100.4",
+                                "",
+                                "203.0.113.999"))
+                .allSatisfy(
+                        value ->
+                                assertThat(TrustedClientIpResolver.canonicalizeLiteral(value))
+                                        .isEmpty());
     }
 
     @Test
     void trustedPeerAcceptsOneRawXffLineAndCanonicalizesIt() throws Exception {
         TrustedClientIpResolver resolver = resolverWithTrustedProxy("192.0.2.10");
-        MockServerHttpRequest request = MockServerHttpRequest.get("/api/x")
-                .remoteAddress(address("192.0.2.10"))
-                .header("X-Forwarded-For", " 2001:0db8::1 ")
-                .build();
+        MockServerHttpRequest request =
+                MockServerHttpRequest.get("/api/x")
+                        .remoteAddress(address("192.0.2.10"))
+                        .header("X-Forwarded-For", " 2001:0db8::1 ")
+                        .build();
 
         TrustedClientIpResolver.Resolution resolution = resolver.resolve(request);
 
@@ -52,15 +58,17 @@ class TrustedClientIpResolverTest {
     @Test
     void trustedPeerRejectsCommaChainAndBlankDuplicateLine() throws Exception {
         TrustedClientIpResolver resolver = resolverWithTrustedProxy("192.0.2.10");
-        MockServerHttpRequest commaChain = MockServerHttpRequest.get("/api/x")
-                .remoteAddress(address("192.0.2.10"))
-                .header("X-Forwarded-For", "203.0.113.7, 198.51.100.4")
-                .build();
-        MockServerHttpRequest blankDuplicate = MockServerHttpRequest.get("/api/x")
-                .remoteAddress(address("192.0.2.10"))
-                .header("X-Forwarded-For", "203.0.113.7")
-                .header("X-Forwarded-For", "")
-                .build();
+        MockServerHttpRequest commaChain =
+                MockServerHttpRequest.get("/api/x")
+                        .remoteAddress(address("192.0.2.10"))
+                        .header("X-Forwarded-For", "203.0.113.7, 198.51.100.4")
+                        .build();
+        MockServerHttpRequest blankDuplicate =
+                MockServerHttpRequest.get("/api/x")
+                        .remoteAddress(address("192.0.2.10"))
+                        .header("X-Forwarded-For", "203.0.113.7")
+                        .header("X-Forwarded-For", "")
+                        .build();
 
         assertThat(resolver.resolve(commaChain).clientIp()).isEqualTo("192.0.2.10");
         assertThat(resolver.resolve(blankDuplicate).clientIp()).isEqualTo("192.0.2.10");
@@ -69,14 +77,16 @@ class TrustedClientIpResolverTest {
     @Test
     void untrustedOrNullPeerIgnoresForwardingHeaders() throws Exception {
         TrustedClientIpResolver resolver = resolverWithTrustedProxy("192.0.2.10");
-        MockServerHttpRequest untrusted = MockServerHttpRequest.get("/api/x")
-                .remoteAddress(address("198.51.100.9"))
-                .header("X-Forwarded-For", "203.0.113.7")
-                .header("X-Real-IP", "203.0.113.8")
-                .build();
-        MockServerHttpRequest noPeer = MockServerHttpRequest.get("/api/x")
-                .header("X-Forwarded-For", "203.0.113.7")
-                .build();
+        MockServerHttpRequest untrusted =
+                MockServerHttpRequest.get("/api/x")
+                        .remoteAddress(address("198.51.100.9"))
+                        .header("X-Forwarded-For", "203.0.113.7")
+                        .header("X-Real-IP", "203.0.113.8")
+                        .build();
+        MockServerHttpRequest noPeer =
+                MockServerHttpRequest.get("/api/x")
+                        .header("X-Forwarded-For", "203.0.113.7")
+                        .build();
 
         assertThat(resolver.resolve(untrusted).clientIp()).isEqualTo("198.51.100.9");
         assertThat(resolver.resolve(untrusted).trustedPeer()).isFalse();
@@ -93,7 +103,9 @@ class TrustedClientIpResolverTest {
 
         TrustedClientIpProperties requiredEmpty = new TrustedClientIpProperties();
         requiredEmpty.setRequired(true);
-        assertThat(org.assertj.core.api.Assertions.catchThrowable(requiredEmpty::validateAndInitialize))
+        assertThat(
+                        org.assertj.core.api.Assertions.catchThrowable(
+                                requiredEmpty::validateAndInitialize))
                 .isInstanceOf(IllegalStateException.class);
     }
 

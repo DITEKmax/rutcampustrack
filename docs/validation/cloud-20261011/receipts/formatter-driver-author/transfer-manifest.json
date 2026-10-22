@@ -1,0 +1,127 @@
+{
+  "utc": "2026-10-12T05:37:49.031415+00:00",
+  "status": "SOURCE_READY_FORMAT_RUNTIME_NOT_RUN",
+  "commit": "d18484795137298777d0845afcd078dca91eb590",
+  "base": "18265e3932f9609b4cef4e156e21d310f2d3c63d",
+  "tracked_source_inventory": [
+    "scripts/format-authored.mjs"
+  ],
+  "source_sha256": "df4e46651c1d971309548856f9eabc748eee13e8919d5b5b46818dcdb6ed49cb",
+  "safe_archive": {
+    "file": "immutable-source-only-receipts.zip",
+    "bytes": 277550,
+    "sha256": "70e3045d7bc59ff54a278c0996468681567f593c6184717826529035302562ca",
+    "members": 18,
+    "crc": "PASS"
+  },
+  "members": [
+    {
+      "file": "REPORT.md",
+      "bytes": 3737,
+      "sha256": "39f1273a35a21df8d1d6ffcd0a568dc444594553118f63d773f212c7d80e888b"
+    },
+    {
+      "file": "attempts.ndjson",
+      "bytes": 666,
+      "sha256": "5d6429ee3cb6ad4fcfcb22edc51541c6688af5aded1f074ed8dbc918796514ab"
+    },
+    {
+      "file": "check-driver.mjs",
+      "bytes": 3427,
+      "sha256": "9afa6038a9ae81b9cfc9083156296bd87506ab7b80c7fe66a1ea67e3c2428371"
+    },
+    {
+      "file": "format-authored.before.mjs.txt",
+      "bytes": 8764,
+      "sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960"
+    },
+    {
+      "file": "format-authored.final.mjs.txt",
+      "bytes": 9469,
+      "sha256": "df4e46651c1d971309548856f9eabc748eee13e8919d5b5b46818dcdb6ed49cb"
+    },
+    {
+      "file": "four-manifest-identities.json",
+      "bytes": 1441,
+      "sha256": "ef4ba19dc093b5259c0a75a57a7e219aa704368b4df65a0a6290d25d750f1ce2"
+    },
+    {
+      "file": "inventory-before.mjs",
+      "bytes": 1323,
+      "sha256": "759438a024d46b6e55587f9062ef5ab3a87137275c34d11351bb2c4657bb70ba"
+    },
+    {
+      "file": "own-tracked.paths0",
+      "bytes": 609535,
+      "sha256": "89547e4a97b26f50eb96092f49faec4bdfed98cec2457c3bec9e623b3e1bdcf2"
+    },
+    {
+      "file": "posix-check.safe.json",
+      "bytes": 1269,
+      "sha256": "b1ba241b8289a34720a153ebaf609548f03cc61faa572a2da3c6c711b5c9ae49"
+    },
+    {
+      "file": "posix-write.safe.json",
+      "bytes": 1264,
+      "sha256": "1f9e5d8db1826257cf21be92b6fb064fc437ea22bbc255a6c356272cada6279a"
+    },
+    {
+      "file": "root-before-inventory.json",
+      "bytes": 1265458,
+      "sha256": "9cc54eb280ad3e116bebdd5b12c0d823ad9269be481b70d4ef7c71455297b5a2"
+    },
+    {
+      "file": "root-candidate-inventory.json",
+      "bytes": 1265670,
+      "sha256": "806f5edbe2d1f51f0d8fca87d8f55271aca7d98dc0adff17e9fc757b340f729e"
+    },
+    {
+      "file": "root-tracked.paths0",
+      "bytes": 659905,
+      "sha256": "309b6b78314594b07fcfb0dd0ee437c4b711db0d9f8f0635505f8f0572d052be"
+    },
+    {
+      "file": "semantic.patch",
+      "bytes": 1653,
+      "sha256": "278697848440738d9888371ee7b7eabd68bd18ab4403383a5ba7fb4b5abb6ad5"
+    },
+    {
+      "file": "source-hooks.safe.json",
+      "bytes": 881,
+      "sha256": "d1b1873ef6f08eeff23514cfdf2c1f542c6f7735930a82e8bd6dd50342ba2016"
+    },
+    {
+      "file": "source-inventory-proof.json",
+      "bytes": 3060,
+      "sha256": "61a8fbec3ef1f1ab5b2952fe403eddf0ab77ce2520f5db13dd06588f7b1600a7"
+    },
+    {
+      "file": "win32-check.safe.json",
+      "bytes": 1358,
+      "sha256": "ca0051d737d4d32a11baa684b5b45fcae889ade86001e211d6ca18e9c80b70eb"
+    },
+    {
+      "file": "win32-write.safe.json",
+      "bytes": 1353,
+      "sha256": "7006a10836496fc6c171424ca054c26a372532c0abbd742c0e17a0de34ffb894"
+    }
+  ],
+  "all_other7349_source_modes_hashes": "EXACT",
+  "old_graph43_and_source_proposal_seals": "ALL_UNCHANGED",
+  "formatter_runtime": "NOT_RUN",
+  "massformat": "NOT_RUN",
+  "raw_logs_private600": [
+    {
+      "file": "source-hooks.raw.private.log",
+      "sha256": "b64ea10530a298d1d04048e84ebee9cf09ebdd35846f7d20e186e65713e32588",
+      "bytes": 164,
+      "publishable": false
+    },
+    {
+      "file": "source-hooks-cached.raw.private.log",
+      "sha256": "e3707942879c88cb1dd19c405cf188a73ed0dbb401cb264a739003dbec03e11a",
+      "bytes": 480,
+      "publishable": false
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "phase": "old-red",
+  "nativeExit": 1,
+  "expectedNativeExit": 1,
+  "controlCount": 29,
+  "failedControlCount": 5,
+  "failedClosedCodes": [
+    "COMPLETE_STATUS_GARBAGE_UNKNOWN",
+    "STATUS_AMBIGUOUS_DELIMITER_UNKNOWN",
+    "STATUS_BRACED_DESCRIPTION_UNKNOWN",
+    "STATUS_MISORDER_UNKNOWN",
+    "STATUS_NON_NULL_CAUSE_UNKNOWN"
+  ],
+  "causalExpectedRed": true,
+  "accepted": true
+}

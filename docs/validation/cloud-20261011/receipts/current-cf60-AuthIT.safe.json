@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-14T00:33:28.762544+00:00",
+  "artifact": 11861097670,
+  "archive_bytes": 8568,
+  "archive_sha256": "9cbfcb0d4d46c127536e96586ad88e0d26c399276aa5c686a4f57bed260775c1",
+  "metadata": {
+    "checkoutSha": "a51fca22ae4b5a06536c9614f3e50798c2749f27",
+    "prHeadSha": "cf60e65946b81139a47670c473c4212b3756a76c",
+    "service": "auth-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38489533064",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "summary": {
+    "PASSED": 172,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "exact_P09_case": {
+    "xmlOrdinal": 17,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+    "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+    "sourceSha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43"
+  },
+  "reader_terminal": {
+    "direct_pid": 606460,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 606460,
+        "start_ticks": 19171629
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "raw_XML_logs_read": false,
+  "limits": "finite172namedJavaoutcomes, not fullAuth/P09/client or globalacceptance"
+}

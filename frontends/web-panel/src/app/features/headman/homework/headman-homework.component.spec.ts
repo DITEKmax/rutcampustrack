@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -150,21 +151,19 @@ describe('HeadmanHomeworkComponent', () => {
     expect(component.isEditing('other-key')).toBe(false);
   });
 
-  it('onSaved clears editingState and reloads (homework list refetched)', () => {
-    const { component, homeworkApi } = setup();
-    const day = component.days()[0];
-    const row = day.lessons[0];
+  it('saved form closes and displays the refreshed homework', () => {
+    const { fixture, component, homeworkApi } = setup();
+    const row = component.days()[0].lessons[0];
     component.onAddHomework(row);
-    expect(component.editingState()).not.toBeNull();
-
-    // Baseline — list was called once during ngOnInit reload.
-    const callsBefore = (homeworkApi.list as unknown as { mock: { calls: unknown[] } }).mock.calls.length;
-
-    component.onSaved();
-
+    fixture.detectChanges();
+    const form = fixture.debugElement.query(By.css('app-homework-inline-form'));
+    expect(form).toBeTruthy();
+    (homeworkApi.list as ReturnType<typeof vi.fn>).mockReturnValue(of([{ ...HOMEWORK_OWN, title: 'Сохранённое задание' }]));
+    form.triggerEventHandler('saved', undefined);
+    fixture.detectChanges();
     expect(component.editingState()).toBeNull();
-    const callsAfter = (homeworkApi.list as unknown as { mock: { calls: unknown[] } }).mock.calls.length;
-    expect(callsAfter).toBeGreaterThan(callsBefore);
+    expect(fixture.nativeElement.querySelector('app-homework-inline-form')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Сохранённое задание');
   });
 
   it('homeworksFor returns only homeworks matching lessonKey (date + number)', () => {

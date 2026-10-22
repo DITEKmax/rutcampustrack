@@ -1,0 +1,14 @@
+{"at": "2026-10-12T04:58:18.780352+00:00", "status": "IN_PROGRESS_READ_ONLY", "input": "artifact manifest840492 / source908 / root731", "next": "independent streaming8JAR metadata/source/deps/production bundle proof; staging permission/mode qualification", "runtime": "NOT_RUN", "children": 0}
+{"at": "2026-10-12T05:01:33.439408+00:00", "phase": "original24_manifest_root_archive", "runtime": "NOT_RUN", "payloads": 24}
+{"at": "2026-10-12T05:02:06.607349+00:00", "phase": "original24_manifest_root_archive", "runtime": "NOT_RUN", "payloads": 24}
+{"at": "2026-10-12T05:02:07.943999+00:00", "phase": "source7350_identity", "runtime": "NOT_RUN", "paths": 7350}
+{"at": "2026-10-12T05:02:11.651882+00:00", "phase": "installed8272_identity", "runtime": "NOT_RUN", "entries": 8272}
+{"at": "2026-10-12T05:03:25.507324+00:00", "phase": "own_audit_correction", "reason": "helper incorrectly assumed docs-only diff excludes generatedchecks and every nested library indexed; inspect exactchecks receipt and standardtools omission, resume after accepted source/deps checkpoints; no product/build execution"}
+{"at": "2026-10-12T05:03:26.078780+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "auth", "entries": 1530}
+{"at": "2026-10-12T05:03:26.736198+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "academic", "entries": 1797}
+{"at": "2026-10-12T05:03:27.279790+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "schedule", "entries": 1515}
+{"at": "2026-10-12T05:03:27.705021+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "attendance", "entries": 1745}
+{"at": "2026-10-12T05:03:27.951656+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "bff", "entries": 1296}
+{"at": "2026-10-12T05:03:28.205518+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "gateway", "entries": 291}
+{"at": "2026-10-12T05:03:28.630979+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "notification", "entries": 1400}
+{"at": "2026-10-12T05:03:29.010690+00:00", "phase": "streaming_artifact", "runtime": "NOT_RUN", "service": "renderer", "entries": 1260}

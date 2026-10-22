@@ -1,0 +1,50 @@
+{
+  "preparation_count": 35,
+  "docker_services": 9,
+  "host_services": 7,
+  "pin_pullnever_no_build": true,
+  "published_ports_all_loopback": true,
+  "default_all_grants_false": true,
+  "teaching_fixture_only_four": true,
+  "renderer_overlay_full_app_readonly_no_entrypoint_override": true,
+  "json_yaml_ast": "PASS static only",
+  "existing_staged_host_cwds": [
+    {
+      "service": "auth",
+      "exists": false
+    },
+    {
+      "service": "academic",
+      "exists": false
+    },
+    {
+      "service": "schedule",
+      "exists": false
+    },
+    {
+      "service": "attendance",
+      "exists": false
+    },
+    {
+      "service": "bff",
+      "exists": false
+    },
+    {
+      "service": "gateway",
+      "exists": false
+    },
+    {
+      "service": "notification",
+      "exists": false
+    }
+  ],
+  "current_renderer_stage_exists": false,
+  "author_input_changes": [
+    "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application.yml"
+  ],
+  "runtime": "NOT_RUN",
+  "source_writes": 0,
+  "allocations": 0,
+  "children": 0,
+  "prior_metadata_locator_attempt": "Reviewer path used shared-web instead of shared-web-api for EducationalTime; corrected location, no product/runtime failure"
+}

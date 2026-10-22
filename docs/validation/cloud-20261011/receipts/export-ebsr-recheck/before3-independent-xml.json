@@ -1,0 +1,171 @@
+{
+  "path": "/workspace/scratch/rct-validation/export_developer/ebsr-runtime-before-3-xml/services_auth-service_auth-app_integrationTest/TEST-ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT.xml",
+  "sha256": "8e85691f60991ba74334e40342d3145fdd4a31e19cc72e40a7fc8331e25ae9ae",
+  "suite": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+  "counts": {
+    "tests": 18,
+    "failures": 12,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "name": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes()",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes",
+      "test_line": 115,
+      "safe_observed_labels": [
+        "ready",
+        "error"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[1] wire=8",
+      "outcome": "FAIL",
+      "failure_type": "java.lang.AssertionError",
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "test_line": 268,
+      "safe_observed_labels": [],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[2] wire=\"8\"",
+      "outcome": "FAIL",
+      "failure_type": "java.lang.AssertionError",
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "test_line": 268,
+      "safe_observed_labels": [],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[3] wire=null",
+      "outcome": "FAIL",
+      "failure_type": "java.lang.AssertionError",
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "test_line": 268,
+      "safe_observed_labels": [],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[4] wire=\"UNKNOWN\"",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[5] wire=[]",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[6] wire={}",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[7] wire=true",
+      "outcome": "PASS"
+    },
+    {
+      "name": "legacySixtySecondAuthorityWorksWhileTamperedChangedExpiredAndLongCapabilitiesNeverDispatch()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation()",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation",
+      "test_line": 196,
+      "safe_observed_labels": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "unavailableLiveRegistryAuthorityCannotIssueACapability()",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "unavailableLiveRegistryAuthorityCannotIssueACapability",
+      "test_line": 214,
+      "safe_observed_labels": [
+        "200 OK",
+        "503 SERVICE_UNAVAILABLE"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "limitedWithoutViewGrantsCannotIssueEitherRegistryCapability()",
+      "outcome": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException",
+      "method": "limitedWithoutViewGrantsCannotIssueEitherRegistryCapability",
+      "test_line": 219,
+      "safe_observed_labels": [],
+      "fixture_constraint_admin_access_state": true
+    },
+    {
+      "name": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes()",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes",
+      "test_line": 177,
+      "safe_observed_labels": [
+        "404 NOT_FOUND",
+        "500 INTERNAL_SERVER_ERROR"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "configuredAuthMapperPreservesAllCanonicalStringCodesAndRejectsMalformedRequiredKinds()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[1] user=teacher",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "legacyRegistryIssuanceRequiresSelectedAdminBeforeCapabilityStorage",
+      "test_line": 187,
+      "safe_observed_labels": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[2] user=student",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "legacyRegistryIssuanceRequiresSelectedAdminBeforeCapabilityStorage",
+      "test_line": 187,
+      "safe_observed_labels": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[1] wire=8",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "actualAuthKindBoundaryRejectsOrdinalAndNumericString",
+      "test_line": 233,
+      "safe_observed_labels": [
+        "400 BAD_REQUEST",
+        "202 ACCEPTED"
+      ],
+      "fixture_constraint_admin_access_state": false
+    },
+    {
+      "name": "[2] wire=\"8\"",
+      "outcome": "FAIL",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "method": "actualAuthKindBoundaryRejectsOrdinalAndNumericString",
+      "test_line": 233,
+      "safe_observed_labels": [
+        "400 BAD_REQUEST",
+        "202 ACCEPTED"
+      ],
+      "fixture_constraint_admin_access_state": false
+    }
+  ],
+  "meaningful_rule_failures": 11,
+  "excluded_fixture_failures": 1
+}

@@ -1,13 +1,12 @@
 package ru.rutcampustrack.auth.controller;
 
+import java.util.Objects;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.auth.api.InternalSemesterDeletionConfirmationApi;
 import ru.rutcampustrack.auth.dto.ConfirmSemesterDeletionRequest;
 import ru.rutcampustrack.auth.service.SemesterDeletionConfirmationService;
-
-import java.util.Objects;
 
 @RestController
 public final class InternalSemesterDeletionConfirmationController
@@ -17,7 +16,8 @@ public final class InternalSemesterDeletionConfirmationController
 
     public InternalSemesterDeletionConfirmationController(
             SemesterDeletionConfirmationService confirmationService) {
-        this.confirmationService = Objects.requireNonNull(confirmationService, "confirmationService");
+        this.confirmationService =
+                Objects.requireNonNull(confirmationService, "confirmationService");
     }
 
     @Override

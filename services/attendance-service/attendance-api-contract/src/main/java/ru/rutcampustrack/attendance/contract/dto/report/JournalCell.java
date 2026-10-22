@@ -4,11 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * One cell in the journal grid (D-08) — represents attendance for a student on a given date/lesson.
- * Plain Java class — no Lombok (contract module rule).
- * lessonId added (Phase 55 D-01) to support headman cell-click marking via
- * PUT /attendance/lessons/{lessonId}/students/{userId}.
+ * Plain Java class — no Lombok (contract module rule). lessonId added (Phase 55 D-01) to support
+ * headman cell-click marking via PUT /attendance/lessons/{lessonId}/students/{userId}.
  */
-@Schema(description = "Ячейка журнала: ID пары, дата, номер пары, статус, символ (+/н/у/сп/отменена) и причина excuse")
+@Schema(
+        description =
+                "Ячейка журнала: ID пары, дата, номер пары, статус, символ (+/н/у/сп/отменена) и причина excuse")
 public class JournalCell {
 
     private final Long lessonId;
@@ -16,19 +17,26 @@ public class JournalCell {
     private final Integer lessonNumber;
     private final String status;
     private final String symbol;
+
     /**
-     * Human-readable excuse reason shown next to "у" in the journal.
-     * Non-null only when status is EXCUSED / FREE_ATTENDANCE and the cascade
-     * from an approved excuse ticket stamped it onto the document.
+     * Human-readable excuse reason shown next to "у" in the journal. Non-null only when status is
+     * EXCUSED / FREE_ATTENDANCE and the cascade from an approved excuse ticket stamped it onto the
+     * document.
      */
     private final String excuseReason;
 
-    public JournalCell(Long lessonId, String date, Integer lessonNumber, String status, String symbol) {
+    public JournalCell(
+            Long lessonId, String date, Integer lessonNumber, String status, String symbol) {
         this(lessonId, date, lessonNumber, status, symbol, null);
     }
 
-    public JournalCell(Long lessonId, String date, Integer lessonNumber, String status, String symbol,
-                       String excuseReason) {
+    public JournalCell(
+            Long lessonId,
+            String date,
+            Integer lessonNumber,
+            String status,
+            String symbol,
+            String excuseReason) {
         this.lessonId = lessonId;
         this.date = date;
         this.lessonNumber = lessonNumber;

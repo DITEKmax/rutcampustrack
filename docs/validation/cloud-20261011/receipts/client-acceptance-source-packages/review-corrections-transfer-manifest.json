@@ -1,0 +1,246 @@
+{
+  "revision": "cf067a008d732ca77f385a3eb1f53e0a79234687",
+  "kind": "SOURCE_CORRECTIONS_ONLY_NOT_CLIENT_ACCEPTANCE",
+  "archive": "/workspace/scratch/rct-validation/client_real_acceptance/client-real-acceptance-review-corrections.safe.zip",
+  "sha256": "d1c1aaf8cb9540620c97e8e7fcdaefd2a38439c864d03048d27614fdd2fcc81f",
+  "bytes": 71849,
+  "members": [
+    {
+      "path": "receipts/CRA-VIEWPORT-T02.safe.json",
+      "sha256": "fe00db3d7177232754a8ef7be81a7c3a66bca4ee265d482c45d0bee603a48819",
+      "bytes": 1868
+    },
+    {
+      "path": "receipts/review-corrections.viewport-before.safe.json",
+      "sha256": "d1a6d759fac50c53b35e2528ab2bd48f7ee156df5dc2535f34ddaa2604481e95",
+      "bytes": 6993
+    },
+    {
+      "path": "receipts/review-corrections.viewport-before.native.log",
+      "sha256": "22509f13a385e835fc08651ac51aca0373135481106f53421db2086d094a0236",
+      "bytes": 99
+    },
+    {
+      "path": "receipts/review-corrections.viewport-before.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/playwright-config-8fe.original.ts",
+      "sha256": "19dcceae2b4c729dad3370f70f83beb448481395fb14b461bafa5a909813c987",
+      "bytes": 722
+    },
+    {
+      "path": "receipts/CURRENT.md",
+      "sha256": "3cfd69da2b3d3db19e8e1a27032b2564739af579f0f65d2a8c04157bbec83ea1",
+      "bytes": 1407
+    },
+    {
+      "path": "receipts/HANDOFF.md",
+      "sha256": "eccbb515d3ab7e7751775b5f0d8f7b4220a99ff7d0ab84c7cbef711e73e156f2",
+      "bytes": 19380
+    },
+    {
+      "path": "receipts/review-corrections-final.safe.json",
+      "sha256": "780f24d7f696c7ea747b23e14d3452b35466b8c672a6eebe59d1aa6205b193d4",
+      "bytes": 10153
+    },
+    {
+      "path": "receipts/review-corrections.partial.safe.json",
+      "sha256": "d59f74b75dedfa8d8429cde558db48f122bbb72f339965645ec5e9c4e33a5226",
+      "bytes": 5406
+    },
+    {
+      "path": "receipts/CRA-EXPORT-T01.controls.safe.json",
+      "sha256": "3edf813475e1cb85a3b8bdc4cd5cfcdc4fd5e3962726b7371b686cf0607a75a9",
+      "bytes": 8777
+    },
+    {
+      "path": "receipts/TMA-date-branch.controls.safe.json",
+      "sha256": "7cd12b1ae9c22642105a5927c8f93f876d10e3048204fba8d45eb1894ce724f1",
+      "bytes": 1677
+    },
+    {
+      "path": "receipts/scenario-oracle-map.json",
+      "sha256": "e732fb106d3fba44130c1f5c5d08de231df3e4db3aca9e226671d6743cf3a7bc",
+      "bytes": 21366
+    },
+    {
+      "path": "receipts/current-type-discovery-final.safe.json",
+      "sha256": "318b458b777f94acdffd4430cce0a17dadac77e965ff9b996b2615867bedc41d",
+      "bytes": 14121
+    },
+    {
+      "path": "receipts/inventory.json",
+      "sha256": "8d934e6760b0647e0f1e3cc525faf31513e1cff6bb5c4bb007f6084956aeb68a",
+      "bytes": 1819
+    },
+    {
+      "path": "receipts/verification-receipt.json",
+      "sha256": "6b27c22acbcb64fcb21c0ac37011d287b14c281ad563814dbc451e58c23a5339",
+      "bytes": 2466
+    },
+    {
+      "path": "receipts/default-config-source-import.json",
+      "sha256": "199f8a157409c0713198eede3b7a34beb57ba993b14bdf6287981d0e282b4b24",
+      "bytes": 576
+    },
+    {
+      "path": "receipts/current-dependency-validation.json",
+      "sha256": "56e5ba82407bff2a3060c88eddb9bd12e7a75e0a1135d9d6030d0d00843d3117",
+      "bytes": 3878
+    },
+    {
+      "path": "receipts/actual-type-resolution.safe.json",
+      "sha256": "696107ca54daa7d31061381241cab4d19a1602b2b31cdf13ff6d3455fa9ea639",
+      "bytes": 66302
+    },
+    {
+      "path": "receipts/type-resolution-final-paths.txt",
+      "sha256": "8da14f3b510b43d6927596930a8635d07d306d52cbd5c63cd4b312afa14d6b1d",
+      "bytes": 17200
+    },
+    {
+      "path": "receipts/PRIV-HOOK01.safe.json",
+      "sha256": "71c0bcca57c5b252897e0940c8ffdce89acfcf6d06aa42b4b72aa98c5c026c66",
+      "bytes": 1319
+    },
+    {
+      "path": "receipts/review-corrections.viewport-after.safe.json",
+      "sha256": "664e09c8bba2c1043c0ff1f59a7824272af8f8ad9d2100a949cb75fa03a5d296",
+      "bytes": 6991
+    },
+    {
+      "path": "receipts/review-corrections.viewport-typecheck-final.native.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "receipts/review-corrections.viewport-typecheck-final.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/review-corrections.viewport-format-check.native.log",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66
+    },
+    {
+      "path": "receipts/review-corrections.viewport-format-check.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/review-corrections.viewport-after.native.log",
+      "sha256": "22509f13a385e835fc08651ac51aca0373135481106f53421db2086d094a0236",
+      "bytes": 99
+    },
+    {
+      "path": "receipts/review-corrections.viewport-after.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/export-boundary-probe.attempt2.native.log",
+      "sha256": "405785620c85c339119c8c93c4ee88c186ead2e5a83161a3dffd469d184d34c4",
+      "bytes": 95
+    },
+    {
+      "path": "receipts/export-boundary-probe.attempt2.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/export-boundary-probe.attempt3.native.log",
+      "sha256": "405785620c85c339119c8c93c4ee88c186ead2e5a83161a3dffd469d184d34c4",
+      "bytes": 95
+    },
+    {
+      "path": "receipts/export-boundary-probe.attempt3.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/tma-rejection-oracle-probe.native.log",
+      "sha256": "6c8107d47910ef7be6dde57fded7fd9870e44a01da45e557518c024932b4f89b",
+      "bytes": 143
+    },
+    {
+      "path": "receipts/tma-rejection-oracle-probe.native-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "receipts/export-boundary-probe.mjs",
+      "sha256": "87c0509697ef40accebea53568a754b652616ffe8b50c84f872328682b145ae3",
+      "bytes": 6222
+    },
+    {
+      "path": "receipts/tma-rejection-oracle-probe.mjs",
+      "sha256": "326d2ea9c1e3a1bcd358d50ffab016ff07e1ef75064d9470fde3a591b6fd434f",
+      "bytes": 3498
+    },
+    {
+      "path": "receipts/export-8fe.original.ts",
+      "sha256": "e3bcae752f4ac8483035d7ccc379b36936c8b848cd55d9f2943b82a58e90f20c",
+      "bytes": 5389
+    },
+    {
+      "path": "receipts/safe-hook-discovery-reporter.cjs",
+      "sha256": "cb4b9348c2b446168521bcdf45c04990cfe5a1ac2e135da0e53c1a96b1b5a1b4",
+      "bytes": 1874
+    },
+    {
+      "path": "receipts/tsconfig.current.json",
+      "sha256": "5406f8532f82482a3ac6863e85681a22bac902ac3b17c432458f412b16811122",
+      "bytes": 1096
+    },
+    {
+      "path": "source/tests/e2e/fixtures/cloud-accepted-playwright.ts",
+      "sha256": "a59c5fee38e468268fea21f23a47c8f2c3220a4dfa3cc6919bb04fdb02e83b05",
+      "bytes": 839
+    },
+    {
+      "path": "source/tests/e2e/fixtures/cloud-accepted-support.ts",
+      "sha256": "737c8b7cbed5c74adbdaf5fc806b6766c20a5620bc9e7ce380cb774730b785f6",
+      "bytes": 7924
+    },
+    {
+      "path": "source/tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+      "sha256": "9afb5c7809b21c5d7af895261c20aca5c6aca16160603dac6fc69161f0d15d6d",
+      "bytes": 4351
+    },
+    {
+      "path": "source/tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "e26258c392df42754e9f39e4b2f283a5a3603309351a41f9abf900870c29000e",
+      "bytes": 11838
+    },
+    {
+      "path": "source/tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "dc6bdea1febd81de6ce9e20177929ee6ce5ad3c464412e6a035a64182acad0c2",
+      "bytes": 6722
+    },
+    {
+      "path": "source/tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+      "sha256": "b24d93b05de11ae6c6f41e2da5be0e5f3fd58c45a66ff16d0717aacd1f34e3e2",
+      "bytes": 3407
+    },
+    {
+      "path": "source/tests/e2e/specs/cloud-accepted-tma-proof.spec.ts",
+      "sha256": "c38ce6dc83d6bd155ca7acb01b52eb59becc97e5aad497f682f0546a50eb7b17",
+      "bytes": 3914
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "source_context": {
+    "author": "ci_academic_heap",
+    "commit": "1b4d8bdafe59e227bfc26cd8fd6eeed98e10f099",
+    "sha256": "a4625d4a5c8f5ff8deac9381d26e3feaadb77e750eea7ab7208fbc419222b8e0",
+    "context_only_unstaged": true
+  },
+  "excluded": "node_modules/caches/private targets/cookies/credentials/actual generated exportHTML or personal values",
+  "old_archives_preserved": [
+    "client-real-acceptance-source.safe.zip",
+    "client-real-acceptance-type-discovery.safe.zip"
+  ]
+}

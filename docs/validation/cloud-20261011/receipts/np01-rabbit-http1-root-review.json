@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T07:39:55.431200+00:00",
+  "author_sha": "b89874ccb92a444c945e020cf1d7ffe20ede997a",
+  "verdict": "APPROVE_MINIMAL_HARNESS_HTTP1_CORRECTION",
+  "reviewer": "Root independentreader/non-author",
+  "actual_before": "localnativeEOF+remote446/1sameIOException417 before7scenarios; Rabbit ready/directproxy probe defaultfirstPUT EOF",
+  "actual_after_probe": "sameheaders/body/target forcedHTTP1.1 firstPUT201/permissions204",
+  "source_delta": "ONE Java builder.version(HTTP_1_1) onlyRabbitmanagementclient; URI/auth/body/asserts/deadline andallPython/domain/common unchanged",
+  "source_sha256": "bf44a550a966709fb266131bb1639c3ddb501f0b292df9c9c8b09eef3ed3e18a",
+  "fullsuite": "pending correctedactualretry"
+}

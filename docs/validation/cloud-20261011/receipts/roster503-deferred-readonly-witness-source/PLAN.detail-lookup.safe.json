@@ -1,0 +1,40 @@
+{
+  "kind": "SOURCE_ONLY_EXISTING_ACTOR_ROSTER_WITNESS",
+  "helperSha256": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/focused3-roster-witness-source/witness-detail-lookup.cjs",
+    "<FRESH_OWN_TMP>/witness.safe.json"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C.UTF-8",
+    "TZ": "UTC",
+    "TMPDIR": "<FRESH_OWN_TMP>"
+  },
+  "limits": {
+    "phaseSeconds": 60,
+    "nodeHeapMiB": 512,
+    "rssBytes": 1073741824,
+    "ownTmpBytes": 33554432,
+    "cleanupMarginSeconds": 30
+  },
+  "guardReuse": "b78 currentguard/run_owned callbacks onlyfreshparams, no newframework",
+  "recoveryQualification": "No saved rawactor/lessonIDs by privacydesign; exactlytwo cohort-created syntheticHEADMAN candidates and uniqueoldercreatedAt identify firstworker by source chronology under isolatedno-concurrent-domain-writer assumption. Ifcount/pagination/identity/lessonambiguous failsclosed. Notdirect equality to a retainedUIid.",
+  "httpBounds": "3s perrequest/maxRedirects0/maxRetries0/responseRAM<=1MiB afterreceipt/resourceguard protectswholeprocess",
+  "authChanges": "ActualFULLADMIN admission\u2192listmetadata\u2192selecteduserGET initialcredential viewRAM\u2192existingHEADMAN re-admission/role/logout only; nodomainwrite/reseed/reset.",
+  "native": "NOT_RUN_CANCELLED_BEFORE_ANY_GRANT_OR_DISPATCH_HOST_CLEANUP",
+  "originalSourceUntouched": true,
+  "currentStandUnavailable": true,
+  "runInterval": "Original actual driver launch.issued_at through terminal.safe.json immutable native-file modification time, read inRAM; no guessed end cutoff.",
+  "correctionQualification": "SOURCE-only literal regex/newline and exact interval correction; initialsource preserved, neither versionexecuted.",
+  "futureCallerQualification": "Future freshcoherentstand+Root APIgrant required. Existingreviewedb78/r1observe/status caller onlyfreshcommand/time/output/rootpins parameters; no newdispatcher created.",
+  "futureMaxPhaseSeconds": 60,
+  "futureCleanupMarginSeconds": 30,
+  "rawErrorOrBodyOutput": false,
+  "commands": [],
+  "sourceDetailLookupProofSha256": "f3dce24cd84719c25ff647b1bea8a3e9159d29d770e379f5952805c33a31c9a1",
+  "acceptancePredicate": "Nativeexit alone is insufficient. Read only closed witness.safe.json: stage===CLASSIFIED and singleRosterGet===true and failedClosed!==true. HTTP503 classification witnesses currentboundary; neverclaims product/clientPASS.",
+  "futureChecksBeforeApi": "Fresh coherentstand/livebirth/readiness/sourceRoot19 and usersfixture+Playwright1.59.1+TS5.9.3+Nodebc17 pins; exact helper2354; rootgrant60s withinstandcleanup30s margin; explicitenv and sameb78callbacks/caller; no dispatch underoldstand/grant."
+}

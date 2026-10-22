@@ -1,0 +1,1400 @@
+{
+  "schema": "rct-current-ci-metadata/v1",
+  "observer": "fd864_ci_observer",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "observed_at": "2026-10-14 03:58:32 UTC",
+  "last_checked_at": "2026-10-14 03:58:32 UTC",
+  "metadata_changed_at": "2026-10-14 03:58:59 UTC",
+  "metadata_call_state": "SETTLED_NO_PENDING_METADATA_CALL",
+  "scope": "official GitHub GET run/jobs/artifacts metadata only",
+  "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+  "event": "pull_request",
+  "run_attempt": 1,
+  "advertised_merge_sha_prefix": "63b667d4",
+  "actual_checkout_merge_sha": "UNKNOWN",
+  "public_case_lines": {
+    "first3": [
+      14,
+      61,
+      160
+    ],
+    "remaining5": [
+      230,
+      257,
+      298,
+      316,
+      405
+    ],
+    "administrator_lifecycle": 451,
+    "role_logout": 825,
+    "application_recovery": 326,
+    "source": "Root explicit current-head assignment and governing current pointer; no artifact cases read"
+  },
+  "step_tracking": "by exact current GitHub step name; numbers retained as receipt only",
+  "runs": [
+    {
+      "id": 38507359432,
+      "name": "Coverage",
+      "artifacts": [
+        {
+          "id": 11869026119,
+          "name": "safe-coverage-outcomes-auth-service-1",
+          "size_in_bytes": 16437,
+          "digest": "sha256:abcd75b9862b05ff18606d754b803d1530bd1ce42692c0789f62aef62378c7f4",
+          "expired": false,
+          "created_at": "2026-10-14T03:47:52Z",
+          "expires_at": "2026-10-21T03:47:52Z",
+          "workflow_run": {
+            "id": 38507359432,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868856340,
+          "name": "safe-coverage-outcomes-api-gateway-1",
+          "size_in_bytes": 7709,
+          "digest": "sha256:8889fc32862fb0b0b3623b98e63cbdd7c2542eadca9871e95738b4a70256f9a4",
+          "expired": false,
+          "created_at": "2026-10-14T03:41:51Z",
+          "expires_at": "2026-10-21T03:41:51Z",
+          "workflow_run": {
+            "id": 38507359432,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868738598,
+          "name": "safe-coverage-outcomes-academic-service-1",
+          "size_in_bytes": 37030,
+          "digest": "sha256:a926537b3d0da994132d29a08f62df93e1d6332cccb3795095e725a43cd491de",
+          "expired": false,
+          "created_at": "2026-10-14T03:55:46Z",
+          "expires_at": "2026-10-21T03:55:46Z",
+          "workflow_run": {
+            "id": 38507359432,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868652025,
+          "name": "safe-coverage-outcomes-notification-service-1",
+          "size_in_bytes": 12085,
+          "digest": "sha256:8470e239188bbc47be65bc87fffc1da4a7e44b348e64081a9ea4b3125b11fb7b",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:09Z",
+          "expires_at": "2026-10-21T03:44:09Z",
+          "workflow_run": {
+            "id": 38507359432,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868422178,
+          "name": "safe-coverage-outcomes-schedule-service-1",
+          "size_in_bytes": 16240,
+          "digest": "sha256:41ef2ee7374438a3cc4f14995ae57da67d398bdf384eb130ee65988864fb23e7",
+          "expired": false,
+          "created_at": "2026-10-14T03:42:59Z",
+          "expires_at": "2026-10-21T03:42:58Z",
+          "workflow_run": {
+            "id": 38507359432,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868307740,
+          "name": "safe-coverage-outcomes-attendance-service-1",
+          "size_in_bytes": 28045,
+          "digest": "sha256:bc6b9c7c61397a929c97f59015a5b8fc2382773ae6d05382c6c1cc67e8bb2dfb",
+          "expired": false,
+          "created_at": "2026-10-14T03:43:53Z",
+          "expires_at": "2026-10-21T03:43:53Z",
+          "workflow_run": {
+            "id": 38507359432,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        }
+      ],
+      "event": "pull_request",
+      "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-14T03:39:14Z",
+      "updated_at": "2026-10-14T03:57:11Z",
+      "run_started_at": "2026-10-14T03:39:14Z",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38507359432",
+      "jobs": [
+        {
+          "id": 115667806511,
+          "name": "Python coverage — notification-bot",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667806658,
+          "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667806693,
+          "name": "Java coverage — attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:52Z",
+              "completed_at": "2026-10-14T03:43:52Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:52Z",
+              "completed_at": "2026-10-14T03:43:53Z"
+            }
+          ]
+        },
+        {
+          "id": 115667806753,
+          "name": "Java coverage — schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:58Z",
+              "completed_at": "2026-10-14T03:42:58Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:58Z",
+              "completed_at": "2026-10-14T03:42:59Z"
+            }
+          ]
+        },
+        {
+          "id": 115667806789,
+          "name": "Java coverage — auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:47:51Z",
+              "completed_at": "2026-10-14T03:47:51Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:47:51Z",
+              "completed_at": "2026-10-14T03:47:52Z"
+            }
+          ]
+        },
+        {
+          "id": 115667806791,
+          "name": "Java coverage — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:50Z",
+              "completed_at": "2026-10-14T03:41:50Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:50Z",
+              "completed_at": "2026-10-14T03:41:51Z"
+            }
+          ]
+        },
+        {
+          "id": 115667806882,
+          "name": "Java coverage — notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:08Z",
+              "completed_at": "2026-10-14T03:44:09Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:09Z",
+              "completed_at": "2026-10-14T03:44:10Z"
+            }
+          ]
+        },
+        {
+          "id": 115667806932,
+          "name": "Java coverage — academic-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:55:45Z",
+              "completed_at": "2026-10-14T03:55:45Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe coverage test outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:55:45Z",
+              "completed_at": "2026-10-14T03:55:46Z"
+            }
+          ]
+        },
+        {
+          "id": 115672249399,
+          "name": "Diff coverage report",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": 38507359540,
+      "name": "CI",
+      "artifacts": [
+        {
+          "id": 11869345518,
+          "name": "application-recovery-safe-1",
+          "size_in_bytes": 1062,
+          "digest": "sha256:0dcf729aea014c4c10b6eceb22c6d3fec4bd13690499008e85bc4422f65e02a8",
+          "expired": false,
+          "created_at": "2026-10-14T03:55:35Z",
+          "expires_at": "2026-10-21T03:55:34Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11869066658,
+          "name": "first3-safe-1",
+          "size_in_bytes": 3417,
+          "digest": "sha256:8c0eeb53110618820b06bfcbc6fdca0fe6fb53e88b0a55557362a62ce3f4758b",
+          "expired": false,
+          "created_at": "2026-10-14T03:53:37Z",
+          "expires_at": "2026-10-21T03:53:37Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868990777,
+          "name": "safe-unit-outcomes-api-gateway-1",
+          "size_in_bytes": 6224,
+          "digest": "sha256:6f62697ad95d66c5b127bd8a82fcfa9e52e86db1d7a2c4f5f23624e0b372a053",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:30Z",
+          "expires_at": "2026-10-21T03:44:29Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868876506,
+          "name": "safe-integration-outcomes-auth-service-1",
+          "size_in_bytes": 8567,
+          "digest": "sha256:3a858788a8ebf13385333c203f641766f648fa564eaaf9b08923b1f6b37264fd",
+          "expired": false,
+          "created_at": "2026-10-14T03:49:12Z",
+          "expires_at": "2026-10-21T03:49:11Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868842556,
+          "name": "safe-integration-outcomes-academic-service-1",
+          "size_in_bytes": 21562,
+          "digest": "sha256:8ece234d787ad1575e65d150ce6611a8935c49431bab1328a4a966b80724b12f",
+          "expired": false,
+          "created_at": "2026-10-14T03:57:32Z",
+          "expires_at": "2026-10-21T03:57:31Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868841022,
+          "name": "safe-integration-outcomes-attendance-service-1",
+          "size_in_bytes": 12450,
+          "digest": "sha256:dc09cd552925a47db814673930fce8d84f7925908860e3631516f987e1de6ce4",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:29Z",
+          "expires_at": "2026-10-21T03:44:28Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868811067,
+          "name": "safe-unit-outcomes-notification-service-1",
+          "size_in_bytes": 7827,
+          "digest": "sha256:e956c006a1cd222f55f8f3607a3026b568c6b8fda46acb2d19f015b924703bad",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:58Z",
+          "expires_at": "2026-10-21T03:44:57Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868796045,
+          "name": "safe-unit-outcomes-attendance-service-1",
+          "size_in_bytes": 15527,
+          "digest": "sha256:848c6d55401537dc02756aa7f55b089d453c8690baa3c8428bef4153b847c974",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:31Z",
+          "expires_at": "2026-10-21T03:44:30Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868795975,
+          "name": "safe-unit-outcomes-auth-service-1",
+          "size_in_bytes": 7786,
+          "digest": "sha256:76d7c0aab04d0075dc1f23b8abbe428d4f718dcb1dc46b10847a2931c2d8b979",
+          "expired": false,
+          "created_at": "2026-10-14T03:43:53Z",
+          "expires_at": "2026-10-21T03:43:52Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868790942,
+          "name": "safe-unit-outcomes-schedule-service-1",
+          "size_in_bytes": 5413,
+          "digest": "sha256:57ae682f22ed058cd67a85a0280268092cd5cd11a44663eb901bebf4e040f22f",
+          "expired": false,
+          "created_at": "2026-10-14T03:43:30Z",
+          "expires_at": "2026-10-21T03:43:29Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868567210,
+          "name": "safe-integration-outcomes-schedule-service-1",
+          "size_in_bytes": 10773,
+          "digest": "sha256:ac43782068ea335d76e6a398972f43b4df386f1a3dcb6380735a6752f456cf80",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:54Z",
+          "expires_at": "2026-10-21T03:44:53Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868418913,
+          "name": "admin-lifecycle-safe-1",
+          "size_in_bytes": 449,
+          "digest": "sha256:022920b1ff321a3ce7d9b763a145bd9e4cd71e834134c6e56b886ecfad965408",
+          "expired": false,
+          "created_at": "2026-10-14T03:53:58Z",
+          "expires_at": "2026-10-21T03:53:58Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868402090,
+          "name": "safe-integration-outcomes-api-gateway-1",
+          "size_in_bytes": 1417,
+          "digest": "sha256:f864bbc7b1ac3b608851861db6492247c11b585c26c52999444af431d62edf4d",
+          "expired": false,
+          "created_at": "2026-10-14T03:42:21Z",
+          "expires_at": "2026-10-21T03:42:20Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868373863,
+          "name": "remaining5-safe-1",
+          "size_in_bytes": 420,
+          "digest": "sha256:8c08562536af617d2564ef1647a1f803145cb7c308f45802fa04951af84dd13b",
+          "expired": false,
+          "created_at": "2026-10-14T03:53:50Z",
+          "expires_at": "2026-10-21T03:53:49Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868243058,
+          "name": "safe-integration-outcomes-notification-service-1",
+          "size_in_bytes": 4169,
+          "digest": "sha256:c223c5a090f62999852698bc92bce43afc6c6177ec148cefb05b154528e87758",
+          "expired": false,
+          "created_at": "2026-10-14T03:46:07Z",
+          "expires_at": "2026-10-21T03:46:06Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        },
+        {
+          "id": 11868193047,
+          "name": "safe-unit-outcomes-academic-service-1",
+          "size_in_bytes": 15372,
+          "digest": "sha256:51123ba0a948337e0e2b15c5fb887e20c38bfa48b2794a6668d8f72dd7c80447",
+          "expired": false,
+          "created_at": "2026-10-14T03:44:01Z",
+          "expires_at": "2026-10-21T03:44:00Z",
+          "workflow_run": {
+            "id": 38507359540,
+            "repository_id": 1194500358,
+            "head_repository_id": 1194500358,
+            "head_branch": "codex/server-validation-20261011",
+            "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440"
+          }
+        }
+      ],
+      "event": "pull_request",
+      "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-10-14T03:39:14Z",
+      "updated_at": "2026-10-14T03:57:37Z",
+      "run_started_at": "2026-10-14T03:39:14Z",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38507359540",
+      "jobs": [
+        {
+          "id": 115667807004,
+          "name": "Python Lint & Test",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667807131,
+          "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667807152,
+          "name": "Java IT — attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 11,
+              "name": "Collect safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:27Z",
+              "completed_at": "2026-10-14T03:44:27Z"
+            },
+            {
+              "number": 12,
+              "name": "Upload safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:27Z",
+              "completed_at": "2026-10-14T03:44:29Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807186,
+          "name": "Java IT — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 11,
+              "name": "Collect safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:20Z",
+              "completed_at": "2026-10-14T03:42:20Z"
+            },
+            {
+              "number": 12,
+              "name": "Upload safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:20Z",
+              "completed_at": "2026-10-14T03:42:21Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807187,
+          "name": "Java unit — academic-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:00Z",
+              "completed_at": "2026-10-14T03:44:00Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:00Z",
+              "completed_at": "2026-10-14T03:44:01Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807206,
+          "name": "Java unit — auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:52Z",
+              "completed_at": "2026-10-14T03:43:52Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:52Z",
+              "completed_at": "2026-10-14T03:43:53Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807228,
+          "name": "Java IT — academic-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 11,
+              "name": "Collect safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:57:31Z",
+              "completed_at": "2026-10-14T03:57:31Z"
+            },
+            {
+              "number": 12,
+              "name": "Upload safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:57:31Z",
+              "completed_at": "2026-10-14T03:57:32Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807256,
+          "name": "Playwright E2E auth flow",
+          "status": "completed",
+          "conclusion": "failure",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:19Z",
+              "completed_at": "2026-10-14T03:42:23Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:23Z",
+              "completed_at": "2026-10-14T03:42:30Z"
+            },
+            {
+              "number": 3,
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:30Z",
+              "completed_at": "2026-10-14T03:42:34Z"
+            },
+            {
+              "number": 4,
+              "name": "Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:34Z",
+              "completed_at": "2026-10-14T03:42:37Z"
+            },
+            {
+              "number": 5,
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:37Z",
+              "completed_at": "2026-10-14T03:42:38Z"
+            },
+            {
+              "number": 6,
+              "name": "Prepare disposable FIRST3 clock and private artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:38Z",
+              "completed_at": "2026-10-14T03:42:52Z"
+            },
+            {
+              "number": 7,
+              "name": "Set up Docker Buildx",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:42:52Z",
+              "completed_at": "2026-10-14T03:43:03Z"
+            },
+            {
+              "number": 8,
+              "name": "Generate self-signed TLS cert",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:03Z",
+              "completed_at": "2026-10-14T03:43:03Z"
+            },
+            {
+              "number": 9,
+              "name": "Boot isolated Vue auth stack",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:03Z",
+              "completed_at": "2026-10-14T03:52:46Z"
+            },
+            {
+              "number": 10,
+              "name": "Link synthetic Telegram teacher in the ephemeral database",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:52:46Z",
+              "completed_at": "2026-10-14T03:52:47Z"
+            },
+            {
+              "number": 11,
+              "name": "Install Playwright + browsers",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:52:47Z",
+              "completed_at": "2026-10-14T03:53:07Z"
+            },
+            {
+              "number": 12,
+              "name": "Trust the disposable localhost certificate for Chromium workers",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:07Z",
+              "completed_at": "2026-10-14T03:53:09Z"
+            },
+            {
+              "number": 13,
+              "name": "Run auth-flow @smoke specs (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:09Z",
+              "completed_at": "2026-10-14T03:53:22Z"
+            },
+            {
+              "number": 14,
+              "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:22Z",
+              "completed_at": "2026-10-14T03:53:36Z"
+            },
+            {
+              "number": 15,
+              "name": "Upload safe FIRST3 outcomes and observations",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:36Z",
+              "completed_at": "2026-10-14T03:53:37Z"
+            },
+            {
+              "number": 16,
+              "name": "Run remaining five accepted mobile scenarios (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:37Z",
+              "completed_at": "2026-10-14T03:53:49Z"
+            },
+            {
+              "number": 17,
+              "name": "Upload safe remaining five outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:49Z",
+              "completed_at": "2026-10-14T03:53:50Z"
+            },
+            {
+              "number": 18,
+              "name": "Run real Vue administrator account lifecycle",
+              "status": "completed",
+              "conclusion": "failure",
+              "started_at": "2026-10-14T03:53:50Z",
+              "completed_at": "2026-10-14T03:53:58Z"
+            },
+            {
+              "number": 19,
+              "name": "Upload closed administrator lifecycle outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:53:58Z",
+              "completed_at": "2026-10-14T03:53:59Z"
+            },
+            {
+              "number": 20,
+              "name": "Run real Vue role transition and logout-all",
+              "status": "completed",
+              "conclusion": "skipped",
+              "started_at": "2026-10-14T03:53:59Z",
+              "completed_at": "2026-10-14T03:53:59Z"
+            },
+            {
+              "number": 21,
+              "name": "Upload closed role transition and logout-all outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "started_at": "2026-10-14T03:53:59Z",
+              "completed_at": "2026-10-14T03:53:59Z"
+            },
+            {
+              "number": 22,
+              "name": "Restore a real application checkpoint into fresh disposable databases",
+              "status": "completed",
+              "conclusion": "failure",
+              "started_at": "2026-10-14T03:53:59Z",
+              "completed_at": "2026-10-14T03:55:34Z"
+            },
+            {
+              "number": 23,
+              "name": "Upload closed application recovery API outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:55:34Z",
+              "completed_at": "2026-10-14T03:55:35Z"
+            },
+            {
+              "number": 24,
+              "name": "Stop owned fresh recovery targets",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:55:35Z",
+              "completed_at": "2026-10-14T03:55:35Z"
+            },
+            {
+              "number": 25,
+              "name": "Remove only this job's test certificate trust",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:55:35Z",
+              "completed_at": "2026-10-14T03:55:35Z"
+            },
+            {
+              "number": 26,
+              "name": "Stop isolated e2e containers",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:55:35Z",
+              "completed_at": "2026-10-14T03:56:17Z"
+            },
+            {
+              "number": 48,
+              "name": "Post Set up Docker Buildx",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:56:17Z",
+              "completed_at": "2026-10-14T03:56:35Z"
+            },
+            {
+              "number": 49,
+              "name": "Post Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:56:35Z",
+              "completed_at": "2026-10-14T03:56:35Z"
+            },
+            {
+              "number": 50,
+              "name": "Post Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:56:35Z",
+              "completed_at": "2026-10-14T03:56:35Z"
+            },
+            {
+              "number": 51,
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "skipped",
+              "started_at": "2026-10-14T03:56:35Z",
+              "completed_at": "2026-10-14T03:56:35Z"
+            },
+            {
+              "number": 52,
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:56:35Z",
+              "completed_at": "2026-10-14T03:56:35Z"
+            },
+            {
+              "number": 53,
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:56:35Z",
+              "completed_at": "2026-10-14T03:56:35Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807284,
+          "name": "Java unit — attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:30Z",
+              "completed_at": "2026-10-14T03:44:30Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:30Z",
+              "completed_at": "2026-10-14T03:44:31Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807285,
+          "name": "ShellCheck scripts",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667807315,
+          "name": "Java IT — notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 11,
+              "name": "Collect safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:46:06Z",
+              "completed_at": "2026-10-14T03:46:06Z"
+            },
+            {
+              "number": 12,
+              "name": "Upload safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:46:06Z",
+              "completed_at": "2026-10-14T03:46:08Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807322,
+          "name": "Java unit — schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:29Z",
+              "completed_at": "2026-10-14T03:43:29Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:43:29Z",
+              "completed_at": "2026-10-14T03:43:30Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807335,
+          "name": "Grafana dashboards structure",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667807351,
+          "name": "Java IT — auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 11,
+              "name": "Collect safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:49:10Z",
+              "completed_at": "2026-10-14T03:49:11Z"
+            },
+            {
+              "number": 12,
+              "name": "Upload safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:49:11Z",
+              "completed_at": "2026-10-14T03:49:12Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807352,
+          "name": "Mobile Vue workspace",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        },
+        {
+          "id": 115667807364,
+          "name": "Java IT — schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 11,
+              "name": "Collect safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:53Z",
+              "completed_at": "2026-10-14T03:44:53Z"
+            },
+            {
+              "number": 12,
+              "name": "Upload safe integration outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:53Z",
+              "completed_at": "2026-10-14T03:44:54Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807378,
+          "name": "Java unit — notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:57Z",
+              "completed_at": "2026-10-14T03:44:57Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:57Z",
+              "completed_at": "2026-10-14T03:44:58Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807428,
+          "name": "Java unit — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 9,
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:29Z",
+              "completed_at": "2026-10-14T03:44:29Z"
+            },
+            {
+              "number": 10,
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:44:29Z",
+              "completed_at": "2026-10-14T03:44:30Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 38507359647,
+      "name": "Security",
+      "artifacts": [],
+      "event": "pull_request",
+      "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-14T03:39:14Z",
+      "updated_at": "2026-10-14T03:41:57Z",
+      "run_started_at": "2026-10-14T03:39:14Z",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38507359647",
+      "jobs": [
+        {
+          "id": 115667807547,
+          "name": "Trivy (config — Dockerfile + compose)",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 3,
+              "name": "Trivy config scan",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:18Z",
+              "completed_at": "2026-10-14T03:41:26Z"
+            },
+            {
+              "number": 5,
+              "name": "Post Trivy config scan",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:26Z",
+              "completed_at": "2026-10-14T03:41:26Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807770,
+          "name": "Gitleaks (secrets)",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 3,
+              "name": "Run Gitleaks",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:34Z",
+              "completed_at": "2026-10-14T03:41:39Z"
+            }
+          ]
+        },
+        {
+          "id": 115667807791,
+          "name": "Trivy (filesystem)",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": [
+            {
+              "number": 3,
+              "name": "Trivy fs scan (HIGH, CRITICAL)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:31Z",
+              "completed_at": "2026-10-14T03:41:38Z"
+            },
+            {
+              "number": 4,
+              "name": "Trivy fs scan (SARIF for GitHub Security)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:38Z",
+              "completed_at": "2026-10-14T03:41:46Z"
+            },
+            {
+              "number": 8,
+              "name": "Post Trivy fs scan (SARIF for GitHub Security)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:53Z",
+              "completed_at": "2026-10-14T03:41:54Z"
+            },
+            {
+              "number": 9,
+              "name": "Post Trivy fs scan (HIGH, CRITICAL)",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-14T03:41:54Z",
+              "completed_at": "2026-10-14T03:41:54Z"
+            }
+          ]
+        },
+        {
+          "id": 115667808895,
+          "name": "Trivy (built images)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": 38507359579,
+      "name": "OpenAPI Drift Guard",
+      "artifacts": [],
+      "event": "pull_request",
+      "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-14T03:39:14Z",
+      "updated_at": "2026-10-14T03:40:18Z",
+      "run_started_at": "2026-10-14T03:39:14Z",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38507359579",
+      "jobs": [
+        {
+          "id": 115667807011,
+          "name": "OpenAPI ↔ generated types drift",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+          "run_attempt": 1,
+          "steps": []
+        }
+      ]
+    }
+  ],
+  "other_current_head_run": [
+    {
+      "id": 38507353963,
+      "name": "CI",
+      "event": "push",
+      "head_sha": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "run_attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "qualification": "DISCOVERY_SNAPSHOT_ONLY_SEPARATE_PUSH_EVENT_NOT_FOLLOWED_NOT_PR_GATE_PROOF"
+    }
+  ],
+  "qualification": {
+    "case_results": "UNKNOWN_METADATA_ONLY_ROOT_READS_CLOSED_SAFE_ZIPS",
+    "failure_cause": "UNKNOWN",
+    "built_images": "EXPECTED_CONDITIONAL_SKIP_SCHEDULE_ONLY_ON_PULL_REQUEST",
+    "historical_10ab_cause_not_reused": true,
+    "B013_B014": "FROZEN_NOT_IN_OBSERVER_SCOPE",
+    "new_closed_artifacts": "METADATA_ONLY_EXPLICIT_ROOT_CLOSED_READER_ADMISSION_REQUIRED",
+    "raw_logs_read": false,
+    "artifact_downloaded": false,
+    "native_test_runtime_created": false,
+    "first3": "STEP_SUCCESS_CASES_UNKNOWN_ROOT_CLOSED_SAFE_READ_REQUIRED",
+    "remaining5": "STEP_SUCCESS_CASES_UNKNOWN_ROOT_CLOSED_SAFE_READ_REQUIRED",
+    "administrator_lifecycle": "STEP_FAILED_CASE_451_AND_CAUSE_UNKNOWN_ROOT_CLOSED_READER_REQUIRED",
+    "role_logout": "STEP_AND_UPLOAD_SKIPPED_NO_CASE_PROOF",
+    "application_recovery": "STEP_FAILED_PHASES_326_AND_CAUSE_UNKNOWN_ROOT_CLOSED_READER_REQUIRED_NEW_15_KEY_SERVER_SCHEMA",
+    "cleanup": {
+      "Stop owned fresh recovery targets": "STEP_SUCCESS",
+      "Remove only this job's test certificate trust": "STEP_SUCCESS",
+      "Stop isolated e2e containers": "STEP_SUCCESS"
+    }
+  },
+  "state": "TERMINAL_CURRENT_RUN_METADATA"
+}

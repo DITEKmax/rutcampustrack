@@ -1,0 +1,22 @@
+[
+  {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "e05122c8128ca75ce6d32e2da94221a1a88f6594d9854145146dafa6df652a84"
+  },
+  {
+    "path": "frontends/pwa-vue/src/bootstrap-policy.test.ts",
+    "sha256": "89f7bb9db48738044cf7afa1c34b9fb11a2cac3cc3f1732c10a46bd16f1386cd"
+  },
+  {
+    "path": "frontends/pwa-vue/src/App.vue",
+    "sha256": "2685b74cae6446a178f70e99ad096a9f5766170094acff9fb099d28f4ffbf16c"
+  },
+  {
+    "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+    "sha256": "a5753fb082e7f20a3c96abf9e35785d812f636f9e4d8c06d490ae3b53329ed0a"
+  },
+  {
+    "path": "scripts/collect-ci-test-outcomes.py",
+    "sha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83"
+  }
+]

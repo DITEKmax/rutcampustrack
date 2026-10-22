@@ -1,0 +1,141 @@
+{
+  "red": {
+    "prelaunch": {
+      "prelaunch_utc": "2026-10-11T22:42:44.753755+00:00",
+      "cwd": "/workspace/rct-worktrees/ci-evidence",
+      "argv": [
+        "python3",
+        "tests/harness/test_ci_test_outcomes.py"
+      ],
+      "git_head": "b6114f4084f757d04d166ab995b57b4f4697042f",
+      "status": " M tests/harness/test_ci_test_outcomes.py\n",
+      "source_sha256": {
+        "scripts/collect-ci-test-outcomes.py": "b74573b9e062efddbcb5f1298a941e12d8803e003687cf8aaf7ba834f2f7f522",
+        "tests/harness/test_ci_test_outcomes.py": "38615f246597665387b621119743bad74d6ac95f9353523926961119267250ad",
+        ".github/workflows/ci.yml": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7"
+      },
+      "native_exit": 1,
+      "terminal_utc": "2026-10-11T22:42:45.405645+00:00",
+      "log_sha256": "d8eace5e9daca61a1d222afe914fc2bba36266b506c0e353a99a1cde7a858b4a"
+    },
+    "log_sha_matches": true,
+    "collector_sha_matches_frozen_b611": true,
+    "six_actual_failure_labels": [
+      "test_linked_higher_report_ancestor_is_rejected_before_read (__main__.SafeOutcomesControl.test_linked_higher_report_ancestor_is_rejected_before_read)",
+      "test_linked_result_task_directory_rejects_inside_outside_and_cross_task (__main__.SafeOutcomesControl.test_linked_result_task_directory_rejects_inside_outside_and_cross_task) (placement='inside')",
+      "test_linked_result_task_directory_rejects_inside_outside_and_cross_task (__main__.SafeOutcomesControl.test_linked_result_task_directory_rejects_inside_outside_and_cross_task) (placement='outside')",
+      "test_linked_result_task_directory_rejects_inside_outside_and_cross_task (__main__.SafeOutcomesControl.test_linked_result_task_directory_rejects_inside_outside_and_cross_task) (placement='cross-task')",
+      "test_linked_source_parent_never_reads_inside_or_outside_bytes (__main__.SafeOutcomesControl.test_linked_source_parent_never_reads_inside_or_outside_bytes) (outside=False)",
+      "test_linked_source_parent_never_reads_inside_or_outside_bytes (__main__.SafeOutcomesControl.test_linked_source_parent_never_reads_inside_or_outside_bytes) (outside=True)"
+    ],
+    "failure_kind": "Six substantive assertion failures; no syntax/infra failures.",
+    "exact_preformat_red_control_snapshot": "NOT_PRESERVED; prelaunch hash is recorded, source assertions are corroborated by safe log and final controls."
+  },
+  "green": {
+    "prelaunch": {
+      "prelaunch_utc": "2026-10-11T22:43:07.439888+00:00",
+      "cwd": "/workspace/rct-worktrees/ci-evidence",
+      "argv": [
+        "python3",
+        "tests/harness/test_ci_test_outcomes.py"
+      ],
+      "git_head": "b6114f4084f757d04d166ab995b57b4f4697042f",
+      "status": " M scripts/collect-ci-test-outcomes.py\n M tests/harness/test_ci_test_outcomes.py\n",
+      "source_sha256": {
+        "scripts/collect-ci-test-outcomes.py": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+        "tests/harness/test_ci_test_outcomes.py": "c721d4419953cb66010eabb5412a80a3874d52533e9c0e9ca0836cba3c95d298",
+        ".github/workflows/ci.yml": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7"
+      },
+      "native_exit": 0,
+      "terminal_utc": "2026-10-11T22:43:08.040002+00:00",
+      "log_sha256": "3addfeda603452ee90b29af71c2464ac327ebbb47f4ffef6aba9abf36cfd095e"
+    },
+    "log_sha_matches": true,
+    "prelaunch_source_sha_matches_current_and_commit": {
+      "scripts/collect-ci-test-outcomes.py": true,
+      "tests/harness/test_ci_test_outcomes.py": true,
+      ".github/workflows/ci.yml": true
+    },
+    "current_control_count": 13,
+    "current_controls": [
+      "test_success_static_identity_and_exact_checkout_metadata",
+      "test_failure_error_skip_kept_without_messages_properties_or_streams",
+      "test_parameter_values_and_unknown_valid_identifiers_never_become_identity",
+      "test_nested_class_maps_and_source_strings_comments_cannot_invent_methods",
+      "test_missing_and_empty_data_are_no_results_even_if_step_succeeded",
+      "test_declared_missing_and_explicit_notrun_cases_are_not_executed",
+      "test_malformed_entity_and_oversize_xml_fail_closed_without_raw_error",
+      "test_other_task_and_untracked_source_do_not_pollute_selected_scope",
+      "test_wrong_job_and_invalid_metadata_are_rejected_without_echoing_values",
+      "test_symlinked_report_is_not_read_or_hashed",
+      "test_linked_source_parent_never_reads_inside_or_outside_bytes",
+      "test_linked_result_task_directory_rejects_inside_outside_and_cross_task",
+      "test_linked_higher_report_ancestor_is_rejected_before_read"
+    ],
+    "observed": "Ran 13 tests; OK; native exit 0."
+  },
+  "local_no_results_original_equals_copy": true,
+  "local_no_results": {
+    "collection": "NO_RESULTS",
+    "acceptance": "NOT_ASSESSED",
+    "summary": {
+      "PASSED": 0,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "revision": "b6114f4084f757d04d166ab995b57b4f4697042f"
+  },
+  "prior_independent_review_immutable_receipt_checks": [
+    {
+      "path": "checks.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "evidence-reconciliation.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "findings.md",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "opened-sources.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "source-counterexamples.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "source-equivalence.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "verdict.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    },
+    {
+      "path": "review-manifest.json",
+      "archive_equals_index": true,
+      "working_copy_equals_archive": true
+    }
+  ],
+  "historical_prelaunch_equivalence": "UNKNOWN as explicitly recorded; no promotion from initial8/privacy-red9/final10 to exact-source runtime PASS.",
+  "historical_log_digests": {
+    "control-01.log": true,
+    "privacy-mutation-red.log": true,
+    "control-final.log": true
+  },
+  "actual_remote_CI_upload_readback": "NOT_RUN",
+  "reviewer_runtime": "NOT_RUN",
+  "independent_producer_source_and_XML_freshness_attestation": "UNKNOWN; current hashes are collection-time source identities."
+}

@@ -1,0 +1,12 @@
+{
+  "status": "PREFLIGHT",
+  "pid": 216177,
+  "start": {
+    "utc": "2026-10-12T06:32:38.305020+00:00",
+    "free_available_bytes": 7109451776,
+    "memory_current": 4131713024,
+    "memory_max": 17179869184,
+    "pid": 216177
+  },
+  "children": 0
+}

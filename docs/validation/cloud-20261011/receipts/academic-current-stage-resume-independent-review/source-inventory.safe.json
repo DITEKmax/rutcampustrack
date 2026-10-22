@@ -1,0 +1,243 @@
+{
+  "scope": "READ_ONLY_T006_D011_STAGE_RESUME_SOURCE_REVIEW",
+  "producer_revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "source_manifest_sha256": "ac79d0c08f5c2c893a31ab9b30688eb11b2059f0ce18bf1e704373c24f4d076e",
+  "source_zip_sha256": "d7fa9f971b29445511bbceac2892139891bd77a7026b9564096ab236f7818732",
+  "source_zip_bytes": 70002,
+  "source_entries": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 2976,
+      "sha256": "5c1b4c4a3692b2ca3e71ce24103a83f2f516f6f2353ea4a8aee5793df2ef05c3",
+      "mode": 384
+    },
+    {
+      "path": "academic-runner-delta.safe.json",
+      "bytes": 1140,
+      "sha256": "efb946f7756197ec2f7cd5be159aa1580d87364bd840dbbeac007302a0d19ed0",
+      "mode": 384
+    },
+    {
+      "path": "build-academic.py",
+      "bytes": 8909,
+      "sha256": "f2131e6e6ab2617c76440e9f7224abe89b6ddecb564cbd29aa025114297d3b27",
+      "mode": 384
+    },
+    {
+      "path": "build-grant.template.safe.json",
+      "bytes": 986,
+      "sha256": "a0cb5a7435ab8dede5e3998312eaa091a7c8d68f39cef962273f46ad377bdc9e",
+      "mode": 384
+    },
+    {
+      "path": "inspect-academic.py",
+      "bytes": 4164,
+      "sha256": "ec0f1d6b06e0df15f83799865446e785835eb20f4c6167c7edde9f6eba11966f",
+      "mode": 384
+    },
+    {
+      "path": "launch-schema.safe.json",
+      "bytes": 2981,
+      "sha256": "16d748e7748f66929c6f6701eddbef74eec46c20ba3419d2dfff1d1c2f14441f",
+      "mode": 384
+    },
+    {
+      "path": "partial-resume.py",
+      "bytes": 7547,
+      "sha256": "d2d880ae35083e3a5b765a4a39dd0a92555dd3bc2fe69d06b2b4b333e0c8adb5",
+      "mode": 384
+    },
+    {
+      "path": "refresh-boundary.py",
+      "bytes": 11561,
+      "sha256": "a2f9fa4ad01651da14387f7668cccb753270733b93f97db28aa209386388c886",
+      "mode": 384
+    },
+    {
+      "path": "resources.safe.json",
+      "bytes": 358,
+      "sha256": "29495e4c8dd5d8454a79b675b640ba48260d1e6a1165d69954c88dd419ab6cdf",
+      "mode": 384
+    },
+    {
+      "path": "resume-controls.py",
+      "bytes": 12978,
+      "sha256": "1b7a481068192ac22746a076ebecf905e90ca75d8797cec9253c3ede8adae6ba",
+      "mode": 384
+    },
+    {
+      "path": "resume-controls.safe.json",
+      "bytes": 2100,
+      "sha256": "db0c52f91f399337b570ec5d5b861afcb9408d6df65c8f4bdb1470b47194fd67",
+      "mode": 384
+    },
+    {
+      "path": "run-academic-restart.py",
+      "bytes": 8959,
+      "sha256": "672d90d1ebf8f4e675575a027484f9d0440d70bb5609db8c360dbf67e0cb3239",
+      "mode": 384
+    },
+    {
+      "path": "runtime-binding.py",
+      "bytes": 5353,
+      "sha256": "af71248b64aed3d0c76883d0e832e019f180e9660af5c9d3e8ebd8e54c55cd10",
+      "mode": 384
+    },
+    {
+      "path": "runtime-grant-addendum.template.safe.json",
+      "bytes": 1325,
+      "sha256": "aff97ac4ed48783189ba42b3325437ea98a03f2961bf811a457a71ad49dd20a4",
+      "mode": 384
+    },
+    {
+      "path": "source-controls.py",
+      "bytes": 9957,
+      "sha256": "78b542bbf63dbb632363773980f896b88b56a66c5c1c0bcc9a6867fee6f28e2c",
+      "mode": 384
+    },
+    {
+      "path": "source-controls.safe.json",
+      "bytes": 3062,
+      "sha256": "e57880734e2280f36ecfec12999a0ada73cf703617517f56c731c5e973621d62",
+      "mode": 384
+    },
+    {
+      "path": "source-cost.safe.json",
+      "bytes": 1110,
+      "sha256": "5452bca413c4e7136132a2f1c8069593186e6f92af6d79c7f238a6c9793f3687",
+      "mode": 384
+    },
+    {
+      "path": "source-delta.safe.json",
+      "bytes": 1280,
+      "sha256": "69a729b687d184f3303f6b6306b42634690cf5d93c2a972cee7b20d9f0c56777",
+      "mode": 384
+    },
+    {
+      "path": "stage-academic.py",
+      "bytes": 12263,
+      "sha256": "0805b446b321f535c0102b395766b06375caa19da30e580094cf178735f110ae",
+      "mode": 384
+    },
+    {
+      "path": "stage-app-writer.py",
+      "bytes": 4211,
+      "sha256": "cfbad5f17e6eaf75d71fae68afd4184ec64b0c85c391d5bb1914c93b91cc04c1",
+      "mode": 384
+    },
+    {
+      "path": "stage-grant.template.safe.json",
+      "bytes": 1599,
+      "sha256": "d950e782aa32e6a82b9be5209776baca9263839dc6a5913cc918c2036b96e15d",
+      "mode": 384
+    },
+    {
+      "path": "stage-monitor.py",
+      "bytes": 7114,
+      "sha256": "02f705deffdba883460099359f36785b6521af4554923e8a886517cbff6ac4e1",
+      "mode": 384
+    },
+    {
+      "path": "tmp-anchors.safe.json",
+      "bytes": 667,
+      "sha256": "f188a1b7c614897df4aebe55a33af7f31ecc8dc17b9f9ab36400ba60a4344fca",
+      "mode": 384
+    },
+    {
+      "path": "tool-inputs.safe.json",
+      "bytes": 1279,
+      "sha256": "12c3399942d94bef7b611793702dd5d7541fe941ba74156f3b199b83503b645b",
+      "mode": 384
+    },
+    {
+      "path": "tracked-inputs96.safe.json",
+      "bytes": 133250,
+      "sha256": "7a50001eb5db00a04552162cc201ecb156dc2a9a1345270ca50e94231ab6035b",
+      "mode": 384
+    }
+  ],
+  "source_entries_final_unchanged": true,
+  "launch_helper_pins_exact": {
+    "source-controls.py": "78b542bbf63dbb632363773980f896b88b56a66c5c1c0bcc9a6867fee6f28e2c",
+    "partial-resume.py": "d2d880ae35083e3a5b765a4a39dd0a92555dd3bc2fe69d06b2b4b333e0c8adb5",
+    "runtime-binding.py": "af71248b64aed3d0c76883d0e832e019f180e9660af5c9d3e8ebd8e54c55cd10",
+    "resume-controls.py": "1b7a481068192ac22746a076ebecf905e90ca75d8797cec9253c3ede8adae6ba",
+    "stage-academic.py": "0805b446b321f535c0102b395766b06375caa19da30e580094cf178735f110ae",
+    "stage-monitor.py": "02f705deffdba883460099359f36785b6521af4554923e8a886517cbff6ac4e1",
+    "refresh-boundary.py": "a2f9fa4ad01651da14387f7668cccb753270733b93f97db28aa209386388c886",
+    "stage-app-writer.py": "cfbad5f17e6eaf75d71fae68afd4184ec64b0c85c391d5bb1914c93b91cc04c1",
+    "build-academic.py": "f2131e6e6ab2617c76440e9f7224abe89b6ddecb564cbd29aa025114297d3b27",
+    "inspect-academic.py": "ec0f1d6b06e0df15f83799865446e785835eb20f4c6167c7edde9f6eba11966f",
+    "run-academic-restart.py": "672d90d1ebf8f4e675575a027484f9d0440d70bb5609db8c360dbf67e0cb3239"
+  },
+  "all_11_Python_AST_parse": true,
+  "unchanged_copied_8": [
+    "academic-runner-delta.safe.json",
+    "build-grant.template.safe.json",
+    "inspect-academic.py",
+    "source-controls.py",
+    "source-controls.safe.json",
+    "tmp-anchors.safe.json",
+    "tool-inputs.safe.json",
+    "tracked-inputs96.safe.json"
+  ],
+  "BUILD_and_runner_AST_only_hash_repin": true,
+  "Root_restoration_read_context": {
+    "TASK-CONTRACT.md": {
+      "bytes": 89623,
+      "sha256": "75ee55c6caedd4ca2371818d71031f71d1969f3bcf06a7aa47a5689869acde27"
+    },
+    "CURRENT.md": {
+      "bytes": 56928,
+      "sha256": "8eef91010310c97ef4c8f32f71afddac698d31824dfca7e38014706be6ea4716"
+    },
+    "decisions.md": {
+      "bytes": 24904,
+      "sha256": "64d6ed64378a5c0c3fb8fd7a064247da6ee1f558ae23525d7cd2c8ec9781ea24"
+    },
+    "questions.md": {
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65"
+    },
+    "resources.md": {
+      "bytes": 14022,
+      "sha256": "d3f01623023e519546cfe1783249f1642f00510301502802f27bd1e3568ee681"
+    }
+  },
+  "original_safe_receipts": {
+    "build_manifest": "807f205d8913c3cb8f068968e469ccf51709d310eb1ac44f5584c390bdc01861",
+    "build_result": "08dd08de01d3c4fe5c0ebcea7cd53e22c41f36fb4d65e94b8d216b8aacda80ac",
+    "build_zip": "346dc7cc4ca2f7912cd7e9ae1e5429d27720dbe9899b7899a1638f9fb565285a",
+    "partial_manifest": "77b75e656d7b3857879fa4936a59a4e3abddc85761462dbf81e382bb541fa824",
+    "partial_receipt": "7369bebaef675999e2d112b039e107a290a79dd5d75b34c3b3fba86912480fc7",
+    "partial_zip": "5bc005551c6e0ff36582bca976ac0825f465ffb093290d854dd464da1f4bc80c",
+    "JAR_recorded_sha256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+    "cost_manifest": "7dd574f4374ca2664f85634f55876aaec930ddc62adc7498f42321d2dc8e1616",
+    "cost_zip": "f1eae06bc6c514fbb40bdaf6d9476c7f3d6a30c84e3bcda0dcc39fd047e22aae",
+    "recorded_full_members": 1797,
+    "recorded_direct_libraries": 183,
+    "recorded_unfolded_manifest": {
+      "Manifest-Version": "1.0",
+      "Main-Class": "org.springframework.boot.loader.launch.JarLauncher",
+      "Start-Class": "ru.rutcampustrack.academic.AcademicApplication",
+      "Spring-Boot-Version": "3.5.16",
+      "Spring-Boot-Classes": "BOOT-INF/classes/",
+      "Spring-Boot-Lib": "BOOT-INF/lib/",
+      "Spring-Boot-Classpath-Index": "BOOT-INF/classpath.idx",
+      "Spring-Boot-Layers-Index": "BOOT-INF/layers.idx",
+      "Build-Jdk-Spec": "21",
+      "Implementation-Title": "academic-app",
+      "Implementation-Version": "0.1.0"
+    },
+    "recorded_recursive_fixture_absent": true,
+    "recorded_partial_files": 894,
+    "recorded_partial_directories": 40
+  },
+  "actual_prefix_scan": false,
+  "actual_JAR_read": false,
+  "private_ENV_key_data_reads": false,
+  "source_mutations": false,
+  "native_stage_runtime": "NOT_RUN",
+  "model_requested_selected": "Sol6.1/xhigh",
+  "model_actual": "UNKNOWN"
+}

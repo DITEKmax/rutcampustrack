@@ -1,0 +1,16 @@
+{
+  "scope": "EXACT02_FORMATTER_CANDIDATE_FINITE_BRIDGE_ONLY",
+  "verdict": "APPROVE_FINITE_FORMATTER_EQUIVALENCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 922,
+      "sha256": "41945593b3bb9adfd8b113471b41bf8769ea2a728c0154d6cbc008736bfb9ff0"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2863,
+      "sha256": "b3b3ee1699a28cbe57a4616480d00ef9e690bf28ea7b692ec98cf99fc54793d3"
+    }
+  ]
+}

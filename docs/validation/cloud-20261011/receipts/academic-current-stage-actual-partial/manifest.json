@@ -1,0 +1,27 @@
+{
+  "scope": "ACTUAL_STAGE_ONLY_PARTIAL_FAILURE",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/actual-stage01/HANDOFF.md",
+      "sha256": "331a40897162bdf51dba7f0bcf0b41022767741638c94d1664187cb388518079",
+      "bytes": 1075
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/actual-stage01/partial-payload.safe.json",
+      "sha256": "7369bebaef675999e2d112b039e107a290a79dd5d75b34c3b3fba86912480fc7",
+      "bytes": 371904
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/actual-stage01/stage-error.safe.json",
+      "sha256": "3f95b3f3ffdf8b47343017dcd3cfe63f2bcd14e7a6ca2d42fea3f4eea731f3f4",
+      "bytes": 86
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_refresh_pin_correction/actual-stage01/terminal-outcome.safe.json",
+      "sha256": "f502d72dcfe1d16bd23b0c6bca0d1b6e738534554a42d024bd1f7b6d5d213278",
+      "bytes": 1343
+    }
+  ],
+  "private_files_excluded": true,
+  "native_runtime": "NOT_RUN"
+}

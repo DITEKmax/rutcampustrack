@@ -1,0 +1,120 @@
+# Standalone private operator scope; never starts the business stack.
+# Required values are secret references supplied by the operator, never committed.
+name: ${RCT_OBSERVER_PROJECT:-rct-observability-apps}
+x-bounded-logs: &logs
+  driver: json-file
+  options: { max-size: 5m, max-file: '2' }
+services:
+  glitchtip-db:
+    image: postgres:16@sha256:760ea41aae126965bedd587d35a23de37447bb13a6ac4444bef6ff73b8b72234
+    environment:
+      POSTGRES_DB: glitchtip
+      POSTGRES_USER: glitchtip
+      POSTGRES_PASSWORD_FILE: /run/secrets/glitchtip-db-password
+    command:
+      [postgres, -c, max_connections=30, -c, max_locks_per_transaction=512, -c, shared_buffers=32MB]
+    secrets: [glitchtip-db-password]
+    volumes: [glitchtip-db:/var/lib/postgresql/data]
+    networks: [observer]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U glitchtip -d glitchtip']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+    cpus: 0.5
+    logging: *logs
+    restart: unless-stopped
+  glitchtip:
+    image: glitchtip/glitchtip:6.2.6@sha256:a3d8eb1b36c1e1603d55ab32711ea3dd8115874742a781a57391a62a16e0dff6
+    # A single embedded worker/web service; Valkey deliberately disabled.
+    env_file: [./infra/glitchtip/bounded.env]
+    environment:
+      GLITCHTIP_DOMAIN: ${RCT_OBSERVER_URL:-http://localhost:18880}/glitchtip
+      BASE_PATH: /glitchtip
+      ALLOWED_HOSTS: ${RCT_GLITCHTIP_ALLOWED_HOSTS:-localhost,127.0.0.1,observer-proxy,glitchtip}
+    entrypoint: [/bin/sh, /observer/start.sh]
+    secrets: [glitchtip-db-password, glitchtip-secret-key]
+    volumes:
+      - ./infra/glitchtip/start.sh:/observer/start.sh:ro
+      - ./infra/glitchtip/bootstrap-projects.py:/observer/bootstrap-projects.py:ro
+      - glitchtip-uploads:/code/uploads
+    depends_on:
+      glitchtip-db: { condition: service_healthy }
+    networks: [observer, browser-ingest]
+    mem_limit: 512m
+    cpus: 0.75
+    logging: *logs
+    restart: unless-stopped
+  pyroscope:
+    image: grafana/pyroscope:2.4.0@sha256:b7e62699a27463aa3533efe3f88c320da594da495731fd6eabca6f44f92cdd7b
+    command: [-config.file=/etc/pyroscope/config.yml]
+    environment: { GOMEMLIMIT: 256MiB, GOMAXPROCS: '1' }
+    volumes:
+      - ./infra/pyroscope/config.yml:/etc/pyroscope/config.yml:ro
+      - pyroscope-data:/data
+      - pyroscope-compactor:/data-compactor
+      - pyroscope-metastore:/data-metastore
+    networks: [observer, profiles]
+    mem_limit: 384m
+    cpus: 0.75
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: *logs
+    restart: unless-stopped
+  homepage:
+    image: ghcr.io/gethomepage/homepage:v2.6.0@sha256:3e38fe788223cb46a3ce1f046ef11667b40f7707fdca0dcbfa3f86c5c42bf1e8
+    user: '1000:1000'
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: ${RCT_HOMEPAGE_ALLOWED_HOSTS:-localhost:18880,127.0.0.1:18880,observer-proxy,homepage:3000}
+      NEXT_TELEMETRY_DISABLED: '1'
+      LOG_TARGETS: stdout
+    # Links only: no Docker socket, host filesystem, credentials or machine widgets.
+    volumes:
+      - ./infra/homepage:/app/config:ro
+    tmpfs:
+      - '/app/.next/cache:uid=1000,gid=1000,size=16m'
+      - '/tmp:uid=1000,gid=1000,size=8m'
+    networks: [observer]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 192m
+    cpus: 0.25
+    logging: *logs
+    restart: unless-stopped
+  observer-proxy:
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    # Loopback only. Remote use requires an authenticated tunnel or existing TLS ingress.
+    ports: ['127.0.0.1:${RCT_OBSERVER_PORT:-18880}:8080']
+    entrypoint: [/bin/sh, /observer/start-proxy.sh]
+    volumes:
+      - ./infra/observability-apps/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/observability-apps/start-proxy.sh:/observer/start-proxy.sh:ro
+    secrets: [observer-htpasswd]
+    networks: [observer, operator-access]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID]
+    read_only: true
+    tmpfs: [/tmp:size=8m]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 32m
+    cpus: 0.25
+    logging: *logs
+    restart: unless-stopped
+networks:
+  observer: { internal: true }
+  browser-ingest: { internal: true }
+  profiles: { internal: true }
+  # Host port publishing needs a non-internal bridge; only the proxy joins here.
+  operator-access: { driver: bridge, internal: false }
+volumes:
+  glitchtip-db:
+  glitchtip-uploads:
+  pyroscope-data:
+  pyroscope-compactor:
+  pyroscope-metastore:
+secrets:
+  glitchtip-db-password: { file: '${RCT_GLITCHTIP_DB_PASSWORD_FILE:?required secret file}' }
+  glitchtip-secret-key: { file: '${RCT_GLITCHTIP_SECRET_KEY_FILE:?required secret file}' }
+  observer-htpasswd: { file: '${RCT_OBSERVER_HTPASSWD_FILE:?required operator htpasswd file}' }

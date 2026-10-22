@@ -1,55 +1,295 @@
 import { describe, expect, it, vi } from 'vitest'
-import { HeadmanHomeworkApi, HeadmanHomeworkApiError } from './headman-homework-client'
-import { reuseOrCreateAssistantHomeworkIntent, withAssistantHomeworkPublicationReceipt } from './assistant-homework-create-intent'
+import {
+  createGenerationBoundHeadmanHomeworkApi,
+  HeadmanHomeworkApi,
+  HeadmanHomeworkApiError,
+} from './headman-homework-client'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
+import {
+  reuseOrCreateAssistantHomeworkIntent,
+  withAssistantHomeworkPublicationReceipt,
+} from './assistant-homework-create-intent'
 
 const key = '97eb9070-a49d-45f9-9e72-b9d8fe06eab9'
-const homework = { id: 91, bindingId: 501, requestKey: key, title: 'На дату', description: 'Материалы', link: 'https://example.test/material',
-  subjectId: 88, groupId: 7, semesterId: 12, publishedBy: 41, lessonDate: '2026-09-29',
-  lessonNumber: null, bindingMode: 'DATE', revision: 4, archived: false }
+const homework = {
+  id: 91,
+  bindingId: 501,
+  requestKey: key,
+  title: 'На дату',
+  description: 'Материалы',
+  link: 'https://example.test/material',
+  subjectId: 88,
+  groupId: 7,
+  semesterId: 12,
+  publishedBy: 41,
+  lessonDate: '2026-09-29',
+  lessonNumber: null,
+  bindingMode: 'DATE',
+  revision: 4,
+  archived: false,
+}
+
+describe('authoritative homework HAL pagination', () => {
+  const initial = '/api/academic/homeworks?groupId=7&semesterId=12&page=0&size=100&archived=true'
+  const next =
+    '/api/academic/homeworks?groupId=7&semesterId=12&archived=true&page=1&size=1&sort=title,asc&cursor=opaque'
+  const first = (href = next) => ({
+    _embedded: { homeworkResponseList: [{ ...homework, archived: true }] },
+    page: { number: 0, totalPages: 2 },
+    _links: { next: { href } },
+  })
+  const last = {
+    _embedded: { homeworkResponseList: [{ ...homework, id: 92, archived: true }] },
+    page: { number: 1, totalPages: 2 },
+  }
+
+  it('follows the exact public next link ahead of page metadata with the current credentials', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+      expect([initial, next]).toContain(String(input))
+      return Response.json(String(input) === initial ? first() : last)
+    })
+    const api = new HeadmanHomeworkApi({ accessToken: () => 'current-token', fetcher })
+    expect((await api.listHomeworks(7, 12, true)).map((row) => row.id)).toEqual([91, 92])
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([initial, next])
+    for (const [, init] of fetcher.mock.calls) {
+      expect(init?.credentials).toBe('include')
+      expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer current-token')
+    }
+  })
+
+  it.each([
+    'https://foreign.example/api/academic/homeworks?page=1',
+    '//foreign.example/api/academic/homeworks?page=1',
+    '/api/auth/sessions?page=1',
+    '/api/academic/homeworks?groupId=8&semesterId=12&archived=true&page=1',
+    '/api/academic/homeworks?groupId=7&semesterId=13&archived=true&page=1',
+    '/api/academic/homeworks?groupId=7&semesterId=12&page=1',
+  ])('rejects an unsafe or changed-scope next link without following it: %s', async (href) => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+      if (fetcher.mock.calls.length > 1) throw new Error('fixture followed an invalid next')
+      return Response.json(first(href))
+    })
+    const api = new HeadmanHomeworkApi({ accessToken: () => 'current-token', fetcher })
+    await expect(api.listHomeworks(7, 12, true)).rejects.toThrow('Некорректная ссылка пагинации ДЗ')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('detects a repeated next path before fetching or returning duplicate rows', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+      if (fetcher.mock.calls.length > 1) throw new Error('fixture duplicate fetch')
+      return Response.json({ ...first(initial), page: { totalPages: 1 } })
+    })
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    await expect(api.listHomeworks(7, 12, true)).rejects.toThrow('зацикленную пагинацию')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('retains legacy page fallback only when the response provides no next link', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ ...first(), _links: undefined }))
+      .mockResolvedValueOnce(Response.json(last))
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    expect((await api.listHomeworks(7, 12, true)).map((row) => row.id)).toEqual([91, 92])
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([
+      initial,
+      initial.replace('page=0', 'page=1'),
+    ])
+  })
+
+  it('retries the same next link once after 401 and discards a revoked-page partial result', async () => {
+    let token = 'before-refresh'
+    const refresh = vi.fn(async () => {
+      token = 'after-refresh'
+    })
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json(first()))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(Response.json(last))
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => token,
+      onUnauthorized: refresh,
+      fetcher,
+    })
+    expect((await api.listHomeworks(7, 12, true)).map((row) => row.id)).toEqual([91, 92])
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([initial, next, next])
+    expect(new Headers(fetcher.mock.calls[2]?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer after-refresh',
+    )
+    const denied = new HeadmanHomeworkApi({
+      accessToken: () => token,
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(Response.json(first()))
+        .mockResolvedValueOnce(Response.json({}, { status: 403 })),
+    })
+    await expect(denied.listHomeworks(7, 12, true)).rejects.toBeInstanceOf(HeadmanHomeworkApiError)
+  })
+
+  it('discards an old-owner page before another next request after a session switch', async () => {
+    let generation = 1
+    const response = Response.json(first())
+    const json = response.json.bind(response)
+    response.json = async () => {
+      const value: unknown = await json()
+      generation = 2
+      return value
+    }
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response)
+    const api = createGenerationBoundHeadmanHomeworkApi(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'old-owner-token',
+        refreshFor: vi.fn(),
+      },
+      fetcher,
+    )
+    await expect(api.listHomeworks(7, 12, true)).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+})
 
 describe('Headman Homework r2 additive boundary', () => {
   it('preserves DATE type and durable binding receipt on create/reload/content-only edit', async () => {
     const current = { ...homework, lessonType: 'LAB' }
     const calls: RequestInit[] = []
-    const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => { calls.push(init!); return Response.json(current, { status: init?.method === 'POST' ? 201 : 200 }) })
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push(init!)
+      return Response.json(current, { status: init?.method === 'POST' ? 201 : 200 })
+    })
     const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
-    await expect(api.createHomework({ title: 'На дату', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: null, bindingMode: 'DATE', lessonType: 'LAB', requestKey: key })).resolves.toMatchObject({ state: 'ACTIVE', homework: { lessonType: 'LAB', bindingId: 501 } })
-    expect(JSON.parse(String(calls[0]?.body))).toMatchObject({ lessonType: 'LAB', lessonNumber: null })
+    await expect(
+      api.createHomework({
+        title: 'На дату',
+        subjectId: 88,
+        groupId: 7,
+        semesterId: 12,
+        lessonDate: '2026-09-29',
+        lessonNumber: null,
+        bindingMode: 'DATE',
+        lessonType: 'LAB',
+        requestKey: key,
+      }),
+    ).resolves.toMatchObject({ state: 'ACTIVE', homework: { lessonType: 'LAB', bindingId: 501 } })
+    expect(JSON.parse(String(calls[0]?.body))).toMatchObject({
+      lessonType: 'LAB',
+      lessonNumber: null,
+    })
     await expect(api.getHomework(91)).resolves.toMatchObject({ lessonType: 'LAB' })
     await api.updateHomework(91, { title: 'На дату', requestKey: key, expectedRevision: 4 })
     expect(JSON.parse(String(calls[2]?.body))).not.toHaveProperty('lessonType')
-    const broken = new HeadmanHomeworkApi({ accessToken: () => null, fetcher: async () => Response.json({ ...current, bindingId: null }, { status: 201 }) })
-    await expect(broken.createHomework({ title: 'На дату', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: null, bindingMode: 'DATE', lessonType: 'LAB', requestKey: key })).rejects.toThrow()
+    const broken = new HeadmanHomeworkApi({
+      accessToken: () => null,
+      fetcher: async () => Response.json({ ...current, bindingId: null }, { status: 201 }),
+    })
+    await expect(
+      broken.createHomework({
+        title: 'На дату',
+        subjectId: 88,
+        groupId: 7,
+        semesterId: 12,
+        lessonDate: '2026-09-29',
+        lessonNumber: null,
+        bindingMode: 'DATE',
+        lessonType: 'LAB',
+        requestKey: key,
+      }),
+    ).rejects.toThrow()
   })
   it('adds explicit archive scope only to requested collection/detail reads', async () => {
     const paths: string[] = []
-    const fetcher: typeof fetch = async (input) => { const path = String(input); paths.push(path); return Response.json(path.includes('/91') ? { ...homework, archived: true } : { _embedded: { homeworkResponseList: [{ ...homework, archived: true }] } }) }
+    const fetcher: typeof fetch = async (input) => {
+      const path = String(input)
+      paths.push(path)
+      return Response.json(
+        path.includes('/91')
+          ? { ...homework, archived: true }
+          : { _embedded: { homeworkResponseList: [{ ...homework, archived: true }] } },
+      )
+    }
     const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
-    await api.listHomeworks(7, 12, true); await api.getHomework(91, true); await api.listHomeworks(7, 12)
-    expect(paths[0]).toContain('archived=true'); expect(paths[1]).toBe('/api/academic/homeworks/91?archived=true'); expect(paths[2]).not.toContain('archived')
+    await api.listHomeworks(7, 12, true)
+    await api.getHomework(91, true)
+    await api.listHomeworks(7, 12)
+    expect(paths[0]).toContain('archived=true')
+    expect(paths[1]).toBe('/api/academic/homeworks/91?archived=true')
+    expect(paths[2]).not.toContain('archived')
   })
   it('retains exact next occurrence tokens and frozen selected guards across a lost reply', async () => {
     const posts: string[] = []
     let count = 0
     const fetcher: typeof fetch = async (input, init) => {
-      if (String(input).includes('/lessons/next')) return Response.json({ lessonId: 30, occurrenceId: '71', occurrenceRevision: '9007199254740993', groupId: 7, subjectId: 88, semesterId: 12, lessonType: 'LECTURE', date: '2026-09-29', lessonNumber: 2, startTime: '10:00', endTime: '11:30' })
-      posts.push(String(init?.body)); count += 1
+      if (String(input).includes('/lessons/next'))
+        return Response.json({
+          lessonId: 30,
+          occurrenceId: '71',
+          occurrenceRevision: '9007199254740993',
+          groupId: 7,
+          subjectId: 88,
+          semesterId: 12,
+          lessonType: 'LECTURE',
+          date: '2026-09-29',
+          lessonNumber: 2,
+          startTime: '10:00',
+          endTime: '11:30',
+        })
+      posts.push(String(init?.body))
+      count += 1
       if (count === 1) throw new TypeError('lost reply')
       return Response.json({ ...homework, bindingMode: 'LESSON', lessonNumber: 2 })
     }
     const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
     const next = await api.nextHomeworkLesson(7, 12, 88, 'LECTURE', '2026-09-02')
     expect(next?.occurrenceRevision).toBe('9007199254740993')
-    const input = { title: 'Задание', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: 2, bindingMode: 'LESSON' as const, lessonType: 'LECTURE' as const, selectedOccurrenceId: next!.occurrenceId!, selectedOccurrenceRevision: next!.occurrenceRevision!, requestKey: key }
-    await expect(api.createHomework(input)).rejects.toThrow('lost reply'); await api.createHomework(input)
-    expect(posts[0]).toBe(posts[1]); expect(JSON.parse(posts[0]!)).toMatchObject({ selectedOccurrenceId: '71', selectedOccurrenceRevision: '9007199254740993' })
+    const input = {
+      title: 'Задание',
+      subjectId: 88,
+      groupId: 7,
+      semesterId: 12,
+      lessonDate: '2026-09-29',
+      lessonNumber: 2,
+      bindingMode: 'LESSON' as const,
+      lessonType: 'LECTURE' as const,
+      selectedOccurrenceId: next!.occurrenceId!,
+      selectedOccurrenceRevision: next!.occurrenceRevision!,
+      requestKey: key,
+    }
+    await expect(api.createHomework(input)).rejects.toThrow('lost reply')
+    await api.createHomework(input)
+    expect(posts[0]).toBe(posts[1])
+    expect(JSON.parse(posts[0]!)).toMatchObject({
+      selectedOccurrenceId: '71',
+      selectedOccurrenceRevision: '9007199254740993',
+    })
   })
   it('forbids DATE occurrence guards and rejects invalid or incomplete placement before transport', async () => {
     const fetcher = vi.fn()
     const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
-    const input = { title: 'Задание', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: null, bindingMode: 'DATE' as const, requestKey: key, selectedOccurrenceId: '71', selectedOccurrenceRevision: '3' }
+    const input = {
+      title: 'Задание',
+      subjectId: 88,
+      groupId: 7,
+      semesterId: 12,
+      lessonDate: '2026-09-29',
+      lessonNumber: null,
+      bindingMode: 'DATE' as const,
+      requestKey: key,
+      selectedOccurrenceId: '71',
+      selectedOccurrenceRevision: '3',
+    }
     await expect(api.createHomework(input)).rejects.toThrow()
-    await expect(api.updateHomework(91, { title: 'Задание', requestKey: key, expectedRevision: 4, bindingMode: 'LESSON', lessonDate: '2026-02-30', lessonNumber: 2 })).rejects.toThrow()
+    await expect(
+      api.updateHomework(91, {
+        title: 'Задание',
+        requestKey: key,
+        expectedRevision: 4,
+        bindingMode: 'LESSON',
+        lessonDate: '2026-02-30',
+        lessonNumber: 2,
+      }),
+    ).rejects.toThrow()
     expect(fetcher).not.toHaveBeenCalled()
   })
 })
@@ -57,14 +297,35 @@ describe('Headman Homework r2 additive boundary', () => {
 describe('homework DATE and edit wire contract', () => {
   it('retains DATE/null placement, revision and archive while paging homework and history', async () => {
     const fetcher = vi.fn(async (path: RequestInfo | URL) => {
-      if (String(path).includes('/history')) return Response.json({ content: [
-        { id: 31, revision: 4, actorId: 42, actorDisplayName: 'Кузнецов Михаил Андреевич', occurredAt: '2026-09-27T12:00:00+03:00', action: 'EDITED', before: {}, after: homework },
-      ], totalPages: 1 })
-      return Response.json({ _embedded: { homeworkResponseList: [{ ...homework, archived: true }] }, page: { totalPages: 1 } })
+      if (String(path).includes('/history'))
+        return Response.json({
+          content: [
+            {
+              id: 31,
+              revision: 4,
+              actorId: 42,
+              actorDisplayName: 'Кузнецов Михаил Андреевич',
+              occurredAt: '2026-09-27T12:00:00+03:00',
+              action: 'EDITED',
+              before: {},
+              after: homework,
+            },
+          ],
+          totalPages: 1,
+        })
+      return Response.json({
+        _embedded: { homeworkResponseList: [{ ...homework, archived: true }] },
+        page: { totalPages: 1 },
+      })
     })
-    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => 'token',
+      fetcher: fetcher as typeof fetch,
+    })
     expect(await api.listHomeworks(7, 12)).toEqual([{ ...homework, archived: true }])
-    expect(await api.history(91)).toMatchObject([{ revision: 4, actorId: 42, actorDisplayName: 'Кузнецов Михаил Андреевич', action: 'EDITED' }])
+    expect(await api.history(91)).toMatchObject([
+      { revision: 4, actorId: 42, actorDisplayName: 'Кузнецов Михаил Андреевич', action: 'EDITED' },
+    ])
     expect(fetcher).toHaveBeenCalledTimes(2)
   })
 
@@ -76,75 +337,165 @@ describe('homework DATE and edit wire contract', () => {
       if (init?.method === 'POST') return Response.json(homework, { status: 201 })
       putCount += 1
       if (putCount === 1) throw new TypeError('response lost after server accepted edit')
-      if (putCount === 2) return Response.json({ ...homework, title: 'Новое название', revision: 5 })
+      if (putCount === 2)
+        return Response.json({ ...homework, title: 'Новое название', revision: 5 })
       return Response.json({ detail: 'revision conflict' }, { status: 409 })
     })
-    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
-    await expect(api.createHomework({ title: homework.title, description: homework.description, link: homework.link,
-      subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate, lessonNumber: null, bindingMode: 'DATE', requestKey: key }))
-      .resolves.toMatchObject({ state: 'ACTIVE', homework: { id: 91 } })
-    expect(requests[0]?.body).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, requestKey: key })
-    const intent = Object.freeze({ title: 'Новое название', description: homework.description, link: homework.link,
-      requestKey: key, expectedRevision: 4 })
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => 'token',
+      fetcher: fetcher as typeof fetch,
+    })
+    await expect(
+      api.createHomework({
+        title: homework.title,
+        description: homework.description,
+        link: homework.link,
+        subjectId: 88,
+        groupId: 7,
+        semesterId: 12,
+        lessonDate: homework.lessonDate,
+        lessonNumber: null,
+        bindingMode: 'DATE',
+        requestKey: key,
+      }),
+    ).resolves.toMatchObject({ state: 'ACTIVE', homework: { id: 91 } })
+    expect(requests[0]?.body).toMatchObject({
+      bindingMode: 'DATE',
+      lessonNumber: null,
+      requestKey: key,
+    })
+    const intent = Object.freeze({
+      title: 'Новое название',
+      description: homework.description,
+      link: homework.link,
+      requestKey: key,
+      expectedRevision: 4,
+    })
     await expect(api.updateHomework(91, intent)).rejects.toThrow('response lost')
     await expect(api.updateHomework(91, intent)).resolves.toMatchObject({ id: 91, revision: 5 })
     expect(requests[1]?.body).toEqual(requests[2]?.body)
-    expect(requests[2]?.body).toMatchObject({ expectedRevision: 4, requestKey: key, link: homework.link })
+    expect(requests[2]?.body).toMatchObject({
+      expectedRevision: 4,
+      requestKey: key,
+      link: homework.link,
+    })
     await expect(api.updateHomework(91, intent)).rejects.toBeInstanceOf(HeadmanHomeworkApiError)
     expect(requests[3]?.body).toEqual(requests[2]?.body)
   })
 
   it('finishes a lost creation response after transfer using the same request and current placement', async () => {
     const moved = { ...homework, lessonDate: '2026-10-02', lessonNumber: 5, bindingMode: 'LESSON' }
-    const fetcher = vi.fn()
+    const fetcher = vi
+      .fn()
       .mockRejectedValueOnce(new TypeError('response lost after creation'))
       .mockResolvedValueOnce(Response.json(moved))
-    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
-    const input = { title: homework.title, subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate,
-      lessonNumber: 2, bindingMode: 'LESSON' as const, requestKey: key }
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => 'token',
+      fetcher: fetcher as typeof fetch,
+    })
+    const input = {
+      title: homework.title,
+      subjectId: 88,
+      groupId: 7,
+      semesterId: 12,
+      lessonDate: homework.lessonDate,
+      lessonNumber: 2,
+      bindingMode: 'LESSON' as const,
+      requestKey: key,
+    }
     await expect(api.createHomework(input)).rejects.toThrow('response lost')
-    await expect(api.createHomework(input)).resolves.toMatchObject({ state: 'ACTIVE', homework: moved })
+    await expect(api.createHomework(input)).resolves.toMatchObject({
+      state: 'ACTIVE',
+      homework: moved,
+    })
     expect(fetcher.mock.calls[0]?.[1]?.body).toEqual(fetcher.mock.calls[1]?.[1]?.body)
   })
 
   it('retains PENDING identity in the intent and completes its same-key replay after transfer', async () => {
     const receipt = { homeworkId: '91', bindingId: '501', requestKey: key }
     const moved = { ...homework, lessonDate: '2026-10-02', lessonNumber: 5, bindingMode: 'LESSON' }
-    const fetcher = vi.fn()
+    const fetcher = vi
+      .fn()
       .mockResolvedValueOnce(Response.json({ ...receipt, state: 'PENDING' }, { status: 202 }))
       .mockResolvedValueOnce(Response.json(moved))
-    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
-    const context = { userId: 41, groupId: 7, semesterId: 12, subjectId: 88, selectedDate: homework.lessonDate,
-      lessonId: 300, lessonDate: homework.lessonDate, lessonNumber: 2, bindingMode: 'LESSON' as const }
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => 'token',
+      fetcher: fetcher as typeof fetch,
+    })
+    const context = {
+      userId: 41,
+      groupId: 7,
+      semesterId: 12,
+      subjectId: 88,
+      selectedDate: homework.lessonDate,
+      lessonId: 300,
+      lessonDate: homework.lessonDate,
+      lessonNumber: 2,
+      bindingMode: 'LESSON' as const,
+    }
     const values = { title: homework.title, description: '', link: '' }
     const original = reuseOrCreateAssistantHomeworkIntent(null, context, values, () => key)!
     const pending = await api.createHomework(original.input, original.receipt)
     expect(pending.state).toBe('PENDING')
     if (pending.state !== 'PENDING') throw new Error('expected pending publication')
     const accepted = withAssistantHomeworkPublicationReceipt(original, pending.receipt)
-    const retry = reuseOrCreateAssistantHomeworkIntent(accepted, context, { ...values, title: 'Changed' }, () => 'another-key')!
+    const retry = reuseOrCreateAssistantHomeworkIntent(
+      accepted,
+      context,
+      { ...values, title: 'Changed' },
+      () => 'another-key',
+    )!
     expect(retry).toBe(accepted)
     expect(retry.input).toBe(original.input)
     expect(retry.receipt).toEqual(receipt)
     expect(Object.isFrozen(retry.receipt)).toBe(true)
-    await expect(api.createHomework(retry.input, retry.receipt)).resolves.toMatchObject({ state: 'ACTIVE', homework: moved })
+    await expect(api.createHomework(retry.input, retry.receipt)).resolves.toMatchObject({
+      state: 'ACTIVE',
+      homework: moved,
+    })
     expect(fetcher.mock.calls[0]?.[1]?.body).toEqual(fetcher.mock.calls[1]?.[1]?.body)
   })
 
   it('rejects a different key, accepted identity or immutable scope in pending and active responses', async () => {
     const receipt = { homeworkId: '91', bindingId: '501', requestKey: key }
-    const input = { title: homework.title, subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate,
-      lessonNumber: 2, bindingMode: 'LESSON' as const, requestKey: key }
+    const input = {
+      title: homework.title,
+      subjectId: 88,
+      groupId: 7,
+      semesterId: 12,
+      lessonDate: homework.lessonDate,
+      lessonNumber: 2,
+      bindingMode: 'LESSON' as const,
+      requestKey: key,
+    }
     const otherKey = '3bbe4b81-42e1-4bcf-a963-41da6f379c02'
-    for (const wrong of [{ ...receipt, requestKey: otherKey }, { ...receipt, homeworkId: '92' }, { ...receipt, bindingId: '502' }]) {
-      const fetcher = vi.fn().mockResolvedValue(Response.json({ ...wrong, state: 'PENDING' }, { status: 202 }))
-      const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
+    for (const wrong of [
+      { ...receipt, requestKey: otherKey },
+      { ...receipt, homeworkId: '92' },
+      { ...receipt, bindingId: '502' },
+    ]) {
+      const fetcher = vi
+        .fn()
+        .mockResolvedValue(Response.json({ ...wrong, state: 'PENDING' }, { status: 202 }))
+      const api = new HeadmanHomeworkApi({
+        accessToken: () => 'token',
+        fetcher: fetcher as typeof fetch,
+      })
       await expect(api.createHomework(input, receipt)).rejects.toThrow('некорректное подтверждение')
     }
-    for (const wrong of [{ ...homework, requestKey: otherKey }, { ...homework, id: 92 }, { ...homework, bindingId: 502 },
-      { ...homework, groupId: 8 }, { ...homework, subjectId: 89 }, { ...homework, semesterId: 13 }]) {
+    for (const wrong of [
+      { ...homework, requestKey: otherKey },
+      { ...homework, id: 92 },
+      { ...homework, bindingId: 502 },
+      { ...homework, groupId: 8 },
+      { ...homework, subjectId: 89 },
+      { ...homework, semesterId: 13 },
+    ]) {
       const fetcher = vi.fn().mockResolvedValue(Response.json(wrong))
-      const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
+      const api = new HeadmanHomeworkApi({
+        accessToken: () => 'token',
+        fetcher: fetcher as typeof fetch,
+      })
       await expect(api.createHomework(input, receipt)).rejects.toThrow()
     }
   })

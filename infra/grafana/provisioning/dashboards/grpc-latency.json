@@ -1,5 +1,7 @@
 {
-  "annotations": {"list": []},
+  "annotations": {
+    "list": []
+  },
   "description": "M05 Группа 8 (NEW-149) — gRPC client latency по method + error-rate. Источник — grpc.client.duration histogram из GrpcClientMetricsInterceptor. Deadline 3s enforced на stub-level (см. ArchUnit GrpcClientDeadlineTest).",
   "editable": true,
   "fiscalYearStartMonth": 0,
@@ -11,88 +13,216 @@
     {
       "type": "timeseries",
       "title": "gRPC p50 latency (по методу)",
-      "description": "histogram_quantile(0.5) на 5-минутном rate. Baseline ~5ms loopback docker, alert при > 100ms = downstream перегружен.",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum by (service, method, le) (rate(grpc_client_duration_seconds_bucket[5m])))",
-          "legendFormat": "{{service}}/{{method}}",
+          "expr": "histogram_quantile(0.5, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
           "refId": "A"
         }
       ],
-      "fieldConfig": {"defaults": {"unit": "s"}}
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      }
     },
     {
       "type": "timeseries",
       "title": "gRPC p95 latency",
-      "description": "P95 — хвосты. Alert-триггер > 500ms (80% от deadline 3s).",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "id": 2,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (service, method, le) (rate(grpc_client_duration_seconds_bucket[5m])))",
-          "legendFormat": "{{service}}/{{method}}",
+          "expr": "histogram_quantile(0.95, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
           "refId": "A"
         }
       ],
-      "fieldConfig": {"defaults": {"unit": "s"}}
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      }
     },
     {
       "type": "timeseries",
       "title": "gRPC p99 latency",
-      "description": "P99 — deadline approach. > 2.5s = следующий запрос почти гарантировано получит DEADLINE_EXCEEDED.",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "id": 3,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum by (service, method, le) (rate(grpc_client_duration_seconds_bucket[5m])))",
-          "legendFormat": "{{service}}/{{method}}",
+          "expr": "histogram_quantile(0.99, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
           "refId": "A"
         }
       ],
-      "fieldConfig": {"defaults": {"unit": "s"}}
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      }
     },
     {
       "type": "timeseries",
-      "title": "gRPC error-rate (non-OK статусы)",
-      "description": "rate по gRPC status code — UNAVAILABLE / DEADLINE_EXCEEDED / FAILED_PRECONDITION (NEW-149 runtime-guard) / NOT_FOUND. Alert при > 5% error-rate sustained 5min.",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "title": "gRPC errors per second (non-OK)",
+      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "id": 4,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "sum by (service, method, status) (rate(grpc_client_duration_seconds_count{status!=\"OK\"}[5m]))",
-          "legendFormat": "{{service}}/{{method}} [{{status}}]",
+          "expr": "sum by (job, instance, environment, service, grpc_service, method, status) (rate(grpc_client_duration_seconds_count{status!=\"OK\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}} [{{status}}]",
           "refId": "A"
         }
       ],
-      "fieldConfig": {"defaults": {"unit": "reqps"}}
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "NO DATA"
+        }
+      }
     },
     {
       "type": "stat",
-      "title": "Active gRPC методы",
-      "description": "Количество уникальных (service, method) пар за последние 5 минут. Baseline: attendance→schedule 5 методов + attendance→academic 8 + schedule→academic 4 = 17.",
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+      "title": "Observed gRPC methods (5-minute samples)",
+      "description": "Metric observations include idle timers; count is instrumented methods with samples, not active concurrent calls.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 16
+      },
       "id": 5,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "count(count by (service, method) (rate(grpc_client_duration_seconds_count[5m])))",
-          "refId": "A"
+          "expr": "count(count by (service, grpc_service, method) (rate(grpc_client_duration_seconds_count{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "NO DATA"
+        }
+      }
     }
   ],
   "refresh": "30s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["m05", "grpc", "latency"],
-  "templating": {"list": []},
-  "time": {"from": "now-1h", "to": "now"},
+  "tags": [
+    "m05",
+    "grpc",
+    "latency"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "environment",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values(up, environment)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "job",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values(up{environment=~\"$environment\"}, job)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values(up{environment=~\"$environment\",job=~\"$job\"}, instance)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "",
   "title": "gRPC Client Latency (M05 G8)",

@@ -2,25 +2,22 @@ package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 
-/** V24 durable role grant read model owned by auth-service. */
+/** NONAUTHORITATIVE directory projection for registry filters and display; never admission. */
 @Entity
-@Table(name = "user_role_grants")
+@Table(name = "academic_role_directory")
 @Getter
 @NoArgsConstructor
 public class UserRoleGrant {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id private Long id;
 
     @Column(name = "user_id", nullable = false, updatable = false)
     private Long userId;

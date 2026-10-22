@@ -1,0 +1,115 @@
+{
+  "revision": "a8474924894c51ff65d510dc8ef5b2af301efa3e",
+  "archive": "/workspace/scratch/rct-validation/client_real_acceptance/client-real-acceptance-source.safe.zip",
+  "bytes": 33634,
+  "sha256": "d758820154fab54cae37aacdcd29e45f0ae3b2c79dff5915524698bba10bcacc",
+  "members": [
+    {
+      "member": "receipts/CURRENT.md",
+      "bytes": 815,
+      "sha256": "ada89b3ac36141fd4f28be06e52b128c9b87a6dcf3e856a4300ba247790b4054"
+    },
+    {
+      "member": "receipts/HANDOFF.md",
+      "bytes": 10706,
+      "sha256": "016e7b09110e259dbce9bfcc6a889c906668dca0c0e006a4b2f74255c32ad145"
+    },
+    {
+      "member": "receipts/assessment.json",
+      "bytes": 5034,
+      "sha256": "c831367e2568449bb5c0b6c1fdba8cc729ef20e0f7cc6bcb6a61c00a5e8177c2"
+    },
+    {
+      "member": "receipts/counterexamples.json",
+      "bytes": 919,
+      "sha256": "a13e69518b5dd99c3b5d6ab9109dd0f3c9c2a964c82e7cbafc115ea94d289a88"
+    },
+    {
+      "member": "receipts/format-check-final.log",
+      "bytes": 66,
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "member": "receipts/format-check.log",
+      "bytes": 66,
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "member": "receipts/format-write.log",
+      "bytes": 482,
+      "sha256": "158776d28764534421b14eb25b43250d059687dfba9eae311a5ba6876a4be6fa"
+    },
+    {
+      "member": "receipts/inventory.json",
+      "bytes": 2519,
+      "sha256": "54944139bfe19d078bbfef6c9e8cec97a7dfd95dce0d351e021f0c75b3816c23"
+    },
+    {
+      "member": "receipts/scenario-oracle-map.json",
+      "bytes": 18885,
+      "sha256": "2903f41817e55cfa65e93b2563a6256f0eaedcd163978c92b4848c22a372ca26"
+    },
+    {
+      "member": "receipts/source-inputs.json",
+      "bytes": 1317,
+      "sha256": "778eeb936ba8423ec2f664a46fc7cd26ba58f16c63d8bb310d32c7c3c91c1c5b"
+    },
+    {
+      "member": "receipts/source-verification.json",
+      "bytes": 1899,
+      "sha256": "40fa8d0b7d12cc83e2b38115f79e91fe6cfbbccd000a7330817671f8cffbf910"
+    },
+    {
+      "member": "receipts/verification-receipt.json",
+      "bytes": 1355,
+      "sha256": "359fcb99bdb72cb325d8907b4452ace263c4dc5656e80c6754cf0fd8020203d5"
+    },
+    {
+      "member": "receipts/verify-source.mjs",
+      "bytes": 2562,
+      "sha256": "f9c2cdc0df9b2fdab3e2aaacd29ecb6b054123c8acd54fb524a7b5fad0edf8a2"
+    },
+    {
+      "member": "receipts/write-receipts.py",
+      "bytes": 9176,
+      "sha256": "ceddd1bc7f74af13155ca8ae901afd06d96ea70533a35efd3546218fc9fb7c5e"
+    },
+    {
+      "member": "tests/e2e/fixtures/cloud-accepted-playwright.ts",
+      "bytes": 722,
+      "sha256": "19dcceae2b4c729dad3370f70f83beb448481395fb14b461bafa5a909813c987"
+    },
+    {
+      "member": "tests/e2e/fixtures/cloud-accepted-support.ts",
+      "bytes": 5255,
+      "sha256": "46570c1a92cb78bf9aa5981a0f11745584d32eea5362acc3eb8b81e414ed6c39"
+    },
+    {
+      "member": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+      "bytes": 4294,
+      "sha256": "59161e3e6d614b372317ec21de22c108832fb54e4eaba020e7313220575eb146"
+    },
+    {
+      "member": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "bytes": 11790,
+      "sha256": "f1d868e7e68ef3959fe9787c91f0ad482d1d4a762d5c1b6fc45e480823831fc0"
+    },
+    {
+      "member": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "bytes": 5330,
+      "sha256": "2efc5eeff233f95f73de26a7ba5a6b82804b4d73e75076c791fe91b8b80f71bc"
+    },
+    {
+      "member": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+      "bytes": 3350,
+      "sha256": "e73ab8a2a07389876953a4878af82991ff06400b4740613cc02285e0905f1c2c"
+    },
+    {
+      "member": "tests/e2e/specs/cloud-accepted-tma-proof.spec.ts",
+      "bytes": 2697,
+      "sha256": "ec9d92563341a651be3156aca4d67438f04bc5888805f8178ebd1eb30c318f99"
+    }
+  ],
+  "private_artifacts": "source and safe metadata only; no generated credentials/proofs/tokens/sessions/identities",
+  "runtime": "NOT_RUN"
+}

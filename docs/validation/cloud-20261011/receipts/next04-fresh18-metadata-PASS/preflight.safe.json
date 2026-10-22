@@ -1,0 +1,422 @@
+{
+  "utc": "2026-10-13T03:25:43.711421+00:00",
+  "scope": "ACTUAL_READONLY_METADATA_PREFLIGHT",
+  "runtime": "NOT_RUN",
+  "actor_uid": 1000,
+  "actor_gid": 1000,
+  "checks": {
+    "actor1000": true,
+    "resource_barrier": true,
+    "project_empty": true,
+    "old5_volume_names_driver_labels": true,
+    "all5_exact_images": true,
+    "IPAM_no_overlap": true,
+    "ports_not_listening": true,
+    "stopped159_key_metadata_exact": true,
+    "runtime_ancestor_anchors_exact": true,
+    "all_bound_source_guard_review_seals": true,
+    "JDK_exact_small_binary_hash": true,
+    "actual_result_commit_spec_SHA": true,
+    "artifact8_present_ordinary_owned": true,
+    "host7_app_cwds_and_declaredclasspath_readable": true,
+    "exact_mounts_present_nosymlink_owned": true,
+    "no_visible_live_app_browser_and_root_heavy_released": true,
+    "new_cohort_absent": true,
+    "new_next04_grant_absent": true
+  },
+  "blockers": [],
+  "resources": {
+    "workspace_free": 9429684224,
+    "tmp_free": 7500517376,
+    "shared": 5097697280,
+    "maximum": 17179869184
+  },
+  "project_containers": [],
+  "project_networks": [],
+  "old5_volumes": [
+    {
+      "name": "rct-client-host-config-20261012_owned-postgres-academic",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "0c6c31317df897fc003a1f16bd35e2f3b1a683a7160dece320f5ebf5df4016aa",
+        "com.docker.compose.project": "rct-client-host-config-20261012",
+        "com.docker.compose.version": "2.40.3",
+        "com.docker.compose.volume": "owned-postgres-academic"
+      },
+      "same_prior": true
+    },
+    {
+      "name": "rct-client-host-config-20261012_owned-postgres-schedule",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "61e89268dff8e28bb3636b09a5dc55cb3114e21e317a8443c021e8f6f05ef1e1",
+        "com.docker.compose.project": "rct-client-host-config-20261012",
+        "com.docker.compose.version": "2.40.3",
+        "com.docker.compose.volume": "owned-postgres-schedule"
+      },
+      "same_prior": true
+    },
+    {
+      "name": "rct-client-host-config-20261012_owned-mongo-attendance",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "2d23ff85f70759d190542f2d59b7dfb0692688581b71de96e389f90ce5ebd23c",
+        "com.docker.compose.project": "rct-client-host-config-20261012",
+        "com.docker.compose.version": "2.40.3",
+        "com.docker.compose.volume": "owned-mongo-attendance"
+      },
+      "same_prior": true
+    },
+    {
+      "name": "rct-client-host-config-20261012_owned-redis",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "8b5d190c532b1551a388983b40c07b35d735583a3fb2293175aed5cbb92adcd4",
+        "com.docker.compose.project": "rct-client-host-config-20261012",
+        "com.docker.compose.version": "2.40.3",
+        "com.docker.compose.volume": "owned-redis"
+      },
+      "same_prior": true
+    },
+    {
+      "name": "rct-client-host-config-20261012_owned-rabbitmq",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "0eeb71a78e1d2afa66ae4c06b43ecd69afb4681d20c491f6f043b1bc2fdc154c",
+        "com.docker.compose.project": "rct-client-host-config-20261012",
+        "com.docker.compose.version": "2.40.3",
+        "com.docker.compose.volume": "owned-rabbitmq"
+      },
+      "same_prior": true
+    }
+  ],
+  "images": [
+    {
+      "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "size": 176465533,
+      "user": "",
+      "cwd": "/",
+      "entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "cmd": [
+        "rabbitmq-server"
+      ]
+    },
+    {
+      "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "size": 451303453,
+      "user": "",
+      "cwd": "",
+      "entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "cmd": [
+        "postgres"
+      ]
+    },
+    {
+      "id": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "size": 48216274,
+      "user": "",
+      "cwd": "/",
+      "entrypoint": [
+        "/docker-entrypoint.sh"
+      ],
+      "cmd": [
+        "nginx",
+        "-g",
+        "daemon off;"
+      ]
+    },
+    {
+      "id": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+      "size": 721470337,
+      "user": "app",
+      "cwd": "/app",
+      "entrypoint": [
+        "java",
+        "org.springframework.boot.loader.launch.JarLauncher"
+      ],
+      "cmd": null
+    },
+    {
+      "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+      "size": 39061364,
+      "user": "",
+      "cwd": "/data",
+      "entrypoint": [
+        "docker-entrypoint.sh"
+      ],
+      "cmd": [
+        "redis-server"
+      ]
+    }
+  ],
+  "network_IPAM": [
+    {
+      "id": "5a818f4fe5d3b8d8ee8a422a6c37dba03d0f6330f9d132f1bad1a72a3db19f51",
+      "name": "bridge",
+      "IPAM": [
+        {
+          "Gateway": "172.17.0.1",
+          "Subnet": "172.17.0.0/16"
+        }
+      ]
+    },
+    {
+      "id": "1911064eb8533cd59ddb14acc50b8e7a9dbb8a965b2987aa288fe8a8a789ed02",
+      "name": "host",
+      "IPAM": null
+    },
+    {
+      "id": "b92899604cbc84c843014b87b35200b1e69d266eab531ffa5b27c7dfca991f58",
+      "name": "none",
+      "IPAM": null
+    }
+  ],
+  "IPAM_overlap": [],
+  "ports": [
+    8080,
+    8085,
+    8443,
+    9090,
+    9091,
+    9092,
+    9093,
+    9094,
+    19091,
+    19092,
+    19093,
+    19094,
+    19095,
+    28379,
+    28417,
+    28432,
+    28433,
+    28488,
+    28672
+  ],
+  "listening_conflicts": [],
+  "data_metadata_nodes": 159,
+  "data_key_ENV_content_or_hash_reads": false,
+  "next04_source_manifest": {
+    "path": "/workspace/scratch/rct-validation/current_host_restart_next04_parameters/source/manifest.json",
+    "sha256": "95e43a914cf866e6ccd58b0fcbb305534b9cd7c0580adf2e6e16f2b378266afc"
+  },
+  "Root_source_revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "old19_current19_qualification": "17unchanged+2approvedcheckingchanges; no runtimeproductinputdelta",
+  "artifact8_JAR_metadata": [
+    {
+      "service": "auth",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1246760,
+      "bytes": 100183493,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "academic",
+      "path": "/tmp/rct-academic-refresh-20261012-attempt01/checkout/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "device": 33,
+      "inode": 212652,
+      "bytes": 99771572,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "schedule",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1251413,
+      "bytes": 93153993,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "attendance",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1311480,
+      "bytes": 95976000,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "bff",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1442010,
+      "bytes": 50139225,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "gateway",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "device": 27,
+      "inode": 1442092,
+      "bytes": 62093389,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "notification",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1444106,
+      "bytes": 86688703,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    },
+    {
+      "service": "renderer",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "device": 27,
+      "inode": 1445889,
+      "bytes": 48918520,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "nlink": 1,
+      "retained_producer_SHA": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "fresh_full_JAR_rehash": "NOT_REPEATED_IMMUTABLE_PRODUCER_FENCE"
+    }
+  ],
+  "host7_classpath_metadata": [
+    {
+      "service": "auth",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/auth/app",
+      "classpath_style": "genuine-default-cwd-JarLauncher",
+      "available_readable_nosymlink": true
+    },
+    {
+      "service": "academic",
+      "cwd": "/tmp/rct-academic-refresh-20261012-attempt01/app",
+      "classpath_style": "separate-cp",
+      "available_readable_nosymlink": true
+    },
+    {
+      "service": "schedule",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/schedule/app",
+      "classpath_style": "separate-cp",
+      "available_readable_nosymlink": true
+    },
+    {
+      "service": "attendance",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/attendance/app",
+      "classpath_style": "separate-cp",
+      "available_readable_nosymlink": true
+    },
+    {
+      "service": "bff",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/bff/app",
+      "classpath_style": "separate-cp",
+      "available_readable_nosymlink": true
+    },
+    {
+      "service": "gateway",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/gateway/app",
+      "classpath_style": "genuine-default-cwd-JarLauncher",
+      "available_readable_nosymlink": true
+    },
+    {
+      "service": "notification",
+      "cwd": "/workspace/scratch/rct-validation/current_host_stage/payload/notification/app",
+      "classpath_style": "genuine-default-cwd-JarLauncher",
+      "available_readable_nosymlink": true
+    }
+  ],
+  "readonly_mount_metadata": [
+    {
+      "source": "/workspace/scratch/rct-validation/current_host_stage/payload/renderer/app",
+      "device": 27,
+      "inode": 8256,
+      "mode": 493,
+      "uid": 1000,
+      "gid": 1000,
+      "nofollow_kind_ok": true
+    },
+    {
+      "source": "/workspace/rutcampustrack/tests/e2e/infra/nginx/nginx.conf",
+      "device": 27,
+      "inode": 9223372036856386782,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "nofollow_kind_ok": true
+    },
+    {
+      "source": "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/edge-default.conf",
+      "device": 27,
+      "inode": 1845575,
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000,
+      "nofollow_kind_ok": true
+    },
+    {
+      "source": "/workspace/scratch/rct-validation/current_host_config/tls/edge",
+      "device": 27,
+      "inode": 11981,
+      "mode": 493,
+      "uid": 1000,
+      "gid": 1000,
+      "nofollow_kind_ok": true
+    },
+    {
+      "source": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue/dist",
+      "device": 27,
+      "inode": 29489,
+      "mode": 493,
+      "uid": 1000,
+      "gid": 1000,
+      "nofollow_kind_ok": true
+    },
+    {
+      "source": "/workspace/scratch/rct-validation/current_vue_stage/frontend/tma-vue/dist",
+      "device": 27,
+      "inode": 29500,
+      "mode": 493,
+      "uid": 1000,
+      "gid": 1000,
+      "nofollow_kind_ok": true
+    }
+  ],
+  "visible_live_known_app_browser_names": [],
+  "process_metadata_unreadable": [],
+  "old_private_grant_content_not_read": true,
+  "governing_D012_task_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "old_rejection_preserved": true,
+  "finished_utc": "2026-10-13T03:25:44.073339+00:00",
+  "disposition": "READY_READONLY_METADATA_ONLY"
+}

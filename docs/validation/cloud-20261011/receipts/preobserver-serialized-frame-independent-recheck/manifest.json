@@ -1,0 +1,16 @@
+{
+  "scope": "SERIALIZATION_FRAME_ONLY_AND_CLOSED_WORKER_ROW_RETENTION",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1682,
+      "sha256": "a38861a154b98ad20e713a51f6b76f3ac1c25893b2d297998a1ce639d4b8d4c0"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2573,
+      "sha256": "0fcdb4e99b53ccdc4bb0dab4bade0a73b4bc511819a77aaed2dfd5bbf1fcf858"
+    }
+  ]
+}

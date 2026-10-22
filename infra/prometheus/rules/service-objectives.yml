@@ -1,0 +1,223 @@
+groups:
+- name: service-objectives
+  rules:
+  - record: rct_sli:http_eligible_rate5m
+    expr: sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[5m]))
+  - record: rct_sli:http_error_ratio5m
+    expr: (sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[5m]))
+      or on (job, instance, environment, method, uri, routeId) (0 * rct_sli:http_eligible_rate5m)) / rct_sli:http_eligible_rate5m
+  - record: rct_sli:http_eligible_rate30m
+    expr: sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[30m]))
+  - record: rct_sli:http_error_ratio30m
+    expr: (sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[30m]))
+      or on (job, instance, environment, method, uri, routeId) (0 * rct_sli:http_eligible_rate30m)) / rct_sli:http_eligible_rate30m
+  - record: rct_sli:http_eligible_rate1h
+    expr: sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[1h]))
+  - record: rct_sli:http_error_ratio1h
+    expr: (sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[1h]))
+      or on (job, instance, environment, method, uri, routeId) (0 * rct_sli:http_eligible_rate1h)) / rct_sli:http_eligible_rate1h
+  - record: rct_sli:http_eligible_rate6h
+    expr: sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[6h]))
+  - record: rct_sli:http_error_ratio6h
+    expr: (sum by (job, instance, environment, method, uri, routeId) (rate(http_server_requests_seconds_count{status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[6h]))
+      or on (job, instance, environment, method, uri, routeId) (0 * rct_sli:http_eligible_rate6h)) / rct_sli:http_eligible_rate6h
+  - alert: HttpAvailabilityBudgetBurnFast
+    expr: rct_sli:http_error_ratio5m > (14.4 * 0.001) and rct_sli:http_error_ratio1h > (14.4 * 0.001) and (sum by (job, instance, environment, method, uri,
+      routeId) (increase(http_server_requests_seconds_count{status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[5m]))
+      >= 20)
+    for: 2m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: HTTP99.9% error-budget burn in {{ $labels.job }} {{ $labels.method }} {{ $labels.uri }}
+      description: Eligible=observed2xx/3xx/5xx businessHTTP; expected4xx/cancellations and actuator/docs excluded. Good=2xx/3xx; error=5xx. Both sustained
+        windows exceed budget. This observed-request SLI does not measure off-host reachability; inspect request/trace IDs and downstream failures. Minimum20
+        eligible samples in5m prevents one low-volume request from becoming a ratio page; absolute terminal failures have separate alerts.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: HttpAvailabilityBudgetBurnSlow
+    expr: rct_sli:http_error_ratio30m > (6 * 0.001) and rct_sli:http_error_ratio6h > (6 * 0.001) and (sum by (job, instance, environment, method, uri, routeId)
+      (increase(http_server_requests_seconds_count{status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[30m])) >= 100)
+    for: 15m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: HTTP99.9% error-budget burn in {{ $labels.job }} {{ $labels.method }} {{ $labels.uri }}
+      description: Eligible=observed2xx/3xx/5xx businessHTTP; expected4xx/cancellations and actuator/docs excluded. Good=2xx/3xx; error=5xx. Both sustained
+        windows exceed budget. This observed-request SLI does not measure off-host reachability; inspect request/trace IDs and downstream failures. Minimum100
+        eligible samples in30m; low traffic is not a statistical availability verdict.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - record: rct_sli:report_p95_seconds5m
+    expr: histogram_quantile(0.95,sum by (job,instance,environment,report,format,le) (rate(attendance_report_duration_seconds_bucket{outcome!="rejected"}[5m])))
+  - alert: ReportLatencyObjectiveExceeded
+    expr: rct_sli:report_p95_seconds5m{format="docx"} > 30
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: DOCX eligible report p95 >30s
+      description: Completed report API attempts excluding expected rejected inputs. A transient retry is not a new business denominator. Inspect renderer
+        latency and capacity; preserve the complete18-week report.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - record: rct_sli:http_operation_p95_seconds5m
+    expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[5m])))
+    labels:
+      operation: file_export
+  - alert: HttpOperationLatencyObjectiveExceeded
+    expr: rct_sli:http_operation_p95_seconds5m{operation="file_export"} > 30
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+      operation: file_export
+    annotations:
+      summary: file_export p95 exceeds30s in {{ $labels.job }} {{ $labels.uri }}
+      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
+        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
+        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - record: rct_sli:http_operation_p95_seconds5m
+    expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~"(/api)?/auth/.*|.*/mobile/session",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[5m])))
+    labels:
+      operation: admission
+  - alert: HttpOperationLatencyObjectiveExceeded
+    expr: rct_sli:http_operation_p95_seconds5m{operation="admission"} > 2
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+      operation: admission
+    annotations:
+      summary: admission p95 exceeds2s in {{ $labels.job }} {{ $labels.uri }}
+      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
+        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
+        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - record: rct_sli:http_operation_p95_seconds5m
+    expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"GET|HEAD",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[5m])))
+    labels:
+      operation: read
+  - alert: HttpOperationLatencyObjectiveExceeded
+    expr: rct_sli:http_operation_p95_seconds5m{operation="read"} > 2
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+      operation: read
+    annotations:
+      summary: read p95 exceeds2s in {{ $labels.job }} {{ $labels.uri }}
+      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
+        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
+        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - record: rct_sli:http_operation_p95_seconds5m
+    expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"POST|PUT|PATCH|DELETE",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[5m])))
+    labels:
+      operation: write
+  - alert: HttpOperationLatencyObjectiveExceeded
+    expr: rct_sli:http_operation_p95_seconds5m{operation="write"} > 3
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+      operation: write
+    annotations:
+      summary: write p95 exceeds3s in {{ $labels.job }} {{ $labels.uri }}
+      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
+        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
+        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+- name: http-slo-window-rollup
+  interval: 30m
+  rules:
+  - record: rct_sli:http_scrape_window_complete30m
+    expr: (min by (job,environment) (min_over_time(up{job=~"api-gateway|auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production"}[30m]))
+      == 1) and on(job,environment) (min by (job,environment) (count_over_time(up{job=~"api-gateway|auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production"}[30m]))
+      >= 120) and on(job,environment) (count by(job,environment) (up{job=~"api-gateway|auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production"})
+      == count by(job,environment) (rct_expected_target{job=~"api-gateway|auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production"}))
+  - record: rct_sli:http_eligible_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[30m]))
+    labels:
+      operation: file_export
+  - record: rct_sli:http_eligible_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~"(/api)?/auth/.*|.*/mobile/session",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[30m]))
+    labels:
+      operation: admission
+  - record: rct_sli:http_eligible_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"GET|HEAD",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[30m]))
+    labels:
+      operation: read
+  - record: rct_sli:http_eligible_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"POST|PUT|PATCH|DELETE",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[30m]))
+    labels:
+      operation: write
+  - record: rct_sli:http_eligible_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job="api-gateway",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[30m]))
+    labels:
+      operation: gateway_ingress
+  - record: rct_sli:http_error_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[30m]))
+      or on(job,environment) (0 * rct_sli:http_eligible_events30m{operation="file_export"})
+    labels:
+      operation: file_export
+  - record: rct_sli:http_error_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~"(/api)?/auth/.*|.*/mobile/session",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[30m]))
+      or on(job,environment) (0 * rct_sli:http_eligible_events30m{operation="admission"})
+    labels:
+      operation: admission
+  - record: rct_sli:http_error_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"GET|HEAD",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[30m]))
+      or on(job,environment) (0 * rct_sli:http_eligible_events30m{operation="read"})
+    labels:
+      operation: read
+  - record: rct_sli:http_error_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"POST|PUT|PATCH|DELETE",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[30m]))
+      or on(job,environment) (0 * rct_sli:http_eligible_events30m{operation="write"})
+    labels:
+      operation: write
+  - record: rct_sli:http_error_events30m
+    expr: sum by(job,environment) (increase(http_server_requests_seconds_count{job="api-gateway",environment="production",status=~"5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[30m]))
+      or on(job,environment) (0 * rct_sli:http_eligible_events30m{operation="gateway_ingress"})
+    labels:
+      operation: gateway_ingress
+  - record: rct_sli:http_window_complete30m
+    expr: 1 + 0 * ((min by(job,environment) (count_over_time(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[30m]))
+      >= 120) and on(job,environment) rct_sli:http_scrape_window_complete30m)
+    labels:
+      operation: file_export
+  - record: rct_sli:http_window_complete30m
+    expr: 1 + 0 * ((min by(job,environment) (count_over_time(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~"(/api)?/auth/.*|.*/mobile/session",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[30m]))
+      >= 120) and on(job,environment) rct_sli:http_scrape_window_complete30m)
+    labels:
+      operation: admission
+  - record: rct_sli:http_window_complete30m
+    expr: 1 + 0 * ((min by(job,environment) (count_over_time(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"GET|HEAD",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[30m]))
+      >= 120) and on(job,environment) rct_sli:http_scrape_window_complete30m)
+    labels:
+      operation: read
+  - record: rct_sli:http_window_complete30m
+    expr: 1 + 0 * ((min by(job,environment) (count_over_time(http_server_requests_seconds_count{job=~"auth-service|mobile-bff|academic-service|schedule-service|attendance-service|notification-web|document-renderer-service",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"POST|PUT|PATCH|DELETE",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[30m]))
+      >= 120) and on(job,environment) rct_sli:http_scrape_window_complete30m)
+    labels:
+      operation: write
+  - record: rct_sli:http_window_complete30m
+    expr: 1 + 0 * ((min by(job,environment) (count_over_time(http_server_requests_seconds_count{job="api-gateway",environment="production",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[30m]))
+      >= 120) and on(job,environment) rct_sli:http_scrape_window_complete30m)
+    labels:
+      operation: gateway_ingress
+  - record: rct_sli:http_window_timestamp_seconds
+    expr: time() + 0 * rct_sli:http_window_complete30m
+# Prometheus2.55 includes both range boundaries. Exclude the old boundary by1s
+# so thirty days contain exactly1440 nonoverlapping30min window endings.
+- name: http-slo-long-window
+  interval: 1m
+  rules:
+  - record: rct_sli:http_source_coverage_seconds30d
+    expr: time() - min_over_time(rct_sli:http_window_timestamp_seconds[29d23h59m59s])
+  - record: rct_sli:http_source_samples30d
+    expr: count_over_time(rct_sli:http_window_timestamp_seconds[29d23h59m59s])
+  - record: rct_sli:http_availability30d
+    expr: (1 - sum_over_time(rct_sli:http_error_events30m[29d23h59m59s]) / sum_over_time(rct_sli:http_eligible_events30m[29d23h59m59s])) and on(job,environment,operation)
+      (rct_sli:http_source_coverage_seconds30d >= 2590200) and on(job,environment,operation) (rct_sli:http_source_samples30d >= 1440)

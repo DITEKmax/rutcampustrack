@@ -1,0 +1,41 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/native_deadline_recheck/CURRENT.json",
+      "name": "CURRENT.json",
+      "bytes": 789,
+      "mode": 384,
+      "sha256": "6de17e3cbd55380f005123ff5777e996a01bff42c4454bc380ef6de292ef89e3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_deadline_recheck/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 7352,
+      "mode": 384,
+      "sha256": "59d535aa686701b4050a573fe58952aa7c7ee728f788c5ae6e6abcb58580a6d0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_deadline_recheck/recheck.safe.json",
+      "name": "recheck.safe.json",
+      "bytes": 2341,
+      "mode": 384,
+      "sha256": "45f5df8663865f66f2adceb4ad4097157fc0cb477796b925ba6a36b4048a9ddc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_deadline_recheck/selected-static-recheck.py",
+      "name": "selected-static-recheck.py",
+      "bytes": 9962,
+      "mode": 384,
+      "sha256": "cc21701b533c5d681e9ca55a9494ed96600e6e976f88ff12154d8419e47ebc9a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_deadline_recheck/source-delta.patch",
+      "name": "source-delta.patch",
+      "bytes": 5018,
+      "mode": 384,
+      "sha256": "a143d22d3f5093c36526e471cf7791a24f585f27ba397c0218f9d5ac6745ba5b"
+    }
+  ],
+  "private_or_native_payload_included": false
+}

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import MobileIcon from './MobileIcon.vue'
-import checkIcon from '../../assets/admin/check.svg'
-import './admin-notice.pcss'
+import MobileIcon from './MobileIcon.vue';
+import checkIcon from '../../assets/admin/check.svg';
+import './admin-notice.pcss';
 
-defineProps<{ tone: 'success' | 'warning' | 'danger'; title: string }>()
+defineProps<{ tone: 'success' | 'warning' | 'danger'; title: string }>();
 </script>
 
 <template>

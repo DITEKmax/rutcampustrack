@@ -1,0 +1,32 @@
+[
+  {
+    "name": "bounded-child.py",
+    "source": "/workspace/scratch/rct-validation/current_artifact_corrections/bounded-child.py",
+    "sha256": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+    "bytes": 8769
+  },
+  {
+    "name": "harmless-tree.py",
+    "source": "/workspace/scratch/rct-validation/current_artifact_corrections/harmless-tree.py",
+    "sha256": "a879d65c1cee0e15f370f13f92710c6e0efce2e3011db5261b5985863079fc97",
+    "bytes": 767
+  },
+  {
+    "name": "signal-runner.py",
+    "source": "/workspace/scratch/rct-validation/current_artifact_corrections/signal-runner.py",
+    "sha256": "8e0159dd195006e01ab8d4cd0cffec2799f2eb2985a1e4eba6aaef1e6b7f4a95",
+    "bytes": 822
+  },
+  {
+    "name": "controls.py",
+    "source": "/workspace/scratch/rct-validation/current_artifact_corrections/controls.py",
+    "sha256": "d722cb1096505ce7d5ef83cae2614e1545a6de5f61076755af64372e2a41f40c",
+    "bytes": 10913
+  },
+  {
+    "name": "preserve.py",
+    "source": "/workspace/scratch/rct-validation/current_artifact_corrections/preserve.py",
+    "sha256": "d9b66843f05265df514a7bab5b367c27778055af983fa42ea914bb769b829db3",
+    "bytes": 5106
+  }
+]

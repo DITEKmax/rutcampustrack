@@ -1,73 +1,62 @@
-# M04 Группа 9 — Alertmanager config. QA4 + NEW-62/63/64.
-#
-# Routing: все алерты → single webhook в notification-web:9094
-# (/internal/alert), который re-publishes в RabbitMQ `alert.fired`;
-# notification-bot consumer форвардит в Telegram админу (D2=(a)).
-#
-# Mute window 22:00-08:00 MSK — только для severity!=critical (D3).
-# Critical (ServiceDown) будит ночью, warning — отложен до утра.
-
 global:
   resolve_timeout: 5m
-
-# Тихий час — fixed 22:00-08:00 MSK. D3=(a).
-# `time_intervals` — v0.27+ alertmanager формат.
-# MSK = UTC+3: 22:00 MSK = 19:00 UTC, 08:00 MSK = 05:00 UTC.
-# Интервал через полночь UTC разделён на два непрерывных диапазона.
-# Alertmanager v0.27 включает start_time и исключает end_time; '24:00'
-# допустим как конец суток. [19:00,24:00) + [00:00,05:00) покрывают
-# ровно 10 часов без минутного разрыва перед полуночью UTC.
 time_intervals:
-  - name: quiet-hours-msk
-    time_intervals:
-      - times:
-          - start_time: '19:00'
-            end_time: '24:00'
-          - start_time: '00:00'
-            end_time: '05:00'
-        location: 'UTC'
-
+- name: quiet-hours-msk
+  time_intervals:
+  - times:
+    - start_time: '19:00'
+      end_time: '24:00'
+    - start_time: 00:00
+      end_time: 05:00
+    location: UTC
 route:
-  receiver: 'notification-webhook'
-  group_by: ['alertname', 'service']
-  group_wait: 30s       # accumulate related alerts в одну notification
-  group_interval: 5m    # between group notifications same group
-  repeat_interval: 3h   # повторное уведомление если alert продолжается
+  receiver: notification-webhook
+  group_by:
+  - environment
+  - alertname
+  - service
+  - job
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 3h
   routes:
-    # Critical — идут всегда, включая тихий час. Мышление простое:
-    # если сервис лёг ночью, лучше разбудить админа, чем ждать утра.
-    - matchers:
-        - severity="critical"
-      receiver: 'notification-webhook'
-      continue: false
-
-    # Warnings — muted в тихий час. Остальные отсылаются сразу.
-    - matchers:
-        - severity="warning"
-      receiver: 'notification-webhook'
-      mute_time_intervals:
-        - quiet-hours-msk
-      continue: false
-
+  - matchers:
+    - severity="critical"
+    receiver: notification-webhook
+    continue: false
+  - matchers:
+    - severity="warning"
+    receiver: notification-webhook
+    mute_time_intervals:
+    - quiet-hours-msk
+    continue: false
 receivers:
-  - name: 'notification-webhook'
-    webhook_configs:
-      - url: 'http://notification-web:9094/internal/alert'
-        send_resolved: true
-        max_alerts: 0  # без лимита в одном POST payload'е
-        http_config:
-          # Internal secret для защиты endpoint'а (M06 заменит на mTLS).
-          # Alertmanager добавляет header Authorization: Bearer <token>
-          # автоматически из credentials.
-          authorization:
-            type: Bearer
-            credentials_file: /etc/alertmanager/secret
-
+- name: notification-webhook
+  webhook_configs:
+  - url: http://notification-web:9094/internal/alert
+    send_resolved: true
+    max_alerts: 100
+    http_config:
+      authorization:
+        type: Bearer
+        credentials_file: /run/secrets/alert-webhook-token
 inhibit_rules:
-  # Если ServiceDown — не шумим HealthCheckDown для того же target
-  # (сервис down → health тоже down, один сигнал достаточен).
-  - source_matchers:
-      - alertname="ServiceDown"
-    target_matchers:
-      - alertname="HealthCheckDown"
-    equal: ['instance', 'job']
+- source_matchers:
+  - alertname="ServiceDown"
+  - service!=""
+  target_matchers:
+  - alertname="HealthCheckDown"
+  - service!=""
+  equal:
+  - environment
+  - service
+- source_matchers:
+  - alertname="HttpAvailabilityBudgetBurnFast"
+  target_matchers:
+  - alertname="HttpAvailabilityBudgetBurnSlow"
+  equal:
+  - environment
+  - job
+  - instance
+  - method
+  - uri

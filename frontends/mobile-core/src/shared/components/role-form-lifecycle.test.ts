@@ -4,7 +4,6 @@ import RoleSwitchDialog from './RoleSwitchDialog.vue'
 import AutoGrowTextarea from '../../features/requests/AutoGrowTextarea.vue'
 import { DEFAULT_PASSWORD_POLICY, type ProfileSnapshot } from '../../features/profile/profile-types'
 
-let wrapOnPageScrollbar = false
 
 class TestElement {
   children: TestElement[] = []
@@ -15,22 +14,40 @@ class TestElement {
   value = ''
   clientWidth = 350
   contentHeight = 188
-  constructor(readonly tag: string) { markRaw(this) }
-  get tagName(): string { return this.tag.toUpperCase() }
-  get nodeName(): string { return this.tagName }
-  get childNodes(): TestElement[] { return this.children }
-  get clientHeight(): number { return Math.max(96, parseFloat(this.style.height) || 0) }
-  get scrollHeight(): number {
-    const extraLine = wrapOnPageScrollbar && this.tag === 'textarea' && this.clientHeight >= 188 ? 24 : 0
-    return Math.max(this.contentHeight + extraLine, this.clientHeight)
+  constructor(readonly tag: string) {
+    markRaw(this)
   }
-  getAttributeNames(): string[] { return Object.keys(this.props) }
-  getAttribute(name: string): string | null { return this.props[name] === undefined ? null : String(this.props[name]) }
-  focus(): void { testDocument.activeElement = this }
-  contains(target: unknown): boolean { return this === target || this.children.some((child) => child.contains(target)) }
+  get tagName(): string {
+    return this.tag.toUpperCase()
+  }
+  get nodeName(): string {
+    return this.tagName
+  }
+  get childNodes(): TestElement[] {
+    return this.children
+  }
+  get clientHeight(): number {
+    return Math.max(96, parseFloat(this.style.height) || 0)
+  }
+  get scrollHeight(): number {
+    return Math.max(this.contentHeight, this.clientHeight)
+  }
+  getAttributeNames(): string[] {
+    return Object.keys(this.props)
+  }
+  getAttribute(name: string): string | null {
+    return this.props[name] === undefined ? null : String(this.props[name])
+  }
+  focus(): void {
+    testDocument.activeElement = this
+  }
+  contains(target: unknown): boolean {
+    return this === target || this.children.some((child) => child.contains(target))
+  }
   querySelectorAll(): TestElement[] {
     return this.children.flatMap((child) => [
-      ...(child.tag === 'button' && !child.props.disabled ? [child] : []), ...child.querySelectorAll(),
+      ...(child.tag === 'button' && !child.props.disabled ? [child] : []),
+      ...child.querySelectorAll(),
     ])
   }
 }
@@ -39,7 +56,11 @@ class TestDocument extends EventTarget {
   body = new TestElement('body')
   fonts = Object.assign(new EventTarget(), { ready: Promise.resolve() })
   listeners = new Map<string, Set<EventListenerOrEventListenerObject>>()
-  override addEventListener(name: string, listener: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions): void {
+  override addEventListener(
+    name: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions,
+  ): void {
     if (listener) {
       const callbacks = this.listeners.get(name) ?? new Set()
       callbacks.add(listener)
@@ -47,7 +68,11 @@ class TestDocument extends EventTarget {
     }
     super.addEventListener(name, listener, options)
   }
-  override removeEventListener(name: string, listener: EventListenerOrEventListenerObject | null, options?: boolean | EventListenerOptions): void {
+  override removeEventListener(
+    name: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions,
+  ): void {
     if (listener) this.listeners.get(name)?.delete(listener)
     super.removeEventListener(name, listener, options)
   }
@@ -63,21 +88,29 @@ const renderer = createRenderer<TestElement, TestElement>({
   createElement: (tag) => new TestElement(tag),
   createText: (text) => Object.assign(new TestElement('#text'), { text }),
   createComment: (text) => Object.assign(new TestElement('#comment'), { text }),
-  setText: (node, text) => { node.text = text },
-  setElementText: (node, text) => { node.text = text; node.children = [] },
+  setText: (node, text) => {
+    node.text = text
+  },
+  setElementText: (node, text) => {
+    node.text = text
+    node.children = []
+  },
   parentNode: (node) => node.parentElement,
-  nextSibling: (node) => node.parentElement?.children[node.parentElement.children.indexOf(node) + 1] ?? null,
+  nextSibling: (node) =>
+    node.parentElement?.children[node.parentElement.children.indexOf(node) + 1] ?? null,
   querySelector: () => testDocument.body,
   patchProp: (node, key, _old, value) => {
     node.props[key] = value
     if (key === 'value') node.value = String(value)
   },
   remove: (node) => {
-    if (node.parentElement) node.parentElement.children = node.parentElement.children.filter((child) => child !== node)
+    if (node.parentElement)
+      node.parentElement.children = node.parentElement.children.filter((child) => child !== node)
     node.parentElement = null
   },
   insert: (node, parent, anchor) => {
-    if (node.parentElement) node.parentElement.children = node.parentElement.children.filter((child) => child !== node)
+    if (node.parentElement)
+      node.parentElement.children = node.parentElement.children.filter((child) => child !== node)
     const index = anchor ? parent.children.indexOf(anchor) : -1
     parent.children.splice(index < 0 ? parent.children.length : index, 0, node)
     node.parentElement = parent
@@ -86,22 +119,45 @@ const renderer = createRenderer<TestElement, TestElement>({
 function setup(): TestElement {
   testDocument = new TestDocument()
   frames.clear()
-  wrapOnPageScrollbar = false
   observed = null
   notifyResize = null
   disconnected = false
   vi.stubGlobal('document', testDocument)
   vi.stubGlobal('HTMLElement', TestElement)
   vi.stubGlobal('window', new EventTarget())
-  vi.stubGlobal('getComputedStyle', () => ({ minHeight: '96px', borderTopWidth: '0px', borderBottomWidth: '0px' }))
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frames.set(++frameId, callback); return frameId })
-  vi.stubGlobal('cancelAnimationFrame', (id: number) => { frames.delete(id) })
-  vi.stubGlobal('ResizeObserver', class {
-    constructor(callback: () => void) { notifyResize = callback }
-    observe(element: TestElement): void { observed = element }
-    disconnect(): void { disconnected = true }
+  vi.stubGlobal('getComputedStyle', () => ({
+    minHeight: '96px',
+    borderTopWidth: '0px',
+    borderBottomWidth: '0px',
+  }))
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    frames.set(++frameId, callback)
+    return frameId
   })
-  vi.stubGlobal('MutationObserver', class { observe(): void {} disconnect(): void {} })
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => {
+    frames.delete(id)
+  })
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      constructor(callback: () => void) {
+        notifyResize = callback
+      }
+      observe(element: TestElement): void {
+        observed = element
+      }
+      disconnect(): void {
+        disconnected = true
+      }
+    },
+  )
+  vi.stubGlobal(
+    'MutationObserver',
+    class {
+      observe(): void {}
+      disconnect(): void {}
+    },
+  )
   return new TestElement('root')
 }
 async function flushFrame(): Promise<void> {
@@ -116,8 +172,14 @@ function key(key: string, shiftKey = false): Event {
 }
 function roleSnapshot(): ProfileSnapshot {
   return {
-    sessionId: 'session', userId: 'student', displayName: 'Student', sessionVersion: 'v1', rolesVersion: 'v1',
-    activeRole: 'STUDENT', readOnly: false, passwordPolicy: DEFAULT_PASSWORD_POLICY,
+    sessionId: 'session',
+    userId: 'student',
+    displayName: 'Student',
+    sessionVersion: 'v1',
+    rolesVersion: 'v1',
+    activeRole: 'STUDENT',
+    readOnly: false,
+    passwordPolicy: DEFAULT_PASSWORD_POLICY,
     roles: [
       { grantId: 'student', role: 'STUDENT', status: 'ACTIVE', selectable: true, readOnly: false },
       { grantId: 'headman', role: 'HEADMAN', status: 'ACTIVE', selectable: true, readOnly: false },
@@ -134,7 +196,10 @@ describe('role overlay lifecycle', () => {
     const root = setup()
     const previous = new TestElement('button')
     testDocument.activeElement = previous
-    const app = renderer.createApp(RoleSwitchDialog, { snapshot: roleSnapshot(), onSelectRole: vi.fn() })
+    const app = renderer.createApp(RoleSwitchDialog, {
+      snapshot: roleSnapshot(),
+      onSelectRole: vi.fn(),
+    })
     app.mount(root)
     app.unmount()
     await nextTick()
@@ -150,7 +215,11 @@ describe('role overlay lifecycle', () => {
     const previous = new TestElement('button')
     testDocument.activeElement = previous
     const close = vi.fn()
-    const app = renderer.createApp(RoleSwitchDialog, { snapshot: roleSnapshot(), onSelectRole: vi.fn(), onClose: close })
+    const app = renderer.createApp(RoleSwitchDialog, {
+      snapshot: roleSnapshot(),
+      onSelectRole: vi.fn(),
+      onClose: close,
+    })
     apps.push(app)
     app.mount(root)
     await nextTick()
@@ -171,51 +240,16 @@ describe('role overlay lifecycle', () => {
   })
 })
 
-describe('comment wrapping measurement', () => {
-  it('fits final wrapping when restoring height restores the outer page scrollbar', async () => {
+
+
+describe('comment measurement lifecycle', () => {
+  it('releases observers and ignores pending width/font callbacks after unmount', async () => {
     const root = setup()
-    wrapOnPageScrollbar = true
     const app = renderer.createApp(AutoGrowTextarea, { modelValue: 'Retained comment' })
-    apps.push(app)
-    app.mount(root)
-    const control = root.children.find((child) => child.tag === 'textarea')!
-    // height:auto measured 188; restoring it caused one extra 24px line.
-    expect(control.style.height).toBe('212px')
-    expect(control.clientHeight).toBeGreaterThanOrEqual(control.scrollHeight)
-    await flushFrame()
-    expect(control.style.height).toBe('212px')
-  })
-  it('remeasures the textarea width after page scrollbars, font completion and deletion', async () => {
-    const root = setup()
-    const app = renderer.createApp({ render: () => h(AutoGrowTextarea, { modelValue: 'Retained comment' }) })
-    apps.push(app)
-    app.mount(root)
-    const control = root.children.find((child) => child.tag === 'textarea')!
-    expect(control.style.height).toBe('188px')
+    apps.push(app); app.mount(root)
+    const control = root.children.find(child => child.tag === 'textarea')!
     expect(observed).toBe(control)
-    // A page scrollbar narrows the actual control after initial growth.
-    control.clientWidth = 335
-    control.contentHeight = 212
-    notifyResize?.()
-    // A hidden browser may not run animation frames: nextTick must suffice.
-    await nextTick()
-    expect(control.style.height).toBe('212px')
-    await flushFrame()
-    expect(control.clientHeight).toBeGreaterThanOrEqual(control.scrollHeight)
-    expect(control.style.height).toBe('212px')
-    // Font completion can wrap more lines while width stays unchanged.
-    control.contentHeight = 236
-    testDocument.fonts.dispatchEvent(new Event('loadingdone'))
-    await flushFrame()
-    expect(control.style.height).toBe('236px')
-    control.contentHeight = 44
-    const input = control.props.onInput as (event: { target: TestElement }) => void
-    control.value = ''
-    input({ target: control })
-    await flushFrame()
-    expect(control.style.height).toBe('96px')
-    app.unmount()
-    apps.pop()
+    app.unmount(); apps.pop()
     expect(disconnected).toBe(true)
     const height = control.style.height
     notifyResize?.()

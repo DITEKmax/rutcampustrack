@@ -31,6 +31,12 @@ public record LessonTransferBatch(
         bindings = List.copyOf(bindings);
     }
 
-    public record Binding(long bindingId, long actorId, UUID requestKey, Long homeworkId,
-                          String payloadHash, String state, long revision) { }
+    public record Binding(
+            long bindingId,
+            long actorId,
+            UUID requestKey,
+            Long homeworkId,
+            String payloadHash,
+            String state,
+            long revision) {}
 }

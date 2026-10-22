@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Optional
 
 import redis.asyncio as aioredis
@@ -55,6 +56,9 @@ class OtpMessageTracker:
             return cls.KEY_PREFIX, cls.PENDING_PREFIX
         if purpose == "password_reset":
             return cls.RESET_KEY_PREFIX, cls.RESET_PENDING_PREFIX
+        if re.fullmatch(r"subject_delete:[A-Za-z0-9_-]{32}", purpose):
+            # Challenge-keyed cleanup cannot delete a later operation's bot code.
+            return f"{purpose}:msgs:", f"{purpose}:pending:"
         raise ValueError("unsupported OTP purpose")
 
     async def store_pending_user_msg(

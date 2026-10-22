@@ -1,0 +1,16 @@
+{
+  "time": "2026-10-11T20:25:19.365229+00:00",
+  "proposal_sha256": "8ca2d21468f2adbf8470e13fbb909b61b773a48a46367851c8fbeda4e944b094",
+  "current_manifest_sha256": "561d565d2e1e11af240d21748f7d84f3ace541454a7e4e2a10a9176c556b006b",
+  "all_prior_values_unchanged": "PASS",
+  "layout": "rootserializationrewroteintactlayout atcheckpoint; correction reconstructsoriginalrestoredproposal bytebody+newownerheader entries, normalEOF only",
+  "new_entries": [
+    "delivery_manual_absence_geo_block_20261011",
+    "owner_cloud_skills_20261011",
+    "owner_cloud_validation_20261011",
+    "delivery_pwa_offline_readonly_20261011",
+    "delivery_tma_initdata_reuse_20261011",
+    "delivery_map_legend_deferred_20261011"
+  ],
+  "scope": "source-doc correction; no product/runtimechanges"
+}

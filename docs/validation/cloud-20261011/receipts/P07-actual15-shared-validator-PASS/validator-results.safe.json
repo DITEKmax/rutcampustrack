@@ -1,0 +1,82 @@
+{
+  "schema": "RCT_P07_CLOSED_XML_V1",
+  "schema_valid": true,
+  "code": "CLOSED",
+  "pass": true,
+  "classname": "ru.rutcampustrack.shared.security.InternalJwtValidatorTest",
+  "declared": {
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "observed": {
+    "PASSED": 15,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0
+  },
+  "cases": [
+    {
+      "method": "validToken_returnsCompleteFrozenClaims",
+      "status": "PASSED"
+    },
+    {
+      "method": "headmanTokenKeepsRawAdmissionRoleAndMapsToStudentDomainRole",
+      "status": "PASSED"
+    },
+    {
+      "method": "terminalToken_isReadOnlyAndCanOmitGroup",
+      "status": "PASSED"
+    },
+    {
+      "method": "expiredToken_throws",
+      "status": "PASSED"
+    },
+    {
+      "method": "wrongSignatureIssuerAudienceAndPurpose_throw",
+      "status": "PASSED"
+    },
+    {
+      "method": "onlyRs256Tokens_areAccepted",
+      "status": "PASSED"
+    },
+    {
+      "method": "joseHeader_mustContainExactlyCanonicalAlgAndType",
+      "status": "PASSED"
+    },
+    {
+      "method": "joseHeader_mayIncludeCanonicalJwtType",
+      "status": "PASSED"
+    },
+    {
+      "method": "duplicateJoseHeader_withValidSignature_isRejected",
+      "status": "PASSED"
+    },
+    {
+      "method": "duplicatePayload_withValidSignature_isRejected",
+      "status": "PASSED"
+    },
+    {
+      "method": "missingAndWrongTypeClaims_throw",
+      "status": "PASSED"
+    },
+    {
+      "method": "everyFrozenRequiredClaimMustBePresent",
+      "status": "PASSED"
+    },
+    {
+      "method": "canonicalAndSemanticInvariants_areRequired",
+      "status": "PASSED"
+    },
+    {
+      "method": "timeClaims_mustBeWholeSecondAndOrdered",
+      "status": "PASSED"
+    },
+    {
+      "method": "blankAndNullToken_throwWithoutBearerInMessage",
+      "status": "PASSED"
+    }
+  ],
+  "gradle_native_exit": 0
+}

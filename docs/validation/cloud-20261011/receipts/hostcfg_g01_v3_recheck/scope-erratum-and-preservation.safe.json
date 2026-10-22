@@ -1,0 +1,22 @@
+{
+  "attempt01_source_sha256": "7efbc625686fc7cc46dd7561557b807bf727afe9f5c887c92b663954a7f245a8",
+  "final_source_sha256": "049dd43de49d54300e5aa8883bdfb6c0cf28b7bcc3554c7f5ac84d32140c544a",
+  "exact_scope_correction_changes_only": [
+    "deterministic sorted iteration",
+    "ENV json/env suffix filter",
+    "VAPID added to stat-only key inventory"
+  ],
+  "selected_actual_suffix_filter_controls": 6,
+  "generator_actual_function_with_public_deterministic_byte_fixture": {
+    "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/prepare-directional-v3.py",
+    "source_sha256": "049dd43de49d54300e5aa8883bdfb6c0cf28b7bcc3554c7f5ac84d32140c544a",
+    "function_AST_sha256": "2e717bab1f3a23ee07437fe72931794c3543b9bf700d4855bccf968d5cd467fe"
+  },
+  "historical_author_OWN_VAPID_read_copy": "acknowledged source/receipt erratum; exact redundant NEW copy removed; initial no-key-read flag superseded",
+  "current_private_copy_count9_and_noPEM": true,
+  "original_private_keys_ID_ENV_all_captured_metadata_exact": 19,
+  "reviewer_private_key_or_ID_bytes_read": false,
+  "private_hashes_or_values_disclosed": false,
+  "full_corrected_generation_rerun": "not claimed; actual current nine outputs independently validated",
+  "old16review_old39_privatekeys_source_product_validators_unchanged": true
+}

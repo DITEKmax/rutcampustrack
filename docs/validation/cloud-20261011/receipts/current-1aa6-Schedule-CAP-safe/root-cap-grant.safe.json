@@ -1,0 +1,7 @@
+{
+  "authorized_by_root": true,
+  "scope": "CURRENT1AA6_ONE_CLOSED_SCHEDULE_ARTIFACT",
+  "issued": "2026-10-13T22:05:41.729438+00:00",
+  "stop": "2026-10-13T22:07:41.729438+00:00",
+  "limits": "unchanged45/5/5/30;32MiBcompressed+decompressed/512MiBRSSsampled/256MiBgrowth/4GiBfloor/15GiBshared1reserve"
+}

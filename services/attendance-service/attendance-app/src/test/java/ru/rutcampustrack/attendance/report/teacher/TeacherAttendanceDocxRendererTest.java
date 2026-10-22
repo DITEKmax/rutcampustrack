@@ -1,9 +1,13 @@
 package ru.rutcampustrack.attendance.report.teacher;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.exception.ReportValidationException;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Cell;
@@ -13,7 +17,6 @@ import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.ReportKind;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Row;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,19 +30,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 class TeacherAttendanceDocxRendererTest {
 
-    private static final String WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    private static final String WORD_NS =
+            "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
     private final TeacherAttendanceDocxRenderer renderer = new TeacherAttendanceDocxRenderer();
 
     @Test
-    void subjectJournalKeepsEveryLessonAndStudentAcrossSixColumnSegments() throws Exception {
-        TeacherAttendanceExportModel model = model(ReportKind.SUBJECT_JOURNAL,
-                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
+    void subjectJournalKeepsEveryLessonAndStudentAcrossLogicalSegments() throws Exception {
+        TeacherAttendanceExportModel model =
+                model(
+                        ReportKind.SUBJECT_JOURNAL,
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 9, 30));
 
         byte[] docx = renderer.render(model);
         writeSampleIfRequested("subject-journal.docx", docx);
@@ -47,41 +53,50 @@ class TeacherAttendanceDocxRendererTest {
         var document = parse(xml);
         NodeList tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
 
-        assertThat(tables.getLength()).isEqualTo(3);
         assertThat(xml).doesNotContain("${", "50001", "50002");
-        assertThat(xml).contains(
-                "Журнал посещаемости по предмету",
-                "Физика и астрономия",
-                "Лабораторная работа",
-                "Запланировано",
-                "Отменено",
-                "Иванова Елизавета Александровна с очень длинной фамилией",
-                "25%");
-        assertThat(count(xml, "<w:tblHeader w:val=\"true\"/>" )).isEqualTo(3);
-        assertThat(count(xml, "<w:br w:type=\"page\"/>" )).isEqualTo(2);
-
-        Element firstMatrix = (Element) tables.item(0);
-        Element secondMatrix = (Element) tables.item(1);
-        assertThat(rows(firstMatrix)).hasSize(3);
-        assertThat(rows(secondMatrix)).hasSize(3);
-        assertThat(cells(rows(firstMatrix).get(0))).hasSize(8);
-        assertThat(cells(rows(secondMatrix).get(0))).hasSize(4);
-        assertThat(cellText(cells(rows(firstMatrix).get(2)).get(4))).isEmpty();
-        assertThat(cellText(cells(rows(firstMatrix).get(2)).get(5))).isEmpty();
-        assertThat(cellText(cells(rows(secondMatrix).get(1)).get(3))).isEmpty();
-
-        Element summary = (Element) tables.item(2);
-        List<Element> summaryRows = rows(summary);
-        assertThat(cells(summaryRows.get(0))).hasSize(10);
-        assertThat(cells(summaryRows.get(1))).hasSize(10);
-        assertThat(cellText(cells(summaryRows.get(2)).get(6))).isEqualTo("—");
-        assertThat(cellText(cells(summaryRows.get(2)).get(7))).isEqualTo("—");
-        assertThat(cellText(cells(summaryRows.get(2)).get(8))).isEqualTo("—");
-        assertThat(cellText(cells(summaryRows.get(2)).get(9))).isEqualTo("—");
+        assertThat(visibleText(xml))
+                .contains(
+                        "Журнал посещаемости по предмету",
+                        "Физика и астрономия",
+                        "Запланировано",
+                        "Отменено",
+                        "25%");
+        assertMatrix(model, document);
+        var logicalRows = ru.rutcampustrack.attendance.report.ExportTableReader.wordRows(xml);
+        assertThat(logicalRows)
+                .anySatisfy(
+                        row ->
+                                assertThat(row)
+                                        .containsExactly(
+                                                model.rows().getFirst().displayName(),
+                                                "2",
+                                                "2",
+                                                "1",
+                                                "4",
+                                                "8",
+                                                "25%",
+                                                "50%",
+                                                "25%",
+                                                "12,5%"));
+        assertThat(logicalRows)
+                .anySatisfy(
+                        row ->
+                                assertThat(row)
+                                        .containsExactly(
+                                                model.rows().get(1).displayName(),
+                                                "0",
+                                                "0",
+                                                "0",
+                                                "0",
+                                                "0",
+                                                "—",
+                                                "—",
+                                                "—",
+                                                "—"));
     }
 
     @Test
-    void largeSemesterKeepsThirtyStudentsAndThirtySixLessons() throws Exception {
+    void eighteenWeekSemesterKeepsThirtyStudentsAllThirtySixLessonsAndTotals() throws Exception {
         TeacherAttendanceExportModel model = largeSemesterModel();
 
         byte[] docx = renderer.render(model);
@@ -91,84 +106,140 @@ class TeacherAttendanceDocxRendererTest {
         NodeList tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
         String visibleText = visibleText(xml);
 
-        assertThat(tables.getLength()).isEqualTo(7);
         assertThat(xml).doesNotContain("${", "91000", "91029");
-        assertThat(visibleText).contains(
-                "Математический анализ и прикладная статистика для инженерных направлений",
-                "Александрова Мария Сергеевна, обучающаяся по индивидуальному учебному плану",
-                "Фёдорова Анастасия Михайловна");
-
-        for (int segmentIndex = 0; segmentIndex < 6; segmentIndex++) {
-            List<Element> matrixRows = rows((Element) tables.item(segmentIndex));
-            assertThat(matrixRows).hasSize(31);
-            assertThat(cells(matrixRows.get(0))).hasSize(8);
-            assertThat(cells(matrixRows.get(1))).hasSize(8);
-        }
-        Element firstMatrix = (Element) tables.item(0);
-        assertThat(cellText(cells(rows(firstMatrix).get(1)).get(2))).isEqualTo("·");
-
-        Element summary = (Element) tables.item(6);
-        List<Element> summaryRows = rows(summary);
-        assertThat(summaryRows).hasSize(31);
-        assertThat(cells(summaryRows.get(0))).hasSize(10);
-        assertThat(cells(summaryRows.get(30))).hasSize(10);
-        for (int studentIndex = 0; studentIndex < largeStudentNames().size(); studentIndex++) {
-            String studentName = largeStudentNames().get(studentIndex);
-            assertThat(occurrences(visibleText, studentName)).isEqualTo(7);
-        }
-        for (int lessonIndex = 0; lessonIndex < 36; lessonIndex++) {
-            assertThat(visibleText).contains(largeSemesterModelDate(lessonIndex));
+        assertThat(visibleText)
+                .contains(
+                        "Математический анализ и прикладная статистика для инженерных направлений");
+        assertMatrix(model, document);
+        for (String student : largeStudentNames()) {
+            assertThat(ru.rutcampustrack.attendance.report.ExportTableReader.wordRows(xml))
+                    .anySatisfy(
+                            row -> {
+                                assertThat(row.getFirst()).isEqualTo(student);
+                                assertThat(row.subList(1, row.size()))
+                                        .containsExactly(
+                                                "18", "9", "9", "27", "36", "50%", "75%", "25%",
+                                                "25%");
+                            });
         }
     }
 
     @Test
     void weeklyBatchKeepsCallerWeekBoundariesAndAddsASectionForEachModel() throws Exception {
-        TeacherAttendanceExportModel first = model(ReportKind.WEEKLY_ATTENDANCE,
-                LocalDate.of(2026, 9, 7), LocalDate.of(2026, 9, 13));
-        TeacherAttendanceExportModel second = model(ReportKind.WEEKLY_ATTENDANCE,
-                LocalDate.of(2026, 9, 14), LocalDate.of(2026, 9, 20));
+        TeacherAttendanceExportModel first =
+                model(
+                        ReportKind.WEEKLY_ATTENDANCE,
+                        LocalDate.of(2026, 9, 7),
+                        LocalDate.of(2026, 9, 13));
+        TeacherAttendanceExportModel second =
+                model(
+                        ReportKind.WEEKLY_ATTENDANCE,
+                        LocalDate.of(2026, 9, 14),
+                        LocalDate.of(2026, 9, 20));
 
         byte[] docx = renderer.render(List.of(first, second));
         writeSampleIfRequested("weekly-batch.docx", docx);
         String xml = TeacherAttendanceDocxRenderer.readDocumentXml(docx);
         String visibleText = visibleText(xml);
 
-        assertThat(visibleText).contains(
-                "Неделя: 07.09.2026–13.09.2026", "Неделя: 14.09.2026–20.09.2026");
-        assertThat(count(xml, "<w:br w:type=\"page\"/>" )).isEqualTo(3);
+        assertThat(visibleText)
+                .contains("Неделя: 07.09.2026–13.09.2026", "Неделя: 14.09.2026–20.09.2026");
+        assertThat(visibleText.indexOf("Неделя: 07.09.2026–13.09.2026"))
+                .isLessThan(visibleText.indexOf("Неделя: 14.09.2026–20.09.2026"));
         assertThat(visibleText).doesNotContain("${");
         assertThat(visibleText).doesNotContain("Итоги по студентам");
-        assertThat(parse(xml).getElementsByTagNameNS(WORD_NS, "tbl").getLength()).isEqualTo(4);
+        parse(xml);
     }
 
     @Test
     void weeklyBatchRejectsSubjectJournalModels() {
-        TeacherAttendanceExportModel subjectModel = model(ReportKind.SUBJECT_JOURNAL,
-                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
+        TeacherAttendanceExportModel subjectModel =
+                model(
+                        ReportKind.SUBJECT_JOURNAL,
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 9, 30));
 
         assertThatThrownBy(() -> renderer.render(List.of(subjectModel)))
                 .isInstanceOf(ReportValidationException.class)
                 .hasMessageContaining("WEEKLY_ATTENDANCE");
     }
 
-    private static TeacherAttendanceExportModel model(ReportKind kind, LocalDate from, LocalDate to) {
+    private static void assertMatrix(
+            TeacherAttendanceExportModel model, org.w3c.dom.Document document) {
+        var tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
+        java.util.Set<Long> observed = new java.util.HashSet<>();
+        for (int table = 0; table < tables.getLength(); table++) {
+            var matrixRows = rows((Element) tables.item(table));
+            if (matrixRows.isEmpty()) continue;
+            var headings =
+                    cells(matrixRows.getFirst()).stream()
+                            .map(TeacherAttendanceDocxRendererTest::cellText)
+                            .toList();
+            if (!headings.contains("№") || !headings.contains("Студент")) continue;
+            for (var column : model.columns()) {
+                String date =
+                        column.date()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.uuuu"));
+                int position = -1;
+                for (int index = 0; index < headings.size(); index++) {
+                    String heading = headings.get(index);
+                    if (heading.contains(date)
+                            && heading.contains(column.typeLabel())
+                            && heading.contains("№" + column.lessonNumber())) position = index;
+                }
+                if (position < 0) continue;
+                assertThat(observed.add(column.lessonId())).isTrue();
+                for (var expected : model.rows()) {
+                    var row =
+                            matrixRows.stream()
+                                    .skip(1)
+                                    .map(TeacherAttendanceDocxRendererTest::cells)
+                                    .filter(
+                                            value ->
+                                                    value.stream()
+                                                            .anyMatch(
+                                                                    cell ->
+                                                                            cellText(cell)
+                                                                                    .equals(
+                                                                                            expected
+                                                                                                    .displayName())))
+                                    .findFirst()
+                                    .orElseThrow();
+                    var mark = expected.cellsByLessonId().get(column.lessonId());
+                    String symbol =
+                            mark == null ? "" : mark.symbol().isBlank() ? "·" : mark.symbol();
+                    assertThat(cellText(row.get(position)))
+                            .as(expected.displayName() + "/" + column.lessonId())
+                            .isEqualTo(symbol);
+                }
+            }
+        }
+        assertThat(observed)
+                .containsExactlyInAnyOrderElementsOf(
+                        model.columns().stream().map(Column::lessonId).toList());
+    }
+
+    private static TeacherAttendanceExportModel model(
+            ReportKind kind, LocalDate from, LocalDate to) {
         List<Column> columns = new ArrayList<>();
         for (int index = 0; index < 8; index++) {
-            columns.add(new Column(
-                    700L + index,
-                    from.plusDays(kind == ReportKind.WEEKLY_ATTENDANCE ? index % 6L : index * 2L),
-                    LocalTime.of(9 + index % 4, 30),
-                    index + 1,
-                    81L,
-                    "Физика и астрономия",
-                    index % 2 == 0 ? "LAB" : "LECTURE",
-                    index % 2 == 0 ? "Лабораторная работа" : "Лекция",
-                    switch (index) {
-                        case 2 -> "CANCELLED";
-                        case 3, 7 -> "PLANNED";
-                        case 4 -> "ACTIVE";
-                        default -> "CLOSED";
-                    }));
+            columns.add(
+                    new Column(
+                            700L + index,
+                            from.plusDays(
+                                    kind == ReportKind.WEEKLY_ATTENDANCE ? index % 6L : index * 2L),
+                            LocalTime.of(9 + index % 4, 30),
+                            index + 1,
+                            81L,
+                            "Физика и астрономия",
+                            index % 2 == 0 ? "LAB" : "LECTURE",
+                            index % 2 == 0 ? "Лабораторная работа" : "Лекция",
+                            switch (index) {
+                                case 2 -> "CANCELLED";
+                                case 3, 7 -> "PLANNED";
+                                case 4 -> "ACTIVE";
+                                default -> "CLOSED";
+                            }));
         }
 
         Map<Long, Cell> firstCells = new LinkedHashMap<>();
@@ -180,48 +251,82 @@ class TeacherAttendanceDocxRendererTest {
         firstCells.put(706L, new Cell("у", AttendanceStatus.EXCUSED, true));
         // Future lesson 707 deliberately has no key, so the report cannot imply absence.
 
-        java.util.Optional<Metrics> rowMetrics = kind == ReportKind.WEEKLY_ATTENDANCE
-                ? java.util.Optional.empty()
-                : java.util.Optional.of(new Metrics(2, 2, 1, 4, 8,
-                        new BigDecimal("25"), new BigDecimal("50"),
-                        new BigDecimal("25"), new BigDecimal("12.5")));
-        Row first = new Row(50001L,
-                "Иванова Елизавета Александровна с очень длинной фамилией",
-                firstCells,
-                rowMetrics);
-        Row second = new Row(50002L,
-                "Петров Артём",
-                Map.of(),
+        java.util.Optional<Metrics> rowMetrics =
                 kind == ReportKind.WEEKLY_ATTENDANCE
                         ? java.util.Optional.empty()
-                        : java.util.Optional.of(new Metrics(0, 0, 0, 0, 0,
-                                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
+                        : java.util.Optional.of(
+                                new Metrics(
+                                        2,
+                                        2,
+                                        1,
+                                        4,
+                                        8,
+                                        new BigDecimal("25"),
+                                        new BigDecimal("50"),
+                                        new BigDecimal("25"),
+                                        new BigDecimal("12.5")));
+        Row first =
+                new Row(
+                        50001L,
+                        "Иванова Елизавета Александровна с очень длинной фамилией",
+                        firstCells,
+                        rowMetrics);
+        Row second =
+                new Row(
+                        50002L,
+                        "Петров Артём",
+                        Map.of(),
+                        kind == ReportKind.WEEKLY_ATTENDANCE
+                                ? java.util.Optional.empty()
+                                : java.util.Optional.of(
+                                        new Metrics(
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO,
+                                                BigDecimal.ZERO)));
 
-        Context context = new Context(kind, 12L, "Осенний семестр", 42L, "ПИ-101",
-                kind == ReportKind.SUBJECT_JOURNAL ? 81L : null,
-                kind == ReportKind.SUBJECT_JOURNAL ? "Физика и астрономия" : "",
-                from, to, List.of("Лабораторная работа", "Лекция"),
-                Instant.parse("2026-09-23T10:11:12Z"));
+        Context context =
+                new Context(
+                        kind,
+                        12L,
+                        "Осенний семестр",
+                        42L,
+                        "ПИ-101",
+                        kind == ReportKind.SUBJECT_JOURNAL ? 81L : null,
+                        kind == ReportKind.SUBJECT_JOURNAL ? "Физика и астрономия" : "",
+                        from,
+                        to,
+                        List.of("Лабораторная работа", "Лекция"),
+                        Instant.parse("2026-09-23T10:11:12Z"));
         return new TeacherAttendanceExportModel(context, columns, List.of(first, second));
     }
 
     private static TeacherAttendanceExportModel largeSemesterModel() {
         LocalDate from = LocalDate.of(2026, 2, 2);
-        LocalDate to = LocalDate.of(2026, 7, 31);
+        LocalDate to = from.plusWeeks(18).minusDays(1);
         String subject = "Математический анализ и прикладная статистика для инженерных направлений";
         List<Column> columns = new ArrayList<>();
         for (int index = 0; index < 36; index++) {
-            columns.add(new Column(
-                    800L + index,
-                    largeSemesterDate(from, index),
-                    LocalTime.of(9 + index % 6, 30),
-                    index % 5 + 1,
-                    801L,
-                    subject,
-                    index % 3 == 0 ? "LECTURE" : index % 3 == 1 ? "PRACTICE" : "LAB",
-                    index % 3 == 0 ? "Лекция" : index % 3 == 1
-                            ? "Практическое занятие" : "Лабораторная работа с индивидуальным оборудованием",
-                    "CLOSED"));
+            columns.add(
+                    new Column(
+                            800L + index,
+                            largeSemesterDate(from, index),
+                            LocalTime.of(9 + index % 6, 30),
+                            index % 5 + 1,
+                            801L,
+                            subject,
+                            index % 3 == 0 ? "LECTURE" : index % 3 == 1 ? "PRACTICE" : "LAB",
+                            index % 3 == 0
+                                    ? "Лекция"
+                                    : index % 3 == 1
+                                            ? "Практическое занятие"
+                                            : "Лабораторная работа с индивидуальным оборудованием",
+                            "CLOSED"));
         }
 
         List<Row> rows = new ArrayList<>();
@@ -229,35 +334,49 @@ class TeacherAttendanceDocxRendererTest {
             Map<Long, Cell> cells = new LinkedHashMap<>();
             for (int lessonIndex = 0; lessonIndex < columns.size(); lessonIndex++) {
                 int symbolIndex = (studentIndex + lessonIndex) % 4;
-                Cell cell = switch (symbolIndex) {
-                    case 0 -> new Cell("", AttendanceStatus.PRESENT, true);
-                    case 1 -> new Cell("+", AttendanceStatus.PRESENT, true);
-                    case 2 -> new Cell("у", AttendanceStatus.EXCUSED, true);
-                    default -> new Cell("н", AttendanceStatus.ABSENT, true);
-                };
+                Cell cell =
+                        switch (symbolIndex) {
+                            case 0 -> new Cell("", AttendanceStatus.PRESENT, true);
+                            case 1 -> new Cell("+", AttendanceStatus.PRESENT, true);
+                            case 2 -> new Cell("у", AttendanceStatus.EXCUSED, true);
+                            default -> new Cell("н", AttendanceStatus.ABSENT, true);
+                        };
                 cells.put(columns.get(lessonIndex).lessonId(), cell);
             }
-            rows.add(new Row(
-                    91_000L + studentIndex,
-                    largeStudentNames().get(studentIndex),
-                    cells,
-                    java.util.Optional.of(new Metrics(18, 9, 9, 27, 36,
-                            new BigDecimal("50"), new BigDecimal("75"),
-                            new BigDecimal("25"), new BigDecimal("25")))));
+            rows.add(
+                    new Row(
+                            91_000L + studentIndex,
+                            largeStudentNames().get(studentIndex),
+                            cells,
+                            java.util.Optional.of(
+                                    new Metrics(
+                                            18,
+                                            9,
+                                            9,
+                                            27,
+                                            36,
+                                            new BigDecimal("50"),
+                                            new BigDecimal("75"),
+                                            new BigDecimal("25"),
+                                            new BigDecimal("25")))));
         }
 
-        Context context = new Context(
-                ReportKind.SUBJECT_JOURNAL,
-                12L,
-                "Осенне-весенний семестр 2025/2026",
-                43L,
-                "ПИ-301",
-                801L,
-                subject,
-                from,
-                to,
-                List.of("Лекция", "Практическое занятие", "Лабораторная работа с индивидуальным оборудованием"),
-                Instant.parse("2026-06-30T12:30:00Z"));
+        Context context =
+                new Context(
+                        ReportKind.SUBJECT_JOURNAL,
+                        12L,
+                        "Осенне-весенний семестр 2025/2026",
+                        43L,
+                        "ПИ-301",
+                        801L,
+                        subject,
+                        from,
+                        to,
+                        List.of(
+                                "Лекция",
+                                "Практическое занятие",
+                                "Лабораторная работа с индивидуальным оборудованием"),
+                        Instant.parse("2026-06-30T12:30:00Z"));
         return new TeacherAttendanceExportModel(context, columns, rows);
     }
 
@@ -296,7 +415,7 @@ class TeacherAttendanceDocxRendererTest {
     }
 
     private static LocalDate largeSemesterDate(LocalDate from, int lessonIndex) {
-        return from.plusDays(lessonIndex * 4L);
+        return from.plusWeeks(lessonIndex / 2).plusDays(lessonIndex % 2 * 3L);
     }
 
     private static String largeSemesterModelDate(int lessonIndex) {
@@ -307,7 +426,10 @@ class TeacherAttendanceDocxRendererTest {
     private static org.w3c.dom.Document parse(String xml) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        return factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        return factory.newDocumentBuilder()
+                .parse(
+                        new ByteArrayInputStream(
+                                xml.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
     private static List<Element> rows(Element table) {
@@ -323,7 +445,8 @@ class TeacherAttendanceDocxRendererTest {
         NodeList children = parent.getChildNodes();
         for (int index = 0; index < children.getLength(); index++) {
             Node child = children.item(index);
-            if (child instanceof Element element && WORD_NS.equals(element.getNamespaceURI())
+            if (child instanceof Element element
+                    && WORD_NS.equals(element.getNamespaceURI())
                     && localName.equals(element.getLocalName())) {
                 result.add(element);
             }

@@ -1,0 +1,38 @@
+{
+  "source": "native GitHub decoded job log; values not forwarded",
+  "repo": "DITEKmax/rutcampustrack",
+  "job_id": 114603624624,
+  "run_id": 38184430147,
+  "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "actual_checkout_merge_sha": "c3d12f3313a95f25162a1503be624f3b0617f8c0",
+  "scanner_version": "8.24.3",
+  "commits_scanned": 26,
+  "selected_metadata": [
+    {
+      "field": "Commit",
+      "value": "c3d12f3313a95f25162a1503be624f3b0617f8c0"
+    },
+    {
+      "field": "RuleID",
+      "value": "generic-api-key"
+    },
+    {
+      "field": "File",
+      "value": "docs/validation/cloud-20261011/packet-export-backend-security-review.md"
+    },
+    {
+      "field": "Line",
+      "value": "12"
+    },
+    {
+      "field": "Commit",
+      "value": "63647fc9b63175e1e32b0773d57affc637ea1065"
+    },
+    {
+      "field": "Fingerprint",
+      "value": "63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12"
+    }
+  ],
+  "source_classification": "One generic-api-key match on historical task packet line12 architecture prose, not a credential assignment. Exact fingerprint proof/correction review pending.",
+  "prior_transport": "CLI signedredirectForbidden beforedownload0bytes; not actual log PASS; URL query not retained"
+}

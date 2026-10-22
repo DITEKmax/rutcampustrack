@@ -1,7 +1,10 @@
 package ru.rutcampustrack.mobilebff.student;
 
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HomeworkInfo;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
@@ -11,9 +14,9 @@ import ru.rutcampustrack.academic.grpc.SubjectInfo;
 import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.grpc.AutomaticCheckinRequest;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceEntry;
-import ru.rutcampustrack.attendance.grpc.StudentAttendanceSnapshotResponse;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceProjectionResponse;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingResponse;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceSnapshotResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.*;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MobileAcademicClient;
@@ -23,10 +26,12 @@ import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.AcademicWeekCalendar;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.net.URI;
-import java.time.Instant;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -35,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,8 +55,28 @@ public class StudentQueryService {
     private final MobileAttendanceClient attendance;
     private final Clock clock;
 
-    public StudentQueryService(MobileRequestContext requestContext, MobileAcademicClient academic,
-                               MobileScheduleClient schedule, MobileAttendanceClient attendance, Clock clock) {
+    @Autowired
+    public StudentQueryService(
+            MobileRequestContext requestContext,
+            MobileAcademicClient academic,
+            MobileScheduleClient schedule,
+            MobileAttendanceClient attendance,
+            Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                requestContext,
+                academic,
+                schedule,
+                attendance,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());
+    }
+
+    public StudentQueryService(
+            MobileRequestContext requestContext,
+            MobileAcademicClient academic,
+            MobileScheduleClient schedule,
+            MobileAttendanceClient attendance,
+            Clock clock) {
         this.requestContext = requestContext;
         this.academic = academic;
         this.schedule = schedule;
@@ -61,17 +87,25 @@ public class StudentQueryService {
     public SessionResponse session() {
         InternalJwtClaims claims = requireStudent(false);
         UserResponse user = academic.user(claims.userId());
-        GroupSummary group = claims.groupId() == null ? null : group(academic.group(claims.groupId()));
-        SemesterSummary semester = claims.groupId() == null ? null : semester(academic.activeSemester());
+        GroupSummary group =
+                claims.groupId() == null ? null : group(academic.group(claims.groupId()));
+        SemesterSummary semester =
+                claims.groupId() == null ? null : semester(academic.activeSemester());
         return new SessionResponse(
                 claims.sessionId().toString(),
                 Long.toString(claims.sessionVersion()),
                 Long.toString(claims.rolesVersion()),
                 claims.readOnly(),
                 new StudentUser(Long.toString(user.getId()), user.getDisplayName()),
-                ActiveRole.STUDENT, group, semester,
-                List.of(Capability.TODAY, Capability.GEO_CHECKIN, Capability.OFFLINE_SEMESTER_SCHEDULE),
-                clock.instant(), links("today", "/api/v1/student/today", "schedule", "/api/v1/student/schedule"));
+                ActiveRole.STUDENT,
+                group,
+                semester,
+                List.of(
+                        Capability.TODAY,
+                        Capability.GEO_CHECKIN,
+                        Capability.OFFLINE_SEMESTER_SCHEDULE),
+                clock.instant(),
+                links("today", "/api/v1/student/today", "schedule", "/api/v1/student/schedule"));
     }
 
     public TodayResponse today() {
@@ -80,28 +114,40 @@ public class StudentQueryService {
         LocalDate date = LocalDate.now(clock);
         LessonsResponse lessons = schedule.lessons(claims.groupId(), semester.getId(), date, date);
         List<LessonResponse> ordered = ordered(lessons.getLessonsList());
-        StudentAttendanceSnapshotResponse snapshot = attendance.snapshot(
-                ordered.stream().map(LessonResponse::getId).toList());
-        Map<Long, StudentAttendanceEntry> entryByLesson = snapshot.getEntriesList().stream()
-                .collect(Collectors.toMap(StudentAttendanceEntry::getLessonId, Function.identity()));
+        StudentAttendanceSnapshotResponse snapshot =
+                attendance.snapshot(ordered.stream().map(LessonResponse::getId).toList());
+        Map<Long, StudentAttendanceEntry> entryByLesson =
+                snapshot.getEntriesList().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        StudentAttendanceEntry::getLessonId, Function.identity()));
         Map<Long, SubjectInfo> subjects = subjects(ordered);
-        List<TodayLessonResponse> result = ordered.stream()
-                .map(lesson -> new TodayLessonResponse(
-                        lesson(lesson, subjects.get(lesson.getSubjectId())),
-                        attendance(entryByLesson.get(lesson.getId())),
-                        eligibility(entryByLesson.get(lesson.getId())),
-                        request(entryByLesson.get(lesson.getId()))))
-                .toList();
+        List<TodayLessonResponse> result =
+                ordered.stream()
+                        .map(
+                                lesson ->
+                                        new TodayLessonResponse(
+                                                lesson(lesson, subjects.get(lesson.getSubjectId())),
+                                                attendance(entryByLesson.get(lesson.getId())),
+                                                eligibility(entryByLesson.get(lesson.getId())),
+                                                request(entryByLesson.get(lesson.getId()))))
+                        .toList();
         Instant serverNow = Instant.parse(snapshot.getServerNow());
-        return new TodayResponse(LocalDate.ofInstant(serverNow, MOSCOW), MOSCOW.getId(), serverNow,
-                result, links("self", "/api/v1/student/today", "schedule", "/api/v1/student/schedule"));
+        return new TodayResponse(
+                LocalDate.ofInstant(serverNow, MOSCOW),
+                MOSCOW.getId(),
+                serverNow,
+                result,
+                links("self", "/api/v1/student/today", "schedule", "/api/v1/student/schedule"));
     }
 
     public ScheduleResponse schedule(long requestedSemesterId) {
         InternalJwtClaims claims = requireStudent(true);
         SemesterResponse active = academic.activeSemester();
         if (active.getId() != requestedSemesterId) {
-            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+            throw new MobileBffException(
+                    HttpStatus.FORBIDDEN,
+                    ProblemCode.OUT_OF_SCOPE,
                     "Семестр не входит в scope студента");
         }
         LocalDate from = LocalDate.parse(active.getDateFrom());
@@ -109,33 +155,42 @@ public class StudentQueryService {
         LessonsResponse lessons = schedule.lessons(claims.groupId(), active.getId(), from, to);
         List<LessonResponse> ordered = ordered(lessons.getLessonsList());
         Map<Long, SubjectInfo> subjects = subjects(ordered);
-        Instant updatedAt = lessons.hasUpdatedAt() ? Instant.parse(lessons.getUpdatedAt()) : Instant.EPOCH;
-        return new ScheduleResponse(semester(active), from, to, updatedAt,
-                ordered.stream().map(lesson -> lesson(lesson, subjects.get(lesson.getSubjectId()))).toList(),
-                links("self", "/api/v1/student/schedule?semesterId=" + requestedSemesterId,
-                        "today", "/api/v1/student/today"));
+        Instant updatedAt =
+                lessons.hasUpdatedAt() ? Instant.parse(lessons.getUpdatedAt()) : Instant.EPOCH;
+        return new ScheduleResponse(
+                semester(active),
+                from,
+                to,
+                updatedAt,
+                ordered.stream()
+                        .map(lesson -> lesson(lesson, subjects.get(lesson.getSubjectId())))
+                        .toList(),
+                links(
+                        "self",
+                        "/api/v1/student/schedule?semesterId=" + requestedSemesterId,
+                        "today",
+                        "/api/v1/student/today"));
     }
 
     public StudentAttendanceResponse attendance(long requestedSemesterId) {
         SemesterResponse active = requireActiveSemester(requestedSemesterId);
-        StudentAttendanceProjectionResponse response = attendance.projection(
-                requestedSemesterId, null, "days", List.of());
+        StudentAttendanceProjectionResponse response =
+                attendance.projection(requestedSemesterId, null, "days", List.of());
         return attendanceResponse(response, active);
     }
 
     public StudentStatisticsResponse statistics(long requestedSemesterId) {
         SemesterResponse active = requireActiveSemester(requestedSemesterId);
-        StudentAttendanceProjectionResponse response = attendance.projection(
-                requestedSemesterId, null, "weeks", List.of());
+        StudentAttendanceProjectionResponse response =
+                attendance.projection(requestedSemesterId, null, "weeks", List.of());
         return statisticsResponse(response, active);
     }
 
     public StudentStatisticsRankingResponse statisticsRanking(
-            long requestedSemesterId,
-            Integer page,
-            int size) {
+            long requestedSemesterId, Integer page, int size) {
         requireActiveSemester(requestedSemesterId);
-        StudentAttendanceRankingResponse response = attendance.ranking(requestedSemesterId, page, size);
+        StudentAttendanceRankingResponse response =
+                attendance.ranking(requestedSemesterId, page, size);
         return new StudentStatisticsRankingResponse(
                 response.getAvailable(),
                 response.getPage(),
@@ -143,33 +198,42 @@ public class StudentQueryService {
                 response.getTotal(),
                 response.hasOwnPosition() ? response.getOwnPosition() : null,
                 response.getRowsList().stream()
-                        .map(row -> new StudentStatisticsRankingRow(
-                                Long.toString(row.getStudentId()),
-                                row.getDisplayName(),
-                                row.hasPosition() ? row.getPosition() : null,
-                                row.hasPercentage() ? row.getPercentage() : null,
-                                row.getIsSelf()))
+                        .map(
+                                row ->
+                                        new StudentStatisticsRankingRow(
+                                                Long.toString(row.getStudentId()),
+                                                row.getDisplayName(),
+                                                row.hasPosition() ? row.getPosition() : null,
+                                                row.hasPercentage() ? row.getPercentage() : null,
+                                                row.getIsSelf()))
                         .toList());
     }
 
     public StudentStatisticsSubjectDetailResponse statisticsSubject(
-            long requestedSemesterId,
-            long subjectId,
-            String range,
-            List<String> types) {
+            long requestedSemesterId, long subjectId, String range, List<String> types) {
         SemesterResponse active = requireActiveSemester(requestedSemesterId);
-        StudentAttendanceProjectionResponse response = attendance.projection(
-                requestedSemesterId, subjectId, range, types == null ? List.of() : types);
-        ru.rutcampustrack.attendance.grpc.StudentAttendanceSubject subject = response.getSubjectsList().stream()
-                .filter(value -> value.getSubjectId() == subjectId)
-                .findFirst()
-                .orElseThrow(() -> new MobileBffException(HttpStatus.NOT_FOUND,
-                        ProblemCode.LESSON_NOT_FOUND, "Предмет не найден"));
+        StudentAttendanceProjectionResponse response =
+                attendance.projection(
+                        requestedSemesterId, subjectId, range, types == null ? List.of() : types);
+        ru.rutcampustrack.attendance.grpc.StudentAttendanceSubject subject =
+                response.getSubjectsList().stream()
+                        .filter(value -> value.getSubjectId() == subjectId)
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new MobileBffException(
+                                                HttpStatus.NOT_FOUND,
+                                                ProblemCode.LESSON_NOT_FOUND,
+                                                "Предмет не найден"));
         return new StudentStatisticsSubjectDetailResponse(
                 Long.toString(subject.getSubjectId()),
                 subject.getName(),
-                subject.getAvailableTypesList().stream().map(StudentQueryService::lessonType).toList(),
-                subject.getSelectedTypesList().stream().map(StudentQueryService::lessonType).toList(),
+                subject.getAvailableTypesList().stream()
+                        .map(StudentQueryService::lessonType)
+                        .toList(),
+                subject.getSelectedTypesList().stream()
+                        .map(StudentQueryService::lessonType)
+                        .toList(),
                 metricSet(subject.getSelectedAggregate()),
                 subject.getSeriesList().stream().map(StudentQueryService::seriesPoint).toList(),
                 subject.getTypeCardsList().stream().map(StudentQueryService::typeCard).toList());
@@ -183,11 +247,15 @@ public class StudentQueryService {
         Instant serverNow = clock.instant();
         LocalDate today = LocalDate.ofInstant(serverNow, MOSCOW);
 
-        LocalDate from = fromRaw == null ? clamp(today, activeFrom, activeTo)
-                : parseHomeworkDate(fromRaw, "from");
+        LocalDate from =
+                fromRaw == null
+                        ? clamp(today, activeFrom, activeTo)
+                        : parseHomeworkDate(fromRaw, "from");
         LocalDate to = toRaw == null ? activeTo : parseHomeworkDate(toRaw, "to");
         if (from.isBefore(activeFrom) || to.isAfter(activeTo) || from.isAfter(to)) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST,
+                    ProblemCode.INVALID_REQUEST,
                     "Диапазон ДЗ должен входить в активный семестр");
         }
 
@@ -196,44 +264,76 @@ public class StudentQueryService {
         if (includeCompletedToday) {
             ZonedDateTime completedTodayFrom = today.atStartOfDay(MOSCOW);
             ZonedDateTime completedTodayTo = today.plusDays(1).atStartOfDay(MOSCOW);
-            response = academic.homeworks(
-                    claims.groupId(), active.getId(), claims.userId(), from.toString(), to.toString(),
-                    true, completedTodayFrom.toInstant().toString(), completedTodayTo.toInstant().toString());
+            response =
+                    academic.homeworks(
+                            claims.groupId(),
+                            active.getId(),
+                            claims.userId(),
+                            from.toString(),
+                            to.toString(),
+                            true,
+                            completedTodayFrom.toInstant().toString(),
+                            completedTodayTo.toInstant().toString());
         } else {
-            response = academic.homeworks(
-                    claims.groupId(), active.getId(), claims.userId(), from.toString(), to.toString());
+            response =
+                    academic.homeworks(
+                            claims.groupId(),
+                            active.getId(),
+                            claims.userId(),
+                            from.toString(),
+                            to.toString());
         }
-        List<HomeworkItem> items = response.getHomeworksList().stream()
-                .sorted(Comparator.comparing((HomeworkInfo item) -> LocalDate.parse(item.getLessonDate()))
-                        .thenComparingInt(item -> item.getCompleted() ? 1 : 0)
-                        .thenComparing(item -> homeworkBindingMode(item.getBindingMode()) == HomeworkBindingMode.DATE
-                                        ? null : Integer.valueOf(item.getLessonNumber()),
-                                Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparingLong(HomeworkInfo::getHomeworkId))
-                .map(StudentQueryService::homeworkItem)
-                .toList();
+        List<HomeworkItem> items =
+                response.getHomeworksList().stream()
+                        .sorted(
+                                Comparator.comparing(
+                                                (HomeworkInfo item) ->
+                                                        LocalDate.parse(item.getLessonDate()))
+                                        .thenComparingInt(item -> item.getCompleted() ? 1 : 0)
+                                        .thenComparing(
+                                                item ->
+                                                        homeworkBindingMode(item.getBindingMode())
+                                                                        == HomeworkBindingMode.DATE
+                                                                ? null
+                                                                : Integer.valueOf(
+                                                                        item.getLessonNumber()),
+                                                Comparator.nullsLast(Comparator.naturalOrder()))
+                                        .thenComparingLong(HomeworkInfo::getHomeworkId))
+                        .map(StudentQueryService::homeworkItem)
+                        .toList();
         return new HomeworkResponse(
-                new HomeworkSemester(Long.toString(active.getId()), active.getName(), activeFrom, activeTo),
-                from, to, serverNow, items);
+                new HomeworkSemester(
+                        Long.toString(active.getId()), active.getName(), activeFrom, activeTo),
+                from,
+                to,
+                serverNow,
+                items);
     }
 
-    public HomeworkCompletionResponse setHomeworkCompletion(String homeworkId,
-                                                             HomeworkCompletionRequest request) {
+    public HomeworkCompletionResponse setHomeworkCompletion(
+            String homeworkId, HomeworkCompletionRequest request) {
         InternalJwtClaims claims = requireStudent(false);
         if (claims.readOnly()) {
-            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.ROLE_READ_ONLY,
+            throw new MobileBffException(
+                    HttpStatus.FORBIDDEN,
+                    ProblemCode.ROLE_READ_ONLY,
                     "Терминальная student-сессия доступна только для чтения");
         }
         if (claims.groupId() == null || claims.groupId() <= 0) {
-            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+            throw new MobileBffException(
+                    HttpStatus.FORBIDDEN,
+                    ProblemCode.OUT_OF_SCOPE,
                     "Не хватает student/group scope");
         }
         long id = parseHomeworkId(homeworkId);
         SemesterResponse active = academic.activeSemesterForHomework();
-        SetHomeworkCompletionResponse response = academic.setHomeworkCompletion(
-                id, active.getId(), request.completed());
-        Instant completedAt = completionAt(response.getCompleted(), response.hasCompletedAt(),
-                response.getCompletedAt());
+        SetHomeworkCompletionResponse response =
+                academic.setHomeworkCompletion(id, active.getId(), request.completed());
+        Instant completedAt =
+                completionAt(
+                        response.getCompleted(),
+                        response.hasCompletedAt(),
+                        response.getCompletedAt());
         return new HomeworkCompletionResponse(
                 Long.toString(response.getHomeworkId()), response.getCompleted(), completedAt);
     }
@@ -241,12 +341,16 @@ public class StudentQueryService {
     private InternalJwtClaims requireStudent(boolean groupRequired) {
         InternalJwtClaims claims = requestContext.claims();
         if (!"STUDENT".equalsIgnoreCase(claims.domainRole())) {
-            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.WRONG_ROLE,
+            throw new MobileBffException(
+                    HttpStatus.FORBIDDEN,
+                    ProblemCode.WRONG_ROLE,
                     "Мобильный student API доступен роли STUDENT");
         }
         if (claims.userId() <= 0
                 || groupRequired && (claims.groupId() == null || claims.groupId() <= 0)) {
-            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+            throw new MobileBffException(
+                    HttpStatus.FORBIDDEN,
+                    ProblemCode.OUT_OF_SCOPE,
                     "Не хватает student/group scope");
         }
         return claims;
@@ -256,28 +360,35 @@ public class StudentQueryService {
         requireStudent(false);
         SemesterResponse active = academic.activeSemester();
         if (active.getId() != requestedSemesterId) {
-            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+            throw new MobileBffException(
+                    HttpStatus.FORBIDDEN,
+                    ProblemCode.OUT_OF_SCOPE,
                     "Семестр не входит в scope студента");
         }
         return active;
     }
 
     private Map<Long, SubjectInfo> subjects(List<LessonResponse> lessons) {
-        return academic.subjects(lessons.stream().map(LessonResponse::getSubjectId).distinct().toList());
+        return academic.subjects(
+                lessons.stream().map(LessonResponse::getSubjectId).distinct().toList());
     }
 
     private static List<LessonResponse> ordered(List<LessonResponse> lessons) {
-        return lessons.stream().sorted(Comparator
-                .comparing((LessonResponse l) -> LocalDate.parse(l.getDate()))
-                .thenComparingInt(LessonResponse::getLessonNumber)
-                .thenComparingLong(LessonResponse::getId)).toList();
+        return lessons.stream()
+                .sorted(
+                        Comparator.comparing((LessonResponse l) -> LocalDate.parse(l.getDate()))
+                                .thenComparingInt(LessonResponse::getLessonNumber)
+                                .thenComparingLong(LessonResponse::getId))
+                .toList();
     }
 
     private static LocalDate parseHomeworkDate(String value, String field) {
         try {
             return LocalDate.parse(value);
         } catch (RuntimeException error) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST,
+                    ProblemCode.INVALID_REQUEST,
                     "Параметр " + field + " должен быть датой ISO-8601");
         }
     }
@@ -290,7 +401,9 @@ public class StudentQueryService {
             }
             return id;
         } catch (NumberFormatException error) {
-            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+            throw new MobileBffException(
+                    HttpStatus.BAD_REQUEST,
+                    ProblemCode.INVALID_REQUEST,
                     "Идентификатор ДЗ должен быть положительным целым числом");
         }
     }
@@ -304,14 +417,20 @@ public class StudentQueryService {
     private static HomeworkItem homeworkItem(HomeworkInfo item) {
         HomeworkBindingMode bindingMode = homeworkBindingMode(item.getBindingMode());
         String link = item.getLink().isBlank() ? null : item.getLink();
-        Instant completedAt = completionAt(item.getCompleted(), item.hasCompletedAt(), item.getCompletedAt());
+        Instant completedAt =
+                completionAt(item.getCompleted(), item.hasCompletedAt(), item.getCompletedAt());
         return new HomeworkItem(
                 Long.toString(item.getHomeworkId()),
                 new HomeworkSubject(Long.toString(item.getSubjectId()), item.getSubjectName()),
-                item.getTitle(), item.getDescription(), link,
+                item.getTitle(),
+                item.getDescription(),
+                link,
                 LocalDate.parse(item.getLessonDate()),
                 bindingMode == HomeworkBindingMode.DATE ? null : item.getLessonNumber(),
-                bindingMode, item.getCompleted(), completedAt, item.getArchived());
+                bindingMode,
+                item.getCompleted(),
+                completedAt,
+                item.getArchived());
     }
 
     private static HomeworkBindingMode homeworkBindingMode(String value) {
@@ -321,66 +440,96 @@ public class StudentQueryService {
         try {
             return HomeworkBindingMode.valueOf(value);
         } catch (IllegalArgumentException error) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+            throw new MobileBffException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Academic Service вернул неизвестный режим привязки ДЗ");
         }
     }
 
-    private static Instant completionAt(boolean completed, boolean hasCompletedAt, String rawCompletedAt) {
+    private static Instant completionAt(
+            boolean completed, boolean hasCompletedAt, String rawCompletedAt) {
         if (!completed) {
             if (hasCompletedAt) {
-                throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                throw new MobileBffException(
+                        HttpStatus.SERVICE_UNAVAILABLE,
+                        ProblemCode.DEPENDENCY_UNAVAILABLE,
                         "Academic Service вернул timestamp для незавершённого ДЗ");
             }
             return null;
         }
         if (!hasCompletedAt) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+            throw new MobileBffException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Academic Service не вернул timestamp завершения ДЗ");
         }
         try {
             return Instant.parse(rawCompletedAt);
         } catch (RuntimeException error) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+            throw new MobileBffException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Academic Service вернул некорректный timestamp завершения ДЗ");
         }
     }
 
     private static LessonScheduleProjection lesson(LessonResponse lesson, SubjectInfo subject) {
         if (subject == null) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+            throw new MobileBffException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Не удалось получить предмет для пары");
         }
-        String roomState = lesson.getRoomChangeState().isBlank() ? "UNKNOWN" : lesson.getRoomChangeState();
+        String roomState =
+                lesson.getRoomChangeState().isBlank() ? "UNKNOWN" : lesson.getRoomChangeState();
         return new LessonScheduleProjection(
-                Long.toString(lesson.getId()), LocalDate.parse(lesson.getDate()), lesson.getLessonNumber(),
-                LocalTime.parse(lesson.getStartTime()), LocalTime.parse(lesson.getEndTime()),
-                LessonStatus.valueOf(lesson.getStatus().toUpperCase()),
-                new SubjectProjection(Long.toString(subject.getSubjectId()), subject.getSubjectName(),
+                Long.toString(lesson.getId()),
+                LocalDate.parse(lesson.getDate()),
+                lesson.getLessonNumber(),
+                LocalTime.parse(lesson.getStartTime()),
+                LocalTime.parse(lesson.getEndTime()),
+                upstreamEnum(LessonStatus.class, lesson.getStatus().toUpperCase(Locale.ROOT)),
+                new SubjectProjection(
+                        Long.toString(subject.getSubjectId()),
+                        subject.getSubjectName(),
                         lessonType(lesson.getLessonType())),
-                new RoomProjection(lesson.getRoom().isBlank() ? null : lesson.getRoom(),
+                new RoomProjection(
+                        lesson.getRoom().isBlank() ? null : lesson.getRoom(),
                         lesson.hasPreviousRoom() ? lesson.getPreviousRoom() : null,
-                        RoomChangeState.valueOf(roomState.toUpperCase())));
+                        upstreamEnum(RoomChangeState.class, roomState.toUpperCase(Locale.ROOT))));
     }
 
     private static AttendanceProjection attendance(StudentAttendanceEntry entry) {
-        if (entry == null || entry.getStatus()
-                == ru.rutcampustrack.attendance.grpc.AttendanceStatus.ATTENDANCE_STATUS_UNSPECIFIED) return null;
+        if (entry == null
+                || entry.getStatus()
+                        == ru.rutcampustrack.attendance.grpc.AttendanceStatus
+                                .ATTENDANCE_STATUS_UNSPECIFIED) return null;
         return new AttendanceProjection(
-                AttendanceStatus.valueOf(entry.getStatus().name().replace("ATTENDANCE_STATUS_", "")),
-                AttendanceSource.valueOf(entry.getSource().name().replace("ATTENDANCE_SOURCE_", "")),
+                upstreamEnum(
+                        AttendanceStatus.class,
+                        entry.getStatus().name().replace("ATTENDANCE_STATUS_", "")),
+                upstreamEnum(
+                        AttendanceSource.class,
+                        entry.getSource().name().replace("ATTENDANCE_SOURCE_", "")),
                 entry.hasMarkedAt() ? Instant.parse(entry.getMarkedAt()) : null);
     }
 
     private static CheckinEligibility eligibility(StudentAttendanceEntry entry) {
         if (entry == null || !entry.hasEligibility()) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+            throw new MobileBffException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Attendance Service не вернул eligibility");
         }
         var value = entry.getEligibility();
-        return new CheckinEligibility(value.getAllowed(),
-                EligibilityReason.valueOf(value.getReason().name()
-                        .replace("STUDENT_CHECKIN_ELIGIBILITY_REASON_", "")),
+        return new CheckinEligibility(
+                value.getAllowed(),
+                upstreamEnum(
+                        EligibilityReason.class,
+                        value.getReason()
+                                .name()
+                                .replace("STUDENT_CHECKIN_ELIGIBILITY_REASON_", "")),
                 value.hasRetryAt() ? Instant.parse(value.getRetryAt()) : null);
     }
 
@@ -389,15 +538,26 @@ public class StudentQueryService {
     }
 
     static AutomaticRequestProjection request(AutomaticCheckinRequest request) {
-        ResolutionReason resolution = request.getResolutionReason()
-                == ru.rutcampustrack.attendance.grpc.AutomaticCheckinResolutionReason
-                .AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED ? null
-                : ResolutionReason.valueOf(request.getResolutionReason().name()
-                .replace("AUTOMATIC_CHECKIN_RESOLUTION_REASON_", ""));
-        return new AutomaticRequestProjection(request.getId(),
-                RequestStatus.valueOf(request.getStatus().name()
-                        .replace("AUTOMATIC_CHECKIN_REQUEST_STATUS_", "")),
-                RequestOrigin.AUTO_GEO_FAILURE, resolution);
+        ResolutionReason resolution =
+                request.getResolutionReason()
+                                == ru.rutcampustrack.attendance.grpc
+                                        .AutomaticCheckinResolutionReason
+                                        .AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED
+                        ? null
+                        : upstreamEnum(
+                                ResolutionReason.class,
+                                request.getResolutionReason()
+                                        .name()
+                                        .replace("AUTOMATIC_CHECKIN_RESOLUTION_REASON_", ""));
+        return new AutomaticRequestProjection(
+                request.getId(),
+                upstreamEnum(
+                        RequestStatus.class,
+                        request.getStatus()
+                                .name()
+                                .replace("AUTOMATIC_CHECKIN_REQUEST_STATUS_", "")),
+                RequestOrigin.AUTO_GEO_FAILURE,
+                resolution);
     }
 
     private static GroupSummary group(GroupResponse group) {
@@ -405,73 +565,127 @@ public class StudentQueryService {
     }
 
     private static SemesterSummary semester(SemesterResponse semester) {
-        return new SemesterSummary(Long.toString(semester.getId()), semester.getName(),
-                LocalDate.parse(semester.getDateFrom()), LocalDate.parse(semester.getDateTo()));
+        return new SemesterSummary(
+                Long.toString(semester.getId()),
+                semester.getName(),
+                LocalDate.parse(semester.getDateFrom()),
+                LocalDate.parse(semester.getDateTo()));
     }
 
     private static StudentAttendanceResponse attendanceResponse(
-            StudentAttendanceProjectionResponse response,
-            SemesterResponse semester) {
+            StudentAttendanceProjectionResponse response, SemesterResponse semester) {
         return new StudentAttendanceResponse(
                 semester(semester),
                 LocalDate.parse(response.getDateFrom()),
                 LocalDate.parse(response.getDateTo()),
                 Instant.parse(response.getServerNow()),
+                attendanceWeeks(semester),
                 response.getTerminalReadOnly(),
                 metricSet(response.getMetrics()),
                 response.getDaysList().stream().map(StudentQueryService::day).toList(),
                 response.getSubjectsList().stream().map(StudentQueryService::subject).toList(),
                 graph(response.getGraph()),
                 rank(response.getOwnRank()),
-                links("self", "/api/v1/student/attendance?semesterId=" + response.getSemesterId(),
-                        "statistics", "/api/v1/student/statistics?semesterId=" + response.getSemesterId()));
+                links(
+                        "self",
+                        "/api/v1/student/attendance?semesterId=" + response.getSemesterId(),
+                        "statistics",
+                        "/api/v1/student/statistics?semesterId=" + response.getSemesterId()));
+    }
+
+    private static List<StudentAttendanceWeek> attendanceWeeks(SemesterResponse semester) {
+        LocalDate start = LocalDate.parse(semester.getDateFrom());
+        LocalDate end = LocalDate.parse(semester.getDateTo());
+        List<StudentAttendanceWeek> weeks = new ArrayList<>();
+        for (LocalDate monday = AcademicWeekCalendar.monday(start);
+                !monday.isAfter(end);
+                monday = monday.plusWeeks(1)) {
+            AcademicWeekCalendar.Parity parity = AcademicWeekCalendar.parity(monday);
+            weeks.add(
+                    new StudentAttendanceWeek(
+                            monday,
+                            monday.plusDays(6),
+                            AcademicWeekCalendar.weekOfSemester(start, monday),
+                            parity.number(),
+                            parity.label()));
+        }
+        return List.copyOf(weeks);
     }
 
     private static StudentStatisticsResponse statisticsResponse(
-            StudentAttendanceProjectionResponse response,
-            SemesterResponse semester) {
+            StudentAttendanceProjectionResponse response, SemesterResponse semester) {
         return new StudentStatisticsResponse(
                 metricSet(response.getMetrics()),
                 rank(response.getOwnRank()),
-                response.getGraph().getWeeksList().stream().map(StudentQueryService::seriesPoint).toList(),
-                response.getSubjectsList().stream()
-                        .map(subject -> new StudentStatisticsSubject(
-                                Long.toString(subject.getSubjectId()), subject.getName(), metricSet(subject.getMetrics())))
+                response.getGraph().getWeeksList().stream()
+                        .map(StudentQueryService::seriesPoint)
                         .toList(),
-                links("self", "/api/v1/student/statistics?semesterId=" + response.getSemesterId(),
-                        "attendance", "/api/v1/student/attendance?semesterId=" + response.getSemesterId()));
+                response.getSubjectsList().stream()
+                        .map(
+                                subject ->
+                                        new StudentStatisticsSubject(
+                                                Long.toString(subject.getSubjectId()),
+                                                subject.getName(),
+                                                metricSet(subject.getMetrics())))
+                        .toList(),
+                links(
+                        "self",
+                        "/api/v1/student/statistics?semesterId=" + response.getSemesterId(),
+                        "attendance",
+                        "/api/v1/student/attendance?semesterId=" + response.getSemesterId()));
     }
 
     private static StudentAttendanceDay day(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceDay source) {
         return new StudentAttendanceDay(
-                LocalDate.parse(source.getDate()), source.getWeekday(), source.getDayNumber(),
-                StudentAttendanceDayState.valueOf(source.getState()),
+                LocalDate.parse(source.getDate()),
+                source.getWeekday(),
+                source.getDayNumber(),
+                upstreamEnum(StudentAttendanceDayState.class, source.getState()),
                 source.getLessonsList().stream().map(StudentQueryService::lesson).toList());
     }
 
     private static StudentAttendanceLesson lesson(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceLesson source) {
         return new StudentAttendanceLesson(
-                Long.toString(source.getLessonId()), LocalDate.parse(source.getDate()),
+                Long.toString(source.getLessonId()),
+                LocalDate.parse(source.getDate()),
                 Integer.toString(source.getLessonNumber()),
-                new SubjectProjection(Long.toString(source.getSubjectId()), source.getSubjectName(),
+                new SubjectProjection(
+                        Long.toString(source.getSubjectId()),
+                        source.getSubjectName(),
                         lessonType(source.getLessonType())),
                 lessonType(source.getLessonType()),
-                new AttendanceLessonSchedule(LocalTime.parse(source.getStartsAt()),
-                        LocalTime.parse(source.getEndsAt()), source.hasRoom() ? source.getRoom() : null),
-                StudentAttendanceLessonStatus.valueOf(source.getStatus()),
-                source.getRequestOptionsList().stream().map(option ->
-                        new StudentAttendanceRequestOption(option.getId(), option.getKind(), option.getLabel(),
-                                option.getEnabled(), option.hasReason() ? option.getReason() : null)).toList());
+                new AttendanceLessonSchedule(
+                        LocalTime.parse(source.getStartsAt()),
+                        LocalTime.parse(source.getEndsAt()),
+                        source.hasRoom() ? source.getRoom() : null),
+                upstreamEnum(StudentAttendanceLessonStatus.class, source.getStatus()),
+                source.getRequestOptionsList().stream()
+                        .map(
+                                option ->
+                                        new StudentAttendanceRequestOption(
+                                                option.getId(),
+                                                option.getKind(),
+                                                option.getLabel(),
+                                                option.getEnabled(),
+                                                option.hasReason() ? option.getReason() : null))
+                        .toList(),
+                source.hasExplanation() ? explanation(source.getExplanation()) : null);
     }
 
     private static StudentAttendanceSubject subject(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceSubject source) {
         return new StudentAttendanceSubject(
-                Long.toString(source.getSubjectId()), source.getName(), metricSet(source.getMetrics()),
-                source.getAvailableTypesList().stream().map(StudentQueryService::lessonType).toList(),
-                source.getSelectedTypesList().stream().map(StudentQueryService::lessonType).toList(),
+                Long.toString(source.getSubjectId()),
+                source.getName(),
+                metricSet(source.getMetrics()),
+                source.getAvailableTypesList().stream()
+                        .map(StudentQueryService::lessonType)
+                        .toList(),
+                source.getSelectedTypesList().stream()
+                        .map(StudentQueryService::lessonType)
+                        .toList(),
                 metricSet(source.getSelectedAggregate()),
                 source.getTypeCardsList().stream().map(StudentQueryService::typeCard).toList(),
                 source.getSeriesList().stream().map(StudentQueryService::seriesPoint).toList());
@@ -480,14 +694,26 @@ public class StudentQueryService {
     private static StudentAttendanceTypeCard typeCard(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceTypeCard source) {
         return new StudentAttendanceTypeCard(
-                lessonType(source.getLessonType()), metricSet(source.getMetrics()),
+                lessonType(source.getLessonType()),
+                metricSet(source.getMetrics()),
                 source.getHistoryList().stream().map(StudentQueryService::history).toList());
     }
 
     private static StudentAttendanceHistorySegment history(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceHistorySegment source) {
         return new StudentAttendanceHistorySegment(
-                source.getId(), StudentAttendanceHistoryStatus.valueOf(source.getStatus()));
+                source.getId(),
+                upstreamEnum(StudentAttendanceHistoryStatus.class, source.getStatus()),
+                source.hasExplanation() ? explanation(source.getExplanation()) : null);
+    }
+
+    private static StudentAttendanceExplanation explanation(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceExplanation source) {
+        return new StudentAttendanceExplanation(
+                source.hasReasonCode() ? source.getReasonCode() : null,
+                source.hasReasonText() ? source.getReasonText() : null,
+                source.hasComment() ? source.getComment() : null,
+                source.hasCancellationReason() ? source.getCancellationReason() : null);
     }
 
     private static StudentAttendanceGraph graph(
@@ -500,16 +726,28 @@ public class StudentQueryService {
     private static StudentAttendanceSeriesPoint seriesPoint(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceSeriesPoint source) {
         return new StudentAttendanceSeriesPoint(
-                source.getId(), source.getLabel(), LocalDate.parse(source.getDateFrom()),
+                source.getId(),
+                source.getLabel(),
+                LocalDate.parse(source.getDateFrom()),
                 LocalDate.parse(source.getDateTo()),
-                StudentAttendanceGraphState.valueOf(source.getState()), metricSet(source.getMetrics()));
+                upstreamEnum(StudentAttendanceGraphState.class, source.getState()),
+                metricSet(source.getMetrics()),
+                source.hasGroupPresent()
+                        ? new StudentAttendanceGroupPresent(
+                                source.getGroupPresent().getNumerator(),
+                                source.getGroupPresent().getDenominator(),
+                                source.getGroupPresent().hasPercent()
+                                        ? source.getGroupPresent().getPercent()
+                                        : null)
+                        : null);
     }
 
     private static StudentAttendanceOwnRank rank(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceOwnRank source) {
         return new StudentAttendanceOwnRank(
                 source.hasPosition() ? source.getPosition() : null,
-                source.getParticipantCount(), source.getAvailable());
+                source.getParticipantCount(),
+                source.getAvailable());
     }
 
     private static StudentAttendanceMetricSet metricSet(
@@ -522,16 +760,29 @@ public class StudentQueryService {
 
     private static StudentAttendanceMetricValue metric(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceMetric source) {
-        return new StudentAttendanceMetricValue(source.getCount(), source.hasPercent() ? source.getPercent() : null);
+        return new StudentAttendanceMetricValue(
+                source.getCount(), source.hasPercent() ? source.getPercent() : null);
     }
 
     private static LessonType lessonType(String value) {
-        try {
-            return LessonType.valueOf(value.trim().toUpperCase());
-        } catch (RuntimeException error) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
-                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Attendance Service вернул неизвестный тип пары");
+        return upstreamEnum(
+                LessonType.class, value == null ? null : value.trim().toUpperCase(Locale.ROOT));
+    }
+
+    /** Unknown dependency codes must fail closed without becoming a public internal error. */
+    private static <E extends Enum<E>> E upstreamEnum(Class<E> type, String code) {
+        if (code != null) {
+            try {
+                return Enum.valueOf(type, code);
+            } catch (IllegalArgumentException unknownCode) {
+                // An unknown code is a contract failure; unrelated projection errors remain
+                // visible.
+            }
         }
+        throw new MobileBffException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                ProblemCode.DEPENDENCY_UNAVAILABLE,
+                "Сервис вернул неизвестное значение перечисления");
     }
 
     private static Map<String, Link> links(String... values) {

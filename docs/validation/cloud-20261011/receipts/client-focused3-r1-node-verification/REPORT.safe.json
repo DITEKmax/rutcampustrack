@@ -1,0 +1,91 @@
+{
+  "state": "PASS_FINITE_SOURCE_ADAPTER_NODE_CHECKS_BROWSER_NOT_RUN",
+  "utc": "2026-10-12T17:26:28.548964+00:00",
+  "tool_session": 41949,
+  "launcher_native_exit": 0,
+  "ready_sha256": "78178f656c9a8ce6e02dedc72210dff4526b2acdf62d77849e64d5c90c90dc43",
+  "source_archive_sha256": "d2273ffad64595c95649d808cbb7b6b06489b16a8d24fdf38b7e86f33aff2e6d",
+  "old_ready_sha256": "167b8b1b3bd15dc41c4adebb93d73d514c553c8f6bfd59a6bd03c8294323f49e",
+  "old_observer_sha256": "bc16825621d82805991a50b5cd98b65686697188502e43577d64945c653fc678",
+  "new_observer_sha256": "4650d61052bbc6f5bb7171e529389da11331898e8aecdd4da807c69a2e26df40",
+  "root19_unchanged": true,
+  "old11_unchanged": true,
+  "new13_unchanged": true,
+  "supervisor_birth": "NOT_CAPTURED; metadata-read saw all phases already REAPED; tool41949 exited0",
+  "owned_children": [
+    {
+      "pid": 347296,
+      "start_ticks": 7960478,
+      "phase": "lifetime-red",
+      "same_birth_alive_after": false,
+      "native_exit": 1
+    },
+    {
+      "pid": 347355,
+      "start_ticks": 7960570,
+      "phase": "lifetime-green",
+      "same_birth_alive_after": false,
+      "native_exit": 0
+    },
+    {
+      "pid": 347373,
+      "start_ticks": 7960682,
+      "phase": "types",
+      "same_birth_alive_after": false,
+      "native_exit": 0
+    },
+    {
+      "pid": 347419,
+      "start_ticks": 7960985,
+      "phase": "fields",
+      "same_birth_alive_after": false,
+      "native_exit": 0
+    },
+    {
+      "pid": 347446,
+      "start_ticks": 7961108,
+      "phase": "list",
+      "same_birth_alive_after": false,
+      "native_exit": 0
+    }
+  ],
+  "causal_red_native_exit": 1,
+  "causal_red_witness": {
+    "oldCounterexample": true,
+    "responseDisposeUsed": true
+  },
+  "corrected_green_native_exit": 0,
+  "corrected_source_adapter_controls": {
+    "ordinary": true,
+    "delayedOwnedCloseBeforeEnd": true,
+    "delayedOwnedCloseSettled": true,
+    "lateBody": true,
+    "lateGet": true,
+    "lateDom": true,
+    "redirect": true,
+    "noSuccessGet": true,
+    "lateUiCannotRefill": true
+  },
+  "types_errors": 0,
+  "field_positives": 2,
+  "field_rejected": 7,
+  "list_cases": 3,
+  "list_source_lines": [
+    14,
+    61,
+    142
+  ],
+  "list_project": "chromium",
+  "sampled_peaks": {
+    "owned_rss_bytes": 352923648,
+    "run_allocated_bytes": 634880,
+    "shared_memory_bytes": 8109142016
+  },
+  "private_tmp_removed": true,
+  "cache_allocated_bytes": 561152,
+  "lease": "RELEASED",
+  "qualification": "SOURCE_ADAPTER_ONLY; real Playwright transport cancellation/redirect behavior NOT_EXECUTED",
+  "real_browser_API_login_network": "NOT_RUN",
+  "original_first3_failure_causes": "UNKNOWN",
+  "raw_body_name_credentials_errors_context_included": false
+}

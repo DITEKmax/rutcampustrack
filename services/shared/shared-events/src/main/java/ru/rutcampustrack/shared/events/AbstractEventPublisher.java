@@ -6,17 +6,16 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * Базовый publisher (NEW-60): заполняет стандартные поля {@link DomainEvent}
- * из MDC/reflection перед отправкой. Без привязки к AMQP — интеграция с
- * RabbitMQ делается в M02.
+ * Базовый publisher (NEW-60): заполняет стандартные поля {@link DomainEvent} из MDC/reflection
+ * перед отправкой. Без привязки к AMQP — интеграция с RabbitMQ делается в M02.
  *
  * <p>Workflow:
+ *
  * <ol>
- *   <li>Подкласс/вызывающий создаёт event ({@code new LessonStartedEvent(lessonId)}).</li>
- *   <li>Вызывает {@link #fillDefaults(DomainEvent)} — обогащает event'ом из MDC
- *       (trace_id), reflection'а (event_version), clock'а (occurred_at) и
- *       конструктора publisher'а (source).</li>
- *   <li>Сериализует и отправляет в транспорт.</li>
+ *   <li>Подкласс/вызывающий создаёт event ({@code new LessonStartedEvent(lessonId)}).
+ *   <li>Вызывает {@link #fillDefaults(DomainEvent)} — обогащает event'ом из MDC (trace_id),
+ *       reflection'а (event_version), clock'а (occurred_at) и конструктора publisher'а (source).
+ *   <li>Сериализует и отправляет в транспорт.
  * </ol>
  *
  * <p>Уже-заданные значения не перезаписываются — если caller явно указал
@@ -34,15 +33,16 @@ public abstract class AbstractEventPublisher {
     }
 
     /**
-     * Обогащает event стандартными полями in-place. Вызывается подклассом
-     * publisher'а непосредственно перед сериализацией.
+     * Обогащает event стандартными полями in-place. Вызывается подклассом publisher'а
+     * непосредственно перед сериализацией.
      *
-     * @param event событие с опционально уже заполненными полями; null-поля
-     *              будут заполнены значениями по умолчанию.
-     * @param <T>   тип события
+     * @param event событие с опционально уже заполненными полями; null-поля будут заполнены
+     *     значениями по умолчанию.
+     * @param <T> тип события
      * @return тот же event (fluent-использование).
      */
     protected <T extends DomainEvent> T fillDefaults(T event) {
+        EventTraceContext.capture(event);
         if (event.getEventVersion() == null) {
             event.setEventVersion(resolveEventVersion(event.getClass()));
         }
@@ -64,8 +64,8 @@ public abstract class AbstractEventPublisher {
     }
 
     /**
-     * Читает {@link EventVersion} через reflection. Отсутствие аннотации = 1.
-     * Ищет аннотацию по всей цепочке наследования (включая абстрактные классы).
+     * Читает {@link EventVersion} через reflection. Отсутствие аннотации = 1. Ищет аннотацию по
+     * всей цепочке наследования (включая абстрактные классы).
      */
     static int resolveEventVersion(Class<?> eventClass) {
         Class<?> current = eventClass;

@@ -1,17 +1,16 @@
 package ru.rutcampustrack.mobilebff.contract;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.Format;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.FormatSlot;
-import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.Plan;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.FormatState;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.Plan;
 
 class StudentMapModelsWireContractTest {
 
@@ -21,16 +20,17 @@ class StudentMapModelsWireContractTest {
 
     @Test
     void readySlotUsesIdAndLowercaseWireValues() throws Exception {
-        var slot = new FormatSlot(
-                Format.png,
-                FormatState.ready,
-                "image/png",
-                "42",
-                128,
-                SHA256,
-                640,
-                480,
-                List.of(0d, 0d, 640d, 480d));
+        var slot =
+                new FormatSlot(
+                        Format.png,
+                        FormatState.ready,
+                        "image/png",
+                        "42",
+                        128,
+                        SHA256,
+                        640,
+                        480,
+                        List.of(0d, 0d, 640d, 480d));
 
         JsonNode json = mapper.readTree(mapper.writeValueAsString(slot));
 
@@ -48,16 +48,9 @@ class StudentMapModelsWireContractTest {
     @Test
     void everyNonReadyStateKeepsExplicitNullsAndOmitsOptionalDimensions() throws Exception {
         for (var state : List.of(FormatState.absent, FormatState.processing, FormatState.failed)) {
-            var slot = new FormatSlot(
-                    Format.svg,
-                    state,
-                    "image/svg+xml",
-                    null,
-                    0,
-                    null,
-                    null,
-                    null,
-                    null);
+            var slot =
+                    new FormatSlot(
+                            Format.svg, state, "image/svg+xml", null, 0, null, null, null, null);
 
             JsonNode json = mapper.readTree(mapper.writeValueAsString(slot));
 
@@ -131,27 +124,10 @@ class StudentMapModelsWireContractTest {
 
     private static FormatSlot readySlot(Format format, String contentType, String sha256) {
         return new FormatSlot(
-                format,
-                FormatState.ready,
-                contentType,
-                "42",
-                128,
-                sha256,
-                null,
-                null,
-                null);
+                format, FormatState.ready, contentType, "42", 128, sha256, null, null, null);
     }
 
     private static FormatSlot slot(FormatState state, String id, long bytes, String sha256) {
-        return new FormatSlot(
-                Format.png,
-                state,
-                "image/png",
-                id,
-                bytes,
-                sha256,
-                null,
-                null,
-                null);
+        return new FormatSlot(Format.png, state, "image/png", id, bytes, sha256, null, null, null);
     }
 }

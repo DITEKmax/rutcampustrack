@@ -1,5 +1,8 @@
 package ru.rutcampustrack.schedule.oneoff;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -12,13 +15,9 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
 import ru.rutcampustrack.schedule.security.RequireRole;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
 /**
- * REST controller for one-off lesson management (Phase 60-03).
- * Implements {@link OneOffLessonApi}; HTTP mappings stay on the contract interface.
+ * REST controller for one-off lesson management (Phase 60-03). Implements {@link OneOffLessonApi};
+ * HTTP mappings stay on the contract interface.
  */
 @RestController
 public class OneOffLessonController implements OneOffLessonApi {
@@ -26,8 +25,8 @@ public class OneOffLessonController implements OneOffLessonApi {
     private final OneOffLessonService oneOffLessonService;
     private final OneOffLessonAssembler assembler;
 
-    public OneOffLessonController(OneOffLessonService oneOffLessonService,
-                                  OneOffLessonAssembler assembler) {
+    public OneOffLessonController(
+            OneOffLessonService oneOffLessonService, OneOffLessonAssembler assembler) {
         this.oneOffLessonService = oneOffLessonService;
         this.assembler = assembler;
     }
@@ -35,19 +34,19 @@ public class OneOffLessonController implements OneOffLessonApi {
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
-            UUID idempotencyKey,
-            CreateOneOffLessonRequest request) {
-        OneOffCurrentLessonProjection saved = oneOffLessonService.createCurrentOneOffLesson(request, idempotencyKey);
+            UUID idempotencyKey, CreateOneOffLessonRequest request) {
+        OneOffCurrentLessonProjection saved =
+                oneOffLessonService.createCurrentOneOffLesson(request, idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(saved));
     }
 
     @Override
     public ResponseEntity<CollectionModel<EntityModel<OneOffLessonResponse>>> listOneOffLessons(
             Long groupId, LocalDate dateFrom, LocalDate dateTo) {
-        List<OneOffCurrentLessonProjection> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
-        List<EntityModel<OneOffLessonResponse>> models = items.stream()
-                .map(assembler::toModel)
-                .toList();
+        List<OneOffCurrentLessonProjection> items =
+                oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
+        List<EntityModel<OneOffLessonResponse>> models =
+                items.stream().map(assembler::toModel).toList();
         return ResponseEntity.ok(CollectionModel.of(models));
     }
 

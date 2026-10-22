@@ -1,11 +1,12 @@
 package ru.rutcampustrack.attendance.excuse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -23,7 +24,6 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
-import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
@@ -44,38 +44,39 @@ import java.util.stream.Collectors;
 /**
  * Business logic for excuse tickets (Phase 59, Wave 2).
  *
- * Implements decisions D-04..D-18 from 59-CONTEXT.md:
- * - D-10..D-11: duplicate detection (active ticket per lesson per student)
- * - D-12: headman does NOT create tickets — goes through normal markAttendance flow
- * - D-13: headman cannot approve/reject their own ticket
- * - D-14: read access restricted to owner or headman of same group
- * - D-18: status decision is final — no re-approval/re-rejection
+ * <p>Implements decisions D-04..D-18 from 59-CONTEXT.md: - D-10..D-11: duplicate detection (active
+ * ticket per lesson per student) - D-12: headman does NOT create tickets — goes through normal
+ * markAttendance flow - D-13: headman cannot approve/reject their own ticket - D-14: read access
+ * restricted to owner or headman of same group - D-18: status decision is final — no
+ * re-approval/re-rejection
  *
- * Cascade on approval (D-16) via AttendanceWritePort (plan 59-04).
- * Event publishing (D-19, D-20) via ExcuseEventPublisher (plan 59-05):
- *   - excuse.requested after createExcuse save
- *   - excuse.decided  after updateStatus save + cascade (order matters — journal
- *     consistency requires the cascade to complete before downstream observers).
+ * <p>Cascade on approval (D-16) via AttendanceWritePort (plan 59-04). Event publishing (D-19, D-20)
+ * via ExcuseEventPublisher (plan 59-05): - excuse.requested after createExcuse save -
+ * excuse.decided after updateStatus save + cascade (order matters — journal consistency requires
+ * the cascade to complete before downstream observers).
  */
 @Service
 public class ExcuseService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
-    @org.springframework.beans.factory.annotation.Autowired
-    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(
+            ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) {
+        this.requestActions = actions;
+    }
 
     private static final List<ExcuseTicketStatus> ACTIVE_STATUSES =
             List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED);
 
     /** Russian labels for excuse types — shown next to "у" in journal cells. */
-    private static final Map<ExcuseType, String> EXCUSE_TYPE_LABELS = Map.of(
-            ExcuseType.ILLNESS, "Болезнь",
-            ExcuseType.SUMMONS, "Повестка",
-            ExcuseType.UNIVERSITY_ORDER, "Приказ",
-            ExcuseType.EXEMPTION, "Освобождение",
-            ExcuseType.FREE_ATTENDANCE, "Свободное посещение",
-            ExcuseType.OTHER, "Другое"
-    );
+    private static final Map<ExcuseType, String> EXCUSE_TYPE_LABELS =
+            Map.of(
+                    ExcuseType.ILLNESS, "Болезнь",
+                    ExcuseType.SUMMONS, "Повестка",
+                    ExcuseType.UNIVERSITY_ORDER, "Приказ",
+                    ExcuseType.EXEMPTION, "Освобождение",
+                    ExcuseType.FREE_ATTENDANCE, "Свободное посещение",
+                    ExcuseType.OTHER, "Другое");
 
     private final ExcuseRepository excuseRepository;
     private final RequestContext requestContext;
@@ -89,16 +90,17 @@ public class ExcuseService {
     private final PairWriteCoordinator pairWriteCoordinator;
 
     @Autowired
-    public ExcuseService(ExcuseRepository excuseRepository,
-                         RequestContext requestContext,
-                         AcademicGrpcClient academicGrpcClient,
-                         AttendanceReadPort attendanceReadPort,
-                         AttendanceWritePort attendanceWritePort,
-                         ExcuseEventPublisher excuseEventPublisher,
-                         ScheduleGrpcClient scheduleGrpcClient,
-                         BusinessMetrics businessMetrics,
-                         Clock clock,
-                         PairWriteCoordinator pairWriteCoordinator) {
+    public ExcuseService(
+            ExcuseRepository excuseRepository,
+            RequestContext requestContext,
+            AcademicGrpcClient academicGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            AttendanceWritePort attendanceWritePort,
+            ExcuseEventPublisher excuseEventPublisher,
+            ScheduleGrpcClient scheduleGrpcClient,
+            BusinessMetrics businessMetrics,
+            Clock clock,
+            PairWriteCoordinator pairWriteCoordinator) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
@@ -112,25 +114,36 @@ public class ExcuseService {
     }
 
     /** Source-compatible constructor for focused tests without lesson fencing. */
-    public ExcuseService(ExcuseRepository excuseRepository,
-                         RequestContext requestContext,
-                         AcademicGrpcClient academicGrpcClient,
-                         AttendanceReadPort attendanceReadPort,
-                         AttendanceWritePort attendanceWritePort,
-                         ExcuseEventPublisher excuseEventPublisher,
-                         ScheduleGrpcClient scheduleGrpcClient,
-                         BusinessMetrics businessMetrics,
-                         Clock clock) {
-        this(excuseRepository, requestContext, academicGrpcClient, attendanceReadPort,
-                attendanceWritePort, excuseEventPublisher, scheduleGrpcClient,
-                businessMetrics, clock, null);
+    public ExcuseService(
+            ExcuseRepository excuseRepository,
+            RequestContext requestContext,
+            AcademicGrpcClient academicGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            AttendanceWritePort attendanceWritePort,
+            ExcuseEventPublisher excuseEventPublisher,
+            ScheduleGrpcClient scheduleGrpcClient,
+            BusinessMetrics businessMetrics,
+            Clock clock) {
+        this(
+                excuseRepository,
+                requestContext,
+                academicGrpcClient,
+                attendanceReadPort,
+                attendanceWritePort,
+                excuseEventPublisher,
+                scheduleGrpcClient,
+                businessMetrics,
+                clock,
+                null);
     }
 
     /**
      * D-04 + D-10..D-12, D-15: STUDENT creates an excuse ticket for lessons in their own group.
      *
-     * @throws ConflictException   headman attempted to create (D-12) or a lesson already has an active ticket (D-11)
-     * @throws BadRequestException defensive validation guard (comment length, empty list) — primary validation lives in DTO
+     * @throws ConflictException headman attempted to create (D-12) or a lesson already has an
+     *     active ticket (D-11)
+     * @throws BadRequestException defensive validation guard (comment length, empty list) — primary
+     *     validation lives in DTO
      */
     @Transactional
     public ExcuseTicket createExcuse(CreateExcuseRequest request) {
@@ -143,7 +156,8 @@ public class ExcuseService {
         // в outbox» сохраняется.
         excuseEventPublisher.publishRequested(saved, lessonDetails);
         // M04 Группа 8 — excuse.created{kind}. kind = enum ExcuseType (illness, ...).
-        businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()).increment();
+        businessMetrics.incrementAfterCommit(
+                businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()));
         return saved;
     }
 
@@ -168,8 +182,9 @@ public class ExcuseService {
         }
 
         // D-11: duplicate lesson in an active ticket for this student
-        boolean duplicate = excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
-                requestContext.getUserId(), request.lessonIds(), ACTIVE_STATUSES);
+        boolean duplicate =
+                excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
+                        requestContext.getUserId(), request.lessonIds(), ACTIVE_STATUSES);
         if (duplicate) {
             throw new ConflictException(
                     "На один из выбранных уроков уже существует активный тикет");
@@ -178,42 +193,52 @@ public class ExcuseService {
         // D-25: validate that every lessonId exists and belongs to the student's group
         Long semesterId = validateLessonIds(request.lessonIds());
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
-        lockAndValidateLessons(requestContext.getUserId(), requestContext.getGroupId(),
-                semesterId, request.lessonIds());
+        lockAndValidateLessons(
+                requestContext.getUserId(),
+                requestContext.getGroupId(),
+                semesterId,
+                request.lessonIds());
 
         // Excuse tickets only make sense for lessons where the student is marked absent.
         Long studentId = requestContext.getUserId();
         for (Long lessonId : request.lessonIds()) {
-            attendanceReadPort.findByLessonIdAndUserId(lessonId, studentId)
-                    .ifPresent(record -> {
-                        if (record.status() != AttendanceStatus.ABSENT) {
-                            throw new BadRequestException(
-                                    "Уважительную можно подать только на пару с «н». "
-                                            + "Урок id=" + lessonId + " имеет статус «" + record.status() + "»");
-                        }
-                    });
+            attendanceReadPort
+                    .findByLessonIdAndUserId(lessonId, studentId)
+                    .ifPresent(
+                            record -> {
+                                if (record.status() != AttendanceStatus.ABSENT) {
+                                    throw new BadRequestException(
+                                            "Уважительную можно подать только на пару с «н». "
+                                                    + "Урок id="
+                                                    + lessonId
+                                                    + " имеет статус «"
+                                                    + record.status()
+                                                    + "»");
+                                }
+                            });
         }
 
         Instant now = clock.instant();
-        ExcuseTicket ticket = ExcuseTicket.builder()
-                .studentId(requestContext.getUserId())
-                .groupId(requestContext.getGroupId())
-                .studentName(studentName)
-                .lessonIds(List.copyOf(request.lessonIds()))
-                .semesterId(semesterId)
-                .excuseType(request.excuseType())
-                .comment(request.comment())
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .studentId(requestContext.getUserId())
+                        .groupId(requestContext.getGroupId())
+                        .studentName(studentName)
+                        .lessonIds(List.copyOf(request.lessonIds()))
+                        .semesterId(semesterId)
+                        .excuseType(request.excuseType())
+                        .comment(request.comment())
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
 
         return excuseRepository.save(ticket);
     }
 
     /**
-     * D-05: STUDENT views their own tickets.
-     * Optional status filter narrows to a single lifecycle bucket.
+     * D-05: STUDENT views their own tickets. Optional status filter narrows to a single lifecycle
+     * bucket.
      */
     public Page<ExcuseTicket> getMyTickets(Pageable pageable, ExcuseTicketStatus status) {
         Long userId = requestContext.getUserId();
@@ -223,10 +248,9 @@ public class ExcuseService {
         return excuseRepository.findByStudentId(userId, pageable);
     }
 
-    /**
-     * D-06 + D-14: headman views tickets of THEIR OWN group. Non-headman or wrong group → 403.
-     */
-    public Page<ExcuseTicket> getGroupTickets(Long groupId, Pageable pageable, ExcuseTicketStatus status) {
+    /** D-06 + D-14: headman views tickets of THEIR OWN group. Non-headman or wrong group → 403. */
+    public Page<ExcuseTicket> getGroupTickets(
+            Long groupId, Pageable pageable, ExcuseTicketStatus status) {
         requireExcuseManagement(groupId);
         if (status != null) {
             return excuseRepository.findByGroupIdAndStatus(groupId, status, pageable);
@@ -239,13 +263,16 @@ public class ExcuseService {
      * Everyone else → 403.
      */
     public ExcuseTicket getTicketById(String id) {
-        ExcuseTicket ticket = excuseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
+        ExcuseTicket ticket =
+                excuseRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
 
         boolean isOwner = ticket.getStudentId().equals(requestContext.getUserId());
-        boolean isGroupHeadman = !isOwner
-                && ticket.getGroupId().equals(requestContext.getGroupId())
-                && hasExcuseManagement(ticket.getGroupId());
+        boolean isGroupHeadman =
+                !isOwner
+                        && ticket.getGroupId().equals(requestContext.getGroupId())
+                        && hasExcuseManagement(ticket.getGroupId());
 
         if (!isOwner && !isGroupHeadman) {
             throw new AccessDeniedException("Доступ к тикету запрещён");
@@ -255,19 +282,22 @@ public class ExcuseService {
 
     /**
      * D-07 + D-13 + D-14 + D-18: headman approves/rejects a ticket.
+     *
      * <ul>
-     *   <li>Caller must be headman of the ticket's group (D-07/D-14)</li>
-     *   <li>Caller must not be the ticket author (D-13)</li>
-     *   <li>Ticket must currently be SUBMITTED — otherwise decision is already final (D-18)</li>
-     *   <li>Requested status must be APPROVED or REJECTED (D-07)</li>
+     *   <li>Caller must be headman of the ticket's group (D-07/D-14)
+     *   <li>Caller must not be the ticket author (D-13)
+     *   <li>Ticket must currently be SUBMITTED — otherwise decision is already final (D-18)
+     *   <li>Requested status must be APPROVED or REJECTED (D-07)
      * </ul>
      *
      * Cascade on APPROVED (D-16) will be performed by plan 59-04 once AttendanceWritePort exists.
      */
     @Transactional
     public ExcuseTicket updateStatus(String id, UpdateExcuseStatusRequest request) {
-        ExcuseTicket ticket = excuseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
+        ExcuseTicket ticket =
+                excuseRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
 
         // D-07: only APPROVED or REJECTED are meaningful here
         ExcuseTicketStatus newStatus = request.status();
@@ -289,16 +319,22 @@ public class ExcuseService {
         }
 
         requirePositiveSemester(ticket.getSemesterId());
-        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(),
-                ticket.getSemesterId(), ticket.getLessonIds());
-        ticket = excuseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
+        lockAndValidateLessons(
+                ticket.getStudentId(),
+                ticket.getGroupId(),
+                ticket.getSemesterId(),
+                ticket.getLessonIds());
+        ticket =
+                excuseRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
         if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
             throw new ConflictException("Решение по тикету уже принято");
         }
 
         Instant now = clock.instant();
-        Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(ticket);
+        Map<String, Object> auditBefore =
+                ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(ticket);
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(requestContext.getUserId());
         ticket.setDecisionComment(request.decisionComment());
@@ -309,7 +345,8 @@ public class ExcuseService {
 
         // D-16: on APPROVED, cascade to attendance documents (EXCUSED or FREE_ATTENDANCE)
         if (newStatus == ExcuseTicketStatus.APPROVED) {
-            AttendanceStatus attendanceStatus = mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
+            AttendanceStatus attendanceStatus =
+                    mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
             String reason = buildReason(saved);
             for (Long lessonId : saved.getLessonIds()) {
                 attendanceWritePort.mark(
@@ -325,7 +362,8 @@ public class ExcuseService {
 
         // D-20 / D-28: publish excuse.decided AFTER cascade, BEFORE return — journal
         // consistency requires the cascade to land before any consumer observes the decision.
-        if (requestActions != null) requestActions.excuse(saved, auditBefore, saved.getDecisionBy(), null, now);
+        if (requestActions != null)
+            requestActions.excuse(saved, auditBefore, saved.getDecisionBy(), null, now);
         excuseEventPublisher.publishDecided(saved);
 
         return saved;
@@ -334,24 +372,29 @@ public class ExcuseService {
     /**
      * Применить решение старосты, пришедшее через inline-кнопку в Telegram.
      *
-     * <p>В отличие от {@link #updateStatus}, эта ветка НЕ имеет
-     * {@link RequestContext} — вызывающий это consumer RabbitMQ без JWT. Доверие
-     * к источнику обеспечивается тем, что inline-клавиатура отправляется только
-     * старостам группы (фильтр в {@code headman_alerts.py}), а event
-     * {@code excuse.decision} публикуется ботом только на нажатии кнопки.
+     * <p>В отличие от {@link #updateStatus}, эта ветка НЕ имеет {@link RequestContext} — вызывающий
+     * это consumer RabbitMQ без JWT. Доверие к источнику обеспечивается тем, что inline-клавиатура
+     * отправляется только старостам группы (фильтр в {@code headman_alerts.py}), а event {@code
+     * excuse.decision} публикуется ботом только на нажатии кнопки.
      *
-     * <p>Идемпотентность: повторная доставка для уже решённого тикета игнорируется
-     * — симметрия с {@link ru.rutcampustrack.attendance.latecheckin.LateCheckinService#applyDecision}.
+     * <p>Идемпотентность: повторная доставка для уже решённого тикета игнорируется — симметрия с
+     * {@link ru.rutcampustrack.attendance.latecheckin.LateCheckinService#applyDecision}.
      *
-     * @param ticketId         Mongo id тикета
-     * @param decisionBy       telegram user_id старосты (сохраняется «как есть», как делает late_checkin)
-     * @param approved         true = APPROVED, false = REJECTED
-     * @param decisionComment  опциональный комментарий
+     * @param ticketId Mongo id тикета
+     * @param decisionBy telegram user_id старосты (сохраняется «как есть», как делает late_checkin)
+     * @param approved true = APPROVED, false = REJECTED
+     * @param decisionComment опциональный комментарий
      */
     @Transactional
-    public void applyDecisionFromBot(String ticketId, Long decisionBy, boolean approved, String decisionComment) {
-        ExcuseTicket ticket = excuseRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
+    public void applyDecisionFromBot(
+            String ticketId, Long decisionBy, boolean approved, String decisionComment) {
+        ExcuseTicket ticket =
+                excuseRepository
+                        .findById(ticketId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "ExcuseTicket", "id", ticketId));
 
         // D-18: решение уже принято — тихо выходим (дубликат доставки RabbitMQ).
         if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
@@ -359,17 +402,27 @@ public class ExcuseService {
         }
 
         requirePositiveSemester(ticket.getSemesterId());
-        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(),
-                ticket.getSemesterId(), ticket.getLessonIds());
-        ticket = excuseRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
+        lockAndValidateLessons(
+                ticket.getStudentId(),
+                ticket.getGroupId(),
+                ticket.getSemesterId(),
+                ticket.getLessonIds());
+        ticket =
+                excuseRepository
+                        .findById(ticketId)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "ExcuseTicket", "id", ticketId));
         if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
             return;
         }
 
         Instant now = clock.instant();
-        ExcuseTicketStatus newStatus = approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
-        Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(ticket);
+        ExcuseTicketStatus newStatus =
+                approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
+        Map<String, Object> auditBefore =
+                ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(ticket);
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(decisionBy);
         ticket.setDecisionComment(decisionComment);
@@ -379,7 +432,8 @@ public class ExcuseService {
         ExcuseTicket saved = excuseRepository.save(ticket);
 
         if (newStatus == ExcuseTicketStatus.APPROVED) {
-            AttendanceStatus attendanceStatus = mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
+            AttendanceStatus attendanceStatus =
+                    mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
             String reason = buildReason(saved);
             for (Long lessonId : saved.getLessonIds()) {
                 attendanceWritePort.mark(
@@ -393,7 +447,8 @@ public class ExcuseService {
             }
         }
 
-        if (requestActions != null) requestActions.excuse(saved, auditBefore, saved.getDecisionBy(), null, now);
+        if (requestActions != null)
+            requestActions.excuse(saved, auditBefore, saved.getDecisionBy(), null, now);
         excuseEventPublisher.publishDecided(saved);
     }
 
@@ -408,18 +463,21 @@ public class ExcuseService {
 
     private boolean hasExcuseManagement(Long targetGroupId) {
         if (requestContext.isHeadman()) {
-            return academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId).getIsHeadman();
+            return academicGrpcClient
+                    .isHeadman(requestContext.getUserId(), targetGroupId)
+                    .getIsHeadman();
         }
         return academicGrpcClient.hasAssistantPermission(targetGroupId, "MANAGE_EXCUSES");
     }
 
     /**
-     * D-16: map an {@link ExcuseType} to the corresponding {@link AttendanceStatus}
-     * used when cascading an approved ticket onto attendance documents.
+     * D-16: map an {@link ExcuseType} to the corresponding {@link AttendanceStatus} used when
+     * cascading an approved ticket onto attendance documents.
      *
      * <ul>
-     *   <li>{@code FREE_ATTENDANCE} → {@code FREE_ATTENDANCE}</li>
-     *   <li>everything else (ILLNESS, SUMMONS, UNIVERSITY_ORDER, EXEMPTION, OTHER) → {@code EXCUSED}</li>
+     *   <li>{@code FREE_ATTENDANCE} → {@code FREE_ATTENDANCE}
+     *   <li>everything else (ILLNESS, SUMMONS, UNIVERSITY_ORDER, EXEMPTION, OTHER) → {@code
+     *       EXCUSED}
      * </ul>
      */
     private AttendanceStatus mapExcuseTypeToAttendanceStatus(ExcuseType excuseType) {
@@ -430,8 +488,8 @@ public class ExcuseService {
     }
 
     /**
-     * Human-readable reason shown next to "у" in journal cells. For OTHER we prefer
-     * the student's own comment (truncated) — it carries the actual explanation.
+     * Human-readable reason shown next to "у" in journal cells. For OTHER we prefer the student's
+     * own comment (truncated) — it carries the actual explanation.
      */
     private String buildReason(ExcuseTicket ticket) {
         ExcuseType type = ticket.getExcuseType();
@@ -447,9 +505,8 @@ public class ExcuseService {
     }
 
     /**
-     * D-25: validate that every requested lessonId exists in schedule-service and
-     * belongs to the caller's group. Uses the batch gRPC {@code GetLessonsByIds}
-     * method shipped in plan 59-03.
+     * D-25: validate that every requested lessonId exists in schedule-service and belongs to the
+     * caller's group. Uses the batch gRPC {@code GetLessonsByIds} method shipped in plan 59-03.
      *
      * @throws BadRequestException if any id is unknown or belongs to another group
      */
@@ -460,7 +517,8 @@ public class ExcuseService {
         for (LessonInfo lesson : lessons) {
             returnedIds.add(lesson.getLessonId());
             if (lesson.getSemesterId() <= 0) {
-                throw new ScheduleServiceUnavailableException("Schedule returned a lesson without a positive semester");
+                throw new ScheduleServiceUnavailableException(
+                        "Schedule returned a lesson without a positive semester");
             }
             semesterIds.add(lesson.getSemesterId());
         }
@@ -482,12 +540,16 @@ public class ExcuseService {
         return semesterIds.iterator().next();
     }
 
-    private void lockAndValidateLessons(long studentId, long groupId, long semesterId, List<Long> lessonIds) {
-        List<Long> orderedIds = lessonIds == null ? List.of()
-                : lessonIds.stream().filter(Objects::nonNull).distinct().sorted().toList();
+    private void lockAndValidateLessons(
+            long studentId, long groupId, long semesterId, List<Long> lessonIds) {
+        List<Long> orderedIds =
+                lessonIds == null
+                        ? List.of()
+                        : lessonIds.stream().filter(Objects::nonNull).distinct().sorted().toList();
         requirePositiveSemester(semesterId);
         for (Long lessonId : orderedIds) {
-            LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
+            LessonResponse lesson =
+                    scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
             if (lesson.getSemesterId() != semesterId) {
                 throw new ScheduleServiceUnavailableException(
                         "Schedule lesson semester does not match the request scope");
@@ -504,26 +566,28 @@ public class ExcuseService {
 
     private static void requirePositiveSemester(Long semesterId) {
         if (semesterId == null || semesterId <= 0) {
-            throw new ScheduleServiceUnavailableException("Attendance request has no authoritative semester");
+            throw new ScheduleServiceUnavailableException(
+                    "Attendance request has no authoritative semester");
         }
     }
 
     /**
      * Собирает детали пар для обогащения payload события и UI.
      *
-     * <p>Возвращает список {@code [{lesson_id, lesson_number, date, subject_id,
-     * subject_name}]}. Если gRPC-вызов упадёт, возвращаем пустой список — обогащение
-     * опционально, и падение schedule/academic не должно ломать публикацию события.
+     * <p>Возвращает список {@code [{lesson_id, lesson_number, date, subject_id, subject_name}]}.
+     * Если gRPC-вызов упадёт, возвращаем пустой список — обогащение опционально, и падение
+     * schedule/academic не должно ломать публикацию события.
      */
     List<Map<String, Object>> resolveLessonDetails(List<Long> lessonIds) {
         if (lessonIds == null || lessonIds.isEmpty()) return List.of();
         try {
             List<LessonInfo> lessons = scheduleGrpcClient.getLessonsByIds(lessonIds);
             if (lessons.isEmpty()) return List.of();
-            List<Long> subjectIds = lessons.stream()
-                    .map(LessonInfo::getSubjectId)
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<Long> subjectIds =
+                    lessons.stream()
+                            .map(LessonInfo::getSubjectId)
+                            .distinct()
+                            .collect(Collectors.toList());
             Map<Long, String> subjectNames = academicGrpcClient.getSubjectsByIds(subjectIds);
             List<Map<String, Object>> out = new ArrayList<>(lessons.size());
             for (LessonInfo lesson : lessons) {

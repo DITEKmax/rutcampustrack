@@ -1,0 +1,2 @@
+Frozen corrective formatter source 9a77f68205df2cbd41892373e261fa05adae0265; independent review pending. Original 50 safe receipts are byte-identical in ZIP; SHA256 443ba951795c9078b992426c339467dab71dcbcaf6fd2a87e693e360d4ea15f5.
+Native checks passed: combined680, existing strict lint, PWA/TMA types, compiler literal preservation and selective controls. Windows runtime NOT_RUN. No whole-product acceptance claim. Exact import order/inventory and limits: portable-fresh-review-packet.safe.json and FINAL-source-checks.safe.json inside archive.

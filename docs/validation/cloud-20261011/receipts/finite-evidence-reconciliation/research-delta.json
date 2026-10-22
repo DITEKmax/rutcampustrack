@@ -1,0 +1,171 @@
+{
+  "prior_complete_dispositions": "receipts/matrix-evidence-reconciliation/research-dispositions.json",
+  "sha256": "a950f9b73e6b37674c22cfdd31ae2f4616b45eac9338d659e9d1a3b75ced3adf",
+  "new_product_rules": false,
+  "delta": [
+    {
+      "research_id": "L03",
+      "finite_cases": [
+        "CASE-SB01-OTP-VALIDATION-REDACTION",
+        "CASE-SB05-REPORT-PROOF-REDACTION"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "L04",
+      "finite_cases": [
+        "CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES",
+        "CASE-SB03-MONGO-ENUM-ROUNDTRIP",
+        "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "L05",
+      "finite_cases": [
+        "CASE-DATA-T001-TEACHER-PUBLICATION",
+        "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "L06",
+      "finite_cases": [
+        "CASE-DATA-L06-BATCH-TRANSFER-FENCE"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "L07",
+      "finite_cases": [
+        "CASE-DATA-L07-ARCHIVE-ACTIVATION-SERIAL"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "L08",
+      "finite_cases": [
+        "CASE-DATA-L08-FENCED-AUTH-TUPLE",
+        "CASE-DATA-L08-PASSWORD-ROLLBACK-EVENT",
+        "CASE-DATA-L08-PASSWORD-ROLLBACK-SESSIONS"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P03",
+      "finite_cases": [
+        "CASE-SB01-OTP-VALIDATION-REDACTION",
+        "CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES",
+        "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P05",
+      "finite_cases": [
+        "CASE-DATA-L07-ARCHIVE-ACTIVATION-SERIAL",
+        "CASE-DATA-L08-PASSWORD-ROLLBACK-EVENT",
+        "CASE-DATA-L08-PASSWORD-ROLLBACK-SESSIONS"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P06",
+      "finite_cases": [
+        "CASE-SB06-AUTH-PASSWORD-COMMIT-CLEAR",
+        "CASE-DATA-L08-FENCED-AUTH-TUPLE",
+        "CASE-DATA-L08-PASSWORD-ROLLBACK-EVENT",
+        "CASE-DATA-L08-PASSWORD-ROLLBACK-SESSIONS",
+        "CASE-CI232-WRONG-PASSWORD",
+        "CASE-CI232-STUDENT-LOGIN-COOKIE",
+        "CASE-CI232-STUDENT-ADMIN-DENIAL",
+        "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+        "CASE-CI232-REFRESH-RELOAD",
+        "CASE-CI232-LOGOUT-REVOKE",
+        "CASE-CI232-ONLINE-RECONNECT",
+        "CASE-CI232-TMA-TAMPERED",
+        "CASE-CI232-TMA-TEACHER-HOST-BACK"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P07",
+      "finite_cases": [
+        "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE",
+        "CASE-GW01-NUMERICDATE-LOCAL-PRECHECK",
+        "CASE-CI232-WRONG-PASSWORD",
+        "CASE-CI232-STUDENT-LOGIN-COOKIE",
+        "CASE-CI232-STUDENT-ADMIN-DENIAL",
+        "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+        "CASE-CI232-REFRESH-RELOAD",
+        "CASE-CI232-LOGOUT-REVOKE",
+        "CASE-CI232-ONLINE-RECONNECT",
+        "CASE-CI232-TMA-TAMPERED",
+        "CASE-CI232-TMA-TEACHER-HOST-BACK"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P08",
+      "finite_cases": [
+        "CASE-CI232-WRONG-PASSWORD",
+        "CASE-CI232-STUDENT-LOGIN-COOKIE",
+        "CASE-CI232-STUDENT-ADMIN-DENIAL",
+        "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+        "CASE-CI232-REFRESH-RELOAD",
+        "CASE-CI232-LOGOUT-REVOKE",
+        "CASE-CI232-ONLINE-RECONNECT",
+        "CASE-CI232-TMA-TAMPERED",
+        "CASE-CI232-TMA-TEACHER-HOST-BACK"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P10",
+      "finite_cases": [
+        "CASE-SB06-AUTH-PASSWORD-COMMIT-CLEAR"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P15",
+      "finite_cases": [
+        "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P16",
+      "finite_cases": [
+        "CASE-SB05-REPORT-PROOF-REDACTION"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P17",
+      "finite_cases": [
+        "CASE-SB01-OTP-VALIDATION-REDACTION",
+        "CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES",
+        "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE",
+        "CASE-SB05-REPORT-PROOF-REDACTION",
+        "CASE-GW01-NUMERICDATE-LOCAL-PRECHECK"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P18",
+      "finite_cases": [
+        "CASE-SB03-MONGO-ENUM-ROUNDTRIP"
+      ],
+      "required_parent_status_unchanged": true
+    },
+    {
+      "research_id": "P21",
+      "finite_cases": [
+        "CASE-DATA-L06-BATCH-TRANSFER-FENCE"
+      ],
+      "required_parent_status_unchanged": true
+    }
+  ],
+  "other_L01_L08_P01_P21_dispositions_preserved": true
+}

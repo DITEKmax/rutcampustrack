@@ -1,0 +1,29 @@
+{
+  "utc": "2026-10-12T08:33:31.166761+00:00",
+  "bounded_version_probes_only_no_application_JVM": true,
+  "results": [
+    {
+      "argv": [
+        "/usr/bin/openssl",
+        "version"
+      ],
+      "native_exit": 0,
+      "public_version_output": "OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)",
+      "binary_sha256": "f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1",
+      "binary_realpath": "/usr/bin/openssl",
+      "no_inherited_environment": true
+    },
+    {
+      "argv": [
+        "/workspace/rct-cloud-setup/jdk21/bin/java",
+        "-version"
+      ],
+      "native_exit": 0,
+      "public_version_output": "openjdk version \"21.0.12.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode, sharing)",
+      "binary_sha256": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d",
+      "binary_realpath": "/workspace/rct-cloud-setup/jdk21/bin/java",
+      "no_inherited_environment": true
+    }
+  ],
+  "JDK_release_sha256": "ebbd70bf00bab6d39addf51969c5ff244030b86b29de400b9fb10612ebd3ceec"
+}

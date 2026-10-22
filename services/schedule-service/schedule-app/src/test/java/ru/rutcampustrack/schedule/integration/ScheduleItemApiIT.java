@@ -1,6 +1,17 @@
 package ru.rutcampustrack.schedule.integration;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -27,19 +39,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
- * Integration tests for ScheduleItem CRUD API (TMPL-01 through TMPL-05).
- * Uses MockMvc + @MockitoBean AcademicGrpcClient (D-04 — mock the wrapper, not the stub).
+ * Integration tests for ScheduleItem CRUD API (TMPL-01 through TMPL-05). Uses MockMvc
+ * + @MockitoBean AcademicGrpcClient (D-04 — mock the wrapper, not the stub).
  */
 @AutoConfigureMockMvc
 class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
@@ -51,87 +53,96 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     private static final Long ASSIGNMENT_ID = 501L;
     private static final Long TEACHER_ID = 700L;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @MockitoBean
-    ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient adminPermissions;
+    @MockitoBean ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient adminPermissions;
 
-    @Autowired
-    ru.rutcampustrack.shared.security.InternalJwtTestFactory signer;
+    @Autowired ru.rutcampustrack.shared.security.InternalJwtTestFactory signer;
 
-    @Autowired
-    MockMvc mockMvc;
+    @Autowired MockMvc mockMvc;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    @Autowired ObjectMapper objectMapper;
 
-    private static final SemesterResponse MOCK_SEMESTER = SemesterResponse.newBuilder()
-            .setId(SEMESTER_ID)
-            .setName("Spring 2026")
-            .setDateFrom("2026-02-02")
-            .setDateTo("2026-06-30")
-            .setFirstWeekType("odd")
-            .build();
+    private static final SemesterResponse MOCK_SEMESTER =
+            SemesterResponse.newBuilder()
+                    .setId(SEMESTER_ID)
+                    .setName("Spring 2026")
+                    .setDateFrom("2026-02-02")
+                    .setDateTo("2026-06-30")
+                    .setFirstWeekType("odd")
+                    .build();
 
     @BeforeEach
     void setUp() {
         resetScheduleData();
         lessonNumberCounter = 1;
-        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
-                SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setStateVersion(1).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
+                .thenReturn(
+                        SemesterStateResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setStateVersion(1)
+                                .build());
         // Configure mocks for happy path
         when(academicGrpcClient.validateGroup(GROUP_ID))
-                .thenReturn(GroupResponse.newBuilder()
-                        .setId(GROUP_ID)
-                        .setName("Test Group")
-                        // 58-04: proto field `code` удалён (reserved 3).
-                        .setIsActive(true)
-                        .build());
+                .thenReturn(
+                        GroupResponse.newBuilder()
+                                .setId(GROUP_ID)
+                                .setName("Test Group")
+                                // 58-04: proto field `code` удалён (reserved 3).
+                                .setIsActive(true)
+                                .build());
         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
-        when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER))
-                .thenReturn(WeekType.ODD);
+        when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER)).thenReturn(WeekType.ODD);
         when(academicGrpcClient.isHeadman(USER_ID, GROUP_ID)).thenReturn(true);
         when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID)))
-                .thenReturn(List.of(AssignmentInfo.newBuilder()
-                        .setId(ASSIGNMENT_ID)
-                        .setTeacherId(TEACHER_ID)
-                        .setSubjectId(SUBJECT_ID)
-                        .setGroupId(GROUP_ID)
-                        .setSemesterId(SEMESTER_ID)
-                        .setLessonType("lecture")
-                        .setValidFrom("2026-02-02")
-                        .setValidUntilExclusive("2026-07-01")
-                        .build()));
+                .thenReturn(
+                        List.of(
+                                AssignmentInfo.newBuilder()
+                                        .setId(ASSIGNMENT_ID)
+                                        .setTeacherId(TEACHER_ID)
+                                        .setSubjectId(SUBJECT_ID)
+                                        .setGroupId(GROUP_ID)
+                                        .setSemesterId(SEMESTER_ID)
+                                        .setLessonType("lecture")
+                                        .setValidFrom("2026-02-02")
+                                        .setValidUntilExclusive("2026-07-01")
+                                        .build()));
     }
 
     // ---------- Header helpers ----------
 
-    private MockHttpServletRequestBuilder withHeadmanHeaders(MockHttpServletRequestBuilder builder) {
-        return builder
-                .header("X-User-Id", USER_ID)
+    private MockHttpServletRequestBuilder withHeadmanHeaders(
+            MockHttpServletRequestBuilder builder) {
+        return builder.header("X-User-Id", USER_ID)
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", GROUP_ID)
                 .header("X-Is-Headman", "true");
     }
 
     private MockHttpServletRequestBuilder withAdminHeaders(MockHttpServletRequestBuilder builder) {
-        return builder
-                .header("X-User-Id", 999L)
+        return builder.header("X-User-Id", 999L)
                 .header("X-User-Role", "ADMIN")
-                .header("X-Internal-Token", signer.validToken(999, UUID.randomUUID(), 1, 1,
-                        "ADMIN", "ACTIVE", null, false, false));
+                .header(
+                        "X-Internal-Token",
+                        signer.validToken(
+                                999,
+                                UUID.randomUUID(),
+                                1,
+                                1,
+                                "ADMIN",
+                                "ACTIVE",
+                                null,
+                                false,
+                                false));
     }
 
-    private MockHttpServletRequestBuilder withStudentHeaders(MockHttpServletRequestBuilder builder) {
-        return builder
-                .header("X-User-Id", 55L)
+    private MockHttpServletRequestBuilder withStudentHeaders(
+            MockHttpServletRequestBuilder builder) {
+        return builder.header("X-User-Id", 55L)
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", GROUP_ID)
                 .header("X-Is-Headman", "false");
@@ -140,11 +151,18 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     // ---------- Request builders ----------
 
     private String createRequestJson() throws Exception {
-        return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
-                ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(9, 50),
-                WeekType.ALL, "A-101"
-        ));
+        return objectMapper.writeValueAsString(
+                new CreateScheduleItemRequest(
+                        ASSIGNMENT_ID,
+                        GROUP_ID,
+                        SUBJECT_ID,
+                        SEMESTER_ID,
+                        (short) 1,
+                        (short) 1,
+                        LocalTime.of(8, 30),
+                        LocalTime.of(9, 50),
+                        WeekType.ALL,
+                        "A-101"));
     }
 
     private int lessonNumberCounter = 1;
@@ -170,10 +188,11 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void createTemplate_headman_success() throws Exception {
-        mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Idempotency-Key", UUID.randomUUID().toString())
-                        .content(createRequestJson()))
+        mockMvc.perform(
+                        withHeadmanHeaders(post("/schedule/items"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Idempotency-Key", UUID.randomUUID().toString())
+                                .content(createRequestJson()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.groupId", is(GROUP_ID.intValue())))
@@ -188,20 +207,22 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     @Test
     void createTemplate_admin_success() throws Exception {
         // ADMIN bypasses headman check — no isHeadman mock needed
-        mockMvc.perform(withAdminHeaders(post("/schedule/items"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Idempotency-Key", UUID.randomUUID().toString())
-                        .content(createRequestJson()))
+        mockMvc.perform(
+                        withAdminHeaders(post("/schedule/items"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Idempotency-Key", UUID.randomUUID().toString())
+                                .content(createRequestJson()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.groupId", is(GROUP_ID.intValue())));
     }
 
     @Test
     void createTemplate_nonHeadmanStudent_returns403() throws Exception {
-        mockMvc.perform(withStudentHeaders(post("/schedule/items"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Idempotency-Key", UUID.randomUUID().toString())
-                        .content(createRequestJson()))
+        mockMvc.perform(
+                        withStudentHeaders(post("/schedule/items"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Idempotency-Key", UUID.randomUUID().toString())
+                                .content(createRequestJson()))
                 .andExpect(status().isForbidden());
     }
 
@@ -211,23 +232,27 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     void updateTemplate_requiresReplayAndPreviewContract() throws Exception {
         ScheduleItem saved = saveActiveItem();
 
-        String updateJson = objectMapper.writeValueAsString(
-                new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(
-                        SUBJECT_ID,
-                        (short) 2, (short) 2,
-                        LocalTime.of(10, 10), LocalTime.of(11, 40),
-                        WeekType.ALL, "B-202"
-                )
-        );
+        String updateJson =
+                objectMapper.writeValueAsString(
+                        new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(
+                                SUBJECT_ID,
+                                (short) 2,
+                                (short) 2,
+                                LocalTime.of(10, 10),
+                                LocalTime.of(11, 40),
+                                WeekType.ALL,
+                                "B-202"));
 
-        mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", saved.getId()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateJson))
+        mockMvc.perform(
+                        withHeadmanHeaders(put("/schedule/items/{id}", saved.getId()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(updateJson))
                 .andExpect(status().isBadRequest());
 
         ScheduleItem unchanged = scheduleItemRepository.findById(saved.getId()).orElseThrow();
         org.assertj.core.api.Assertions.assertThat(unchanged.getRoom()).isEqualTo("A-101");
-        org.assertj.core.api.Assertions.assertThat(unchanged.getLessonNumber()).isEqualTo((short) 1);
+        org.assertj.core.api.Assertions.assertThat(unchanged.getLessonNumber())
+                .isEqualTo((short) 1);
     }
 
     // ---------- TMPL-03: Soft delete ----------
@@ -238,8 +263,9 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
 
         mockMvc.perform(withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId())))
                 .andExpect(status().isBadRequest());
-        mockMvc.perform(withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId()))
-                        .header("Idempotency-Key", UUID.randomUUID()))
+        mockMvc.perform(
+                        withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId()))
+                                .header("Idempotency-Key", UUID.randomUUID()))
                 .andExpect(status().isBadRequest());
 
         ScheduleItem fromDb = scheduleItemRepository.findById(saved.getId()).orElseThrow();
@@ -251,19 +277,29 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     @Test
     void listTemplates_returnsActiveOnly() throws Exception {
         // 2 active
-        saveActiveItem();
-        saveActiveItem();
+        ScheduleItem first = saveActiveItem();
+        ScheduleItem second = saveActiveItem();
         // 1 deactivated
         ScheduleItem inactive = saveActiveItem();
         inactive.setActive(false);
         scheduleItemRepository.save(inactive);
 
-        mockMvc.perform(withHeadmanHeaders(
-                        get("/schedule/items")
-                                .param("groupId", GROUP_ID.toString())
-                                .param("semesterId", SEMESTER_ID.toString())))
+        mockMvc.perform(
+                        withHeadmanHeaders(
+                                get("/schedule/items")
+                                        .param("groupId", GROUP_ID.toString())
+                                        .param("semesterId", SEMESTER_ID.toString())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page.totalElements", is(2)));
+                .andExpect(jsonPath("$.page.totalElements", is(2)))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.scheduleItemResponseList[*].id",
+                                org.hamcrest.Matchers.containsInAnyOrder(
+                                        first.getId().intValue(), second.getId().intValue())))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.scheduleItemResponseList[*].active",
+                                org.hamcrest.Matchers.everyItem(is(true))));
     }
 
     // ---------- TMPL-05: gRPC validation ----------
@@ -273,28 +309,38 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
         when(academicGrpcClient.validateGroup(GROUP_ID))
                 .thenThrow(new AcademicServiceUnavailableException("gRPC down"));
 
-        mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Idempotency-Key", UUID.randomUUID().toString())
-                        .content(createRequestJson()))
+        mockMvc.perform(
+                        withHeadmanHeaders(post("/schedule/items"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Idempotency-Key", UUID.randomUUID().toString())
+                                .content(createRequestJson()))
                 .andExpect(status().isServiceUnavailable());
     }
 
     @Test
     void createTemplate_invalidGroupId_returns404() throws Exception {
-        String requestJson = objectMapper.writeValueAsString(new CreateScheduleItemRequest(
-                501L, 999L, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(9, 50),
-                WeekType.ALL, "A-101"
-        ));
+        String requestJson =
+                objectMapper.writeValueAsString(
+                        new CreateScheduleItemRequest(
+                                501L,
+                                999L,
+                                SUBJECT_ID,
+                                SEMESTER_ID,
+                                (short) 1,
+                                (short) 1,
+                                LocalTime.of(8, 30),
+                                LocalTime.of(9, 50),
+                                WeekType.ALL,
+                                "A-101"));
         when(academicGrpcClient.isHeadman(USER_ID, 999L)).thenReturn(true);
         when(academicGrpcClient.validateGroup(999L))
                 .thenThrow(new ResourceNotFoundException("Group", "id", 999L));
 
-        mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Idempotency-Key", UUID.randomUUID().toString())
-                        .content(requestJson))
+        mockMvc.perform(
+                        withHeadmanHeaders(post("/schedule/items"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Idempotency-Key", UUID.randomUUID().toString())
+                                .content(requestJson))
                 .andExpect(status().isNotFound());
     }
 }

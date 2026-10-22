@@ -1,0 +1,18 @@
+{
+  "scope": "SESSION_OFFLINE_TWO_TS_AND_E543_PARAMETER_CALLER",
+  "runtime_verdict": "APPROVE_SOURCE_ONLY",
+  "aggregate_verdict": "CHANGES_REQUESTED",
+  "finding": "SO-DISCOVERY-GATE-001",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1843,
+      "sha256": "bdf8801da096e8ceea991568d7cb3a28c5a35074015d0e645f7eb2806144de37"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3631,
+      "sha256": "17e6d47b6559df34cd964aa735fd87ba4f1d38dc56d1cf75b8ef29aee0cec405"
+    }
+  ]
+}

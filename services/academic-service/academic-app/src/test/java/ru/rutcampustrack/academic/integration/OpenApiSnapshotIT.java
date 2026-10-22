@@ -1,34 +1,31 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.ResponseEntity;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.ResponseEntity;
 
 /**
  * M11 G3: OpenAPI ↔ runtime conformance check.
  *
- * <p>Тест GET'ает {@code /api-docs} у running app и сравнивает с
- * committed snapshot'ом в {@code docs/api-spec/academic.json}. При
- * расхождении падает с инструкцией обновить snapshot через
- * {@code -Dopenapi.snapshot.update=true}.
+ * <p>Тест GET'ает {@code /api-docs} у running app и сравнивает с committed snapshot'ом в {@code
+ * docs/api-spec/academic.json}. При расхождении падает с инструкцией обновить snapshot через {@code
+ * -Dopenapi.snapshot.update=true}.
  *
- * <p>Цель: блокировать accidental breaking changes в OpenAPI —
- * удаление endpoint'ов, изменение типов, удаление обязательных полей.
- * CI step oasdiff делает deeper semantic diff поверх того же snapshot'а.
+ * <p>Цель: блокировать accidental breaking changes в OpenAPI — удаление endpoint'ов, изменение
+ * типов, удаление обязательных полей. CI step oasdiff делает deeper semantic diff поверх того же
+ * snapshot'а.
  */
 class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
 
@@ -36,15 +33,17 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
     // CWD при запуске gradle test — services/academic-service/academic-app/,
     // repo root = ../../../ относительно неё. docs/openapi — единый
     // baseline для M07 frontend drift + M11 G3 runtime conformance.
-    private static final Path SNAPSHOT_PATH = Paths.get("../../..")
-            .resolve("docs").resolve("openapi").resolve(SERVICE_NAME + ".json")
-            .toAbsolutePath().normalize();
+    private static final Path SNAPSHOT_PATH =
+            Paths.get("../../..")
+                    .resolve("docs")
+                    .resolve("openapi")
+                    .resolve(SERVICE_NAME + ".json")
+                    .toAbsolutePath()
+                    .normalize();
 
-    @Autowired
-    TestRestTemplate restTemplate;
+    @Autowired TestRestTemplate restTemplate;
 
     @Test
-    @DisplayName("M11 G3: /api-docs matches committed snapshot")
     void apiDocsMatchesSnapshot() throws IOException {
         String actual = normalizeLineEndings(fetchAndNormalize());
 
@@ -56,18 +55,21 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
         }
 
         assertThat(SNAPSHOT_PATH)
-                .as("Snapshot file missing — run with -Dopenapi.snapshot.update=true to create %s",
+                .as(
+                        "Snapshot file missing — run with -Dopenapi.snapshot.update=true to create %s",
                         SNAPSHOT_PATH)
                 .exists();
 
-        String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
+        String expected =
+                normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
         // JSON object member order depends on Springdoc discovery order.
         // Parsed equality keeps every key/value and array order significant.
         ObjectMapper mapper = new ObjectMapper();
         assertThat(mapper.readTree(actual))
-                .as("OpenAPI spec drifted from committed snapshot. " +
-                        "To regenerate: ./gradlew :services:academic-service:academic-app:integrationTest " +
-                        "--tests OpenApiSnapshotIT -Dopenapi.snapshot.update=true")
+                .as(
+                        "OpenAPI spec drifted from committed snapshot. "
+                                + "To regenerate: ./gradlew :services:academic-service:academic-app:integrationTest "
+                                + "--tests OpenApiSnapshotIT -Dopenapi.snapshot.update=true")
                 .isEqualTo(mapper.readTree(expected));
     }
 
@@ -81,9 +83,10 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
         // RANDOM_PORT меняется каждый запуск. Снимаем из snapshot.
         root.remove("servers");
 
-        ObjectWriter writer = mapper.writer()
-                .with(SerializationFeature.INDENT_OUTPUT)
-                .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+        ObjectWriter writer =
+                mapper.writer()
+                        .with(SerializationFeature.INDENT_OUTPUT)
+                        .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         return writer.writeValueAsString(root) + "\n";
     }
 

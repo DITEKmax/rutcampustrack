@@ -1,0 +1,3629 @@
+{
+  "group_id": "BOT-DELIVERY",
+  "criterion": "retained unacked batch/requeue/DLQ, preference outage, refreshed audience/revocation after429, pending preparation/commit",
+  "related_source_story_ids": [
+    "JS-SYSTEM-03",
+    "JS-SYSTEM-04",
+    "JS-SYSTEM-06",
+    "JS-SYSTEM-07",
+    "JS-SYSTEM-08",
+    "JS-SYSTEM-10",
+    "JS-STUDENT-08"
+  ],
+  "research_ids": [
+    "L01",
+    "P06",
+    "P09",
+    "P12",
+    "P13",
+    "P17",
+    "P21"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/notification-bot/tests/test_callback_excuse.py",
+      "class": "test_callback_excuse",
+      "methods": [
+        {
+          "method": "test_approve_publishes_decision_and_edits_text",
+          "line": 21,
+          "assertion_evidence": [
+            {
+              "line": 28,
+              "expression": "event_publisher_mock.publish.assert_awaited_once_with("
+            },
+            {
+              "line": 32,
+              "expression": "cb.message.edit_text.assert_awaited_once()"
+            },
+            {
+              "line": 34,
+              "expression": "assert \"<literal-redacted>\" in edited_text"
+            },
+            {
+              "line": 35,
+              "expression": "assert \"<literal-redacted>\" not in edited_text"
+            },
+            {
+              "line": 36,
+              "expression": "assert \"<literal-redacted>\" in edited_text"
+            },
+            {
+              "line": 37,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 48,
+              "expression": "event_publisher_mock.publish.assert_awaited_once_with("
+            },
+            {
+              "line": 53,
+              "expression": "assert \"<literal-redacted>\" in edited_text"
+            },
+            {
+              "line": 54,
+              "expression": "assert \"<literal-redacted>\" not in edited_text"
+            },
+            {
+              "line": 55,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            }
+          ]
+        },
+        {
+          "method": "test_reject_publishes_decision_with_approved_false",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 48,
+              "expression": "event_publisher_mock.publish.assert_awaited_once_with("
+            },
+            {
+              "line": 53,
+              "expression": "assert \"<literal-redacted>\" in edited_text"
+            },
+            {
+              "line": 54,
+              "expression": "assert \"<literal-redacted>\" not in edited_text"
+            },
+            {
+              "line": 55,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 69,
+              "expression": "cb.message.edit_caption.assert_awaited_once()"
+            },
+            {
+              "line": 70,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 72,
+              "expression": "assert \"<literal-redacted>\" in edited_caption"
+            },
+            {
+              "line": 73,
+              "expression": "assert \"<literal-redacted>\" in edited_caption"
+            },
+            {
+              "line": 74,
+              "expression": "assert \"<literal-redacted>\" not in edited_caption"
+            },
+            {
+              "line": 83,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            }
+          ]
+        },
+        {
+          "method": "test_document_caption_path_edits_caption",
+          "line": 59,
+          "assertion_evidence": [
+            {
+              "line": 69,
+              "expression": "cb.message.edit_caption.assert_awaited_once()"
+            },
+            {
+              "line": 70,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 72,
+              "expression": "assert \"<literal-redacted>\" in edited_caption"
+            },
+            {
+              "line": 73,
+              "expression": "assert \"<literal-redacted>\" in edited_caption"
+            },
+            {
+              "line": 74,
+              "expression": "assert \"<literal-redacted>\" not in edited_caption"
+            },
+            {
+              "line": 83,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 85,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_not_called()"
+            },
+            {
+              "line": 86,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 95,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 96,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            }
+          ]
+        },
+        {
+          "method": "test_malformed_callback_data_only_answers",
+          "line": 78,
+          "assertion_evidence": [
+            {
+              "line": 83,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 85,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_not_called()"
+            },
+            {
+              "line": 86,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 95,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 96,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 108,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 109,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 119,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 129,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_wrong_action_verb_only_answers",
+          "line": 90,
+          "assertion_evidence": [
+            {
+              "line": 95,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 96,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 108,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 109,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 119,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 129,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 130,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 149,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_awaited_once_with(999)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            }
+          ]
+        },
+        {
+          "method": "test_publisher_error_shows_retry_alert_without_edit",
+          "line": 100,
+          "assertion_evidence": [
+            {
+              "line": 108,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 109,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 119,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 129,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 130,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 149,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_awaited_once_with(999)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 152,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_missing_event_publisher_returns_503_like",
+          "line": 113,
+          "assertion_evidence": [
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 119,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 129,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 130,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 149,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_awaited_once_with(999)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 152,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 168,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 169,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_edit_text_failure_still_answers",
+          "line": 123,
+          "assertion_evidence": [
+            {
+              "line": 129,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 130,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 149,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_awaited_once_with(999)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 152,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 168,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 169,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 182,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 183,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_non_headman_user_gets_denied_without_publish",
+          "line": 137,
+          "assertion_evidence": [
+            {
+              "line": 149,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_awaited_once_with(999)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 152,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 168,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 169,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 182,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 183,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 193,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 194,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_unlinked_telegram_user_gets_denied_without_publish",
+          "line": 156,
+          "assertion_evidence": [
+            {
+              "line": 168,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 169,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 182,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 183,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 193,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 194,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_grpc_error_fail_closed_denies_without_publish",
+          "line": 173,
+          "assertion_evidence": [
+            {
+              "line": 182,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 183,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 193,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 194,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_missing_academic_client_returns_503_like",
+          "line": 187,
+          "assertion_evidence": [
+            {
+              "line": 193,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 194,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_callback_late_checkin.py",
+      "class": "test_callback_late_checkin",
+      "methods": [
+        {
+          "method": "test_approve_publishes_decision_and_edits_text",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 23,
+              "expression": "event_publisher_mock.publish.assert_awaited_once_with("
+            },
+            {
+              "line": 28,
+              "expression": "assert \"<literal-redacted>\" in edited"
+            },
+            {
+              "line": 29,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 40,
+              "expression": "event_publisher_mock.publish.assert_awaited_once_with("
+            },
+            {
+              "line": 45,
+              "expression": "assert \"<literal-redacted>\" in edited"
+            },
+            {
+              "line": 46,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 55,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 56,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_not_called()"
+            },
+            {
+              "line": 57,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 66,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            }
+          ]
+        },
+        {
+          "method": "test_reject_publishes_decision_with_approved_false",
+          "line": 33,
+          "assertion_evidence": [
+            {
+              "line": 40,
+              "expression": "event_publisher_mock.publish.assert_awaited_once_with("
+            },
+            {
+              "line": 45,
+              "expression": "assert \"<literal-redacted>\" in edited"
+            },
+            {
+              "line": 46,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 55,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 56,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_not_called()"
+            },
+            {
+              "line": 57,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 66,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 67,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 77,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 78,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_malformed_callback_data_only_answers",
+          "line": 50,
+          "assertion_evidence": [
+            {
+              "line": 55,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 56,
+              "expression": "academic_client_mock.get_user_by_telegram_id.assert_not_called()"
+            },
+            {
+              "line": 57,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 66,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 67,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 77,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 78,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 87,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 88,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 98,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_wrong_action_verb_only_answers",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 66,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 67,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=False)"
+            },
+            {
+              "line": 77,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 78,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 87,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 88,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 98,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 99,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 117,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_publisher_error_shows_retry_alert",
+          "line": 71,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 78,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 87,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 88,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 98,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 99,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 117,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 133,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 134,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_missing_event_publisher_returns_503_like",
+          "line": 82,
+          "assertion_evidence": [
+            {
+              "line": 87,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 88,
+              "expression": "cb.message.edit_text.assert_not_called()"
+            },
+            {
+              "line": 98,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 99,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 117,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 133,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 134,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_edit_text_failure_still_answers",
+          "line": 92,
+          "assertion_evidence": [
+            {
+              "line": 98,
+              "expression": "event_publisher_mock.publish.assert_awaited_once()"
+            },
+            {
+              "line": 99,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\")"
+            },
+            {
+              "line": 117,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 133,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 134,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 163,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 164,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_non_headman_user_gets_denied_without_publish",
+          "line": 106,
+          "assertion_evidence": [
+            {
+              "line": 117,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 118,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 133,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 134,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 163,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 164,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 173,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 174,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_unlinked_telegram_user_gets_denied_without_publish",
+          "line": 122,
+          "assertion_evidence": [
+            {
+              "line": 133,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 134,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 163,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 164,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 173,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 174,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_headman_without_positive_internal_id_gets_denied_without_publish",
+          "line": 138,
+          "assertion_evidence": [
+            {
+              "line": 150,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 151,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 163,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 164,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 173,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 174,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_grpc_error_fail_closed_denies_without_publish",
+          "line": 155,
+          "assertion_evidence": [
+            {
+              "line": 163,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 164,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            },
+            {
+              "line": 173,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 174,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        },
+        {
+          "method": "test_missing_academic_client_returns_503_like",
+          "line": 168,
+          "assertion_evidence": [
+            {
+              "line": 173,
+              "expression": "event_publisher_mock.publish.assert_not_called()"
+            },
+            {
+              "line": 174,
+              "expression": "cb.answer.assert_awaited_once_with(\"<literal-redacted>\", show_alert=True)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_durable_preferences_delivery.py",
+      "class": "test_durable_preferences_delivery",
+      "methods": [
+        {
+          "method": "test_staged_batch_outage_flushes_nothing_and_retry_admits_once",
+          "line": 21,
+          "assertion_evidence": [
+            {
+              "line": 27,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 31,
+              "expression": "assert queue._queue.qsize() == 0"
+            },
+            {
+              "line": 32,
+              "expression": "one.assert_not_awaited()"
+            },
+            {
+              "line": 33,
+              "expression": "two.assert_not_awaited()"
+            },
+            {
+              "line": 37,
+              "expression": "assert queue._queue.qsize() == 2"
+            },
+            {
+              "line": 49,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 51,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 56,
+              "expression": "factory.assert_awaited_once()"
+            },
+            {
+              "line": 64,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 67,
+              "expression": "assert queue._queue.qsize() == 0"
+            }
+          ]
+        },
+        {
+          "method": "test_worker_outage_defers_batch_and_retry_sends_once",
+          "line": 38,
+          "assertion_evidence": [
+            {
+              "line": 49,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 51,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 56,
+              "expression": "factory.assert_awaited_once()"
+            },
+            {
+              "line": 64,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 67,
+              "expression": "assert queue._queue.qsize() == 0"
+            },
+            {
+              "line": 73,
+              "expression": "alert.coroutine_factory.assert_awaited_once()"
+            },
+            {
+              "line": 82,
+              "expression": "assert await client.is_enabled(101, \"<literal-redacted>\", user_id=11, notification_type=\"<literal-redacted>\") is False"
+            },
+            {
+              "line": 83,
+              "expression": "session.request.assert_not_called()"
+            }
+          ]
+        },
+        {
+          "method": "test_unknown_task_is_not_inferred_system_exemption_and_explicit_alert_is",
+          "line": 59,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 67,
+              "expression": "assert queue._queue.qsize() == 0"
+            },
+            {
+              "line": 73,
+              "expression": "alert.coroutine_factory.assert_awaited_once()"
+            },
+            {
+              "line": 82,
+              "expression": "assert await client.is_enabled(101, \"<literal-redacted>\", user_id=11, notification_type=\"<literal-redacted>\") is False"
+            },
+            {
+              "line": 83,
+              "expression": "session.request.assert_not_called()"
+            }
+          ]
+        },
+        {
+          "method": "test_exact_user_mismatch_never_requests_another_accounts_preferences",
+          "line": 76,
+          "assertion_evidence": [
+            {
+              "line": 82,
+              "expression": "assert await client.is_enabled(101, \"<literal-redacted>\", user_id=11, notification_type=\"<literal-redacted>\") is False"
+            },
+            {
+              "line": 83,
+              "expression": "session.request.assert_not_called()"
+            }
+          ]
+        },
+        {
+          "method": "test_incomplete_or_wrong_identity_snapshot_defers",
+          "line": 89,
+          "assertion_evidence": [
+            {
+              "line": 110,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 150,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 152,
+              "expression": "assert (pending.user_id, pending.chat_id, pending.category) == (12, 102, \"<literal-redacted>\")"
+            },
+            {
+              "line": 155,
+              "expression": "tracker.add.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\", 102, 20, 12)"
+            },
+            {
+              "line": 192,
+              "expression": "assert len(calls) == 2"
+            },
+            {
+              "line": 193,
+              "expression": "assert calls[0] == calls[1]"
+            },
+            {
+              "line": 194,
+              "expression": "assert calls[0][2][\"<literal-redacted>\"] == {\"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": 86400}"
+            },
+            {
+              "line": 217,
+              "expression": "assert kwargs == {\"<literal-redacted>\": False, \"<literal-redacted>\": True}"
+            },
+            {
+              "line": 225,
+              "expression": "assert requeue is True"
+            },
+            {
+              "line": 278,
+              "expression": "assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]"
+            }
+          ]
+        },
+        {
+          "method": "test_headman_tracker_records_original_user_for_later_exact_binding",
+          "line": 112,
+          "assertion_evidence": [
+            {
+              "line": 150,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 152,
+              "expression": "assert (pending.user_id, pending.chat_id, pending.category) == (12, 102, \"<literal-redacted>\")"
+            },
+            {
+              "line": 155,
+              "expression": "tracker.add.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\", 102, 20, 12)"
+            },
+            {
+              "line": 192,
+              "expression": "assert len(calls) == 2"
+            },
+            {
+              "line": 193,
+              "expression": "assert calls[0] == calls[1]"
+            },
+            {
+              "line": 194,
+              "expression": "assert calls[0][2][\"<literal-redacted>\"] == {\"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": 86400}"
+            },
+            {
+              "line": 217,
+              "expression": "assert kwargs == {\"<literal-redacted>\": False, \"<literal-redacted>\": True}"
+            },
+            {
+              "line": 225,
+              "expression": "assert requeue is True"
+            },
+            {
+              "line": 278,
+              "expression": "assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]"
+            },
+            {
+              "line": 279,
+              "expression": "guard.complete.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\")"
+            }
+          ]
+        },
+        {
+          "method": "test_http_retry_reuses_absolute_command_body_and_callback_identity",
+          "line": 156,
+          "assertion_evidence": [
+            {
+              "line": 192,
+              "expression": "assert len(calls) == 2"
+            },
+            {
+              "line": 193,
+              "expression": "assert calls[0] == calls[1]"
+            },
+            {
+              "line": 194,
+              "expression": "assert calls[0][2][\"<literal-redacted>\"] == {\"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": 86400}"
+            },
+            {
+              "line": 217,
+              "expression": "assert kwargs == {\"<literal-redacted>\": False, \"<literal-redacted>\": True}"
+            },
+            {
+              "line": 225,
+              "expression": "assert requeue is True"
+            },
+            {
+              "line": 278,
+              "expression": "assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]"
+            },
+            {
+              "line": 279,
+              "expression": "guard.complete.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\")"
+            },
+            {
+              "line": 280,
+              "expression": "assert sends._queue.qsize() == 0"
+            },
+            {
+              "line": 281,
+              "expression": "assert factory.await_count == 2"
+            },
+            {
+              "line": 318,
+              "expression": "assert await client.is_enabled(101, \"<literal-redacted>\", user_id=11, notification_type=\"<literal-redacted>\") is eligible"
+            }
+          ]
+        },
+        {
+          "method": "test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_completion",
+          "line": 195,
+          "assertion_evidence": [
+            {
+              "line": 217,
+              "expression": "assert kwargs == {\"<literal-redacted>\": False, \"<literal-redacted>\": True}"
+            },
+            {
+              "line": 225,
+              "expression": "assert requeue is True"
+            },
+            {
+              "line": 278,
+              "expression": "assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]"
+            },
+            {
+              "line": 279,
+              "expression": "guard.complete.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\")"
+            },
+            {
+              "line": 280,
+              "expression": "assert sends._queue.qsize() == 0"
+            },
+            {
+              "line": 281,
+              "expression": "assert factory.await_count == 2"
+            },
+            {
+              "line": 318,
+              "expression": "assert await client.is_enabled(101, \"<literal-redacted>\", user_id=11, notification_type=\"<literal-redacted>\") is eligible"
+            },
+            {
+              "line": 319,
+              "expression": "assert calls[0][\"<literal-redacted>\"] == {\"<literal-redacted>\": \"<literal-redacted>\"}"
+            },
+            {
+              "line": 321,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 323,
+              "expression": "assert len(calls) == 1"
+            }
+          ]
+        },
+        {
+          "method": "test_exact_type_authority_ignores_app_category_and_preserves_explicit_off",
+          "line": 286,
+          "assertion_evidence": [
+            {
+              "line": 318,
+              "expression": "assert await client.is_enabled(101, \"<literal-redacted>\", user_id=11, notification_type=\"<literal-redacted>\") is eligible"
+            },
+            {
+              "line": 319,
+              "expression": "assert calls[0][\"<literal-redacted>\"] == {\"<literal-redacted>\": \"<literal-redacted>\"}"
+            },
+            {
+              "line": 321,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 323,
+              "expression": "assert len(calls) == 1"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_idempotency_guard.py",
+      "class": "test_idempotency_guard",
+      "methods": [
+        {
+          "method": "test_first_claim_returns_true",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 17,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 23,
+              "expression": "assert await guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 24,
+              "expression": "assert await guard.try_claim(event_id) is False"
+            },
+            {
+              "line": 29,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 30,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 31,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is False"
+            },
+            {
+              "line": 41,
+              "expression": "assert await bot_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 43,
+              "expression": "assert await other_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 45,
+              "expression": "assert await bot_guard.try_claim(event_id) is False"
+            },
+            {
+              "line": 56,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            }
+          ]
+        },
+        {
+          "method": "test_duplicate_claim_returns_false",
+          "line": 21,
+          "assertion_evidence": [
+            {
+              "line": 23,
+              "expression": "assert await guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 24,
+              "expression": "assert await guard.try_claim(event_id) is False"
+            },
+            {
+              "line": 29,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 30,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 31,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is False"
+            },
+            {
+              "line": 41,
+              "expression": "assert await bot_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 43,
+              "expression": "assert await other_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 45,
+              "expression": "assert await bot_guard.try_claim(event_id) is False"
+            },
+            {
+              "line": 56,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 58,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            }
+          ]
+        },
+        {
+          "method": "test_different_event_ids_are_independent",
+          "line": 28,
+          "assertion_evidence": [
+            {
+              "line": 29,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 30,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is True"
+            },
+            {
+              "line": 31,
+              "expression": "assert await guard.try_claim(\"<literal-redacted>\") is False"
+            },
+            {
+              "line": 41,
+              "expression": "assert await bot_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 43,
+              "expression": "assert await other_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 45,
+              "expression": "assert await bot_guard.try_claim(event_id) is False"
+            },
+            {
+              "line": 56,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 58,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 76,
+              "expression": "with pytest.raises(RuntimeError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 85,
+              "expression": "assert await short_ttl_guard.try_claim(event_id) is True"
+            }
+          ]
+        },
+        {
+          "method": "test_different_consumer_ids_are_independent",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assert await bot_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 43,
+              "expression": "assert await other_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 45,
+              "expression": "assert await bot_guard.try_claim(event_id) is False"
+            },
+            {
+              "line": 56,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 58,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 76,
+              "expression": "with pytest.raises(RuntimeError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 85,
+              "expression": "assert await short_ttl_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 89,
+              "expression": "assert 0 < ttl <= 1"
+            }
+          ]
+        },
+        {
+          "method": "test_missing_event_id_fails_closed",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 56,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 58,
+              "expression": "with pytest.raises(ValueError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 76,
+              "expression": "with pytest.raises(RuntimeError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 85,
+              "expression": "assert await short_ttl_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 89,
+              "expression": "assert 0 < ttl <= 1"
+            }
+          ]
+        },
+        {
+          "method": "test_redis_error_fails_closed",
+          "line": 63,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "with pytest.raises(RuntimeError, match=\"<literal-redacted>\"):"
+            },
+            {
+              "line": 85,
+              "expression": "assert await short_ttl_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 89,
+              "expression": "assert 0 < ttl <= 1"
+            }
+          ]
+        },
+        {
+          "method": "test_ttl_expires",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 85,
+              "expression": "assert await short_ttl_guard.try_claim(event_id) is True"
+            },
+            {
+              "line": 89,
+              "expression": "assert 0 < ttl <= 1"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_mini_app_links.py",
+      "class": "test_mini_app_links",
+      "methods": [
+        {
+          "method": "test_build_mini_app_url_adds_startapp_for_telegram_deep_link",
+          "line": 2,
+          "assertion_evidence": [
+            {
+              "line": 5,
+              "expression": "assert ("
+            }
+          ]
+        },
+        {
+          "method": "test_build_mini_app_url_adds_tg_start_param_for_direct_web_app_url",
+          "line": 9,
+          "assertion_evidence": [
+            {
+              "line": 12,
+              "expression": "assert ("
+            }
+          ]
+        },
+        {
+          "method": "test_build_mini_app_url_preserves_existing_query_and_replaces_old_start_param",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 19,
+              "expression": "assert ("
+            }
+          ]
+        },
+        {
+          "method": "test_build_mini_app_url_returns_none_for_blank_or_invalid_url",
+          "line": 23,
+          "assertion_evidence": [
+            {
+              "line": 26,
+              "expression": "assert build_mini_app_url(\"<literal-redacted>\", \"<literal-redacted>\") is None"
+            },
+            {
+              "line": 27,
+              "expression": "assert build_mini_app_url(None, \"<literal-redacted>\") is None"
+            },
+            {
+              "line": 28,
+              "expression": "assert build_mini_app_url(\"<literal-redacted>\", \"<literal-redacted>\") is None"
+            },
+            {
+              "line": 29,
+              "expression": "assert build_mini_app_url(\"<literal-redacted>\", \"<literal-redacted>\") is None"
+            },
+            {
+              "line": 30,
+              "expression": "assert build_mini_app_url(\"<literal-redacted>\", \"<literal-redacted>\") is None"
+            }
+          ]
+        },
+        {
+          "method": "test_build_mini_app_url_keeps_base_url_without_start_param",
+          "line": 31,
+          "assertion_evidence": [
+            {
+              "line": 34,
+              "expression": "assert build_mini_app_url(\"<literal-redacted>\") == \"<literal-redacted>\""
+            }
+          ]
+        },
+        {
+          "method": "test_build_mini_app_button_uses_url_for_telegram_deep_link",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 44,
+              "expression": "assert button is not None"
+            },
+            {
+              "line": 45,
+              "expression": "assert button.url == \"<literal-redacted>\""
+            },
+            {
+              "line": 46,
+              "expression": "assert button.web_app is None"
+            }
+          ]
+        },
+        {
+          "method": "test_build_mini_app_button_uses_web_app_for_direct_url",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 56,
+              "expression": "assert button is not None"
+            },
+            {
+              "line": 57,
+              "expression": "assert button.url is None"
+            },
+            {
+              "line": 58,
+              "expression": "assert button.web_app is not None"
+            },
+            {
+              "line": 59,
+              "expression": "assert button.web_app.url == \"<literal-redacted>\""
+            }
+          ]
+        },
+        {
+          "method": "test_typed_launch_allowlist_roundtrip_and_unsafe_values_rejected",
+          "line": 60,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assert encoded is not None and \"<literal-redacted>\" not in encoded and len(encoded) <= 384"
+            },
+            {
+              "line": 71,
+              "expression": "assert json.loads(base64.urlsafe_b64decode(encoded + \"<literal-redacted>\" * (-len(encoded) % 4))) == {\"<literal-redacted>\": 2, \"<literal-redacted>\": action}"
+            },
+            {
+              "line": 72,
+              "expression": "assert encode_notification_action({**action, \"<literal-redacted>\": \"<literal-redacted>\"}) is None"
+            },
+            {
+              "line": 73,
+              "expression": "assert encode_notification_action({**action, \"<literal-redacted>\": \"<literal-redacted>\"}) is None"
+            },
+            {
+              "line": 74,
+              "expression": "assert encode_notification_action({**action, \"<literal-redacted>\": [\"<literal-redacted>\"]}) is None"
+            },
+            {
+              "line": 75,
+              "expression": "assert encode_notification_action({\"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\"}) is None"
+            },
+            {
+              "line": 76,
+              "expression": "assert ("
+            },
+            {
+              "line": 80,
+              "expression": "assert encode_notification_action({\"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\", \"<literal-redacted>\": \"<literal-redacted>\"}) is None"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_notification_audience.py",
+      "class": "test_notification_audience",
+      "methods": [
+        {
+          "method": "test_exact32_and_scope_outcome_identity_no_external_role_override",
+          "line": 104,
+          "assertion_evidence": [
+            {
+              "line": 107,
+              "expression": "assert len(NOTIFICATION_TYPES) == 32"
+            },
+            {
+              "line": 108,
+              "expression": "assert \"<literal-redacted>\" not in NOTIFICATION_TYPES"
+            },
+            {
+              "line": 110,
+              "expression": "assert len(request.lesson_scopes) == 2"
+            },
+            {
+              "line": 111,
+              "expression": "assert [s.lesson_type for s in request.lesson_scopes] == [\"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 112,
+              "expression": "assert request.lesson_scopes[1].group_id == 7"
+            },
+            {
+              "line": 114,
+              "expression": "assert decided.request_outcome == \"<literal-redacted>\""
+            },
+            {
+              "line": 115,
+              "expression": "assert decided.affected_user_id == 17"
+            },
+            {
+              "line": 117,
+              "expression": "assert admin.affected_user_id == 18"
+            }
+          ]
+        },
+        {
+          "method": "test_unknown_request_outcome_or_target_defers",
+          "line": 127,
+          "assertion_evidence": [
+            {
+              "line": 128,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 156,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 169,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 172,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 174,
+              "expression": "client.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 181,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 182,
+              "expression": "state.complete.assert_awaited_once_with(EVENT_ID, 1)"
+            },
+            {
+              "line": 183,
+              "expression": "assert all("
+            },
+            {
+              "line": 199,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 200,
+              "expression": "authority.get_current_group_members.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_invalid_central_recipient_response_defers",
+          "line": 145,
+          "assertion_evidence": [
+            {
+              "line": 156,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 169,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 172,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 174,
+              "expression": "client.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 181,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 182,
+              "expression": "state.complete.assert_awaited_once_with(EVENT_ID, 1)"
+            },
+            {
+              "line": 183,
+              "expression": "assert all("
+            },
+            {
+              "line": 199,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 200,
+              "expression": "authority.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 219,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_mismatched_echo_and_authority_outage_never_fallback",
+          "line": 158,
+          "assertion_evidence": [
+            {
+              "line": 169,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 172,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 174,
+              "expression": "client.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 181,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 182,
+              "expression": "state.complete.assert_awaited_once_with(EVENT_ID, 1)"
+            },
+            {
+              "line": 183,
+              "expression": "assert all("
+            },
+            {
+              "line": 199,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 200,
+              "expression": "authority.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 219,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 237,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            }
+          ]
+        },
+        {
+          "method": "test_dual_roles_deliver_one_fact_and_success_receipt",
+          "line": 175,
+          "assertion_evidence": [
+            {
+              "line": 181,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 182,
+              "expression": "state.complete.assert_awaited_once_with(EVENT_ID, 1)"
+            },
+            {
+              "line": 183,
+              "expression": "assert all("
+            },
+            {
+              "line": 199,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 200,
+              "expression": "authority.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 219,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 237,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 259,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 260,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 279,
+              "expression": "assert all("
+            }
+          ]
+        },
+        {
+          "method": "test_revoked_helper_and_late_new_role_or_user_cannot_join",
+          "line": 191,
+          "assertion_evidence": [
+            {
+              "line": 199,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 200,
+              "expression": "authority.get_current_group_members.assert_not_awaited()"
+            },
+            {
+              "line": 219,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 237,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 259,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 260,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 279,
+              "expression": "assert all("
+            },
+            {
+              "line": 301,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 312,
+              "expression": "assert await state.completed(EVENT_ID, 1)"
+            },
+            {
+              "line": 315,
+              "expression": "assert fake_redis_snapshot is None"
+            }
+          ]
+        },
+        {
+          "method": "test_privileged_role_loss_uses_remaining_saved_live_role_once",
+          "line": 203,
+          "assertion_evidence": [
+            {
+              "line": 219,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 237,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 259,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 260,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 279,
+              "expression": "assert all("
+            },
+            {
+              "line": 301,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 312,
+              "expression": "assert await state.completed(EVENT_ID, 1)"
+            },
+            {
+              "line": 315,
+              "expression": "assert fake_redis_snapshot is None"
+            },
+            {
+              "line": 316,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\"})}"
+            },
+            {
+              "line": 330,
+              "expression": "assert not batch.futures"
+            }
+          ]
+        },
+        {
+          "method": "test_off_and_unknown_never_call_provider",
+          "line": 222,
+          "assertion_evidence": [
+            {
+              "line": 237,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 259,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 260,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 279,
+              "expression": "assert all("
+            },
+            {
+              "line": 301,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 312,
+              "expression": "assert await state.completed(EVENT_ID, 1)"
+            },
+            {
+              "line": 315,
+              "expression": "assert fake_redis_snapshot is None"
+            },
+            {
+              "line": 316,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\"})}"
+            },
+            {
+              "line": 330,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 331,
+              "expression": "bot.send_message.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_private_owner_decision_has_no_reason_file_comment_or_pii",
+          "line": 261,
+          "assertion_evidence": [
+            {
+              "line": 279,
+              "expression": "assert all("
+            },
+            {
+              "line": 301,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 312,
+              "expression": "assert await state.completed(EVENT_ID, 1)"
+            },
+            {
+              "line": 315,
+              "expression": "assert fake_redis_snapshot is None"
+            },
+            {
+              "line": 316,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\"})}"
+            },
+            {
+              "line": 330,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 331,
+              "expression": "bot.send_message.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_automatic_cycle_drops_admin_view_without_dropping_student",
+          "line": 291,
+          "assertion_evidence": [
+            {
+              "line": 301,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 312,
+              "expression": "assert await state.completed(EVENT_ID, 1)"
+            },
+            {
+              "line": 315,
+              "expression": "assert fake_redis_snapshot is None"
+            },
+            {
+              "line": 316,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\"})}"
+            },
+            {
+              "line": 330,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 331,
+              "expression": "bot.send_message.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_partial_delivery_receipt_and_prepared_snapshot_survive_replay",
+          "line": 304,
+          "assertion_evidence": [
+            {
+              "line": 312,
+              "expression": "assert await state.completed(EVENT_ID, 1)"
+            },
+            {
+              "line": 315,
+              "expression": "assert fake_redis_snapshot is None"
+            },
+            {
+              "line": 316,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\"})}"
+            },
+            {
+              "line": 330,
+              "expression": "assert not batch.futures"
+            },
+            {
+              "line": 331,
+              "expression": "bot.send_message.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_prepared_roles_are_closed_minimal_and_cannot_disagree_with_event",
+          "line": 332,
+          "assertion_evidence": [
+            {
+              "line": 336,
+              "expression": "with pytest.raises(ValueError):"
+            },
+            {
+              "line": 344,
+              "expression": "with pytest.raises(ValueError):"
+            }
+          ]
+        },
+        {
+          "method": "test_partial_legacy_scopes_use_factual_group_union_without_teacher_tuple",
+          "line": 346,
+          "assertion_evidence": [
+            {
+              "line": 354,
+              "expression": "assert [request.group_id for request in requests] == [7, 17]"
+            },
+            {
+              "line": 355,
+              "expression": "assert all(not request.lesson_scopes for request in requests)"
+            },
+            {
+              "line": 357,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 368,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\", \"<literal-redacted>\"})}"
+            },
+            {
+              "line": 406,
+              "expression": "assert \"<literal-redacted>\" not in kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 408,
+              "expression": "assert [button.callback_data for button in buttons] == [\"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 421,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 431,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_duplicate_across_factual_groups_merges_roles_into_one_recipient",
+          "line": 359,
+          "assertion_evidence": [
+            {
+              "line": 368,
+              "expression": "assert prepared_audience(prepared) == {1: frozenset({\"<literal-redacted>\", \"<literal-redacted>\"})}"
+            },
+            {
+              "line": 406,
+              "expression": "assert \"<literal-redacted>\" not in kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 408,
+              "expression": "assert [button.callback_data for button in buttons] == [\"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 421,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 431,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_pending_headman_preserves_canonical_callbacks_without_private_reason",
+          "line": 369,
+          "assertion_evidence": [
+            {
+              "line": 406,
+              "expression": "assert \"<literal-redacted>\" not in kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 408,
+              "expression": "assert [button.callback_data for button in buttons] == [\"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 421,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 431,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_external_own_sync_suppression_requires_positive_verified_actor",
+          "line": 414,
+          "assertion_evidence": [
+            {
+              "line": 421,
+              "expression": "assert bot.send_message.await_count == sends"
+            },
+            {
+              "line": 431,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_personal_rights_change_is_not_suppressed_as_own_sync_success",
+          "line": 424,
+          "assertion_evidence": [
+            {
+              "line": 431,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_complete_transfer_groups_keep_required_primary_and_only_matching_scopes",
+          "line": 434,
+          "assertion_evidence": [
+            {
+              "line": 440,
+              "expression": "assert [request.group_id for request in requests] == [7, 17]"
+            },
+            {
+              "line": 441,
+              "expression": "assert [[scope.group_id for scope in request.lesson_scopes] for request in requests] == [[7], [17]]"
+            }
+          ]
+        },
+        {
+          "method": "test_semester_terminal_unknown_actor_defers",
+          "line": 445,
+          "assertion_evidence": [
+            {
+              "line": 446,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            }
+          ]
+        },
+        {
+          "method": "test_semester_terminal_actor_is_affected_user_and_non_teacher_events_have_no_scopes",
+          "line": 448,
+          "assertion_evidence": [
+            {
+              "line": 452,
+              "expression": "assert request.affected_user_id == 17"
+            },
+            {
+              "line": 453,
+              "expression": "assert not request.lesson_scopes"
+            },
+            {
+              "line": 455,
+              "expression": "assert not audience_request(event(kind, user_id=1)).lesson_scopes"
+            },
+            {
+              "line": 463,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 508,
+              "expression": "assert notification_type == f\"<literal-redacted>\""
+            },
+            {
+              "line": 528,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 529,
+              "expression": "assert bot.send_message.await_args.kwargs[\"<literal-redacted>\"] == 102"
+            },
+            {
+              "line": 530,
+              "expression": "assert \"<literal-redacted>\" not in bot.send_message.await_args.kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 532,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=101, message_id=55, reply_markup=None)"
+            },
+            {
+              "line": 533,
+              "expression": "tracker.delete_entry.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\", entry)"
+            }
+          ]
+        },
+        {
+          "method": "test_async_completed_outcome_keeps_initiator",
+          "line": 459,
+          "assertion_evidence": [
+            {
+              "line": 463,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 508,
+              "expression": "assert notification_type == f\"<literal-redacted>\""
+            },
+            {
+              "line": 528,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 529,
+              "expression": "assert bot.send_message.await_args.kwargs[\"<literal-redacted>\"] == 102"
+            },
+            {
+              "line": 530,
+              "expression": "assert \"<literal-redacted>\" not in bot.send_message.await_args.kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 532,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=101, message_id=55, reply_markup=None)"
+            },
+            {
+              "line": 533,
+              "expression": "tracker.delete_entry.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\", entry)"
+            },
+            {
+              "line": 535,
+              "expression": "bot.edit_message_reply_markup.assert_not_awaited()"
+            },
+            {
+              "line": 536,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            },
+            {
+              "line": 578,
+              "expression": "with pytest.raises(TelegramDeliveryFailed):"
+            }
+          ]
+        },
+        {
+          "method": "test_terminal_owner_fact_separately_retires_only_authorized_existing_cards",
+          "line": 470,
+          "assertion_evidence": [
+            {
+              "line": 508,
+              "expression": "assert notification_type == f\"<literal-redacted>\""
+            },
+            {
+              "line": 528,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 529,
+              "expression": "assert bot.send_message.await_args.kwargs[\"<literal-redacted>\"] == 102"
+            },
+            {
+              "line": 530,
+              "expression": "assert \"<literal-redacted>\" not in bot.send_message.await_args.kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 532,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=101, message_id=55, reply_markup=None)"
+            },
+            {
+              "line": 533,
+              "expression": "tracker.delete_entry.assert_awaited_once_with(\"<literal-redacted>\", \"<literal-redacted>\", entry)"
+            },
+            {
+              "line": 535,
+              "expression": "bot.edit_message_reply_markup.assert_not_awaited()"
+            },
+            {
+              "line": 536,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            },
+            {
+              "line": 578,
+              "expression": "with pytest.raises(TelegramDeliveryFailed):"
+            },
+            {
+              "line": 580,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry",
+          "line": 542,
+          "assertion_evidence": [
+            {
+              "line": 578,
+              "expression": "with pytest.raises(TelegramDeliveryFailed):"
+            },
+            {
+              "line": 580,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once()"
+            },
+            {
+              "line": 582,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 587,
+              "expression": "bot.edit_message_reply_markup.assert_not_awaited()"
+            },
+            {
+              "line": 588,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            },
+            {
+              "line": 649,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 651,
+              "expression": "assert \"<literal-redacted>\" in options[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 652,
+              "expression": "assert \"<literal-redacted>\" in options[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 653,
+              "expression": "assert (\"<literal-redacted>\" in options) is has_button"
+            },
+            {
+              "line": 657,
+              "expression": "assert button.url == app_url and button.web_app is None"
+            }
+          ]
+        },
+        {
+          "method": "test_personal_delivery_keeps_text_and_receipt_without_unavailable_app_button",
+          "line": 629,
+          "assertion_evidence": [
+            {
+              "line": 649,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 651,
+              "expression": "assert \"<literal-redacted>\" in options[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 652,
+              "expression": "assert \"<literal-redacted>\" in options[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 653,
+              "expression": "assert (\"<literal-redacted>\" in options) is has_button"
+            },
+            {
+              "line": 657,
+              "expression": "assert button.url == app_url and button.web_app is None"
+            },
+            {
+              "line": 659,
+              "expression": "assert button.web_app.url == app_url and button.url is None"
+            },
+            {
+              "line": 660,
+              "expression": "state.complete.assert_awaited_once_with(EVENT_ID, 17)"
+            },
+            {
+              "line": 661,
+              "expression": "assert prefs.is_enabled.await_count > 0"
+            },
+            {
+              "line": 662,
+              "expression": "assert authority.resolve_notification_audience.await_count > 1"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_password_changed.py",
+      "class": "test_password_changed",
+      "methods": [
+        {
+          "method": "test_password_changed_notifies_only_the_bound_telegram_account",
+          "line": 11,
+          "assertion_evidence": [
+            {
+              "line": 20,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 22,
+              "expression": "assert kwargs[\"<literal-redacted>\"] == 42"
+            },
+            {
+              "line": 23,
+              "expression": "assert \"<literal-redacted>\" in kwargs[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 36,
+              "expression": "bot.send_message.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_password_changed_malformed_event_does_not_send",
+          "line": 27,
+          "assertion_evidence": [
+            {
+              "line": 36,
+              "expression": "bot.send_message.assert_not_awaited()"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_pending_delivery.py",
+      "class": "test_pending_delivery",
+      "methods": [
+        {
+          "method": "test_unacked_batch_until_provider_success_and_exhaustion_goes_dlq",
+          "line": 106,
+          "assertion_evidence": [
+            {
+              "line": 127,
+              "expression": "assert not messages[0].processed"
+            },
+            {
+              "line": 128,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 131,
+              "expression": "assert messages[0].acked"
+            },
+            {
+              "line": 132,
+              "expression": "guard.complete.assert_awaited_once()"
+            },
+            {
+              "line": 133,
+              "expression": "connection.close.assert_awaited_once()"
+            },
+            {
+              "line": 154,
+              "expression": "assert failure.await_count == 4"
+            },
+            {
+              "line": 155,
+              "expression": "assert messages[0].dlq and not messages[0].acked"
+            },
+            {
+              "line": 156,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 180,
+              "expression": "assert messages[0].nacked and not messages[0].acked"
+            },
+            {
+              "line": 181,
+              "expression": "guard.complete.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_deadline_or_lease_loss_defers_and_stops_pending_attempts",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 180,
+              "expression": "assert messages[0].nacked and not messages[0].acked"
+            },
+            {
+              "line": 181,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 182,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 183,
+              "expression": "assert all(not worker.done() for worker in queue._workers)"
+            },
+            {
+              "line": 219,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 220,
+              "expression": "assert academic.get_current_group_members.await_count == 2"
+            },
+            {
+              "line": 235,
+              "expression": "factory.assert_awaited_once()"
+            },
+            {
+              "line": 257,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 260,
+              "expression": "one.assert_not_awaited()"
+            },
+            {
+              "line": 261,
+              "expression": "two.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_revoked_headman_after_rate_and_429_wait_is_suppressed",
+          "line": 186,
+          "assertion_evidence": [
+            {
+              "line": 219,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 220,
+              "expression": "assert academic.get_current_group_members.await_count == 2"
+            },
+            {
+              "line": 235,
+              "expression": "factory.assert_awaited_once()"
+            },
+            {
+              "line": 257,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 260,
+              "expression": "one.assert_not_awaited()"
+            },
+            {
+              "line": 261,
+              "expression": "two.assert_awaited_once()"
+            },
+            {
+              "line": 262,
+              "expression": "assert len(queue._workers) == 2 and all(not worker.done() for worker in queue._workers)"
+            },
+            {
+              "line": 291,
+              "expression": "assert len(calls) == 1"
+            },
+            {
+              "line": 294,
+              "expression": "connection.close.assert_awaited_once()"
+            },
+            {
+              "line": 295,
+              "expression": "assert not any(message.acked for message in messages)"
+            }
+          ]
+        },
+        {
+          "method": "test_unknown_audience_defers_batch_without_blocking_other_worker",
+          "line": 238,
+          "assertion_evidence": [
+            {
+              "line": 257,
+              "expression": "with pytest.raises(NotificationPreferencesUnavailable):"
+            },
+            {
+              "line": 260,
+              "expression": "one.assert_not_awaited()"
+            },
+            {
+              "line": 261,
+              "expression": "two.assert_awaited_once()"
+            },
+            {
+              "line": 262,
+              "expression": "assert len(queue._workers) == 2 and all(not worker.done() for worker in queue._workers)"
+            },
+            {
+              "line": 291,
+              "expression": "assert len(calls) == 1"
+            },
+            {
+              "line": 294,
+              "expression": "connection.close.assert_awaited_once()"
+            },
+            {
+              "line": 295,
+              "expression": "assert not any(message.acked for message in messages)"
+            },
+            {
+              "line": 296,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 299,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 300,
+              "expression": "assert all(worker.done() for worker in queue._workers)"
+            }
+          ]
+        },
+        {
+          "method": "test_serialized_processor_bounds_admission_and_shutdown_cancels_all_batches",
+          "line": 265,
+          "assertion_evidence": [
+            {
+              "line": 291,
+              "expression": "assert len(calls) == 1"
+            },
+            {
+              "line": 294,
+              "expression": "connection.close.assert_awaited_once()"
+            },
+            {
+              "line": 295,
+              "expression": "assert not any(message.acked for message in messages)"
+            },
+            {
+              "line": 296,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 299,
+              "expression": "factory.assert_not_awaited()"
+            },
+            {
+              "line": 300,
+              "expression": "assert all(worker.done() for worker in queue._workers)"
+            },
+            {
+              "line": 315,
+              "expression": "factory.assert_awaited_once()"
+            },
+            {
+              "line": 316,
+              "expression": "assert queue._total_sent == 1 and queue._total_failed == 0"
+            },
+            {
+              "line": 328,
+              "expression": "assert messages[0].nacked and not messages[0].dlq"
+            },
+            {
+              "line": 329,
+              "expression": "guard.complete.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_successful_provider_hook_failure_preserves_sent_outcome",
+          "line": 305,
+          "assertion_evidence": [
+            {
+              "line": 315,
+              "expression": "factory.assert_awaited_once()"
+            },
+            {
+              "line": 316,
+              "expression": "assert queue._total_sent == 1 and queue._total_failed == 0"
+            },
+            {
+              "line": 328,
+              "expression": "assert messages[0].nacked and not messages[0].dlq"
+            },
+            {
+              "line": 329,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 350,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 360,
+              "expression": "assert await request_audience("
+            },
+            {
+              "line": 363,
+              "expression": "assert not await request_audience("
+            },
+            {
+              "line": 410,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once()"
+            },
+            {
+              "line": 411,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 412,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_initial_authority_rpc_outage_defers_original",
+          "line": 319,
+          "assertion_evidence": [
+            {
+              "line": 328,
+              "expression": "assert messages[0].nacked and not messages[0].dlq"
+            },
+            {
+              "line": 329,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 350,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 360,
+              "expression": "assert await request_audience("
+            },
+            {
+              "line": 363,
+              "expression": "assert not await request_audience("
+            },
+            {
+              "line": 410,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once()"
+            },
+            {
+              "line": 411,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 412,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            },
+            {
+              "line": 428,
+              "expression": "assert (await academic.get_group_members(7))[0].telegram_id == 111"
+            },
+            {
+              "line": 445,
+              "expression": "bot.send_message.assert_awaited_once()"
+            }
+          ]
+        },
+        {
+          "method": "test_archive_and_terminal_request_keep_lawful_current_audience",
+          "line": 330,
+          "assertion_evidence": [
+            {
+              "line": 350,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 360,
+              "expression": "assert await request_audience("
+            },
+            {
+              "line": 363,
+              "expression": "assert not await request_audience("
+            },
+            {
+              "line": 410,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once()"
+            },
+            {
+              "line": 411,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 412,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            },
+            {
+              "line": 428,
+              "expression": "assert (await academic.get_group_members(7))[0].telegram_id == 111"
+            },
+            {
+              "line": 445,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 446,
+              "expression": "assert bot.send_message.call_args.kwargs[\"<literal-redacted>\"] == 222"
+            },
+            {
+              "line": 447,
+              "expression": "assert messages[0].acked and not messages[0].dlq"
+            }
+          ]
+        },
+        {
+          "method": "test_tracked_reply_rechecks_authorization_after_edit",
+          "line": 368,
+          "assertion_evidence": [
+            {
+              "line": 410,
+              "expression": "bot.edit_message_reply_markup.assert_awaited_once()"
+            },
+            {
+              "line": 411,
+              "expression": "bot.send_message.assert_not_awaited()"
+            },
+            {
+              "line": 412,
+              "expression": "tracker.delete_entry.assert_not_awaited()"
+            },
+            {
+              "line": 428,
+              "expression": "assert (await academic.get_group_members(7))[0].telegram_id == 111"
+            },
+            {
+              "line": 445,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 446,
+              "expression": "assert bot.send_message.call_args.kwargs[\"<literal-redacted>\"] == 222"
+            },
+            {
+              "line": 447,
+              "expression": "assert messages[0].acked and not messages[0].dlq"
+            },
+            {
+              "line": 448,
+              "expression": "guard.complete.assert_awaited_once()"
+            },
+            {
+              "line": 449,
+              "expression": "assert academic.get_group_members.await_count == 1"
+            }
+          ]
+        },
+        {
+          "method": "test_warmed_roster_replay_materializes_current_binding_before_ack",
+          "line": 415,
+          "assertion_evidence": [
+            {
+              "line": 428,
+              "expression": "assert (await academic.get_group_members(7))[0].telegram_id == 111"
+            },
+            {
+              "line": 445,
+              "expression": "bot.send_message.assert_awaited_once()"
+            },
+            {
+              "line": 446,
+              "expression": "assert bot.send_message.call_args.kwargs[\"<literal-redacted>\"] == 222"
+            },
+            {
+              "line": 447,
+              "expression": "assert messages[0].acked and not messages[0].dlq"
+            },
+            {
+              "line": 448,
+              "expression": "guard.complete.assert_awaited_once()"
+            },
+            {
+              "line": 449,
+              "expression": "assert academic.get_group_members.await_count == 1"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "services/notification-bot/tests/test_prepared_delivery.py",
+      "class": "test_prepared_delivery",
+      "methods": [
+        {
+          "method": "test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_roles",
+          "line": 149,
+          "assertion_evidence": [
+            {
+              "line": 155,
+              "expression": "assert operations[:4] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 156,
+              "expression": "assert state.acked and state.published == [PREPARED]"
+            },
+            {
+              "line": 157,
+              "expression": "assert state.published[0][\"<literal-redacted>\"] == EVENT[\"<literal-redacted>\"]"
+            },
+            {
+              "line": 158,
+              "expression": "connection.channel.assert_awaited_once_with(publisher_confirms=False)"
+            },
+            {
+              "line": 159,
+              "expression": "channel.set_qos.assert_awaited_once_with(prefetch_count=1)"
+            },
+            {
+              "line": 160,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 161,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 162,
+              "expression": "guard.release.assert_awaited_once()"
+            },
+            {
+              "line": 169,
+              "expression": "assert operations[:6] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 170,
+              "expression": "assert not state.acked and not state.published and state.requeued"
+            }
+          ]
+        },
+        {
+          "method": "test_commit_unavailable_retains_original_without_partial_replacement",
+          "line": 163,
+          "assertion_evidence": [
+            {
+              "line": 169,
+              "expression": "assert operations[:6] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 170,
+              "expression": "assert not state.acked and not state.published and state.requeued"
+            },
+            {
+              "line": 171,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 172,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 173,
+              "expression": "guard.release.assert_not_awaited()  # Lease survives uncertain commit until expiry."
+            },
+            {
+              "line": 183,
+              "expression": "assert operations[:3] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 184,
+              "expression": "assert state.requeued and not state.acked and not state.published"
+            },
+            {
+              "line": 185,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 186,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 194,
+              "expression": "dispatcher.prepare.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_unknown_prepare_authority_commits_requeue_without_provider_or_publish",
+          "line": 174,
+          "assertion_evidence": [
+            {
+              "line": 183,
+              "expression": "assert operations[:3] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 184,
+              "expression": "assert state.requeued and not state.acked and not state.published"
+            },
+            {
+              "line": 185,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 186,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 194,
+              "expression": "dispatcher.prepare.assert_not_awaited()"
+            },
+            {
+              "line": 196,
+              "expression": "dispatcher.dispatch.assert_awaited_once_with(PREPARED)"
+            },
+            {
+              "line": 197,
+              "expression": "assert state.acked"
+            },
+            {
+              "line": 198,
+              "expression": "guard.complete.assert_awaited_once()"
+            },
+            {
+              "line": 200,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 201,
+              "expression": "assert state.rejected and not state.acked"
+            }
+          ]
+        },
+        {
+          "method": "test_prepared_projection_requires_private_queue_provenance",
+          "line": 190,
+          "assertion_evidence": [
+            {
+              "line": 194,
+              "expression": "dispatcher.prepare.assert_not_awaited()"
+            },
+            {
+              "line": 196,
+              "expression": "dispatcher.dispatch.assert_awaited_once_with(PREPARED)"
+            },
+            {
+              "line": 197,
+              "expression": "assert state.acked"
+            },
+            {
+              "line": 198,
+              "expression": "guard.complete.assert_awaited_once()"
+            },
+            {
+              "line": 200,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 201,
+              "expression": "assert state.rejected and not state.acked"
+            },
+            {
+              "line": 202,
+              "expression": "assert operations[:3] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 203,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 211,
+              "expression": "assert operations[:5] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 212,
+              "expression": "assert \"<literal-redacted>\" not in operations and \"<literal-redacted>\" not in operations"
+            }
+          ]
+        },
+        {
+          "method": "test_abort_after_publish_staging_rolls_back_raw_and_prepared_without_commit",
+          "line": 207,
+          "assertion_evidence": [
+            {
+              "line": 211,
+              "expression": "assert operations[:5] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 212,
+              "expression": "assert \"<literal-redacted>\" not in operations and \"<literal-redacted>\" not in operations"
+            },
+            {
+              "line": 213,
+              "expression": "assert not state.acked and not state.published and not state.rejected and state.requeued"
+            },
+            {
+              "line": 214,
+              "expression": "guard.complete.assert_not_awaited()"
+            },
+            {
+              "line": 215,
+              "expression": "guard.release.assert_not_awaited()"
+            },
+            {
+              "line": 216,
+              "expression": "dispatcher.dispatch.assert_not_awaited()"
+            },
+            {
+              "line": 223,
+              "expression": "assert operations[:5] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 224,
+              "expression": "assert \"<literal-redacted>\" not in operations and \"<literal-redacted>\" not in operations"
+            },
+            {
+              "line": 225,
+              "expression": "assert not state.acked and not state.published and state.requeued"
+            },
+            {
+              "line": 226,
+              "expression": "guard.release.assert_not_awaited()"
+            }
+          ]
+        },
+        {
+          "method": "test_abort_during_automatic_ack_after_staging_never_commits_projection",
+          "line": 217,
+          "assertion_evidence": [
+            {
+              "line": 223,
+              "expression": "assert operations[:5] == [\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"]"
+            },
+            {
+              "line": 224,
+              "expression": "assert \"<literal-redacted>\" not in operations and \"<literal-redacted>\" not in operations"
+            },
+            {
+              "line": 225,
+              "expression": "assert not state.acked and not state.published and state.requeued"
+            },
+            {
+              "line": 226,
+              "expression": "guard.release.assert_not_awaited()"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "Python unit with mocked transport/provider; no real external delivery",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "pytest tests/test_callback_excuse.py tests/test_callback_late_checkin.py tests/test_durable_preferences_delivery.py tests/test_idempotency_guard.py tests/test_mini_app_links.py tests/test_notification_audience.py tests/test_password_changed.py tests/test_pending_delivery.py tests/test_prepared_delivery.py -v",
+      "working_directory": "/workspace/rutcampustrack/services/notification-bot",
+      "intent": "focused transport/provider mocks only; full CI command pytest tests/ -v"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [],
+    "command_if_java": null,
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources",
+    "python_command": "pytest tests/ -v",
+    "working_directory": "/workspace/rutcampustrack/services/notification-bot"
+  },
+  "verification_limits": "Python AsyncMock/MagicMock/monkeypatch test transport/provider; no real Rabbit process-kill/redelivery or live Telegram delivery. Require actual isolated Rabbit/Mongo/Redis drill only for uncovered current risks, no private real bot.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

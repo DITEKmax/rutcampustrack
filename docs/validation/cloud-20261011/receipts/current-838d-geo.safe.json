@@ -1,0 +1,36 @@
+{
+  "artifact": 11871424378,
+  "producer": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+  "run": 38516604489,
+  "digest": "sha256:a89604588c94bad94e57ffc996dee5b1bab691afc5288e95db529a1261ccfa9a",
+  "bytes": 365,
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "teaching-clock-geo.spec.ts",
+        "line": 8,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 9303,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "STUDENT_GEO_D005",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

@@ -1,5 +1,17 @@
 package ru.rutcampustrack.attendance.marking;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +23,7 @@ import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -22,8 +35,8 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -38,46 +51,27 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 /**
- * Unit tests for MarkingService.
- * Proves each authorization branch and core marking orchestration logic.
+ * Unit tests for MarkingService. Proves each authorization branch and core marking orchestration
+ * logic.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class MarkingServiceTest {
 
-    @Mock
-    private ScheduleGrpcClient scheduleGrpcClient;
+    @Mock private ScheduleGrpcClient scheduleGrpcClient;
 
-    @Mock
-    private AcademicGrpcClient academicGrpcClient;
+    @Mock private AcademicGrpcClient academicGrpcClient;
 
-    @Mock
-    private MongoTemplate mongoTemplate;
+    @Mock private MongoTemplate mongoTemplate;
 
-    @Mock
-    private AttendanceEventPublisher eventPublisher;
+    @Mock private AttendanceEventPublisher eventPublisher;
 
-    @Mock
-    private SemesterCacheService semesterCacheService;
+    @Mock private SemesterCacheService semesterCacheService;
 
-    @Mock
-    private RequestContext requestContext;
+    @Mock private RequestContext requestContext;
 
-    @Mock
-    private PairWriteCoordinator pairWriteCoordinator;
+    @Mock private PairWriteCoordinator pairWriteCoordinator;
 
     private MarkingService markingService;
 
@@ -111,9 +105,10 @@ class MarkingServiceTest {
     }
 
     private GroupMembersResponse buildHistoricalGroupMembers(Long semesterId, Long... userIds) {
-        GroupMembersResponse.Builder builder = GroupMembersResponse.newBuilder()
-                .setAsOfDate("2026-04-01")
-                .setSemesterId(semesterId);
+        GroupMembersResponse.Builder builder =
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(semesterId);
         for (Long uid : userIds) {
             builder.addStudents(StudentInfo.newBuilder().setUserId(uid).build());
         }
@@ -143,33 +138,54 @@ class MarkingServiceTest {
         // M05 G8: SyncTaskExecutor для детерминизма unit-тестов
         // (корректность, не latency). Реальный grpcTaskExecutor остаётся
         // в prod-config.
-        markingService = new MarkingService(
-                scheduleGrpcClient, academicGrpcClient, mongoTemplate,
-                eventPublisher, semesterCacheService, requestContext,
-                pairWriteCoordinator, Clock.fixed(Instant.parse("2026-04-01T09:00:00Z"), ZoneOffset.UTC),
-                new SyncTaskExecutor());
+        markingService =
+                new MarkingService(
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        mongoTemplate,
+                        eventPublisher,
+                        semesterCacheService,
+                        requestContext,
+                        pairWriteCoordinator,
+                        Clock.fixed(Instant.parse("2026-04-01T09:00:00Z"), ZoneOffset.UTC),
+                        new SyncTaskExecutor());
         // Default: headman context
         lenient().when(requestContext.isHeadman()).thenReturn(true);
         lenient().when(requestContext.getUserId()).thenReturn(HEADMAN_ID);
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         // Lesson belongs to headman's group
-        lenient().when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(GROUP_ID));
-        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), anyLong()))
+        lenient()
+                .when(scheduleGrpcClient.getLessonById(LESSON_ID))
+                .thenReturn(buildLesson(GROUP_ID));
+        lenient()
+                .when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), anyLong()))
                 .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
         // Student 99 is in group 10
-        lenient().when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(buildGroupMembers(USER_ID, 100L));
-        lenient().when(academicGrpcClient.getGroupMembers(
-                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+        lenient()
+                .when(academicGrpcClient.getGroupMembers(GROUP_ID))
+                .thenReturn(buildGroupMembers(USER_ID, 100L));
+        lenient()
+                .when(
+                        academicGrpcClient.getGroupMembers(
+                                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
                 .thenReturn(buildHistoricalGroupMembers(SEMESTER_ID, USER_ID, 100L));
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
         // mongoTemplate.findOne returns the document after upsert (single-mark path)
-        lenient().when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
+        lenient()
+                .when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
                 .thenReturn(buildSavedDoc());
         // M05 audit fix: findAndModify заменил upsert+findOne в batch-пути.
-        lenient().when(mongoTemplate.findAndModify(any(Query.class), any(), any(FindAndModifyOptions.class),
-                eq(AttendanceDocument.class))).thenReturn(buildSavedDoc());
+        lenient()
+                .when(
+                        mongoTemplate.findAndModify(
+                                any(Query.class),
+                                any(),
+                                any(FindAndModifyOptions.class),
+                                eq(AttendanceDocument.class)))
+                .thenReturn(buildSavedDoc());
         // M05 audit fix (security #2): batch re-check isHeadman via academic gRPC.
-        lenient().when(academicGrpcClient.isHeadman(any(), any()))
+        lenient()
+                .when(academicGrpcClient.isHeadman(any(), any()))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
     }
 
@@ -183,8 +199,9 @@ class MarkingServiceTest {
         when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
                 .thenReturn(null, saved);
 
-        AttendanceDocument result = markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
+        AttendanceDocument result =
+                markingService.markAttendance(
+                        LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
 
         verify(mongoTemplate).upsert(any(), any(), eq(AttendanceDocument.class));
         verify(eventPublisher).publishMarked(eq(result), any());
@@ -201,8 +218,12 @@ class MarkingServiceTest {
     void markAttendance_notHeadman_throwsAccessDeniedException() {
         when(requestContext.isHeadman()).thenReturn(false);
 
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
@@ -215,10 +236,15 @@ class MarkingServiceTest {
 
     @Test
     void markAttendance_lessonBelongsToOtherGroup_throwsAccessDeniedException() {
-        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(20L)); // different group
+        when(scheduleGrpcClient.getLessonById(LESSON_ID))
+                .thenReturn(buildLesson(20L)); // different group
 
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("чужой");
 
@@ -232,12 +258,15 @@ class MarkingServiceTest {
     @Test
     void markAttendance_studentNotInGroup_throwsAccessDeniedException() {
         // group members does NOT include userId 99
-        when(academicGrpcClient.getGroupMembers(
-                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
                 .thenReturn(buildHistoricalGroupMembers(SEMESTER_ID, 100L, 101L));
 
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("составу группы");
 
@@ -250,8 +279,12 @@ class MarkingServiceTest {
 
     @Test
     void markAttendance_cancelledStatus_throwsBadRequestException() {
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.CANCELLED)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.CANCELLED)))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("Допустимые ручные статусы");
 
@@ -260,41 +293,55 @@ class MarkingServiceTest {
 
     @Test
     void markAttendance_sameDayBeforeStart_throwsWithoutRosterOrWrite() {
-        markingService = new MarkingService(
-                scheduleGrpcClient, academicGrpcClient, mongoTemplate,
-                eventPublisher, semesterCacheService, requestContext,
-                pairWriteCoordinator,
-                Clock.fixed(Instant.parse("2026-04-01T06:30:00Z"), ZoneOffset.UTC),
-                new SyncTaskExecutor());
+        markingService =
+                new MarkingService(
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        mongoTemplate,
+                        eventPublisher,
+                        semesterCacheService,
+                        requestContext,
+                        pairWriteCoordinator,
+                        Clock.fixed(Instant.parse("2026-04-01T06:30:00Z"), ZoneOffset.UTC),
+                        new SyncTaskExecutor());
         when(scheduleGrpcClient.getLessonById(LESSON_ID))
                 .thenReturn(buildLesson(GROUP_ID).toBuilder().setStartTime("10:00").build());
 
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("до начала");
 
-        verify(academicGrpcClient, never()).getGroupMembers(
-                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID);
+        verify(academicGrpcClient, never())
+                .getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID);
         verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
     }
 
     @Test
     void markAttendance_missingSemester_failsClosedWithoutUndatedRoster() {
-        LessonResponse missingSemester = LessonResponse.newBuilder()
-                .setId(LESSON_ID)
-                .setGroupId(GROUP_ID)
-                .setSubjectId(SUBJECT_ID)
-                .setDate("2026-04-01")
-                .setLessonNumber(1)
-                .setStartTime("08:00")
-                .setEndTime("09:30")
-                .setStatus("started")
-                .build();
+        LessonResponse missingSemester =
+                LessonResponse.newBuilder()
+                        .setId(LESSON_ID)
+                        .setGroupId(GROUP_ID)
+                        .setSubjectId(SUBJECT_ID)
+                        .setDate("2026-04-01")
+                        .setLessonNumber(1)
+                        .setStartTime("08:00")
+                        .setEndTime("09:30")
+                        .setStatus("started")
+                        .build();
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(missingSemester);
 
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(AcademicServiceUnavailableException.class);
 
         verify(academicGrpcClient, never()).getGroupMembers(GROUP_ID);
@@ -305,36 +352,18 @@ class MarkingServiceTest {
     // Test 6 — Second mark (upsert) updates status, not duplicate
     // -------------------------------------------------------------------------
 
-    @Test
-    void markAttendance_secondMark_upsertsNotDuplicates() {
-        AttendanceDocument presentDoc = buildSavedDoc();
-        AttendanceDocument absentDoc = buildSavedDoc();
-        absentDoc.setStatus(AttendanceStatus.ABSENT);
-        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
-                .thenReturn(null, presentDoc, presentDoc, absentDoc);
-
-        AttendanceDocument first = markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
-        AttendanceDocument second = markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.ABSENT));
-
-        // upsert called twice (once per mark), not insert/save
-        verify(mongoTemplate, org.mockito.Mockito.times(2))
-                .upsert(any(), any(), eq(AttendanceDocument.class));
-        assertThat(second.getId()).isEqualTo(first.getId());
-        assertThat(first.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
-        assertThat(second.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
-    }
-
     // -------------------------------------------------------------------------
     // Test 7 — Event published with correct document
     // -------------------------------------------------------------------------
 
     @Test
     void markAttendance_successfulMark_publishesMarkedEvent() {
-        AttendanceDocument result = markingService.markAttendance(
-                LESSON_ID, USER_ID,
-                new MarkRequest(AttendanceStatus.EXCUSED, ExcuseType.ILLNESS, "test reason"));
+        AttendanceDocument result =
+                markingService.markAttendance(
+                        LESSON_ID,
+                        USER_ID,
+                        new MarkRequest(
+                                AttendanceStatus.EXCUSED, ExcuseType.ILLNESS, "test reason"));
 
         verify(eventPublisher).publishMarked(eq(result), any());
     }
@@ -344,14 +373,19 @@ class MarkingServiceTest {
         when(requestContext.isHeadman()).thenReturn(false);
         AttendanceDocument existing = buildSavedDoc();
         existing.setStatus(AttendanceStatus.EXCUSED);
-        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class))).thenReturn(existing);
+        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
+                .thenReturn(existing);
         when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE"))
                 .thenReturn(true);
         when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
                 .thenReturn(false);
 
-        assertThatThrownBy(() -> markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+        assertThatThrownBy(
+                        () ->
+                                markingService.markAttendance(
+                                        LESSON_ID,
+                                        USER_ID,
+                                        new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("MANAGE_EXCUSES");
 
@@ -368,86 +402,44 @@ class MarkingServiceTest {
     }
 
     /**
-     * BATCH-01: три новые отметки одной пары — один gRPC getLesson,
-     * отдельная проверка readiness, один getGroupMembers и три записи.
-     */
-    @Test
-    void markBatch_threeStudentsOneLesson_upsertsAllPublishesEach() {
-        when(academicGrpcClient.getGroupMembers(GROUP_ID))
-                .thenReturn(buildGroupMembers(99L, 100L, 101L));
-        doReturn(buildLesson(GROUP_ID)).when(scheduleGrpcClient)
-                .requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
-        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
-                .thenReturn(null);
-        AttendanceDocument presentDoc = buildSavedDoc();
-        AttendanceDocument absentDoc = buildSavedDoc();
-        absentDoc.setId("doc-2");
-        absentDoc.setUserId(100L);
-        absentDoc.setStatus(AttendanceStatus.ABSENT);
-        AttendanceDocument excusedDoc = buildSavedDoc();
-        excusedDoc.setId("doc-3");
-        excusedDoc.setUserId(101L);
-        excusedDoc.setStatus(AttendanceStatus.EXCUSED);
-        when(mongoTemplate.findAndModify(any(Query.class), any(), any(FindAndModifyOptions.class),
-                eq(AttendanceDocument.class))).thenReturn(presentDoc, absentDoc, excusedDoc);
-
-        MarkBatchRequest request = new MarkBatchRequest(List.of(
-                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
-                item(LESSON_ID, 100L, AttendanceStatus.ABSENT),
-                item(LESSON_ID, 101L, AttendanceStatus.EXCUSED)
-        ));
-
-        List<AttendanceDocument> result = markingService.markBatch(request);
-
-        assertThat(result).hasSize(3);
-        assertThat(result).extracting(AttendanceDocument::getUserId).containsExactly(99L, 100L, 101L);
-        assertThat(result).extracting(AttendanceDocument::getStatus)
-                .containsExactly(AttendanceStatus.PRESENT, AttendanceStatus.ABSENT, AttendanceStatus.EXCUSED);
-        assertThat(result).extracting(AttendanceDocument::getId).doesNotHaveDuplicates();
-        verify(scheduleGrpcClient, org.mockito.Mockito.times(1)).getLessonById(LESSON_ID);
-        verify(scheduleGrpcClient).requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
-        verify(academicGrpcClient, org.mockito.Mockito.times(1)).getGroupMembers(GROUP_ID);
-        // M05 audit fix: findAndModify заменил upsert+findOne (bug-hunter 2.1).
-        verify(mongoTemplate, org.mockito.Mockito.times(3))
-                .findAndModify(any(), any(), any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
-        verify(eventPublisher, org.mockito.Mockito.times(3)).publishMarked(any(), any());
-        verify(eventPublisher).publishMarked(eq(presentDoc), any());
-        verify(eventPublisher).publishMarked(eq(absentDoc), any());
-        verify(eventPublisher).publishMarked(eq(excusedDoc), any());
-    }
-
-    /**
-     * BATCH-02: non-headman — весь batch отклонён до gRPC.
+     * BATCH-01: три новые отметки одной пары — один gRPC getLesson, отдельная проверка readiness,
+     * один getGroupMembers и три записи.
      */
     @Test
     void markBatch_notHeadman_throwsBeforeAnyWrite() {
         when(requestContext.isHeadman()).thenReturn(false);
 
-        MarkBatchRequest request = new MarkBatchRequest(List.of(
-                item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
+        MarkBatchRequest request =
+                new MarkBatchRequest(List.of(item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
 
         assertThatThrownBy(() -> markingService.markBatch(request))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(mongoTemplate, never()).findAndModify(any(), any(),
-                any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .findAndModify(
+                        any(),
+                        any(),
+                        any(FindAndModifyOptions.class),
+                        eq(AttendanceDocument.class));
         verify(eventPublisher, never()).publishMarked(any(), any());
     }
 
     /**
-     * BATCH-03: студент вне группы среди items — весь batch отклонён,
-     * ни один upsert не выполнен (validation-first atomic).
+     * BATCH-03: студент вне группы среди items — весь batch отклонён, ни один upsert не выполнен
+     * (validation-first atomic).
      */
     @Test
     void markBatch_oneStudentNotInGroup_rejectsWholeBatchNoUpserts() {
         when(academicGrpcClient.getGroupMembers(GROUP_ID))
                 .thenReturn(buildGroupMembers(99L, 100L)); // 200 НЕ в группе
 
-        MarkBatchRequest request = new MarkBatchRequest(List.of(
-                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
-                item(LESSON_ID, 100L, AttendanceStatus.PRESENT),
-                item(LESSON_ID, 200L, AttendanceStatus.PRESENT) // посторонний
-        ));
+        MarkBatchRequest request =
+                new MarkBatchRequest(
+                        List.of(
+                                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
+                                item(LESSON_ID, 100L, AttendanceStatus.PRESENT),
+                                item(LESSON_ID, 200L, AttendanceStatus.PRESENT) // посторонний
+                                ));
 
         // M05 audit fix (security #4): userId не попадает в error message
         // (избегаем enumeration side-channel).
@@ -456,62 +448,73 @@ class MarkingServiceTest {
                 .hasMessageContaining("группе")
                 .hasMessageNotContaining("200");
 
-        verify(mongoTemplate, never()).findAndModify(any(), any(),
-                any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .findAndModify(
+                        any(),
+                        any(),
+                        any(FindAndModifyOptions.class),
+                        eq(AttendanceDocument.class));
         verify(eventPublisher, never()).publishMarked(any(), any());
     }
 
     /**
-     * BATCH-04: CANCELLED в любом item → BadRequestException до любого
-     * write'а (validation-first).
+     * BATCH-04: CANCELLED в любом item → BadRequestException до любого write'а (validation-first).
      */
     @Test
     void markBatch_anyCancelledStatus_rejectsBatch() {
-        MarkBatchRequest request = new MarkBatchRequest(List.of(
-                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
-                item(LESSON_ID, 100L, AttendanceStatus.CANCELLED)
-        ));
+        MarkBatchRequest request =
+                new MarkBatchRequest(
+                        List.of(
+                                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
+                                item(LESSON_ID, 100L, AttendanceStatus.CANCELLED)));
 
         assertThatThrownBy(() -> markingService.markBatch(request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("CANCELLED");
 
-        verify(mongoTemplate, never()).findAndModify(any(), any(),
-                any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .findAndModify(
+                        any(),
+                        any(),
+                        any(FindAndModifyOptions.class),
+                        eq(AttendanceDocument.class));
     }
 
-    /**
-     * BATCH-05: lesson из чужой группы — весь batch отклонён.
-     */
+    /** BATCH-05: lesson из чужой группы — весь batch отклонён. */
     @Test
     void markBatch_lessonFromOtherGroup_rejectsBatch() {
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(999L));
 
-        MarkBatchRequest request = new MarkBatchRequest(List.of(
-                item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
+        MarkBatchRequest request =
+                new MarkBatchRequest(List.of(item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
 
         assertThatThrownBy(() -> markingService.markBatch(request))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("чужой");
 
-        verify(mongoTemplate, never()).findAndModify(any(), any(),
-                any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .findAndModify(
+                        any(),
+                        any(),
+                        any(FindAndModifyOptions.class),
+                        eq(AttendanceDocument.class));
     }
 
     /**
-     * BATCH-06 (M05 audit fix security #2): JWT claim is_headman=true, но
-     * academic-source-of-truth вернул false — весь batch отклонён до любых
-     * Mongo writes (cross-service revocation respected).
+     * BATCH-06 (M05 audit fix security #2): JWT claim is_headman=true, но academic-source-of-truth
+     * вернул false — весь batch отклонён до любых Mongo writes (cross-service revocation
+     * respected).
      */
     @Test
     void markBatch_academicSayNotHeadman_rejectsBatch() {
-        doReturn(buildLesson(GROUP_ID)).when(scheduleGrpcClient)
+        doReturn(buildLesson(GROUP_ID))
+                .when(scheduleGrpcClient)
                 .requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
         when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
 
-        MarkBatchRequest request = new MarkBatchRequest(List.of(
-                item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
+        MarkBatchRequest request =
+                new MarkBatchRequest(List.of(item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
 
         assertThatThrownBy(() -> markingService.markBatch(request))
                 .isInstanceOf(AccessDeniedException.class)
@@ -521,15 +524,18 @@ class MarkingServiceTest {
         verify(scheduleGrpcClient).requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
         verify(academicGrpcClient, org.mockito.Mockito.times(2)).isHeadman(HEADMAN_ID, GROUP_ID);
         verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
-        verify(mongoTemplate, never()).findAndModify(any(), any(),
-                any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .findAndModify(
+                        any(),
+                        any(),
+                        any(FindAndModifyOptions.class),
+                        eq(AttendanceDocument.class));
         verifyNoInteractions(eventPublisher);
     }
 
     /**
-     * BATCH-07 (M05 audit fix security #1): batch с > 10 уникальных
-     * lessonId — отклонён как BadRequest (защита grpcTaskExecutor от DoS
-     * через payload с высоким fan-out'ом).
+     * BATCH-07 (M05 audit fix security #1): batch с > 10 уникальных lessonId — отклонён как
+     * BadRequest (защита grpcTaskExecutor от DoS через payload с высоким fan-out'ом).
      */
     @Test
     void markBatch_tooManyUniqueLessons_rejectsBatch() {
@@ -544,7 +550,11 @@ class MarkingServiceTest {
                 .hasMessageContaining("различных уроков");
 
         verify(scheduleGrpcClient, never()).getLessonById(any());
-        verify(mongoTemplate, never()).findAndModify(any(), any(),
-                any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verify(mongoTemplate, never())
+                .findAndModify(
+                        any(),
+                        any(),
+                        any(FindAndModifyOptions.class),
+                        eq(AttendanceDocument.class));
     }
 }

@@ -1,0 +1,3423 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "db57c30f1c27722985733f9b023bc4795854a307",
+    "prHeadSha": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38313867449",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "5c6c7c8c6cddd1629626d51c89a5738441603a559acdf77302a5cf58f6379322",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "f6535fff25c0e9bb8cace9e493ca2cdebd5105f02f93768ca9312580f36890f2",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "47f19908e8fdcc54e44278d97ed7ac41a89aaec0bc9ee11f0e0a2e94f95039b1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "2f01370f80e596f7d4c05f0f40ba29e56d98d509f44e3991d7e76daa3676ec0f",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 21,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 21,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 5,
+      "sha256": "d920e53fcb34d6e18a064a3e7eae8f29a7a1222f5f287f52f088616a033455eb",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 6,
+      "sha256": "558cb84bd580a17fcae0cc86022079e281814e30a66c1673aa09f579c99bf262",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 7,
+      "sha256": "875d78befa1f33ec360589c45a069ea81d58a4245c4ac81fefd9e1b49f642f4d",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 8,
+      "sha256": "dfd709b8d2eab67d322d19edc1793ba10041e05bd454fafedb6dbd6945cc0d0c",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 9,
+      "sha256": "89e3d45483c61100fba3c35b9440825e191832f67b4a84f08eef4514d99e74ea",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 10,
+      "sha256": "777f37e62d9900b8b16081af2330b369b20b05bde140c6425f5cf7a296cbc02f",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 11,
+      "sha256": "78ebc205cb713c6598b3bfb6b300e03a6db15b24a756dd788021a0db2ded667f",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 12,
+      "sha256": "79b07d4c1441d1553e04edcf60e7bea47cc654bbdc2f1bbef7aae4229145a356",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 13,
+      "sha256": "ff965876cbd0b98a181d18e2cf66fd31299e3ce8e9b103737de6625a87333b48",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 14,
+      "sha256": "9760aee35b83a31ddde5e47ad8dbe6dbce369fbac361bfb8613267d50b475203",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 15,
+      "sha256": "a5ac60ba19d46b60b1d14f7d73da688db21ae919a40f772cc114b29f5a32701b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 16,
+      "sha256": "44a8375f36993015425a72b571831f48da75369b9097901a82c8ade73d2d4923",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 17,
+      "sha256": "559b7e437e5dbbf7969436f1b762f032b90347b66e5b13db9a79141a6f394e3a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 18,
+      "sha256": "1f4afac8b5e5e7d035199144fcb1996bea5936af37b5a100c5a78748acbe87c9",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 19,
+      "sha256": "82c1d037c460213ac2157cca5ca10a339c5c1af6263081d773d9372fb8919272",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 20,
+      "sha256": "820e63dfe6e3320f53dd319da4e9a0d0e28d7ce24937d6f78d8b246676ec135c",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 21,
+      "sha256": "345a4551340f124173c7f619146c44d6c4f9e81b0939685162b66873babee2fd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 9,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 22,
+      "sha256": "ca136683aea6c504351e52b815b393351365a86a490682b7c2de0ed3aeeb4ce8",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 23,
+      "sha256": "fb0cc2fad504b7081a660fccf90daacfa7b2bd92d1ee626f8001e374e84cf135",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 9,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 24,
+      "sha256": "a1586a1a86488313acf720c0ef0bb490552fb3975f9854154155bab7bc45b3f3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 25,
+      "sha256": "cfa630282bf02707a2991d4d7fd082dcb5c88b66094c7bc3afc46991a623f7e1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 26,
+      "sha256": "acbb05186622ab2682d6f3eb8aa604284c042f2f6487e90b90816455442f89de",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 27,
+      "sha256": "d4f5e98d60b4da65a8ea7515b4cc0bb4f3d92738e75220560c5127ecc8bfbca1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 28,
+      "sha256": "a416202332ad750e9c9660b800c03a36c071b6598f5cab30c7cd89f7f49b64b3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 29,
+      "sha256": "d95af6ed37358694d87dc1f151dcd255faa40de9cdca75f6a4157732afdf21ac",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 30,
+      "sha256": "134e5475a89c3acaf08921953d2197d7c09224c35a6c4cc00fbc49e40a73706b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 31,
+      "sha256": "70cc0f47f7f277acfbbe458abf08dc78a232be65534ccd2b48347b8230facb39",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 32,
+      "sha256": "4da6542a884bcf7cfaffc1f0abad08cef89b4da31d366255352546f368881b9c",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 33,
+      "sha256": "c90f34f69f6f5363e2e2d0101798c93f2704217a1c6f19178b17f1c7c912a3a7",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 34,
+      "sha256": "d255733ba2919db1dc6f5a7745fa993557f2b63d49e5a7cbf1b4cdfc15bab285",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 35,
+      "sha256": "c97d4f117c2be2490d3e8707637e6b7e9d7d73d82cf03f45461205c051e924df",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 36,
+      "sha256": "da59ed0e129f13674bbfca19ccb5b24291e6717e6f6ea097a3cac56f6781b4a1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 37,
+      "sha256": "74baa02f9d58d80b18b0edb62c8a55dab9a16dd821477501e880aa0408742240",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 38,
+      "sha256": "5ef518c9c915f5d99be3cd6b4364d965fc6be48ff9d7fecf1c0006d168acdfcd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 9,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 39,
+      "sha256": "04762461c5f9fd4f233f148c35d961ce068860971c3b948e8263a6f8ef9e4d91",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 40,
+      "sha256": "fa9ad8740635b9996a3ccfa3d90fd2249bc8e2ae4c4242bc3c8501e693ae15a2",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 27,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 27,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 41,
+      "sha256": "540b2a65bec61c51f53c76e8f2100a2197ca76152fb836b830a03829c675f962",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 42,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 42,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "domainAuditAndOutboxRollbackTogether",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "legacySourceAndNullableActorRoleRemainReadableAndAuditDependencyFailureKeepsOriginalError",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "geoReceiptPersistsDeniedDistanceReplayAndApprovedDecisionInSameHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "noOpLegacySnapshotAndDeleteRecreateDoNotReuseRevision",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "rejectedClearAndMultipartMarkSurviveRollbackWithoutChangingAttendanceOrAttachments",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "permissionAuthorizedAssistantDecisionKeepsTrueActorRole",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "adminActivityCountsActualTransitionsOnceAndUsesActionTimeAndPublicationIdentity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "assistantAdmissionAndKnownActorAreCapturedBeforeRollbackCallback",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "outerTransactionRejectionIsWrittenOnlyAfterActualRollback",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "cooldownSurvivesMongoRollbackAndDoesNotProduceReceiptOrDuplicateAppliedEvents",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "legacyHeadersWithoutAcceptedSignedContextCannotCreateSpoofedHeadmanRejection",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "revisionGuardRejectsReplacedExcuseAndClearRetainsApprovedTicket",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "autoMaterializationAndAuthoritativeEventRedeliveryKeepPermanentHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "internalTransientTransactionRetryRecordsOnlyFinalCooldownRejection",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "semesterFenceRejectionPreservesDomainAndCreatesOneScopedAudit",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "cancelledOrFutureOwnLessonRejectsButForeignMissingAndUnrosteredTargetsDoNotPolluteHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "earlyRpcReceiptMismatchIsRecordedOnceWhileReplayAndForeignScopeRemainUnchanged",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "cursorPagesRedactSensitiveSnapshotAndReauthorizeEveryPage",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "acceptedGeoCapturesMeasuredReceiptAndBeforeAfterOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "guardedPutDoesNotOverwriteNewExcuseOrLaterSameStatusReason",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "method": "dashboardSignalSharesReadableProjectionCommitAndRollback",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.event.AttendanceSemesterDeletionDataIT",
+      "method": "digestTracksOnlyOwnedDomainRows_andDeleteRemovesTheirBinaryPayloads",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/AttendanceSemesterDeletionDataIT.java",
+      "sourceSha256": "9604e682247657f7d112b631a0124bf23bcc34d7177d599f8193c585f03574c5"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.event.EventIdempotentIT",
+      "method": "differentEventIds_areIndependent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventIdempotentIT.java",
+      "sourceSha256": "6f61523956db8f12afd3736556d995980d458116bae3cf263e8277cdb27ca885"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.event.EventIdempotentIT",
+      "method": "duplicateDelivery_isDedupped",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventIdempotentIT.java",
+      "sourceSha256": "6f61523956db8f12afd3736556d995980d458116bae3cf263e8277cdb27ca885"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "prepareArchiveWaitsBehindFirstWriteInExistingEmptyFenceCollection",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "mismatchedTrackedEffectScopeCommitsErrorAckWithoutPartialDomainWrites",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "transferBatchesShareOneDomainReceipt_andEachDeliveryReplaysItsAck",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "oneOffV2MovesMarksOnceAndFencesOriginVersionAndScopeTampering",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "prepareArchiveWaitsBehindAlreadyFencedAttendanceWrite",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "conflictingTargetMarkStoresErrorReceiptWithoutChangingEitherMark",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "method": "archivePrepareDrainsDelayedTrustedTransferAndEffectBeforeSeal_andStaleReleaseCannotUnsealNextArchive",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT",
+      "method": "cancellation_doesNotAffectOtherDocs",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+      "sourceSha256": "010fac0c143aa3aa150698e017dd885a6e404e7b3624b6d0b008c29f48acd870"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT",
+      "method": "cancellation_deletesAttendanceDocs",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+      "sourceSha256": "010fac0c143aa3aa150698e017dd885a6e404e7b3624b6d0b008c29f48acd870"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT",
+      "method": "cancellation_idempotent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+      "sourceSha256": "010fac0c143aa3aa150698e017dd885a6e404e7b3624b6d0b008c29f48acd870"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT",
+      "method": "prepareDrainsAcceptedScheduleEffectAndReleaseRestoresArchivedAndActiveStatesAtNewEpoch",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+      "sourceSha256": "8d3ffe79fe0986eccfacadd9beeb350f92f67fdb0a315c6f16912131dbf40474"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT",
+      "method": "commitDeletesDomainAndFileBytesAtomically_replaysAck_andTombstoneBlocksLateEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+      "sourceSha256": "8d3ffe79fe0986eccfacadd9beeb350f92f67fdb0a315c6f16912131dbf40474"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT",
+      "method": "deletingMarkBeforeSemesterPurgeAlsoRemovesItsLegacyFile_withoutDeletingForeignOwnerBytes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+      "sourceSha256": "8d3ffe79fe0986eccfacadd9beeb350f92f67fdb0a315c6f16912131dbf40474"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.events.AttendanceMarkedContractIT",
+      "method": "retiredLegacyCheckin_doesNotPublishAttendanceMarkedEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/events/AttendanceMarkedContractIT.java",
+      "sourceSha256": "caa6a901e211d22056629c0e22ee016912d8c2ac3eb5ac0b189e4cd1caa55a1f"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "updateStatus_headmanSelfApprove_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "updateStatus_alreadyDecided_returns409",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "updateStatus_approvedByHeadman_returns200AndCascadesAttendance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "createExcuse_asPlainStudent_returns410WithoutPersistence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "createExcuse_asHeadman_returns410WithoutPersistence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "createExcuse_duplicateLessonId_returns410WithoutChangingTicket",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+      "method": "getTicketById_foreignStudent_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+      "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseEventContractIT",
+      "method": "createExcuse_publishesRequestedEvent_matchingBotContract",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java",
+      "sourceSha256": "b5f152fa1386663d781c53157316eab9d611ee9c236945b46b40b516d056f845"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseEventContractIT",
+      "method": "updateStatus_publishesDecidedEvent_matchingBotContract",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java",
+      "sourceSha256": "b5f152fa1386663d781c53157316eab9d611ee9c236945b46b40b516d056f845"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT",
+      "method": "existsByStudentIdAndLessonIdsInAndStatusIn_returnsFalse_whenRejectedTicketOnly",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+      "sourceSha256": "83979f08116b31394067c500f22f4bd7e475acdb434cbfd2d092df672dfbfa62"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT",
+      "method": "existsByStudentIdAndLessonIdsInAndStatusIn_returnsTrue_whenActiveTicketOverlaps",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+      "sourceSha256": "83979f08116b31394067c500f22f4bd7e475acdb434cbfd2d092df672dfbfa62"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT",
+      "method": "existsByStudentIdAndLessonIdsInAndStatusIn_returnsFalse_whenOtherStudent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+      "sourceSha256": "83979f08116b31394067c500f22f4bd7e475acdb434cbfd2d092df672dfbfa62"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+      "method": "approve_freeAttendanceTicket_createsFreeAttendanceDocuments",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+      "sourceSha256": "5282475a028647468dc6ab487f1020ccc439c3bcf4c258207e67c5295e3d6e9d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+      "method": "approve_illnessTicket_createsExcusedAttendanceForEachLesson",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+      "sourceSha256": "5282475a028647468dc6ab487f1020ccc439c3bcf4c258207e67c5295e3d6e9d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+      "method": "reject_doesNotTouchAttendance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+      "sourceSha256": "5282475a028647468dc6ab487f1020ccc439c3bcf4c258207e67c5295e3d6e9d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+      "method": "approve_preservesExistingPresentAttendance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+      "sourceSha256": "5282475a028647468dc6ab487f1020ccc439c3bcf4c258207e67c5295e3d6e9d"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.grpc.AdminActivityGrpcIT",
+      "method": "signedJwtNeedsFreshDashboardCapabilityAndFailuresNeverReturnFakeZero",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AdminActivityGrpcIT.java",
+      "sourceSha256": "32d98b879dbe4d5e8c9c57017da75fac5062577317c1c21191ff283eadaf6a90"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "method": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "sourceSha256": "df5499716ddfa95b0587f93e2d814697efcecc86f88dfbaeb062f83164a1492c"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.grpc.UserImpactIT",
+      "method": "countsEveryRetainedTargetMarkWithoutReadingPrivateFieldsOrChangingRows",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/UserImpactIT.java",
+      "sourceSha256": "9137404bd556343e9ea6f163e8096cc72fe4084b2683602e2c3889363d842eb5"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "method": "beansEndpointReturns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "method": "envEndpointReturns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "method": "healthEndpointReturnsUp",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "method": "actuatorIndexShowsOnlyHealthAndInfo",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "method": "heapdumpEndpointReturns404",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "method": "infoEndpointReturns200",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.CheckinIT",
+      "method": "legacyCheckin_returns410AndPreservesManualAbsenceWithoutSideEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/CheckinIT.java",
+      "sourceSha256": "021020d2e35c8c37e4f174ce9ed20e651fbf2954a49a2bd512a9bc768024f9da"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "method": "unknownCodeFailsClosedAndOptionalNullKeepsItsMeaning",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "sourceSha256": "a6fbc936ded92ec4ff4d8a75d304531fe3d606307e306bcbc81a4b56ed2809aa"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "method": "attendanceStatus_absent_storedAsLowercaseString",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "sourceSha256": "a6fbc936ded92ec4ff4d8a75d304531fe3d606307e306bcbc81a4b56ed2809aa"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "method": "attendanceStatus_storedAsLowercaseString",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "sourceSha256": "a6fbc936ded92ec4ff4d8a75d304531fe3d606307e306bcbc81a4b56ed2809aa"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "sourceSha256": "a6fbc936ded92ec4ff4d8a75d304531fe3d606307e306bcbc81a4b56ed2809aa"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "sourceSha256": "a6fbc936ded92ec4ff4d8a75d304531fe3d606307e306bcbc81a4b56ed2809aa"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonCancelled_beforeClose_preventsRetrospectiveMaterialization",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "concurrentCloseAndCancel_persistedBoundaryConvergesAndRetriesRemainIdempotent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonClosed_partialCheckins_createsAbsentOnlyForUnmarked",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonClosed_existingCheckin_preservesCheckinStatus",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "duplicateCancelledEventRequeuesAckFromExactStoredReceipt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonClosed_noExistingRecords_createsAbsentForAllStudents",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonCancelled_existingDocs_updatesStatusToCancelled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonCancelled_noDocs_noError",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "method": "lessonClosed_thenCancelled_convergesEveryMaterializedRecord",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.LateCheckinPerformanceIT",
+      "method": "lateCheckinQueryStaysUnder50ms",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/LateCheckinPerformanceIT.java",
+      "sourceSha256": "6c945d900d7f341a66cd01e55a0c7ba7b2ed5d1c03c9f566bd0d9f391865d69f"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "journal_historicalRoster_authorizedFileAndClear",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_studentNotInGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_headmanMarksStudentInGroup_returns200WithHateoas",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_secondMark_preservesImmutableFields",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_secondMark_updatesStatusNotDuplicate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_cancelledStatus_returns400",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_successfulMark_publishesAttendanceMarkedEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_notHeadman_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "mark_lessonBelongsToDifferentGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+      "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.MongoIndexIT",
+      "method": "mongoConfigInitIndexes_createsAllExpectedIndexes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+      "sourceSha256": "7c8873de4a0054b589bc952a02f1c77512c36ddd91ef6b63cef9124ff4e0a8c3"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.MongoIndexIT",
+      "method": "uniqueIndex_allowsDifferentLessonSameUser",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+      "sourceSha256": "7c8873de4a0054b589bc952a02f1c77512c36ddd91ef6b63cef9124ff4e0a8c3"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.MongoIndexIT",
+      "method": "uniqueIndex_rejectsDuplicateLessonUser",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+      "sourceSha256": "7c8873de4a0054b589bc952a02f1c77512c36ddd91ef6b63cef9124ff4e0a8c3"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+      "sourceSha256": "23e181aca2b3fcdd5d1758ed420126b92ef529f3e6f7b4b98f1d7513d8dfb35e"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.OutboxAtomicityIT",
+      "method": "saveExcuseAndOutbox_thenThrow_bothRolledBack",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+      "sourceSha256": "302189727ee5d7a1a4b60e3a59893199289b9d1fab5c565556da4d041097cd6d"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.OutboxAtomicityIT",
+      "method": "saveExcuseAndOutbox_withoutThrow_bothCommitted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+      "sourceSha256": "302189727ee5d7a1a4b60e3a59893199289b9d1fab5c565556da4d041097cd6d"
+    },
+    {
+      "xmlOrdinal": 27,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.PaginationCapIT",
+      "method": "getMyTickets_sizeExceedsMax_truncatedToShared100",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/PaginationCapIT.java",
+      "sourceSha256": "a566b622ac193148d426e0d6354e36f45550aba7030cfdfd4ed437153f331472"
+    },
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.RabbitConsumerIT",
+      "method": "publishToFanoutExchange_doesNotThrow",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+      "sourceSha256": "17ac73b1a80aff478cf66011582c2e87a3c1293cd6b8654c3a47ff33c3675ee6"
+    },
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.RabbitConsumerIT",
+      "method": "attendanceDlqQueue_isDeclared",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+      "sourceSha256": "17ac73b1a80aff478cf66011582c2e87a3c1293cd6b8654c3a47ff33c3675ee6"
+    },
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.RabbitConsumerIT",
+      "method": "attendanceEventsQueue_isDeclaredAndBound",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+      "sourceSha256": "17ac73b1a80aff478cf66011582c2e87a3c1293cd6b8654c3a47ff33c3675ee6"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT",
+      "method": "transientDecisionFailure_retriesThreeTimesThenDeadLetters",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+      "sourceSha256": "16fb2d0760380cf6913ddf792048685e96b307fc3976e00e9ca8856ecae2e638"
+    },
+    {
+      "xmlOrdinal": 29,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT",
+      "method": "malformedDecisionEnvelope_isBoundedAndDeadLetters",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+      "sourceSha256": "16fb2d0760380cf6913ddf792048685e96b307fc3976e00e9ca8856ecae2e638"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentStats_excludesAuthoritativeCancelledAndTransferredStoredRecords",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentStats_excludesCancelled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentRecords_allSubjects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getLessonAttendance_headman_returnsAllGroupMembers",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentRecords_filteredBySubject",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getJournal_headman_returnsGridShape",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 30,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getLessonAttendance_regularStudentForbidden",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+      "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+    },
+    {
+      "xmlOrdinal": 31,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+      "method": "studentEndpoint_withNoHeaders_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+      "sourceSha256": "5bc0c8a5bce3285c38e22f61a3dea462b083729f3e66eae6dec3090e9f1d2562"
+    },
+    {
+      "xmlOrdinal": 31,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+      "method": "studentEndpoint_withTeacherRole_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+      "sourceSha256": "5bc0c8a5bce3285c38e22f61a3dea462b083729f3e66eae6dec3090e9f1d2562"
+    },
+    {
+      "xmlOrdinal": 31,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+      "method": "studentEndpoint_withStudentRole_returns200",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+      "sourceSha256": "5bc0c8a5bce3285c38e22f61a3dea462b083729f3e66eae6dec3090e9f1d2562"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.integration.StartupOrphanCleanupRemovedIT",
+      "method": "rerunRunner_withOrphanDocsAndDeadSchedule_preservesDocs",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/StartupOrphanCleanupRemovedIT.java",
+      "sourceSha256": "46f6d8b032ef8c16cda1bcb8c49d504eb36fcc2a38e563b4227cc23565b8ad0f"
+    },
+    {
+      "xmlOrdinal": 32,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.integration.StartupOrphanCleanupRemovedIT",
+      "method": "startupRunner_doesNotInvokeScheduleGrpcClient",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/StartupOrphanCleanupRemovedIT.java",
+      "sourceSha256": "46f6d8b032ef8c16cda1bcb8c49d504eb36fcc2a38e563b4227cc23565b8ad0f"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "createRequest_asStudent_returns410WithoutPersistence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "listPending_asNonHeadman_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "decideRequest_asNonHeadman_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "decideRequest_approveByHeadman_returns200AndMarksAttendance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "listGroupRequests_forForeignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "listGroupRequests_asHeadman_returnsRecentPendingAndDecidedRequests",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "listPending_asHeadman_returnsOnlyGroupPending",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 33,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "method": "listGroupRequests_withStatusFilter_returnsOnlyThatStatus",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+      "method": "exportCurrentDocx_returnsGeneratedDocxFromMongoBackedData",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+      "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+      "method": "exportCurrentPdf_convertsSingleWeekDocx",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+      "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+      "method": "exportCurrentPng_convertsSingleWeekDocx",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+      "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+      "method": "exportSelectedWeeksPng_returnsZipWithOneEntryPerSelectedWeek",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+      "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+      "method": "exportSelectedWeeksPdf_convertsOneMultiPageDocx",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+      "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+    },
+    {
+      "xmlOrdinal": 34,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+      "method": "exportSelectedWeeksDocx_returnsOneMultiPageDocx",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+      "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+    },
+    {
+      "xmlOrdinal": 35,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+      "method": "wrongSignatureInternalToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+      "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+      "method": "invalidInternalToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+      "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+      "method": "legacyHeaders_dualMode_accepted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+      "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+      "method": "validInternalToken_passesFilter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+      "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+      "method": "expiredInternalToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+      "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+    },
+    {
+      "xmlOrdinal": 36,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+      "method": "internalToken_precedenceOverLegacy",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+      "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+    },
+    {
+      "xmlOrdinal": 37,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT",
+      "method": "legacyHeaders_strictMode_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+      "sourceSha256": "490c47cdd352d43bca9b6a2920b410cb72ec063f4266f1dcbc891aaab4a59548"
+    },
+    {
+      "xmlOrdinal": 37,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT",
+      "method": "noHeaders_strictMode_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+      "sourceSha256": "490c47cdd352d43bca9b6a2920b410cb72ec063f4266f1dcbc891aaab4a59548"
+    },
+    {
+      "xmlOrdinal": 37,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT",
+      "method": "validInternalToken_strictMode_passes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+      "sourceSha256": "490c47cdd352d43bca9b6a2920b410cb72ec063f4266f1dcbc891aaab4a59548"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "decideLateCheckin_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "getJournal_foreignGroupId_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "plainStudent_cannotViewJournal",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "getTicketById_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "getGroupTickets_foreignGroupId_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "markAttendance_plainStudentNotHeadman_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "listPendingLateCheckin_plainStudent_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "getTicketById_foreignGroupHeadman_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+      "method": "updateExcuseStatus_foreignGroup_returns403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+      "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+    },
+    {
+      "xmlOrdinal": 39,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+      "method": "authorityOutageDoesNotSilentlyReusePreviousSemesterForRequests",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+      "sourceSha256": "06bcf69c81c7bd0f1177e51286989de7ea7090cb977d2cb3d1ed94f19a0689b6"
+    },
+    {
+      "xmlOrdinal": 39,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+      "method": "missedActivationEventDoesNotRejectCurrentLessonOrSelectPreviousBudget",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+      "sourceSha256": "06bcf69c81c7bd0f1177e51286989de7ea7090cb977d2cb3d1ed94f19a0689b6"
+    },
+    {
+      "xmlOrdinal": 39,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+      "method": "missedArchiveEventDoesNotExposePreviousSemesterRequestOptions",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+      "sourceSha256": "06bcf69c81c7bd0f1177e51286989de7ea7090cb977d2cb3d1ed94f19a0689b6"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "botDecisionForCancelledRequestRemainsNoOpWithoutAuthorizationOrWrites",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "concurrentGeoAndRejectNeverOverwriteGeoProvenance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "concurrentGeoAndManualAbsenceNeverLeaveStaleGeoOverwrite",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "legacyLateApprovalPreservesExistingPresentProvenanceAndTimestamps",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "realOutboxCommitsOnceAndReplayDoesNotDuplicateEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "readOnlyCheckinAndReplayRejectBothGeoVariantsBeforeAnySideEffect",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "concurrentSameKeyConvergesOnOneAckAndOnePendingEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "parallelSuccessfulRetriesConvergeOnOneReceiptAndOneCancellationEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "realOutboxInsertFailureRollsBackAndSameCommandCanSucceedLater",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "replayReturnsOriginalAckAfterWindowClosedAndDifferentPayloadIsRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "manualDecisionAndGeoWritersClearJournalBlobButRetainRequestOwnedEvidence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "successfulGeoRetryCancelsAutoRequestAndKeepsOriginalReceiptImmutable",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "outboxFailureRollsBackAttendancePairAndReceipt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "staleApproveAfterGeoCancellationIsNoEffect",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "exactReceiptReplaysButNewKeysAreBlockedDuringArchiveTransitions",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "botDecisionUsesCanonicalActorAndAuthoritativeGroupCheckInMongoTransaction",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "manualHeadmanAbsenceRejectsBeforeGeofenceAndWithoutPairMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "unavailableGeoPersistsOnePendingRequestReceiptCooldownAndOutboxCallAtomically",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "archivedSemesterFenceRejectsGeoCheckinWithoutAttendanceOrRequestWrites",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "botDecisionForForeignGroupHeadmanMakesNoMongoWrites",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "manualPendingRequestRejectsGeoWithoutMutationOrCancellation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "rejectedRequestGetsNewIdAtBoundary",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "submittedExcuseBlocksAutoRetryWithoutChangingPairRequestReceiptOrOutbox",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 24,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "windowIsInclusiveAtBothBoundaries",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 25,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "replayFromMongoPreservesAckWhenClockHasNanoseconds",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 26,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "pendingAutoRequestRejectsEarlyRetryThenReusesIdAndRenewsCooldownOnFailure",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 40,
+      "suiteOrdinal": 1,
+      "ordinal": 27,
+      "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "method": "concurrentGeoAndApproveConvergeWithoutMixedProvenance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "terminalDecisionDoesNotReplayForAnotherActorOutcomeOrComment",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "cancellationAtLockedReadRejectsBothMissingMarkSubmissionsWithoutSideEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanLateCurrentProjectionUsesMovedLessonRatherThanRetainedMetadata",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "mixedOwnerListAndOptionsExposeBothPendingKindsWithoutPeerData",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "persistedLimitControlsOptionsAndSubmissionsUntilExhausted",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "partialExcuseUsesCanonicalTransferredTargetAndRejectsStaleOrInvalidSubsetAtomically",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "approvalChangesFreeAttendanceToExcused",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "activeGroupTeacherReadsHistoricalTicketAndBytesWhileFormerTeacherIsDenied",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanCurrentProjectionRefusesConcurrentTargetStateOrScopeChanges",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "exactDecisionRepeatsKeepAttendanceTimestampBudgetAndSingleEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanCurrentProjectionIsCompleteOrRefusedAndTerminalDependencyFailureKeepsEvidence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "presentPriorityKeepsExistingAttendanceDuringExcuseApproval",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "partialLegacyWithoutSnapshotsRetainsOriginalMembershipAcrossDetailListAndReplay",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "ambiguousExcuseCommitRecoversPersistedDecisionWithoutDuplicateEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "partialExcuseRejectsChangedGenerationPendingDependencyAndConcurrentTicketBeforeWriting",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "sixConcurrentManualLateSubmissionsChargeExactlyFive",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanMongoDatesMatchDetailAndInclusiveCoverageInMoscow",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "partialExcusePreservesEvidencePresentAndExactReceiptAfterLostAck",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "cancellationAfterSubmissionRejectsBothMissingMarkApprovalsWithoutNewSideEffects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "decisionRepeatStillRequiresCurrentAuthorityAndWritableSemester",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "ambiguousLateCheckinCommitRecoversPersistedDecisionWithoutDuplicateEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "approvalAndRealPairWriterRacePreservesPresent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "excuseIdempotencyFingerprintDistinguishesNullCommentFromLiteralNull",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 24,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "cancelAndDecisionRaceLeaveOneTerminalLateOutcomeAndOneOutboxEvent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 25,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "rejectedAndCancelledManualLateRequestsDoNotRefundBudget",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 26,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "attachmentSpoofThirdAndOversizeInputsRejectBeforeAnyWrite",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 27,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "concurrentSameExcuseKeyCreatesOneTicketAndOneReceipt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 28,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "closedMissingMarksOfferSubmitAndApproveBothRequestKinds",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 29,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "exactExcuseRetryKeepsSingleRequestReceiptAndOutboxButFilenameChangeConflicts",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 30,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "attachmentReadProjectsExpiryButRetentionClearsBytesUnderTheSemesterFence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 31,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "uncommittedTransientDecisionFailureStillRetriesOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 32,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "productionMongoOutboxInsertRollsBackWithTransactionFailure",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 33,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "directRequestDecisionsDeleteOnlyJournalBytesForTheExactStudentLessonPair",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 34,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "overlappingExcusePackagesCannotBothActivate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 35,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanOpenUnionNormalizesSubmittedAndExcludesDraft",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 36,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanCoverageFilterMatchesCoverageIntervalGap",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 37,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 38,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "excuseApprovalAfterTransferUsesCurrentLessonAndPreservesOriginalRequestEvidence",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 39,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "headmanArchiveSortUsesDecisionTimeBeforeStableKindAndIdTieBreakers",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 40,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "invalidLessonMakesExcusePackageRollbackWithoutReceiptOrAttachment",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 41,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "exactAttachmentLimitsPersistBinarySeparatelyAndCancelRetainsIt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    },
+    {
+      "xmlOrdinal": 41,
+      "suiteOrdinal": 1,
+      "ordinal": 42,
+      "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "method": "terminalAttachmentRetentionAfterTransferWaitsForArchiveRestoreThenClearsBytesOnce",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+    }
+  ],
+  "summary": {
+    "PASSED": 220,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

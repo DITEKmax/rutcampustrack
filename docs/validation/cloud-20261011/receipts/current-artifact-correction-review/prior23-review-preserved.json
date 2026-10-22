@@ -1,0 +1,7 @@
+{
+  "manifest": "/workspace/scratch/rct-validation/current_artifact_review/manifest.json",
+  "manifest_sha256": "9b62cd7bab7a27c77de3a2048b527cab8d808d5e866fb705c93bf5271feddbcd",
+  "files": 23,
+  "all_current_original_hashes_equal": true,
+  "original_source_edits": false
+}

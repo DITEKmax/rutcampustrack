@@ -1,0 +1,11 @@
+{
+  "status": "READONLY_METADATA_ADDENDUM",
+  "entries": [
+    {
+      "path": "actual-detached-HEAD.safe.json",
+      "sha256": "a0345ddd63f424cf27127cc1425b99e89a7034e3fcd20e2db4d37794bb962535",
+      "bytes": 456,
+      "mode": "0600"
+    }
+  ]
+}

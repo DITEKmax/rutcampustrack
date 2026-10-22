@@ -1,0 +1,64 @@
+{
+  "state": "FINITE_CONTINUATION_GREEN_KNOWN_OWN_CLEANUP_COMPLETE",
+  "source_sha256": "06c4adc7936bc5893192e63c4a36bad44ff2a5ac1463578bf23def1d494ca6cb",
+  "product_revision": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1",
+  "all4_product_pins_unchanged": true,
+  "original_run": {
+    "session": 65486,
+    "native_exit": 1,
+    "cause": "SAMPLED32MiB_GROWTH_GUARD_STOP",
+    "allocation_cause": "UNKNOWN",
+    "whole_run_cap_result": "FAIL",
+    "old_exit_code": 1,
+    "old_markers": "validated by frozen0d82 Source order before stop; not persisted",
+    "birth_identities": "UNKNOWN",
+    "original_receipt_write": "BLOCKED_BY_SAME_GROWTH_GUARD"
+  },
+  "continuation": {
+    "session": 58716,
+    "native_exit": 0,
+    "chunks": [
+      "92c210",
+      "656a06"
+    ],
+    "root_grant_sha256": "ec8fab26d9848d870703c91f720acdd4e760069d74690263c511b617e5e340cf",
+    "issued_utc": "2026-10-13T14:11:17.169592+00:00",
+    "cleanup_gate_utc": "2026-10-13T14:13:47.169592+00:00",
+    "stop_utc": "2026-10-13T14:14:17.169592+00:00",
+    "partial_last_write_utc": "2026-10-13T14:12:34.866983+00:00",
+    "supervisor_birth": "UNKNOWN_NOT_EXPOSED_BY_TOOL_OR_FIXED_SOURCE",
+    "individual_CLI_births": "UNKNOWN",
+    "partial": {
+      "state": "GREEN_AND_KNOWN_OWN_CLEANUP_COMPLETED",
+      "original_run": "65486_RESOURCE_FAIL",
+      "green": "PASS_PRIVATE_AND_PUBLIC_FILE_ABSENT",
+      "removed_container_ids": [
+        "8dc5bb9af2eee9e340a4fe3b2b3cb572bb241114c5a789a748aa211fd2ef031b",
+        "8bcec58eef9701cadeeee0de8ae038648eb1d5b4b7b9d919e792babd702df1cc",
+        "a9105357ff47f26281be8e85dbc4061ad8f548dc4518ad4c1fe4f9757dda6b2c"
+      ],
+      "volume_removed": true,
+      "tmp_removed": true,
+      "removed_tmp_leaves": [
+        "private.key",
+        "public.key"
+      ],
+      "qualification": "Original growth cap failure and missing original birth/cleanup ID journals remain; old exit1 and Source-order marker admission only. No real key read or whole-run cap compliance claim.",
+      "workspace_free_before_container_cleanup": 7007129600,
+      "workspace_free_after_container_cleanup": 7053828096,
+      "observed_net_workspace_recovery_bytes": 46698496
+    }
+  },
+  "post_cleanup_verification": {
+    "metadata_chunk": "8f2b5a",
+    "native_exit": 0,
+    "successful_filtered_name_ID_rows": 0,
+    "successful_volume_rows": 0,
+    "temp_lexists": false,
+    "observed_utc": "2026-10-13T14:14:35.747586+00:00",
+    "qualification": "Read-only post-cleanup verification after grant stop; all mutation/final partial writing completed before original cleanup margin. No whole-wrapper timing or hypothetical-process absence claim."
+  },
+  "public_HTTP_provisioning_tests": "NOT_RUN",
+  "P07_parent": "UNKNOWN",
+  "limitations": "Synthetic cachedAlpine recipe/booleans only; realprivatekeyreadability/exploitation/currentproductionimageUID unmeasured; no realkeys/oldvolumes/data read; Source/privatecontent hashes not collected."
+}

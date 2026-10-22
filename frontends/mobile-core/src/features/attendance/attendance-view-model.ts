@@ -1,10 +1,17 @@
+import type { StudentAttendanceExplanation, StudentAttendanceWeek } from '../../api/types'
+
 export type AttendanceTheme = 'dark' | 'light'
 
 export type AttendanceReadState<T> =
   | { readonly status: 'loading' }
   | { readonly status: 'ready'; readonly data: T }
   | { readonly status: 'empty' }
-  | { readonly status: 'error'; readonly code: string; readonly message: string; readonly retryable: boolean }
+  | {
+      readonly status: 'error'
+      readonly code: string
+      readonly message: string
+      readonly retryable: boolean
+    }
   | { readonly status: 'forbidden'; readonly reason: string }
   | { readonly status: 'offline' }
   | { readonly status: 'no-semester' }
@@ -12,7 +19,11 @@ export type AttendanceReadState<T> =
 export type AttendanceMode = 'days' | 'subjects' | 'graph'
 export type AttendanceGraphRange = 'days' | 'weeks'
 export type LessonType = 'LECTURE' | 'PRACTICE' | 'LAB'
-export const LESSON_TYPE_ORDER = ['LECTURE', 'PRACTICE', 'LAB'] as const satisfies readonly LessonType[]
+export const LESSON_TYPE_ORDER = [
+  'LECTURE',
+  'PRACTICE',
+  'LAB',
+] as const satisfies readonly LessonType[]
 
 export type AttendanceLessonStatus =
   | 'PRESENT'
@@ -60,6 +71,7 @@ export interface AttendanceLesson {
   }
   readonly status: AttendanceLessonStatus
   readonly requestOptions: readonly AttendanceRequestOption[]
+  readonly explanation?: StudentAttendanceExplanation | null
 }
 
 export interface AttendanceDay {
@@ -75,6 +87,7 @@ export type AttendanceHistoryStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'FUTURE
 export interface AttendanceHistorySegment {
   readonly id: string
   readonly status: AttendanceHistoryStatus
+  readonly explanation?: StudentAttendanceExplanation | null
 }
 
 export interface AttendanceSubjectTypeSummary {
@@ -99,7 +112,13 @@ export interface AttendanceGraphPoint {
 }
 
 export interface AttendanceViewModel {
-  readonly semester?: { readonly id: string; readonly name: string; readonly dateFrom: string; readonly dateTo: string }
+  readonly weeks?: readonly StudentAttendanceWeek[]
+  readonly semester?: {
+    readonly id: string
+    readonly name: string
+    readonly dateFrom: string
+    readonly dateTo: string
+  }
   readonly serverNow?: string
   readonly metrics: AttendanceMetricSet
   readonly days: readonly AttendanceDay[]
@@ -161,11 +180,17 @@ export function formatDayDate(date: string): string {
   })
 }
 
-export function lessonsForDate(data: AttendanceViewModel, date: string): readonly AttendanceLesson[] {
+export function lessonsForDate(
+  data: AttendanceViewModel,
+  date: string,
+): readonly AttendanceLesson[] {
   return data.days.find((day) => day.date === date)?.lessons ?? []
 }
 
-export function findAttendanceLesson(data: AttendanceViewModel, lessonId: string | null): AttendanceLesson | null {
+export function findAttendanceLesson(
+  data: AttendanceViewModel,
+  lessonId: string | null,
+): AttendanceLesson | null {
   if (lessonId === null) return null
   for (const day of data.days) {
     const lesson = day.lessons.find((candidate) => candidate.id === lessonId)
@@ -174,11 +199,26 @@ export function findAttendanceLesson(data: AttendanceViewModel, lessonId: string
   return null
 }
 
-export function graphForRange(data: AttendanceViewModel, range: AttendanceGraphRange): readonly AttendanceGraphPoint[] {
+export function graphForRange(
+  data: AttendanceViewModel,
+  range: AttendanceGraphRange,
+): readonly AttendanceGraphPoint[] {
   return data.graph[range]
 }
 
 /** Eligibility is a server-owned option; status alone never enables a request. */
 export function hasEnabledRequestOption(lesson: AttendanceLesson): boolean {
   return lesson.requestOptions.some((option) => option.enabled)
+}
+
+/** Use server display text, never expose an unknown machine code as a reason. */
+export function attendanceExplanationText(
+  status: AttendanceLessonStatus,
+  explanation?: StudentAttendanceExplanation | null,
+): string {
+  if (status === 'CANCELLED') return explanation?.cancellationReason?.trim() ?? ''
+  if (status !== 'EXCUSED') return ''
+  return [explanation?.reasonText, explanation?.comment]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .join(' · ')
 }

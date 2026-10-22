@@ -1,0 +1,40 @@
+{
+  "schema": "P10_OPERATION_R1_SOURCE_READY_V1",
+  "utc": "2026-10-13T12:41:03.071864+00:00",
+  "state": "SOURCE_READY_PENDING_TARGETED_PRIVACY_RECHECK_FRESH_ROOT_GRANT",
+  "context": "Actual02 native1/BOUNDARY_UNKNOWN, cleanupREMOVED and all2births gone; no selected projection/privateXML file. Old actualoperation/exception/status remainUNKNOWN. SoleP10 currentCI failure causeUNKNOWN; product/test frozen5dac104e.",
+  "change": "Only add15 fixed operation stage markers, exact19-known standard exception type mapping plus OTHER, and numericHTTPstatus for exact HTTPError plain dictionary code. No message/reason/URI/context/arbitraryclass/getter/hash export. Primary+cleanup decisions/status cap1024 unchanged. Missing/invalidreceipt stillrejects.",
+  "stage_semantics": "Last started Source operation, never proof of success/cause; before readmit, URL open/read, selectedZIP/XML, private and SAFEwrites. Initial before-run admission errors still have no admitted lifecycle file and reject observation; this patch does not change that guard.",
+  "controls11": "Selected actual genericcatch AST oldHTTP403missing->newHTTPenum/status; URLError/readmitOS/privatePermission/safeOS/XMLParse/typedZIPprimary/unknownHTTPsubclassgettertrap/statusbounds. No observer/network/XML/errorbody read; old13lifecycle and17+6parser evidence reused.",
+  "initial_control_checking_failure_preserved": "Fixture-only UnknownHTTP getter trap was armed during construction; corrected fixture setup, Source unchanged; operation-controls-attempt01.safe.json",
+  "actual02_tool_mode": "require_escalated; Source policy differences in tool-environment-policy.safe.json; no actualenvread or causalclaim",
+  "existing_patterns": "Same c5af/b78 private parent/admission; no newrunner/framework/parentenv/TLS/approval/transport changes. Corrected873d RAM connectoradapter retained; no connector/native retry now.",
+  "dispatch_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-operation-r1/run-green-owned.py",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-operation-r1/root-diagnostic-grant01.private.json",
+    "<FRESH_ROOT_GRANT_SHA256>"
+  ],
+  "grant_template": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-operation-r1/grant-template.private.json",
+  "grant_window_proposal": 360,
+  "phase60_cleanup60": "Exact oldcaps",
+  "acceptance": "Targeted independent new exception/stage privacy risk review then Root grant only if justified by changed checking scope. No testreplay/Productfix/B013.",
+  "Source_files": {
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "controls-selected-catch.py": "f5c4fbedbf66741dc8b914ddcd866f5e92e9c2d3fb3410f8a98d5ecb00ed5a1d",
+    "grant-template.private.json": "0d9c4cd630bde2a583053e3722667a0f773c399d9e81097bc1a230b685768bbe",
+    "green-plan.safe.json": "e8242daa0701c25d0f2b3b11dc7bc31bb1578223ff945567704da6ceb394294f",
+    "logged-green-child.py": "c5426d2230ba9b7ddafdb106684e045704e8882b909abb5a847c59788b8cbf7a",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "operation-controls-attempt01.safe.json": "9215b81c43184b5288e2346d882f9613b8d21584ebaf2bcefdc03fea886c640d",
+    "operation-controls.safe.json": "e59e1096b84346f5e360f1725c2f56087cf6af65b9182ceebd860f49b5bb605b",
+    "run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "source-delta.patch": "06409629e6350c6e7307acc4b8c91959abba52c872a3fac0788b3796b7d45eba",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "source-proof.safe.json": "b3942ab52fdd2d89ae0cce7ad6423f5af9253019e71b59e78ef8abb0b3d9af32",
+    "tool-environment-policy.safe.json": "c0185c1e1b64af3645147981b09092cb4797ca553f74fe006dc0f6b19622669d"
+  },
+  "actual02_response_retained_privately_in_RAM": true,
+  "actualcause": "UNKNOWN",
+  "native_authority": false
+}

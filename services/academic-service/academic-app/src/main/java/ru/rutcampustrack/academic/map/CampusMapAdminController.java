@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.map;
 
+import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
+
+import java.util.List;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,20 +14,16 @@ import ru.rutcampustrack.academic.contract.api.CampusMapAdminApi;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.BuildingResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionPreview;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionPreview;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionResult;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
 import ru.rutcampustrack.academic.security.RequireRole;
-
-import java.util.List;
-
-import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 
 /** REST adapter for the admin campus-map inventory and upload commands. */
 @RestController
@@ -32,136 +31,200 @@ public class CampusMapAdminController implements CampusMapAdminApi {
     private final CampusMapAdminService service;
     private final CampusMapDeletionService deletion;
 
-    public CampusMapAdminController(CampusMapAdminService service, CampusMapDeletionService deletion) {
+    public CampusMapAdminController(
+            CampusMapAdminService service, CampusMapDeletionService deletion) {
         this.service = service;
         this.deletion = deletion;
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
-    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanTargetResponse> getPlanTarget(
-            String buildingCode, String floorCode) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<
+                    ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                            .PlanTargetResponse>
+            getPlanTarget(String buildingCode, String floorCode) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(service.getPlanTarget(buildingCode, floorCode));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<List<BuildingResponse>> listBuildings() {
         return ResponseEntity.ok(service.listBuildings());
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
-    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeletionPreview> previewPlanDeletion(
-            String buildingCode, String floorCode, String format) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE", "DATA_DELETE"})
+    public ResponseEntity<
+                    ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                            .PlanDeletionPreview>
+            previewPlanDeletion(String buildingCode, String floorCode, String format) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(deletion.previewPlan(buildingCode, floorCode, format));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
-    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeletionResult> deletePlan(
-            ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest request) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(deletion.deletePlan(request));
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE", "DATA_DELETE"})
+    public ResponseEntity<
+                    ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                            .PlanDeletionResult>
+            deletePlan(
+                    ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                                    .PlanDeleteRequest
+                            request) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(deletion.deletePlan(request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<BuildingResponse> createBuilding(CreateBuildingRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createBuilding(request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<List<FloorResponse>> listFloors(String buildingId) {
         return ResponseEntity.ok(service.listFloors(buildingId));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<FloorResponse> createFloor(CreateFloorRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createFloor(request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
-    public ResponseEntity<BuildingResponse> updateBuilding(String buildingId, UpdateInventoryRequest request) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<BuildingResponse> updateBuilding(
+            String buildingId, UpdateInventoryRequest request) {
         return ResponseEntity.ok(service.updateBuilding(buildingId, request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
-    public ResponseEntity<FloorResponse> updateFloor(String floorId, UpdateInventoryRequest request) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<FloorResponse> updateFloor(
+            String floorId, UpdateInventoryRequest request) {
         return ResponseEntity.ok(service.updateFloor(floorId, request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE", "DATA_DELETE"})
     public ResponseEntity<DeletionPreview> previewFloorDeletion(String floorId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(deletion.preview(DeletionTarget.FLOOR, floorId));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE", "DATA_DELETE"})
     public ResponseEntity<DeletionPreview> previewBuildingDeletion(String buildingId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(deletion.preview(DeletionTarget.BUILDING, buildingId));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE", "DATA_DELETE"})
     public ResponseEntity<DeletionResult> deleteFloor(String floorId, DeleteRequest request) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(deletion.delete(DeletionTarget.FLOOR, floorId, request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE", "DATA_DELETE"})
     public ResponseEntity<DeletionResult> deleteBuilding(String buildingId, DeleteRequest request) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(deletion.delete(DeletionTarget.BUILDING, buildingId, request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
-    public ResponseEntity<UploadPlanResponse> uploadPlan(String buildingCode, String floorCode,
-                                                      String label, MultipartFile png, MultipartFile svg) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<UploadPlanResponse> uploadPlan(
+            String buildingCode,
+            String floorCode,
+            String label,
+            MultipartFile png,
+            MultipartFile svg) {
         UploadPlanResponse result = service.uploadPlan(buildingCode, floorCode, label, png, svg);
-        return ResponseEntity.status(result.status() == UploadPlanStatus.created
-                ? HttpStatus.CREATED : HttpStatus.OK).body(result);
+        return ResponseEntity.status(
+                        result.status() == UploadPlanStatus.created
+                                ? HttpStatus.CREATED
+                                : HttpStatus.OK)
+                .body(result);
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
-    public ResponseEntity<PlanResponse> uploadVersion(String floorId,
-                                                      String label,
-                                                      MultipartFile png,
-                                                      MultipartFile svg) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<PlanResponse> uploadVersion(
+            String floorId, String label, MultipartFile png, MultipartFile svg) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.uploadVersion(floorId, label, png, svg));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<PlanResponse> getVersion(String floorId, String version) {
         return ResponseEntity.ok(service.getVersion(floorId, version));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
-    public ResponseEntity<byte[]> downloadAsset(String floorId,
-                                                String version,
-                                                String format,
-                                                String assetId) {
-        CampusMapAdminService.Download download = service.downloadAsset(floorId, version, format, assetId);
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<byte[]> downloadAsset(
+            String floorId, String version, String format, String assetId) {
+        CampusMapAdminService.Download download =
+                service.downloadAsset(floorId, version, format, assetId);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(download.contentType()));
         headers.setContentLength(download.content().length);
-        headers.set(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"floor-" + floorId + "-v" + version + "-"
-                        + download.format().name().toLowerCase(java.util.Locale.ROOT) + "\"");
+        headers.set(
+                HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"floor-"
+                        + floorId
+                        + "-v"
+                        + version
+                        + "-"
+                        + download.format().name().toLowerCase(java.util.Locale.ROOT)
+                        + "\"");
         headers.setCacheControl(CacheControl.noStore());
         return new ResponseEntity<>(download.content(), headers, HttpStatus.OK);
     }

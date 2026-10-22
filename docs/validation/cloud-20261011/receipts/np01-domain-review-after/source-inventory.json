@@ -1,0 +1,50 @@
+[
+  {
+    "scope": "correction",
+    "revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+    "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+    "bytes": 5810,
+    "sha256": "b4e043e54057c03da54bff89857314274b6bbba1ac100a1db8998d7fc9388727",
+    "current_equal": true
+  },
+  {
+    "scope": "correction",
+    "revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+    "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+    "bytes": 16083,
+    "sha256": "e3d8989fa3e84219997984a9672b15280f092680ac779d838d5af5430667ee03",
+    "current_equal": true
+  },
+  {
+    "scope": "correction",
+    "revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+    "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+    "bytes": 14093,
+    "sha256": "5ca0e87e09e68e6c28252202c7cd20113544e8f9e430fbbea1b0f1ed403e97db",
+    "current_equal": true
+  },
+  {
+    "scope": "correction",
+    "revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+    "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+    "bytes": 2908,
+    "sha256": "89afa08c158ef861de08f005f310d6634142e54b4a3e3ef457522691cc7728dd",
+    "current_equal": true
+  },
+  {
+    "scope": "new_bridge",
+    "revision": "dc9acc4385c756ce7bf070f248feadc7c4dba234",
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+    "bytes": 19024,
+    "sha256": "607e7e7ecf95b0d5fa5fb276abb57969dd2ee68fff989fd554f8c1eb6ce86a71",
+    "current_equal": true
+  },
+  {
+    "scope": "new_bridge",
+    "revision": "dc9acc4385c756ce7bf070f248feadc7c4dba234",
+    "path": "services/notification-bot/tests/np01_bridge_runner.py",
+    "bytes": 17418,
+    "sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+    "current_equal": true
+  }
+]

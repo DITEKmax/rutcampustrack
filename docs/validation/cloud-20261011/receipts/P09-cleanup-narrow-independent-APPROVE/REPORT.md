@@ -1,0 +1,19 @@
+# P09 cleanup — narrow independent recheck
+
+Verdict: **APPROVE_SOURCE**. P09-TEST-CLEANUP-MASKS-PRIMARY is closed. No remaining finding in the narrow cleanup delta; this is not a runtime or actual resource-cleanup PASS.
+
+Reviewed clean author commit80dc4070b0c011581d287b043a494aea91876d46 in `/workspace/rct-worktrees/p09-auth-socket-join-20261013`. Corrected `RealAuthOpenSocketLogoutIT.java` SHAf8f7f9b37afcc313d80833b1ff9998584685f218ac7b2bc5e4eefb0df6cae52c; build SHA282a4efc96471a80d07adcc68bd21568d350a48bf7dab29e58fc130b2b903eaf unchanged. Originala764/test214c and independent reviewdc61/4e5f/82ba remain preserved. Same independent requested gpt-6.1-sol/high, actual metadata UNKNOWN. Updated task/correction receipts restored; Root's native freeze remains in force.
+
+The catch at corrected173–176 occurs after try-with-resources has applied context-close suppression. It saves and rethrows the original Exception/AssertionError. Finally initializes the accumulator with that primary and independently attempts A disconnect, B disconnect, client.stop and both actor cleanups. Each supported cleanup error is attached to the primary or first cleanup error; no first disconnect error skips the second direct attempt. When primary exists the pending throw survives normally completing finally; when it does not, the first RuntimeException/AssertionError cleanup error is rethrown, so cleanup-only failure cannot silently pass.
+
+AfterAll89–106 attempts each enumerated own key deletion independently, accumulates IOException/RuntimeException/AssertionError, includes walk/stream errors and throws the first recorded error with later errors suppressed. It does not widen paths or touch any new resource. Enumeration failure remains an explicit failure, not a claim that unenumerated paths were removed. No actual keys or filesystem ownership were inspected by the reviewer.
+
+Five independent exact Source comparisons pass: prefix/imports/fields; locals except the primary slot; the exact genuine join body and assertions; every noncleanup helper/secondary context; unchanged pinned build bytes. Only primary slot/catch/finally and AfterAll aggregation changed. Original whole join/classpath/privacy/clock review is reused. No security assertion, Auth/WS rule, TTL, event, dependency or configuration changes occur in the correction.
+
+Three new RAM accumulator analogues address the added logic: existing TWR close suppression plus five cleanup failures retains the primary and all six suppressed errors; no primary plus five cleanup errors retains the first and four suppressed errors and fails; multiple enumerated key-deletion failures preserve the first while continuing to the remaining entries. These are explicitly Source/JLS reasoning and RAM analogues, not Java AST/bytecode execution or actual Spring/socket/key cleanup. The old four controls and unchanged join are not replayed.
+
+Verification: public corrected/old Git Source reads, clean revision and Source hashes; `python3 -B /workspace/scratch/rct-validation/p10_failure_frame_privacy_review/p09-cleanup-recheck/source-checks.py`, exit0, inverse5/newRAM3. No compile/formatter/Java/Gradle/HTTP/PG/Redis/WebSocket/Docker/runtime/sensitivity execution. Actual join and cleanup remain NOT_RUN; P09 parent UNKNOWN.
+
+Created only this reviewer-owned directory's report, Source-check script/JSON, safe report/manifest/ZIP. No Source/self-fix/shared-doc writes, grants, native/network/API/private environment/artifact/key reads, children or B013 action. Root controls the unrelated retained-resource finish and future native leases.
+
+Next: once Root's native freeze is safely released, bind existing formatter/compile and ONE genuine join run to a fresh approved resource/cap/source plan. Independently verify actual outcomes and owned cleanup, then reviewed relevant sensitivity/restored GREEN/current CI before any matrix promotion.

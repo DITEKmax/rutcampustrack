@@ -1,0 +1,58 @@
+{
+  "source_scope_before": "six original Git sources independently exactRoot731",
+  "native_before": {
+    "run_id": "38205391312",
+    "head_sha": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+    "actual_checkout": "ba64e94c498866b9b833de38baff4c3888869a09",
+    "Auth_summary": {
+      "PASSED": 167,
+      "FAILED": 2,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "Academic_summary": {
+      "PASSED": 153,
+      "FAILED": 292,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "Auth_two_intended_source_assertions": [
+      {
+        "case": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession()",
+        "exception_type": "org.opentest4j.AssertionFailedError",
+        "source_frames": [
+          "app//ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordResetIsPurposeBoundAtomicAndRevokesEverySession(AuthOtpFlowIT.java:304)"
+        ],
+        "expected": 1,
+        "actual": 4,
+        "xml_sha256": "d24165edee458e832e60d634379f989f391ee6b0060ab23a7b6ffaea8d91c1e7"
+      },
+      {
+        "case": "passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart()",
+        "exception_type": "org.opentest4j.AssertionFailedError",
+        "source_frames": [
+          "app//ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart(AuthOtpFlowIT.java:360)"
+        ],
+        "expected": 1,
+        "actual": 4,
+        "xml_sha256": "d24165edee458e832e60d634379f989f391ee6b0060ab23a7b6ffaea8d91c1e7"
+      }
+    ],
+    "Academic_failure_types": {
+      "java.lang.IllegalStateException": 292
+    },
+    "Academic_selected_safe_frames": [
+      "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+      "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+      "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+      "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+      "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)"
+    ],
+    "Academic_qualification": "Safe native diagnostics expose292 IllegalStateExceptions and selected guard65 examples; this reviewer did not read raw XML/properties/stdout/bodies or classify product execution from setup failures."
+  },
+  "private_raw_read": false,
+  "after_runtime": "NOT_RUN",
+  "Ruff_before": "I0014/E5013 safe original diagnostics; author scoped Ruff0.11.13 after native0 at exact4 source hashes"
+}

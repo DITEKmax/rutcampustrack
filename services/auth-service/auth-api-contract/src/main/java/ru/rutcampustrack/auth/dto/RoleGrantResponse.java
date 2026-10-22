@@ -3,7 +3,6 @@ package ru.rutcampustrack.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-
 import java.util.Objects;
 
 @Schema(name = "RoleGrantResponse")
@@ -14,8 +13,7 @@ public record RoleGrantResponse(
         @Schema(nullable = true) @Pattern(regexp = "^[1-9][0-9]*$") String groupId,
         @Schema(nullable = true) String contextLabel,
         boolean selectable,
-        boolean readOnly
-) {
+        boolean readOnly) {
     public RoleGrantResponse {
         requirePositiveDecimal(grantId, "grantId");
         requireUppercase(role, "role");

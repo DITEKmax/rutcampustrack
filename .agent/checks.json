@@ -63,5 +63,132 @@
       }
     ],
     "runtime": "not_run"
+  },
+  "cloud_validation_20261011": {
+    "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "state": "IN_PROGRESS",
+    "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+    "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
+    "commands_receipts": [
+      "docs/validation/cloud-20261011/attempts.ndjson",
+      "docs/validation/cloud-20261011/receipts/security-developer",
+      "docs/validation/cloud-20261011/receipts/delivery-developer",
+      "docs/validation/cloud-20261011/receipts/renderer-developer",
+      "docs/validation/cloud-20261011/receipts/security-boundaries-review",
+      "docs/validation/cloud-20261011/verified-cases.csv",
+      "docs/validation/cloud-20261011/receipts/current-client-artifacts",
+      "docs/validation/cloud-20261011/receipts/np01-domain-runtime-review",
+      "docs/validation/cloud-20261011/receipts/checkpoint25668-terminal-status.json"
+    ],
+    "checks": [
+      {
+        "command": "uv --offline tool run --from pre-commit==4.6.2 pre-commit run (cached supportedGo/tool paths; see CURRENT/attempts)",
+        "exit_code": 0,
+        "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
+        "evidence": "all6mandatoryhooksPASS beforecheckpoint; root scoped whitespacecheckPASS"
+      },
+      {
+        "command": "git show <author/integrated SHA> | git patch-id --stable (9exactpairs; safe Python subprocess, no patch output)",
+        "exit_code": 0,
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "evidence": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json"
+      },
+      {
+        "command": "cached pre-commit run before e093 commit, Gitleaks/checkJSON/largefile/EOF/whitespace applicable hooks",
+        "exit_code": 0,
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "evidence": "attempts.ndjson root11409terminal0; YAML no changedfiles, not runtime skip"
+      },
+      {
+        "command": "git push designatedbranch; git ls-remote + gh pr view exactreadback",
+        "exit_code": 0,
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "evidence": "docs/validation/cloud-20261011/receipts/checkpoint-e093-remote.json"
+      },
+      {
+        "command": "cached mandatoryprecommit after exact receiptarchive/EOF normalization",
+        "exit_code": 0,
+        "revision": "b7944851a40c096d4842d0551e4b56299b1d620b",
+        "evidence": "attempts.ndjson session83153terminal0 all applicablegatesPASS"
+      },
+      {
+        "command": "git show <author/integrated> | git patch-id --stable; 18 pairs",
+        "exit_code": 0,
+        "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35",
+        "evidence": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json"
+      },
+      {
+        "command": "reviewedmapcherry-picks+stablepatchids20exactpairs",
+        "exit_code": 0,
+        "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
+        "evidence": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json"
+      },
+      {
+        "command": "cachedmandatoryprecommit all6gates afterexactarchivepreservation/readablecorrection",
+        "exit_code": 0,
+        "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
+        "evidence": "attempts.ndjson session57652terminal0"
+      },
+      {
+        "command": "root scoped mandatory source gates sixhooks",
+        "exit_code": 0,
+        "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+        "evidence": "attempts.ndjson session95875terminal0; exportcoherent96sourcebridge"
+      },
+      {
+        "command": "independent mergedRepository source review",
+        "exit_code": 0,
+        "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+        "evidence": "receipts/export-merged-repository-review; sourceAPPROVE/currenttwoAcademicchecksNOT_RUN"
+      },
+      {
+        "command": "cached mandatory precommit ALL staged checkpoint paths",
+        "exit_code": 0,
+        "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+        "evidence": "docs/validation/cloud-20261011/receipts/checkpoint908-root-gates.json"
+      },
+      {
+        "command": "broker2 exactsourceintegration +cachedmandatorysourcehooks",
+        "exit_code": 0,
+        "revision": "009476554070f70458f57e5b97e5d795ff41f3bf",
+        "evidence": "docs/validation/cloud-20261011/receipts/np01-broker-source-gates.json"
+      },
+      {
+        "command": "cached mandatoryprecommit before currentcheckpoint",
+        "exit_code": 0,
+        "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3",
+        "evidence": "docs/validation/cloud-20261011/receipts/root-checkpoint88-gates.json"
+      },
+      {
+        "command": "cached six mandatory precommit hooks --files taskdocs322",
+        "exit_code": 0,
+        "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+        "evidence": "docs/validation/cloud-20261011/receipts/root-doc-hooks-0837.json; source/runtime acceptance remains incomplete"
+      },
+      {
+        "time": "2026-10-12T11:06:29.114122+00:00",
+        "scope": "current65 remote/native/source integration",
+        "result": "PARTIAL: exact2092 source/mode identities andAngular0; Java2596PASS0F_E3oldGatewaySKIP;9cleanChromium; brokerfinite7PASS; currentCI/CoverageFAIL knownformat/testoracle; Security/OpenAPIgreen",
+        "receipt": "docs/validation/cloud-20261011/receipts/ci_format65_receipts/original-byte-index.json"
+      }
+    ],
+    "runtime": {
+      "state": "NO_ACTIVE_HOST_BROKER_DOCKER_BROWSER",
+      "actual_attempt": "Docker9 floorstop beforeapps; exactcontainers/networkcleaned andfivevolumespreserved",
+      "capacity": "immutablecopy dedup980434944 +browsercache relocation935976960; v4finiteconfigreview pending",
+      "resources": "docs/validation/cloud-20261011/resources.md"
+    },
+    "remote": {
+      "verified_head": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "branch": "codex/server-validation-20261011",
+      "draft_pr": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "base": "main",
+      "merged": false,
+      "actual_checkout_revision": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "CI": 38236931589,
+      "Coverage": 38236931576,
+      "Security": 38236931590,
+      "OpenAPI": 38236931530
+    }
   }
 }

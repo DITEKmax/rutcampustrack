@@ -1,0 +1,131 @@
+{
+  "source": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "rows": [
+    {
+      "service": "auth-service",
+      "id": "sha256:2ad4dd93cce4f4099d5b920d07f921acb25c782d7d9e7390a8b928df53799c11",
+      "tags": [
+        "rct/auth-service:client-eec3"
+      ],
+      "size_bytes": 317052284,
+      "jar_sha256": "ba514dcb98d623e3f926debf1a3306532d7c13a090367972bfeabc0c77b05635",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "academic-service",
+      "id": "sha256:9b13bb13a00ba45bb84162876c67150e79199097e8be7bd4c2681a7b25f9f089",
+      "tags": [
+        "rct/academic-service:client-eec3"
+      ],
+      "size_bytes": 314017853,
+      "jar_sha256": "b70e18c4e1004f49301a1813f13e46a56c4f13fed442a7a6569734f781a61520",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "schedule-service",
+      "id": "sha256:3e0da7c88deee6d103eeb477317f51ef897998ce1372fbb0f71534fb5cb951aa",
+      "tags": [
+        "rct/schedule-service:client-eec3"
+      ],
+      "size_bytes": 306927955,
+      "jar_sha256": "62442b2b58d12c94d177df5a4fc5b417d01d058e20e52c6fb2850d727b964d6d",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "attendance-service",
+      "id": "sha256:5a8385330941def578e758db7578aef85f831d5556f79730bc9ab4d0b1f1d9dd",
+      "tags": [
+        "rct/attendance-service:client-eec3"
+      ],
+      "size_bytes": 310384385,
+      "jar_sha256": "fbdcf1af4690f9efc547fa48e2d27af46e4ad3184143b6ef6195fc4e9ef015da",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "mobile-bff",
+      "id": "sha256:dfe6425a015a9e9605e2ca16e1e21b936d7dd2eb1296e8d5795b1865f1c343c7",
+      "tags": [
+        "rct/mobile-bff:client-eec3"
+      ],
+      "size_bytes": 263290358,
+      "jar_sha256": "52c96cf5349d33e0dfee09f81208e969e693bb3e7ff48762513d16c6e88dc78e",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "api-gateway",
+      "id": "sha256:93a0e2544c7116591b0d2dd0d4c1a04ff785ab7074b22ca1afc0eba5c374ccd8",
+      "tags": [
+        "rct/api-gateway:client-eec3"
+      ],
+      "size_bytes": 270081282,
+      "jar_sha256": "2e40d87f5716e148ed58416de73407d38ed8b7c43387f63d4fe4815820082929",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/api-gateway/build/libs/api-gateway-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "notification-web",
+      "id": "sha256:3ff1bcdacdbf961d4ae2895924fda31fc893f24e75d98cbf0d70ad2ce8a18e88",
+      "tags": [
+        "rct/notification-web:client-eec3"
+      ],
+      "size_bytes": 299767224,
+      "jar_sha256": "12d6aa434927bf3091d16ce06178e5d42191856f63da38bfe6259b5e204df8d1",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar"
+      ],
+      "candidate": true
+    },
+    {
+      "service": "document-renderer-service",
+      "id": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+      "tags": [
+        "rct/document-renderer-service:client-eec3"
+      ],
+      "size_bytes": 721470337,
+      "jar_sha256": "b01fe685f628d0d0e3cc4e6758f32ed2f81ce16bac8cb3f63b8b14b687a527a0",
+      "retained_exact_jar_paths": [
+        "/workspace/rct-worktrees/client-acceptance/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar"
+      ],
+      "candidate": false
+    }
+  ],
+  "containers": [],
+  "protected_all_image_ids": [
+    "sha256:0cd5951d043f34c6fdb61274eb61c42bbb15aa8e05eab35c110ffd69a84e9463",
+    "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+    "sha256:2ad4dd93cce4f4099d5b920d07f921acb25c782d7d9e7390a8b928df53799c11",
+    "sha256:3e0da7c88deee6d103eeb477317f51ef897998ce1372fbb0f71534fb5cb951aa",
+    "sha256:3ff1bcdacdbf961d4ae2895924fda31fc893f24e75d98cbf0d70ad2ce8a18e88",
+    "sha256:5a8385330941def578e758db7578aef85f831d5556f79730bc9ab4d0b1f1d9dd",
+    "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+    "sha256:711ce61d970663b9dc4b0c4dcd2dee6d3d72c900f1a31b9599703dde61bf730a",
+    "sha256:81bd698b4594e751a3269e4dcd3e03a4a0ec0daf7b72e7aa1abd43cce9887542",
+    "sha256:93a0e2544c7116591b0d2dd0d4c1a04ff785ab7074b22ca1afc0eba5c374ccd8",
+    "sha256:9b13bb13a00ba45bb84162876c67150e79199097e8be7bd4c2681a7b25f9f089",
+    "sha256:ac1502203bffd13c241ca25a7bae60cbd968fd0011247f6727524634b3f2f6e3",
+    "sha256:cc6e50c173ff2cf38ffb812fb582450e9b40fc1f67eadd63e81071f18fc8cc96",
+    "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+    "sha256:de912cbbf07f938bb8aaa5682464a73a00c6a996efdf0880423aeb4eae006c34",
+    "sha256:dfe6425a015a9e9605e2ca16e1e21b936d7dd2eb1296e8d5795b1865f1c343c7",
+    "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058"
+  ],
+  "status": "READ_ONLY plan; seven oldownJavaimages maybe retired for hostacceptance afterrootchoice; renderer/native/shared/images/JAR/source/evidence retained"
+}

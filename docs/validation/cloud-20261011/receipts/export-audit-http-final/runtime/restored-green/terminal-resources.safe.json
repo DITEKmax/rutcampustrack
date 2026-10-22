@@ -1,0 +1,118 @@
+{
+  "time": "2026-10-12T03:00:48.723192+00:00",
+  "free_bytes": 8346214400,
+  "cpu_count": 5,
+  "java_process_metadata": [
+    "11771       1 java            Z",
+    "33249       1 java            Z",
+    "33286       1 java            Z",
+    "149519       1 java            Z",
+    "149559       1 java            Z",
+    "163814       1 java            Z",
+    "190292  190291 java            S",
+    "190332  190292 java            S",
+    "191522  190332 java            S"
+  ],
+  "containers": [
+    {
+      "id": "5704264915e1d46c35085bae110bd226657eb42cef46edb67efbaa72275f54a1",
+      "image": "testcontainers/ryuk:0.11.0",
+      "name": "/testcontainers-ryuk-3824c056-7b7a-4084-b3fe-a8593a7e611e",
+      "state": "running",
+      "created": "2026-10-12T03:00:32.531800364Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.ryuk": "true",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33038"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33038"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c2646a56daa55d557c66c47d38944807cbdc87c0fbf9e6b410a94d2461483ccc",
+      "image": "redis:7-alpine",
+      "name": "/bold_chaum",
+      "state": "running",
+      "created": "2026-10-12T03:00:06.565316595Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.sessionId": "4177516f-dd97-4d75-b097-54f26ccec952",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "6379/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33037"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33037"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4462d453867788efb7bf85afdc46637fe44df34a148b1f8424cd5aa614fdfd3f",
+      "image": "postgres:16",
+      "name": "/distracted_golick",
+      "state": "running",
+      "created": "2026-10-12T02:59:55.233149464Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.sessionId": "4177516f-dd97-4d75-b097-54f26ccec952",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33036"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33036"
+          }
+        ]
+      }
+    },
+    {
+      "id": "347b6524b8241f149ae1b3c5b44c7fad31651cc93a5dc1749bd065b4fc770efc",
+      "image": "testcontainers/ryuk:0.11.0",
+      "name": "/testcontainers-ryuk-4177516f-dd97-4d75-b097-54f26ccec952",
+      "state": "running",
+      "created": "2026-10-12T02:59:54.162745291Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.ryuk": "true",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33035"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33035"
+          }
+        ]
+      }
+    }
+  ]
+}

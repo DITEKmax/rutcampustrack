@@ -1,0 +1,133 @@
+{
+  "utc": "2026-10-12T10:27:35.236493+00:00",
+  "status": "PASS_ACTUAL_FRESH_READONLY_PREFLIGHT",
+  "project": "rct-client-host-config-20261012",
+  "namespace_container_network_volume_conflicts": false,
+  "occupied_projected_ports": [],
+  "IPAM_route_overlaps": [],
+  "images": [
+    {
+      "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "logical_image_bytes": 176465533,
+      "user": "",
+      "cwd": "/"
+    },
+    {
+      "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "logical_image_bytes": 451303453,
+      "user": "",
+      "cwd": ""
+    },
+    {
+      "id": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "logical_image_bytes": 48216274,
+      "user": "",
+      "cwd": "/"
+    },
+    {
+      "id": "sha256:cc6e50c173ff2cf38ffb812fb582450e9b40fc1f67eadd63e81071f18fc8cc96",
+      "logical_image_bytes": 722988783,
+      "user": "1001",
+      "cwd": ""
+    },
+    {
+      "id": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+      "logical_image_bytes": 721470337,
+      "user": "app",
+      "cwd": "/app"
+    },
+    {
+      "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+      "logical_image_bytes": 39061364,
+      "user": "",
+      "cwd": "/data"
+    }
+  ],
+  "mounts": [
+    {
+      "service": "mongo-attendance",
+      "source": "/workspace/rutcampustrack/infra/mongo/init-mongo.js",
+      "target": "/docker-entrypoint-initdb.d/init-mongo.js",
+      "mode": "0o600",
+      "uid": 1000,
+      "read_only": true,
+      "public_source_sha256": "6d441c7c76b65be0c6a3c207ac1506d78a01c3bb0e7e89e00e77c6708d1f10d8"
+    },
+    {
+      "service": "document-renderer-service",
+      "source": "/workspace/scratch/rct-validation/current_host_stage/payload/renderer/app",
+      "target": "/app",
+      "mode": "0o755",
+      "uid": 1000,
+      "read_only": true
+    },
+    {
+      "service": "pwa-nginx",
+      "source": "/workspace/scratch/rct-validation/current_vue_stage/frontend/pwa-vue/dist",
+      "target": "/usr/share/nginx/html",
+      "mode": "0o755",
+      "uid": 1000,
+      "read_only": true
+    },
+    {
+      "service": "pwa-nginx",
+      "source": "/workspace/rutcampustrack/frontends/pwa-vue/nginx.conf",
+      "target": "/etc/nginx/conf.d/default.conf",
+      "mode": "0o600",
+      "uid": 1000,
+      "read_only": true,
+      "public_source_sha256": "ac539e1249b78bad614aec6bdb37c540532e52f4c54caf27129ccbf2cb8544aa"
+    },
+    {
+      "service": "mini-app-nginx",
+      "source": "/workspace/scratch/rct-validation/current_vue_stage/frontend/tma-vue/dist",
+      "target": "/usr/share/nginx/html",
+      "mode": "0o755",
+      "uid": 1000,
+      "read_only": true
+    },
+    {
+      "service": "mini-app-nginx",
+      "source": "/workspace/rutcampustrack/frontends/tma-vue/nginx.conf",
+      "target": "/etc/nginx/conf.d/default.conf",
+      "mode": "0o600",
+      "uid": 1000,
+      "read_only": true,
+      "public_source_sha256": "6e2054334f829214a379b32d10f4f3edb397903ae65748daec1ebe8cd6374cb6"
+    },
+    {
+      "service": "nginx",
+      "source": "/workspace/rutcampustrack/tests/e2e/infra/nginx/nginx.conf",
+      "target": "/etc/nginx/nginx.conf",
+      "mode": "0o600",
+      "uid": 1000,
+      "read_only": true,
+      "public_source_sha256": "90a43f6589469b153e5234dae0c4287755cb4caa39cbbb477e363fbe76b977b2"
+    },
+    {
+      "service": "nginx",
+      "source": "/workspace/rutcampustrack/tests/e2e/infra/nginx/default.conf",
+      "target": "/etc/nginx/conf.d/default.conf",
+      "mode": "0o600",
+      "uid": 1000,
+      "read_only": true,
+      "public_source_sha256": "caad5497400ca27e2f96288031c8771225c263526834d3c9eef3c697a285dc69"
+    },
+    {
+      "service": "nginx",
+      "source": "/workspace/scratch/rct-validation/current_host_config/tls/edge",
+      "target": "/etc/nginx/certs",
+      "mode": "0o755",
+      "uid": 1000,
+      "read_only": true
+    }
+  ],
+  "config_safe_files_exact": true,
+  "free_available_bytes": 8171560960,
+  "memory_current": 3417317376,
+  "memory_max": 17179869184,
+  "Docker9_logical_copy_projection": 2707241745,
+  "after_projection_growth_floor_headroom": 95610095,
+  "actual_copy_allocation": "NOT_YET_MEASURED",
+  "ENV_key_log_HealthLog_read": false
+}

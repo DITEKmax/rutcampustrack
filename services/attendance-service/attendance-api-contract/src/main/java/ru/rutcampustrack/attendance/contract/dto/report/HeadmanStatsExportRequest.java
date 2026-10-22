@@ -9,10 +9,13 @@ public record HeadmanStatsExportRequest(
         List<HeadmanStatsSort> sorts,
         List<HeadmanStatsFilter> filters,
         String format,
-        @jakarta.validation.constraints.Positive Long semesterId
-) {
-    public HeadmanStatsExportRequest(Long subjectId, List<String> lessonTypes, List<HeadmanStatsSort> sorts,
-                                    List<HeadmanStatsFilter> filters, String format) {
+        @jakarta.validation.constraints.Positive Long semesterId) {
+    public HeadmanStatsExportRequest(
+            Long subjectId,
+            List<String> lessonTypes,
+            List<HeadmanStatsSort> sorts,
+            List<HeadmanStatsFilter> filters,
+            String format) {
         this(subjectId, lessonTypes, sorts, filters, format, null);
     }
 }

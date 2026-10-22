@@ -1,73 +1,166 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { displayPercent, type AttendanceGraphPoint, type AttendanceGraphRange } from './attendance-view-model'
-import { initialPeriodPage, periodState, shortDate, weekday, type AttendancePeriod } from './attendance-periods'
-type GraphPoint = Parameters<typeof periodState>[0]
-const props = withDefaults(defineProps<{ points: readonly (AttendanceGraphPoint | AttendancePeriod)[]; range?: AttendanceGraphRange; serverNow?: string | undefined }>(), { range: 'days', serverNow: '' })
-const emit = defineEmits<{ 'change-range': [range: AttendanceGraphRange] }>()
-const columns = ref<HTMLElement | null>(null)
-const hasHorizontalOverflow = ref(false)
-const detailMetrics = ref<HTMLElement | null>(null)
-const detailLabelsOutside = ref(false)
-let observer: ResizeObserver | null = null
-function measureColumns(): void { hasHorizontalOverflow.value = Boolean(columns.value && columns.value.scrollWidth > columns.value.clientWidth) }
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import {
+  displayPercent,
+  type AttendanceGraphPoint,
+  type AttendanceGraphRange,
+} from './attendance-view-model';
+import {
+  initialPeriodPage,
+  periodState,
+  shortDate,
+  weekday,
+  type AttendancePeriod,
+} from './attendance-periods';
+type GraphPoint = Parameters<typeof periodState>[0];
+const props = withDefaults(
+  defineProps<{
+    points: readonly (AttendanceGraphPoint | AttendancePeriod)[];
+    range?: AttendanceGraphRange;
+    serverNow?: string | undefined;
+  }>(),
+  { range: 'days', serverNow: '' },
+);
+const emit = defineEmits<{ 'change-range': [range: AttendanceGraphRange] }>();
+const columns = ref<HTMLElement | null>(null);
+const hasHorizontalOverflow = ref(false);
+const detailMetrics = ref<HTMLElement | null>(null);
+const detailLabelsOutside = ref(false);
+let observer: ResizeObserver | null = null;
+function measureColumns(): void {
+  hasHorizontalOverflow.value = Boolean(
+    columns.value && columns.value.scrollWidth > columns.value.clientWidth,
+  );
+}
 function measureDetailLabels(): void {
-  detailLabelsOutside.value = Array.from(detailMetrics.value?.querySelectorAll<HTMLElement>('.attendance-graph__detail-segment') ?? [])
-    .some((segment) => {
-      const label = segment.querySelector<HTMLElement>('.attendance-graph__detail-segment-label')
-      return Boolean(label && label.getBoundingClientRect().width > segment.getBoundingClientRect().width)
-    })
+  detailLabelsOutside.value = Array.from(
+    detailMetrics.value?.querySelectorAll<HTMLElement>('.attendance-graph__detail-segment') ?? [],
+  ).some((segment) => {
+    const label = segment.querySelector<HTMLElement>('.attendance-graph__detail-segment-label');
+    return Boolean(
+      label && label.getBoundingClientRect().width > segment.getBoundingClientRect().width,
+    );
+  });
 }
-watch(detailMetrics, (current, previous) => {
-  if (previous) observer?.unobserve(previous)
-  if (current) observer?.observe(current)
-  void nextTick(measureDetailLabels)
-}, { flush: 'post' })
+watch(
+  detailMetrics,
+  (current, previous) => {
+    if (previous) observer?.unobserve(previous);
+    if (current) observer?.observe(current);
+    void nextTick(measureDetailLabels);
+  },
+  { flush: 'post' },
+);
 onMounted(() => {
-  observer = new ResizeObserver(() => { measureColumns(); measureDetailLabels() })
-  if (columns.value) observer.observe(columns.value)
-  if (detailMetrics.value) observer.observe(detailMetrics.value)
-  measureColumns()
-  measureDetailLabels()
-  void document.fonts.ready.then(() => { if (observer) measureDetailLabels() })
-})
-onBeforeUnmount(() => { observer?.disconnect(); observer = null })
-const page = ref(0)
-const selectedId = ref<string | null>(null)
-const size = computed(() => props.range === 'days' ? 7 : 6)
-const pageCount = computed(() => Math.max(1, Math.ceil(props.points.length / size.value)))
-const visible = computed(() => props.points.slice(page.value * size.value, (page.value + 1) * size.value))
-watch(visible, () => { void nextTick(measureColumns) })
-const selected = computed(() => visible.value.find((point) => point.id === selectedId.value) ?? visible.value.find((point) => point.state === 'DATA' && !('outsideSemester' in point && point.outsideSemester)) ?? visible.value.find((point) => !('outsideSemester' in point && point.outsideSemester)) ?? visible.value[0] ?? null)
-const statusMetrics = ['present', 'excused', 'absent'] as const
-const statusLabels = { present: 'Был', excused: 'Уважительная причина', absent: 'Не был' } as const
-const selectedState = computed(() => selected.value ? graphState(selected.value) : '')
-watch(selected, () => { void nextTick(measureDetailLabels) })
-watch(() => [props.points, props.range, props.serverNow] as const, () => { page.value = initialPeriodPage(props.points, props.range, props.serverNow); selectedId.value = null }, { immediate: true })
-function changePage(delta: number): void { page.value = Math.max(0, Math.min(pageCount.value - 1, page.value + delta)); selectedId.value = null }
-function keyboard(event: KeyboardEvent, index: number): void {
-  const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0
-  if (!offset && event.key !== 'Home' && event.key !== 'End') return
-  event.preventDefault()
-  const next = event.key === 'Home' ? 0 : event.key === 'End' ? visible.value.length - 1 : Math.max(0, Math.min(visible.value.length - 1, index + offset))
-  selectedId.value = visible.value[next]?.id ?? null
-  const target = (event.currentTarget as HTMLElement).parentElement?.querySelectorAll<HTMLButtonElement>('button')[next]
-  target?.focus()
-  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  observer = new ResizeObserver(() => {
+    measureColumns();
+    measureDetailLabels();
+  });
+  if (columns.value) observer.observe(columns.value);
+  if (detailMetrics.value) observer.observe(detailMetrics.value);
+  measureColumns();
+  measureDetailLabels();
+  void document.fonts.ready.then(() => {
+    if (observer) measureDetailLabels();
+  });
+});
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  observer = null;
+});
+const page = ref(0);
+const selectedId = ref<string | null>(null);
+const size = computed(() => (props.range === 'days' ? 7 : 6));
+const pageCount = computed(() => Math.max(1, Math.ceil(props.points.length / size.value)));
+const visible = computed(() =>
+  props.points.slice(page.value * size.value, (page.value + 1) * size.value),
+);
+watch(visible, () => {
+  void nextTick(measureColumns);
+});
+const selected = computed(
+  () =>
+    visible.value.find((point) => point.id === selectedId.value) ??
+    visible.value.find(
+      (point) => point.state === 'DATA' && !('outsideSemester' in point && point.outsideSemester),
+    ) ??
+    visible.value.find((point) => !('outsideSemester' in point && point.outsideSemester)) ??
+    visible.value[0] ??
+    null,
+);
+const statusMetrics = ['present', 'excused', 'absent'] as const;
+const statusLabels = { present: 'Был', excused: 'Уважительная причина', absent: 'Не был' } as const;
+const selectedState = computed(() => (selected.value ? graphState(selected.value) : ''));
+watch(selected, () => {
+  void nextTick(measureDetailLabels);
+});
+watch(
+  () => [props.points, props.range, props.serverNow] as const,
+  () => {
+    page.value = initialPeriodPage(props.points, props.range, props.serverNow);
+    selectedId.value = null;
+  },
+  { immediate: true },
+);
+function changePage(delta: number): void {
+  page.value = Math.max(0, Math.min(pageCount.value - 1, page.value + delta));
+  selectedId.value = null;
 }
-function percentage(point: GraphPoint, metric: 'present' | 'excused' | 'absent'): number { return point.state !== 'DATA' || !point.metrics.held ? 0 : Math.min(100, Math.max(0, point.metrics[metric].percent ?? 0)) }
-function hasMarks(point: GraphPoint): boolean { return !('missing' in point && point.missing) && !('outsideSemester' in point && point.outsideSemester) && point.state === 'DATA' && point.metrics.held > 0 && point.metrics.present.percent !== null && point.metrics.absent.percent !== null && point.metrics.excused.percent !== null }
+function keyboard(event: KeyboardEvent, index: number): void {
+  const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0;
+  if (!offset && event.key !== 'Home' && event.key !== 'End') return;
+  event.preventDefault();
+  const next =
+    event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? visible.value.length - 1
+        : Math.max(0, Math.min(visible.value.length - 1, index + offset));
+  selectedId.value = visible.value[next]?.id ?? null;
+  const target = (
+    event.currentTarget as HTMLElement
+  ).parentElement?.querySelectorAll<HTMLButtonElement>('button')[next];
+  target?.focus();
+  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+function percentage(point: GraphPoint, metric: 'present' | 'excused' | 'absent'): number {
+  return point.state !== 'DATA' || !point.metrics.held
+    ? 0
+    : Math.min(100, Math.max(0, point.metrics[metric].percent ?? 0));
+}
+function hasMarks(point: GraphPoint): boolean {
+  return (
+    !('missing' in point && point.missing) &&
+    !('outsideSemester' in point && point.outsideSemester) &&
+    point.state === 'DATA' &&
+    point.metrics.held > 0 &&
+    point.metrics.present.percent !== null &&
+    point.metrics.absent.percent !== null &&
+    point.metrics.excused.percent !== null
+  );
+}
 function graphState(point: GraphPoint): string {
-  if (('missing' in point && point.missing) || ('outsideSemester' in point && point.outsideSemester)) return periodState(point)
-  if (hasMarks(point)) return ''
-  if (point.state === 'DATA' && point.metrics.held > 0) return 'Нет данных об отметках'
-  return periodState(point)
+  if (
+    ('missing' in point && point.missing) ||
+    ('outsideSemester' in point && point.outsideSemester)
+  )
+    return periodState(point);
+  if (hasMarks(point)) return '';
+  if (point.state === 'DATA' && point.metrics.held > 0) return 'Нет данных об отметках';
+  return periodState(point);
 }
 function metricDescription(point: GraphPoint): string {
-  return statusMetrics.map((metric) => `${statusLabels[metric]}: ${point.metrics[metric].count}, ${displayPercent(point.metrics[metric].percent)}`).join('; ')
+  return statusMetrics
+    .map(
+      (metric) =>
+        `${statusLabels[metric]}: ${point.metrics[metric].count}, ${displayPercent(point.metrics[metric].percent)}`,
+    )
+    .join('; ');
 }
 function description(point: GraphPoint): string {
-  return [point.label, graphState(point), point.state === 'DATA' ? metricDescription(point) : ''].filter(Boolean).join(': ')
+  return [point.label, graphState(point), point.state === 'DATA' ? metricDescription(point) : '']
+    .filter(Boolean)
+    .join(': ');
 }
 </script>
 <template>
@@ -84,7 +177,7 @@ function description(point: GraphPoint): string {
       aria-label="Период графика"
     >
       <button
-        v-for="item in (['days', 'weeks'] as const)"
+        v-for="item in ['days', 'weeks'] as const"
         :key="item"
         class="attendance-graph__range-button"
         :class="{ 'attendance-graph__range-button--selected': range === item }"
@@ -104,7 +197,8 @@ function description(point: GraphPoint): string {
       >
         ‹
       </button>
-      <span role="status">{{ visible[0] ? shortDate(visible[0].dateFrom) : 'Нет периодов' }}{{ visible.length ? ` — ${shortDate(visible[visible.length - 1]!.dateTo)}` : '' }}</span>
+      <span role="status">{{ visible[0] ? shortDate(visible[0].dateFrom) : 'Нет периодов'
+      }}{{ visible.length ? ` — ${shortDate(visible[visible.length - 1]!.dateTo)}` : '' }}</span>
       <button
         type="button"
         aria-label="Следующие периоды"
@@ -174,7 +268,10 @@ function description(point: GraphPoint): string {
               class="attendance-graph__neutral-label"
             >{{ point.state === 'FUTURE' ? '›' : '—' }}</span>
           </span>
-          <span class="attendance-graph__date">{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom) }}<br v-if="range === 'days'">{{ range === 'days' ? point.dateFrom.slice(8) : '' }}</span>
+          <span class="attendance-graph__date">{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom)
+          }}<br v-if="range === 'days'">{{
+            range === 'days' ? point.dateFrom.slice(8) : ''
+          }}</span>
         </button>
       </div>
     </div>
@@ -191,11 +288,19 @@ function description(point: GraphPoint): string {
       aria-label="Выбранный период"
       aria-live="polite"
     >
-      <h3>{{ shortDate(selected.dateFrom) }}{{ selected.dateTo !== selected.dateFrom ? ` — ${shortDate(selected.dateTo)}` : '' }}</h3>
+      <h3>
+        {{ shortDate(selected.dateFrom)
+        }}{{ selected.dateTo !== selected.dateFrom ? ` — ${shortDate(selected.dateTo)}` : '' }}
+      </h3>
       <p v-if="selectedState">
         {{ selectedState }}
       </p>
-      <template v-if="!('missing' in selected && selected.missing) && !('outsideSemester' in selected && selected.outsideSemester)">
+      <template
+        v-if="
+          !('missing' in selected && selected.missing) &&
+            !('outsideSemester' in selected && selected.outsideSemester)
+        "
+      >
         <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
         <p
           v-if="selected.state === 'DATA' && !hasMarks(selected)"
@@ -219,7 +324,9 @@ function description(point: GraphPoint): string {
             :style="{ inlineSize: `${percentage(selected, metric)}%` }"
             aria-hidden="true"
           >
-            <span class="attendance-graph__detail-segment-label">{{ displayPercent(selected.metrics[metric].percent) }}</span>
+            <span class="attendance-graph__detail-segment-label">{{
+              displayPercent(selected.metrics[metric].percent)
+            }}</span>
           </span>
         </div>
         <div

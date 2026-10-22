@@ -1,0 +1,7 @@
+// Original failed post-connector predicate chain; no original returned values.
+const o = r.structuredContent, v = o?.structuredContent;
+if (r.isError === true || !o || !v || typeof v.download_url !== "string"
+    || !(v.artifact_id === 11806374316 || v.artifact_id === "11806374316")
+    || !(o.artifact_id === 11806374316 || o.artifact_id === "11806374316")) throw new Error("CLOSED");
+const u = new URL(v.download_url);
+if (v.download_url.length > 8192 || u.protocol !== "https:" || u.username || u.password || u.hash) throw new Error("CLOSED");

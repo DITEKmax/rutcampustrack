@@ -1,0 +1,69 @@
+{
+  "producer_head": "b3c0d04ede6b79c9818042e81074c848974d3ce9",
+  "manifest_sha256": "57d2cce9b76f8835ee6a12c3fae91a71247a11c4a986adba4e79586ce2751ce8",
+  "manifest_failed": [],
+  "zip_equal": true,
+  "protected_receipt": {
+    "expected_sha256": "29c1c5431eeacb030e59ee3cee9efd6c594aaa7840fdf9651796c93c71737bff",
+    "own_sha256": "29c1c5431eeacb030e59ee3cee9efd6c594aaa7840fdf9651796c93c71737bff",
+    "root_sha256": "29c1c5431eeacb030e59ee3cee9efd6c594aaa7840fdf9651796c93c71737bff",
+    "own_mode": "0o600",
+    "root_mode": "0o600"
+  },
+  "driver_exact_one_literal_addition": true,
+  "inventory_delta": [
+    {
+      "before": {
+        "path": "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+        "tool": "python"
+      },
+      "after": {
+        "path": "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+        "reason": "immutable verification evidence/source copy; preserve exact bytes"
+      }
+    }
+  ],
+  "counts": {
+    "EXCLUDED": 4956,
+    "prettier": 680,
+    "sql": 6,
+    "python": 120,
+    "java": 1590
+  },
+  "new_net_paths": 2092,
+  "net_paths_same_old2092": true,
+  "path_hash_mode_mismatches": [],
+  "source_delta_from_old5eac": [
+    "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+    "scripts/format-authored.mjs"
+  ],
+  "patch16_paths": [
+    "scripts/recovery.py",
+    "scripts/test-application-recovery-checks.py",
+    "scripts/test-application-recovery.py",
+    "scripts/test-recovery-failure-boundaries.py",
+    "scripts/test-recovery.py",
+    "services/notification-bot/bot/__main__.py",
+    "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+    "services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+    "services/notification-bot/bot/handlers/start.py",
+    "services/notification-bot/bot/notifications/password_changed.py",
+    "services/notification-bot/bot/services/bot_credential_cards.py",
+    "services/notification-bot/tests/np01_bridge_runner.py",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py",
+    "services/notification-bot/tests/test_bot_credential_cards.py",
+    "services/notification-bot/tests/test_password_changed.py",
+    "services/notification-bot/tests/test_start_handler.py"
+  ],
+  "patch16_exact_original_diff": true,
+  "patch16_excludes_receipt": true,
+  "corrected_import_union_count": 2092,
+  "corrected_import_union_exact_net": true,
+  "native_python_check": 0,
+  "python120_ASThashes_same_prior": true,
+  "python120_all_AST_equal": true,
+  "clean": true,
+  "reviewer_driver_CLI": "EPERM spawnSync git; safe pure classifier evaluation substituted; no permission escalation",
+  "inventory_path_set_unchanged": true,
+  "angular433_unchanged_from_prior_exact_pass": true
+}

@@ -1,0 +1,302 @@
+[
+  {
+    "file": "safe-integration-outcomes-api-gateway-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "api-gateway",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 9,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 4,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-attendance-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "attendance-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 220,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 41,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-auth-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "auth-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 169,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 24,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-notification-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "notification-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 62,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 13,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-integration-outcomes-schedule-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "schedule-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 205,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 38,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-it-academic.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "academic-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "failure"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 445,
+      "FAILED": 1,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 66,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-academic.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "academic-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 465,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 46,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-api-gateway-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "api-gateway",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 168,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 16,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-attendance-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "attendance-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 315,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 47,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-auth-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "auth-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 140,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 25,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-notification-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "notification-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 125,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 26,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  },
+  {
+    "file": "safe-unit-outcomes-schedule-service-1.json",
+    "metadata": {
+      "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+      "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+      "service": "schedule-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38216670757",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "summary": {
+      "PASSED": 272,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "xml_reports": 18,
+    "counts_consistent": true,
+    "acceptance": "NOT_ASSESSED"
+  }
+]

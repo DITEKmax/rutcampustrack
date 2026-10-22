@@ -1,0 +1,122 @@
+{
+  "source": "/workspace/scratch/rct-validation/capacity_premutation_aliases",
+  "manifest": "manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "66a03e03f53ee13c18f9cf65680fa8e3c2be66b6216ce5db7bec1e5638e5d783",
+      "original_bytes": 312,
+      "working_sha256": "66a03e03f53ee13c18f9cf65680fa8e3c2be66b6216ce5db7bec1e5638e5d783",
+      "working_bytes": 312,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "PROCESS.json",
+      "original_sha256": "b0c173280210163294a6f4c7b1e98741c9ac687711eed5e99aa53867884d9ec6",
+      "original_bytes": 135,
+      "working_sha256": "b0c173280210163294a6f4c7b1e98741c9ac687711eed5e99aa53867884d9ec6",
+      "working_bytes": 135,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "18c960997f06003400a5d40c57f3bc05bb7de1c98bebb206313b97454981d1fc",
+      "original_bytes": 5646,
+      "working_sha256": "18c960997f06003400a5d40c57f3bc05bb7de1c98bebb206313b97454981d1fc",
+      "working_bytes": 5646,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "RESULT.json",
+      "original_sha256": "5d6b2dca7583d76b0da47d7bc05c6257ba9a672db62dfc7f4817cfc98f134505",
+      "original_bytes": 787,
+      "working_sha256": "5d6b2dca7583d76b0da47d7bc05c6257ba9a672db62dfc7f4817cfc98f134505",
+      "working_bytes": 787,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "SUMMARY.json",
+      "original_sha256": "caddf884109b105d6dbf4e9e04f19f8461d8b5f373527ebc0137e14956b574d6",
+      "original_bytes": 926,
+      "working_sha256": "caddf884109b105d6dbf4e9e04f19f8461d8b5f373527ebc0137e14956b574d6",
+      "working_bytes": 926,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "713bef7890590b953d02b9c797a39adbc486f5fb4bdbe0bdb0b846bfb9085ced",
+      "original_bytes": 5535,
+      "working_sha256": "713bef7890590b953d02b9c797a39adbc486f5fb4bdbe0bdb0b846bfb9085ced",
+      "working_bytes": 5535,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "input-seals.json",
+      "original_sha256": "22e9bdd027736f16b76a9667a170263483797a88fbb4d7aa9024744200350615",
+      "original_bytes": 5851,
+      "working_sha256": "22e9bdd027736f16b76a9667a170263483797a88fbb4d7aa9024744200350615",
+      "working_bytes": 5851,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ownership-freeze-lineage.json",
+      "original_sha256": "2e8260a373b97c6b9d3872244dfe97ec640c6ebbf65c0803eb7d36273b7b2600",
+      "original_bytes": 3346,
+      "working_sha256": "2e8260a373b97c6b9d3872244dfe97ec640c6ebbf65c0803eb7d36273b7b2600",
+      "working_bytes": 3346,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "phase-budget.json",
+      "original_sha256": "d85bb9e558cc146310369cad3b8d7cb2e932494ee5f7156f232d2d24e193dd76",
+      "original_bytes": 1596,
+      "working_sha256": "d85bb9e558cc146310369cad3b8d7cb2e932494ee5f7156f232d2d24e193dd76",
+      "working_bytes": 1596,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proposed-path-freeze-COW-registry.json",
+      "original_sha256": "3b3bfba8affa57cb6b4ed6ec43015bf148b65d61c011e7dba21cfecc1c813a16",
+      "original_bytes": 16177426,
+      "working_sha256": "dad54cf3b52ae3ddf370f85e9fae99de267f67d05988366dbe3cdfa7c20a2e07",
+      "working_bytes": 468337,
+      "transformation": "lossless single-member ZIP of exact working bytes; immutable originals retained",
+      "working_path": "proposed-path-freeze-COW-registry.json.readable.zip"
+    },
+    {
+      "path": "reference-aliases.json",
+      "original_sha256": "66532b02b4c274816156648a0c9b3af7038402c1b2c9e40342eb6d0c0cc5e66d",
+      "original_bytes": 1852876,
+      "working_sha256": "4b68a794553d019083732375ff78eed9d33cb1e2e0b073dc44964b441a957351",
+      "working_bytes": 83100,
+      "transformation": "lossless single-member ZIP of exact working bytes; immutable originals retained",
+      "working_path": "reference-aliases.json.readable.zip"
+    },
+    {
+      "path": "scan.py",
+      "original_sha256": "b27c18849dbb099d5229ab0cc2b509c8c8203b231c757002225158395dad2131",
+      "original_bytes": 9180,
+      "working_sha256": "ba0da6a3f48369df381b460ad82da833bb1a3989084f811cd5e78fb60d49485a",
+      "working_bytes": 3528,
+      "transformation": "lossless single-member ZIP of exact working bytes; immutable originals retained",
+      "working_path": "scan.py.readable.zip"
+    },
+    {
+      "path": "worktrees.json",
+      "original_sha256": "56d1ddb9d7ec4f6264a05256cba86b92f8b30662f259c46658a09f5ec18a89f6",
+      "original_bytes": 11436,
+      "working_sha256": "56d1ddb9d7ec4f6264a05256cba86b92f8b30662f259c46658a09f5ec18a89f6",
+      "working_bytes": 11436,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "manifest.json",
+      "original_sha256": "a84242355d6223fbc2f87cd61b6b6928ce83d8bb476276df308afb8196496116",
+      "original_bytes": 2967,
+      "working_sha256": "a84242355d6223fbc2f87cd61b6b6928ce83d8bb476276df308afb8196496116",
+      "working_bytes": 2967,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

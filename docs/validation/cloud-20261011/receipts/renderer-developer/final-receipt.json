@@ -1,0 +1,229 @@
+{
+  "at": "2026-10-11T20:48:23.637368+00:00",
+  "status": "READY_FOR_FRESH_REVIEW",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "commit": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+  "branch": "codex/rct-validation-renderer-20261011",
+  "worktree_clean": true,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_metadata": "UNKNOWN",
+  "heavy_lease": "RENDERER1 RELEASED; all own runtime terminal; no repeat unchanged PASS",
+  "runs": [
+    {
+      "id": "red-unit-01",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:test",
+        "--tests",
+        "*ProcessRunnerLifecycleTest",
+        "--tests",
+        "*DocumentRendererGrpcServiceImplTest",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 1,
+      "executed": null,
+      "failed": null,
+      "skipped": null,
+      "cause_or_result": "Sandbox local socket denied before tests, not product failure",
+      "log": "red-unit-01.log",
+      "xml": null,
+      "source_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "network_permission": "default sandbox"
+    },
+    {
+      "id": "red-unit-02",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:test",
+        "--tests",
+        "*ProcessRunnerLifecycleTest",
+        "--tests",
+        "*DocumentRendererGrpcServiceImplTest",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 1,
+      "executed": 7,
+      "failed": 4,
+      "skipped": 0,
+      "cause_or_result": "Confirmed RF01 unsupported format and RF02 owned process leak",
+      "log": "red-unit-02.log",
+      "xml": "red-unit-02-xml",
+      "source_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "network_permission": "with_additional_permissions/network.enabled=true"
+    },
+    {
+      "id": "native-baseline-01",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:integrationTest",
+        "--tests",
+        "*OfficeDocumentConverterNativeIT",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 1,
+      "executed": 2,
+      "failed": 1,
+      "skipped": 0,
+      "cause_or_result": "Actual format positive PASS; RF03 malformed input rendered silently",
+      "log": "native-baseline-01.log",
+      "xml": "native-baseline-01-xml",
+      "source_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "network_permission": "with_additional_permissions/network.enabled=true"
+    },
+    {
+      "id": "red-cancellation-01",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:integrationTest",
+        "--tests",
+        "*DocumentRendererCancellationIT",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 1,
+      "executed": 2,
+      "failed": 2,
+      "skipped": 0,
+      "cause_or_result": "RF04 real client cancel/deadline did not stop conversion",
+      "log": "red-cancellation-01.log",
+      "xml": "red-cancellation-01-xml",
+      "source_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "network_permission": "with_additional_permissions/network.enabled=true"
+    },
+    {
+      "id": "green-renderer-01",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:test",
+        ":services:document-renderer-service:document-renderer-app:integrationTest",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 1,
+      "executed": 30,
+      "failed": 1,
+      "skipped": 0,
+      "cause_or_result": "Native and units PASS; explicit cancel still blocked by synchronous RPC callback dispatch",
+      "log": "green-renderer-01.log",
+      "xml": "green-renderer-01-xml",
+      "source_revision": "uncommitted bounded renderer WIP before commit; see source relationship below",
+      "network_permission": "with_additional_permissions/network.enabled=true"
+    },
+    {
+      "id": "green-renderer-02",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:test",
+        "--tests",
+        "*ProcessRunner*Test",
+        "--tests",
+        "*DocumentRendererGrpcServiceImplTest",
+        ":services:document-renderer-service:document-renderer-app:integrationTest",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 1,
+      "executed": 13,
+      "failed": 2,
+      "skipped": 0,
+      "cause_or_result": "Final product suites PASS except obsolete worker-thread latch in cancellation fixture; process stop already passed. Fixture corrected to subsequent RPC recovery",
+      "log": "green-renderer-02.log",
+      "xml": "green-renderer-02-xml",
+      "source_revision": "uncommitted bounded renderer WIP before commit; see source relationship below",
+      "network_permission": "with_additional_permissions/network.enabled=true"
+    },
+    {
+      "id": "green-cancellation-03",
+      "workdir": "/workspace/rct-worktrees/renderer-files",
+      "launcher": "python3 /workspace/rct-cloud-setup/run-gradle.py",
+      "arguments": [
+        ":services:document-renderer-service:document-renderer-app:integrationTest",
+        "--tests",
+        "*DocumentRendererCancellationIT",
+        "--max-workers=2",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "exit": 0,
+      "executed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "cause_or_result": "Final cancellation/deadline, three-generation process cleanup and subsequent actual RPC recovery PASS",
+      "log": "green-cancellation-03.log",
+      "xml": "green-cancellation-03-xml",
+      "source_revision": "uncommitted bounded renderer WIP before commit; see source relationship below",
+      "network_permission": "with_additional_permissions/network.enabled=true"
+    }
+  ],
+  "final_pass_evidence": {
+    "green-renderer-01": [
+      "OfficeDocumentInputValidationTest 8",
+      "OfficeDocumentConverterTest 9"
+    ],
+    "green-renderer-02": [
+      "DocumentRendererGrpcServiceImplTest 6",
+      "ProcessRunnerLifecycleTest 2",
+      "ProcessRunnerTest 1",
+      "OfficeDocumentConverterNativeIT 2"
+    ],
+    "green-cancellation-03": [
+      "DocumentRendererCancellationIT 2"
+    ]
+  },
+  "source_relationship": "Final product present in green-renderer-02 and unchanged during green-cancellation-03. Only cancellation fixture changed after green-renderer-02, replacing obsolete worker latch with real subsequent RPC. Validation/converter fixtures unchanged since passing green-renderer-01; later edits affected only process teardown and RPC cancellation. No test rerun after commit because commit added no source changes. Current hashes in inventory.json; per-run whole-worktree SHA unavailable, reported WIP honestly.",
+  "native_evidence": {
+    "directory": "native-green-artifacts",
+    "hashes": "native-artifact-sha256.json",
+    "oracles": [
+      "pdftotext Cyrillic + page text/order",
+      "pdfinfo two pages",
+      "ImageIO actual PNG dimensions and distinct red/blue page patches",
+      "ZIP page names/order/all pages",
+      "legacy PNG first page only",
+      "actual authenticated Netty gRPC ephemeral port0",
+      "converter tempdirs removed"
+    ],
+    "visual_inspection": "Both final page PNGs viewed; Cyrillic readable and distinct patch colors confirmed"
+  },
+  "sensitivity": "Real unchanged-baseline red regressions for invalid wire format, interruption/timeout leak, malformed DOCX and real RPC cancel/deadline. No mocks replace positive native conversion; slow dependency only deliberately injected in cancellation fault test.",
+  "limitations": [
+    "Native bundled Linux LibreOffice/Poppler, not Docker image boot/TLS",
+    "No full domain export model/role/filter/browser acceptance",
+    "No proof all DOCX variants, embedded external relationships or zip resource bounds; accepted generated transitional DOCX/core parts tested",
+    "XLSX/HTML and graph renderer are distinct domain implementations, not closed by this shared PDF/PNG check",
+    "Attachment download/year cutoff and SVG/storage/browser remain separate owner scopes",
+    "Async report readiness and admin registry export acceptance diagnosis remain root UNKNOWN; no speculative endpoint/job architecture"
+  ],
+  "mechanical_checks": [
+    "git diff --check PASS",
+    "git diff --cached --check PASS",
+    "scoped git commit exit 0",
+    "git status --short empty"
+  ],
+  "review": "PENDING independent reviewer; no global DONE, no push/integration by author",
+  "cleanup": "No live owned Gradle/Java/soffice. Known defunct baseline Java PIDs33249/33286 adopted PID1 plus preexisting11771; no CPU or live dependency. Cleanup now kills/reaps owned descendants deepest-first before parent. No Docker resources."
+}

@@ -1,11 +1,15 @@
 package ru.rutcampustrack.schedule.lesson;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -25,43 +29,33 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 /**
  * Integration tests for LessonStatusTransitionJob cron transitions.
  *
- * Tests cover:
- * - CRON-01 / EVNT-01: planned->active when start_time is reached
- * - CRON-02 / EVNT-02: active->closed after end_time + 5 min grace period
- * - CRON-03: catch-up for all past-due lessons on restart (not just today's)
- * - Negative cases: no premature transitions, no change to cancelled lessons
+ * <p>Tests cover: - CRON-01 / EVNT-01: planned->active when start_time is reached - CRON-02 /
+ * EVNT-02: active->closed after end_time + 5 min grace period - CRON-03: catch-up for all past-due
+ * lessons on restart (not just today's) - Negative cases: no premature transitions, no change to
+ * cancelled lessons
  *
- * IMPORTANT: Tests are NOT @Transactional. Using @Transactional would cause rollback
- * instead of commit, so the @TransactionalEventListener(AFTER_COMMIT) in DomainEventListener
- * would never fire. Manual @AfterEach cleanup is used instead.
+ * <p>IMPORTANT: Tests are NOT @Transactional. Using @Transactional would cause rollback instead of
+ * commit, so the @TransactionalEventListener(AFTER_COMMIT) in DomainEventListener would never fire.
+ * Manual @AfterEach cleanup is used instead.
  */
 class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    @Autowired
-    LessonStatusTransitionJob job;
+    @Autowired LessonStatusTransitionJob job;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
+    @Autowired JdbcTemplate jdbcTemplate;
 
-    @MockitoBean
-    Clock clock;
+    @MockitoBean Clock clock;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
     @BeforeEach
     void configureClock() {
@@ -70,8 +64,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         // the first method too so a prior recurring test cannot leave fence
         // 501 with a different group/subject/semester interval.
         resetScheduleData();
-        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L)).thenReturn(
-                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(1L).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
+                                .setId(1L)
+                                .build());
         // Default: Moscow 2026-04-03 10:00 (after a typical 08:30 start, before 10:05+5 end)
         Instant fixedInstant = ZonedDateTime.of(2026, 4, 3, 10, 0, 0, 0, MOSCOW).toInstant();
         when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
@@ -155,7 +152,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     // =========================================================================
 
     @Test
-    void catchesUpMissedTransitionsOnRestart() {
+    void catchesUpMissedTransitionsOnRestart() throws Exception {
         // Canonical pair 1: 08:30–09:50, both deadlines passed at noon.
         ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
 
@@ -178,12 +175,30 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         assertThat(all).allMatch(l -> l.getStatus() == LessonStatus.CLOSED);
         assertThat(all).allMatch(l -> l.getClosedAt() != null);
 
-        // 3 lesson.started + 3 lesson.closed в outbox
         List<OutboxRecord> pending = outboxStorage.findPending(100);
-        assertThat(pending.stream().filter(r -> "lesson.started".equals(r.eventType())).count())
-                .isGreaterThanOrEqualTo(3);
-        assertThat(pending.stream().filter(r -> "lesson.closed".equals(r.eventType())).count())
-                .isGreaterThanOrEqualTo(3);
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String type : List.of("lesson.started", "lesson.closed")) {
+            var ids = new java.util.ArrayList<Long>();
+            for (var record : pending) {
+                if (type.equals(record.eventType())) {
+                    var event = mapper.readTree(record.payload());
+                    assertThat(event.path("event_id").asText()).isNotBlank();
+                    ids.add(event.path("payload").path("lesson_id").asLong());
+                }
+            }
+            assertThat(ids).containsExactlyInAnyOrder(l1.getId(), l2.getId(), l3.getId());
+        }
+        var before = pending.stream().map(OutboxRecord::payload).toList();
+        var rows =
+                jdbcTemplate.queryForList(
+                        "SELECT id,status,revision,closed_at FROM lessons ORDER BY id");
+        job.runTransitions();
+        assertThat(outboxStorage.findPending(100).stream().map(OutboxRecord::payload).toList())
+                .containsExactlyInAnyOrderElementsOf(before);
+        assertThat(
+                        jdbcTemplate.queryForList(
+                                "SELECT id,status,revision,closed_at FROM lessons ORDER BY id"))
+                .isEqualTo(rows);
     }
 
     // =========================================================================
@@ -215,7 +230,8 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     void doesNotTransitionCancelledLesson() {
         // ScheduleItem: startTime=08:30 (past)
         ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
-        Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.CANCELLED);
+        Lesson lesson =
+                createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.CANCELLED);
 
         // 09:40 Moscow is past start, but the lesson is CANCELLED.
         setClockTo(2026, 4, 3, 9, 40);
@@ -231,7 +247,8 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     // =========================================================================
 
     private void setClockTo(int year, int month, int day, int hour, int minute) {
-        Instant instant = ZonedDateTime.of(year, month, day, hour, minute, 0, 0, MOSCOW).toInstant();
+        Instant instant =
+                ZonedDateTime.of(year, month, day, hour, minute, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(instant);
         when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
     }
@@ -242,7 +259,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         item.setGroupId(1L);
         item.setSubjectId(100L);
         item.setSemesterId(1L);
-        item.setDayOfWeek((short) 5);  // Friday (2026-04-03 is a Friday)
+        item.setDayOfWeek((short) 5); // Friday (2026-04-03 is a Friday)
         item.setLessonNumber((short) 1);
         item.setStartTime(startTime);
         item.setEndTime(endTime);
@@ -255,22 +272,33 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
         ScheduleItem item = scheduleItemRepository.findById(scheduleItemId).orElseThrow();
-        jdbcTemplate.update("""
-                INSERT INTO schedule_assignment_fences
-                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
-                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive, created_at)
-                VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', DATE '2026-05-01', NOW())
-                ON CONFLICT (assignment_id) DO NOTHING
-                """, item.getGroupId(), item.getSubjectId(), item.getSemesterId());
-        Long occurrenceId = jdbcTemplate.queryForObject("""
-                INSERT INTO lesson_occurrences
-                    (schedule_item_id, occurrence_date, assignment_id, group_id,
-                     subject_id, semester_id, assigned_teacher_id, lesson_type,
-                     generation, revision, created_at)
-                VALUES (?, ?, 501, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
-                RETURNING id
-                """, Long.class, scheduleItemId, date, item.getGroupId(),
-                item.getSubjectId(), item.getSemesterId());
+        jdbcTemplate.update(
+                """
+INSERT INTO schedule_assignment_fences
+    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive, created_at)
+VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', DATE '2026-05-01', NOW())
+ON CONFLICT (assignment_id) DO NOTHING
+""",
+                item.getGroupId(),
+                item.getSubjectId(),
+                item.getSemesterId());
+        Long occurrenceId =
+                jdbcTemplate.queryForObject(
+                        """
+                        INSERT INTO lesson_occurrences
+                            (schedule_item_id, occurrence_date, assignment_id, group_id,
+                             subject_id, semester_id, assigned_teacher_id, lesson_type,
+                             generation, revision, created_at)
+                        VALUES (?, ?, 501, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
+                        RETURNING id
+                        """,
+                        Long.class,
+                        scheduleItemId,
+                        date,
+                        item.getGroupId(),
+                        item.getSubjectId(),
+                        item.getSemesterId());
 
         Lesson lesson = new Lesson();
         lesson.setScheduleItemId(scheduleItemId);
@@ -293,8 +321,10 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         lesson.setStatus(status);
         lesson.setCreatedAt(OffsetDateTime.now());
         Lesson saved = lessonRepository.saveAndFlush(lesson);
-        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
-                saved.getId(), occurrenceId);
+        jdbcTemplate.update(
+                "UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
+                saved.getId(),
+                occurrenceId);
         return saved;
     }
 }

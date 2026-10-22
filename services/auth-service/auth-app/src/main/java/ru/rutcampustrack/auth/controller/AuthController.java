@@ -1,6 +1,7 @@
 package ru.rutcampustrack.auth.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Objects;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,6 @@ import ru.rutcampustrack.auth.service.AuthService;
 import ru.rutcampustrack.auth.service.OtpService;
 import ru.rutcampustrack.auth.service.TmaService;
 
-import java.util.Objects;
-
 @RestController
 public final class AuthController implements AuthApi {
 
@@ -29,10 +28,11 @@ public final class AuthController implements AuthApi {
     private final TmaService tmaService;
     private final JwtProperties jwtProperties;
 
-    public AuthController(AuthService authService,
-                          OtpService otpService,
-                          TmaService tmaService,
-                          JwtProperties jwtProperties) {
+    public AuthController(
+            AuthService authService,
+            OtpService otpService,
+            TmaService tmaService,
+            JwtProperties jwtProperties) {
         this.authService = Objects.requireNonNull(authService, "authService");
         this.otpService = Objects.requireNonNull(otpService, "otpService");
         this.tmaService = Objects.requireNonNull(tmaService, "tmaService");
@@ -40,8 +40,10 @@ public final class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<TokenResponse> login(LoginRequest request, HttpServletRequest httpRequest) {
-        return respondWithCookie(authService.login(request, resolveClientIp(httpRequest)),
+    public ResponseEntity<TokenResponse> login(
+            LoginRequest request, HttpServletRequest httpRequest) {
+        return respondWithCookie(
+                authService.login(request, resolveClientIp(httpRequest)),
                 jwtProperties.refreshTokenExpiration());
     }
 
@@ -61,36 +63,38 @@ public final class AuthController implements AuthApi {
     @Override
     public ResponseEntity<Void> requestOtp(OtpRequest request) {
         otpService.requestOtp(request);
-        return ResponseEntity.noContent()
-                .cacheControl(CacheControl.noStore())
-                .build();
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 
     @Override
     public ResponseEntity<TokenResponse> verifyOtp(OtpVerifyRequest request) {
-        return respondWithCookie(otpService.verifyOtp(request),
-                jwtProperties.refreshTokenExpiration());
+        return respondWithCookie(
+                otpService.verifyOtp(request), jwtProperties.refreshTokenExpiration());
     }
 
     @Override
-    public ResponseEntity<TokenResponse> verifyOtpByCode(OtpVerifyByCodeRequest request,
-                                                         HttpServletRequest httpRequest) {
-        return respondWithCookie(otpService.verifyOtpByCode(request, resolveClientIp(httpRequest)),
+    public ResponseEntity<TokenResponse> verifyOtpByCode(
+            OtpVerifyByCodeRequest request, HttpServletRequest httpRequest) {
+        return respondWithCookie(
+                otpService.verifyOtpByCode(request, resolveClientIp(httpRequest)),
                 jwtProperties.refreshTokenExpiration());
     }
 
     @Override
     public ResponseEntity<TokenResponse> tmaAuth(TmaAuthRequest request) {
-        return respondWithCookie(tmaService.authenticateWithInitData(request),
+        return respondWithCookie(
+                tmaService.authenticateWithInitData(request),
                 jwtProperties.refreshTokenExpiration());
     }
 
-    private ResponseEntity<TokenResponse> respondWithCookie(TokenResponse tokens, long maxAgeSeconds) {
+    private ResponseEntity<TokenResponse> respondWithCookie(
+            TokenResponse tokens, long maxAgeSeconds) {
         if (tokens == null || tokens.refreshToken() == null || tokens.refreshToken().isBlank()) {
             throw new IllegalStateException("session issuance did not return a refresh cookie");
         }
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE,
+                .header(
+                        HttpHeaders.SET_COOKIE,
                         AuthCookies.issue(tokens.refreshToken(), maxAgeSeconds).toString())
                 .cacheControl(CacheControl.noStore())
                 .body(tokens);

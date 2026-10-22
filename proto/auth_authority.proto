@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package rutcampustrack.authauthority;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.authauthority.grpc";
+
+// Auth owns these decisions. TLS and the existing x-service-token identify one exact
+// caller and method allow-list; GRPC_SECRET and a caller-supplied role are insufficient.
+// notification-bot: GetOwnBotMenuScope/GetOwnBotProfile only. Domain services:
+// CheckBotOwnAuthority is MobileBFF-only; Academic and Attendance have separate
+// method names so the existing exact-one-principal policy remains unchanged.
+// Existing AcademicGrpcService credential/card messages and field numbers are unchanged.
+service AuthIdentityGrpcService {
+  rpc GetOwnBotMenuScope(GetOwnBotMenuScopeRequest) returns (GetOwnBotMenuScopeResponse);
+  rpc GetOwnBotProfile(GetOwnBotProfileRequest) returns (GetOwnBotProfileResponse);
+  rpc CheckBotOwnAuthority(CheckBotOwnAuthorityRequest) returns (CheckBotOwnAuthorityResponse);
+  rpc CheckAcademicBotOwnAuthority(CheckBotOwnAuthorityRequest) returns (CheckBotOwnAuthorityResponse);
+  rpc CheckAttendanceBotOwnAuthority(CheckBotOwnAuthorityRequest) returns (CheckBotOwnAuthorityResponse);
+}
+
+message GetOwnBotMenuScopeRequest {
+  int64 telegram_sender_id = 1;
+  int64 private_chat_id = 2; // positive and equal to the verified sender
+}
+message BotActiveGrant {
+  string role = 1; // closed canonical STUDENT, HEADMAN, TEACHER, ADMIN
+  int64 group_id = 2; // zero only for a role without group context
+  string status = 3; // exactly ACTIVE
+}
+message GetOwnBotMenuScopeResponse {
+  bool found = 1;
+  int64 user_id = 2;
+  int64 telegram_binding_version = 3;
+  int64 roles_version = 4;
+  repeated BotActiveGrant grants = 5;
+}
+
+message GetOwnBotProfileRequest {
+  int64 telegram_sender_id = 1;
+  int64 private_chat_id = 2;
+}
+message GetOwnBotProfileResponse {
+  bool found = 1;
+  int64 user_id = 2;
+  int64 telegram_binding_version = 3;
+  int64 roles_version = 4;
+  string login = 5; // nonsecret; never an initial/reset password or hash
+  bool password_changed = 6;
+  string display_name = 7; // Academic presentation only; never authority
+  string group_name = 8; // Academic presentation only; never authority
+}
+
+enum BotReadCapability {
+  BOT_READ_CAPABILITY_UNSPECIFIED = 0;
+  BOT_READ_CAPABILITY_HOMEWORK_READ = 1;
+  BOT_READ_CAPABILITY_HEADMAN_CURRENT_ATTENDANCE_READ = 2;
+  BOT_READ_CAPABILITY_TEACHER_TODAY_READ = 3;
+}
+message CheckBotOwnAuthorityRequest {
+  int64 telegram_sender_id = 1;
+  int64 private_chat_id = 2;
+  int64 expected_user_id = 3;
+  int64 expected_telegram_binding_version = 4;
+  int64 expected_roles_version = 5;
+  BotReadCapability required_capability = 6;
+}
+message CheckBotOwnAuthorityResponse {
+  int64 user_id = 1;
+  int64 telegram_binding_version = 2;
+  int64 roles_version = 3;
+  repeated int64 authorized_group_ids = 4; // context only; domain rechecks eligibility
+  BotReadCapability capability = 5;
+}
+
+// All positive reads use current Auth account/grants/versions/fence, without cache.
+// Invalid private sender/binding or denied capability: PERMISSION_DENIED.
+// A stale expected tuple: FAILED_PRECONDITION. Invalid/unknown fields: INVALID_ARGUMENT.
+// Missing dependency/current authority: UNAVAILABLE. No partial authority on failure.
+// Menu/profile missing or pending/archived identity returns found=false with other
+// fields empty. Check never admits a pending/fenced identity. No Academic callback
+// occurs in Check; Academic supplies its own live object/membership eligibility.

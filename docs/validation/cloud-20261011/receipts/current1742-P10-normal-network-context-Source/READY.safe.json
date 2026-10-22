@@ -1,0 +1,47 @@
+{
+  "schema": "P10_NETWORK_R1_SOURCE_READY_V1",
+  "state": "SOURCE_READY_PENDING_TARGETED_INDEPENDENT_REVIEW_FRESH_ROOT_GRANT",
+  "utc": "2026-10-13T13:33:27.610075+00:00",
+  "Goal": "Preserve only the explicitly approved normal inherited urllib proxy/CA context for the one original-artifact diagnostic.",
+  "Context_evidence": "Root decisions.md2026-10-13T13:28:25.553407 authorizes8-key Source correction. Actual03 exactURLError atURL_OPEN/status0, nestedreason/P10causeUNKNOWN; Source explicit parent whitelist omitted this normal reader context. Existing actual18 success is precedent, not causal proof.",
+  "Relevant_scope": "NEW own checking sibling parent/parameter/receipt files only; product5dac104e/child94e957 frozen; originalc5af/ac4e93ed immutable.",
+  "Required_behavior": "Forward only8 exact named existing str values into private child env RAM; no actualenvironmentkeypresence/value/hash export. Keep urllib certificate+hostname verification/default client/URL/artifact/admission/source pins/caps unchanged.",
+  "approved_public_keynames": [
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "NO_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "no_proxy",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR"
+  ],
+  "Constraints": "No fullENV/HOME/auth/unknownproxy/REQUESTS-CURL-client vars; no actualenvmeasure or contextdump, no native/request/MCP/URLprobe/Product/test/B013.",
+  "Existing_patterns": "Only one added loop in reviewed c5af parent; same b78/direct-parent/hash/grant/admit/reap algorithm. Child94e957 private projection/exception identity semantics exact. RetainedMCPresponse preferred futuregrant; no unnecessaryMCPcall.",
+  "Acceptance": "Whole-parent inverse exact; syntheticRAM6controls verifyold drop/new exact8, disallowedkeys excluded/baseline preserved/empty/sparsecases. All18pins/clean5dac104e/oldSources exact. Independent risk-specific review pending; runtime NOT_RUN.",
+  "Verification": "controls-network-only.py executes selectedloop AST with synthetic os.environs only; no parent import/runtime/os.environ read. Prior stage/enum/lifecycle/parser/caps controls reused; no replay.",
+  "Do_not": "No transport/TLS/approval relaxation, environment value/path/URI/body/rawclass/hash export or actualcause inference; no fullenvcopy/newlauncher/framework/testreplay/B013.",
+  "dispatch_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1/run-green-owned.py",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1/root-diagnostic-grant01.private.json",
+    "<FRESH_ROOT_GRANT_SHA256>"
+  ],
+  "false_grant_template": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1/grant-template.private.json",
+  "Source_files": {
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "controls-network-only.py": "07ba01c818639feae86f1519b1fb295b9091613bf4600747364236a4f245f708",
+    "grant-template.private.json": "5060e2d7d64ba7f5360a507d0184281b00899c5fdaef4eb2dfc590f88191194e",
+    "green-plan.safe.json": "09d72a7d1011d177d205358031445a9544fca0a6de2c1e8e178498e62cc2576e",
+    "logged-green-child.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "network-controls.safe.json": "ed5f0f16c5e71edaef298f9721daf23a56b9ef8a29175cf72c49ab518ef490fe",
+    "run-green-owned.py": "4611344f9af8a48b0e695545c4053994c1f72591929553b3336df4e2a8d311c9",
+    "source-delta.patch": "18c7c48bad8a3f686a5959c0e2be595c647a2e7e13e3a94f4fcd71edd55c1e7f",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "source-proof.safe.json": "38ad8194c93d91f7e6369a5c0ee6900318c4af0dff3ee9d0cb738ea161a64c04"
+  },
+  "actual03_nestedreason_productcause": "UNKNOWN",
+  "native_authorized": false,
+  "next": "Targeted independent review -> fresh Root grant of exact changed parent+samechild/pins/caps only if approved."
+}

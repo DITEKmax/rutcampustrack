@@ -1,0 +1,7 @@
+{
+  "schema": "RCT_SAFE_NARROW_SOURCE_RECHECK_MANIFEST_V1",
+  "live_public_source_and_original_class_match": true,
+  "files": {
+    "REPORT.safe.json": "ef63304b12108bad2388aeeedfcbb5cdb56638a4926a3a3ab59ea67b85fcd7e1"
+  }
+}

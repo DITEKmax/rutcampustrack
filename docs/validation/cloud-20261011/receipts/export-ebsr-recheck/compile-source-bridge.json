@@ -1,0 +1,8 @@
+{
+  "compile_producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "tested_wip_committed_as": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "inputs": 1853,
+  "matches_b45": true,
+  "manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+  "final_fixture_test_requires_its_own_actual_run": true
+}

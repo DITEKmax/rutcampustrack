@@ -1,0 +1,26 @@
+{
+  "utc": "2026-10-13T07:52:05.509207+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/t008_twojar_refresh_source_plan/PLAN.safe.json",
+      "sha256": "eff4246114cd9031eadf7bf2c1cb3876220a0e42f43534ddfca26d16bca010e7",
+      "size": 10683
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/t008_twojar_refresh_source_plan/tracked-inputs597.safe.json",
+      "sha256": "5e9e6162ce34eedb1f7329d8dd295be7b35dcdbf131cf2663a61990571783b41",
+      "size": 203574
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/t008_twojar_refresh_source_plan/existing-input-pins.safe.json",
+      "sha256": "8c7d080c4e738cf01c8a25fcb0024db08481a48e124392de391170cf05c52fcc",
+      "size": 1638
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/t008_twojar_refresh_source_plan/HANDOFF.md",
+      "sha256": "99f749152abc4ee0a17629aa107b064d7d60a7850a224dd9d4cecddaa4cd7dc8",
+      "size": 1465
+    }
+  ],
+  "private_excluded": true
+}

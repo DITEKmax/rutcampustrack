@@ -1,0 +1,157 @@
+{
+  "original_xml_copies": [
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+      "matches_original": true,
+      "properties_count": 0,
+      "synthetic_only_expected": true
+    }
+  ],
+  "logs": "Only safe outcome fragments retained; raw originals hashed and linked, not republished by reviewer",
+  "payloads": "Synthetic example.invalid 2x2 SVG candidates only; no browser opening/network performed",
+  "credentials": "No real credential/private source read or output; original XML has no system property values"
+}

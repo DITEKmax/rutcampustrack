@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -8,9 +8,12 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserDialogComponent, UserDialogData } from './user-dialog.component';
+import { getByRole, queryByRole } from '@testing-library/dom';
+import userEvent from '@testing-library/user-event';
 import type { UserResponse } from '../../shared/types';
 
 describe('UserDialogComponent', () => {
+  let fixture: ComponentFixture<UserDialogComponent>;
   let httpMock: HttpTestingController;
   let dialogRefSpy: { close: ReturnType<typeof vi.fn> };
 
@@ -29,7 +32,7 @@ describe('UserDialogComponent', () => {
     });
 
     httpMock = TestBed.inject(HttpTestingController);
-    const fixture = TestBed.createComponent(UserDialogComponent);
+    fixture = TestBed.createComponent(UserDialogComponent);
     return fixture.componentInstance;
   }
 
@@ -321,17 +324,18 @@ describe('UserDialogComponent', () => {
     expect(component.submitError()).toBe('Не удалось сохранить. Проверьте введённые данные');
   });
 
-  it('isHeadman checkbox visible only when role is student', () => {
-    const component = createComponent({ mode: 'create', groups: [] });
-
-    component.form.patchValue({ role: 'TEACHER' });
-    // In template: @if (form.get('role')?.value === 'STUDENT') shows isHeadman
-    // We test the form state instead of DOM in unit tests
-    expect(component.form.get('role')!.value).toBe('TEACHER');
-
-    component.form.patchValue({ role: 'STUDENT' });
-    expect(component.form.get('role')!.value).toBe('STUDENT');
-    // isHeadman control exists regardless; visibility is template-only concern
-    expect(component.form.get('isHeadman')!.value).toBe(false);
+  it('isHeadman checkbox visible only when role is student', async () => {
+    createComponent({ mode: 'create', groups: [] });
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const user = userEvent.setup();
+    for (const [role, visible] of [['Студент', true], ['Преподаватель', false], ['Администратор', false], ['Студент', true]] as const) {
+      await user.click(getByRole(root, 'combobox', { name: 'Роль' }));
+      fixture.detectChanges();
+      await user.click(getByRole(document.body, 'option', { name: role }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(queryByRole(root, 'checkbox', { name: 'Является старостой группы' }) !== null).toBe(visible);
+    }
   });
 });

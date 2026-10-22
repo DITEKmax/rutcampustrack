@@ -1,0 +1,1148 @@
+[
+  {
+    "id": "CASE-SAQ-AUTH-ROLE-SELECTION",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 19,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135"
+        },
+        "xml_sha256": "b917ff71339f7150f9b668ce64aad5b4d751a5411d701974645497194cace18a"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-AUTH-NEUTRAL-SCOPE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 19,
+          "suiteOrdinal": 1,
+          "ordinal": 4,
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135"
+        },
+        "xml_sha256": "b917ff71339f7150f9b668ce64aad5b4d751a5411d701974645497194cace18a"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 19,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135"
+        },
+        "xml_sha256": "b917ff71339f7150f9b668ce64aad5b4d751a5411d701974645497194cace18a"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-RESET-ATOMIC-PURPOSE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+        },
+        "xml_sha256": "3e221b8e17c3bcf4a1eddf8aae4a37e1ad81eb2e884bdb092411e382bdaf871d"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-RESET-NATURAL-EXPIRY-REUSE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 7,
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+        },
+        "xml_sha256": "3e221b8e17c3bcf4a1eddf8aae4a37e1ad81eb2e884bdb092411e382bdaf871d"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-RESET-ACCOUNT-ATTEMPT-WINDOW",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 6,
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "passwordResetFailedAttemptsSurviveANewChallenge",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+        },
+        "xml_sha256": "3e221b8e17c3bcf4a1eddf8aae4a37e1ad81eb2e884bdb092411e382bdaf871d"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-RECOVERY-DENIAL",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 8,
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+        },
+        "xml_sha256": "3e221b8e17c3bcf4a1eddf8aae4a37e1ad81eb2e884bdb092411e382bdaf871d"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-AUTH-LIVE-REVOKE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 11,
+          "suiteOrdinal": 1,
+          "ordinal": 7,
+          "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+          "method": "liveAdmissionThenCommittedRevokeIsDenied",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+          "sourceSha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70"
+        },
+        "xml_sha256": "beb0e6eb06a9f233c9585c17d46b3a978ddac9f2c37674f229cc9e9315ef1d29"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-WS-TICKET-RACE-EXPIRY-LOGOUT",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 21,
+          "suiteOrdinal": 1,
+          "ordinal": 2,
+          "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+          "method": "concurrentActualHttpConsumersHaveExactlyOneWinnerAndBurnTicket",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+          "sourceSha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+        },
+        "xml_sha256": "536a8ba8e8817cbc2935f7f434860ef33a0a6c04f9737c7609afe43ecbe88a3b"
+      },
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 21,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+          "method": "actualRedisThirtySecondExpiryRejectsUnconsumedTicket",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+          "sourceSha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+        },
+        "xml_sha256": "536a8ba8e8817cbc2935f7f434860ef33a0a6c04f9737c7609afe43ecbe88a3b"
+      },
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 21,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+          "method": "logoutBeforeConsumeInvalidatesOutstandingTicket",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+          "sourceSha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51"
+        },
+        "xml_sha256": "536a8ba8e8817cbc2935f7f434860ef33a0a6c04f9737c7609afe43ecbe88a3b"
+      },
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 22,
+          "suiteOrdinal": 1,
+          "ordinal": 6,
+          "classname": "ru.rutcampustrack.auth.integration.WsTicketIT",
+          "method": "consumeTicket_revokedBeforeConsume_isRejectedAndBurned",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+          "sourceSha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a"
+        },
+        "xml_sha256": "2511b984f442d7ff0bae382c30bdf90cdcba391f9d96280290cf8fe13d83e76c"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-WS-OUTBOUND-REVOKE-SEAM",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-notification-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "notification-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 3,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+          "method": "openSocketReceivesBeforeRevokeAndCannotReceiveNextPrivateMessageAfterRevoke",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+          "sourceSha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953"
+        },
+        "xml_sha256": "04ec2c3f1ce3f67ca329b7536c759e9cf3e892cea3b0edddd8ec627491c2a8e6"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-LAST-FULL-AND-DOWNGRADE-RACE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 1,
+          "suiteOrdinal": 1,
+          "ordinal": 12,
+          "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+          "method": "concurrentFullRevocationsSerializeAndCannotRemoveLastFull",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+          "sourceSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d"
+        },
+        "xml_sha256": "2d1b91ec42a5230a270625c282bf435b0d52d7f8fa87e9c8c23289f1f1aacc6e"
+      },
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 1,
+          "suiteOrdinal": 1,
+          "ordinal": 5,
+          "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+          "method": "actorDowngradeWhileWaitingForGlobalLockCannotUseOldFullAdmission",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+          "sourceSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d"
+        },
+        "xml_sha256": "2d1b91ec42a5230a270625c282bf435b0d52d7f8fa87e9c8c23289f1f1aacc6e"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-ADMIN-LIMITED-CATALOGUE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 1,
+          "suiteOrdinal": 1,
+          "ordinal": 6,
+          "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+          "method": "limitedAssignmentRoundTripsValidatesDependenciesAndNeverDelegatesFull",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+          "sourceSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d"
+        },
+        "xml_sha256": "2d1b91ec42a5230a270625c282bf435b0d52d7f8fa87e9c8c23289f1f1aacc6e"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-USER-ARCHIVE-RESTORE-ROLLBACK",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 47,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+          "method": "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+          "sourceSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d"
+        },
+        "xml_sha256": "243b440a5e98989a72ea140970112152d481ab518ba8c349b3326f5361d96eb3"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-ASSIGNMENT-OVERLAP-AND-DATES",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 2,
+          "classname": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+          "method": "sameTeacherSameTypeOverlapRaceCommitsOneAndReturnsOne409",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+          "sourceSha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902"
+        },
+        "xml_sha256": "daefab5102a137ca2dc5ec1926db4b7879e8905fae8b8a0fd03d1e7188baee62"
+      },
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 4,
+          "classname": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+          "method": "invalidAssignmentDateBoundsAreRejectedWithoutWrite",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+          "sourceSha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902"
+        },
+        "xml_sha256": "daefab5102a137ca2dc5ec1926db4b7879e8905fae8b8a0fd03d1e7188baee62"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-ASSIGNMENT-PENDING-EXACT-REPLAY",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 8,
+          "suiteOrdinal": 1,
+          "ordinal": 2,
+          "classname": "ru.rutcampustrack.academic.assignment.AssignmentReplacementIT",
+          "method": "pendingActivationIsFencedAndExactReplayCompletesAfterScheduleCommit",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementIT.java",
+          "sourceSha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c"
+        },
+        "xml_sha256": "82680cf78aa8aa4adcef630dbfacc8c08848eda59075eba413225321fd2b2d86"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-SEMESTER-RESTORE-NOT-ACTIVE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-academic-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "academic-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 46,
+          "suiteOrdinal": 1,
+          "ordinal": 2,
+          "classname": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+          "method": "expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+          "sourceSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c"
+        },
+        "xml_sha256": "5382310da7a6fda024e70abed3adabf797df04e511f70a9f1dee017b7d629992"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-CLAIM-OUTAGE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-notification-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "notification-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 10,
+          "suiteOrdinal": 1,
+          "ordinal": 4,
+          "classname": "ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT",
+          "method": "concurrentSameEventClaimCommitsOneEffectAndLoserRetriesSafely",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+          "sourceSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a"
+        },
+        "xml_sha256": "1edb3adfe47d89fb64f55023531ea398bfbb1833720d8a5f6ae3ea8dca5a5496"
+      },
+      {
+        "collector": "safe-integration-outcomes-notification-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "notification-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 10,
+          "suiteOrdinal": 1,
+          "ordinal": 9,
+          "classname": "ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT",
+          "method": "authorityOutageRollsBackEventClaimBeforeEnqueueAndReplayAdmitsOnce",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+          "sourceSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a"
+        },
+        "xml_sha256": "1edb3adfe47d89fb64f55023531ea398bfbb1833720d8a5f6ae3ea8dca5a5496"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-BOT-TOGGLE-CAS",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-notification-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "notification-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 10,
+          "suiteOrdinal": 1,
+          "ordinal": 7,
+          "classname": "ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT",
+          "method": "concurrentCallbackTogglesAndReplaysLinearizeWithoutLostUpdates",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+          "sourceSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a"
+        },
+        "xml_sha256": "1edb3adfe47d89fb64f55023531ea398bfbb1833720d8a5f6ae3ea8dca5a5496"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-NOTIFICATION-WHOLE-PROFILE-CAS",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-notification-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "notification-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 9,
+          "suiteOrdinal": 1,
+          "ordinal": 12,
+          "classname": "ru.rutcampustrack.notification.history.NotificationStateV2IT",
+          "method": "concurrentPreferenceSavesCommitOneWholeProfileAndLoserGets409",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java",
+          "sourceSha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209"
+        },
+        "xml_sha256": "294c33a9db91e0dce68ae523a19a901c561051114c9b4036f57aeba7d0335dd4"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-EXPORT-ENUM-DB-WIRE",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 3,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.auth.export.ExportJobsIT",
+          "method": "threeGenerationFailuresTerminateAndWireAndDatabaseRejectUnknownOrOrdinalState",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+          "sourceSha256": "ef149ec5b3be6f8a17cf5675080ed271481233f551b5d66da499c15ea738276b"
+        },
+        "xml_sha256": "5fadf4b07477c332bd96b142c1d7c9dbbec263ce30d07267aa69f6b3b5b496cf"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-EXPORT-HTTP-REVOKE-AUDIT",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 10,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+          "method": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+          "sourceSha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff"
+        },
+        "xml_sha256": "2fd98e6005151ddf61b363e8de44020c95160ce7723e02842f7d8f007e8c5d36"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-QR-EXCHANGE-AUTHORITY",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 16,
+          "suiteOrdinal": 1,
+          "ordinal": 5,
+          "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+          "method": "browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+          "sourceSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c"
+        },
+        "xml_sha256": "c18d23e4b338b1b4cd43132e57ed644585af14a8e6b59889b87c39386ce619b3"
+      },
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 16,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+          "method": "sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+          "sourceSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c"
+        },
+        "xml_sha256": "c18d23e4b338b1b4cd43132e57ed644585af14a8e6b59889b87c39386ce619b3"
+      },
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 16,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+          "method": "rejectedExpiredAndSupersededChallengesCannotIssueAndRedisLimitsAreAuthoritative",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+          "sourceSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c"
+        },
+        "xml_sha256": "c18d23e4b338b1b4cd43132e57ed644585af14a8e6b59889b87c39386ce619b3"
+      },
+      {
+        "collector": "safe-integration-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "integrationTest",
+          "job": "java-integration-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 16,
+          "suiteOrdinal": 1,
+          "ordinal": 2,
+          "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+          "method": "receiptFailureRollsBackSessionAuditAndCleanupOnlyDeletesOwnedExpiredQrMetadata",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+          "sourceSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c"
+        },
+        "xml_sha256": "c18d23e4b338b1b4cd43132e57ed644585af14a8e6b59889b87c39386ce619b3"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  },
+  {
+    "id": "CASE-SAQ-PASSWORD-UNICODE-POLICY",
+    "current_native_pass": true,
+    "unchanged_test_source": true,
+    "evidence": [
+      {
+        "collector": "safe-unit-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+          "method": "acceptsTwelveUnicodeScalarsWithNdAndPSpecial",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+          "sourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+        },
+        "xml_sha256": "4c0b13630c893f1d429d80662fa88f4266e6b2b6d367afcd06d7bdb069a1ab17"
+      },
+      {
+        "collector": "safe-unit-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 2,
+          "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+          "method": "symbolAloneSatisfiesSpecialCategoryWithoutPunctuation",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+          "sourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+        },
+        "xml_sha256": "4c0b13630c893f1d429d80662fa88f4266e6b2b6d367afcd06d7bdb069a1ab17"
+      },
+      {
+        "collector": "safe-unit-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 5,
+          "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+          "method": "supplementaryScalarsCountAsOneAndUnicodeNdIsAccepted",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+          "sourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+        },
+        "xml_sha256": "4c0b13630c893f1d429d80662fa88f4266e6b2b6d367afcd06d7bdb069a1ab17"
+      },
+      {
+        "collector": "safe-unit-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 1,
+          "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+          "method": "rejectsMissingDigitOrSpecialAndDoesNotTreatSpaceOrCombiningMarkAsSpecial",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+          "sourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+        },
+        "xml_sha256": "4c0b13630c893f1d429d80662fa88f4266e6b2b6d367afcd06d7bdb069a1ab17"
+      },
+      {
+        "collector": "safe-unit-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 4,
+          "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+          "method": "enforcesScalarMinimumAndUtf8ByteMaximumWithoutTruncation",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+          "sourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+        },
+        "xml_sha256": "4c0b13630c893f1d429d80662fa88f4266e6b2b6d367afcd06d7bdb069a1ab17"
+      },
+      {
+        "collector": "safe-unit-outcomes-auth-service-1.json",
+        "metadata": {
+          "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+          "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+          "service": "auth-service",
+          "task": "test",
+          "job": "java-unit-test",
+          "runId": "38219224186",
+          "runAttempt": "1",
+          "event": "pull_request",
+          "testStepOutcome": "success"
+        },
+        "case": {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 6,
+          "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+          "method": "rejectsUnpairedSurrogatesInsteadOfReplacingThem",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+          "sourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d"
+        },
+        "xml_sha256": "4c0b13630c893f1d429d80662fa88f4266e6b2b6d367afcd06d7bdb069a1ab17"
+      }
+    ],
+    "prior_mode_and_limits_preserved": true
+  }
+]

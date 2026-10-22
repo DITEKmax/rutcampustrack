@@ -4,9 +4,4 @@ import java.math.BigDecimal;
 
 /** Inclusive range for numeric columns or case-insensitive contains for displayName. */
 public record HeadmanStatsFilter(
-        String field,
-        String contains,
-        BigDecimal minimum,
-        BigDecimal maximum
-) {
-}
+        String field, String contains, BigDecimal minimum, BigDecimal maximum) {}

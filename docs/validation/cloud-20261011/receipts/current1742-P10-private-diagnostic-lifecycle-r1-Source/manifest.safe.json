@@ -1,0 +1,22 @@
+{
+  "schema": "P10_LIFECYCLE_R1_SOURCE_MANIFEST_V1",
+  "files": {
+    "PLAN.md": "af59b2ba105a738688117b62662e0b1b2239b67494a89e354e3494e44cae66d6",
+    "READY.safe.json": "0dcb740d0fe0bd731eed44ed4ee14ce5ea9a9abc46040c404b2293a3c838e3b8",
+    "admission-reused.py.source": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+    "controls-attempt01.safe.json": "83238e7a6153c17fa14ad8098e38bbcc5332683157dc4774cf2ccdfb61f9b2af",
+    "controls.safe.json": "0f3c882415239b765a54e73e78d4ac8f02e68a79a9f4374e04b6ef3805d9bf17",
+    "grant-template.private.json": "1290e0c4a63d9c090c24e99d2343de7ee3343667085587b058faa36334d62526",
+    "green-plan.safe.json": "2e79c298365f1a5bf2f2c315fcac244b1a92ab98d8bfd6e25bce7d7ae3874809",
+    "lifecycle-controls.safe.json": "4ad67cdb5c37563cd80769689aeedb70f81a8a0f84b0ee891680bffea13123e3",
+    "logged-green-child.py": "3e03b90d825ca66abac21f29d685d0b8d96aa011cd00c2adcd1c365f01adc766",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "source-check-attempt01.safe.json": "13b7a9d37ae7bdfc81b28a1fed28fde619cf39dd4f3f3e601067d4bfcfa9fd95",
+    "source-delta.patch": "32f1e3ce2f3b09420bed9bd498cb980fda700b88f0921a081286129d37d722c0",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+    "source-proof.safe.json": "e19adcea65330c2516298405f40d5ed9671db69876d46cd9ac981e7c6e58f690"
+  },
+  "original_preserved": "14eb/8c33",
+  "no_operational_private_request_grant_archive_XML_log": true
+}

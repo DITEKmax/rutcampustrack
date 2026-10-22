@@ -1,6 +1,18 @@
 package ru.rutcampustrack.auth.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import io.micrometer.core.instrument.Counter;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,42 +21,29 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.script.RedisScript;
-import ru.rutcampustrack.auth.config.JwtProperties;
+
 import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
-import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
+import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 /**
- * M09 Группа 1 (01 P0-5) — unit-проверка что verifyOtp использует
- * {@link java.security.MessageDigest#isEqual(byte[], byte[])} для сравнения
- * кодов (constant-time) вместо {@link String#equals(Object)}.
+ * M09 Группа 1 (01 P0-5) — unit-проверка что verifyOtp использует {@link
+ * java.security.MessageDigest#isEqual(byte[], byte[])} для сравнения кодов (constant-time) вместо
+ * {@link String#equals(Object)}.
  *
- * <p>Гарантия constant-time обеспечивается JDK-имплементацией MessageDigest.isEqual;
- * unit-тест ниже (a) статически валидирует исходник на отсутствие String.equals
- * против request.code() и наличие MessageDigest.isEqual; (b) проверяет что
- * functional-поведение верно (корректный код → success-путь, неверный → mismatch).
+ * <p>Гарантия constant-time обеспечивается JDK-имплементацией MessageDigest.isEqual; unit-тест ниже
+ * (a) статически проверяет реальные call paths обоих verify методов к MessageDigest.isEqual; (b)
+ * проверяет что functional-поведение верно (корректный код → success-путь, неверный → mismatch).
  */
 class OtpServiceTest {
 
@@ -71,15 +70,22 @@ class OtpServiceTest {
         Counter counter = mock(Counter.class);
         when(businessMetrics.otpVerifyCounter(anyString())).thenReturn(counter);
         when(redis.opsForValue()).thenReturn(valueOps);
-        when(redis.execute(any(RedisScript.class), anyList(), any(), any(), any()))
-                .thenReturn(1L);
+        when(redis.execute(any(RedisScript.class), anyList(), any(), any(), any())).thenReturn(1L);
 
-        otpService = new OtpService(redis, otpProperties, userRepository,
-                authService, eventPublisher, businessMetrics);
+        otpService =
+                new OtpService(
+                        redis,
+                        otpProperties,
+                        userRepository,
+                        authService,
+                        eventPublisher,
+                        businessMetrics);
     }
 
     @Test
-    @DisplayName("verifyOtp: корректный код того же размера — не падает в OtpExpiredException (mismatch-путь)")
+    @DisplayName(
+            "verifyOtp: корректный код того же размера — не падает в OtpExpiredException"
+                + " (mismatch-путь)")
     void verifyOtp_correctCode_doesNotThrowMismatch() {
         Long telegramId = 111L;
         User user = activeUser();
@@ -99,13 +105,13 @@ class OtpServiceTest {
         when(valueOps.get("otp:" + telegramId)).thenReturn("123456");
         when(valueOps.increment("otp_verify_attempts:" + telegramId)).thenReturn(1L);
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtp(new OtpVerifyRequest(telegramId, "000000")))
+        assertThatThrownBy(() -> otpService.verifyOtp(new OtpVerifyRequest(telegramId, "000000")))
                 .isInstanceOf(OtpExpiredException.class);
     }
 
     @Test
-    @DisplayName("verifyOtp: null код не падает по NPE (защита от Bad Input до MessageDigest.isEqual)")
+    @DisplayName(
+            "verifyOtp: null код не падает по NPE (защита от Bad Input до MessageDigest.isEqual)")
     void verifyOtp_nullCode_handledGracefully() {
         Long telegramId = 333L;
         User user = activeUser();
@@ -113,8 +119,7 @@ class OtpServiceTest {
         when(valueOps.get("otp:" + telegramId)).thenReturn("123456");
         when(valueOps.increment("otp_verify_attempts:" + telegramId)).thenReturn(1L);
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtp(new OtpVerifyRequest(telegramId, null)))
+        assertThatThrownBy(() -> otpService.verifyOtp(new OtpVerifyRequest(telegramId, null)))
                 .isInstanceOf(OtpExpiredException.class);
     }
 
@@ -127,38 +132,53 @@ class OtpServiceTest {
         when(valueOps.get("otp:" + telegramId)).thenReturn("123456");
         // The atomic script returns PROOF_MISSING when otp_code:<code> has
         // disappeared, even though the forward key still contains the code.
-        when(redis.execute(any(RedisScript.class), anyList(), any(), any(), any()))
-                .thenReturn(0L);
+        when(redis.execute(any(RedisScript.class), anyList(), any(), any(), any())).thenReturn(0L);
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtp(new OtpVerifyRequest(telegramId, "123456")))
+        assertThatThrownBy(() -> otpService.verifyOtp(new OtpVerifyRequest(telegramId, "123456")))
                 .isInstanceOf(OtpExpiredException.class);
 
         verifyNoInteractions(authService, eventPublisher);
     }
 
     @Test
-    @DisplayName("OtpService source: использует MessageDigest.isEqual вместо String.equals для request.code()")
+    @DisplayName(
+            "OtpService source: использует MessageDigest.isEqual вместо String.equals для"
+                + " request.code()")
     void verifyOtp_constantTimeCompare_sourceAssertion() throws Exception {
-        // Структурная проверка: сорс-код OtpService не содержит `storedCode.equals(request.code())`
-        // и содержит вызов MessageDigest.isEqual. Это предохраняет от регрессии —
-        // если кто-то переведёт compare обратно на String.equals, тест упадёт.
-        java.nio.file.Path src = locateSource();
-        String code = java.nio.file.Files.readString(src);
-
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("verifyOtp must not compare OTP via String.equals (timing side-channel)")
-                .doesNotContain("storedCode.equals(request.code())");
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("verifyOtp must use MessageDigest.isEqual for constant-time compare")
-                .contains("MessageDigest.isEqual");
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("both public OTP forms must use one atomic Redis proof consume")
-                .contains("DefaultRedisScript<Long>", "consumeProofScript", "CONSUME_PROOF_SCRIPT");
-        org.assertj.core.api.Assertions.assertThat(code)
-                .as("both public OTP forms must require the reverse proof")
-                .contains("if not reverse then\n                return 0")
-                .doesNotContain("elseif reverse and reverse ~= ARGV[2]");
+        var type =
+                new com.tngtech.archunit.core.importer.ClassFileImporter()
+                        .importClasses(OtpService.class)
+                        .get(OtpService.class);
+        for (String entry : java.util.List.of("verifyOtp", "verifyOtpByCode")) {
+            var reachable = new java.util.HashSet<com.tngtech.archunit.core.domain.JavaMethod>();
+            collectOtpCalls(
+                    type.getMethods().stream()
+                            .filter(method -> method.getName().equals(entry))
+                            .findFirst()
+                            .orElseThrow(),
+                    reachable);
+            var comparisons =
+                    reachable.stream()
+                            .flatMap(method -> method.getMethodCallsFromSelf().stream())
+                            .toList();
+            assertThat(comparisons)
+                    .as(entry + " reaches the approved JDK comparison on its actual call path")
+                    .anySatisfy(
+                            call -> {
+                                assertThat(call.getTargetOwner().getName())
+                                        .isEqualTo("java.security.MessageDigest");
+                                assertThat(call.getName()).isEqualTo("isEqual");
+                            });
+            assertThat(comparisons)
+                    .noneSatisfy(
+                            call -> {
+                                assertThat(call.getTargetOwner().getName())
+                                        .isEqualTo("java.lang.String");
+                                assertThat(call.getName()).isEqualTo("equals");
+                            });
+        }
+        // Structural call-path guard only: constant-time data flow still requires crypto review.
+        // Redis atomicity and both reverse-index requirements are proved by OtpIT, not source text.
     }
 
     @Test
@@ -168,9 +188,12 @@ class OtpServiceTest {
                 .thenThrow(new DataAccessResourceFailureException("database unavailable"));
 
         assertThatThrownBy(() -> otpService.requestOtp(new OtpRequest(666L)))
-                .isInstanceOfSatisfying(AuthSessionException.class,
-                        exception -> org.assertj.core.api.Assertions.assertThat(exception.code())
-                                .isEqualTo(AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
+                .isInstanceOfSatisfying(
+                        AuthSessionException.class,
+                        exception ->
+                                org.assertj.core.api.Assertions.assertThat(exception.code())
+                                        .isEqualTo(
+                                                AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
         verify(valueOps, never()).get(anyString());
         verify(valueOps, never()).set(anyString(), anyString(), any());
     }
@@ -182,9 +205,12 @@ class OtpServiceTest {
                 .thenThrow(new DataAccessResourceFailureException("database unavailable"));
 
         assertThatThrownBy(() -> otpService.verifyOtp(new OtpVerifyRequest(444L, "123456")))
-                .isInstanceOfSatisfying(AuthSessionException.class,
-                        exception -> org.assertj.core.api.Assertions.assertThat(exception.code())
-                                .isEqualTo(AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
+                .isInstanceOfSatisfying(
+                        AuthSessionException.class,
+                        exception ->
+                                org.assertj.core.api.Assertions.assertThat(exception.code())
+                                        .isEqualTo(
+                                                AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
         verify(valueOps, never()).get(anyString());
         verify(redis, never()).execute(any(RedisScript.class), anyList(), any(), any(), any());
     }
@@ -194,7 +220,8 @@ class OtpServiceTest {
     // ========================================================================
 
     @Test
-    @DisplayName("verifyOtpByCode: counter < limit, mismatch → инкремент counter + OtpExpiredException")
+    @DisplayName(
+            "verifyOtpByCode: counter < limit, mismatch → инкремент counter + OtpExpiredException")
     void verifyOtpByCode_mismatchUnderLimit_incrementsCounter() {
         String ip = "1.2.3.4";
         String missKey = "otp_verify_by_code_miss:" + ip;
@@ -202,8 +229,8 @@ class OtpServiceTest {
         when(valueOps.get("otp_code:000000")).thenReturn(null);
         when(valueOps.increment(missKey)).thenReturn(6L);
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("000000"), ip))
+        assertThatThrownBy(
+                        () -> otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("000000"), ip))
                 .isInstanceOf(OtpExpiredException.class);
     }
 
@@ -216,35 +243,37 @@ class OtpServiceTest {
         when(valueOps.get("otp_code:111111")).thenReturn(null);
         when(valueOps.increment(missKey)).thenReturn(1L);
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("111111"), ip))
+        assertThatThrownBy(
+                        () -> otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("111111"), ip))
                 .isInstanceOf(OtpExpiredException.class);
 
         // Verify EXPIRE был выставлен (только при первом INCR)
-        org.mockito.Mockito.verify(redis).expire(
-                org.mockito.ArgumentMatchers.eq(missKey),
-                org.mockito.ArgumentMatchers.eq(300L),
-                org.mockito.ArgumentMatchers.eq(java.util.concurrent.TimeUnit.SECONDS));
+        org.mockito.Mockito.verify(redis)
+                .expire(
+                        org.mockito.ArgumentMatchers.eq(missKey),
+                        org.mockito.ArgumentMatchers.eq(300L),
+                        org.mockito.ArgumentMatchers.eq(java.util.concurrent.TimeUnit.SECONDS));
     }
 
     @Test
-    @DisplayName("verifyOtpByCode: counter == limit (20) → 429 OtpRateLimitException БЕЗ проверки кода")
+    @DisplayName(
+            "verifyOtpByCode: counter == limit (20) → 429 OtpRateLimitException БЕЗ проверки кода")
     void verifyOtpByCode_atLimit_throws429() {
         String ip = "9.9.9.9";
         String missKey = "otp_verify_by_code_miss:" + ip;
         when(valueOps.get(missKey)).thenReturn("20"); // на лимите
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("123456"), ip))
+        assertThatThrownBy(
+                        () -> otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("123456"), ip))
                 .isInstanceOf(OtpRateLimitException.class);
 
         // otp_code:* НЕ должен запрашиваться — pre-check срубил раньше.
-        org.mockito.Mockito.verify(valueOps, org.mockito.Mockito.never())
-                .get("otp_code:123456");
+        org.mockito.Mockito.verify(valueOps, org.mockito.Mockito.never()).get("otp_code:123456");
     }
 
     @Test
-    @DisplayName("verifyOtpByCode: repository failure is typed authority unavailable before consume")
+    @DisplayName(
+            "verifyOtpByCode: repository failure is typed authority unavailable before consume")
     void verifyOtpByCode_repositoryFailureIsTypedAuthorityUnavailable() {
         String code = "123456";
         String ip = "192.0.2.55";
@@ -255,11 +284,13 @@ class OtpServiceTest {
         when(userRepository.findByTelegramId(telegramId))
                 .thenThrow(new DataAccessResourceFailureException("database unavailable"));
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest(code), ip))
-                .isInstanceOfSatisfying(AuthSessionException.class,
-                        exception -> org.assertj.core.api.Assertions.assertThat(exception.code())
-                                .isEqualTo(AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
+        assertThatThrownBy(() -> otpService.verifyOtpByCode(new OtpVerifyByCodeRequest(code), ip))
+                .isInstanceOfSatisfying(
+                        AuthSessionException.class,
+                        exception ->
+                                org.assertj.core.api.Assertions.assertThat(exception.code())
+                                        .isEqualTo(
+                                                AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
         verify(redis, never()).execute(any(RedisScript.class), anyList(), any(), any(), any());
         verify(valueOps, never()).increment(anyString());
     }
@@ -276,13 +307,17 @@ class OtpServiceTest {
         when(valueOps.get("otp_verify_by_code_miss:10.0.0.2")).thenReturn("20");
 
         // IP-A проходит до Redis check
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("777777"), "10.0.0.1"))
+        assertThatThrownBy(
+                        () ->
+                                otpService.verifyOtpByCode(
+                                        new OtpVerifyByCodeRequest("777777"), "10.0.0.1"))
                 .isInstanceOf(OtpExpiredException.class);
 
         // IP-B сразу throttled
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("777777"), "10.0.0.2"))
+        assertThatThrownBy(
+                        () ->
+                                otpService.verifyOtpByCode(
+                                        new OtpVerifyByCodeRequest("777777"), "10.0.0.2"))
                 .isInstanceOf(OtpRateLimitException.class);
     }
 
@@ -293,15 +328,18 @@ class OtpServiceTest {
         when(valueOps.get("otp_code:222222")).thenReturn(null);
         when(valueOps.increment("otp_verify_by_code_miss:unknown")).thenReturn(1L);
 
-        assertThatThrownBy(() ->
-                otpService.verifyOtpByCode(new OtpVerifyByCodeRequest("222222"), null))
+        assertThatThrownBy(
+                        () ->
+                                otpService.verifyOtpByCode(
+                                        new OtpVerifyByCodeRequest("222222"), null))
                 .isInstanceOf(OtpExpiredException.class);
     }
 
     private static java.nio.file.Path locateSource() {
         // build.gradle-ый layout: services/auth-service/src/main/java/...
-        java.nio.file.Path p = java.nio.file.Paths.get(
-                "src/main/java/ru/rutcampustrack/auth/service/OtpService.java");
+        java.nio.file.Path p =
+                java.nio.file.Paths.get(
+                        "src/main/java/ru/rutcampustrack/auth/service/OtpService.java");
         return p.toAbsolutePath();
     }
 
@@ -311,12 +349,23 @@ class OtpServiceTest {
             Field id = User.class.getDeclaredField("id");
             id.setAccessible(true);
             id.set(user, 1L);
-            Field status = User.class.getDeclaredField("status");
-            status.setAccessible(true);
-            status.set(user, AccountStatus.ACTIVE);
+            Field accountState = User.class.getDeclaredField("accountState");
+            accountState.setAccessible(true);
+            accountState.set(user, "ACTIVE");
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }
         return user;
+    }
+
+    private static void collectOtpCalls(
+            com.tngtech.archunit.core.domain.JavaMethod method,
+            java.util.Set<com.tngtech.archunit.core.domain.JavaMethod> reachable) {
+        if (!reachable.add(method)) return;
+        method.getMethodCallsFromSelf().stream()
+                .filter(call -> call.getTargetOwner().equals(method.getOwner()))
+                .map(call -> call.getTarget().resolveMember())
+                .flatMap(java.util.Optional::stream)
+                .forEach(delegate -> collectOtpCalls(delegate, reachable));
     }
 }

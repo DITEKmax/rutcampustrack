@@ -1,0 +1,249 @@
+{
+  "observed_at": "2026-10-13 23:10:51 UTC",
+  "head": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "actual_checkout": "a932aae335267d6774a39f8b1c2284795b8ac54c",
+  "actual_checkout_tree_equals_head": true,
+  "runs": [
+    {
+      "id": 38480461362,
+      "name": "CI",
+      "event": "pull_request",
+      "head_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38480461362",
+      "jobs": [
+        {
+          "id": 115581483774,
+          "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484119,
+          "name": "Java unit \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484151,
+          "name": "Java IT \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "id": 115581484181,
+          "name": "Grafana dashboards structure",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484185,
+          "name": "Java IT \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484200,
+          "name": "Java IT \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484263,
+          "name": "Java IT \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484276,
+          "name": "Python Lint & Test",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484341,
+          "name": "Java IT \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484357,
+          "name": "Java unit \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484369,
+          "name": "Java IT \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484376,
+          "name": "Playwright E2E auth flow",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "id": 115581484404,
+          "name": "Java unit \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484430,
+          "name": "Mobile Vue workspace",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484434,
+          "name": "Java unit \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484517,
+          "name": "Java unit \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484959,
+          "name": "ShellCheck scripts",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581485160,
+          "name": "Java unit \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 38480461526,
+      "name": "Coverage",
+      "event": "pull_request",
+      "head_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38480461526",
+      "jobs": [
+        {
+          "id": 115581483851,
+          "name": "Python coverage \u2014 notification-bot",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484068,
+          "name": "Mobile Vue coverage \u2014 PWA, TMA, mobile-core",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484126,
+          "name": "Java coverage \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484191,
+          "name": "Java coverage \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484236,
+          "name": "Java coverage \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484292,
+          "name": "Java coverage \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484319,
+          "name": "Java coverage \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484493,
+          "name": "Java coverage \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115586719852,
+          "name": "Diff coverage report",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 38480461287,
+      "name": "Security",
+      "event": "pull_request",
+      "head_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38480461287",
+      "jobs": [
+        {
+          "id": 115581482914,
+          "name": "Trivy (filesystem)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581483140,
+          "name": "Gitleaks (secrets)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581483207,
+          "name": "Trivy (config \u2014 Dockerfile + compose)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115581484567,
+          "name": "Trivy (built images)",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ]
+    },
+    {
+      "id": 38480461454,
+      "name": "OpenAPI Drift Guard",
+      "event": "pull_request",
+      "head_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38480461454",
+      "jobs": [
+        {
+          "id": 115581483772,
+          "name": "OpenAPI \u2194 generated types drift",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "limits": "Current remotea852; Rootlocalc0f10 adds P18test/Auth-only changed dependency condition, no gateclaim for newlocalSHA; builtimage conditionalskip retained"
+}

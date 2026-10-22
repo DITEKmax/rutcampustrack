@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-14T02:57:01.394841+00:00",
+  "source_revision": "f27583dba73b05d8f20dce2752f75eb50423e2d6",
+  "paths": [
+    ".github/workflows/ci.yml",
+    "docs/validation/cloud-20261011/CURRENT.md",
+    "docs/validation/cloud-20261011/attempts.ndjson",
+    "docs/validation/cloud-20261011/boundary-scenarios.csv",
+    "docs/validation/cloud-20261011/receipts/Q03-existing-finite-auth-proof-reuse.safe.json",
+    "docs/validation/cloud-20261011/receipts/Q04-Q15-current-localchecks.safe.json",
+    "docs/validation/cloud-20261011/receipts/Q04-admin-journey-independent-review.safe.md",
+    "docs/validation/cloud-20261011/receipts/Q15-current-application-recovery-independent-review.safe.md",
+    "docs/validation/cloud-20261011/receipts/current-f8b-Auth-checkout.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-f8b-FIRST3.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-f8b-application-recovery.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-f8b-gates-metadata.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-f8b-next5.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-f8b-real-push-readback.safe.json",
+    "docs/validation/cloud-20261011/resources.md",
+    "docs/validation/cloud-20261011/source-ledger.json",
+    "docs/validation/cloud-20261011/verified-cases.csv",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts",
+    "tests/e2e/fixtures/application-recovery.spec.ts",
+    "tests/e2e/playwright.real-mobile.config.ts",
+    "tests/e2e/specs/mobile-real-server.spec.ts"
+  ],
+  "source_pins": {
+    ".github/workflows/ci.yml": "96cdf7fbfe2d61ef573d8adb601d2671212e3e3e27038fedf4e21a6ca9f03d87",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "1919febde7299ac2da8c947a947ed600983b0025fe7f07c057bbb6d064897755",
+    "tests/e2e/fixtures/application-recovery.spec.ts": "602c5911faf3a1d4c19a5dfb46c6a5e06e701240edecf0e5b5495f309161befc",
+    "tests/e2e/playwright.real-mobile.config.ts": "36249138be7b4c1214c98128ee82759a8af211f9541db28cb152383c19223576",
+    "tests/e2e/specs/mobile-real-server.spec.ts": "67444c7dec0464e38ddf6cccc2b1e61aaeabf824e99aa27096788c5d4c202c0b"
+  },
+  "normal_hooks": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "native_terminal": {
+    "direct_pid": 622448,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 622448,
+        "start_ticks": 20036190
+      },
+      {
+        "pid": 622460,
+        "start_ticks": 20036196
+      },
+      {
+        "pid": 622488,
+        "start_ticks": 20036227
+      },
+      {
+        "pid": 622516,
+        "start_ticks": 20036299
+      },
+      {
+        "pid": 622611,
+        "start_ticks": 20036341
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "source_pins_after": "UNCHANGED",
+  "independent_review": "Q04whole-R1-configselection andQ15targeteddiagnostic APPROVE_SOURCE_LOCAL",
+  "actual_new_client_diagnostic": "NOT_RUN",
+  "original_f8b_acceptance": "8clientsPASS/RecoveryseedFAILbeforebackup/causeUNKNOWN; CovSecOpenAPIgreen",
+  "parser_angular_contract_checks": "PASS"
+}

@@ -1,0 +1,73 @@
+{
+  "time": "2026-10-12T06:14:53.523929+00:00",
+  "scope": "READ_ONLY metadata alias and freeze proposal",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/CURRENT.json",
+      "bytes": 312,
+      "sha256": "66a03e03f53ee13c18f9cf65680fa8e3c2be66b6216ce5db7bec1e5638e5d783"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/PROCESS.json",
+      "bytes": 135,
+      "sha256": "b0c173280210163294a6f4c7b1e98741c9ac687711eed5e99aa53867884d9ec6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/REPORT.md",
+      "bytes": 5646,
+      "sha256": "18c960997f06003400a5d40c57f3bc05bb7de1c98bebb206313b97454981d1fc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/RESULT.json",
+      "bytes": 787,
+      "sha256": "5d6b2dca7583d76b0da47d7bc05c6257ba9a672db62dfc7f4817cfc98f134505"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/SUMMARY.json",
+      "bytes": 926,
+      "sha256": "caddf884109b105d6dbf4e9e04f19f8461d8b5f373527ebc0137e14956b574d6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/attempts.ndjson",
+      "bytes": 5535,
+      "sha256": "713bef7890590b953d02b9c797a39adbc486f5fb4bdbe0bdb0b846bfb9085ced"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/input-seals.json",
+      "bytes": 5851,
+      "sha256": "22e9bdd027736f16b76a9667a170263483797a88fbb4d7aa9024744200350615"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/ownership-freeze-lineage.json",
+      "bytes": 3346,
+      "sha256": "2e8260a373b97c6b9d3872244dfe97ec640c6ebbf65c0803eb7d36273b7b2600"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/phase-budget.json",
+      "bytes": 1596,
+      "sha256": "d85bb9e558cc146310369cad3b8d7cb2e932494ee5f7156f232d2d24e193dd76"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/proposed-path-freeze-COW-registry.json",
+      "bytes": 16177426,
+      "sha256": "3b3bfba8affa57cb6b4ed6ec43015bf148b65d61c011e7dba21cfecc1c813a16"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/reference-aliases.json",
+      "bytes": 1852876,
+      "sha256": "66532b02b4c274816156648a0c9b3af7038402c1b2c9e40342eb6d0c0cc5e66d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/scan.py",
+      "bytes": 9180,
+      "sha256": "b27c18849dbb099d5229ab0cc2b509c8c8203b231c757002225158395dad2131"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/capacity_premutation_aliases/worktrees.json",
+      "bytes": 11436,
+      "sha256": "56d1ddb9d7ec4f6264a05256cba86b92f8b30662f259c46658a09f5ec18a89f6"
+    }
+  ],
+  "resource_mutations": false,
+  "processes": []
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "P09_INDEPENDENT_SOURCE_REVIEW_CHECKS_V1",
+  "verdict": "FINDINGS",
+  "test_source_sha256": "214c60272df3cbb471bb4cba4fe974c67d5e285d15517401517dc57a5831e607",
+  "build_source_sha256": "282a4efc96471a80d07adcc68bd21568d350a48bf7dab29e58fc130b2b903eaf",
+  "primary_cleanup_semantics_RAM4": {
+    "normal_cleanup_preserves_primary": {
+      "terminal": "PRIMARY",
+      "attempted_actions": [
+        "disconnect_A",
+        "disconnect_B",
+        "client_stop",
+        "logout_A",
+        "logout_B"
+      ]
+    },
+    "control_logout_failure_masks_primary": {
+      "terminal": "CLEANUP",
+      "attempted_actions": [
+        "disconnect_A",
+        "disconnect_B",
+        "client_stop",
+        "logout_A",
+        "logout_B"
+      ]
+    },
+    "first_disconnect_failure_masks_primary_skips_second_direct_disconnect": {
+      "terminal": "CLEANUP",
+      "attempted_actions": [
+        "disconnect_A",
+        "client_stop",
+        "logout_A",
+        "logout_B"
+      ]
+    },
+    "cleanup_only_failure_fails": {
+      "terminal": "CLEANUP",
+      "attempted_actions": [
+        "disconnect_A",
+        "disconnect_B",
+        "client_stop",
+        "logout_A",
+        "logout_B"
+      ]
+    }
+  },
+  "qualification": "Source counterexample by Java finally semantics; RAM analogue only, not actual Java AST/compile/runtime/sensitivity proof.",
+  "compile_runtime_sensitivity": "NOT_RUN",
+  "actual_auth_socket_effect": "NOT_RUN",
+  "privacy_effects": "Public Source/RAM only; no raw test artifacts/private values/keys/env/native/API/network/product edit"
+}

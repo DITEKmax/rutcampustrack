@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-10-11T23:02:47.773340+00:00",
+  "reviewer": "notification_recovery_review",
+  "notification_verdict": "CHANGES_REQUESTED",
+  "notification_commit": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+  "recovery_verdict": "APPROVE",
+  "recovery_commit": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+  "findings": [
+    "NTR01 P2 source/test-quality TTL false green"
+  ],
+  "NP01": "P2 GAP remains open",
+  "archive_members": 98,
+  "original_member_index": "source-evidence-manifest.json",
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/CURRENT.md",
+      "bytes": 1346,
+      "sha256": "6d29cdaa0d2ab6f824e004b258354c8ae97d1c111f18389ef844a9ae357d514c"
+    },
+    {
+      "path": "collect-review-inputs.py",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/collect-review-inputs.py",
+      "bytes": 14508,
+      "sha256": "87d831dee9886425008e7d9461b765eef6372beae620a67149f49f8c48564455"
+    },
+    {
+      "path": "immutable-original-review-inputs.zip",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/immutable-original-review-inputs.zip",
+      "bytes": 278863,
+      "sha256": "f00b64476e12fa4dec1b1e5f9f9a7f47232a232f55ba4e38e00a9dfdd2414994"
+    },
+    {
+      "path": "review.json",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/review.json",
+      "bytes": 8214,
+      "sha256": "ad94c318a58a585ecc2088b2f8eb43b12ff470a20197bf2aa1fe7ea98a259b5b"
+    },
+    {
+      "path": "review.md",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/review.md",
+      "bytes": 12047,
+      "sha256": "35d8a75ffbf0895453894e8ae74ab8e210787297ea72b7fb689b579353e0ef8f"
+    },
+    {
+      "path": "source-evidence-manifest.json",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/source-evidence-manifest.json",
+      "bytes": 126120,
+      "sha256": "a6561d9ec73be8b67cfb23e2eea9fb151c5d00a0037c113a5e544ea9eabe3dc6"
+    },
+    {
+      "path": "ttl-oracle-analysis.json",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/ttl-oracle-analysis.json",
+      "bytes": 1009,
+      "sha256": "10b2f276f120945633433f5cf701535c5c18ec277dd8899e93690268f0de9a2f"
+    },
+    {
+      "path": "verification.json",
+      "absolute_path": "/workspace/scratch/rct-validation/notification_recovery_review/verification.json",
+      "bytes": 625,
+      "sha256": "27d1bdb53dcfedabf26227a349ec129618ce4baad5c28f22edfc7920674078b5"
+    }
+  ],
+  "immutability": "Finalized original-byte archive and SHA256 index; all outputs made read-only; root copies bytes and verifies before publishing. Manifest self-hash is supplied separately in transfer-manifest.sha256.",
+  "no_runtime_or_whole_family_acceptance": true
+}

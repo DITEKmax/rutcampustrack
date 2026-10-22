@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetIncreaseRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDetailResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
@@ -16,6 +18,14 @@ import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageRespo
 /** Unified, headman-scoped request queue for excuse and late-checkin tickets. */
 @RequestMapping("/attendance/requests")
 public interface HeadmanRequestApi {
+
+    @GetMapping("/students/{studentId}/late-checkin-budget")
+    ResponseEntity<HeadmanLateCheckinBudgetResponse> budget(@PathVariable long studentId);
+
+    @PostMapping("/students/{studentId}/late-checkin-budget")
+    ResponseEntity<HeadmanLateCheckinBudgetResponse> increaseBudget(
+            @PathVariable long studentId,
+            @Valid @RequestBody HeadmanLateCheckinBudgetIncreaseRequest body);
 
     @GetMapping
     ResponseEntity<HeadmanRequestPageResponse> list(
@@ -32,9 +42,11 @@ public interface HeadmanRequestApi {
 
     @PostMapping("/{id}/decision")
     ResponseEntity<HeadmanRequestDetailResponse> decide(
-            @PathVariable String id,
-            @Valid @RequestBody HeadmanRequestDecisionRequest body);
+            @PathVariable String id, @Valid @RequestBody HeadmanRequestDecisionRequest body);
 
-    @GetMapping(value = "/{id}/attachments/{attachmentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    ResponseEntity<byte[]> downloadAttachment(@PathVariable String id, @PathVariable String attachmentId);
+    @GetMapping(
+            value = "/{id}/attachments/{attachmentId}",
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<byte[]> downloadAttachment(
+            @PathVariable String id, @PathVariable String attachmentId);
 }

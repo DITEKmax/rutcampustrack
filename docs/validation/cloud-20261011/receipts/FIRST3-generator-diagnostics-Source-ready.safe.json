@@ -1,0 +1,222 @@
+{
+  "schema": "RCT_FIRST3_DATASET_CORRECTION_SOURCE_READY_V1",
+  "utc": "2026-10-13 09:06:46 UTC",
+  "state": "SOURCE_READY_INDEPENDENT_REVIEW_REQUIRED_NATIVE_NOT_RUN",
+  "writer": "first3_dataset_call_source",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "worktree": "/workspace/rct-worktrees/first3-dataset-correction-20261013",
+  "branch": "codex/first3-dataset-correction-20261013",
+  "frozen_base": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "semantic_commit": "2ffd36d390e19879451e855d6e974f97ab5b4c5c",
+  "mechanical_commit": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "head": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "worktree_clean": true,
+  "pushed": false,
+  "antecedent_source_receipt": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/source-receipt.safe.json",
+    "sha256": "4416ae9789cbc92e1aec85de055e421afe2c03c67c488fad8802906438365fb0"
+  },
+  "modified": [
+    {
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "old_sha256": "913724732eba4fdd38706ffa34325c073f1599f732f56fd287df5558d4457251",
+      "sha256": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+      "change": "Replace invalid-reachable random code100 with 1+(10+byte%90), preserving exactly the90 accepted110..199. Unexpected status still throws before any response JSON; closed helper replaces raw method/path/status message."
+    },
+    {
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "old_sha256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+      "sha256": "9e975dc7ec7410cee2d0fc603f2c60039f6eb9b1966f486959dfdc483d4ff9aa",
+      "change": "One canonical11-route/cause map; derive DATASET_HTTP stages; helper produces bounded closed reported marker only; classifier/decoder accept exact known reported code + existing finite nonzero HTTP status. Unknown route/status mapsUNKNOWN0. Existing outcome reporter unchanged."
+    }
+  ],
+  "preserved": {
+    "artifact_privacy_sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+    "original_assertions_http_expectations": "UNCHANGED",
+    "clocks_session_seed_private_guards": "UNCHANGED",
+    "Angular_server_API_proto_Root_collector_config_locks": "UNCHANGED",
+    "static_checks": {
+      "old15ConstantRowsPreserved": true,
+      "reporterMethodsAndOutcomeCountsByteExact": true,
+      "untrustedClassFrameHintsByteExact": true,
+      "reportedHintEvictionByteExact": true,
+      "privateArtifactSourceUntouched": true,
+      "outputDiagnosticFieldCount": 3,
+      "corePriorityCap": 8,
+      "annotationReadCap": 32,
+      "noCurrentFailurePromotion": true
+    }
+  },
+  "generator": {
+    "current_finding": "DF-FIRST3-DATASET-NUMERIC-CODE-001",
+    "accepted_rule": "Canonical GroupCodeRules.fromParts + ProgramType explicit1..9; course1<=duration4; accepted JS-ADMIN05 creation supplies codes and duration.",
+    "original_expression": "`1${randomBytes(1)[0] % 100}`.padEnd(3, '0')",
+    "corrected_expression": "`1${10 + (randomBytes(1)[0] % 90)}`",
+    "original_bad_public_byte_inputs": [
+      0,
+      100,
+      200
+    ],
+    "original_bad_code": "100",
+    "all256_corrected_inputs_canonical_valid": true,
+    "old_valid_domain_equals_new_domain": true,
+    "retained_codes": 90,
+    "alphabetic_uniqueness_strategy": "UNCHANGED_RANDOM_SUFFIX",
+    "source_projected_failure": "Old code100 reaches current canonical BadRequest/400 while fixture expects201; not an observed HTTP response."
+  },
+  "canonical_producer_contract": {
+    "annotation": "rct-safe-failure-v1",
+    "fields": [
+      "stage",
+      "cause",
+      "httpStatus"
+    ],
+    "new_mapping": [
+      {
+        "cause": "DATASET_SEMESTERS_READ_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "GET",
+        "routeShape": "^\\/api\\/academic\\/semesters\\?size=100$"
+      },
+      {
+        "cause": "DATASET_SEMESTER_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/academic\\/semesters$"
+      },
+      {
+        "cause": "DATASET_SEMESTER_ACTIVATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "PATCH",
+        "routeShape": "^\\/api\\/academic\\/semesters\\/[1-9][0-9]{0,18}\\/activate$"
+      },
+      {
+        "cause": "DATASET_GROUP_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/academic\\/groups\\/registry$"
+      },
+      {
+        "cause": "DATASET_USER_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/academic\\/users$"
+      },
+      {
+        "cause": "DATASET_HEADMAN_SET_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "PUT",
+        "routeShape": "^\\/api\\/academic\\/groups\\/[1-9][0-9]{0,18}\\/headman$"
+      },
+      {
+        "cause": "DATASET_SUBJECT_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/academic\\/subjects$"
+      },
+      {
+        "cause": "DATASET_SUBJECT_READ_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "GET",
+        "routeShape": "^\\/api\\/academic\\/subjects\\/[1-9][0-9]{0,18}$"
+      },
+      {
+        "cause": "DATASET_LESSON_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/schedule\\/one-off-lessons$"
+      },
+      {
+        "cause": "DATASET_HOMEWORK_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/academic\\/homeworks$"
+      },
+      {
+        "cause": "DATASET_ASSISTANT_CREATE_HTTP",
+        "stage": "DATASET_HTTP",
+        "method": "POST",
+        "routeShape": "^\\/api\\/academic\\/assistants$"
+      }
+    ],
+    "marker_template": "Reported synthetic dataset CLOSED_CAUSE: HTTP ALLOWLIST_STATUS",
+    "serialized_prefix": "Error: ",
+    "known_marker_only": true,
+    "existing_allowed_nonzero_http_statuses": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      410,
+      422,
+      423,
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "dataset_zero_forbidden": true,
+    "unknown_route_or_status": {
+      "stage": "UNKNOWN",
+      "cause": "UNKNOWN",
+      "httpStatus": 0
+    },
+    "path_boundary": "Primitive string <=128 UTF16units; control characters rejected; exact source route shapes only; dynamic IDs matched as positive1..19 decimal digits inRAM, never copied/hashed/exported.",
+    "reported_trust": "These serialized markers report context declared by a bounded source form. A fabricated exact marker can classify to the same closed tuple; it authenticates neither execution, operation, actual HTTP response, product cause, actor identity, admission, nor success. Actual witness needs source/revision/producer/runtime join. No classifier grants access or changes result status.",
+    "old15_core_and9_untrusted_hints": "Preserved, corepriority8/decoderfirst32 unchanged; new11 codes are core HTTP diagnostic context and may displace only reported-only slots, never original core facts.",
+    "root_consumer_schema": "UNMODIFIED_BY_AUTHOR; Root sole writer must mirror this frozen11 cause->DATASET_HTTP/status contract explicitly and review its boundary before future artifact collection."
+  },
+  "verification": {
+    "V8_RAM_safe_controls": {
+      "total": 378,
+      "passed": true,
+      "getterCalls": 0,
+      "knownRouteStatusCases": 143,
+      "mode": "SELECTED_ACTUAL_SOURCE_TYPE_ONLY_ERASURE_V8_RAM"
+    },
+    "V8_RAM_privacy_generator_actor_controls": {
+      "total": 267,
+      "pass": true,
+      "newInputs": 256,
+      "retainedAcceptedCodes": 90,
+      "invalidOldByteInputs": [
+        0,
+        100,
+        200
+      ],
+      "actorUnexpectedStatusStillThrows": true,
+      "errorBodyReads": 0,
+      "mode": "ACTUAL_SOURCE_SELECTED_BODY_TYPE_ERASURE_STUB_RESPONSE_V8_RAM_NOT_HTTP"
+    },
+    "interpretation": "Selected actual semantic TS functions/body with type-only erasure, public bytes and stub response metadata, V8 RAM only. It does not prove full TS compiler, Playwright worker or real network/server/browser behavior. Final mechanical change is layout plus one optional call-argument trailing comma removal; full native formatter/type verification remainsNOT_RUN.",
+    "preparation_errors": "Two TS-erasure adapter syntax errors and one overly broad source-block preservation comparison failed before final controls; corrected only RAM adapters/boundaries. No product fix or oracle weakening followed those adapter failures.",
+    "git_diff_check": "PASS",
+    "git_inventory": "EXACT_TWO_ASSIGNED_FILES",
+    "ordinary_own_commits": "PASS_NO_PUSH",
+    "installed_precommit_hook": "ABSENT_TARGETED_CHECK; no hook bypass",
+    "Node_Playwright_formatter_typecheck": "NOT_RUN",
+    "Java_Docker_API_browser_network": "NOT_RUN",
+    "raw_artifacts_XML_HTML_logs_credentials_read": false,
+    "current_three_CI_FAIL_cause": "UNKNOWN",
+    "parent_criteria": "NOT_PROMOTED"
+  },
+  "sufficient_next_checks": {
+    "prerequisite": "Fresh independent implementation/privacy review of frozen2files+reported trust+Root consumer contract, then explicitly fresh bounded checking grant. No native granted by this receipt.",
+    "targeted_native_control": "Use existing reviewed TS VM loader pattern with canonical worktree module binding. One finite OLD/NEW control package: original byte0/100/200 violate canonical domain, newall256 valid/preserve90; all11 public operation/status boundaries, wrongprefix/method/path/status, overlong/accessor/prototype, full8core cap/first32, failure retention and private marker absence. Actual Actor.call stub unexpected400 stillthrows and doesnotreaderrorbody. Emit only closed booleans/counts/codes, no raw errors.",
+    "privacy_worker": "Reuse unchanged tests/e2e/check-artifact-privacy.mjs against this worktree with existing protected fixture/canonical reporter; browserNOT_STARTED. Existing interruption/missingguard capture boundaries retained.",
+    "formatting": "Existing Prettier2file scoped write/check under fresh grant; use original .prettierrc.json and shared existing binary; preserve tiny mechanical commit separately if it changes whitespace.",
+    "typecheck": "Existing scoped strict TS5.9.3 checker/program includes mobile-dataset/reporter/private fixture; only worktree binding delta, no compiler policy weakening.",
+    "actual_client": "After Root source integration and consumer update, exactly one appropriate current CI/FIRST3 cycle or authorized retained real lane. Preserve original assertions/statuses and old failing SAFE receipts. Current actual cause remainsUNKNOWN until closed runtime diagnostic arrives."
+  },
+  "limits": [
+    "SourceREADY is not runtimePASS/DONE.",
+    "Root originalworktree/product/consumer/globaldocs untouched.",
+    "No B013 rejected action repeated/rephrased or new model fallback.",
+    "No ordinary own commit pushes/main/prod/deploy effects.",
+    "Mechanical formatting was manually separated; canonical formatter has not run."
+  ]
+}

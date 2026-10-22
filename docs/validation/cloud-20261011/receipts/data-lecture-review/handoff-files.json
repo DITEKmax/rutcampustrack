@@ -1,0 +1,91 @@
+{
+  "format_version": 1,
+  "timestamp": "2026-10-11T22:00:19.337225+00:00",
+  "scratch": "/workspace/scratch/rct-validation/data_lecture_review",
+  "reviewed_stable_commit": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "verdict": "APPROVE",
+  "scope": "qualified independent read-only DATA3 review; required current L05 page verification dependency preserved",
+  "immutable": true,
+  "raw_logs_requests_or_sensitive_artifacts_included": false,
+  "files": [
+    {
+      "name": "CURRENT.md",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/CURRENT.md",
+      "bytes": 657,
+      "sha256": "9e4c42cc3d3e14e39cdf5154652cca9d28fc2c9df1324016f5ebfc4a9ffbff5f",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "bounded-cases.csv",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/bounded-cases.csv",
+      "bytes": 2533,
+      "sha256": "036554fa28ae6cd7149478bc537e02e77516d38c47e0c42830005c2dacdc5e98",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "evidence-reconciliation.json",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/evidence-reconciliation.json",
+      "bytes": 58673,
+      "sha256": "8342876058cc579650e178ff4391aa1abb5bcaac96e0ec7fc697ad6baaa3b0a0",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "merged-subject-repository.java.txt",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/merged-subject-repository.java.txt",
+      "bytes": 2643,
+      "sha256": "3288e8caf3d87e414c0e4b76a6cc1ab7411163b25b31f9a6c609bef0b0bde9d2",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "review.md",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/review.md",
+      "bytes": 12193,
+      "sha256": "965d4f069b845fd0736921f82103cb1647b5db561fc71c371ba163304c90217f",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "source-equivalence.json",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/source-equivalence.json",
+      "bytes": 19014,
+      "sha256": "5c258d1f34c85b1c76001e6ba1d3e3bb34e0651111366f7fa006ab437cf7921a",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "source-ledger.json",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/source-ledger.json",
+      "bytes": 35222,
+      "sha256": "43379eac574207fda0e489e13641c54d1b01b73b6b00f2e589a915a87d8e1174",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "subject-test-provenance.json",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/subject-test-provenance.json",
+      "bytes": 1168,
+      "sha256": "afc1fa0e7ca9ab485b6c4c7c51c8d856610e3888b2bd5ea646b64784c3b2a024",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "subject-test-provenance.md",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/subject-test-provenance.md",
+      "bytes": 1262,
+      "sha256": "a9fd456b842cfa97cd0948b0eb314b1d2151da70c794b71f8f861ea087e15fe8",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "test-quality.json",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/test-quality.json",
+      "bytes": 2693,
+      "sha256": "5e9990d84a462a56d8ba9beb98f916aeac21b77653138769b7335c9a6586e301",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "verdict.json",
+      "path": "/workspace/scratch/rct-validation/data_lecture_review/verdict.json",
+      "bytes": 2333,
+      "sha256": "0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c",
+      "safe_to_transfer": true
+    }
+  ],
+  "transfer_rule": "copy these exact safe reviewer bytes into root-owned receipts; verify SHA256. Do not alter this independent verdict. Integration/CI may append separate root receipts.",
+  "self_hash": "handoff.sha256 hashes this manifest and all listed outputs; manifest intentionally excludes its own recursive hash"
+}

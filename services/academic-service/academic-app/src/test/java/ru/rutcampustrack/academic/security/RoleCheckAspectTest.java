@@ -1,5 +1,10 @@
 package ru.rutcampustrack.academic.security;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,43 +16,34 @@ import org.mockito.quality.Strictness;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
- * Unit test for RoleCheckAspect — no Spring context, uses Mockito only.
- * Tests headman bypass logic and existing role enforcement.
+ * Unit test for RoleCheckAspect — no Spring context, uses Mockito only. Tests headman bypass logic
+ * and existing role enforcement.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RoleCheckAspectTest {
 
-    @Mock
-    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
-    @Mock
-    private RequestContext requestContext;
+    @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+    @Mock private RequestContext requestContext;
 
-    @Mock
-    private ProceedingJoinPoint pjp;
+    @Mock private ProceedingJoinPoint pjp;
 
-    @Mock
-    private RequireRole requireRole;
+    @Mock private RequireRole requireRole;
 
-    @InjectMocks
-    private RoleCheckAspect aspect;
+    @InjectMocks private RoleCheckAspect aspect;
 
     @org.junit.jupiter.api.BeforeEach
     void injectAuthorityAdapter() {
-        org.springframework.test.util.ReflectionTestUtils.setField(aspect,"adminAccess",adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                aspect, "adminAccess", adminAccess);
     }
 
     @Test
     void headmanPassesStudentRole() throws Throwable {
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         when(requestContext.isHeadman()).thenReturn(true);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.STUDENT});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.STUDENT});
 
         aspect.checkRole(pjp, requireRole);
 
@@ -58,7 +54,7 @@ class RoleCheckAspectTest {
     void headmanBlockedForAdminRole() {
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         when(requestContext.isHeadman()).thenReturn(true);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.ADMIN});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.ADMIN});
 
         assertThrows(AccessDeniedException.class, () -> aspect.checkRole(pjp, requireRole));
     }
@@ -67,7 +63,7 @@ class RoleCheckAspectTest {
     void plainStudentPassesStudentRole() throws Throwable {
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.STUDENT});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.STUDENT});
 
         aspect.checkRole(pjp, requireRole);
 
@@ -78,7 +74,7 @@ class RoleCheckAspectTest {
     void plainStudentBlockedForAdminRole() {
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.ADMIN});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.ADMIN});
 
         assertThrows(AccessDeniedException.class, () -> aspect.checkRole(pjp, requireRole));
     }
@@ -87,17 +83,17 @@ class RoleCheckAspectTest {
     void nullRoleAlwaysThrows() {
         when(requestContext.getRole()).thenReturn(null);
         lenient().when(requestContext.isHeadman()).thenReturn(true);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.STUDENT});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.STUDENT});
 
         assertThrows(AccessDeniedException.class, () -> aspect.checkRole(pjp, requireRole));
     }
 
     @Test
     void adminPassesAdminRole() throws Throwable {
-        when(requireRole.admin()).thenReturn(new String[]{});
+        when(requireRole.admin()).thenReturn(new String[] {});
         when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.ADMIN});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.ADMIN});
 
         aspect.checkRole(pjp, requireRole);
 
@@ -109,7 +105,7 @@ class RoleCheckAspectTest {
     void teacherPassesTeacherRole() throws Throwable {
         when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
-        when(requireRole.value()).thenReturn(new UserRole[]{UserRole.TEACHER});
+        when(requireRole.value()).thenReturn(new UserRole[] {UserRole.TEACHER});
 
         aspect.checkRole(pjp, requireRole);
 

@@ -1,0 +1,38 @@
+[
+  {
+    "phase": "before-global",
+    "native_XML_private_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/before-global/result.private.xml",
+    "native_XML_sha256": "e30d8f0bf9673c3a7e8d26b4cbabf4c2fc46e82806190e6433ef4429fccacb97",
+    "native_XML_bytes": 36163,
+    "redacted_XML_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/before-global/result.redacted.xml",
+    "redacted_XML_sha256": "979505cf86c38009d91e00e5b1832d1a1fdd78b3fd5ce36dd5ae005e456802a3",
+    "qualification": "Derived native XML preserves original testsuite/testcase metadata, outcomes and failure types; removes logs, properties, messages and stack text. Native original hash retained; never relabeled native bytes."
+  },
+  {
+    "phase": "normal-green",
+    "native_XML_private_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/normal-green/result.private.xml",
+    "native_XML_sha256": "55f33100133608d17c6c684517c6ff6974fa66249b8a1898954b3f529f17d644",
+    "native_XML_bytes": 35563,
+    "redacted_XML_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/normal-green/result.redacted.xml",
+    "redacted_XML_sha256": "82b73ff01522e572520fb652cc1c3231451050cf01e8931cd03bb97912a821a2",
+    "qualification": "Derived native XML preserves original testsuite/testcase metadata, outcomes and failure types; removes logs, properties, messages and stack text. Native original hash retained; never relabeled native bytes."
+  },
+  {
+    "phase": "duplicate-current",
+    "native_XML_private_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/duplicate-current/result.private.xml",
+    "native_XML_sha256": "140ec4cfe1bedb797881cde0096060a16194ad133971063fac99001316fe11bc",
+    "native_XML_bytes": 36162,
+    "redacted_XML_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/duplicate-current/result.redacted.xml",
+    "redacted_XML_sha256": "c3c6ce45427e4461029610bd9fa4e0d7d4b5a86ac7d80fd8c311934c6aa371c8",
+    "qualification": "Derived native XML preserves original testsuite/testcase metadata, outcomes and failure types; removes logs, properties, messages and stack text. Native original hash retained; never relabeled native bytes."
+  },
+  {
+    "phase": "restored-green",
+    "native_XML_private_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/restored-green/result.private.xml",
+    "native_XML_sha256": "f521f0e1090d0d54446df5be6d80a4d5f371547659152b1e64b2d33b845a119d",
+    "native_XML_bytes": 35562,
+    "redacted_XML_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/restored-green/result.redacted.xml",
+    "redacted_XML_sha256": "0d83269d18083d3cd44e295397b8010f62462d69e0ca670122a70c0b3ac0639b",
+    "qualification": "Derived native XML preserves original testsuite/testcase metadata, outcomes and failure types; removes logs, properties, messages and stack text. Native original hash retained; never relabeled native bytes."
+  }
+]

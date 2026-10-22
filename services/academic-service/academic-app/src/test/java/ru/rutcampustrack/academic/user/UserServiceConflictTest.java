@@ -1,132 +1,229 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import io.grpc.Metadata;
+import io.grpc.Status;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
-import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.academic.identitycatalog.IdentityCatalogSynchronizer;
+import ru.rutcampustrack.academic.identityoperation.*;
+import ru.rutcampustrack.authauthority.grpc.*;
+import ru.rutcampustrack.authoperations.grpc.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.*;
+import java.util.function.Function;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-/**
- * Unit test for UserService.createUser pre-check behavior (BUG-006 / D-07).
- *
- * Verifies that explicit existsByXxx checks throw ConflictException with the
- * correct field name BEFORE a save() call is attempted.
- */
-@ExtendWith(MockitoExtension.class)
+/** Field-specific duplicate outcomes at the actual Academic/Auth operation seams. */
 class UserServiceConflictTest {
-
-    @Mock private UserRepository userRepository;
-    @Mock private HeadmanAssistantRepository headmanAssistantRepository;
-    @Mock private StudentGroupHistoryRepository studentGroupHistoryRepository;
-    @Mock private RequestContext requestContext;
-    @Mock private UserAssembler userAssembler;
-    @Mock private CacheManager cacheManager;
-    @Mock private ApplicationEventPublisher eventPublisher;
-    @Mock private GroupRepository groupRepository;
-    @Mock private SemesterRepository semesterRepository;
-    @Mock private GroupHistoryCoverageRepository coverageRepository;
-
-    @InjectMocks
-    private UserService service;
-
-    @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
-    @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
-
-    @org.junit.jupiter.api.BeforeEach
-    void managedEnrollmentFixture() {
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
-        Group group = org.mockito.Mockito.mock(Group.class);
-        lenient().when(group.getId()).thenReturn(1L);
-        lenient().when(group.isActive()).thenReturn(true);
-        Semester semester = org.mockito.Mockito.mock(Semester.class);
-        lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
-        lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
-        GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
-        lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
-        lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
-        lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
-        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
-                .thenReturn(List.of(semester));
-        lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
-    }
+    private final UserIdentityCommandFixture fixture = new UserIdentityCommandFixture();
 
     private CreateUserRequest studentRequest() {
-        // telegramId is mandatory for STUDENT since BUG-006-3; use a placeholder
-        // value so this fixture exercises the happy path.
         return new CreateUserRequest(
-                "Иванов", "Иван", "Иванович",
-                UserRole.STUDENT, 1L, null, 123456789L
-        );
+                "Иванов", "Иван", "Иванович", UserRole.STUDENT, 1L, null, 123456789L);
     }
 
     @Test
     void existingTelegramIdThrowsConflictWithFieldTelegramId() {
-        // Request with telegramId that already exists
-        CreateUserRequest req = new CreateUserRequest(
-                "Петров", "Пётр", null,
-                UserRole.STUDENT, 1L, null, 55555L
-        );
-        when(userRepository.existsByTelegramId(55555L)).thenReturn(true);
+        var rejected =
+                new RejectionBoundary(IdentityOperationPhase.IDENTITY_OPERATION_PHASE_REJECTED);
+        rejected.install();
+        assertTelegramConflict(() -> fixture.service.createUser(studentRequest()));
+        // Replay reads the saved closed subtype; it does not infer it from a fresh catalog row.
+        when(rejected.store.acceptedForActor(eq(fixture.id.toString()), any()))
+                .thenAnswer(call -> fixture.accepted);
+        assertTelegramConflict(() -> fixture.service.createUser(studentRequest()));
+        verify(rejected.auth, times(1)).prepare(any());
+        verify(rejected.store, never()).apply(any());
+        verify(fixture.users, never()).save(any());
 
-        assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(ConflictException.class, ex -> {
-                    assertThat(ex.getField()).isEqualTo("telegramId");
-                });
+        // A lost/unknown rejection acknowledgement cannot become a field conflict.
+        var unknown = new RejectionBoundary(null);
+        unknown.install();
+        assertThatThrownBy(() -> fixture.service.createUser(studentRequest()))
+                .isInstanceOf(AcademicIdentityPendingException.class);
+        verify(unknown.store, never()).rejected(any(), any());
 
-        verify(userRepository, never()).save(any());
+        // A concurrent positive reservation wins over the requested negative tombstone.
+        var positive =
+                new RejectionBoundary(
+                        IdentityOperationPhase.IDENTITY_OPERATION_PHASE_PREPARED_FENCED);
+        positive.install();
+        assertThatThrownBy(() -> fixture.service.createUser(studentRequest()))
+                .isInstanceOf(AcademicIdentityPendingException.class);
+        verify(positive.store, never()).rejected(any(), any());
     }
 
     @Test
     void existingEmployeeNumberThrowsConflictWithFieldEmployeeNumber() {
-        CreateUserRequest req = new CreateUserRequest(
-                "Учителев", "Учитель", null,
-                UserRole.TEACHER, null, "EMP-001", null
-        );
-        when(userRepository.existsByEmployeeNumber("EMP-001")).thenReturn(true);
-
-        assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(ConflictException.class, ex -> {
-                    assertThat(ex.getField()).isEqualTo("employeeNumber");
-                });
-
-        verify(userRepository, never()).save(any());
+        when(fixture.jdbc.queryForObject(
+                        contains("employee_number=?"), eq(Boolean.class), eq("EMP-001"), eq(0L)))
+                .thenReturn(true);
+        var request =
+                new CreateUserRequest(
+                        "Учителев", "Учитель", null, UserRole.TEACHER, null, "EMP-001", null);
+        assertThatThrownBy(() -> fixture.service.createUser(request))
+                .isInstanceOfSatisfying(
+                        ConflictException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo("employeeNumber"));
+        fixture.notAccepted();
+        verify(fixture.users, never()).save(any());
     }
 
-    @Test
-    void noConflictWhenNoExistingValues() {
-        CreateUserRequest req = studentRequest();
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    private static void assertTelegramConflict(Runnable call) {
+        assertThatThrownBy(call::run)
+                .isInstanceOfSatisfying(
+                        ConflictException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo("telegramId"));
+    }
 
-        service.createUser(req);
+    /** Stops at the real Auth INSERT: no DB, server or new authority implementation. */
+    private final class RejectionBoundary {
+        final JdbcAcademicIdentityOperationStore store =
+                mock(JdbcAcademicIdentityOperationStore.class);
+        final AcademicIdentityCoordinator.Auth auth = mock(AcademicIdentityCoordinator.Auth.class);
+        AcademicIdentityCoordinator.Operation current;
+        final IdentityOperationPhase reply;
 
-        verify(userRepository).save(any());
+        RejectionBoundary(IdentityOperationPhase reply) {
+            this.reply = reply;
+        }
+
+        void install() {
+            var request = new MockHttpServletRequest();
+            request.addHeader("Idempotency-Key", fixture.id.toString());
+            var coordinator =
+                    new AcademicIdentityCoordinator(
+                            store, auth, mock(IdentityCatalogSynchronizer.class));
+            var http =
+                    new AcademicIdentityHttpOperations(
+                            request, new MockHttpServletResponse(), store, coordinator);
+            doAnswer(
+                            call -> {
+                                Function<UUID, AcademicIdentityCoordinator.AcceptedCommand> build =
+                                        call.getArgument(1);
+                                return http.execute(
+                                        call.getArgument(0),
+                                        id -> {
+                                            fixture.accepted = build.apply(id);
+                                            return fixture.accepted;
+                                        });
+                            })
+                    .when(fixture.http)
+                    .execute(any(AcademicIdentityLocalCommand.ApiIntent.class), any());
+            when(store.accept(any()))
+                    .thenAnswer(
+                            call -> {
+                                var command =
+                                        (AcademicIdentityCoordinator.AcceptedCommand)
+                                                call.getArgument(0);
+                                if (current == null)
+                                    current =
+                                            new AcademicIdentityCoordinator.Operation(
+                                                    fixture.id.toString(),
+                                                    AcademicIdentityCoordinator.Phase.ACCEPTED,
+                                                    command.authCommand(),
+                                                    null,
+                                                    List.of());
+                                return current;
+                            });
+            var trailers = new Metadata();
+            trailers.put(
+                    Metadata.Key.of("x-rct-error-code", Metadata.ASCII_STRING_MARSHALLER),
+                    "TELEGRAM_ID_CONFLICT");
+            when(auth.prepare(any())).thenThrow(Status.ALREADY_EXISTS.asRuntimeException(trailers));
+            when(store.prepareRejection(
+                            any(),
+                            eq(
+                                    IdentityOperationRejectionReason
+                                            .IDENTITY_OPERATION_REJECTION_REASON_TARGET_CONFLICT),
+                            eq("TELEGRAM_ID_CONFLICT")))
+                    .thenAnswer(
+                            call ->
+                                    RejectUnpreparedIdentityOperationRequest.newBuilder()
+                                            .setCanonicalPrepare(current.command())
+                                            .setReason(
+                                                    IdentityOperationRejectionReason
+                                                            .IDENTITY_OPERATION_REJECTION_REASON_TARGET_CONFLICT)
+                                            .build());
+            when(auth.reject(any()))
+                    .thenAnswer(
+                            call -> {
+                                if (reply == null) throw Status.UNAVAILABLE.asRuntimeException();
+                                return IdentityOperationResult.newBuilder()
+                                        .setOperationId(current.id())
+                                        .setCommandHash(current.command().getCommandHash())
+                                        .setKind(current.command().getKind())
+                                        .setPhase(reply)
+                                        .setOperationRevision(1)
+                                        .setErrorCode(
+                                                reply
+                                                                == IdentityOperationPhase
+                                                                        .IDENTITY_OPERATION_PHASE_REJECTED
+                                                        ? "PREPARE_REJECTED_TARGET_CONFLICT"
+                                                        : "")
+                                        .addAllTargets(
+                                                reply
+                                                                == IdentityOperationPhase
+                                                                        .IDENTITY_OPERATION_PHASE_REJECTED
+                                                        ? List.of()
+                                                        : List.of(
+                                                                PreparedIdentityTarget.newBuilder()
+                                                                        .setUserId(42)
+                                                                        .setFinalRolesVersion(1)
+                                                                        .setCredentialsVersion(1)
+                                                                        .setTelegramBindingVersion(
+                                                                                1)
+                                                                        .addGrants(
+                                                                                AdmissionGrant
+                                                                                        .newBuilder()
+                                                                                        .setGrantId(
+                                                                                                7)
+                                                                                        .setRole(
+                                                                                                "STUDENT")
+                                                                                        .setStatus(
+                                                                                                "ACTIVE")
+                                                                                        .setGroupId(
+                                                                                                1))
+                                                                        .build()))
+                                        .build();
+                            });
+            when(store.rejected(any(), any()))
+                    .thenAnswer(
+                            call -> {
+                                current =
+                                        new AcademicIdentityCoordinator.Operation(
+                                                current.id(),
+                                                AcademicIdentityCoordinator.Phase.REJECTED,
+                                                current.command(),
+                                                call.getArgument(1),
+                                                List.of(),
+                                                "TELEGRAM_ID_CONFLICT");
+                                return current;
+                            });
+            when(store.prepared(any(), any()))
+                    .thenAnswer(
+                            call -> {
+                                current =
+                                        new AcademicIdentityCoordinator.Operation(
+                                                current.id(),
+                                                AcademicIdentityCoordinator.Phase.AUTH_PREPARED,
+                                                current.command(),
+                                                call.getArgument(1),
+                                                List.of(),
+                                                "TELEGRAM_ID_CONFLICT");
+                                return current;
+                            });
+            when(store.apply(any())).thenThrow(Status.UNAVAILABLE.asRuntimeException());
+            when(store.findForActor(anyString())).thenAnswer(call -> current);
+        }
     }
 }

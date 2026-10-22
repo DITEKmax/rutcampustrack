@@ -1,0 +1,105 @@
+{
+  "utc": "2026-10-12T17:36:47.610736+00:00",
+  "count": 14,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/academic-migrations-readiness.safe.json",
+      "relative_path": "academic-migrations-readiness.safe.json",
+      "size": 178,
+      "mode": "0o600",
+      "sha256": "88d5d21949fd0dd72819034cf5426f9d5638619edd13186d79cc1c2ca0fa905d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/academic-process.safe.json",
+      "relative_path": "academic-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "3100c2dc056d6e7081d1fabe7d3c0b296e875691a46fb9fe0a29065ebb5e15e2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/attendance-process.safe.json",
+      "relative_path": "attendance-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "f4803281427097dfe5be2d8a902d7961920af74f707998bc98806a5951fca396"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/auth-process.safe.json",
+      "relative_path": "auth-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "e732d940a644091afb0db250c376562070fba2a7a6252b112597054c668a2a06"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/bff-process.safe.json",
+      "relative_path": "bff-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "a9a882682fb3e8e214809c6080790bd5fe19de17dec705f36838413f4e69ec85"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/cohort-artifact-bind.safe.json",
+      "relative_path": "cohort-artifact-bind.safe.json",
+      "size": 959,
+      "mode": "0o600",
+      "sha256": "8fcd5cc0ae83890657b9a4d38d2006ae2c447dea5e3942cb345305eae0612686"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/gateway-process.safe.json",
+      "relative_path": "gateway-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "6a11af2f312e276727b20befa3eb7bf90faea0130bb6da41f2250ae6572c69e9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/live8-identities.safe.json",
+      "relative_path": "live8-identities.safe.json",
+      "size": 2030,
+      "mode": "0o600",
+      "sha256": "9249fcd0ba6ef7dc18201d2aee8aded702c02b67a051657558f95f6c1d63cd4b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/mongo-protocol.safe.json",
+      "relative_path": "mongo-protocol.safe.json",
+      "size": 313,
+      "mode": "0o600",
+      "sha256": "da534856fd23648f7365758865964bab0edffdae6e921875fed3f3e47047df82"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/mongo-server-process.safe.json",
+      "relative_path": "mongo-server-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "20ba2aa2a33dcfd9b0fbc98c8e91a0d6980dc899b68c32d088f28db2349b1ec2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/notification-process.safe.json",
+      "relative_path": "notification-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "e150e584e073df4889e85798aaec7fccc7069475ba37fb707074915930b356ab"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/schedule-process.safe.json",
+      "relative_path": "schedule-process.safe.json",
+      "size": 302,
+      "mode": "0o600",
+      "sha256": "39fb5f6d733a8ebf50768271bb004452d005d514a26cb828a7cc1fe6c7daf4e5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/stand-readiness.py",
+      "relative_path": "stand-readiness.py",
+      "size": 7666,
+      "mode": "0o600",
+      "sha256": "8d694f0e5f2880ada69a9484de928d3b51ef65e37c2dd7db105517de9845ccd9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/critical-readiness-seal/stand-readiness.safe.json",
+      "relative_path": "stand-readiness.safe.json",
+      "size": 3261,
+      "mode": "0o600",
+      "sha256": "ecf9c0a90a723f8b503316020e663972e65ebdbd2f5c798172cd9792d2a10155"
+    }
+  ],
+  "private_files_excluded": true
+}

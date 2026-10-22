@@ -1,0 +1,52 @@
+{
+  "scope": "INDEPENDENT_T006_D011_CURRENT_ACADEMIC_STAGE_RESUME_SOURCE",
+  "verdict": "CHANGES_REQUESTED_SOURCE",
+  "source_manifest_sha256": "ac79d0c08f5c2c893a31ab9b30688eb11b2059f0ce18bf1e704373c24f4d076e",
+  "source_zip_sha256": "d7fa9f971b29445511bbceac2892139891bd77a7026b9564096ab236f7818732",
+  "findings": [
+    {
+      "id": "ACR-RESUME-MANIFEST01",
+      "priority": "P2",
+      "status": "OPEN_SOURCE"
+    },
+    {
+      "id": "ACR-RESUME-EFFECT01",
+      "priority": "P2",
+      "status": "OPEN_SOURCE"
+    }
+  ],
+  "native_stage_runtime": "NOT_RUN",
+  "actual_prefix_scan": false,
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 977,
+      "sha256": "40c12a777f2accc2e00d018e18250beb71fd6a5ae91f293a38089d3d080d3528",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 7967,
+      "sha256": "26c0f0b1fe113e9d94921925b3ac23c4b055c0cdd20a3ee0e83abbce95ec928e",
+      "mode": "0o400"
+    },
+    {
+      "path": "check.py",
+      "bytes": 12835,
+      "sha256": "700ef75241b73ddef0dd08de472b86468cdec651fbc21014e2c10013f1f58fe2",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 3535,
+      "sha256": "2d45fa28cdcaa11f64cc292da0ba66f5ee9969bb5f19cc49921acdc799ae2c38",
+      "mode": "0o400"
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "bytes": 8823,
+      "sha256": "3e3ae847c7197a383dad8fe9e2e7f97ffa2916d42f39fce5db25770df0b557e4",
+      "mode": "0o400"
+    }
+  ]
+}

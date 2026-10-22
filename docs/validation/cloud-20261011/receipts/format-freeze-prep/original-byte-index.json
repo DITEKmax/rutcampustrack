@@ -1,0 +1,119 @@
+{
+  "source": "/workspace/scratch/rct-validation/format_freeze_prep",
+  "manifest": "handoff-manifest.json",
+  "files": [
+    {
+      "path": "curated-authored-inventory.json",
+      "original_sha256": "243c2b81d9898a4e247273e67ace0e72f4aeb5c82b2f72dae71f0b5f8b916e7b",
+      "original_bytes": 2282020,
+      "working_sha256": "75fc9e811698c29ffbe2258bd0ef380b25c9c1fec699cf5e4ccb1af28ed253bd",
+      "working_bytes": 185433,
+      "transformation": "lossless single-member ZIP of newline-normalized readable view; immutable original retained separately",
+      "working_path": "curated-authored-inventory.json.readable.zip",
+      "archive_member": "curated-authored-inventory.json",
+      "readable_original_sha256": "243c2b81d9898a4e247273e67ace0e72f4aeb5c82b2f72dae71f0b5f8b916e7b",
+      "readable_original_bytes": 2282020
+    },
+    {
+      "path": "current-runner-inventory.json",
+      "original_sha256": "7c6f1b2190ab63989d4fa6367e824f65479cbb6016547d8602fb6db55627bebc",
+      "original_bytes": 1094945,
+      "working_sha256": "0e2802d7a027a164e14e4eb13d009c70b14ba5a7eed32f45585b1a76f56c9bd8",
+      "working_bytes": 62207,
+      "transformation": "lossless single-member ZIP of newline-normalized readable view; immutable original retained separately",
+      "working_path": "current-runner-inventory.json.readable.zip",
+      "archive_member": "current-runner-inventory.json",
+      "readable_original_sha256": "7c6f1b2190ab63989d4fa6367e824f65479cbb6016547d8602fb6db55627bebc",
+      "readable_original_bytes": 1094945
+    },
+    {
+      "path": "driver-target-reconciliation.json",
+      "original_sha256": "8b74fae096212579e522f644c67043fd7a4700b54f8d0bbf74c52b5272ce4294",
+      "original_bytes": 3048,
+      "working_sha256": "8b74fae096212579e522f644c67043fd7a4700b54f8d0bbf74c52b5272ce4294",
+      "working_bytes": 3048,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "expected-export-inputs.json",
+      "original_sha256": "f4ddd4388b60048e18074c7358e7f2fb0ece4353a6ba920d45307198db2f8d85",
+      "original_bytes": 63125,
+      "working_sha256": "f4ddd4388b60048e18074c7358e7f2fb0ece4353a6ba920d45307198db2f8d85",
+      "working_bytes": 63125,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "inventory.py",
+      "original_sha256": "462777888c1941345ced76e57117cfab715fa97f1ee76d16e34338c5b38ff380",
+      "original_bytes": 10672,
+      "working_sha256": "462777888c1941345ced76e57117cfab715fa97f1ee76d16e34338c5b38ff380",
+      "working_bytes": 10672,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "next-pass.md",
+      "original_sha256": "1ab6a6fe18125e58508803883d8fc6dfff0518575a31929e8ddf9e12b9a62b24",
+      "original_bytes": 8187,
+      "working_sha256": "1ab6a6fe18125e58508803883d8fc6dfff0518575a31929e8ddf9e12b9a62b24",
+      "working_bytes": 8187,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "prepare-export-classification.mjs",
+      "original_sha256": "4585e53b98ef359a483624e0dc03559ad2aeb0fa741cd8a0a077c9f7af228549",
+      "original_bytes": 931,
+      "working_sha256": "4585e53b98ef359a483624e0dc03559ad2aeb0fa741cd8a0a077c9f7af228549",
+      "working_bytes": 931,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "root-c4-paths.z",
+      "original_sha256": "d0a7eb131d58bfa3e7c116c3d7a0afb3f309fced3c14cfc8a212abbe2b5fbe2a",
+      "original_bytes": 577629,
+      "working_sha256": "7ed925a4a82777c6a6d83302452e3e296f0c461d6eeede4144e92a3624bb0340",
+      "working_bytes": 577630,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "root-observed-status.txt",
+      "original_sha256": "f1e368b6aaf2af61a9412df5369b4801b67ea7667787776beb9c0c28dfbf7eba",
+      "original_bytes": 2723,
+      "working_sha256": "f1e368b6aaf2af61a9412df5369b4801b67ea7667787776beb9c0c28dfbf7eba",
+      "working_bytes": 2723,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "summary.json",
+      "original_sha256": "1380f6bb440229df59eef26936fc82026732ddd49e8af2e0bda761b0e5dcc140",
+      "original_bytes": 1005,
+      "working_sha256": "1380f6bb440229df59eef26936fc82026732ddd49e8af2e0bda761b0e5dcc140",
+      "working_bytes": 1005,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification.json",
+      "original_sha256": "1a30fc21ad3082abb3e625dcc17bed1166fa54695ec68585db8c4f6ec7a03dca",
+      "original_bytes": 320,
+      "working_sha256": "1a30fc21ad3082abb3e625dcc17bed1166fa54695ec68585db8c4f6ec7a03dca",
+      "working_bytes": 320,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verified-exact-original-dispositions.json",
+      "original_sha256": "cbc534b3c894a8f44acb1b4fe05079da62cb022cab323830156de67383af5d1b",
+      "original_bytes": 12673,
+      "working_sha256": "cbc534b3c894a8f44acb1b4fe05079da62cb022cab323830156de67383af5d1b",
+      "working_bytes": 12673,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "handoff-manifest.json",
+      "original_sha256": "0cef34d2f94d481ed1778635135e3d4102aec69c330381bc95c0c82005a165e4",
+      "original_bytes": 1654,
+      "working_sha256": "0cef34d2f94d481ed1778635135e3d4102aec69c330381bc95c0c82005a165e4",
+      "working_bytes": 1654,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-12T02:33:20.807288+00:00",
+  "status": "SEALED_SOURCE_ONLY_ADDENDUM_RUNTIME_NOT_RUN",
+  "original29_seal_unchanged": true,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-image-metadata.json",
+      "sha256": "726f0aef988ac6816423deb4635afc21855c620097a063987348df629c90bff6",
+      "bytes": 1024
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-old-layout-proof.json",
+      "sha256": "880d57dd578c2be5e507182b003fe08bb3b7945068ef87607466f216694e863a",
+      "bytes": 5877
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-payload-manifest.schema.json",
+      "sha256": "a32107d9e480f1337fadbbca124a90551a4ce03d78a82f7eb218a8e6c7bf9000",
+      "bytes": 7020
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-result.json",
+      "sha256": "3df519a6672e7f87753b175519d965146c3180abad4b18c2bb77c746221c59c6",
+      "bytes": 5297
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum.compose.template.yml",
+      "sha256": "0b6021bfacb0c7424785a8b49a40b527cb77a6988a488bf99f6b0a89b5ef3e7e",
+      "bytes": 662
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum.md",
+      "sha256": "ef1bc5af0337d4d9a0797f79e1f425ae06c1dda933a3f1ce378f23a582408f04",
+      "bytes": 8187
+    }
+  ]
+}

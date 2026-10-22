@@ -1,0 +1,10 @@
+{
+  "utc": "2026-10-12T06:34:05.143517+00:00",
+  "exec_session": 66270,
+  "ordinary_helper": "dedup.py",
+  "step": "fresh full exact preflight; same foreground process then serialized DEDUP1",
+  "no_second_instance": true,
+  "read_pointer": "CURRENT.json",
+  "journal_pointer": "journal.ndjson when exact preflight PASS",
+  "children": 0
+}

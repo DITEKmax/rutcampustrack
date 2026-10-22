@@ -1,0 +1,84 @@
+{
+  "state": "PASS_COMPILE_ONLY",
+  "native": {
+    "direct_pid": 368941,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 368941,
+        "start_ticks": 8460724
+      },
+      {
+        "pid": 368983,
+        "start_ticks": 8460839
+      },
+      {
+        "pid": 369067,
+        "start_ticks": 8462964
+      },
+      {
+        "pid": 369071,
+        "start_ticks": 8462985
+      },
+      {
+        "pid": 369133,
+        "start_ticks": 8465717
+      },
+      {
+        "pid": 369136,
+        "start_ticks": 8465739
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "classes": [
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/integration/AcademicGrpcIT.class",
+      "bytes": 42254,
+      "sha256": "bf6ec858a278f0cd7c1d213eb35f2c5b5d15109aecd8c58be53230295875de81",
+      "mtime_ns": 1791830880966622559,
+      "fresh": true,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/integration/AcademicGrpcIT$FilteredUserRow.class",
+      "bytes": 1842,
+      "sha256": "ac821ba6d9939ca5a2db3916f6d4e80b41a6ac24b0a5007f34a1658d0e25d948",
+      "mtime_ns": 1791830880959812539,
+      "fresh": true,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/integration/AcademicGrpcIT$FilteredUsers.class",
+      "bytes": 2482,
+      "sha256": "10cfdbe9216c264b169259fe0cd30ca3df4e35802e57a128ee043f84883e0544",
+      "mtime_ns": 1791830880959812539,
+      "fresh": true,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "fresh_three_classes": true,
+  "source_unchanged": true,
+  "peaks": {
+    "owned_rss_bytes": 1166151680,
+    "cohort_disk_delta_bytes": 66715648,
+    "shared_growth_bytes": 1238577152
+  },
+  "supervisor": {
+    "pid": 368909,
+    "birth": 8460624
+  },
+  "test_API_Docker": "NOT_RUN",
+  "stdout_stderr": "DEVNULL",
+  "cleanup_tmp_removed": true
+}

@@ -7,21 +7,24 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
+
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
- * Authenticates the student homework, projection, and campus-map read RPCs
- * and the campus-map open RPC with the same signed Internal JWT used at the
- * HTTP BFF and attendance gRPC student boundary. Existing Academic RPCs retain their established
- * shared-secret contract.
+ * Authenticates the student homework, projection, and campus-map read RPCs and the campus-map open
+ * RPC with the same signed Internal JWT used at the HTTP BFF and attendance gRPC student boundary.
+ * Existing Academic RPCs retain their established shared-secret contract.
  */
 @GrpcGlobalServerInterceptor
 public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor {
-    static final String GET_METHOD_NAME = AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworksForWeek";
-    static final String METHOD_NAME = AcademicGrpcServiceGrpc.SERVICE_NAME + "/SetHomeworkCompletion";
+    static final String GET_METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworksForWeek";
+    static final String METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/SetHomeworkCompletion";
     static final String PROJECTION_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/ResolveStudentProjectionScope";
     static final String MAP_MANIFEST_METHOD_NAME =
@@ -32,13 +35,16 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/ReadCampusMapAsset";
     static final String MAP_OPEN_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/RecordCampusFloorOpen";
-    static final String ADMIN_PERMISSION_METHOD_NAME = AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAdminPermission";
+    static final String ADMIN_PERMISSION_METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAdminPermission";
     static final String ASSISTANT_PERMISSION_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAssistantPermission";
     static final String GROUP_COMPOSITION_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHeadmanGroupComposition";
     static final String HEADMAN_STATS_SCOPE_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/ResolveHeadmanStatsScope";
+    static final String HEADMAN_JOURNAL_STATE_METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHeadmanJournalSemesterState";
     static final Metadata.Key<String> INTERNAL_TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
 
@@ -50,9 +56,7 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-            ServerCall<ReqT, RespT> call,
-            Metadata headers,
-            ServerCallHandler<ReqT, RespT> next) {
+            ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         String methodName = call.getMethodDescriptor().getFullMethodName();
         if (!METHOD_NAME.equals(methodName)
                 && !GET_METHOD_NAME.equals(methodName)
@@ -64,16 +68,25 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
                 && !ADMIN_PERMISSION_METHOD_NAME.equals(methodName)
                 && !ASSISTANT_PERMISSION_METHOD_NAME.equals(methodName)
                 && !GROUP_COMPOSITION_METHOD_NAME.equals(methodName)
-                && !HEADMAN_STATS_SCOPE_METHOD_NAME.equals(methodName)) {
+                && !HEADMAN_STATS_SCOPE_METHOD_NAME.equals(methodName)
+                && !HEADMAN_JOURNAL_STATE_METHOD_NAME.equals(methodName)) {
             return next.startCall(call, headers);
         }
         try {
             InternalJwtClaims claims = validator.validate(headers.get(INTERNAL_TOKEN));
-            Context context = Context.current().withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims);
+            Context context =
+                    Context.current().withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims);
+            if (ADMIN_PERMISSION_METHOD_NAME.equals(methodName))
+                context =
+                        context.withValue(
+                                StudentHomeworkGrpcIdentity.ADMIN_PERMISSION_TOKEN,
+                                headers.get(INTERNAL_TOKEN));
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
-            call.close(Status.UNAUTHENTICATED.withDescription("Invalid internal identity"), new Metadata());
-            return new ServerCall.Listener<>() { };
+            call.close(
+                    Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),
+                    new Metadata());
+            return new ServerCall.Listener<>() {};
         }
     }
 }

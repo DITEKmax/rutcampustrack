@@ -1,28 +1,5 @@
 package ru.rutcampustrack.auth.session;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.auth.config.InternalIssuerProperties;
-import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
-import ru.rutcampustrack.auth.service.JwtService;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
-import ru.rutcampustrack.auth.session.port.SessionStatePort;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +11,28 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ru.rutcampustrack.auth.config.InternalIssuerProperties;
+import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
+import ru.rutcampustrack.auth.service.JwtService;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
 class SessionAdmissionServiceTest {
 
@@ -56,12 +55,12 @@ class SessionAdmissionServiceTest {
         issuerProperties = new InternalIssuerProperties();
         issuerProperties.setSecret("test-internal-issuer-secret-32-bytes-or-more-for-test-env");
         issuerProperties.setTokenTtlSeconds(60);
-        service = new SessionAdmissionService(
-                jwtService,
-                sessionStatePort,
-                issuerProperties,
-                Clock.fixed(NOW, ZoneOffset.UTC)
-        );
+        service =
+                new SessionAdmissionService(
+                        jwtService,
+                        sessionStatePort,
+                        issuerProperties,
+                        Clock.fixed(NOW, ZoneOffset.UTC));
 
         Jws<Claims> parsed = mock(Jws.class);
         claims = mock(Claims.class);
@@ -83,7 +82,8 @@ class SessionAdmissionServiceTest {
     @Test
     void admitsLiveSnapshotAndBuildsResponseFromTheSameGrant() {
         SessionSnapshot snapshot = snapshot(RoleStatus.ACTIVE, AuthRole.STUDENT, 10L);
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
 
         AuthAdmissionResponse response = service.admit("access");
 
@@ -99,158 +99,221 @@ class SessionAdmissionServiceTest {
         assertThat(response.isHeadman()).isFalse();
         assertThat(response.readOnly()).isFalse();
         verify(sessionStatePort).snapshot(any());
-        verify(jwtService).generateInternalToken(
-                snapshot, Instant.parse("2026-09-10T10:00:00Z"),
-                Instant.parse("2026-09-10T10:01:00Z"));
+        verify(jwtService)
+                .generateInternalToken(
+                        snapshot,
+                        Instant.parse("2026-09-10T10:00:00Z"),
+                        Instant.parse("2026-09-10T10:01:00Z"));
     }
 
     @Test
     void delayedSnapshotUsesFreshClockAndRetainsOriginalSnapshotRequestTime() {
         MutableClock delayedClock = new MutableClock(NOW);
-        service = new SessionAdmissionService(
-                jwtService, sessionStatePort, issuerProperties, delayedClock);
+        service =
+                new SessionAdmissionService(
+                        jwtService, sessionStatePort, issuerProperties, delayedClock);
         SessionSnapshot snapshot = snapshot(RoleStatus.ACTIVE, AuthRole.STUDENT, 10L);
-        when(sessionStatePort.snapshot(any())).thenAnswer(invocation -> {
-            delayedClock.advanceTo(Instant.parse("2026-09-10T10:00:05.250Z"));
-            return SessionStatePort.SnapshotResult.success(snapshot);
-        });
+        when(sessionStatePort.snapshot(any()))
+                .thenAnswer(
+                        invocation -> {
+                            delayedClock.advanceTo(Instant.parse("2026-09-10T10:00:05.250Z"));
+                            return SessionStatePort.SnapshotResult.success(snapshot);
+                        });
 
         AuthAdmissionResponse response = service.admit("access");
 
         assertThat(response.expiresAt()).isEqualTo(Instant.parse("2026-09-10T10:01:05Z"));
-        verify(sessionStatePort).snapshot(
-                new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
-        verify(jwtService).generateInternalToken(
-                snapshot,
-                Instant.parse("2026-09-10T10:00:05Z"),
-                Instant.parse("2026-09-10T10:01:05Z"));
+        verify(sessionStatePort)
+                .snapshot(new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
+        verify(jwtService)
+                .generateInternalToken(
+                        snapshot,
+                        Instant.parse("2026-09-10T10:00:05Z"),
+                        Instant.parse("2026-09-10T10:01:05Z"));
     }
 
     @Test
     void originalAccessExpiryAfterSnapshotIsRejectedBeforeSigning() {
         MutableClock delayedClock = new MutableClock(NOW);
-        service = new SessionAdmissionService(
-                jwtService, sessionStatePort, issuerProperties, delayedClock);
+        service =
+                new SessionAdmissionService(
+                        jwtService, sessionStatePort, issuerProperties, delayedClock);
         SessionSnapshot snapshot = snapshot(RoleStatus.ACTIVE, AuthRole.STUDENT, 10L);
-        when(sessionStatePort.snapshot(any())).thenAnswer(invocation -> {
-            delayedClock.advanceTo(Instant.parse("2026-09-10T10:05:00.001Z"));
-            return SessionStatePort.SnapshotResult.success(snapshot);
-        });
+        when(sessionStatePort.snapshot(any()))
+                .thenAnswer(
+                        invocation -> {
+                            delayedClock.advanceTo(Instant.parse("2026-09-10T10:05:00.001Z"));
+                            return SessionStatePort.SnapshotResult.success(snapshot);
+                        });
 
         assertThatThrownBy(() -> service.admit("access"))
-                .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                        assertThat(exception.code())
-                                .isEqualTo(SessionAdmissionException.Code.INVALID_SESSION));
-        verify(sessionStatePort).snapshot(
-                new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
-        verify(jwtService, org.mockito.Mockito.never())
-                .generateInternalToken(any(), any(), any());
+                .isInstanceOfSatisfying(
+                        SessionAdmissionException.class,
+                        exception ->
+                                assertThat(exception.code())
+                                        .isEqualTo(SessionAdmissionException.Code.INVALID_SESSION));
+        verify(sessionStatePort)
+                .snapshot(new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
+        verify(jwtService, org.mockito.Mockito.never()).generateInternalToken(any(), any(), any());
     }
 
     @Test
     void sessionExpiryDuringSnapshotIsRejectedBeforeSigning() {
         MutableClock delayedClock = new MutableClock(NOW);
-        service = new SessionAdmissionService(
-                jwtService, sessionStatePort, issuerProperties, delayedClock);
-        SessionSnapshot snapshot = snapshot(
-                RoleStatus.ACTIVE,
-                AuthRole.STUDENT,
-                10L,
-                Instant.parse("2026-09-10T10:00:03Z"));
-        when(sessionStatePort.snapshot(any())).thenAnswer(invocation -> {
-            delayedClock.advanceTo(Instant.parse("2026-09-10T10:00:05.250Z"));
-            return SessionStatePort.SnapshotResult.success(snapshot);
-        });
+        service =
+                new SessionAdmissionService(
+                        jwtService, sessionStatePort, issuerProperties, delayedClock);
+        SessionSnapshot snapshot =
+                snapshot(
+                        RoleStatus.ACTIVE,
+                        AuthRole.STUDENT,
+                        10L,
+                        Instant.parse("2026-09-10T10:00:03Z"));
+        when(sessionStatePort.snapshot(any()))
+                .thenAnswer(
+                        invocation -> {
+                            delayedClock.advanceTo(Instant.parse("2026-09-10T10:00:05.250Z"));
+                            return SessionStatePort.SnapshotResult.success(snapshot);
+                        });
 
         assertThatThrownBy(() -> service.admit("access"))
-                .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                        assertThat(exception.code())
-                                .isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));
-        verify(sessionStatePort).snapshot(
-                new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
-        verify(jwtService, org.mockito.Mockito.never())
-                .generateInternalToken(any(), any(), any());
+                .isInstanceOfSatisfying(
+                        SessionAdmissionException.class,
+                        exception ->
+                                assertThat(exception.code())
+                                        .isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));
+        verify(sessionStatePort)
+                .snapshot(new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
+        verify(jwtService, org.mockito.Mockito.never()).generateInternalToken(any(), any(), any());
     }
 
     @Test
     void signingDelayPastInternalExpiryIsRejectedBeforeResponse() {
         MutableClock delayedClock = new MutableClock(NOW);
-        service = new SessionAdmissionService(
-                jwtService, sessionStatePort, issuerProperties, delayedClock);
+        service =
+                new SessionAdmissionService(
+                        jwtService, sessionStatePort, issuerProperties, delayedClock);
         SessionSnapshot snapshot = snapshot(RoleStatus.ACTIVE, AuthRole.STUDENT, 10L);
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
-        when(jwtService.generateInternalToken(any(), any(), any())).thenAnswer(invocation -> {
-            delayedClock.advanceTo(Instant.parse("2026-09-10T10:01:00.001Z"));
-            return "internal";
-        });
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        when(jwtService.generateInternalToken(any(), any(), any()))
+                .thenAnswer(
+                        invocation -> {
+                            delayedClock.advanceTo(Instant.parse("2026-09-10T10:01:00.001Z"));
+                            return "internal";
+                        });
 
         assertThatThrownBy(() -> service.admit("access"))
-                .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                        assertThat(exception.code())
-                                .isEqualTo(SessionAdmissionException.Code.INVALID_SESSION));
-        verify(sessionStatePort).snapshot(
-                new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
-        verify(jwtService).generateInternalToken(
-                snapshot,
-                Instant.parse("2026-09-10T10:00:00Z"),
-                Instant.parse("2026-09-10T10:01:00Z"));
+                .isInstanceOfSatisfying(
+                        SessionAdmissionException.class,
+                        exception ->
+                                assertThat(exception.code())
+                                        .isEqualTo(SessionAdmissionException.Code.INVALID_SESSION));
+        verify(sessionStatePort)
+                .snapshot(new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
+        verify(jwtService)
+                .generateInternalToken(
+                        snapshot,
+                        Instant.parse("2026-09-10T10:00:00Z"),
+                        Instant.parse("2026-09-10T10:01:00Z"));
     }
 
     @Test
     void signingDelayPastSessionExpiryIsRejectedBeforeResponse() {
         MutableClock delayedClock = new MutableClock(NOW);
-        service = new SessionAdmissionService(
-                jwtService, sessionStatePort, issuerProperties, delayedClock);
-        SessionSnapshot snapshot = snapshot(
-                RoleStatus.ACTIVE,
-                AuthRole.STUDENT,
-                10L,
-                Instant.parse("2026-09-10T10:00:30Z"));
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
-        when(jwtService.generateInternalToken(any(), any(), any())).thenAnswer(invocation -> {
-            delayedClock.advanceTo(Instant.parse("2026-09-10T10:00:30.001Z"));
-            return "internal";
-        });
+        service =
+                new SessionAdmissionService(
+                        jwtService, sessionStatePort, issuerProperties, delayedClock);
+        SessionSnapshot snapshot =
+                snapshot(
+                        RoleStatus.ACTIVE,
+                        AuthRole.STUDENT,
+                        10L,
+                        Instant.parse("2026-09-10T10:00:30Z"));
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        when(jwtService.generateInternalToken(any(), any(), any()))
+                .thenAnswer(
+                        invocation -> {
+                            delayedClock.advanceTo(Instant.parse("2026-09-10T10:00:30.001Z"));
+                            return "internal";
+                        });
 
         assertThatThrownBy(() -> service.admit("access"))
-                .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                        assertThat(exception.code())
-                                .isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));
-        verify(sessionStatePort).snapshot(
-                new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
-        verify(jwtService).generateInternalToken(
-                snapshot,
-                Instant.parse("2026-09-10T10:00:00Z"),
-                Instant.parse("2026-09-10T10:01:00Z"));
+                .isInstanceOfSatisfying(
+                        SessionAdmissionException.class,
+                        exception ->
+                                assertThat(exception.code())
+                                        .isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));
+        verify(sessionStatePort)
+                .snapshot(new SessionStatePort.SnapshotCommand(USER_ID, SESSION_ID, NOW));
+        verify(jwtService)
+                .generateInternalToken(
+                        snapshot,
+                        Instant.parse("2026-09-10T10:00:00Z"),
+                        Instant.parse("2026-09-10T10:01:00Z"));
     }
 
     @Test
     void terminalGrantRemainsVisibleButCannotBeAdmitted() {
         Instant created = Instant.parse("2026-09-10T08:00:00Z");
-        RoleGrant terminal = new RoleGrant(
-                1L, USER_ID, AuthRole.STUDENT, RoleStatus.EXPELLED, null, created, created);
-        SessionSnapshot snapshot = new SessionSnapshot(
-                SESSION_ID, USER_ID, 2L, 3L, null, List.of(terminal),
-                Instant.parse("2026-09-10T11:00:00Z"), created, created,
-                null, null, AuthMethod.OTP, "test", "test");
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        RoleGrant terminal =
+                new RoleGrant(
+                        1L, USER_ID, AuthRole.STUDENT, RoleStatus.EXPELLED, null, created, created);
+        SessionSnapshot snapshot =
+                new SessionSnapshot(
+                        SESSION_ID,
+                        USER_ID,
+                        2L,
+                        3L,
+                        null,
+                        List.of(terminal),
+                        Instant.parse("2026-09-10T11:00:00Z"),
+                        created,
+                        created,
+                        null,
+                        null,
+                        AuthMethod.OTP,
+                        "test",
+                        "test");
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
 
         assertThatThrownBy(() -> service.admit("access"))
-                .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                        assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE));
+                .isInstanceOfSatisfying(
+                        SessionAdmissionException.class,
+                        exception ->
+                                assertThat(exception.code())
+                                        .isEqualTo(
+                                                SessionAdmissionException.Code
+                                                        .ROLE_NOT_SELECTABLE));
         verify(jwtService, never()).generateInternalToken(any(), any(), any());
     }
 
     @Test
     void authoritativeSuspendedGrantIsRoleNotSelectable() {
         Instant created = Instant.parse("2026-09-10T08:00:00Z");
-        RoleGrant suspended = new RoleGrant(
-                1L, USER_ID, AuthRole.STUDENT, RoleStatus.SUSPENDED, 10L, created, created);
-        SessionSnapshot snapshot = new SessionSnapshot(
-                SESSION_ID, USER_ID, 3L, 3L, null, List.of(suspended),
-                Instant.parse("2026-09-10T11:00:00Z"), created, created,
-                null, null, AuthMethod.OTP, "test", "test");
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        RoleGrant suspended =
+                new RoleGrant(
+                        1L, USER_ID, AuthRole.STUDENT, RoleStatus.SUSPENDED, 10L, created, created);
+        SessionSnapshot snapshot =
+                new SessionSnapshot(
+                        SESSION_ID,
+                        USER_ID,
+                        3L,
+                        3L,
+                        null,
+                        List.of(suspended),
+                        Instant.parse("2026-09-10T11:00:00Z"),
+                        created,
+                        created,
+                        null,
+                        null,
+                        AuthMethod.OTP,
+                        "test",
+                        "test");
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
 
         assertThatThrownBy(() -> service.admit("access"))
                 .isInstanceOf(SessionAdmissionException.class)
@@ -278,8 +341,11 @@ class SessionAdmissionServiceTest {
                     .thenReturn(SessionStatePort.SnapshotResult.failure(failureCode));
 
             assertThatThrownBy(() -> service.admit("access"))
-                    .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                            assertThat(exception.code()).isEqualTo(expectedCode(failureCode)));
+                    .isInstanceOfSatisfying(
+                            SessionAdmissionException.class,
+                            exception ->
+                                    assertThat(exception.code())
+                                            .isEqualTo(expectedCode(failureCode)));
         }
     }
 
@@ -296,55 +362,84 @@ class SessionAdmissionServiceTest {
         identityClaims.put("is_headman", false);
         identityClaims.put("readOnly", false);
         when(claims.getSubject()).thenReturn(Long.toString(USER_ID));
-        when(claims.get(anyString())).thenAnswer(invocation ->
-                identityClaims.get(invocation.getArgument(0, String.class)));
+        when(claims.get(anyString()))
+                .thenAnswer(
+                        invocation -> identityClaims.get(invocation.getArgument(0, String.class)));
         when(claims.getExpiration()).thenReturn(java.util.Date.from(ACCESS_EXPIRATION));
 
         SessionSnapshot snapshot = snapshot(RoleStatus.ACTIVE, AuthRole.STUDENT, 10L);
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
-        List<IdentityMismatch> mismatches = List.of(
-                new IdentityMismatch("role", "TEACHER"),
-                new IdentityMismatch("status", "EXPELLED"),
-                new IdentityMismatch("group_id", "11"),
-                new IdentityMismatch("is_headman", true),
-                new IdentityMismatch("readOnly", true)
-        );
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        List<IdentityMismatch> mismatches =
+                List.of(
+                        new IdentityMismatch("role", "TEACHER"),
+                        new IdentityMismatch("status", "EXPELLED"),
+                        new IdentityMismatch("group_id", "11"),
+                        new IdentityMismatch("is_headman", true),
+                        new IdentityMismatch("readOnly", true));
 
         for (IdentityMismatch mismatch : mismatches) {
             Object expected = identityClaims.put(mismatch.claim(), mismatch.value());
             assertThatThrownBy(() -> service.admit("access"))
-                    .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
-                            assertThat(exception.code())
-                                    .isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE));
+                    .isInstanceOfSatisfying(
+                            SessionAdmissionException.class,
+                            exception ->
+                                    assertThat(exception.code())
+                                            .isEqualTo(
+                                                    SessionAdmissionException.Code
+                                                            .SESSION_STATE_STALE));
             identityClaims.put(mismatch.claim(), expected);
         }
 
         verify(sessionStatePort, times(mismatches.size())).snapshot(any());
-        verify(jwtService, org.mockito.Mockito.never())
-                .generateInternalToken(any(), any(), any());
+        verify(jwtService, org.mockito.Mockito.never()).generateInternalToken(any(), any(), any());
     }
 
     @Test
     void staleVersionsAndChangedGrantIdentityAreConflicts() {
-        SessionSnapshot staleVersion = new SessionSnapshot(
-                SESSION_ID, USER_ID, 3L, 3L,
-                new RoleGrant(1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L,
-                        Instant.parse("2026-09-10T08:00:00Z"), Instant.parse("2026-09-10T08:00:00Z")),
-                List.of(new RoleGrant(1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, 10L,
-                        Instant.parse("2026-09-10T08:00:00Z"), Instant.parse("2026-09-10T08:00:00Z"))),
-                Instant.parse("2026-09-10T11:00:00Z"),
-                Instant.parse("2026-09-10T08:00:00Z"),
-                Instant.parse("2026-09-10T08:00:00Z"),
-                null, null, AuthMethod.OTP, "test", "test");
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(staleVersion));
+        SessionSnapshot staleVersion =
+                new SessionSnapshot(
+                        SESSION_ID,
+                        USER_ID,
+                        3L,
+                        3L,
+                        new RoleGrant(
+                                1L,
+                                USER_ID,
+                                AuthRole.STUDENT,
+                                RoleStatus.ACTIVE,
+                                10L,
+                                Instant.parse("2026-09-10T08:00:00Z"),
+                                Instant.parse("2026-09-10T08:00:00Z")),
+                        List.of(
+                                new RoleGrant(
+                                        1L,
+                                        USER_ID,
+                                        AuthRole.STUDENT,
+                                        RoleStatus.ACTIVE,
+                                        10L,
+                                        Instant.parse("2026-09-10T08:00:00Z"),
+                                        Instant.parse("2026-09-10T08:00:00Z"))),
+                        Instant.parse("2026-09-10T11:00:00Z"),
+                        Instant.parse("2026-09-10T08:00:00Z"),
+                        Instant.parse("2026-09-10T08:00:00Z"),
+                        null,
+                        null,
+                        AuthMethod.OTP,
+                        "test",
+                        "test");
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(staleVersion));
 
         assertThatThrownBy(() -> service.admit("access"))
                 .isInstanceOf(SessionAdmissionException.class)
                 .extracting(exception -> ((SessionAdmissionException) exception).code())
                 .isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE);
 
-        when(sessionStatePort.snapshot(any())).thenReturn(
-                SessionStatePort.SnapshotResult.failure(SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE));
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(
+                        SessionStatePort.SnapshotResult.failure(
+                                SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE));
         assertThatThrownBy(() -> service.admit("access"))
                 .isInstanceOf(SessionAdmissionException.class)
                 .extracting(exception -> ((SessionAdmissionException) exception).code())
@@ -354,7 +449,8 @@ class SessionAdmissionServiceTest {
     @Test
     void noAdmissionCacheCallsAuthorityAndSignsOnEveryRequest() {
         SessionSnapshot snapshot = snapshot(RoleStatus.ACTIVE, AuthRole.STUDENT, 10L);
-        when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
+        when(sessionStatePort.snapshot(any()))
+                .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
 
         service.admit("access");
         service.admit("access");
@@ -368,20 +464,28 @@ class SessionAdmissionServiceTest {
     }
 
     private SessionSnapshot snapshot(
-            RoleStatus status,
-            AuthRole role,
-            Long groupId,
-            Instant refreshExpiresAt
-    ) {
+            RoleStatus status, AuthRole role, Long groupId, Instant refreshExpiresAt) {
         Instant created = Instant.parse("2026-09-10T08:00:00Z");
         RoleGrant grant = new RoleGrant(1L, USER_ID, role, status, groupId, created, created);
         return new SessionSnapshot(
-                SESSION_ID, USER_ID, 2L, 3L, grant, List.of(grant),
-                refreshExpiresAt, created, created,
-                null, null, AuthMethod.OTP, "test", "test");
+                SESSION_ID,
+                USER_ID,
+                2L,
+                3L,
+                grant,
+                List.of(grant),
+                refreshExpiresAt,
+                created,
+                created,
+                null,
+                null,
+                AuthMethod.OTP,
+                "test",
+                "test");
     }
 
-    private static SessionAdmissionException.Code expectedCode(SessionStatePort.FailureCode failureCode) {
+    private static SessionAdmissionException.Code expectedCode(
+            SessionStatePort.FailureCode failureCode) {
         return switch (failureCode) {
             case INVALID_SESSION -> SessionAdmissionException.Code.INVALID_SESSION;
             case SESSION_REVOKED -> SessionAdmissionException.Code.SESSION_REVOKED;
@@ -393,8 +497,7 @@ class SessionAdmissionServiceTest {
         };
     }
 
-    private record IdentityMismatch(String claim, Object value) {
-    }
+    private record IdentityMismatch(String claim, Object value) {}
 
     private static final class MutableClock extends Clock {
         private Instant current;

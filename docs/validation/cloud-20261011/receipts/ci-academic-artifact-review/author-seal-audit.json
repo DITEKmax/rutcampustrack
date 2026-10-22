@@ -1,0 +1,100 @@
+[
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/REPORT.md",
+    "actual_sha256": "631d46e3c27dff7841665f3e0b988cfabec32bc59349e3f74a184f4d8e10a54d",
+    "expected_sha256": "631d46e3c27dff7841665f3e0b988cfabec32bc59349e3f74a184f4d8e10a54d",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/source-proof.json",
+    "actual_sha256": "72ad6bf8a7361fd8dd3f0cc3ec29cb87910b2941c4ca407213de5103664ecc93",
+    "expected_sha256": "72ad6bf8a7361fd8dd3f0cc3ec29cb87910b2941c4ca407213de5103664ecc93",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/verification-plan.json",
+    "actual_sha256": "5b965fb8d0e57ab6b2bc46dce971d4a192600d95cb97fc3fa7f43f4724f51171",
+    "expected_sha256": "5b965fb8d0e57ab6b2bc46dce971d4a192600d95cb97fc3fa7f43f4724f51171",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/baseline-to-final.patch",
+    "actual_sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb",
+    "expected_sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/heap-to-final-dependency-only.patch",
+    "actual_sha256": "30eff23086cfc3f4c1fc66cf72b3fcd9817ccad83c653ecbb392a9d499e05fee",
+    "expected_sha256": "30eff23086cfc3f4c1fc66cf72b3fcd9817ccad83c653ecbb392a9d499e05fee",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/corrective-commit.patch",
+    "actual_sha256": "99aa4e44fe01cfb03a9712bd96459562920d20ce1747993e9c70cccdce1ec7b0",
+    "expected_sha256": "99aa4e44fe01cfb03a9712bd96459562920d20ce1747993e9c70cccdce1ec7b0",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/build.gradle.kts.final.txt",
+    "actual_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+    "expected_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/REPORT.md",
+    "actual_sha256": "c60bb77622da70927fb761e7dc1d8fbd2925a96f17586a328032946552885a0a",
+    "expected_sha256": "c60bb77622da70927fb761e7dc1d8fbd2925a96f17586a328032946552885a0a",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/source-proof.json",
+    "actual_sha256": "8b8a68fc0cd61156afa660edf8f31bd3839f476b7cfe1b954bdb6204ec884a6f",
+    "expected_sha256": "8b8a68fc0cd61156afa660edf8f31bd3839f476b7cfe1b954bdb6204ec884a6f",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/verification-plan.json",
+    "actual_sha256": "6eb25e248e461c17266b8e82cedb4b66c8126b7f92c8bceed30bc87078b95afe",
+    "expected_sha256": "6eb25e248e461c17266b8e82cedb4b66c8126b7f92c8bceed30bc87078b95afe",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/broker-dependency-feasibility.json",
+    "actual_sha256": "730cadd21fe2451217e09c783c936ebf4230136c198eb452c2ea8f9790ffc54b",
+    "expected_sha256": "730cadd21fe2451217e09c783c936ebf4230136c198eb452c2ea8f9790ffc54b",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/gradle-default-heap-proof.json",
+    "actual_sha256": "d9f6440c4972e9f543b6a1afb096637ce98a69c35817afce773d255e5fa95903",
+    "expected_sha256": "d9f6440c4972e9f543b6a1afb096637ce98a69c35817afce773d255e5fa95903",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/classpath-proof.init.gradle",
+    "actual_sha256": "11fb605f7d4937321c6c76b11c5f51d3ae9b064fa14f5b345e242995e5ae4856",
+    "expected_sha256": "11fb605f7d4937321c6c76b11c5f51d3ae9b064fa14f5b345e242995e5ae4856",
+    "equal": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/ci_academic_heap/transfer-manifest.json",
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/heap-only.patch",
+    "actual_sha256": "37dd6ddd18bfe08b9f47dfbe619e3b832856f777ecc3ed804143190ad734b2ee",
+    "expected_sha256": "37dd6ddd18bfe08b9f47dfbe619e3b832856f777ecc3ed804143190ad734b2ee",
+    "equal": true
+  }
+]

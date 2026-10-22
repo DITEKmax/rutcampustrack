@@ -1,0 +1,111 @@
+{
+  "provenance": {
+    "archive_origin": "https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz",
+    "checksum_origin": "https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_checksums.txt",
+    "archive_bytes": 5796002,
+    "archive_sha256": "9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c",
+    "checksum_verified": true,
+    "binary_sha256": "e18325d568268b6efb6cd0cc721f8bea5667f4cd1c8d03618ab61987f41269ad"
+  },
+  "archive_hash_matches_published_checksum_file": true,
+  "archive_binary_equals_used_binary": true,
+  "independently_observed_binary_version": "8.24.3",
+  "official_download_provenance": "Author-recorded official release URLs; independent local byte/checksum/version verification, no reviewer network redownload or signature claim.",
+  "historical_source": {
+    "commit": "63647fc9b63175e1e32b0773d57affc637ea1065",
+    "path": "docs/validation/cloud-20261011/packet-export-backend-security-review.md",
+    "line": 12,
+    "blob_sha256": "041b38046f426ff860d8625c1029549d674e96521243fa102bfccdb489c27bb7",
+    "line_sha256": "8d45ff494f4991e99c94509811935a760c82693d23a3eeb1773b41a6cf99e719",
+    "classification": "Architecture prose describing REST Auth Academic and export scope; no credential assignment."
+  },
+  "historical_line_independently_opened": true,
+  "false_positive_classification": "Known task-packet line12 architecture prose; no credential assignment; no real secret was read or repeated.",
+  "native_security_job": {
+    "source": "native GitHub decoded job log; values not forwarded",
+    "repo": "DITEKmax/rutcampustrack",
+    "job_id": 114603624624,
+    "run_id": 38184430147,
+    "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+    "actual_checkout_merge_sha": "c3d12f3313a95f25162a1503be624f3b0617f8c0",
+    "scanner_version": "8.24.3",
+    "commits_scanned": 26,
+    "selected_metadata": [
+      {
+        "field": "Commit",
+        "value": "c3d12f3313a95f25162a1503be624f3b0617f8c0"
+      },
+      {
+        "field": "RuleID",
+        "value": "generic-api-key"
+      },
+      {
+        "field": "File",
+        "value": "docs/validation/cloud-20261011/packet-export-backend-security-review.md"
+      },
+      {
+        "field": "Line",
+        "value": "12"
+      },
+      {
+        "field": "Commit",
+        "value": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      {
+        "field": "Fingerprint",
+        "value": "63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12"
+      }
+    ],
+    "source_classification": "One generic-api-key match on historical task packet line12 architecture prose, not a credential assignment. Exact fingerprint proof/correction review pending.",
+    "prior_transport": "CLI signedredirectForbidden beforedownload0bytes; not actual log PASS; URL query not retained"
+  },
+  "history_commit_count_independently_verified": 26,
+  "red": {
+    "command": [
+      "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+      "git",
+      "--no-banner",
+      "--no-color",
+      "--redact=100",
+      "--report-format=json",
+      "--report-path=/workspace/scratch/rct-validation/security_fingerprint/baseline-historical.private-redacted.json",
+      "--log-opts=--no-merges --first-parent e99abf06062f8efd2697da4dc424658feaee08b0^..63647fc9b63175e1e32b0773d57affc637ea1065",
+      "--gitleaks-ignore-path=/workspace/scratch/rct-validation/security_fingerprint/empty-ignore",
+      "/workspace/rct-worktrees/security-fingerprint"
+    ],
+    "exit_code": 1,
+    "findings_count": 1,
+    "findings": [
+      {
+        "RuleID": "generic-api-key",
+        "File": "docs/validation/cloud-20261011/packet-export-backend-security-review.md",
+        "StartLine": 12,
+        "EndLine": 12,
+        "Commit": "63647fc9b63175e1e32b0773d57affc637ea1065",
+        "Fingerprint": "63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12"
+      }
+    ],
+    "report_sha256": "6511973115d42c8a20539fc6ac9656d724d6216a04f1dace0bb22ecb3c83db8e"
+  },
+  "green": {
+    "command": [
+      "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+      "git",
+      "--no-banner",
+      "--no-color",
+      "--redact=100",
+      "--report-format=json",
+      "--report-path=/workspace/scratch/rct-validation/security_fingerprint/corrected-historical.private-redacted.json",
+      "--log-opts=--no-merges --first-parent e99abf06062f8efd2697da4dc424658feaee08b0^..63647fc9b63175e1e32b0773d57affc637ea1065",
+      "--gitleaks-ignore-path=/workspace/rct-worktrees/security-fingerprint",
+      "/workspace/rct-worktrees/security-fingerprint"
+    ],
+    "exit_code": 0,
+    "findings_count": 0,
+    "findings": [],
+    "report_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "private_raw_reports_or_logs_opened": false,
+  "recorded_report_hashes": "Author original safe projections retain hashes; private report/log bytes deliberately not opened by reviewer.",
+  "reviewer_scanner_history_replay": "NOT_RUN; sufficient original bounded native records retained"
+}

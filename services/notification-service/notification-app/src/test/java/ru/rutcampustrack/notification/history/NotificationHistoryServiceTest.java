@@ -1,16 +1,5 @@
 package ru.rutcampustrack.notification.history;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import ru.rutcampustrack.notification.contract.dto.history.UnreadCountDto;
-
-import java.time.Instant;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -20,17 +9,24 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import ru.rutcampustrack.notification.contract.dto.history.UnreadCountDto;
+
 @ExtendWith(MockitoExtension.class)
 class NotificationHistoryServiceTest {
 
-    @Mock
-    private NotificationHistoryRepository repository;
+    @Mock private NotificationHistoryRepository repository;
 
-    @Mock
-    private CacheManager cacheManager;
+    @Mock private CacheManager cacheManager;
 
-    @Mock
-    private Cache cache;
+    @Mock private Cache cache;
 
     private NotificationHistoryService service;
 

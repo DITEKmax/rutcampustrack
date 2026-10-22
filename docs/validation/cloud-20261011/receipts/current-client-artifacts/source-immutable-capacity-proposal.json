@@ -1,0 +1,55 @@
+{
+  "status": "READ_ONLY_EXACT_OWN_FROZEN_ARCHIVE_CANDIDATES_NO_DEDUP_GRANT",
+  "candidates": [
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "retained_readonly_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "bytes": 1690298,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 1691648,
+      "same_device": true,
+      "current_links": 1,
+      "old_links": 20,
+      "status": "PROPOSAL_ONLY_IMMUTABLE_ARCHIVE_COW_FREEZE_REQUIRED_NO_MUTATION"
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "retained_readonly_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/design/mobile/RutCampusTrack_PWA_TMA_UX_Guide.pdf",
+      "sha256": "9f32905d3078d2254c1eeb1d42c2fed070e1d38876ad838a53c02ddf04e34e2c",
+      "bytes": 2319229,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 2322432,
+      "same_device": true,
+      "current_links": 1,
+      "old_links": 1,
+      "status": "PROPOSAL_ONLY_IMMUTABLE_ARCHIVE_COW_FREEZE_REQUIRED_NO_MUTATION"
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/design/mobile/reference-audit/headman-contact.png",
+      "retained_readonly_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/design/mobile/reference-audit/headman-contact.png",
+      "sha256": "33efe1e22bf5c5ac37d2913a18a1e0acb3448586a8eb729eb4beb42c3e8bee66",
+      "bytes": 2909338,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 2912256,
+      "same_device": true,
+      "current_links": 1,
+      "old_links": 1,
+      "status": "PROPOSAL_ONLY_IMMUTABLE_ARCHIVE_COW_FREEZE_REQUIRED_NO_MUTATION"
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/design/mobile/reference-audit/student-contact.png",
+      "retained_readonly_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/design/mobile/reference-audit/student-contact.png",
+      "sha256": "1ef9653044101482998f5b53913f1dfbae0b071801a7c872399bf696d2d424c5",
+      "bytes": 1456252,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 1458176,
+      "same_device": true,
+      "current_links": 1,
+      "old_links": 1,
+      "status": "PROPOSAL_ONLY_IMMUTABLE_ARCHIVE_COW_FREEZE_REQUIRED_NO_MUTATION"
+    }
+  ],
+  "new_owned_allocated_bytes_sum": 8384512,
+  "protected": "All sources/JARs/evidence retained; only exact frozen old immutable archive equality, currentWT SOURCE frozen/no future in-place edits; no status/current docs/active outputs"
+}

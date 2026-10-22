@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-
 import java.time.Instant;
 
 /** Internal-only fresh identity and immutable report selector used by the Gateway dispatcher. */
@@ -14,6 +13,13 @@ public record ReportDownloadTicketRedemptionResponse(
         @NotNull AuthAdmissionResponse admission,
         @NotNull Instant ticketExpiresAt,
         @NotBlank @Pattern(regexp = "[0-9a-f]{64}") String reportBindingHash,
-        @NotNull @Valid IssueReportDownloadTicketRequest report
-) {
+        @NotNull @Valid IssueReportDownloadTicketRequest report,
+        java.util.UUID exportJobId) {
+    public ReportDownloadTicketRedemptionResponse(
+            AuthAdmissionResponse admission,
+            Instant ticketExpiresAt,
+            String reportBindingHash,
+            IssueReportDownloadTicketRequest report) {
+        this(admission, ticketExpiresAt, reportBindingHash, report, null);
+    }
 }

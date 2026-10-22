@@ -5,6 +5,34 @@ package rutcampustrack.attendance;
 option java_multiple_files = true;
 option java_package = "ru.rutcampustrack.attendance.grpc";
 
+// Aggregate-only administrator report. The caller is Academic over authenticated
+// TLS, with a directed service credential AND a live signed ADMIN identity.
+service AttendanceAdminGroupStatsGrpcService {
+  rpc GetGroupSemesterStats (AdminGroupStatsQuery) returns (AdminGroupStatsSnapshot);
+}
+message AdminGroupStatsQuery {
+  int64 semester_id = 1;
+  string date_from = 2;
+  string date_to = 3;
+  repeated int64 group_ids = 4;
+}
+message AdminGroupAttendanceTotals {
+  int64 group_id = 1;
+  int64 counted_lessons = 2;
+  int64 present = 3;
+  int64 excused = 4;
+  int64 absent = 5;
+  int64 opportunities = 6;
+  optional double present_percent = 7;
+  optional double present_or_excused_percent = 8;
+}
+message AdminGroupStatsSnapshot {
+  int64 semester_id = 1;
+  string date_from = 2;
+  string date_to = 3;
+  repeated AdminGroupAttendanceTotals groups = 4;
+}
+
 // Aggregate-only ADMIN read. Signed identity is re-authorized against Academic
 // DASHBOARD_VIEW for every call; arbitrary caller-selected ranges are forbidden.
 service AttendanceAdminActivityGrpcService {
@@ -200,6 +228,14 @@ message StudentAttendanceLesson {
   optional string room = 9;
   string status = 10; // PRESENT, ABSENT, EXCUSED, ACTIVE, FUTURE, NO_DATA, CANCELLED
   repeated StudentAttendanceRequestOption request_options = 11;
+  optional StudentAttendanceExplanation explanation = 12;
+}
+
+message StudentAttendanceExplanation {
+  optional string reason_code = 1;
+  optional string reason_text = 2;
+  optional string comment = 3;
+  optional string cancellation_reason = 4;
 }
 
 message StudentAttendanceRequestOption {
@@ -230,6 +266,7 @@ message StudentAttendanceTypeCard {
 message StudentAttendanceHistorySegment {
   string id = 1;
   string status = 2; // PRESENT, ABSENT, EXCUSED, FUTURE, NO_DATA
+  optional StudentAttendanceExplanation explanation = 3;
 }
 
 message StudentAttendanceGraph {
@@ -244,6 +281,14 @@ message StudentAttendanceSeriesPoint {
   string date_to = 4;
   string state = 5; // DATA, NO_DATA, FUTURE
   StudentAttendanceMetricSet metrics = 6;
+  StudentAttendanceGroupPresent group_present = 7;
+}
+
+// Aggregate historical student/lesson cells only; no roster identities.
+message StudentAttendanceGroupPresent {
+  int32 numerator = 1;
+  int32 denominator = 2;
+  optional double percent = 3;
 }
 
 message StudentAttendanceOwnRank {
@@ -424,6 +469,8 @@ enum StudentExcuseReason {
   STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION = 3;
   STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES = 4;
   STUDENT_EXCUSE_REASON_OTHER = 5;
+  STUDENT_EXCUSE_REASON_UNIVERSITY_ORDER = 6;
+  STUDENT_EXCUSE_REASON_SUMMONS = 7;
 }
 
 enum StudentRequestAttachmentState {

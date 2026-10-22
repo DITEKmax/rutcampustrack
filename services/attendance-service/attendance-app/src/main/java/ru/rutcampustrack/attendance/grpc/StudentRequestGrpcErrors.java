@@ -5,8 +5,8 @@ import io.grpc.Status;
 import io.grpc.protobuf.StatusProto;
 import org.springframework.web.server.ResponseStatusException;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.exception.InvalidIdempotencyKeyException;
@@ -16,19 +16,24 @@ import ru.rutcampustrack.attendance.student.StudentCheckinException;
 
 /** Typed gRPC status mapping for the student Requests transport. */
 final class StudentRequestGrpcErrors {
-    private StudentRequestGrpcErrors() {
-    }
+    private StudentRequestGrpcErrors() {}
 
     static RuntimeException toStatus(RuntimeException error) {
         StudentRequestErrorCode code = code(error);
         Status.Code grpcCode = grpcCode(code);
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder().setCode(code).build();
-        com.google.rpc.Status status = com.google.rpc.Status.newBuilder()
-                .setCode(grpcCode.value())
-                .setMessage(code == StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED
-                        ? "Student request operation failed" : safeMessage(error))
-                .addDetails(Any.pack(detail))
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder().setCode(code).build();
+        com.google.rpc.Status status =
+                com.google.rpc.Status.newBuilder()
+                        .setCode(grpcCode.value())
+                        .setMessage(
+                                code
+                                                == StudentRequestErrorCode
+                                                        .STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED
+                                        ? "Student request operation failed"
+                                        : safeMessage(error))
+                        .addDetails(Any.pack(detail))
+                        .build();
         return StatusProto.toStatusRuntimeException(status);
     }
 
@@ -38,12 +43,15 @@ final class StudentRequestGrpcErrors {
         }
         if (error instanceof StudentCheckinException checkin) {
             return switch (checkin.code()) {
-                case INVALID_REQUEST -> StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST;
+                case INVALID_REQUEST ->
+                        StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST;
                 case INVALID_IDEMPOTENCY_KEY ->
                         StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY;
-                case INVALID_SESSION -> StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION;
+                case INVALID_SESSION ->
+                        StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION;
                 case WRONG_ROLE -> StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE;
-                case OUT_OF_SCOPE -> StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE;
+                case OUT_OF_SCOPE ->
+                        StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE;
                 case DEPENDENCY_UNAVAILABLE ->
                         StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_DEPENDENCY_UNAVAILABLE;
                 default -> StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED;
@@ -66,7 +74,8 @@ final class StudentRequestGrpcErrors {
             }
             return StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_DEPENDENCY_UNAVAILABLE;
         }
-        if (error instanceof ResponseStatusException status && status.getStatusCode().value() == 410) {
+        if (error instanceof ResponseStatusException status
+                && status.getStatusCode().value() == 410) {
             return StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_EXPIRED;
         }
         if (error instanceof AccessDeniedException) {
@@ -88,12 +97,14 @@ final class StudentRequestGrpcErrors {
     private static Status.Code grpcCode(StudentRequestErrorCode code) {
         return switch (code) {
             case STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST,
-                 STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY -> Status.Code.INVALID_ARGUMENT;
+                    STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY ->
+                    Status.Code.INVALID_ARGUMENT;
             case STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION -> Status.Code.UNAUTHENTICATED;
-            case STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE,
-                 STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE -> Status.Code.PERMISSION_DENIED;
+            case STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE, STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE ->
+                    Status.Code.PERMISSION_DENIED;
             case STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND,
-                 STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_NOT_FOUND -> Status.Code.NOT_FOUND;
+                    STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_NOT_FOUND ->
+                    Status.Code.NOT_FOUND;
             case STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT -> Status.Code.ABORTED;
             case STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_EXPIRED -> Status.Code.FAILED_PRECONDITION;
             case STUDENT_REQUEST_ERROR_CODE_PAYLOAD_TOO_LARGE -> Status.Code.RESOURCE_EXHAUSTED;

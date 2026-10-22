@@ -1,0 +1,43 @@
+{
+  "schema": "rct-independent-review-manifest-v1",
+  "files": {
+    "OUTCOME.safe.json": {
+      "bytes": 1098,
+      "sha256": "187347f6a754547614585f0c8191e24f2587862d5f8b07b407456c2449169519"
+    },
+    "REPORT.md": {
+      "bytes": 13818,
+      "sha256": "cc89fddcccb82587fc4ccc2031c991caf37d9f9c0a0e18dd303a49f658792c7d"
+    },
+    "selected-methods.safe.json": {
+      "bytes": 115067,
+      "sha256": "5f54b07f12cbe879237ed0d4500cad86cb6a8cd08905c7a4719cff1cd484e040"
+    }
+  },
+  "original_public_inputs": {
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md": {
+      "bytes": 90897,
+      "sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c"
+    },
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/scenarios.csv": {
+      "bytes": 349298,
+      "sha256": "d200bba10bd283112655ae4d21eca12afc82adb7861b0f7f104a4bf10f1d2694"
+    },
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/P07-actual15-shared-validator-PASS/REPORT.safe.json": {
+      "bytes": 6291,
+      "sha256": "e1ebe3451a8c70af6933edf257f72198d7c0214ebabaebedabb8a9125733c1d8"
+    },
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/P07-existing-shared-validator-source-plan/PLAN.safe.json": {
+      "bytes": 25175,
+      "sha256": "5c5f5b3c93eb3beb4de1f9c2579851c40f91953997f976238c9533934e0493d8"
+    },
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ntr-seal-review/review.json": {
+      "bytes": 2006,
+      "sha256": "57f2d59ec8a09e59782b38ddbf60afa7a6cf7a00f9b8af5609ba2af330991a4a"
+    },
+    "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/matrix-review/required-boundary-rows.json": {
+      "bytes": 89070,
+      "sha256": "3d0deb60efff6807b02e89bbe80f620c664060d4980efb5e60ca502d14d28a8f"
+    }
+  }
+}

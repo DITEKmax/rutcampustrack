@@ -1,0 +1,52 @@
+{
+  "source_revision": "4e7454cdd56348ce67ad638a089e64f2b782d443",
+  "source_equivalence": "Exact final 4e probe bytes equal assigned WT",
+  "probe_sha256": "6400aab04683da89d43ffa869a661be333f0ed0bfed6f7b6b40de07cf63ad346",
+  "classpath_input_sha256": "749e6c2f30845634816614f82de8a190d9420d097232979e3437a2f7e8901fac",
+  "classpath_entries": 218,
+  "no_gradle_docker_cache_writes": true,
+  "steps": [
+    {
+      "step": "exact-final-probe-javac",
+      "exit": 0,
+      "duration_seconds": 3.49,
+      "peak_group_rss_bytes": 138788864,
+      "limit_trigger": null,
+      "throwable_classes": [],
+      "own_source_frames": []
+    },
+    {
+      "step": "one-baseline-jvm",
+      "exit": 1,
+      "duration_seconds": 35.4,
+      "peak_group_rss_bytes": 194392064,
+      "limit_trigger": null,
+      "throwable_classes": [
+        "java.lang.OutOfMemoryError"
+      ],
+      "own_source_frames": [
+        {
+          "method": "ru.rutcampustrack.attendance.report.DocxRenderer.mergeDocumentXml",
+          "file": "DocxRenderer.java",
+          "line": 147
+        },
+        {
+          "method": "ru.rutcampustrack.attendance.report.DocxRenderer.render",
+          "file": "DocxRenderer.java",
+          "line": 48
+        },
+        {
+          "method": "ru.rutcampustrack.attendance.report.ObservabilityProbe.measure",
+          "file": "ObservabilityProbe.java",
+          "line": 107
+        },
+        {
+          "method": "ru.rutcampustrack.attendance.report.ObservabilityProbe.main",
+          "file": "ObservabilityProbe.java",
+          "line": 82
+        }
+      ]
+    }
+  ],
+  "result": "CAUSE_OBSERVED"
+}

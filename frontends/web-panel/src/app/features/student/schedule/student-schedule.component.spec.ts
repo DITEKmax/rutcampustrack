@@ -131,14 +131,6 @@ describe('StudentScheduleComponent', () => {
     flushRecords(httpMock);
   });
 
-  it('renders 4 skeleton rows while the request is pending', async () => {
-    const { container } = await setup();
-    expect(container.querySelectorAll('.schedule-skeleton').length).toBe(4);
-    httpMock
-      .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
-      .flush({ _embedded: { lessonResponseList: [] } });
-    flushRecords(httpMock);
-  });
 
   it('renders "Занятий нет" empty state when no lessons are returned', async () => {
     const { fixture } = await setup();

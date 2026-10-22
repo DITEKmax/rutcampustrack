@@ -1,0 +1,27 @@
+{
+  "time": "2026-10-12T02:58:42.525897+00:00",
+  "classification": "MEANINGFUL_CURRENT_JOB_EXACT_ONE_ORACLE_SENSITIVITY",
+  "native_launch": "d788c8/session56239",
+  "native_terminal": "70c0e4 exit1",
+  "expected": 1,
+  "actual": 2,
+  "cause": "Controlled one valid duplicate currentjob audit metadata fact; unchanged scopedexact1 predicate detects it",
+  "failure_line": "88 currentjob count; insertcount1 fixtureguard line85-87 completed successfully",
+  "qualification": "oracle sensitivity to duplicate durable fact state; no claim of mutated product duplication path",
+  "fixture_setup_error": false,
+  "overlay_compile_marker": true,
+  "XML_sha256": "140ec4cfe1bedb797881cde0096060a16194ad133971063fac99001316fe11bc",
+  "XML_bytes": 36162,
+  "all6510source_unchanged": true,
+  "min_free_bytes": 8390959104,
+  "own_session": "dee5d605-ee83-497e-9f80-fe59946313a9",
+  "own3_standard_Ryuk_cleanup_absent": [
+    "1eb8a3dfd45b317d41e7602171631619c052fd04ed44aec74b60b484bf72635f",
+    "ef132992a16f587edace51605cef4fa236486afc47d0ff2754808fd3f301601c",
+    "681e9c9d7e63251e515875ce297238dc2f7f8a4fbf955addd0682579bab398ac"
+  ],
+  "other_resources_untouched_ids": [
+    "693960f783ee",
+    "4421a1b1ff84"
+  ]
+}

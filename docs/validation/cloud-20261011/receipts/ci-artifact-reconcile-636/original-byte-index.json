@@ -1,0 +1,249 @@
+{
+  "source": "/workspace/scratch/rct-validation/ci_artifact_reconcile",
+  "manifest": "original-byte-index.json",
+  "files": [
+    {
+      "path": "all-safe-cases.json",
+      "original_sha256": "3dc9dea9dcea749a44223254353ce348feef003182dbe34253cb4f15c4903d4b",
+      "original_bytes": 2423530,
+      "working_sha256": "8938273cad5d8665479d633f12b5774e4f802b0cb08c70175d49cddde6302645",
+      "working_bytes": 110162,
+      "transformation": "byte-equal member compressed wrapper; original exactbytes preserved immutable-original-receipts.zip",
+      "working_path": "all-safe-cases-readable.zip",
+      "working_archive_member": "all-safe-cases.json"
+    },
+    {
+      "path": "artifact-qualification.json",
+      "original_sha256": "8ea6c4185a745b5133ce38922bfdb75b7d283cf61663b1432f970c8e3cc8a7bd",
+      "original_bytes": 7923,
+      "working_sha256": "8ea6c4185a745b5133ce38922bfdb75b7d283cf61663b1432f970c8e3cc8a7bd",
+      "working_bytes": 7923,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "assess.py",
+      "original_sha256": "dce4e6a60e52909500b2085eb3c1fbaf7f524e7dac05e850d65517f65f264a15",
+      "original_bytes": 8088,
+      "working_sha256": "dce4e6a60e52909500b2085eb3c1fbaf7f524e7dac05e850d65517f65f264a15",
+      "working_bytes": 8088,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "checks.json",
+      "original_sha256": "4c3275801e000239c151e055c909d3266d824395153933174bbf73e3be0dcf5f",
+      "original_bytes": 702,
+      "working_sha256": "4c3275801e000239c151e055c909d3266d824395153933174bbf73e3be0dcf5f",
+      "working_bytes": 702,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.md",
+      "original_sha256": "66b2d5c395cc17ee493638b77217aab99ecbb1317a3c49a63701c43eec9c14e3",
+      "original_bytes": 5002,
+      "working_sha256": "66b2d5c395cc17ee493638b77217aab99ecbb1317a3c49a63701c43eec9c14e3",
+      "working_bytes": 5002,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11718619123.zip",
+      "original_sha256": "4d1956a7fecde179f9d90576a88692496f94a60b94011c06736f6531f1fa672b",
+      "original_bytes": 5407,
+      "working_sha256": "4d1956a7fecde179f9d90576a88692496f94a60b94011c06736f6531f1fa672b",
+      "working_bytes": 5407,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11718708644.zip",
+      "original_sha256": "8985cb06ce982f76e95c161663fa309f2919ba607554054e9f0f85976d29537e",
+      "original_bytes": 3987,
+      "working_sha256": "8985cb06ce982f76e95c161663fa309f2919ba607554054e9f0f85976d29537e",
+      "working_bytes": 3987,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11718743176.zip",
+      "original_sha256": "ebbbb08dcddd8925f32dd577c9102f4cf3a56e10df405db4e5784c3ba9b0c0ab",
+      "original_bytes": 7295,
+      "working_sha256": "ebbbb08dcddd8925f32dd577c9102f4cf3a56e10df405db4e5784c3ba9b0c0ab",
+      "working_bytes": 7295,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11718792984.zip",
+      "original_sha256": "1546d07400b65b5b03e34cfd4f12079fff1dc3e129928a037d41d5f80da6c965",
+      "original_bytes": 14719,
+      "working_sha256": "1546d07400b65b5b03e34cfd4f12079fff1dc3e129928a037d41d5f80da6c965",
+      "working_bytes": 14719,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11718823099.zip",
+      "original_sha256": "4a37b54ce8d81b9d2f761b850c7ef73becfd1a9676c1cc712b76099897b62670",
+      "original_bytes": 14651,
+      "working_sha256": "4a37b54ce8d81b9d2f761b850c7ef73becfd1a9676c1cc712b76099897b62670",
+      "working_bytes": 14651,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11718972638.zip",
+      "original_sha256": "61c9339cc80dc58015eaf9f58b97c3de8cfc1386b6a09c0419821ecc002950f5",
+      "original_bytes": 7275,
+      "working_sha256": "61c9339cc80dc58015eaf9f58b97c3de8cfc1386b6a09c0419821ecc002950f5",
+      "working_bytes": 7275,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11719102777.zip",
+      "original_sha256": "8ff450fb0a1370dea997d92db27e0a4fa3863a8dfb496eba492810bc52dfa14f",
+      "original_bytes": 19454,
+      "working_sha256": "8ff450fb0a1370dea997d92db27e0a4fa3863a8dfb496eba492810bc52dfa14f",
+      "working_bytes": 19454,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11719167418.zip",
+      "original_sha256": "8e635ec1da4ac16f742a41cf4e5c5500286d242fd01b882e1af415d4f2e002a0",
+      "original_bytes": 12433,
+      "working_sha256": "8e635ec1da4ac16f742a41cf4e5c5500286d242fd01b882e1af415d4f2e002a0",
+      "working_bytes": 12433,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11719430751.zip",
+      "original_sha256": "dde4404d5ee526b6b088941e034c6226e624265ec9943084d20b0faa7029a6d5",
+      "original_bytes": 6913,
+      "working_sha256": "dde4404d5ee526b6b088941e034c6226e624265ec9943084d20b0faa7029a6d5",
+      "working_bytes": 6913,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11719450597.zip",
+      "original_sha256": "47fcf5a1958bc25fb3e01b9f4f93dbd8546a322e2db8d8c236d323870b76532a",
+      "original_bytes": 5834,
+      "working_sha256": "47fcf5a1958bc25fb3e01b9f4f93dbd8546a322e2db8d8c236d323870b76532a",
+      "working_bytes": 5834,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11719500562.zip",
+      "original_sha256": "c889101fd51f52dd568435e07a9445adcb455c3f70927b1d7d713a23164210b7",
+      "original_bytes": 10774,
+      "working_sha256": "c889101fd51f52dd568435e07a9445adcb455c3f70927b1d7d713a23164210b7",
+      "working_bytes": 10774,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-artifacts/11719530075.zip",
+      "original_sha256": "6e4c3638642e55500490ce6ad87aeceecb4e09030ee49936b679cb8a9262bdb6",
+      "original_bytes": 1339,
+      "working_sha256": "6e4c3638642e55500490ce6ad87aeceecb4e09030ee49936b679cb8a9262bdb6",
+      "working_bytes": 1339,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "inputs.json",
+      "original_sha256": "2d28c396074bfb449f5f2be8e74046895b25cf9a1cb6195aa330575558fa52b0",
+      "original_bytes": 14029,
+      "working_sha256": "2d28c396074bfb449f5f2be8e74046895b25cf9a1cb6195aa330575558fa52b0",
+      "working_bytes": 14029,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "l05-reconciliation.json",
+      "original_sha256": "570e6915677fbcd0311b3aefeb94c62358567ec1d04b2b8dc863985fc01fa274",
+      "original_bytes": 3912,
+      "working_sha256": "570e6915677fbcd0311b3aefeb94c62358567ec1d04b2b8dc863985fc01fa274",
+      "working_bytes": 3912,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "l05-source-bridge.json",
+      "original_sha256": "eb7224bc8426c58a58c99887dfe206586601788e206821094793bb23ea5de963",
+      "original_bytes": 144276,
+      "working_sha256": "eb7224bc8426c58a58c99887dfe206586601788e206821094793bb23ea5de963",
+      "working_bytes": 144276,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "native-academic-job-steps.json",
+      "original_sha256": "078b263980f6b35e593435c58c54209842e0a53953dfcb9798edbaf29ddb9b9a",
+      "original_bytes": 1931,
+      "working_sha256": "078b263980f6b35e593435c58c54209842e0a53953dfcb9798edbaf29ddb9b9a",
+      "working_bytes": 1931,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "native-ci-jobs.json",
+      "original_sha256": "f85ea803adce40d8d91cc80d65a3c80745972d0b44e0230a863de2379df21fe4",
+      "original_bytes": 38938,
+      "working_sha256": "f85ea803adce40d8d91cc80d65a3c80745972d0b44e0230a863de2379df21fe4",
+      "working_bytes": 38938,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "native-merge-bridge.json",
+      "original_sha256": "64083f736c46cf24ecb9015e726d1da3c3cdc046f0cbfbd8a96ce888bb792102",
+      "original_bytes": 892,
+      "working_sha256": "64083f736c46cf24ecb9015e726d1da3c3cdc046f0cbfbd8a96ce888bb792102",
+      "working_bytes": 892,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proposed-verified-cases.csv",
+      "original_sha256": "6252edac535d086f26a7dac680d84095a0b3ccb5cb2756ea0924d4ef24916a4e",
+      "original_bytes": 3404,
+      "working_sha256": "3450456d80727f9ce076dd30a4cb0aec618660fd85d6ab717f02e0f9c602fd16",
+      "working_bytes": 3403,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "reconcile.py",
+      "original_sha256": "9c0be39cf341eda2a4dd576d2311b65cd115f3e80b5edbc7211932aa47ba5fcf",
+      "original_bytes": 5653,
+      "working_sha256": "9c0be39cf341eda2a4dd576d2311b65cd115f3e80b5edbc7211932aa47ba5fcf",
+      "working_bytes": 5653,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-SubjectListDataIT-actual-checkout.java",
+      "original_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "original_bytes": 10364,
+      "working_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "working_bytes": 10364,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "test-source-identity.json",
+      "original_sha256": "358b1c84e1022cd27d0931ca431a7cd9aee2ef154767ef6a7097293bce114b75",
+      "original_bytes": 184395,
+      "working_sha256": "358b1c84e1022cd27d0931ca431a7cd9aee2ef154767ef6a7097293bce114b75",
+      "working_bytes": 184395,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "2019e3ff2dd136da22280b03f1d91e2bf2802e5c57bf2f09ac4f64a66cd2b106",
+      "original_bytes": 6757,
+      "working_sha256": "2019e3ff2dd136da22280b03f1d91e2bf2802e5c57bf2f09ac4f64a66cd2b106",
+      "working_bytes": 6757,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verdict.json",
+      "original_sha256": "c45bb8e17e8cd8153609c3ca64b3b685c3b9bdcd75c2383e8030ea4d1c328630",
+      "original_bytes": 1077,
+      "working_sha256": "c45bb8e17e8cd8153609c3ca64b3b685c3b9bdcd75c2383e8030ea4d1c328630",
+      "working_bytes": 1077,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-byte-index.json",
+      "original_sha256": "9f71bcb3f2b0359c61630274de8a1181ba2445f65069bf028db912d6ee253390",
+      "original_bytes": 4982,
+      "working_sha256": "9f71bcb3f2b0359c61630274de8a1181ba2445f65069bf028db912d6ee253390",
+      "working_bytes": 4982,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

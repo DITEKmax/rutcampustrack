@@ -18,10 +18,10 @@ import ru.rutcampustrack.notification.contract.dto.push.VapidPublicKeyResponse;
 /**
  * REST API contract for Web Push subscription management.
  *
- * Per D-11: Contract-first design — controller implements this interface.
- * Per D-12: Mappings are ONLY in the interface, NOT in the controller class.
- * Per PUSH-01: VAPID public key endpoint is public (no auth required).
- * Subscribe/unsubscribe require a coherent supported signed account context; identity comes only from admission.
+ * <p>Per D-11: Contract-first design — controller implements this interface. Per D-12: Mappings are
+ * ONLY in the interface, NOT in the controller class. Per PUSH-01: VAPID public key endpoint is
+ * public (no auth required). Subscribe/unsubscribe require a coherent supported signed account
+ * context; identity comes only from admission.
  */
 @Tag(name = "Push", description = "Web Push subscription management")
 @RequestMapping("/push")

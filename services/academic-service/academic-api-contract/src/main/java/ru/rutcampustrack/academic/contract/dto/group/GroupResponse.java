@@ -1,9 +1,8 @@
 package ru.rutcampustrack.academic.contract.dto.group;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.hateoas.RepresentationModel;
-
 import java.time.OffsetDateTime;
+import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Response DTO for a student group with HATEOAS links.
@@ -32,9 +31,16 @@ public class GroupResponse extends RepresentationModel<GroupResponse> {
         this.createdAt = createdAt;
     }
 
-    public GroupResponse(Long id, String name, String alphabeticCode, String numericCode,
-                         Integer currentCourse, Integer trainingDurationYears,
-                         String durationStatus, boolean active, OffsetDateTime createdAt) {
+    public GroupResponse(
+            Long id,
+            String name,
+            String alphabeticCode,
+            String numericCode,
+            Integer currentCourse,
+            Integer trainingDurationYears,
+            String durationStatus,
+            boolean active,
+            OffsetDateTime createdAt) {
         this(id, name, active, createdAt);
         this.alphabeticCode = alphabeticCode;
         this.numericCode = numericCode;
@@ -43,30 +49,75 @@ public class GroupResponse extends RepresentationModel<GroupResponse> {
         this.durationStatus = durationStatus;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getAlphabeticCode() { return alphabeticCode; }
-    public void setAlphabeticCode(String alphabeticCode) { this.alphabeticCode = alphabeticCode; }
+    public String getName() {
+        return name;
+    }
 
-    public String getNumericCode() { return numericCode; }
-    public void setNumericCode(String numericCode) { this.numericCode = numericCode; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Integer getCurrentCourse() { return currentCourse; }
-    public void setCurrentCourse(Integer currentCourse) { this.currentCourse = currentCourse; }
+    public String getAlphabeticCode() {
+        return alphabeticCode;
+    }
 
-    public Integer getTrainingDurationYears() { return trainingDurationYears; }
-    public void setTrainingDurationYears(Integer trainingDurationYears) { this.trainingDurationYears = trainingDurationYears; }
+    public void setAlphabeticCode(String alphabeticCode) {
+        this.alphabeticCode = alphabeticCode;
+    }
 
-    public String getDurationStatus() { return durationStatus; }
-    public void setDurationStatus(String durationStatus) { this.durationStatus = durationStatus; }
+    public String getNumericCode() {
+        return numericCode;
+    }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public void setNumericCode(String numericCode) {
+        this.numericCode = numericCode;
+    }
 
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+    public Integer getCurrentCourse() {
+        return currentCourse;
+    }
+
+    public void setCurrentCourse(Integer currentCourse) {
+        this.currentCourse = currentCourse;
+    }
+
+    public Integer getTrainingDurationYears() {
+        return trainingDurationYears;
+    }
+
+    public void setTrainingDurationYears(Integer trainingDurationYears) {
+        this.trainingDurationYears = trainingDurationYears;
+    }
+
+    public String getDurationStatus() {
+        return durationStatus;
+    }
+
+    public void setDurationStatus(String durationStatus) {
+        this.durationStatus = durationStatus;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

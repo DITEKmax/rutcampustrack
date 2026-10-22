@@ -1,0 +1,30 @@
+{
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "closed_source_findings": [
+    "F3-C96-COHORT01",
+    "F3-C96-PREALLOC01"
+  ],
+  "input_ready_sha256": "6f619a4583cb50260dccdd1e8eb6ec13974988becbb17451191de1eb1a7f760c",
+  "input_driver_sha256": "e7b5dca63157f50c4aceb0df08f905544ca9b68cd7ddde2e569973f6ccf24ee3",
+  "members": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 3936,
+      "sha256": "b5d9453790906788a7eadebb464bcb449eab582d4294ad25e69a8a2564fbca52",
+      "mode": "0o600"
+    },
+    {
+      "path": "evidence.safe.json",
+      "bytes": 3187,
+      "sha256": "3e0866a6b0e2a027ba5c3e44e389e6f5b51964c8891cadd74822ff8d1b79a3a2",
+      "mode": "0o600"
+    },
+    {
+      "path": "source-ledger.safe.json",
+      "bytes": 1325,
+      "sha256": "57fa537051c59bba397c77a6be3d3fd075c1cdce8e9c838580dfde5469a3ba9a",
+      "mode": "0o600"
+    }
+  ],
+  "actual_runtime": "NOT_RUN"
+}

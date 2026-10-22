@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-12T06:34:22.230523+00:00",
+  "status": "HONEST_PARTIAL_OR_ERROR",
+  "pid": 216393,
+  "children": 0,
+  "candidate_count": 10831,
+  "actual_replacements": 250,
+  "pending_temp": null,
+  "interrupts": [],
+  "error": {
+    "type": "TypeError",
+    "message": "dict() got multiple values for keyword argument 'utc'",
+    "row": 249
+  },
+  "verification_error": null,
+  "before": {
+    "utc": "2026-10-12T06:34:12.940322+00:00",
+    "free_available_bytes": 7101943808,
+    "memory_current": 6657654784,
+    "memory_max": 17179869184,
+    "pid": 216393
+  },
+  "after": {
+    "utc": "2026-10-12T06:34:22.230503+00:00",
+    "free_available_bytes": 7130857472,
+    "memory_current": 6656925696,
+    "memory_max": 17179869184,
+    "pid": 216393
+  },
+  "observed_net_free_gain_bytes": 28913664,
+  "original_unique_candidate_allocated_bytes": 30359552,
+  "net_free_qualification": "Observed VFS net difference includes own receipts and unrelated concurrent Root documentation writes; not a per-file allocator attribution.",
+  "candidate_metadata_changes": "inode/nlink/mtime/ctime intentionally become reference values; SHA/size/mode/UID/GID/path preserved",
+  "reference_mtime_preserved": true,
+  "all_known_alias_nlink_exact": true,
+  "future_rule": "All exact12153 paths immutable; atomic COW + identity journal before ANY later edit/build/formatter/chmod.",
+  "runtime_stage_keys_apps_containers": "NOT_RUN"
+}

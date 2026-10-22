@@ -1,0 +1,1007 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "sha256": "c1bb600979f644e36cd772c0e3c7e332f79a2a6e7d53e791e8efb035b8626a1e",
+    "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "timestamp": "2026-10-11T21:52:28",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "grpcClientsMustSetDeadline",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+    "sha256": "08382564bb9dbee3a77a7e9f4253a47967852c0553f3781fee8d22ff764e5263",
+    "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+    "timestamp": "2026-10-11T21:52:34",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "integrationTestsMustEndWithIT",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "sha256": "dd51e8c5fd7a257fc61c154e6096027bc608aee7f1ca0aa8cde9477eb8dff07a",
+    "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "timestamp": "2026-10-11T21:52:38",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 2,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "entitiesMustNotUseJpaRelations",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "sha256": "d33fb795aa1c857fc013361e5c4c08f16d6b6ce3162bfcf589066acc2cdcb8ea",
+    "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "timestamp": "2026-10-11T21:52:38",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "sha256": "e03c80833e4963f20f921af5cddfdd82632ce836f73b3372d596c28c8b335a3f",
+    "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+    "timestamp": "2026-10-11T21:52:16",
+    "declared": {
+      "tests": 11,
+      "failures": 11,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 11,
+      "failures_and_errors": 11,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "svgDoctypeCannotResolveAnExternalEntityOrPublishAFile()",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory()",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[1] corruption=header-only",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[2] corruption=truncated",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes()",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[1] child=<script>alert(1)</script>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[2] child=<image href='https://example.invalid/rct-file-marker'/>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[3] child=<rect onload='alert(1)'/>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      },
+      {
+        "name": "[6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.ClassCastException",
+        "failure_message": "java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')"
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "sha256": "424bd3b1b03cf2a43bbd5784b80c7d968c605ac46a372707ba6623411650b58d",
+    "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "timestamp": "2026-10-11T21:54:30",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "grpcClientsMustSetDeadline",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+    "sha256": "c0192eaa718d0a595603039809e2f657c7352109888b9253f8cba3c8a10f1e86",
+    "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+    "timestamp": "2026-10-11T21:54:37",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "integrationTestsMustEndWithIT",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "sha256": "13acd9f088a1ac8d0a2185c4088c44b9d93bb83489d328639c5b27759ed6a061",
+    "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "timestamp": "2026-10-11T21:54:42",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 2,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "entitiesMustNotUseJpaRelations",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "sha256": "d1c1a6d86e7c65fb16709128511074e2e44660fd7215935bac3f1dcff7b287b6",
+    "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "timestamp": "2026-10-11T21:54:42",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "sha256": "0e5487fc25b8de4987ef280d0942529de896023eac5b91f5a8951e9bf71f382c",
+    "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+    "timestamp": "2026-10-11T21:54:06",
+    "declared": {
+      "tests": 11,
+      "failures": 5,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 11,
+      "failures_and_errors": 5,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "svgDoctypeCannotResolveAnExternalEntityOrPublishAFile()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[1] corruption=header-only",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.AssertionError",
+        "failure_message": "java.lang.AssertionError: Status expected:<400> but was:<201>"
+      },
+      {
+        "name": "[2] corruption=truncated",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.AssertionError",
+        "failure_message": "java.lang.AssertionError: Status expected:<400> but was:<201>"
+      },
+      {
+        "name": "foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[1] child=<script>alert(1)</script>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[2] child=<image href='https://example.invalid/rct-file-marker'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[3] child=<rect onload='alert(1)'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.AssertionError",
+        "failure_message": "java.lang.AssertionError: Status expected:<400> but was:<201>"
+      },
+      {
+        "name": "[5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.AssertionError",
+        "failure_message": "java.lang.AssertionError: Status expected:<400> but was:<201>"
+      },
+      {
+        "name": "[6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+        "outcome": "FAIL",
+        "failure_type": "java.lang.AssertionError",
+        "failure_message": "java.lang.AssertionError: Status expected:<400> but was:<201>"
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "sha256": "2605e43acd9348335a886e5e51560cf0373297262549b3e638a56606b70bf9ee",
+    "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "timestamp": "2026-10-11T21:57:15",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "grpcClientsMustSetDeadline",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+    "sha256": "d4e869e12ce569a66e564037e99b189c991718242d8daa533ac00a5048962475",
+    "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+    "timestamp": "2026-10-11T21:57:19",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "integrationTestsMustEndWithIT",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "sha256": "a456ee65271f6312357437dab7ad077ac8c601809c0250570064b91e77e80c06",
+    "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "timestamp": "2026-10-11T21:57:22",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 2,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "entitiesMustNotUseJpaRelations",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "sha256": "e3cf30a0b7dfd8a17c2e82746373dca6cefff6a1bf4fa7a29f999fb56e1ee7f2",
+    "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "timestamp": "2026-10-11T21:57:22",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "sha256": "7d4fb6eacd5d28edabf040f9b1e23ffd61b1a3c46e543ca4524e919c308cb12e",
+    "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+    "timestamp": "2026-10-11T21:57:03",
+    "declared": {
+      "tests": 8,
+      "failures": 5,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 8,
+      "failures_and_errors": 5,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "[1] corruption=header-only",
+        "outcome": "FAIL",
+        "failure_type": "org.opentest4j.AssertionFailedError",
+        "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+      },
+      {
+        "name": "[2] corruption=truncated",
+        "outcome": "FAIL",
+        "failure_type": "org.opentest4j.AssertionFailedError",
+        "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+      },
+      {
+        "name": "[1] child=<script>alert(1)</script>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[2] child=<image href='https://example.invalid/rct-file-marker'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[3] child=<rect onload='alert(1)'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+        "outcome": "FAIL",
+        "failure_type": "org.opentest4j.AssertionFailedError",
+        "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+      },
+      {
+        "name": "[5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+        "outcome": "FAIL",
+        "failure_type": "org.opentest4j.AssertionFailedError",
+        "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+      },
+      {
+        "name": "[6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+        "outcome": "FAIL",
+        "failure_type": "org.opentest4j.AssertionFailedError",
+        "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+      }
+    ],
+    "safe_served_diagnostics": [
+      "Unexpected admitted file: status=201 servedStatus=200 byteEquality=true format=png bytes=24 sha256=ad752fe96b52d32f2a89b12d0e3247376ae768d92f90d6d499e6fea5872d7b5a storedAssets=1",
+      "Unexpected admitted file: status=201 servedStatus=200 byteEquality=true format=png bytes=33 sha256=0329f0e7becb20d48e15a449a26b5f33dae65d76109115cbac01bd98e11c0e16 storedAssets=1",
+      "Unexpected admitted file: status=201 servedStatus=200 byteEquality=true format=svg bytes=179 sha256=91c4195208fee91d3fb65d55ccb1edc354f091bb9068d0598139e1cc9c4d12d2 storedAssets=1",
+      "Unexpected admitted file: status=201 servedStatus=200 byteEquality=true format=svg bytes=192 sha256=d339d20471d86eecb7f9247edfd11c434ff17d5f2b59ae188160e75d3706ed5a storedAssets=1",
+      "Unexpected admitted file: status=201 servedStatus=200 byteEquality=true format=svg bytes=159 sha256=210950e830cc4d6c5556d7de1c003f7e45255bfac478d3807fadb8b3d0b39a44 storedAssets=1"
+    ]
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "sha256": "dc73096847e8e78460d090c64fa502be299dd5d1216eb30fac99ab7d4af84245",
+    "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "timestamp": "2026-10-11T22:09:28",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "grpcClientsMustSetDeadline",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "sha256": "c633e723d4b818efcf1e1617455dc9645e643291999d46614b75142c451bccfd",
+    "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "timestamp": "2026-10-11T22:09:33",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 2,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "entitiesMustNotUseJpaRelations",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "sha256": "b24c3e0cd1ccdb4c2e36b8f28ce2c3ae25309cde95afe3eb02096c20cafb7271",
+    "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "timestamp": "2026-10-11T22:09:34",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+    "sha256": "640add364b240561a77a020f560df98da234fb447e6ae28abdd2e7accab6c1a0",
+    "suite": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+    "timestamp": "2026-10-11T22:09:26",
+    "declared": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 4,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "deletionRequiresAdminAndLivePasswordEvenForACompletedReplay()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "firstPngUploadPublishesAnExplicitAbsentSvgSlotAtomically()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "invalidMimeAndUnsafeSvgAreRejectedBeforeTheFloorLock()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "sha256": "2933ad93d4e4c3ada818d5f921310e4ac7da3c729e59bf21cfff343d658145df",
+    "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "timestamp": "2026-10-11T22:10:30",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "grpcClientsMustSetDeadline",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+    "sha256": "0ad6e8a9f429f19d3c1042f4c3b67b1e6219208647fb4847ad3b82515c5c5e80",
+    "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+    "timestamp": "2026-10-11T22:10:36",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "integrationTestsMustEndWithIT",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "sha256": "fc7e7aad56b301b86cb5241bac9b3f975ae42b96e688c60ef0735f99650e62f7",
+    "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "timestamp": "2026-10-11T22:10:40",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 2,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "entitiesMustNotUseJpaRelations",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "sha256": "0fb6df50c51d95a2cc49ff35031644fab8d58ca0cd7b75c40d6e0645636ccf66",
+    "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "timestamp": "2026-10-11T22:10:40",
+    "declared": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 1,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "sha256": "a7e929b86e60bc010249aa1430da88615fa07c35d8bbb1790772702eb31fa6b3",
+    "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+    "timestamp": "2026-10-11T22:09:48",
+    "declared": {
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 19,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "safeStyleAnimationAndEmbeddedRasterRemainAccepted()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "svgDoctypeCannotResolveAnExternalEntityOrPublishAFile()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "acceptedPngColorsInterlaceAndLargeDimensionsDoNotRequireRasterAllocationInValidator()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[1] corruption=header-only",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[2] corruption=truncated",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[3] corruption=checksum",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[4] corruption=compressed-data",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[5] corruption=huge-incomplete-raster",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[1] child=<script>alert(1)</script>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[2] child=<image href='https://example.invalid/rct-file-marker'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[3] child=<rect onload='alert(1)'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[7] child=<style>rect { fill: u\\72l('\\2f rct-file-marker.svg#paint'); }</style>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[8] child=<style>@\\69mport '//example.invalid/rct-file-marker.css';</style>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "[9] child=<use xml:base='https://example.invalid/rct-file-marker.svg' href='#paint'/>",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+    "sha256": "c0ea4cd0661e9e9fade1d4f2e4bf6d175bfab895f93ae94ddc17e328c6e08cc5",
+    "suite": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+    "timestamp": "2026-10-11T22:10:28",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "tests": 2,
+      "failures_and_errors": 0,
+      "skipped": 0
+    },
+    "counts_match": true,
+    "cases": [
+      {
+        "name": "oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      },
+      {
+        "name": "oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory()",
+        "outcome": "PASS",
+        "failure_type": null,
+        "failure_message": null
+      }
+    ],
+    "safe_served_diagnostics": []
+  }
+]

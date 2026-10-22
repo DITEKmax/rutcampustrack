@@ -1,0 +1,910 @@
+{
+  "academic:testCompileClasspath": [
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "main (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:apiElements' variant classes",
+      "attributes": {
+        "artifactType": "java-classes-directory",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "classes",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/classes/java/main",
+      "kind": "directory_tree_sha256",
+      "sha256": "71bebf593f15c0d6b3aec6b202d27af21997b3bccb84fb78b98585e0fe309166"
+    },
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "testFixtures (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:testFixturesApiElements' variant classes",
+      "attributes": {
+        "artifactType": "java-classes-directory",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "classes",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security-test-fixtures",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/classes/java/testFixtures",
+      "kind": "directory_tree_sha256",
+      "sha256": "d305dc14578f25a9df9a8b12381f64e98123687131c7c7e9345b724e9c66f515"
+    },
+    {
+      "component": "org.springframework.security:spring-security-core:6.5.11",
+      "artifact": "spring-security-core-6.5.11.jar (org.springframework.security:spring-security-core:6.5.11)",
+      "variant": "org.springframework.security:spring-security-core:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-core",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-core/6.5.11/d57309ff65d122a2fa45a3a8f47b01e9183cb6e6/spring-security-core-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "26ac26527cc015c5c71f3832add705a2410129a8f8de847054f2bc3b1d2e4465"
+    },
+    {
+      "component": "org.springframework.security:spring-security-crypto:6.5.11",
+      "artifact": "spring-security-crypto-6.5.11.jar (org.springframework.security:spring-security-crypto:6.5.11)",
+      "variant": "org.springframework.security:spring-security-crypto:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-crypto",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-crypto/6.5.11/2cbc07fa7650ef2f49bcc5ac35e7666c79614f55/spring-security-crypto-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "dcdd2f3b2d5d2bb1531986b5cc1737b464a76d8b5831f93fc8da9cdd67e6797f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-api:0.12.6",
+      "artifact": "jjwt-api-0.12.6.jar (io.jsonwebtoken:jjwt-api:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-api:0.12.6 configuration compile",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-api",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984"
+    }
+  ],
+  "academic:testRuntimeClasspath": [
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "shared-security-0.1.0.jar (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:runtimeElements'",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/libs/shared-security-0.1.0.jar",
+      "kind": "file_sha256",
+      "sha256": "349d430b8c10880e0b972197ffc8969aedbfcff9ec33e170505334342a24ebed"
+    },
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "shared-security-0.1.0-test-fixtures.jar (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:testFixturesRuntimeElements'",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security-test-fixtures",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/libs/shared-security-0.1.0-test-fixtures.jar",
+      "kind": "file_sha256",
+      "sha256": "f86982fccafe7c06d8e093685f7b63365b445a600f7259dd24c8b76aa0ca859b"
+    },
+    {
+      "component": "org.springframework.security:spring-security-core:6.5.11",
+      "artifact": "spring-security-core-6.5.11.jar (org.springframework.security:spring-security-core:6.5.11)",
+      "variant": "org.springframework.security:spring-security-core:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-core",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-core/6.5.11/d57309ff65d122a2fa45a3a8f47b01e9183cb6e6/spring-security-core-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "26ac26527cc015c5c71f3832add705a2410129a8f8de847054f2bc3b1d2e4465"
+    },
+    {
+      "component": "org.springframework.security:spring-security-crypto:6.5.11",
+      "artifact": "spring-security-crypto-6.5.11.jar (org.springframework.security:spring-security-crypto:6.5.11)",
+      "variant": "org.springframework.security:spring-security-crypto:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-crypto",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-crypto/6.5.11/2cbc07fa7650ef2f49bcc5ac35e7666c79614f55/spring-security-crypto-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "dcdd2f3b2d5d2bb1531986b5cc1737b464a76d8b5831f93fc8da9cdd67e6797f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-jackson:0.12.6",
+      "artifact": "jjwt-jackson-0.12.6.jar (io.jsonwebtoken:jjwt-jackson:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-jackson:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-jackson",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-jackson/0.12.6/f141e0c1136ba17f2632858238a31ae05642dbf8/jjwt-jackson-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8f8c293730fa0241a0f882b6128c3e5b2c07f3ff3e6391126ef71e73ecb24ea0"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-impl:0.12.6",
+      "artifact": "jjwt-impl-0.12.6.jar (io.jsonwebtoken:jjwt-impl:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-impl:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-impl",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-impl/0.12.6/ac23673a84b6089e0369fb8ab2c69edd91cd6eb0/jjwt-impl-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "ad80ceda467ddab64f0e729257dd5f72f61487cc3b92e696270e620f0d88168f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-api:0.12.6",
+      "artifact": "jjwt-api-0.12.6.jar (io.jsonwebtoken:jjwt-api:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-api:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-api",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984"
+    }
+  ],
+  "academic:compileClasspath": [
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "main (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:apiElements' variant classes",
+      "attributes": {
+        "artifactType": "java-classes-directory",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "classes",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/classes/java/main",
+      "kind": "directory_tree_sha256",
+      "sha256": "71bebf593f15c0d6b3aec6b202d27af21997b3bccb84fb78b98585e0fe309166"
+    },
+    {
+      "component": "org.springframework.security:spring-security-core:6.5.11",
+      "artifact": "spring-security-core-6.5.11.jar (org.springframework.security:spring-security-core:6.5.11)",
+      "variant": "org.springframework.security:spring-security-core:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-core",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-core/6.5.11/d57309ff65d122a2fa45a3a8f47b01e9183cb6e6/spring-security-core-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "26ac26527cc015c5c71f3832add705a2410129a8f8de847054f2bc3b1d2e4465"
+    },
+    {
+      "component": "org.springframework.security:spring-security-crypto:6.5.11",
+      "artifact": "spring-security-crypto-6.5.11.jar (org.springframework.security:spring-security-crypto:6.5.11)",
+      "variant": "org.springframework.security:spring-security-crypto:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-crypto",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-crypto/6.5.11/2cbc07fa7650ef2f49bcc5ac35e7666c79614f55/spring-security-crypto-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "dcdd2f3b2d5d2bb1531986b5cc1737b464a76d8b5831f93fc8da9cdd67e6797f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-api:0.12.6",
+      "artifact": "jjwt-api-0.12.6.jar (io.jsonwebtoken:jjwt-api:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-api:0.12.6 configuration compile",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-api",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984"
+    }
+  ],
+  "academic:runtimeClasspath": [
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "shared-security-0.1.0.jar (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:runtimeElements'",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/libs/shared-security-0.1.0.jar",
+      "kind": "file_sha256",
+      "sha256": "349d430b8c10880e0b972197ffc8969aedbfcff9ec33e170505334342a24ebed"
+    },
+    {
+      "component": "org.springframework.security:spring-security-core:6.5.11",
+      "artifact": "spring-security-core-6.5.11.jar (org.springframework.security:spring-security-core:6.5.11)",
+      "variant": "org.springframework.security:spring-security-core:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-core",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-core/6.5.11/d57309ff65d122a2fa45a3a8f47b01e9183cb6e6/spring-security-core-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "26ac26527cc015c5c71f3832add705a2410129a8f8de847054f2bc3b1d2e4465"
+    },
+    {
+      "component": "org.springframework.security:spring-security-crypto:6.5.11",
+      "artifact": "spring-security-crypto-6.5.11.jar (org.springframework.security:spring-security-crypto:6.5.11)",
+      "variant": "org.springframework.security:spring-security-crypto:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-crypto",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-crypto/6.5.11/2cbc07fa7650ef2f49bcc5ac35e7666c79614f55/spring-security-crypto-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "dcdd2f3b2d5d2bb1531986b5cc1737b464a76d8b5831f93fc8da9cdd67e6797f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-jackson:0.12.6",
+      "artifact": "jjwt-jackson-0.12.6.jar (io.jsonwebtoken:jjwt-jackson:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-jackson:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-jackson",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-jackson/0.12.6/f141e0c1136ba17f2632858238a31ae05642dbf8/jjwt-jackson-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8f8c293730fa0241a0f882b6128c3e5b2c07f3ff3e6391126ef71e73ecb24ea0"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-impl:0.12.6",
+      "artifact": "jjwt-impl-0.12.6.jar (io.jsonwebtoken:jjwt-impl:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-impl:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-impl",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-impl/0.12.6/ac23673a84b6089e0369fb8ab2c69edd91cd6eb0/jjwt-impl-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "ad80ceda467ddab64f0e729257dd5f72f61487cc3b92e696270e620f0d88168f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-api:0.12.6",
+      "artifact": "jjwt-api-0.12.6.jar (io.jsonwebtoken:jjwt-api:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-api:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-api",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984"
+    }
+  ],
+  "auth:compileClasspath": [
+    {
+      "component": "org.springframework.boot:spring-boot-starter-security:3.5.16",
+      "artifact": "spring-boot-starter-security-3.5.16.jar (org.springframework.boot:spring-boot-starter-security:3.5.16)",
+      "variant": "org.springframework.boot:spring-boot-starter-security:3.5.16 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.boot",
+          "name": "spring-boot-starter-security",
+          "version": "3.5.16"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-security/3.5.16/b32c27a95316b69df761455c6f29d30ecaba07f2/spring-boot-starter-security-3.5.16.jar",
+      "kind": "file_sha256",
+      "sha256": "826a677535c3a3a37c242c2de8061f2ecafb34d449ba1c5988079733dcb6d65d"
+    },
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "main (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:apiElements' variant classes",
+      "attributes": {
+        "artifactType": "java-classes-directory",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "classes",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/classes/java/main",
+      "kind": "directory_tree_sha256",
+      "sha256": "71bebf593f15c0d6b3aec6b202d27af21997b3bccb84fb78b98585e0fe309166"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-api:0.12.6",
+      "artifact": "jjwt-api-0.12.6.jar (io.jsonwebtoken:jjwt-api:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-api:0.12.6 configuration compile",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-api",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984"
+    },
+    {
+      "component": "org.springframework.security:spring-security-web:6.5.11",
+      "artifact": "spring-security-web-6.5.11.jar (org.springframework.security:spring-security-web:6.5.11)",
+      "variant": "org.springframework.security:spring-security-web:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-web",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-web/6.5.11/eeee13020ef81f290633e68fe062bccba062774e/spring-security-web-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "50df9fc76162d33cf8b5410cf7a7a969abd42a5ecddb284aab4f453cb5512306"
+    },
+    {
+      "component": "org.springframework.security:spring-security-config:6.5.11",
+      "artifact": "spring-security-config-6.5.11.jar (org.springframework.security:spring-security-config:6.5.11)",
+      "variant": "org.springframework.security:spring-security-config:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-config",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-config/6.5.11/c698bc32f1f10f85b3ade54575077eaebc9b86c3/spring-security-config-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "218685930013a2d1c126a896490ac3c44cf6fe90cf3d0286f2266bb877f916f7"
+    },
+    {
+      "component": "org.springframework.security:spring-security-core:6.5.11",
+      "artifact": "spring-security-core-6.5.11.jar (org.springframework.security:spring-security-core:6.5.11)",
+      "variant": "org.springframework.security:spring-security-core:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-core",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-core/6.5.11/d57309ff65d122a2fa45a3a8f47b01e9183cb6e6/spring-security-core-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "26ac26527cc015c5c71f3832add705a2410129a8f8de847054f2bc3b1d2e4465"
+    },
+    {
+      "component": "org.springframework.security:spring-security-crypto:6.5.11",
+      "artifact": "spring-security-crypto-6.5.11.jar (org.springframework.security:spring-security-crypto:6.5.11)",
+      "variant": "org.springframework.security:spring-security-crypto:6.5.11 variant apiElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-crypto",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-crypto/6.5.11/2cbc07fa7650ef2f49bcc5ac35e7666c79614f55/spring-security-crypto-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "dcdd2f3b2d5d2bb1531986b5cc1737b464a76d8b5831f93fc8da9cdd67e6797f"
+    }
+  ],
+  "auth:runtimeClasspath": [
+    {
+      "component": "org.springframework.boot:spring-boot-starter-security:3.5.16",
+      "artifact": "spring-boot-starter-security-3.5.16.jar (org.springframework.boot:spring-boot-starter-security:3.5.16)",
+      "variant": "org.springframework.boot:spring-boot-starter-security:3.5.16 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.boot",
+          "name": "spring-boot-starter-security",
+          "version": "3.5.16"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-security/3.5.16/b32c27a95316b69df761455c6f29d30ecaba07f2/spring-boot-starter-security-3.5.16.jar",
+      "kind": "file_sha256",
+      "sha256": "826a677535c3a3a37c242c2de8061f2ecafb34d449ba1c5988079733dcb6d65d"
+    },
+    {
+      "component": "project :services:shared:shared-security",
+      "artifact": "shared-security-0.1.0.jar (project :services:shared:shared-security)",
+      "variant": "configuration ':services:shared:shared-security:runtimeElements'",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "21",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "ru.rutcampustrack.shared",
+          "name": "shared-security",
+          "version": "0.1.0"
+        }
+      ],
+      "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-security/build/libs/shared-security-0.1.0.jar",
+      "kind": "file_sha256",
+      "sha256": "349d430b8c10880e0b972197ffc8969aedbfcff9ec33e170505334342a24ebed"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-impl:0.12.6",
+      "artifact": "jjwt-impl-0.12.6.jar (io.jsonwebtoken:jjwt-impl:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-impl:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-impl",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-impl/0.12.6/ac23673a84b6089e0369fb8ab2c69edd91cd6eb0/jjwt-impl-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "ad80ceda467ddab64f0e729257dd5f72f61487cc3b92e696270e620f0d88168f"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-jackson:0.12.6",
+      "artifact": "jjwt-jackson-0.12.6.jar (io.jsonwebtoken:jjwt-jackson:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-jackson:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-jackson",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-jackson/0.12.6/f141e0c1136ba17f2632858238a31ae05642dbf8/jjwt-jackson-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8f8c293730fa0241a0f882b6128c3e5b2c07f3ff3e6391126ef71e73ecb24ea0"
+    },
+    {
+      "component": "io.jsonwebtoken:jjwt-api:0.12.6",
+      "artifact": "jjwt-api-0.12.6.jar (io.jsonwebtoken:jjwt-api:0.12.6)",
+      "variant": "io.jsonwebtoken:jjwt-api:0.12.6 configuration runtime",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "io.jsonwebtoken",
+          "name": "jjwt-api",
+          "version": "0.12.6"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.6/478886a888f6add04937baf0361144504a024967/jjwt-api-0.12.6.jar",
+      "kind": "file_sha256",
+      "sha256": "8fabe0be1dfad1c823dc43137453e017d2c83f376422c83e017d9dd1043e6984"
+    },
+    {
+      "component": "org.springframework.security:spring-security-web:6.5.11",
+      "artifact": "spring-security-web-6.5.11.jar (org.springframework.security:spring-security-web:6.5.11)",
+      "variant": "org.springframework.security:spring-security-web:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-web",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-web/6.5.11/eeee13020ef81f290633e68fe062bccba062774e/spring-security-web-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "50df9fc76162d33cf8b5410cf7a7a969abd42a5ecddb284aab4f453cb5512306"
+    },
+    {
+      "component": "org.springframework.security:spring-security-config:6.5.11",
+      "artifact": "spring-security-config-6.5.11.jar (org.springframework.security:spring-security-config:6.5.11)",
+      "variant": "org.springframework.security:spring-security-config:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-config",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-config/6.5.11/c698bc32f1f10f85b3ade54575077eaebc9b86c3/spring-security-config-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "218685930013a2d1c126a896490ac3c44cf6fe90cf3d0286f2266bb877f916f7"
+    },
+    {
+      "component": "org.springframework.security:spring-security-core:6.5.11",
+      "artifact": "spring-security-core-6.5.11.jar (org.springframework.security:spring-security-core:6.5.11)",
+      "variant": "org.springframework.security:spring-security-core:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-core",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-core/6.5.11/d57309ff65d122a2fa45a3a8f47b01e9183cb6e6/spring-security-core-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "26ac26527cc015c5c71f3832add705a2410129a8f8de847054f2bc3b1d2e4465"
+    },
+    {
+      "component": "org.springframework.security:spring-security-crypto:6.5.11",
+      "artifact": "spring-security-crypto-6.5.11.jar (org.springframework.security:spring-security-crypto:6.5.11)",
+      "variant": "org.springframework.security:spring-security-crypto:6.5.11 variant runtimeElements",
+      "attributes": {
+        "artifactType": "jar",
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": "17",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-runtime"
+      },
+      "capabilities": [
+        {
+          "group": "org.springframework.security",
+          "name": "spring-security-crypto",
+          "version": "6.5.11"
+        }
+      ],
+      "file": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.security/spring-security-crypto/6.5.11/2cbc07fa7650ef2f49bcc5ac35e7666c79614f55/spring-security-crypto-6.5.11.jar",
+      "kind": "file_sha256",
+      "sha256": "dcdd2f3b2d5d2bb1531986b5cc1737b464a76d8b5831f93fc8da9cdd67e6797f"
+    }
+  ]
+}

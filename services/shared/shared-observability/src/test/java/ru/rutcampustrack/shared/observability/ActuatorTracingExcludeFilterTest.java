@@ -1,13 +1,12 @@
 package ru.rutcampustrack.shared.observability;
 
-import io.micrometer.tracing.exporter.FinishedSpan;
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import io.micrometer.tracing.exporter.FinishedSpan;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 class ActuatorTracingExcludeFilterTest {
 
@@ -23,7 +22,8 @@ class ActuatorTracingExcludeFilterTest {
     @Test
     void drops_actuatorRoot_byUrlPathTag() {
         // Spring Boot 3.4+ semconv 1.20+
-        FinishedSpan span = stubSpan("trace-2", "HTTP GET", Map.of("url.path", "/actuator/prometheus"));
+        FinishedSpan span =
+                stubSpan("trace-2", "HTTP GET", Map.of("url.path", "/actuator/prometheus"));
 
         assertThat(filter.isExportable(span)).isFalse();
     }
@@ -38,15 +38,19 @@ class ActuatorTracingExcludeFilterTest {
 
     @Test
     void drops_actuatorRoot_byHttpUrlTag() {
-        FinishedSpan span = stubSpan("trace-4", "HTTP GET",
-                Map.of("http.url", "http://localhost:9090/actuator/health"));
+        FinishedSpan span =
+                stubSpan(
+                        "trace-4",
+                        "HTTP GET",
+                        Map.of("http.url", "http://localhost:9090/actuator/health"));
 
         assertThat(filter.isExportable(span)).isFalse();
     }
 
     @Test
     void drops_actuatorRoot_byLegacyHttpTargetTag() {
-        FinishedSpan span = stubSpan("trace-5", "HTTP GET", Map.of("http.target", "/actuator/health"));
+        FinishedSpan span =
+                stubSpan("trace-5", "HTTP GET", Map.of("http.target", "/actuator/health"));
 
         assertThat(filter.isExportable(span)).isFalse();
     }
@@ -73,8 +77,8 @@ class ActuatorTracingExcludeFilterTest {
 
     @Test
     void passes_businessSpan_byUrlPath() {
-        FinishedSpan span = stubSpan("trace-biz-2", "HTTP POST",
-                Map.of("url.path", "/api/auth/login"));
+        FinishedSpan span =
+                stubSpan("trace-biz-2", "HTTP POST", Map.of("url.path", "/api/auth/login"));
 
         assertThat(filter.isExportable(span)).isTrue();
     }
@@ -82,8 +86,8 @@ class ActuatorTracingExcludeFilterTest {
     @Test
     void passes_substringMatch_isNotConfusedWithActuator() {
         // /api/foo/actuator-status НЕ должен дропаться — только /actuator/ prefix
-        FinishedSpan span = stubSpan("trace-biz-3", "HTTP GET",
-                Map.of("url.path", "/api/foo/actuator-status"));
+        FinishedSpan span =
+                stubSpan("trace-biz-3", "HTTP GET", Map.of("url.path", "/api/foo/actuator-status"));
 
         assertThat(filter.isExportable(span)).isTrue();
     }
@@ -112,8 +116,10 @@ class ActuatorTracingExcludeFilterTest {
         assertThat(smallFilter.isExportable(staleChild)).isTrue();
 
         // child от t2 и t3 всё ещё дропается
-        assertThat(smallFilter.isExportable(stubSpan("t2", "authorize request", Map.of()))).isFalse();
-        assertThat(smallFilter.isExportable(stubSpan("t3", "authorize request", Map.of()))).isFalse();
+        assertThat(smallFilter.isExportable(stubSpan("t2", "authorize request", Map.of())))
+                .isFalse();
+        assertThat(smallFilter.isExportable(stubSpan("t3", "authorize request", Map.of())))
+                .isFalse();
     }
 
     @Test

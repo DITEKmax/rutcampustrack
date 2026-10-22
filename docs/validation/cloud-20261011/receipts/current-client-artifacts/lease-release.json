@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-12T04:38:52.327593+00:00",
+  "lease": "ARTIFACT_BUILD1",
+  "state": "RELEASE_READY_BUILD_ONLY_COMPLETE",
+  "phases": [
+    {
+      "phase": "boot8",
+      "native_exit": 0,
+      "pid": 201154,
+      "pid_absent": true,
+      "source7350_exact": true
+    },
+    {
+      "phase": "pwa",
+      "native_exit": 0,
+      "pid": 201350,
+      "pid_absent": true,
+      "source7350_exact": true
+    },
+    {
+      "phase": "tma",
+      "native_exit": 0,
+      "pid": 201403,
+      "pid_absent": true,
+      "source7350_exact": true
+    }
+  ],
+  "worktree_tracked_status_clean": true,
+  "own_apps_browser_Docker_keys_staging": "NOT_RUN"
+}

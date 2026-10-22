@@ -1,0 +1,3 @@
+# CHANGES_REQUESTED partial — true broker harness
+
+BR-T01 exact foreign same-chat preservation oracle is weak; independent harmless dict counterexample confirms global marker can pass after wrong new-card removal. BR-G01 child environments inherit unrestricted parent variables. BR-G02 timeout cleanup kills supervisor before descendant reaping. BR-R01 lacks explicit required ephemeral loopback host bindings. These are source/test preparation findings, not actual product/runtime failures. Original2 frozen9f/old24/65seal and all prior review seals unchanged. Full source report/qualified boundaries follow.

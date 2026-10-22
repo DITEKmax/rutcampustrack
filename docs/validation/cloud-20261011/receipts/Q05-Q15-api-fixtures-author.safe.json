@@ -1,0 +1,694 @@
+{
+  "at": "2026-10-14T03:53:57.266108+00:00",
+  "baseline": "fd864eb028f271537d24d7b6c065b553c56d6440",
+  "branch": "codex/rct-validation-semester-api-current-20261014",
+  "checks": "NOT_RUN; source counterexample makes current fixture preparation inapplicable; no Node product runtime",
+  "isolation": "Complete boundedsemesterlist max1000/5pages, noexistingScheduled/transitioningsemesters; ownfuturedateafterallranges, restoreexactoriginalownedclock bytes and formeractiveauthorityfinally; noAuthClock changes/deletion/OTP/deletionproof",
+  "limits": "Finite oneFULLadmincommand/3HEADMANwriterpaths only; noallrole/allchannel/delete/replayfault/outage claim; scheduledsemesterprecondition failsclosed toprotectunownedCIintents; noQ012/B013/B014scope",
+  "native": "NOT_RUN; no browser/Docker/network/server/Node children launched; no local resource changes.",
+  "paused_at": "2026-10-14T02:36:00.616817+00:00",
+  "private_resources": "RCT_SEMESTER_LIFECYCLE_RUN700 withartifacts700 andprivate600disposable-target marker RCT_SEMESTER_DISPOSABLE; SafeReporter unchanged/no browser; generatedpublicCAviaNodeextra; payloads onlyRAM",
+  "refusal_and_noeffect": "All3distinctHEADMANwriters typed409/problem conflict; stablecanonical lesson projection/markrevision+content/homeworkidentity+revision+content/studenthistoricalprojection and archiveauthority unchanged; exactidempotency sameoperation; explicitrestoreinactive-unscheduled-released thenacceptedactivate andoneHWedit",
+  "routes": [
+    "POST /api/academic/semesters/{id}/archive|restore +Idempotency-Key",
+    "GET /api/academic/semesters/{id}/archive/status",
+    "PATCH /api/academic/semesters/{id}/activate",
+    "HEADMAN DELETE future /api/schedule/one-off-lessons/{id}",
+    "HEADMAN PUT existing /api/attendance/lessons/{physical}/students/{user}",
+    "HEADMAN PUT existing /api/academic/homeworks/{id}"
+  ],
+  "scope": "One real FULLadmin archive/restore/activate via existing idempotent API and all3actualparticipantreceipts; ownfuturepopulatedsemester only, after allotherCIcases",
+  "source": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+  "source_sha256": "a1f60e0f4ce2463e186f348f515c55d029db6768c402bc02edc8259d51fc0cb8",
+  "status": "TWO_FIXTURE_LOCAL_CHECKS_PASS_API_RUNTIME_NOT_RUN",
+  "type_config": "/workspace/scratch/rct-validation/native_recovery_actual/semester-source.tsconfig.private.json",
+  "type_config_sha256": "df8a39dc615ea1afee6938ca3ab0ed8475c0765d54edf90f82226e400f5cb9aa",
+  "worktree": "/workspace/rct-worktrees/recovery",
+  "clock_input": "Accept existing ISO UTC instant including 12 Moscow; preserve exact Buffer; wx temp chmod0644 before rename; Auth clock untouched",
+  "source_blocker": "NONE_SOURCE; actual API needs resolved shared Schedule closure/new justified CI; runtime NOT_RUN",
+  "wip": "Untracked ONE own fixture preserved unchanged; former5f20 clean branch retained; no commit/commonconfig/product changes.",
+  "original_unformatted_git_blob": "d8d7f5ed23044342b07ef1f041112d8e23148e33",
+  "original_unformatted_sha256": "17150d662d06e3e4758d32a27a8d6c95d39d8e0f71b39cea49ddeaf458bcda55",
+  "active_native": null,
+  "public_clock_umask_control": {
+    "result": {
+      "direct_pid": 632086,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 632086,
+          "start_ticks": 20349379
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "legacy_mode": "0600",
+    "legacy_other_read": false,
+    "fixed_mode": "0644",
+    "private_mode": "0600",
+    "peak_own_rss_bytes": 0,
+    "actual_ci_cause": "UNKNOWN"
+  },
+  "local_checks_current": [
+    {
+      "phase": "format-apply",
+      "result": {
+        "direct_pid": 632349,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632349,
+            "start_ticks": 20365380
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "7d8dc4c7ec971f94a7e5ca13cbef7ac0c1b29ba6e2cc95d4432cefba47554fed"
+    },
+    {
+      "phase": "format-idempotency",
+      "result": {
+        "direct_pid": 632360,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632360,
+            "start_ticks": 20365460
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "da27b98a891e963280339e26db0293af4aaecabc34bd4b828e201a85eb1d8a29"
+    },
+    {
+      "phase": "format-check",
+      "result": {
+        "direct_pid": 632374,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632374,
+            "start_ticks": 20365533
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "phase": "targeted-tsc",
+      "result": {
+        "direct_pid": 632385,
+        "native_exit": 2,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632385,
+            "start_ticks": 20365589
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": false
+      },
+      "log_sha256": "9c311e8c7ab45e87163a165e40b45931f2c2b5384ded2403567c4aef076a88d5",
+      "diagnostic_codes": [
+        "TS2339"
+      ]
+    }
+  ],
+  "temporary_link_removed": true,
+  "temporary_config_removed": true,
+  "local_checks_final": [
+    {
+      "phase": "q05-format-apply",
+      "result": {
+        "direct_pid": 632617,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632617,
+            "start_ticks": 20375177
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "eaf5791d5369d53032298165424138d2acdafc6d24a53133755bdecfecc4cf44"
+    },
+    {
+      "phase": "q05-format-idempotency",
+      "result": {
+        "direct_pid": 632628,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632628,
+            "start_ticks": 20375252
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "2fd5c83a8e99666d1929a8b8f4c699dfc0eeb4e75e6d9789757243ef831a78f9"
+    },
+    {
+      "phase": "q05-format-check",
+      "result": {
+        "direct_pid": 632639,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632639,
+            "start_ticks": 20375312
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "phase": "targeted-tsc-two-fixtures",
+      "result": {
+        "direct_pid": 632650,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632650,
+            "start_ticks": 20375372
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "public-clock-source-controls",
+      "result": {
+        "direct_pid": 632657,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632657,
+            "start_ticks": 20375609
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "one-api-discovery",
+      "result": {
+        "direct_pid": 632664,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 632664,
+            "start_ticks": 20375681
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "log_sha256": "62329286d506aeb81169bf39b81ee6a315c71d63093f43748b3e0c6fc084442b"
+    }
+  ],
+  "source_pins": {
+    "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/application-recovery.spec.ts": "fcb60e300d5ac50b80ede67d92432c43296f9420c5d03d70f2ae42a36f364d1e",
+    "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts": "a1f60e0f4ce2463e186f348f515c55d029db6768c402bc02edc8259d51fc0cb8"
+  },
+  "discovery": "ONE_STATIC_API_TEST",
+  "peak_sampled_own_rss_bytes": 315899904,
+  "api_runtime": "NOT_RUN",
+  "commit": "5e9dc8117b27caf7aba7b31042d8a8334e0b2e3e",
+  "delivery9": {
+    "source": {
+      "worktree": "/workspace/rct-worktrees/recovery",
+      "branch": "codex/rct-validation-semester-api-current-20261014",
+      "base": "fd864eb028f271537d24d7b6c065b553c56d6440",
+      "commit": "5e9dc8117b27caf7aba7b31042d8a8334e0b2e3e",
+      "files": [
+        "tests/e2e/fixtures/application-recovery.spec.ts",
+        "tests/e2e/fixtures/semester-lifecycle.spec.ts"
+      ],
+      "pins": {
+        "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/application-recovery.spec.ts": "fcb60e300d5ac50b80ede67d92432c43296f9420c5d03d70f2ae42a36f364d1e",
+        "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts": "a1f60e0f4ce2463e186f348f515c55d029db6768c402bc02edc8259d51fc0cb8"
+      }
+    },
+    "operation": "FULL admin owns populated future semester; archive/all3 READY; STUDENT history + HEADMAN journal/HW; 3 typed409/noeffect; same-key replay; restore/all3 RELEASED/inactive; explicit activate + HW revision once/durable readback",
+    "inputs": "Existing MobileDataset/Actor/TEST_USERS, owned synthetic HTTPS localhost8443, original public educational-clock directory+disposable marker, private run/artifacts700+marker600; no new proofheader/deletionintent",
+    "isolation": "Complete max5x200 semester inventory, reject scheduled/transitioning/releasePending, <100 initial semesters for existing MobileDataset size100; nonoverlap range after latest dateTo/original instant; own new dataset",
+    "observations": "Owned occurrence PRESENT identity; all3 participant receipts; operation/action/semester/stateVersion replay; schedule room/canonicalidentity, attendance markrevision, HW contents+binding+revision preserved",
+    "checks": "Old Node umask077 control0600; fixed2Source clocks0644/private0600/exact bytes/foreignmarker; formatter idempotency/check, TSC2fixtures, one static API test discovery PASS. First TSC2339 saved; corrected to actual admin-access/me route",
+    "resources": "Existing b78, cachedNode512MiB heap, deadline120s, workspace floor4GiB/growth256MiB/shared15GiB reserve1GiB; peakown315899904B; all owned reaped; own temporary config/link/TMP removed on finalPASS",
+    "cleanup": "finally exact original clock bytes then original active semester authority/no active if none; no owned/foreign dataset/backups deletion; product3clockpins unchanged; no localDocker/browser/API/server/network",
+    "limits": "Actual Q05 API runtime NOT_RUN; Q15 actual cause UNKNOWN until CI linkage; Source umask counterexample proven. Requires serial futureCI AFTER client/Q04/Q15 on isolated synthetic stack. Independent Q15targeted/Q05whole review pending Root"
+  },
+  "q05_current_correction": {
+    "commit": "424426a5a159380f672aa2d378fcff3aa5c5c716",
+    "source_sha256": "b805469c283e71668e5cdc716011cb95d355c31681deacd7e978112552bcec8e",
+    "author_receipt": {
+      "goal": "Correct one real Q05 archive/restore API fixture from independent F1/F2 review",
+      "context": {
+        "worktree": "/workspace/rct-worktrees/recovery",
+        "branch": "codex/rct-validation-semester-api-current-20261014",
+        "base": "5e9dc8117b27caf7aba7b31042d8a8334e0b2e3e",
+        "requested_model": "gpt-6.1-sol/high",
+        "actual_model": "UNKNOWN",
+        "pins": {
+          "tests/e2e/fixtures/semester-lifecycle.spec.ts": "b805469c283e71668e5cdc716011cb95d355c31681deacd7e978112552bcec8e",
+          "tests/e2e/fixtures/application-recovery.spec.ts": "fcb60e300d5ac50b80ede67d92432c43296f9420c5d03d70f2ae42a36f364d1e",
+          "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "615d0534156e7c4e3ca219d164d503b4601a5d0c0d35aeb368ac88b1e7f685f9",
+          "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "bd160f75da6b62e7eb3395d8299dd86c8dde1f2aaef679c71c0594e31feb3cd5",
+          "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "74fa6ba7d0a8ca5f2497f6f4ab43087674e581bfd7f934c4e530bc69ddc2d7be"
+        },
+        "commit": "424426a5a159380f672aa2d378fcff3aa5c5c716",
+        "original_preserved": {
+          "base_commit": "5e9dc8117b27caf7aba7b31042d8a8334e0b2e3e",
+          "original_unformatted_blob": "d8d7f5ed23044342b07ef1f041112d8e23148e33",
+          "original_unformatted_sha256": "17150d662d06e3e4758d32a27a8d6c95d39d8e0f71b39cea49ddeaf458bcda55"
+        },
+        "prior_accepted_correction_commit": "abad361ea158bd82259bf4daad15b4d8be77232e"
+      },
+      "scope": [
+        "tests/e2e/fixtures/semester-lifecycle.spec.ts"
+      ],
+      "required_behavior": "Known semester pinned to private Q15 seed.historyUrl with live active/range/no-transition checks; guarded Actor forbids MobileDataset semester fallback; yesterday actual CLOSED job and bounded actual Attendance lowercaseABSENT+nonempty revision before exact uppercaseCAS; unchanged clock Buffer assertions; 3realparticipants/replay/refusals/history; explicit activation and exact original ID finally",
+      "constraints": "420s test and Root540s final CI step; normal120s participant and90s closure waits retained; ordinary cleanup uses2s HTTP/30s archive settle/60s restore; no hard termination restoration guarantee; no product/common edits",
+      "patterns": "Actor/MobileDataset/private artifacts/SafeReporter",
+      "acceptance": "Source F1/F2 correction + local targeted checks + Root independent review/real CI",
+      "verification": {
+        "API": "NOT_RUN",
+        "commands": [
+          {
+            "phase": "format-apply",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/client-format/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+            ],
+            "result": {
+              "direct_pid": 637357,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 637357,
+                  "start_ticks": 20587526
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "8a639c98df77c9dea04358195168c26768dfbb1d7797b7fa3a8ba1f51827f0e5"
+          },
+          {
+            "phase": "format-idempotency",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/client-format/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+            ],
+            "result": {
+              "direct_pid": 637407,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 637407,
+                  "start_ticks": 20587613
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "521eda4b12337665f194b913308f416fec697ddc4474efa58ced4e779a234f96"
+          },
+          {
+            "phase": "format-check",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/client-format/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--check",
+              "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+            ],
+            "result": {
+              "direct_pid": 637425,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 637425,
+                  "start_ticks": 20587677
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+          },
+          {
+            "phase": "targeted-tsc",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+              "--noEmit",
+              "--project",
+              "/tmp/q05-api-node-q0497icp/source.tsconfig.json"
+            ],
+            "result": {
+              "direct_pid": 637436,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 637436,
+                  "start_ticks": 20587733
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "phase": "one-api-discovery",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/recovery/tests/e2e/node_modules/playwright/cli.js",
+              "test",
+              "--config",
+              "/tmp/q05-api-node-q0497icp/discovery.config.ts",
+              "--project=chromium",
+              "--list"
+            ],
+            "result": {
+              "direct_pid": 637443,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 637443,
+                  "start_ticks": 20587990
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "62329286d506aeb81169bf39b81ee6a315c71d63093f43748b3e0c6fc084442b"
+          },
+          {
+            "phase": "one-api-discovery",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/recovery/tests/e2e/node_modules/playwright/cli.js",
+              "test",
+              "--config",
+              "/tmp/q05-api-node-ch88s4z7/discovery.config.ts",
+              "--project=chromium",
+              "--list",
+              "--reporter",
+              "/tmp/q05-api-node-ch88s4z7/discovery-reporter.cjs"
+            ],
+            "result": {
+              "direct_pid": 637627,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 637627,
+                  "start_ticks": 20591165
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "phase": "p2-format-apply",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/client-format/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+            ],
+            "result": {
+              "direct_pid": 639255,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 639255,
+                  "start_ticks": 20624225
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "418d87870fb7a98b95bdb48a1ac75acec085376e94f01d8580cf088f7c7dc540"
+          },
+          {
+            "phase": "p2-format-idempotency",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/client-format/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--write",
+              "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+            ],
+            "result": {
+              "direct_pid": 639266,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 639266,
+                  "start_ticks": 20624306
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "b8743aeca0939af5528deabaa0d92d52b66d9328f2d91365d3a34ddd920f6af9"
+          },
+          {
+            "phase": "p2-format-check",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rct-worktrees/client-format/frontends/node_modules/prettier/bin/prettier.cjs",
+              "--check",
+              "/workspace/rct-worktrees/recovery/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+            ],
+            "result": {
+              "direct_pid": 639285,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 639285,
+                  "start_ticks": 20624369
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+          },
+          {
+            "phase": "p2-targeted-tsc",
+            "argv": [
+              "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+              "--max-old-space-size=512",
+              "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/tsc.js",
+              "--noEmit",
+              "--project",
+              "/tmp/q05-api-node-mc82c1rz/source.tsconfig.json"
+            ],
+            "result": {
+              "direct_pid": 639323,
+              "native_exit": 0,
+              "terminal_reason": "NATIVE_TERMINAL",
+              "signal_count": 0,
+              "settled": true,
+              "all_owned_processes_reaped": true,
+              "all_members_including_Z_after": [],
+              "known_owned_identities": [
+                {
+                  "pid": 639323,
+                  "start_ticks": 20624427
+                }
+              ],
+              "adopted_waitpid_receipts": [],
+              "supervision_error_type": null,
+              "phase_success": true
+            },
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ],
+        "active_native": null,
+        "formatter_idempotent": true,
+        "peak_sampled_own_rss_bytes": 341422080,
+        "minimum_workspace_free_bytes": 6197825536,
+        "own_tmp_removed": true,
+        "own_link_removed": true,
+        "source_sha256": "b805469c283e71668e5cdc716011cb95d355c31681deacd7e978112552bcec8e",
+        "tool_sessions_closed": [
+          41147,
+          35540,
+          71470
+        ],
+        "discovery": {
+          "staticTests": 1,
+          "oneAssignedFixture": true
+        },
+        "status": "SOURCE_LOCAL_PASS_PENDING_INDEPENDENT_RECHECK",
+        "commit": "Normal git add/commit PASS; one assigned fixture only; clean worktree",
+        "rss_qualification": "Last discovery invocation sampled peak recorded; previous invocation exact peak UNKNOWN after same field overwrite. All phases fresh512MiB sampled guard PASS; no OS isolation claim.",
+        "followup": {
+          "base": "abad361ea158bd82259bf4daad15b4d8be77232e",
+          "finding": "P2 CLOSED->empty report->AUTO ABSENT->EMPTY CAS409 Source interleaving; no actual runtime/productbug claim",
+          "correction": "Bounded60s actual absent+nonemptyrevision poll, exact ABSENT/revisionCAS; no EMPTY shortcut",
+          "status": "LOCAL_4CHECKS_PASS_PENDING_TARGETED_RECHECK",
+          "active_native": null,
+          "commit": "424426a5a159380f672aa2d378fcff3aa5c5c716",
+          "source_sha256": "b805469c283e71668e5cdc716011cb95d355c31681deacd7e978112552bcec8e",
+          "tool_session_closed": 71470,
+          "worktree_clean": true,
+          "all_children_reaped": true
+        }
+      },
+      "do_not": "No other files/old outcome/main/push/merge/Ready/deploy/Angular/newframework/subagents"
+    },
+    "independent_review": "receipts/Q05-semester-api-independent-review.safe.md",
+    "status": "APPROVE_SOURCE_LOCAL_CHECKS_PASS_ACTUAL_API_NOT_RUN"
+  }
+}

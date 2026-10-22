@@ -1,0 +1,53 @@
+{
+  "schema": "P10_CACHE_DIRECTIVE_QUOTE_R1_SOURCE_READY_V1",
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "finding": "Quoted comma split false-positive from extension value; test-oracle checking defect only",
+  "base_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "source_path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+  "source_before_simple": "a1aae309d0a13e834de61cce1b41c768ddfdf452138d76f44238eca8a243e6d8",
+  "source_after": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "original_product_test_source": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "original_ci_red_frame": 1184,
+  "original_ready_sha256": "cf089798059e53bb5943c47996a716a85fbfc78b40cd16a518337fb06f27c772",
+  "original_delta_sha256": "dcef6a0e177db6520bb0b4e7b9397dc98dea3808c4b7b3ba7d6add6441c279ed",
+  "original_execution_bindings_sha256": "2e28bb8bd2c63aea3cd5de593fc3aec033e2a65a3cf8fcc625fe1e43e6b08fb8",
+  "delta_sha256": "ebb546864f2d1ec367804c0b89236a91c88264ef9cc0ff924f1977c9a3353b72",
+  "correction_delta_sha256": "f9c0f9b147fcefa151c1610675333d05d3b9ae5d7c0c016a81526141078094d6",
+  "prior_parameters_preserved": "40b22b1d51c3fb773e6ef6c8816da5b1f45c93ac40e8a5d933df28e9d0cfa4fd",
+  "only_assigned_file_changed": true,
+  "inverse_outside_header_assertion_and_one_necessary_private_helper_exact": true,
+  "all_other_body_status_secret_credential_state_session_clocks_exact": true,
+  "RAM_controls": {
+    "count": 16,
+    "PASS": true,
+    "actual_prior_simple_algorithm_quoted_comma_false_positive": true,
+    "escaped_quote_false_positive": true,
+    "corrected_quoted_comma_escaped_quote_reject": true,
+    "default_single_case_no_store_positive": true,
+    "null_missing_lookalikes_unclosed_quotes_reject": true,
+    "qualification": "Pure RAM exact Java helper semantics model; nativeJava/nativeHTTP NOT_RUN. No mirrored new test suite/framework."
+  },
+  "reuse": "Callbacks/init/observer/caps unchanged. Only test SHA/manifest SHA/plan SHA fields rebound; old parameters preserved.",
+  "parameter_pins": {
+    "format01/semantic-source-manifest.safe.json": "608166e3eb93e0680e3b4cc4061eb43462e1e616f29c540be647985edd6ec774",
+    "format01/format-plan.safe.json": "6367f1ba92a7e59021373b13026af7ad75ea9a9d60af2e7d8d2e1aa62502c711",
+    "format01/run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "format01/logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "format01/grant-template.private.json": "40ad4700d75e8d8834daae8e532ba9c09d83e65101b4767f54173e86c01d3ec5",
+    "format01/format-journal.init.gradle": "90933926b19e792e941c15b2649560fdce53ea730b40456f4a4931a25cc6eaad",
+    "one-http01/logged-it-child.py": "130e8c367cb02762ece383704f899c3fafc97c064051cd12a9d6692711b4914a",
+    "one-http01/run-it-owned.py": "5b27e8fd4c1d658426c24e8abaf6950142682116294005b12252eba64d0673a7",
+    "one-http01/it-plan.safe.json": "2780438d0d38b6dfa084a11ce2e7618162cb5f97c48b25b968e2d9ab5da82309",
+    "one-http01/grant-template.private.json": "d73ee120079be6c1242a335be3de8c6ea4c6707bdc9d5a8b8ff3f5d7c84497ca",
+    "one-http01/it-source-supplement.safe.json": "d45f46b606130a17fbd757856b4466ad34a30e6c25572c53dfc01a76f042c7bc",
+    "one-http01/it_container_observer.py": "0dec9cb57458eb3f7d0dd97f882ba7d6f6f351b8727f293166178f4e2b6d95bb",
+    "one-http01/formatted-source-manifest.safe.json": "608166e3eb93e0680e3b4cc4061eb43462e1e616f29c540be647985edd6ec774"
+  },
+  "gates": [
+    "Independent narrow quote-aware oracle recheck",
+    "Fresh Root format grant",
+    "Postformat Source/head parameter rebind and fresh oneHTTP grant/resource/image/foreign joins"
+  ],
+  "cause": "Original actual1184/default header remains Source-qualified oracle cause; corrected genuine UnicodeHTTP GREEN required. Sensitive-credential mutation remains separate later requirement.",
+  "no_native_network_API_artifact_or_credentials_read": true
+}

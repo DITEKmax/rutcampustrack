@@ -1,0 +1,83 @@
+{
+  "metadata": {
+    "checkoutSha": "bb4c4dfafcaf14e58721c5b211289409b51785a9",
+    "prHeadSha": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "job": "java-coverage",
+    "runId": "38363252073",
+    "runAttempt": "1",
+    "testStepScope": "unit+integration+report",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "summary": {
+    "PASSED": 220,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "selected8": [
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getLessonAttendance_headman_returnsAllGroupMembers",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getLessonAttendance_regularStudentForbidden",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getJournal_headman_returnsGridShape",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentStats_excludesCancelled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentStats_excludesAuthoritativeCancelledAndTransferredStoredRecords",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentRecords_filteredBySubject",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+      "method": "getStudentRecords_allSubjects",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "f31027c75571842d3a8bfefc494268e2ac8c41c44a1b119184d8cc72949472ea"
+    },
+    {
+      "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+      "method": "journal_historicalRoster_authorizedFileAndClear",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "sourceSha256": "def754977de95b0c4a830ed58dbec449bf86910355381dc32562062b1949e161"
+    }
+  ],
+  "selected8_all_pass": true,
+  "xml_counts_consistent": true,
+  "raw_XML_logs_read": false
+}

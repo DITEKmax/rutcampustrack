@@ -1,0 +1,62 @@
+[
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+    "sha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+    "bytes": 5816,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+    "sha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+    "bytes": 4336,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServicePrincipal.java",
+    "sha256": "9cc0ada0fdd7650ec2a3858662b1fc127319c339a595a9a858784925fba07643",
+    "bytes": 1683,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessJdbcAuthority.java",
+    "sha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+    "bytes": 5855,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcAuthInterceptor.java",
+    "sha256": "1ad2005dabbbce6e9780a306032e75d5fbdfcc61311c4c9eb3b962eae01d4e82",
+    "bytes": 1416,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessConfiguration.java",
+    "sha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+    "bytes": 405,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+    "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+    "bytes": 40223,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/notification-bot/bot/consumers/event_consumer.py",
+    "sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315",
+    "bytes": 13106,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/notification-bot/bot/services/otp_message_tracker.py",
+    "sha256": "7501b01be4b82909c14f72a8fcc4a4130b500ff2ea439b836d63e7f2ace0a853",
+    "bytes": 6301,
+    "unchanged_from_base": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+    "sha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+    "bytes": 73195,
+    "unchanged_from_base": true
+  }
+]

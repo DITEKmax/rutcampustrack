@@ -1,0 +1,24 @@
+# Identity only for the already-owned disposable E2E applications.
+# No production feature, sampling, security or business-clock overrides.
+x-application-identity: &application-identity
+  DEPLOYMENT_ENVIRONMENT: synthetic
+  SERVICE_VERSION: ${GITHUB_SHA:?exact executable CI source required}
+  MANAGEMENT_METRICS_TAGS_ENVIRONMENT: synthetic
+  MANAGEMENT_METRICS_TAGS_VERSION: ${GITHUB_SHA:?exact executable CI source required}
+services:
+  auth-service:
+    environment: *application-identity
+  academic-service:
+    environment: *application-identity
+  schedule-service:
+    environment: *application-identity
+  attendance-service:
+    environment: *application-identity
+  document-renderer-service:
+    environment: *application-identity
+  mobile-bff:
+    environment: *application-identity
+  api-gateway:
+    environment: *application-identity
+  notification-web:
+    environment: *application-identity

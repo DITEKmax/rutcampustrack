@@ -1,0 +1,70 @@
+{
+  "state": "NARROW_SOURCE_READY_TYPES_LIST_PENDING",
+  "utc": "2026-10-13T03:09:03.991688+00:00",
+  "files": [
+    {
+      "path": "NODE-PLAN.safe.json",
+      "sha256": "7555676a9d407ea2bb09a5bbdf876a59d0d53d69802055eb79857ca2ea3fb3b5",
+      "bytes": 2517
+    },
+    {
+      "path": "READY.before.safe.json",
+      "sha256": "d4c26ca86da22bb6f32cbf2053976712aae82ca799cd8324556ad3f9baf6d190",
+      "bytes": 20865
+    },
+    {
+      "path": "READY.current.safe.json",
+      "sha256": "abf70b9342cb033e6f26f1759c59f51c1067b0cdc165cd0037416c3730e13acc",
+      "bytes": 23097
+    },
+    {
+      "path": "RECHECK-PACKET.md",
+      "sha256": "4d361ad276036c866b011d855415b6dd5b4b6afc81acf5b2344af37ed0c2e254",
+      "bytes": 2906
+    },
+    {
+      "path": "closed-step-observer.after.ts",
+      "sha256": "cf11c5268fdbfd839be408cbeb37cbef2f7ae713c56ba755dc9c1e0cc064c076",
+      "bytes": 6485
+    },
+    {
+      "path": "closed-step-observer.before.ts",
+      "sha256": "27e5d2348f993310b89cdd532151ec25e2d7d754034dd5dd3211e4f68d924510",
+      "bytes": 6442
+    },
+    {
+      "path": "node-adapter.before.py",
+      "sha256": "408ade0195f75697720d9c2e8f6089203406db3ebe8c13400b2debc9523a72e9",
+      "bytes": 13452
+    },
+    {
+      "path": "node-grant02.template.safe.json",
+      "sha256": "a2c3b5a76484cca5ba164c2fe2f9f901073856c1fb9ad1e76b17715403678bc9",
+      "bytes": 2861
+    },
+    {
+      "path": "root-source-compatibility.safe.json",
+      "sha256": "ed2d835130b790d00c523cc44d18c2ccc8f2248783d2b4efbac97c9f26711be7",
+      "bytes": 1894
+    },
+    {
+      "path": "run-node-checks02.py",
+      "sha256": "aa7c5a8f7ba6ca4ba9da6f9592139decc63fe6376a03efad7a0b0e8435c78295",
+      "bytes": 13447
+    },
+    {
+      "path": "source-symbol-counterexample.safe.json",
+      "sha256": "e3bcfcb3aca58cbd0e6abd3baeeadc89b68f3d48ba014681fc089b9cad96316d",
+      "bytes": 1017
+    },
+    {
+      "path": "source.patch",
+      "sha256": "c8793764a53dd70105645927b129dda28096ce0ff660d7b0e8748ca75d55d093",
+      "bytes": 817
+    }
+  ],
+  "new_ready_sha256": "abf70b9342cb033e6f26f1759c59f51c1067b0cdc165cd0037416c3730e13acc",
+  "new_observer_sha256": "cf11c5268fdbfd839be408cbeb37cbef2f7ae713c56ba755dc9c1e0cc064c076",
+  "root_source_revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "runtime": "NOT_RUN"
+}

@@ -1,0 +1,397 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Exact TypeScript prop type annotation"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^frontends/mobile-core/src/features/notifications/NotificationsScreen\.vue$''']
+regexes = ['''^[ \t]*api: NotificationsV2Api;[ \t]*$''']
+
+# Inert policy data for the existing Security step; no native allowlist is created
+# until every occurrence in the scanned file history has a recognized context.
+[rct_metadata]
+version = 1
+trusted_revision = "77811f7476e628973d27fc13238183796e711f7c"
+public_labels = [
+  "previous184SUCCESS",
+  "quote/hexnumeric",
+  "s17_propagation",
+  "compile08PASS90.81s",
+  "Academic330PASS190FAIL1SKIP",
+  "broker7/default300s",
+  "expectedchild0/3failedtests",
+  "NormalCI38548579139/attempt1",
+  "187PASS/4SubjectProofFAIL",
+  "duplicate/nonfinite",
+  "duplicate/mixed",
+  "11806374316/run38387263916/192040B/head1742/not",
+  "correctedstaged65043PASS1",
+  "genuineAcademic96/other7producer908",
+]
+git_reference_fields = [
+  "CIWT",
+  "HWauthor",
+  "Java_commit",
+  "PRCheckout",
+  "PRhead",
+  "Python_commit",
+  "RootHead",
+  "Rootsource",
+  "Vue_config_sha",
+  "actualCheckout",
+  "actualNewCheckout",
+  "actualPRCheckout",
+  "actualPushReadback",
+  "actualTree",
+  "actual_CI_checkout",
+  "actual_PR_checkout",
+  "actual_checkout",
+  "actual_checkout_all31",
+  "actual_checkout_reported",
+  "actual_checkout_sha",
+  "actual_checkout_tree_sha",
+  "actual_executable_checkout",
+  "actual_git_transport_readback",
+  "actual_new_checkout",
+  "actual_pr_api_head",
+  "actual_pr_checkout",
+  "actualcheckout",
+  "advertisedMerge",
+  "advertised_PR_merge_sha",
+  "applicableCurrent",
+  "author",
+  "author_commit",
+  "author_mechanical",
+  "author_mechanical_sha",
+  "author_parent",
+  "author_revision",
+  "author_semantic",
+  "author_semantic_sha",
+  "author_sha",
+  "authors",
+  "base",
+  "baseHead",
+  "base_published_revision",
+  "base_sha",
+  "baseline",
+  "before_root",
+  "candidate",
+  "candidateMerge",
+  "candidateMergeOnly",
+  "capacity",
+  "checkout",
+  "checkoutSha",
+  "checkout_sha",
+  "checkpoint_sha",
+  "client_commit",
+  "commit",
+  "commits",
+  "correction",
+  "current",
+  "currentPublished",
+  "current_root",
+  "evidenceHead",
+  "executable",
+  "executableCI",
+  "executableCheckout",
+  "executableHead",
+  "executablePR",
+  "executable_producer",
+  "final_WT",
+  "formatter_commit",
+  "from",
+  "frozen_base",
+  "gitRemote",
+  "gitRemoteHead",
+  "git_readback",
+  "green_pending_revision",
+  "head",
+  "headStill",
+  "head_parent",
+  "head_sha",
+  "imports",
+  "integrated_root",
+  "local",
+  "localCommitted",
+  "localHead",
+  "localRemotePRHead",
+  "localSha",
+  "local_head",
+  "local_remote_PR",
+  "local_remote_PR_head",
+  "local_remote_PR_sha",
+  "local_remote_authenticated_PR_head",
+  "authenticated_PR2_head",
+  "local_sha",
+  "main",
+  "main_sha",
+  "main_unchanged",
+  "map_source",
+  "mechanical",
+  "mechanical_Root",
+  "mechanical_author",
+  "mechanical_commit",
+  "mechanical_root",
+  "mechanical_sha",
+  "mergeCandidate",
+  "mergeCandidateNotCheckoutProof",
+  "new_source",
+  "np_revision",
+  "observedPreviousHead",
+  "officialPR",
+  "officialPRHead",
+  "officialPrHeadSha",
+  "outcome",
+  "ownLocalCommitBeforeExplicitExitGate",
+  "pack",
+  "packId",
+  "parent",
+  "parentPublished",
+  "parent_docs_checkpoint",
+  "prCheckout",
+  "prHead",
+  "prHeadSha",
+  "pr_api_head_sha",
+  "pr_head",
+  "pr_head_sha",
+  "previous",
+  "previousHead",
+  "previous_head",
+  "priorPublished",
+  "producer",
+  "producerHead",
+  "producerHeadSha",
+  "producer_head",
+  "producer_head_sha",
+  "producer_sha",
+  "producer_tested_head",
+  "product_test_revision",
+  "published",
+  "publishedAcademicRevision",
+  "publishedHead",
+  "published_head",
+  "published_pr_head",
+  "published_revision",
+  "published_source",
+  "q06_commit",
+  "qualified_at",
+  "remote",
+  "remoteBranch",
+  "remoteBranchSha",
+  "remoteHead",
+  "remotePRHead",
+  "remoteReadback",
+  "remoteReadbackSha",
+  "remoteStill",
+  "remote_PR",
+  "remote_PR_SHA",
+  "remote_PR_last_verified",
+  "remote_PR_sha",
+  "remote_PR_still",
+  "remote_branch_sha",
+  "remote_pr",
+  "remote_pr_head",
+  "remote_pr_producer_sha",
+  "remote_pr_sha",
+  "remote_sha",
+  "remote_transport_sha",
+  "revision",
+  "root",
+  "rootHead",
+  "rootInputRevision",
+  "root_actual_local",
+  "root_head_at_assignment",
+  "root_local_sha",
+  "root_revision",
+  "root_sha",
+  "root_source_revision",
+  "semantic",
+  "semantic_Root",
+  "semantic_author",
+  "semantic_commit",
+  "semantic_head",
+  "semantic_parent",
+  "semantic_root",
+  "semantic_sha",
+  "separateLsRemote",
+  "sha",
+  "source",
+  "source54Docs6Commit",
+  "sourceBase",
+  "sourceEquivalentCheckout",
+  "sourceEquivalentTree",
+  "sourceExecutable",
+  "source_base",
+  "source_commits",
+  "source_correction",
+  "source_current",
+  "source_head",
+  "source_producer",
+  "source_ref",
+  "source_revision",
+  "source_root",
+  "source_sha",
+  "source_test954",
+  "startingHead",
+  "startingTree",
+  "tested",
+  "tested_head",
+  "tested_producer",
+  "tested_revision",
+  "tested_source",
+  "tested_source_sha",
+  "tree",
+  "treeEqualsDa",
+  "tree_sha",
+  "version",
+  "whole_commit",
+  "wt_head",
+]
+
+[rct_metadata.limits]
+files = 26
+objects = 1024
+source_bytes = 2147483648
+file_bytes = 33554432
+values_per_file = 8192
+config_bytes = 2097152
+
+[[rct_metadata.files]]
+path = ".github/workflows/ci.yml"
+kind = "ci-pin"
+source_path = "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/CURRENT.md"
+kind = "prose"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/HANDOFF-20261017.md"
+kind = "prose"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/attempts.ndjson"
+kind = "journal"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/packet-frozen-nonangular-format-review.md"
+kind = "prose"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/CI-FIRST3-138-push-readback/readback.safe.json"
+kind = "json"
+required = { "utc" = "str", "qualification" = "str" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/FIRST3-profile-logout-source-local.safe.json"
+kind = "json"
+required = { "root_source_revision" = "str", "author_commit" = "str", "source_sha256" = "str", "outcome" = "dict" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/P07-key-isolation-checking-caller-r1-Source/caller-r1-manifest.safe.json"
+kind = "json"
+required = { "files" = "dict", "native" = "str", "semantic_revision" = "str", "source_files" = "list" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/P07-key-isolation-physical-caller-r2-Source/manifest.safe.json"
+kind = "json"
+required = { "files" = "dict", "native" = "str", "semantic_revision" = "str" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/P11-Gateway-pooled-release-red-green.safe.json"
+kind = "json"
+required = { "state" = "str", "updated_utc" = "str", "base" = "str" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/Q07-cancel-restore-client-author.safe.json"
+kind = "json"
+required = { "Goal" = "str", "Context" = "dict", "Scope" = "dict", "Verification" = "dict" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/Q07-existing-finite-proof-reuse.safe.json"
+kind = "json"
+required = { "Goal" = "str", "Context" = "dict", "Scope" = "str", "Verification" = "dict" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/Q08-existing-geo-source-preparation.safe.json"
+kind = "json"
+required = { "goal" = "str", "context" = "dict", "relevant_scope" = "dict", "verification" = "dict" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/Q09-helper-homework-client-author.safe.json"
+kind = "json"
+required = { "Goal" = "str", "Context" = "dict", "Scope" = "dict", "Verification" = "dict" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/client-focused3-current96-cohort-correction/READY.safe.json"
+kind = "json"
+required = { "schema" = "str", "utc" = "str" }
+schema = "RCT_FOCUS3_CURRENT96_CORRECTION_SOURCE_READY_V1"
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/client-focused3-source/READY.safe.json"
+kind = "json"
+required = { "schema" = "str", "utc" = "str" }
+schema = "RCT_FOCUSED3_READY_SOURCE_V1"
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/guard_vue_current_review/REPORT.md"
+kind = "prose"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/p10-credential-data-sensitivity-actual-pair-review.safe.json"
+kind = "json"
+required = { "schema" = "str", "checks" = "dict", "findings" = "list", "original_AuthSource_sha256" = "str" }
+schema = "P10_CREDENTIAL_DATA_SENSITIVITY_INDEPENDENT_FINITE_ACTUAL_PAIR_REVIEW_V1"
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/p10-credential-data-sensitivity-review.safe.json"
+kind = "json"
+required = { "schema" = "str", "checks" = "dict", "findings" = "list", "native" = "str", "original_auth_service_sha256" = "str" }
+schema = "P10_ENCODING_DATA_SENSITIVITY_INDEPENDENT_SOURCE_REVIEW_V1"
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/preobserver-diagnostic-source-ready/READY.safe.json"
+kind = "json"
+required = { "state" = "str", "scope" = "list", "baseCommit" = "str", "sourceHashes" = "dict" }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/resources.md"
+kind = "prose"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/selected-results-20261018-v3.csv"
+kind = "csv"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/verified-cases.csv"
+kind = "csv"
+required = {  }
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/client-focused3-current96-source/READY.safe.json"
+kind = "json"
+required = { "schema" = "str", "utc" = "str" }
+schema = "RCT_FOCUS3_CURRENT96_SOURCE_READY_V1"
+
+[[rct_metadata.files]]
+path = "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json"
+kind = "json"
+required = { "utc" = "str", "qualification" = "str", "source_pins" = "dict", "next_reviewed_integrations" = "dict" }
+
+[[rct_metadata.files]]
+path = ".github/workflows/security.yml"
+kind = "action-pin"
+required = { }

@@ -1,0 +1,64 @@
+{
+  "docker_start": {
+    "session": 65234,
+    "tool_exit": 0
+  },
+  "mongo_readiness": {
+    "session": 49783,
+    "tool_exit": 0
+  },
+  "readiness": {
+    "session": 5301,
+    "tool_exit": 0
+  },
+  "stop": {
+    "session": 81857,
+    "tool_exit": 0
+  },
+  "docker_cleanup": {
+    "session": 80840,
+    "tool_exit": 0
+  },
+  "foreground": [
+    {
+      "service": "mongo",
+      "session": 43694,
+      "tool_exit": 0
+    },
+    {
+      "service": "academic",
+      "session": 48052,
+      "tool_exit": 0
+    },
+    {
+      "service": "auth",
+      "session": 51813,
+      "tool_exit": 0
+    },
+    {
+      "service": "schedule",
+      "session": 86173,
+      "tool_exit": 0
+    },
+    {
+      "service": "attendance",
+      "session": 39876,
+      "tool_exit": 0
+    },
+    {
+      "service": "bff",
+      "session": 83644,
+      "tool_exit": 0
+    },
+    {
+      "service": "gateway",
+      "session": 28218,
+      "tool_exit": 0
+    },
+    {
+      "service": "notification",
+      "session": 19257,
+      "tool_exit": 0
+    }
+  ]
+}

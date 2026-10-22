@@ -1,0 +1,253 @@
+{
+  "time": "2026-10-11T21:39:04.561787+00:00",
+  "archive": "selected-junit-safe-results.zip",
+  "sha256": "1a12e27268ee0ce70a0ee14f4d0ea5650eb48fbffed4fcce4833159289b39663",
+  "bytes": 15013,
+  "members": [
+    {
+      "member": "6b310ec77c0e7d5f-TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+      "sha256": "f6c39419773f521e2ff20cede3258c408585a38692710335797207e86b9f736f",
+      "bytes": 625,
+      "original_path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+      "original_sha256": "6b310ec77c0e7d5fd30682e0c21b39c6e38df26bec53ccde8d381dc295fa0058",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-DR01-OPTIONAL-PROJECTION-CONTAINMENT"
+      ]
+    },
+    {
+      "member": "a61e5fbc086a9766-TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "sha256": "54f1ca863dbbe12c1594ceeab624916b7346fcdb8a77bd1c9012e54d18359ae8",
+      "bytes": 954,
+      "original_path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "original_sha256": "a61e5fbc086a97662783791d50eea98a42ee29707ed7e31fe096fc1a9c6baa9b",
+      "selected_tests": 3,
+      "cases": [
+        "CASE-L02-SEMESTER-AUTHORITATIVE-READ"
+      ]
+    },
+    {
+      "member": "148b589f8aa5a8d1-TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+      "sha256": "3a99cfb4bcf24bf52317675ca61c5e49663acc58727d218431560b82612875dd",
+      "bytes": 571,
+      "original_path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-schedule/TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+      "original_sha256": "148b589f8aa5a8d192298ea22fe5f5a15a636a6f7a377f7373e5a88fddbe829d",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-DELIVERY-UNCHANGED-EVENT-CONTRACTS"
+      ]
+    },
+    {
+      "member": "5be5d72ad2bed6c4-TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+      "sha256": "56598e0c55c37d0eb9feb16828c58373e7bef2fb2ae8bdc4e1f76791e5292a5a",
+      "bytes": 734,
+      "original_path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+      "original_sha256": "5be5d72ad2bed6c4eb4430ec72dabc9e04d4f9e9ba9f5b0c52071bb8506bb7c7",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-DELIVERY-UNCHANGED-EVENT-CONTRACTS"
+      ]
+    },
+    {
+      "member": "5f86cceb436b9c90-TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml",
+      "sha256": "0e7c5a2aba1e432daabced11c8c34dad4caf95bedad634300497fb12de7ae31f",
+      "bytes": 755,
+      "original_path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-unit/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml",
+      "original_sha256": "5f86cceb436b9c90d24963dcb8aa405aece785a837b30ee57c3fe0687d8ece36",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-L02-SEMESTER-AUTHORITATIVE-READ"
+      ]
+    },
+    {
+      "member": "f9798aa4d936610d-TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "c5e432574e2a5a3b8866459123949e3f9962d47ed1e389d5dce5574ad6e0bdcb",
+      "bytes": 601,
+      "original_path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "original_sha256": "f9798aa4d936610d6d4d82d12bece79333e967faacf8b3bc95863940b73b58c7",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-L01-ACADEMIC-BROKER-ACCEPTANCE"
+      ]
+    },
+    {
+      "member": "fa763aaf8714cc42-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "sha256": "984ba94681e782cdb89ab23beec953b3e8feae6a1986d166237874395858f74b",
+      "bytes": 590,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "original_sha256": "fa763aaf8714cc423aedb749a4b938f0053fced91140b1b9c6c39f101fdbcff2",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-SD02-LOCALE-AUTH-ACADEMIC"
+      ]
+    },
+    {
+      "member": "715bf49e92ed0397-TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+      "sha256": "cee5b0fd5ddfa7b86a12008a36a3da51df94023c5e55d64536e3cab43ab596d0",
+      "bytes": 923,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+      "original_sha256": "715bf49e92ed0397a5adf2e1734a052e28844ccd24ef09d66741962e2d55ed33",
+      "selected_tests": 3,
+      "cases": [
+        "CASE-L03-QR-REDACTION"
+      ]
+    },
+    {
+      "member": "a5b06263d18c8d9e-TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+      "sha256": "6d8c774320e1e7fa287c197dd5a439aae7c0f1a867738c8743172535e613ff44",
+      "bytes": 820,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+      "original_sha256": "a5b06263d18c8d9e297219128c229afc3bf212257350a60d7a173878ca3349bf",
+      "selected_tests": 3,
+      "cases": [
+        "CASE-SD01-TMA-SERVER"
+      ]
+    },
+    {
+      "member": "75f769671737c2f4-academic-service-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml",
+      "sha256": "818d5046f235db8a0dcc690b0367dcb74b0d478f330267d94911041ecf9e93c1",
+      "bytes": 724,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml",
+      "original_sha256": "75f769671737c2f4f283dd7491f51a95e09c4af8fe764e55d070aecd0640466d",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-SD02-LOCALE-AUTH-ACADEMIC"
+      ]
+    },
+    {
+      "member": "ff5af4db9b22e607-academic-service-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "sha256": "ed8f28007cb0de33ac7a94d6a51ecedf757a729478ed444b7b22e0b5ec5bf1cd",
+      "bytes": 593,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "original_sha256": "ff5af4db9b22e6073b323537044e6d743ba26c3a2f0bf8bdb3c093dffe4515e5",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-SD03-HELPER-HOMEWORK-PRODUCER"
+      ]
+    },
+    {
+      "member": "f7a61fde373ea652-auth-service-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml",
+      "sha256": "90d2adfb0a7cb54666119dc8dfe5f60239483a41964dee1d235eec2b588dfcd1",
+      "bytes": 712,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml",
+      "original_sha256": "f7a61fde373ea652d92f612b0a8184ea07a0a886b423115d7e43760a111b102f",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-SD02-LOCALE-AUTH-ACADEMIC"
+      ]
+    },
+    {
+      "member": "8b3f12189b9a6327-auth-service-TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml",
+      "sha256": "27601546670e51a9edb65db0e507659b52bdd6f034394ead2942f71323029935",
+      "bytes": 1198,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml",
+      "original_sha256": "8b3f12189b9a63274a86de53d2f9bb1e065cafc4c5f18a76fcb96b38dc0fd5b4",
+      "selected_tests": 5,
+      "cases": [
+        "CASE-L03-QR-REDACTION"
+      ]
+    },
+    {
+      "member": "2a0b616f4a84162c-auth-service-TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+      "sha256": "1e73620e46d573ad309e49a4e0816d0e75baff2d39c25e1720b6d28ed1f7cca9",
+      "bytes": 2224,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+      "original_sha256": "2a0b616f4a84162cb3768cc2c1973289eb82f47278f105a08fc04bd59513969b",
+      "selected_tests": 16,
+      "cases": [
+        "CASE-SD01-TMA-SERVER"
+      ]
+    },
+    {
+      "member": "a414ed92fa2b13c1-schedule-service-TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml",
+      "sha256": "59549ebab8c428187bb25cb8144466a6472a80ac0134581d22b635ace56ce381",
+      "bytes": 603,
+      "original_path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/schedule-service-TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml",
+      "original_sha256": "a414ed92fa2b13c1257a85af76c23bc2420abf4202b90b211d9f0a5f7b7f9a2e",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-SD03-HOMEWORK-SCHEDULE-CONSUMER"
+      ]
+    },
+    {
+      "member": "beef83c030341e66-TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "sha256": "333f404efcc5dd28924412a8202cd72efe1ccb46449d2c21f7317ba0e5422911",
+      "bytes": 706,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-cancellation-03-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "original_sha256": "beef83c030341e66821266e2dd8388adcccaf75a4e6119d5ad19864a5446f5aa",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-RF04-ACTUAL-GRPC-CANCEL-DEADLINE"
+      ]
+    },
+    {
+      "member": "638c3fde042478a0-TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+      "sha256": "e52cef00364086dc3bd4ac38760a6cfdb82c8b17349317181b60a74376fa6189",
+      "bytes": 1907,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+      "original_sha256": "638c3fde042478a0297fd371e34afb354fca77e4831e9a4d99f079f03980a2c1",
+      "selected_tests": 9,
+      "cases": [
+        "CASE-RF03-OOXML-SECURE-INPUT"
+      ]
+    },
+    {
+      "member": "4fef8b70255f7f20-TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest.xml",
+      "sha256": "5e82efa6f2e76f9d68c380c96f4989604d9f1a8191a7ae01d4130681429d1cad",
+      "bytes": 5115,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest.xml",
+      "original_sha256": "4fef8b70255f7f20116d362919d292080365a113341d9e9bb9fe16f7853f3f98",
+      "selected_tests": 8,
+      "cases": [
+        "CASE-RF03-OOXML-SECURE-INPUT"
+      ]
+    },
+    {
+      "member": "29dda2ec2cc97a26-TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+      "sha256": "128d5b15bf2de51ae4d9b07fb3adb7dc75400435c3227fd5ddea486729f8de03",
+      "bytes": 1311,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+      "original_sha256": "29dda2ec2cc97a261e8189968a598980bee614c44feedcaad0ad5262f8ed0869",
+      "selected_tests": 6,
+      "cases": [
+        "CASE-RF01-GRPC-FORMAT-REJECTION"
+      ]
+    },
+    {
+      "member": "52c58c4af8ed337e-TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+      "sha256": "a55e61d5927072056547c573dde5f9131db634da19205dbb9573901420d0ace6",
+      "bytes": 792,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+      "original_sha256": "52c58c4af8ed337eacee0bc2236ad9ed8992d44a4df2233e55b8914e54059319",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-RENDERER-NATIVE-PDF-PNG"
+      ]
+    },
+    {
+      "member": "6c624202b1e5a47b-TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+      "sha256": "e2ae6f991b7377dfe770656b08680854560fc626c42ce019bcd9aa9744b4c1fd",
+      "bytes": 752,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+      "original_sha256": "6c624202b1e5a47b1106632f64f911a1259ce43381855c2ac0558400d4e2450e",
+      "selected_tests": 2,
+      "cases": [
+        "CASE-RF02-OWNED-PROCESS-TREE"
+      ]
+    },
+    {
+      "member": "d396a3ff9efb20f9-TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+      "sha256": "a824dd527f115d19f7fb963ec2dff984e87168f9f003cbd5a6819416e2551139",
+      "bytes": 579,
+      "original_path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+      "original_sha256": "d396a3ff9efb20f991da2fb2fbff8ef659f6ad3b65c1dd2af0e30973c2ecd7ba",
+      "selected_tests": 1,
+      "cases": [
+        "CASE-RF02-OWNED-PROCESS-TREE"
+      ]
+    }
+  ],
+  "missing_originals": [],
+  "scope": "exact reviewer-selected XML result metadata checked against original hashes; no full sensitive output; remaining families unchanged",
+  "status": "PASS selectedmetadata validation"
+}

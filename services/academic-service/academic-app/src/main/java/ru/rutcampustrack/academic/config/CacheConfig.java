@@ -7,24 +7,46 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.ObjectProvider;
+
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SocketOptions;
+import io.lettuce.core.TimeoutOptions;
+import io.lettuce.core.resource.DefaultClientResources;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.BatchStrategies;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.cache.RedisCacheWriter;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.UUID;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    @Value("${rct.cache.redis.host:}")
+    private String cacheHost;
+
+    @Value("${rct.cache.redis.port:6379}")
+    private int cachePort;
+
+    @Value("${rct.cache.redis.username:}")
+    private String cacheUsername;
+
+    @Value("${rct.cache.redis.password:}")
+    private String cachePassword;
 
     @Value("${cache.ttl.groups:PT5M}")
     private Duration groupsTtl;
@@ -48,19 +70,13 @@ public class CacheConfig {
     private Duration subjectTtl;
 
     /**
-     * Redis-backed CacheManager when RedisConnectionFactory is available, NoOpCacheManager otherwise.
-     * Using ObjectProvider avoids @ConditionalOnBean timing issues in user @Configuration classes:
-     * Spring evaluates @ConditionalOnBean before autoconfiguration registers RedisConnectionFactory,
-     * causing the condition to fail even when Redis IS configured. ObjectProvider resolves lazily
-     * at bean-creation time, after all beans are registered.
-     *
-     * Non-cache integration tests exclude RedisAutoConfiguration → no factory → NoOpCacheManager.
-     * Cache integration tests keep Redis → factory is present → RedisCacheManager.
+     * Disposable cache has its own process and private client. Boot's default Redis factory and
+     * templates continue to serve critical limits/tickets; missing cache configuration never
+     * silently routes cache traffic into that critical pool.
      */
     @Bean
-    public CacheManager cacheManager(ObjectProvider<RedisConnectionFactory> connectionFactoryProvider) {
-        RedisConnectionFactory connectionFactory = connectionFactoryProvider.getIfAvailable();
-        if (connectionFactory == null) {
+    public CacheManager cacheManager() {
+        if (cacheHost.isBlank()) {
             return new NoOpCacheManager();
         }
 
@@ -81,52 +97,98 @@ public class CacheConfig {
         // Block'ирует gadget-chains через произвольные ClassPath-классы в
         // @class поле Redis-payload'а (защита от attacker с RW access к Redis).
         // String/Integer/Long/Boolean — final, не требуют @class; не в списке.
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfSubType("ru.rutcampustrack.")
-                // Collection types — нужны для List/Set/Map поля в DTO.
-                .allowIfSubType("java.util.ArrayList")
-                .allowIfSubType("java.util.LinkedList")
-                .allowIfSubType("java.util.HashMap")
-                .allowIfSubType("java.util.LinkedHashMap")
-                .allowIfSubType("java.util.TreeMap")
-                .allowIfSubType("java.util.HashSet")
-                .allowIfSubType("java.util.LinkedHashSet")
-                .allowIfSubType("java.util.TreeSet")
-                .allowIfSubType("java.util.Collections$")
-                .allowIfSubType("java.util.Optional")
-                // java.time types для OffsetDateTime/Instant/LocalDate.
-                .allowIfSubType("java.time.")
-                // BigDecimal/BigInteger для numeric-полей.
-                .allowIfSubType("java.math.BigDecimal")
-                .allowIfSubType("java.math.BigInteger")
-                .build();
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfSubType("ru.rutcampustrack.")
+                        // Collection types — нужны для List/Set/Map поля в DTO.
+                        .allowIfSubType("java.util.ArrayList")
+                        .allowIfSubType("java.util.LinkedList")
+                        .allowIfSubType("java.util.HashMap")
+                        .allowIfSubType("java.util.LinkedHashMap")
+                        .allowIfSubType("java.util.TreeMap")
+                        .allowIfSubType("java.util.HashSet")
+                        .allowIfSubType("java.util.LinkedHashSet")
+                        .allowIfSubType("java.util.TreeSet")
+                        .allowIfSubType("java.util.Collections$")
+                        .allowIfSubType("java.util.Optional")
+                        // java.time types для OffsetDateTime/Instant/LocalDate.
+                        .allowIfSubType("java.time.")
+                        // BigDecimal/BigInteger для numeric-полей.
+                        .allowIfSubType("java.math.BigDecimal")
+                        .allowIfSubType("java.math.BigInteger")
+                        .build();
 
-        ObjectMapper om = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(hibernate6Module)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .activateDefaultTyping(
-                        ptv,
-                        ObjectMapper.DefaultTyping.NON_FINAL,
-                        JsonTypeInfo.As.PROPERTY);
+        ObjectMapper om =
+                new ObjectMapper()
+                        .registerModule(new JavaTimeModule())
+                        .registerModule(hibernate6Module)
+                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                        .activateDefaultTyping(
+                                ptv,
+                                ObjectMapper.DefaultTyping.NON_FINAL,
+                                JsonTypeInfo.As.PROPERTY);
 
-        GenericJackson2JsonRedisSerializer serializer =
-                new GenericJackson2JsonRedisSerializer(om);
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(om);
 
-        RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
-                .disableCachingNullValues()
-                .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(serializer));
+        RedisCacheConfiguration base =
+                RedisCacheConfiguration.defaultCacheConfig()
+                        .prefixCacheNameWith("rct:cache:" + UUID.randomUUID() + ":")
+                        .disableCachingNullValues()
+                        .serializeValuesWith(
+                                RedisSerializationContext.SerializationPair.fromSerializer(
+                                        serializer));
 
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(base.entryTtl(Duration.ofMinutes(5)))
-                .withCacheConfiguration("groups", base.entryTtl(groupsTtl))
-                .withCacheConfiguration("group_members", base.entryTtl(groupMembersTtl))
-                .withCacheConfiguration("users", base.entryTtl(usersTtl))
-                .withCacheConfiguration("active_semester", base.entryTtl(activeSemesterTtl))
-                .withCacheConfiguration("campus_geofence", base.entryTtl(campusGeofenceTtl))
-                .withCacheConfiguration("rbac", base.entryTtl(rbacTtl))
-                .withCacheConfiguration("subject", base.entryTtl(subjectTtl))
-                .build();
+        var resources =
+                DefaultClientResources.builder()
+                        .ioThreadPoolSize(2)
+                        .computationThreadPoolSize(2)
+                        .build();
+        var standalone = new RedisStandaloneConfiguration(cacheHost, cachePort);
+        if (!cacheUsername.isBlank()) standalone.setUsername(cacheUsername);
+        if (!cachePassword.isEmpty()) standalone.setPassword(cachePassword);
+        var options =
+                ClientOptions.builder()
+                        .autoReconnect(false)
+                        .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
+                        .requestQueueSize(64)
+                        .timeoutOptions(TimeoutOptions.enabled(Duration.ofMillis(200)))
+                        .socketOptions(
+                                SocketOptions.builder()
+                                        .connectTimeout(Duration.ofMillis(500))
+                                        .build())
+                        .build();
+        var client =
+                LettuceClientConfiguration.builder()
+                        .clientResources(resources)
+                        .clientOptions(options)
+                        .clientName("academic-disposable-cache")
+                        .commandTimeout(Duration.ofMillis(200))
+                        .shutdownQuietPeriod(Duration.ZERO)
+                        .shutdownTimeout(Duration.ofMillis(500))
+                        .build();
+        var factory = new LettuceConnectionFactory(standalone, client);
+        try {
+            factory.afterPropertiesSet();
+            // SCAN is bounded per batch and scoped to this namespace. Never KEYS or FLUSHDB.
+            var writer =
+                    RedisCacheWriter.nonLockingRedisCacheWriter(factory, BatchStrategies.scan(128));
+            return new DisposableCacheManager(
+                    writer,
+                    base.entryTtl(Duration.ofMinutes(5)),
+                    Map.of(
+                            "groups", base.entryTtl(groupsTtl),
+                            "group_members", base.entryTtl(groupMembersTtl),
+                            "users", base.entryTtl(usersTtl),
+                            "active_semester", base.entryTtl(activeSemesterTtl),
+                            "campus_geofence", base.entryTtl(campusGeofenceTtl),
+                            "rbac", base.entryTtl(rbacTtl),
+                            "subject", base.entryTtl(subjectTtl)),
+                    factory,
+                    resources);
+        } catch (RuntimeException failure) {
+            factory.destroy();
+            resources.shutdown(0, 500, java.util.concurrent.TimeUnit.MILLISECONDS);
+            throw failure;
+        }
     }
 }

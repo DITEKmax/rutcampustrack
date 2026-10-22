@@ -1,0 +1,59 @@
+{
+  "status": "COMMON_SOURCE_RUNTIME_READY; fullNP01crosslayer/integration/globalgates pending",
+  "base_commit": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "proto_path": "/workspace/rct-worktrees/np01-contract/proto/academic.proto",
+  "proto_sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+  "rpc_methods": [
+    "rutcampustrack.academic.AcademicGrpcService/GetOwnBotInitialCredentials",
+    "rutcampustrack.academic.AcademicGrpcService/ManageOwnBotCredentialMessages"
+  ],
+  "migration": "V57__bot_credential_message_lifecycle.sql",
+  "table": "bot_credential_messages",
+  "columns": {
+    "record_id": "BIGINT identity primary key",
+    "user_id": "BIGINT positive immutable original UID; no FK",
+    "private_chat_id": "BIGINT positive immutable",
+    "message_id": "BIGINT positive immutable",
+    "telegram_binding_version": "BIGINT positive immutable",
+    "credentials_version": "BIGINT positive immutable",
+    "record_revision": "BIGINT positive default1; increment exactly once per mutation; CAS for cleanup",
+    "render_revision": "BIGINT positive default1; immutable stable single attempt; not record CAS",
+    "render_state": "VARCHAR(24) IN_FLIGHT | CONFIRMED_EDIT | NO_EDIT | UNCERTAIN; default IN_FLIGHT",
+    "cleanup_state": "VARCHAR(16) NOT_REQUIRED | PENDING | CLEANED; default NOT_REQUIRED",
+    "invalidated_by_credentials_version": "nullable BIGINT >= original credentials_version; first invalidation fence preserved",
+    "created_at": "TIMESTAMPTZ NOT NULL DEFAULT now(); immutable",
+    "updated_at": "TIMESTAMPTZ NOT NULL DEFAULT now()",
+    "render_completed_at": "nullable TIMESTAMPTZ; present once state != IN_FLIGHT",
+    "invalidated_at": "nullable TIMESTAMPTZ; present iff invalidated generation present",
+    "cleaned_at": "nullable TIMESTAMPTZ; present iff CLEANED",
+    "cleanup_event_id": "nullable UUID; present iff CLEANED",
+    "cleanup_outcome": "nullable VARCHAR(16) DELETED | ABSENT | SANITIZED; present iff CLEANED"
+  },
+  "unique": [
+    "private_chat_id,message_id"
+  ],
+  "render_receipt": "Exact immutable tuple + positive render_revision; input record_revision may predate invalidation. IN_FLIGHT -> declared typed outcome once; idempotent same receipt. Never grant new attempt from replay, invalidation or terminal render. Fresh user-first authority/binding/generation recheck; lost/deleted authority invalidates and returns CLEANUP_REQUIRED unless already terminal cleaned.",
+  "cleanup_receipt": "Exact original tuple, current positive record_revision CAS, matching positive invalidation fence and canonical event_id; stale CAS FAILED_PRECONDITION. DELETED/ABSENT allowed while IN_FLIGHT/UNCERTAIN. SANITIZED only CONFIRMED_EDIT/NO_EDIT. Unknown/failure/uncertain cleanup never terminal.",
+  "list": "Original user_id; invalidated_by_credentials_version IS NOT NULL AND <= supplied event fence AND cleanup_state=PENDING, including IN_FLIGHT/UNCERTAIN. Stable record_id cursor1..200 pages. Account missing/archived/unlinked does not deny exact persisted-card cleanup.",
+  "own_read": "mode field6, explicit SNAPSHOT1 requires both expected versions0; RECHECK2 both positive; absent/unknown/mixed invalid. found fresh exactUID/binding/unarchived validACTIVEown durable grant; defaultrole not gate. eligible separately unchanged and initial nonempty. Both login+initial blank whenever !eligible. Valid ADMIN FULL/LIMITED own grants eligible; HEADMAN/helper base grant consistency must be preserved.",
+  "users_columns": [
+    "credentials_version BIGINT NOT NULL DEFAULT1 CHECK>0",
+    "telegram_binding_version BIGINT NOT NULL DEFAULT1 CHECK>0"
+  ],
+  "event_v2": "event_version2; required user_id,credentials_version(postchange),telegram_binding_version; optional positive telegram_id snapshot. Explicit v1 unchanged telegram-only compatibility; v1 cannot invent original UID cleanup.",
+  "runtime": "NOT_RUN; no root lease. Generated outputs not available yet.",
+  "source_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+  "source_inventory": "source-inventory.safe.json",
+  "source_checks": "source-checks.safe.json",
+  "migration_path": "/workspace/rct-worktrees/np01-contract/services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+  "migration_sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+  "lifecycle_guard": "Insert IN_FLIGHT revision1, immutable original tuple +render_revision; update requires revision+1; render receipt once terminal; first invalidation fence immutable; prior PENDING required before CLEANED; cleaned identity tombstone retained; no user FK. Binding/archive/delete invalidations may use original credential generation (>= original).",
+  "atomic_invalidation": "BEFORE UPDATE actual credential tuple and telegram_id derived monotonic versions, external version assignment rejected; overflow fails. AFTER UPDATE credential/binding/archive change and AFTER DELETE invalidates NOT_REQUIRED original cards atomically, preserves pending/uncertain state and first fence. No network calls/new event policy in trigger.",
+  "product_contract_commit": "1dbee1831e58477b7ea455e0220751fda09284a0",
+  "source_bridge": "Product contract/proto/schema/migration three paths exact1dbee; only authorized retained migration IT added.",
+  "test_hygiene_bridge": "Compared5a only two trailing spaces removed, no tokens/testsemantics/productbytes changed.",
+  "actual_DB_compile_producer_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "final_source_bridge": "final-source-bridge.safe.json",
+  "runtime_summary": "terminal-summary.safe.json",
+  "generated_python": "python-generation.safe.json"
+}

@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T06:48:15.078906+00:00",
+  "lease": "NP01_COMPILE1",
+  "source_author": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "root_source": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "scope": "actual Auth plainjar +Academic compileJava/compileTestJava ONLY; no integrationTest/Docker/Pythonworker/provider/app/browser",
+  "argv_policy": "canonicalrun-gradle.py/offline/nodaemon/noparallel/maxworker1/heap768m/meta256m/guardf539 closedenv singleforeground/allownedPIDsabsent",
+  "disk_growth_cap": 536870912,
+  "disk_floor": 4294967296,
+  "shared_memory_stop": 16106127360,
+  "deadline_seconds": 300,
+  "parallel_resource": "hostcurrentstage Pythononly boundedextract final192MiB/transient128MiB, no JVM/Docker; aggregate compile+stage<1GiB disk and1.5GiBsharedgrowth vsactual8.60G/free andshared4.60G",
+  "next": "actualnativecompileoutcome+ownclean/preservation/reap proof; thenfreshstage-settled preflight andseparateNP01_BROKER1"
+}

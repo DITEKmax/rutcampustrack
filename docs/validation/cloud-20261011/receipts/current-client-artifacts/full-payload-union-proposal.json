@@ -1,0 +1,82 @@
+{
+  "status": "READ_ONLY_ZIP_HASH_PROPOSAL_NO_EXTRACTION_OR_STAGING",
+  "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "ordered_layers": [
+    "dependencies",
+    "spring-boot-loader",
+    "snapshot-dependencies",
+    "application"
+  ],
+  "service_order": [
+    "auth",
+    "academic",
+    "schedule",
+    "attendance",
+    "bff",
+    "gateway",
+    "notification",
+    "renderer"
+  ],
+  "services": [
+    {
+      "service": "auth",
+      "logical_all_file_bytes": 106294683,
+      "new_distinct_SHA_mode_bytes": 106294683,
+      "distinct_4KiB_rounded_files_estimate": 109764608,
+      "regular_entries": 1530
+    },
+    {
+      "service": "academic",
+      "logical_all_file_bytes": 106876152,
+      "new_distinct_SHA_mode_bytes": 7981226,
+      "distinct_4KiB_rounded_files_estimate": 9011200,
+      "regular_entries": 1797
+    },
+    {
+      "service": "schedule",
+      "logical_all_file_bytes": 99650746,
+      "new_distinct_SHA_mode_bytes": 1399672,
+      "distinct_4KiB_rounded_files_estimate": 1839104,
+      "regular_entries": 1515
+    },
+    {
+      "service": "attendance",
+      "logical_all_file_bytes": 103119560,
+      "new_distinct_SHA_mode_bytes": 25862535,
+      "distinct_4KiB_rounded_files_estimate": 26783744,
+      "regular_entries": 1745
+    },
+    {
+      "service": "bff",
+      "logical_all_file_bytes": 56013157,
+      "new_distinct_SHA_mode_bytes": 547421,
+      "distinct_4KiB_rounded_files_estimate": 643072,
+      "regular_entries": 1296
+    },
+    {
+      "service": "gateway",
+      "logical_all_file_bytes": 62450858,
+      "new_distinct_SHA_mode_bytes": 13114520,
+      "distinct_4KiB_rounded_files_estimate": 13271040,
+      "regular_entries": 291
+    },
+    {
+      "service": "notification",
+      "logical_all_file_bytes": 92519970,
+      "new_distinct_SHA_mode_bytes": 11079469,
+      "distinct_4KiB_rounded_files_estimate": 11493376,
+      "regular_entries": 1400
+    },
+    {
+      "service": "renderer",
+      "logical_all_file_bytes": 54580439,
+      "new_distinct_SHA_mode_bytes": 103748,
+      "distinct_4KiB_rounded_files_estimate": 147456,
+      "regular_entries": 1260
+    }
+  ],
+  "all_payload_logical_bytes": 681505565,
+  "distinct_SHA_mode_bytes": 166383274,
+  "distinct_4KiB_rounded_files_estimate": 172953600,
+  "qualification": "Logical/rounded estimate only, including complete CURRENT Renderer payload. Actual directories/unique inode allocation/staging delta require separate root grant; sameSHA+mode hardlinks only, roots frozen/COW before later writes. No extraction/JAR/app execution."
+}

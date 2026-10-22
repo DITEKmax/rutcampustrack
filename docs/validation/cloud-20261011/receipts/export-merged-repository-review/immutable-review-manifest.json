@@ -1,0 +1,72 @@
+{
+  "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "verdict": "APPROVE",
+  "scope": "SOURCE_ONLY_BOUNDED merged repository review",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 890,
+      "sha256": "396d63ba67ea89ea763be6ab7e140f3929231e003aaaa5ea1ce1e5099f59e10d"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 10658,
+      "sha256": "5a5830b12a2c39a0bf5033a1e36e388d0e47ae36686450be5ad1614cfc82b5d5"
+    },
+    {
+      "path": "check.py",
+      "bytes": 11007,
+      "sha256": "74201bf339c768a6130fd427eff17202c5cddceeef7f9bc98faefb21beb59495"
+    },
+    {
+      "path": "dependency-inventory.json",
+      "bytes": 5136,
+      "sha256": "bd30b012dc0b9404d3b4178c311f2985c48d1bdabc11f55f49e5da02c764a008"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "governing-inputs.json",
+      "bytes": 2524,
+      "sha256": "efc0e60436bd9c1791e4056d826e08cf19477caf10dc7e0c62d39a9665687003"
+    },
+    {
+      "path": "integrated-author-identity.json",
+      "bytes": 23246,
+      "sha256": "054442617e874c0b097b30a1c8d6f292b5903d72abeb6b0a8db2f4d89b513d58"
+    },
+    {
+      "path": "merged-source-proof.json",
+      "bytes": 1541,
+      "sha256": "9207d20cd5fe5815ef10bfa79f6e469882b456f616bcf1d539ffaf3a2a884a2a"
+    },
+    {
+      "path": "previous-review-unchanged.json",
+      "bytes": 316,
+      "sha256": "d21e87c6ce20bb9b3802381b7ce07d9f4ce8cf7ef2256ef8c362eba2a07d7a07"
+    },
+    {
+      "path": "prior-l05-qualification.json",
+      "bytes": 846,
+      "sha256": "c6e21c4c637bfb665645fec4498a72d763e0b9a5be68c8e7282a2fd59ba62fec"
+    },
+    {
+      "path": "prior-t001-native-evidence.json",
+      "bytes": 1221,
+      "sha256": "707d8ff1907fb5439830a659f6c6d6c941190445baff1bf8b998c1efce95236e"
+    },
+    {
+      "path": "verification-dependency.json",
+      "bytes": 1502,
+      "sha256": "f850704b48d7700e17d663dcba3a4ffd4241cf8d7a9ba02484360c7097d658d3"
+    }
+  ],
+  "excluded": "private-sources/ copies; all original raw logs/XML/request bodies/secret values; previous sealed EBSR artifacts unchanged",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN"
+}

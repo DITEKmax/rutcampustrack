@@ -1,0 +1,18 @@
+{
+  "source": "dd318eff119eeaf68cb9ded99f6e66807d8667aa",
+  "paths": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "hook_statuses": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...........................................(no files to check)Skipped",
+    "check json...........................................(no files to check)Skipped",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "native_exit": 0,
+  "all_owned_reaped": true,
+  "qualification": "4applicablePASS/2YAML-JSONnotapplicableSKIP/sourceposthashesintact/only2staged"
+}

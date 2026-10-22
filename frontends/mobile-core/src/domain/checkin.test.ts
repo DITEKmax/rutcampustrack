@@ -1,34 +1,94 @@
-import { applyCheckinAck, countdownLabel, eligibilityLabel, isPendingCheckin, remainingSeconds, unavailableCommand, unavailableReason } from './checkin'
+import {
+  applyCheckinAck,
+  isPendingCheckin,
+  remainingSeconds,
+  unavailableCommand,
+  unavailableReason,
+} from './checkin'
 import type { StudentCheckinAck, StudentToday } from '../api/types'
 import { describe, expect, it } from 'vitest'
 
 const today: StudentToday = {
-  date: '2026-09-06', timeZone: 'Europe/Moscow', serverNow: '2026-09-06T08:30:00Z', _links: {}, lessons: [{
-    schedule: { id: '77', date: '2026-09-06', lessonNumber: 2, startsAt: '11:20:00', endsAt: '12:50:00', status: 'ACTIVE', subject: { id: '31', name: 'РС', type: 'LECTURE' }, room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' } },
-    attendance: null, request: null, checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
-  }],
+  date: '2026-09-06',
+  timeZone: 'Europe/Moscow',
+  serverNow: '2026-09-06T08:30:00Z',
+  _links: {},
+  lessons: [
+    {
+      schedule: {
+        id: '77',
+        date: '2026-09-06',
+        lessonNumber: 2,
+        startsAt: '11:20:00',
+        endsAt: '12:50:00',
+        status: 'ACTIVE',
+        subject: { id: '31', name: 'РС', type: 'LECTURE' },
+        room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' },
+      },
+      attendance: null,
+      request: null,
+      checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
+    },
+  ],
 }
 
 describe('geo check-in domain', () => {
   it('uses unavailable discriminator instead of zero coordinates', () => {
-    expect(unavailableCommand('TIMEOUT')).toEqual({ geo: { kind: 'UNAVAILABLE', reason: 'TIMEOUT' } })
-    expect(unavailableReason({ code: 1, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)).toBe('PERMISSION_DENIED')
-    expect(unavailableReason({ code: 2, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)).toBe('POSITION_UNAVAILABLE')
-    expect(unavailableReason({ code: 3, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)).toBe('TIMEOUT')
+    expect(unavailableCommand('TIMEOUT')).toEqual({
+      geo: { kind: 'UNAVAILABLE', reason: 'TIMEOUT' },
+    })
+    expect(
+      unavailableReason({
+        code: 1,
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+      } as GeolocationPositionError),
+    ).toBe('PERMISSION_DENIED')
+    expect(
+      unavailableReason({
+        code: 2,
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+      } as GeolocationPositionError),
+    ).toBe('POSITION_UNAVAILABLE')
+    expect(
+      unavailableReason({
+        code: 3,
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+      } as GeolocationPositionError),
+    ).toBe('TIMEOUT')
   })
 
   it('waits for ACK before projecting pending and derives countdown from server time', () => {
-    const ack: StudentCheckinAck = { outcome: 'PENDING_CONFIRMATION', lessonId: '77', attendance: null, request: { id: 'r1', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null }, retryAt: '2026-09-06T08:35:00Z', serverNow: '2026-09-06T08:30:00Z', _links: {} }
+    const ack: StudentCheckinAck = {
+      outcome: 'PENDING_CONFIRMATION',
+      lessonId: '77',
+      attendance: null,
+      request: { id: 'r1', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null },
+      retryAt: '2026-09-06T08:35:00Z',
+      serverNow: '2026-09-06T08:30:00Z',
+      _links: {},
+    }
     expect(today.lessons[0]?.request).toBeNull()
     expect(applyCheckinAck(today, ack).lessons[0]?.request?.id).toBe('r1')
     expect(applyCheckinAck(today, ack).lessons[0]?.checkinEligibility.reason).toBe('COOLDOWN')
-    expect(eligibilityLabel(applyCheckinAck(today, ack).lessons[0]!, 60)).toBe('Повтори через 01:00')
-    expect(eligibilityLabel(applyCheckinAck(today, ack).lessons[0]!, 0)).toBe('Можно повторить отметку')
-    expect(countdownLabel(remainingSeconds(ack.serverNow, ack.retryAt, Date.parse('2026-09-06T08:34:00Z')))).toBe('01:00')
+    expect(remainingSeconds(ack.serverNow, ack.retryAt, Date.parse('2026-09-06T08:34:00Z'))).toBe(60)
   })
 
   it('does not restart a countdown when a delayed idempotency replay has an old serverNow', () => {
-    const replay: StudentCheckinAck = { outcome: 'PENDING_CONFIRMATION', lessonId: '77', attendance: null, request: { id: 'r1', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null }, retryAt: '2026-09-06T08:35:00Z', serverNow: '2026-09-06T08:30:00Z', _links: {} }
+    const replay: StudentCheckinAck = {
+      outcome: 'PENDING_CONFIRMATION',
+      lessonId: '77',
+      attendance: null,
+      request: { id: 'r1', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null },
+      retryAt: '2026-09-06T08:35:00Z',
+      serverNow: '2026-09-06T08:30:00Z',
+      _links: {},
+    }
     const fresh = { ...today, serverNow: '2026-09-06T08:34:00Z' }
     expect(applyCheckinAck(fresh, replay).serverNow).toBe('2026-09-06T08:34:00Z')
   })
@@ -36,21 +96,32 @@ describe('geo check-in domain', () => {
   it('keeps an active request pending after its retry time expires', () => {
     const lesson = {
       ...today.lessons[0]!,
-      request: { id: 'r1', status: 'PENDING' as const, origin: 'AUTO_GEO_FAILURE' as const, resolutionReason: null },
-      checkinEligibility: { allowed: false, reason: 'PENDING_CONFIRMATION' as const, retryAt: '2026-09-06T08:35:00Z' },
+      request: {
+        id: 'r1',
+        status: 'PENDING' as const,
+        origin: 'AUTO_GEO_FAILURE' as const,
+        resolutionReason: null,
+      },
+      checkinEligibility: {
+        allowed: false,
+        reason: 'PENDING_CONFIRMATION' as const,
+        retryAt: '2026-09-06T08:35:00Z',
+      },
     }
 
     expect(isPendingCheckin(lesson)).toBe(true)
-    expect(eligibilityLabel(lesson, 0)).toBe('На подтверждении у старосты')
   })
 
   it('keeps the pending state when the server omits the request projection', () => {
     const lesson = {
       ...today.lessons[0]!,
-      checkinEligibility: { allowed: false, reason: 'PENDING_CONFIRMATION' as const, retryAt: null },
+      checkinEligibility: {
+        allowed: false,
+        reason: 'PENDING_CONFIRMATION' as const,
+        retryAt: null,
+      },
     }
 
     expect(isPendingCheckin(lesson)).toBe(true)
-    expect(eligibilityLabel(lesson, 0)).toBe('На подтверждении у старосты')
   })
 })

@@ -1,0 +1,198 @@
+{
+  "schema": "RCT_D002_STEPS_NODE01_PARTIAL_ACTUAL",
+  "state": "CAUSAL_PRIVACY_AND_FORMAT_PASS_SCOPED_TYPES_FAIL_LIST_NOT_RUN",
+  "utc": "2026-10-13T02:54:45.788496+00:00",
+  "tool_session": 12740,
+  "tool_native_exit": 1,
+  "supervisor": {
+    "pid": 455765,
+    "birth_ticks": 11380037,
+    "source": "D002_STEPS_NODE_ONLY",
+    "stop_utc": "2026-10-13T03:02:05.580897+00:00"
+  },
+  "all_known_births": [
+    {
+      "pid": 455765,
+      "start_ticks": 11380037
+    },
+    {
+      "pid": 455768,
+      "start_ticks": 11380063
+    },
+    {
+      "pid": 455775,
+      "start_ticks": 11380145
+    },
+    {
+      "pid": 455782,
+      "start_ticks": 11380204
+    },
+    {
+      "pid": 455793,
+      "start_ticks": 11380271
+    }
+  ],
+  "all_known_births_absent_or_replaced": true,
+  "no_signals": true,
+  "phases": [
+    {
+      "phase": "known-bad",
+      "native_exit": 1,
+      "accepted": true
+    },
+    {
+      "phase": "privacy-green",
+      "native_exit": 0,
+      "accepted": true
+    },
+    {
+      "phase": "format",
+      "native_exit": 0,
+      "accepted": true
+    },
+    {
+      "phase": "types",
+      "native_exit": 1,
+      "accepted": false
+    }
+  ],
+  "before_controls": {
+    "phase": "D002_CLOSED_STEP_CONTROLS",
+    "variant": "before-category-leak",
+    "count": 11,
+    "parserErrors": 0,
+    "failedCodes": [
+      "PRIVATE_CATEGORY_CLOSED_UNKNOWN"
+    ],
+    "pass": false,
+    "expectedCounterexample": true,
+    "results": [
+      {
+        "code": "PAIRED_SOURCE375_API",
+        "passed": true
+      },
+      {
+        "code": "PRIVATE_TITLE_ARGS_ERROR_NOT_READ",
+        "passed": true
+      },
+      {
+        "code": "ACCESSOR_CATEGORY_LOCATION_REJECTED",
+        "passed": true
+      },
+      {
+        "code": "UNAPPROVED_URL_LOCATION_NOT_EMITTED",
+        "passed": true
+      },
+      {
+        "code": "UNSELECTED_ORIGINAL260_IGNORED",
+        "passed": true
+      },
+      {
+        "code": "PRIVATE_CATEGORY_CLOSED_UNKNOWN",
+        "passed": false
+      },
+      {
+        "code": "NONINTEGER_LINE_NOT_EMITTED",
+        "passed": true
+      },
+      {
+        "code": "EVENT_CAP_SIGNALS_ONCE_AND_STOPS",
+        "passed": true
+      },
+      {
+        "code": "PUBLICATION_FAILURE_SIGNALS_ONCE",
+        "passed": true
+      },
+      {
+        "code": "EXISTING_CALLBACK_NOT_OVERWRITTEN",
+        "passed": true
+      },
+      {
+        "code": "PUBLIC_ADDITIONS_CANONICAL_FAILURE_SIGNAL",
+        "passed": true
+      }
+    ]
+  },
+  "after_controls": {
+    "phase": "D002_CLOSED_STEP_CONTROLS",
+    "variant": "after",
+    "count": 11,
+    "parserErrors": 0,
+    "failedCodes": [],
+    "pass": true,
+    "expectedCounterexample": false,
+    "results": [
+      {
+        "code": "PAIRED_SOURCE375_API",
+        "passed": true
+      },
+      {
+        "code": "PRIVATE_TITLE_ARGS_ERROR_NOT_READ",
+        "passed": true
+      },
+      {
+        "code": "ACCESSOR_CATEGORY_LOCATION_REJECTED",
+        "passed": true
+      },
+      {
+        "code": "UNAPPROVED_URL_LOCATION_NOT_EMITTED",
+        "passed": true
+      },
+      {
+        "code": "UNSELECTED_ORIGINAL260_IGNORED",
+        "passed": true
+      },
+      {
+        "code": "PRIVATE_CATEGORY_CLOSED_UNKNOWN",
+        "passed": true
+      },
+      {
+        "code": "NONINTEGER_LINE_NOT_EMITTED",
+        "passed": true
+      },
+      {
+        "code": "EVENT_CAP_SIGNALS_ONCE_AND_STOPS",
+        "passed": true
+      },
+      {
+        "code": "PUBLICATION_FAILURE_SIGNALS_ONCE",
+        "passed": true
+      },
+      {
+        "code": "EXISTING_CALLBACK_NOT_OVERWRITTEN",
+        "passed": true
+      },
+      {
+        "code": "PUBLIC_ADDITIONS_CANONICAL_FAILURE_SIGNAL",
+        "passed": true
+      }
+    ]
+  },
+  "types": {
+    "phase": "SCOPED_TYPES_ONLY",
+    "typescript_version": "5.9.3",
+    "error_count": 1,
+    "diagnostic_codes": [
+      18048
+    ],
+    "root_file_count": 3,
+    "pass": false
+  },
+  "terminal": {
+    "state": "FAILED_SOURCE_CHECKS",
+    "settled": true,
+    "completed_phase_count": 4,
+    "pass": false,
+    "browser_api_network_started": false,
+    "private_tmp_transform_removed": true,
+    "source_intact": true,
+    "peaks": {
+      "owned_rss_bytes": 346808320,
+      "run_allocated_bytes": 1449984,
+      "shared_memory_bytes": 5451558912
+    }
+  },
+  "discovery": "NOT_RUN_AFTER_TYPE_FAILURE",
+  "source_correction_proposal": "SOURCE_HYPOTHESIS: errorHandler data descriptor checked before nested state factory, but its later errorHandler.value call is inside callback; TS18048 commonly loses descriptor existence narrowing across closure. Minimum stable const failureCallback = errorHandler.value after guard, then failureCallback.call(receiver,...), with independent narrow source/type check. Exact diagnostic location currentlyNOT_CAPTURED; no actual new Source edit/grant.",
+  "qualification": "Knownbad RAMcategory-only leak native1/expectedCounterexampletrue/count11/fail1/privacycode; current11green0; formatter0; TS5.9.3/error1/code18048/root3. All5supervisor+childbirths absent/reaped/TMPcache removed/sourceintact. No browser/API/seed/fixtures/stand; original367timeoutstageUNKNOWN. Preserve actual PASS stages; no fullcontrols/formatter replay needed for declared pure callback binding correction unless diff exposes separate risk."
+}

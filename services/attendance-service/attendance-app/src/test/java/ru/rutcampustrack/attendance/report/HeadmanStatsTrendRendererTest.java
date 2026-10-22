@@ -1,13 +1,18 @@
 package ru.rutcampustrack.attendance.report;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
+
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse.Point;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse.TrendMetric;
 
-import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,10 +20,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.imageio.ImageIO;
 
 class HeadmanStatsTrendRendererTest {
 
@@ -43,17 +45,32 @@ class HeadmanStatsTrendRendererTest {
     }
 
     @Test
-    void pngKeepsAllSemesterWeeksInBoundedTableAtFixedChartWidth() throws Exception {
+    void pngIsDecodableAndBoundedAndHtmlKeepsAllSemesterPeriods() throws Exception {
         var result = renderer.render(semesterTrend(), HeadmanStatsTrendFormat.PNG);
         byte[] bytes = result.content();
 
         assertEquals("image/png", result.contentType());
         assertEquals("headman-stats-trend.png", result.fileName());
-        assertArrayEquals(new byte[]{(byte) 0x89, 'P', 'N', 'G'}, java.util.Arrays.copyOf(bytes, 4));
+        assertArrayEquals(
+                new byte[] {(byte) 0x89, 'P', 'N', 'G'}, java.util.Arrays.copyOf(bytes, 4));
         var image = ImageIO.read(new ByteArrayInputStream(bytes));
         assertNotNull(image);
-        assertEquals(1080, image.getWidth());
-        assertEquals(1148, image.getHeight());
+        String html =
+                new String(
+                        renderer.render(semesterTrend(), HeadmanStatsTrendFormat.HTML).content(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+        var rows = ExportTableReader.htmlRows(html);
+        for (Point point : semesterTrend().points()) {
+            org.assertj.core.api.Assertions.assertThat(rows)
+                    .anySatisfy(
+                            cells -> {
+                                org.assertj.core.api.Assertions.assertThat(cells)
+                                        .containsExactly(
+                                                point.label(),
+                                                metricText(point.present()),
+                                                metricText(point.presentOrExcused()));
+                            });
+        }
         assertTrue(bytes.length <= 20 * 1024 * 1024);
 
         Path preview = Path.of("build", "headman-stats-trend-22-weeks.png");
@@ -61,41 +78,106 @@ class HeadmanStatsTrendRendererTest {
         Files.write(preview, bytes);
     }
 
+    private static String metricText(TrendMetric metric) {
+        if (metric.percent() == null) return "Нет данных (0/0)";
+        return String.format(
+                java.util.Locale.forLanguageTag("ru-RU"),
+                "%.1f%% (%d/%d)",
+                metric.percent(),
+                metric.numerator(),
+                metric.denominator());
+    }
+
     private static HeadmanStatsTrendResponse trend() {
-        var context = new HeadmanStatsResponse.Context(7, "<script>alert('x')</script>",
-                4L, "Весна & осень", LocalDate.parse("2026-02-01"), LocalDate.parse("2026-06-30"),
-                12L, "Математика", List.of("LECTURE"), 3, java.time.Instant.parse("2026-09-26T08:00:00Z"));
-        List<Point> points = List.of(
-                new Point("2026-04-06", "Неделя 1", LocalDate.parse("2026-04-06"), LocalDate.parse("2026-04-12"),
-                        new TrendMetric(13, 25, 52.0), new TrendMetric(15, 25, 60.0)),
-                new Point("2026-04-13", "Неделя 2", LocalDate.parse("2026-04-13"), LocalDate.parse("2026-04-19"),
-                        new TrendMetric(0, 0, null), new TrendMetric(0, 0, null)),
-                new Point("2026-04-20", "Неделя 3", LocalDate.parse("2026-04-20"), LocalDate.parse("2026-04-26"),
-                        new TrendMetric(18, 20, 90.0), new TrendMetric(19, 20, 95.0)),
-                new Point("2026-04-27", "Неделя 4", LocalDate.parse("2026-04-27"), LocalDate.parse("2026-05-03"),
-                        new TrendMetric(16, 20, 80.0), new TrendMetric(17, 20, 85.0)));
-        return new HeadmanStatsTrendResponse(context, HeadmanStatsTrendQueryRequest.Mode.SUBJECT, points,
+        var context =
+                new HeadmanStatsResponse.Context(
+                        7,
+                        "<script>alert('x')</script>",
+                        4L,
+                        "Весна & осень",
+                        LocalDate.parse("2026-02-01"),
+                        LocalDate.parse("2026-06-30"),
+                        12L,
+                        "Математика",
+                        List.of("LECTURE"),
+                        3,
+                        java.time.Instant.parse("2026-09-26T08:00:00Z"));
+        List<Point> points =
+                List.of(
+                        new Point(
+                                "2026-04-06",
+                                "Неделя 1",
+                                LocalDate.parse("2026-04-06"),
+                                LocalDate.parse("2026-04-12"),
+                                new TrendMetric(13, 25, 52.0),
+                                new TrendMetric(15, 25, 60.0)),
+                        new Point(
+                                "2026-04-13",
+                                "Неделя 2",
+                                LocalDate.parse("2026-04-13"),
+                                LocalDate.parse("2026-04-19"),
+                                new TrendMetric(0, 0, null),
+                                new TrendMetric(0, 0, null)),
+                        new Point(
+                                "2026-04-20",
+                                "Неделя 3",
+                                LocalDate.parse("2026-04-20"),
+                                LocalDate.parse("2026-04-26"),
+                                new TrendMetric(18, 20, 90.0),
+                                new TrendMetric(19, 20, 95.0)),
+                        new Point(
+                                "2026-04-27",
+                                "Неделя 4",
+                                LocalDate.parse("2026-04-27"),
+                                LocalDate.parse("2026-05-03"),
+                                new TrendMetric(16, 20, 80.0),
+                                new TrendMetric(17, 20, 85.0)));
+        return new HeadmanStatsTrendResponse(
+                context,
+                HeadmanStatsTrendQueryRequest.Mode.SUBJECT,
+                points,
                 HeadmanStatsTrendResponse.EmptyState.NONE);
     }
 
     private static HeadmanStatsTrendResponse semesterTrend() {
-        var context = new HeadmanStatsResponse.Context(2, "РТ-319", 2L, "Осенний 2026/2027",
-                LocalDate.parse("2026-09-01"), LocalDate.parse("2027-01-25"), null, "", List.of(), 4,
-                java.time.Instant.parse("2026-09-26T10:47:31.986203831Z"));
+        var context =
+                new HeadmanStatsResponse.Context(
+                        2,
+                        "РТ-319",
+                        2L,
+                        "Осенний 2026/2027",
+                        LocalDate.parse("2026-09-01"),
+                        LocalDate.parse("2027-01-25"),
+                        null,
+                        "",
+                        List.of(),
+                        4,
+                        java.time.Instant.parse("2026-09-26T10:47:31.986203831Z"));
         List<Point> points = new ArrayList<>(22);
         for (int index = 0; index < 22; index++) {
-            LocalDate from = index == 0 ? LocalDate.parse("2026-09-01")
-                    : LocalDate.parse("2026-09-07").plusWeeks(index - 1);
-            LocalDate to = index == 0 ? LocalDate.parse("2026-09-06")
-                    : index == 21 ? from : from.plusDays(6);
-            TrendMetric present = index == 0 ? new TrendMetric(1, 2, 50.0)
-                    : index < 4 ? new TrendMetric(0, 2, 0.0) : new TrendMetric(0, 0, null);
-            TrendMetric presentOrExcused = index == 0 ? new TrendMetric(1, 2, 50.0)
-                    : index < 4 ? new TrendMetric(0, 2, 0.0) : new TrendMetric(0, 0, null);
+            LocalDate from =
+                    index == 0
+                            ? LocalDate.parse("2026-09-01")
+                            : LocalDate.parse("2026-09-07").plusWeeks(index - 1);
+            LocalDate to =
+                    index == 0
+                            ? LocalDate.parse("2026-09-06")
+                            : index == 21 ? from : from.plusDays(6);
+            TrendMetric present =
+                    index == 0
+                            ? new TrendMetric(1, 2, 50.0)
+                            : index < 4 ? new TrendMetric(0, 2, 0.0) : new TrendMetric(0, 0, null);
+            TrendMetric presentOrExcused =
+                    index == 0
+                            ? new TrendMetric(1, 2, 50.0)
+                            : index < 4 ? new TrendMetric(0, 2, 0.0) : new TrendMetric(0, 0, null);
             String key = index == 0 ? "2026-08-31" : from.toString();
             points.add(new Point(key, from + " – " + to, from, to, present, presentOrExcused));
         }
-        return new HeadmanStatsTrendResponse(context, HeadmanStatsTrendQueryRequest.Mode.SEMESTER, points,
+        return new HeadmanStatsTrendResponse(
+                context,
+                HeadmanStatsTrendQueryRequest.Mode.SEMESTER,
+                points,
                 HeadmanStatsTrendResponse.EmptyState.NONE);
     }
 

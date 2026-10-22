@@ -1,0 +1,409 @@
+[
+  {
+    "path": "docs/design/packets/JS-STUDENT-01/manifest.json",
+    "before": {
+      "path": "docs/design/packets/JS-STUDENT-01/manifest.json",
+      "tool": "prettier"
+    },
+    "after": {
+      "path": "docs/design/packets/JS-STUDENT-01/manifest.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    }
+  },
+  {
+    "path": "docs/presentations/manifest.json",
+    "before": {
+      "path": "docs/presentations/manifest.json",
+      "tool": "prettier"
+    },
+    "after": {
+      "path": "docs/presentations/manifest.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/assess.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/assess.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/assess.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/reconcile.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/reconcile.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/reconcile.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/source-SubjectListDataIT-actual-checkout.java",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/source-SubjectListDataIT-actual-checkout.java",
+      "tool": "java"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/source-SubjectListDataIT-actual-checkout.java",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/audit.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/audit.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/audit.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/check-runtime-receipts.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/check-runtime-receipts.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/check-runtime-receipts.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/final-check.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/final-check.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/final-check.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/recheck.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/recheck.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/recheck.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/export-merged-repository-review/check.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/export-merged-repository-review/check.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/export-merged-repository-review/check.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/audit.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/audit.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/audit.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/sensitivity.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/sensitivity.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/sensitivity.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/verify.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/verify.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/verify.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/format-freeze-prep/inventory.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/format-freeze-prep/inventory.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/format-freeze-prep/inventory.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json",
+      "tool": "prettier"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/run-map-check.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/run-map-check.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/run-map-check.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "tool": "java"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "tool": "java"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "tool": "java"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "tool": "java"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "tool": "java"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/map-validation-review/audit_evidence.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-review/audit_evidence.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-review/audit_evidence.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/dispositions.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/dispositions.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/dispositions.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/queue.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/queue.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/queue.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/reconcile.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/reconcile.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/reconcile.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/np01-config-author/verify-config.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/np01-config-author/verify-config.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/np01-config-author/verify-config.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/np01-source-resolution/source-ledger.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/np01-source-resolution/source-ledger.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/np01-source-resolution/source-ledger.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/audit.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/audit.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/audit.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/sensitivity.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/sensitivity.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/sensitivity.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/verify.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/verify.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/verify.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/check-dependencies.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/check-dependencies.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/check-dependencies.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/propose-restoration.py",
+    "before": {
+      "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/propose-restoration.py",
+      "tool": "python"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/propose-restoration.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  },
+  {
+    "path": "docs/validation/cloud-20261011/skills/manifest.json",
+    "before": {
+      "path": "docs/validation/cloud-20261011/skills/manifest.json",
+      "tool": "prettier"
+    },
+    "after": {
+      "path": "docs/validation/cloud-20261011/skills/manifest.json",
+      "reason": "preserved source registry/hash receipt; separate byte owner"
+    }
+  }
+]

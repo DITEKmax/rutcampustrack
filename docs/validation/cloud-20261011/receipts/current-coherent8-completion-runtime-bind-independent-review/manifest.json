@@ -1,0 +1,41 @@
+{
+  "scope": "INDEPENDENT_FINITE_COHERENT8_BIND_PARAMETERS_SOURCE",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "source_manifest_sha256": "8ca101cb7024fb09718db7b5ef91eac4c0d4b531d12ae868034b6f16b375460f",
+  "source_ZIP_sha256": "13b19c3ef76ea5e9915b3ef560df6de610f3d576c03ff9b9e7468a802ed64bad",
+  "blocking_findings": [],
+  "actual_runtime": "NOT_RUN",
+  "runtime_prerequisites": "NOT_PASSED",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 647,
+      "sha256": "dfecea78d6cac6dfb1bd5357278e6ae73046b9016f570e0502a491b0972976fc",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3474,
+      "sha256": "3406527fad5168e3069772198a43817452e43a247499e93eb1ae3bbe9291802f",
+      "mode": "0o400"
+    },
+    {
+      "path": "check.py",
+      "bytes": 6714,
+      "sha256": "2fa99a8fd55a1998f0401b18974d770d403a0b83a1cdb8defe79df85ea998b17",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 1990,
+      "sha256": "7ccf2bd3ffb07b850f282438d49ae383bd4391f8669731f2b237d093ebfdcee4",
+      "mode": "0o400"
+    },
+    {
+      "path": "evidence.safe.json",
+      "bytes": 5925,
+      "sha256": "597d1bd82f88efa6a077ece424b482135f77d6fb475038b5fa825df4614a7365",
+      "mode": "0o400"
+    }
+  ]
+}

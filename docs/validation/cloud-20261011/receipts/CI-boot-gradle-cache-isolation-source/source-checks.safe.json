@@ -1,0 +1,74 @@
+{
+  "base": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
+  "worktree": "/workspace/rct-worktrees/boot-gradle-cache-isolation",
+  "modified_paths": [
+    {
+      "path": "services/auth-service/Dockerfile",
+      "before_sha256": "503fac94af3793c27933f9c4e6da6bb3d03568da5ea43052a640fdaf41c35ee8",
+      "after_sha256": "fa38b9e2fc4cb9a3e27ef78908f10abf4d8df529998e34006cf1c2fecbb4edf3",
+      "cache_id": "rct-gradle-auth",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/Dockerfile",
+      "before_sha256": "2ab9bb16bf398869b130a92b497104922e80e6db8b82f212b24880140b3d9582",
+      "after_sha256": "c4d2fc0c1e3e702129e1bbc9ff503f61413853077a70b89ded7fc7530e7b6c7d",
+      "cache_id": "rct-gradle-academic",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/schedule-service/schedule-app/Dockerfile",
+      "before_sha256": "be350274d1eff9a17de9ff8c7f3f8b86217774f7809cbf3d86907d095c16865a",
+      "after_sha256": "ee01c9c7b635db4e97d3d02d1085d5ecd8215af6237618da1f6ec831771c745e",
+      "cache_id": "rct-gradle-schedule",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/Dockerfile",
+      "before_sha256": "3af22c2e46dbaa49c80810b95b0b6bc70076aefd06d891b0d2fd8e85a0ace3c1",
+      "after_sha256": "2f6fb940e38ad9b225346073261b4c0834269c0ffc4900ee46040f6da62a20d5",
+      "cache_id": "rct-gradle-attendance",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/document-renderer-service/document-renderer-app/Dockerfile",
+      "before_sha256": "2d67dc84d7130478e6b7490be5d5e6d215384bea379b657a487b90cd4444cbbd",
+      "after_sha256": "b6cd83254d5f94740b59f3b0fe7595c6c932314ea0336a97b2c0ad720461623d",
+      "cache_id": "rct-gradle-document-renderer",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/Dockerfile",
+      "before_sha256": "56d01259f6b978e48bb82c3c9d51e6f07c94fd92b91bea584f627a5ba7ff0167",
+      "after_sha256": "6f7bd5785b410e100af4bbd73e13a67303eb47c3f41aec05ab38f070d1e80a68",
+      "cache_id": "rct-gradle-mobile-bff",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/api-gateway/Dockerfile",
+      "before_sha256": "50e11abb77c16ded5cb59b78d297cf04635aab1f139a0f7a2f1a01c106b4a3f3",
+      "after_sha256": "d9bdb4618de2269efecf7936b3de18ca3a414f0d43fab71436a3d97ca21a5ba0",
+      "cache_id": "rct-gradle-api-gateway",
+      "commands_and_runtime_stages_unchanged": true
+    },
+    {
+      "path": "services/notification-service/notification-app/Dockerfile",
+      "before_sha256": "11209d2768bdb64c7e23d5e0d2f8b1283a9960b2c76a5eac2393b5872a9d2700",
+      "after_sha256": "b11b75d90f22372d14f4aa14ad45e63d0665e09ee115add80ba1029e842c635a",
+      "cache_id": "rct-gradle-notification",
+      "commands_and_runtime_stages_unchanged": true
+    }
+  ],
+  "all8_ids_unique": true,
+  "each_cache_locked": true,
+  "old_shared_cache_ids": 1,
+  "new_cache_ids": 8,
+  "old_shared_namespace_counterexample": "Eight Docker builds select the same default target-derived cache identity",
+  "inverse_noncomment_instructions_equal": true,
+  "runtime_stages_byteexact": true,
+  "workflow_compose_gradle_wrapper_tests_untouched": true,
+  "git_diff_check": "PASS",
+  "native_Docker_Gradle_test_run": false,
+  "causal_mechanism": "HYPOTHESIS_SOURCE_RISK_ONLY_NOT_CONFIRMED_BY_RUNTIME",
+  "worktree_sparse": true
+}

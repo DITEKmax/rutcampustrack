@@ -1,0 +1,24 @@
+{
+  "utc": "2026-10-12T05:05:27.375839+00:00",
+  "attempt": "baseline-graphfix",
+  "native_exit": 0,
+  "graphs": {
+    "academic:testCompileClasspath": 202,
+    "academic:testRuntimeClasspath": 245,
+    "academic:compileClasspath": 154,
+    "academic:runtimeClasspath": 195,
+    "auth:compileClasspath": 146,
+    "auth:runtimeClasspath": 184
+  },
+  "actual_gradle_jvm": {
+    "javaVersion": "21.0.12.1",
+    "javaVendor": "Eclipse Adoptium",
+    "maxHeapBytes": 805306368,
+    "boundedArguments": [
+      "-XX:MaxMetaspaceSize=256m",
+      "-Xmx768m"
+    ]
+  },
+  "mode": "baseline_only_Auth_TEST_edge_removed_in_memory",
+  "tests_run": 0
+}

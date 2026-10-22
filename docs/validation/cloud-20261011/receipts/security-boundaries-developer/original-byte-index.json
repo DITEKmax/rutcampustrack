@@ -1,0 +1,69 @@
+{
+  "immutable_archive": "immutable-original-receipts.zip",
+  "files": [
+    {
+      "file": "resource-cleanup-final.json",
+      "original_sha256": "5436865e4cc46a45d988a2962fa0a43a783453937f38c24e4dc233116276ffbf",
+      "working_sha256": "e5d80cbbf321bd16ef3332260648b8bb957f6b4db88d2b3f96df1bf630a6af1a",
+      "normalization": "EOF only",
+      "bytes_original": 749
+    },
+    {
+      "file": "historic-8a9-command-recovery.json",
+      "original_sha256": "75a853d27409d4e43ba5ca10f7217c11370fafc92b7ce8f6a3234ae01fe27ab6",
+      "working_sha256": "a187bb3113f54aebe2dbc078fbab6570cc10bacea94a1a027a474d045d27e516",
+      "normalization": "EOF only",
+      "bytes_original": 1949
+    },
+    {
+      "file": "review-packet.md",
+      "original_sha256": "524c78d480ba0f7d08f2d1bb45c6c3e00c31d42dfa773b5e0f258072d7d7f233",
+      "working_sha256": "524c78d480ba0f7d08f2d1bb45c6c3e00c31d42dfa773b5e0f258072d7d7f233",
+      "normalization": "EOF only",
+      "bytes_original": 4554
+    },
+    {
+      "file": "inventory.json",
+      "original_sha256": "d9fa665c4498927e3e3933be289e988e41af0a862d8dc50a9882eac0dd26bd2e",
+      "working_sha256": "15cb2bae7acad75698e4dd799cb334f9125584bcb42ccd277074a104b3f53bab",
+      "normalization": "EOF only",
+      "bytes_original": 2287
+    },
+    {
+      "file": "tested-final-source-manifest.json",
+      "original_sha256": "c0028fe72ea5eb55a4d6d9e83f49d7d2a893d75f32c5c42611547c4d78ad7d8e",
+      "working_sha256": "8cea1a157e9bdae1050c088df745dc3d1fe720633559396701af86609089d58e",
+      "normalization": "path/hash entries and EOF",
+      "bytes_original": 3793
+    },
+    {
+      "file": "artifact-scan-final.json",
+      "original_sha256": "d821f00daa05ae229ce3fa5e6a625730af7685fb03cfce5e6535fbad9b1f41f4",
+      "working_sha256": "7dc32a6de6fd526d7b7177d84241b3b3f4ded84af3a8fbe2e435f241bf1f6eaf",
+      "normalization": "EOF only",
+      "bytes_original": 7701
+    },
+    {
+      "file": "CURRENT.md",
+      "original_sha256": "7fc8d64d672c69cc7fc99827772741db492ab38482b16b3ceccfaf8df1ab82b3",
+      "working_sha256": "7fc8d64d672c69cc7fc99827772741db492ab38482b16b3ceccfaf8df1ab82b3",
+      "normalization": "EOF only",
+      "bytes_original": 875
+    },
+    {
+      "file": "findings.md",
+      "original_sha256": "8b1c82ed85809971754a2916781173d1362a99f41da5c9998f14abc7e01e3ff4",
+      "working_sha256": "8b1c82ed85809971754a2916781173d1362a99f41da5c9998f14abc7e01e3ff4",
+      "normalization": "EOF only",
+      "bytes_original": 5810
+    },
+    {
+      "file": "attempts.ndjson",
+      "original_sha256": "274a9c7a6922012299354385f34678638fc3c04c54c6509e8a93cf146a5af1c2",
+      "working_sha256": "274a9c7a6922012299354385f34678638fc3c04c54c6509e8a93cf146a5af1c2",
+      "normalization": "EOF only",
+      "bytes_original": 17872
+    }
+  ],
+  "note": "Review/transfer statements refer exact immutable original bytes; working readable copies normalize EOF. No semantic evidence changes."
+}

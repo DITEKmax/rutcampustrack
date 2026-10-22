@@ -1,0 +1,18 @@
+{
+  "schema": "P10_CLEANUP_FORMAT03_HTTP02_BOUND_CURRENT_HEAD_V1",
+  "utc": "2026-10-13T17:32:38.822065+00:00",
+  "format_actual_sha256": "9d0c12678454464ba76e8d51c382f814d677efd4d407c717e2fd2e66aa921c28",
+  "head": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "test_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "source_commit_manifest_equal_current_head": true,
+  "WT_clean": true,
+  "commit_only_assigned_file": true,
+  "mechanical_commit": "NONE_BYTES_IDENTICAL",
+  "all18_current_source_pins_match": true,
+  "HTTP02_plan_sha256": "c2708450cc23f9e175af19b59d08b336a2e94fafff1bd450d08c25f7c2e97047",
+  "HTTP02_manifest_sha256": "24c2bfeee6fed06366d3700292fe6b86c952a2047a1785a0b6784f903e919610",
+  "false_grant_sha256": "574b6aaecf261b9de1c04dcf806302e5fbfc2846d6df353ce0bf2d9ffab164f3",
+  "HTTP_native_after_cleanup_FIX": "NOT_RUN",
+  "callbacks_init_observer_caps_changed": false,
+  "prior_parameters_preserved_sha256": "e0b530887b1d00735c4b4052703616d3ffea64b31af27faa9e744126fc0e17cd"
+}

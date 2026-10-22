@@ -1,4 +1,8 @@
-import type { TeacherDayLesson, TeacherJournalQuery, TeacherJournalResponse } from './teacher-client'
+import type {
+  TeacherDayLesson,
+  TeacherJournalQuery,
+  TeacherJournalResponse,
+} from './teacher-client'
 
 export interface TeacherAttendanceFeedState {
   readonly lessons: readonly TeacherDayLesson[]
@@ -17,9 +21,14 @@ export class TeacherAttendanceFeed {
 
   constructor(private readonly publish: (state: TeacherAttendanceFeedState) => void) {}
 
-  get state(): TeacherAttendanceFeedState { return this.value }
+  get state(): TeacherAttendanceFeedState {
+    return this.value
+  }
 
-  reset(query: TeacherJournalQuery | null, reader: ((query: TeacherJournalQuery) => Promise<TeacherJournalResponse>) | null): void {
+  reset(
+    query: TeacherJournalQuery | null,
+    reader: ((query: TeacherJournalQuery) => Promise<TeacherJournalResponse>) | null,
+  ): void {
     this.generation += 1
     this.query = query
     this.reader = reader
@@ -36,15 +45,26 @@ export class TeacherAttendanceFeed {
     try {
       const response = await reader({ ...query, page, pageSize: 100 })
       if (generation !== this.generation) return
-      const merged = new Map(this.value.lessons.map(lesson => [lesson.id, lesson]))
+      const merged = new Map(this.value.lessons.map((lesson) => [lesson.id, lesson]))
       for (const lesson of response.lessons) merged.set(lesson.id, lesson)
-      this.update({ lessons: [...merged.values()], nextPage: page + 1, hasMore: response.hasMore, loading: false, error: null })
+      this.update({
+        lessons: [...merged.values()],
+        nextPage: page + 1,
+        hasMore: response.hasMore,
+        loading: false,
+        error: null,
+      })
     } catch (error) {
       if (generation !== this.generation) return
       this.update({ ...this.value, loading: false, error })
     }
   }
 
-  private empty(): TeacherAttendanceFeedState { return { lessons: [], nextPage: 0, loading: false, hasMore: false, error: null } }
-  private update(state: TeacherAttendanceFeedState): void { this.value = state; this.publish(state) }
+  private empty(): TeacherAttendanceFeedState {
+    return { lessons: [], nextPage: 0, loading: false, hasMore: false, error: null }
+  }
+  private update(state: TeacherAttendanceFeedState): void {
+    this.value = state
+    this.publish(state)
+  }
 }

@@ -1,39 +1,31 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { clearAllClientState } from './clear-all-client-state';
 
-/**
- * M08 Группа 6 (P2-8/6) — regression guard для 10 P0-4 web-panel
- * cross-user leak fix через sessionStorage (общие браузеры деканата).
- *
- * Web-panel version делает только local+session storage clear —
- * не трогает Service Worker caches (web-panel не использует SW) и
- * не PushManager (PWA-only).
- */
-
-describe('clearAllClientState — web-panel logout cleanup (10 P0-4 regression guard)', () => {
-  let localStorageClearSpy: any;
-  let sessionStorageClearSpy: any;
-
-  beforeEach(() => {
-    localStorageClearSpy = vi.spyOn(Storage.prototype, 'clear');
-  });
-
+describe('clearAllClientState — web-panel logout cleanup', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    localStorage.clear();
+    sessionStorage.clear();
   });
 
-  it('clears localStorage', async () => {
+  it('removes both local and session state', async () => {
+    localStorage.setItem('audit-local-owner', 'synthetic-local');
+    sessionStorage.setItem('audit-session-owner', 'synthetic-session');
     await clearAllClientState();
-    // Storage.prototype.clear — shared prototype для local+session
-    expect(localStorageClearSpy).toHaveBeenCalled();
+    expect(localStorage.getItem('audit-local-owner')).toBeNull();
+    expect(sessionStorage.getItem('audit-session-owner')).toBeNull();
   });
 
-  it('does not throw if localStorage disabled', async () => {
-    localStorageClearSpy.mockImplementation(() => {
-      throw new Error('storage disabled');
+  it.each(['localStorage', 'sessionStorage'] as const)('still clears the other storage when %s is unavailable', async blocked => {
+    localStorage.setItem('audit-local-owner', 'synthetic-local');
+    sessionStorage.setItem('audit-session-owner', 'synthetic-session');
+    const originalClear = Storage.prototype.clear;
+    vi.spyOn(Storage.prototype, 'clear').mockImplementation(function(this: Storage) {
+      if (this === window[blocked]) throw new Error('storage disabled');
+      originalClear.call(this);
     });
-
-    // Graceful fallback — не должно бросать
     await expect(clearAllClientState()).resolves.toBeUndefined();
+    if (blocked === 'localStorage') expect(sessionStorage.getItem('audit-session-owner')).toBeNull();
+    else expect(localStorage.getItem('audit-local-owner')).toBeNull();
   });
 });

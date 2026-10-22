@@ -1,0 +1,52 @@
+{
+  "artifact": 11874466275,
+  "producer": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+  "run": 38521397600,
+  "digest": "sha256:93f4ea589f0096a646326cb41ebf4b6d10737c4591458488bb8b95900c76b921",
+  "bytes": 421,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-homework-lifecycle.spec.ts",
+        "line": 16,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 12220,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-homework-lifecycle.spec.ts",
+            "line": 16
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "HELPER_HOMEWORK_COMPLETION",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "closed_reader": {
+    "exit": 0,
+    "reaped": true,
+    "private_input_removed": true
+  }
+}

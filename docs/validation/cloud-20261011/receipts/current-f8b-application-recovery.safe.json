@@ -1,0 +1,79 @@
+{
+  "artifact": 11865756986,
+  "producer": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+  "run": 38499807565,
+  "digest": "sha256:0fbc04ea777e508d472d9b995837b992ee90682832e9f6a5d74e10ca6cfa0c41",
+  "bytes": 426,
+  "phases": {
+    "seed": {
+      "status": "failed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 235,
+          "project": "chromium",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "durationMs": 91206,
+          "errorCount": 1,
+          "diagnostics": [
+            {
+              "stage": "UNKNOWN",
+              "cause": "UNKNOWN",
+              "httpStatus": 0
+            }
+          ],
+          "errorLocations": [
+            {
+              "file": "application-recovery.spec.ts",
+              "line": 235
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "missing_phases": [
+    "admit",
+    "attachment",
+    "pending"
+  ],
+  "diagnostic_schema": {
+    "seed": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES",
+  "root_reader_terminal": {
+    "direct_pid": 619636,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 619636,
+        "start_ticks": 19899717
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "private_input_gone": true,
+  "classification": "ACTUAL_SEED_CHECK_FAILURE_BEFORE_BACKUP; causeUNKNOWN,90spollhypothesisnotproven",
+  "cleanup": "all3ownedCIcleanupstepsSUCCESS",
+  "separate_actual_safe_producer_checkout_join": "docs/validation/cloud-20261011/receipts/current-f8b-Auth-checkout.safe.json",
+  "actual_checkout_merge_sha": "5b17c81248229d9b142a2b3580ce5de6657c6bb6"
+}

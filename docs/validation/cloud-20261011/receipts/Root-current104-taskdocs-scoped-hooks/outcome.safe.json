@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-13T13:33:41.483384+00:00",
+  "scope": "ROOT_SCOPED_CURRENT104_DOCS_HOOKS_FINAL",
+  "result": "NATIVE0_SETTLED_REAPED_ALL_RECORDED_BIRTHSABSENT",
+  "tool_session_id": 96090,
+  "paths_count": 104,
+  "hooks": {
+    "Gitleaks secret detection": "PASS",
+    "check yaml": "SKIP",
+    "check json": "PASS",
+    "check for added large files": "PASS",
+    "fix end of files": "PASS",
+    "trim trailing whitespace": "PASS",
+    "raw_emitted": false
+  },
+  "qualification": "Only new/modified taskdocs vs86a9; no unchanged71 replay, source/caps b2ec exact, private log not emitted, nativelease RELEASED."
+}

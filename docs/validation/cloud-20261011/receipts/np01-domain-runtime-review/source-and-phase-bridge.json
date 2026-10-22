@@ -1,0 +1,526 @@
+{
+  "canonical_source": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "actual_precommit_head": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "reviewed_product": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+  "only3_followon_test_paths": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+    "services/notification-bot/tests/test_bot_credential_cards.py"
+  ],
+  "domain24": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java",
+      "bytes": 14661,
+      "sha256": "c45a9c13b563568860aea9da97622b3ecdabdbbe976cb2c3efd80f23e9f7c839",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialServiceIdentityInterceptor.java",
+      "bytes": 2348,
+      "sha256": "567ad68f32c37f7214f8bc092d5da65a47bc2ed7e96ba1cea427c6101e7125d7",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialsService.java",
+      "bytes": 1769,
+      "sha256": "917f7a1312e88a2b1c5badab34230f2b797aa31c445fb09865e25a479e0e3e7d",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotOwnInitialCredentialsQuery.java",
+      "bytes": 8066,
+      "sha256": "0664e81daccc73468886e5e5d58da4776606d7e078d456ac037cd9537871dca9",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "bytes": 80597,
+      "sha256": "396aaab6cd24392941737331bd5f2c42c812dc198bc9908fa3a2999762b6e89b",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+      "bytes": 21494,
+      "sha256": "db252b05a7dc9d46e2381f4eab6799b5be81fb1d9f0c4cf95f22f409f6be7059",
+      "same_as_reviewed0b9": false,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialServiceIdentityInterceptorTest.java",
+      "bytes": 4897,
+      "sha256": "a1b8389f8c0846bedcf32cab99ee2b7ad775c7198ce32eefe05f3f27a21d9ab8",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedEvent.java",
+      "bytes": 1353,
+      "sha256": "39f5cfb2babd8884f474bef35f183d74ce3d0b21139227f3cdccf165d203b173",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "bytes": 3100,
+      "sha256": "913c31f242faaddd0a8cc45261e318f03ab53e3a65656cc96a0510d10b767352",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+      "bytes": 3526,
+      "sha256": "4bf21512bc882e5cd8dbffe1de49f001ff5988d89ea2dd93c4491798553d40e6",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "bytes": 81584,
+      "sha256": "97a58eebbcaa342c7a9b5c59072b75d50041d5c502bdc67c89dedeaf589ec3c7",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "bytes": 12351,
+      "sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+      "bytes": 22013,
+      "sha256": "c57bb4bbbd273eef447d6af703e3ebd47b86b371b6d0f465f54118c4a9c74124",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+      "bytes": 5810,
+      "sha256": "b4e043e54057c03da54bff89857314274b6bbba1ac100a1db8998d7fc9388727",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+      "bytes": 1901,
+      "sha256": "16fe232cd7c544ba2e179685b9c35fef88fe4926547eb34dcb887274be621e14",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/start.py",
+      "bytes": 7441,
+      "sha256": "1a75ee21186fe277997bd9b84d81afa6d33fc40ce90ee71445bb7a9c7f4081a3",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "bytes": 2345,
+      "sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+      "bytes": 16083,
+      "sha256": "e3d8989fa3e84219997984a9672b15280f092680ac779d838d5af5430667ee03",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "bytes": 14169,
+      "sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "same_as_reviewed0b9": false,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+      "bytes": 2908,
+      "sha256": "89afa08c158ef861de08f005f310d6634142e54b4a3e3ef457522691cc7728dd",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_password_changed.py",
+      "bytes": 2953,
+      "sha256": "000fd42d30b661ab9ed251114ff59096d7539693040f6d41493bb1dbcad9d8f1",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_start_handler.py",
+      "bytes": 4233,
+      "sha256": "8de37ee97d3995067cbf661a4288a9e20d1ab7545d85210408d4634e5c0d3be6",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+      "bytes": 19268,
+      "sha256": "fac76b9e9facc54843c322e7a8912c3cc162ebf4eac3914fba2b46fffbeef43d",
+      "same_as_reviewed0b9": false,
+      "current_tracked_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "bytes": 17418,
+      "sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "same_as_reviewed0b9": true,
+      "current_tracked_equal": true
+    }
+  ],
+  "phases": [
+    {
+      "phase": "bridge01",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "1187176301f6c4704a2fdfbb5a1299c706a573a3c8997e1054990e3272a78cdb",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "compat-after01",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "3a27c95e7930a355ee006b2184fb1cc165cb59af9d7f2d66a0fdff3b94801dc0",
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "-m",
+        "pytest",
+        "-o",
+        "addopts=",
+        "--junitxml=/workspace/scratch/rct-validation/np01_domain_bot/runtime/compat-after01/TEST-compat-after.xml",
+        "tests/test_bot_credential_cards.py::test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc"
+      ]
+    },
+    {
+      "phase": "compat-before01",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "a32c35d2f9221d3c05ad284297e7790bd76a922ba84d9fdba968584f59fa214c",
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "-m",
+        "pytest",
+        "-o",
+        "addopts=",
+        "--junitxml=/workspace/scratch/rct-validation/np01_domain_bot/runtime/compat-before01/TEST-compat-before.xml",
+        "tests/test_bot_credential_cards.py::test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc"
+      ]
+    },
+    {
+      "phase": "compile02",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+        "services/notification-bot/tests/test_bot_credential_cards.py"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "56301013c47a3204efcc1d27fd18a0cfe6169f940ccc88dab9c699a01ddbea71",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:auth-service:auth-app:compileJava",
+        ":services:auth-service:auth-app:compileTestJava",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "fault-cas01",
+      "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "128a2b5b77a0c053f045c7342dfb969335dca5b77a168c14c6bafcc5f6b9fb7d",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "fault-enum01",
+      "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "5180efa8fc24a2e3df0566bbd19236ff78fdaac82514178a448d1675c07f0213",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "fault-permission01",
+      "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotOwnInitialCredentialsQuery.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "08826a45bbd90e148478c4e49bf40c51ffd1139d6a1dc57865a76dc51f570316",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.privateForeignAndUnknownReadModesFailClosed",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "fault-restored01",
+      "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+      "source_count": 7046,
+      "current_aa_difference_paths": [],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "6e4734f169b7556e6af64ee3cbea3596a2c92c8a7e2ff822497a40887be7a646",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.privateForeignAndUnknownReadModesFailClosed",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "pg01",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "297db424f0e3ef4db739c538d83f47fa5784a871e25c5d2386ad413767b1be9a",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+        ":services:auth-service:auth-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.np01*",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "pg02",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "a90781a051dd45365bb7066349248526c8285eb364e34384d842f0d2a833ade6",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+        ":services:auth-service:auth-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.np01*",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "pg03",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "48b57fb0a7d8c28cf85788798c7dc9896f388358a3e2fcd237995cc4a69967d8",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+        ":services:auth-service:auth-app:integrationTest",
+        "--tests",
+        "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.np01*",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    },
+    {
+      "phase": "python01",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+        "services/notification-bot/tests/test_bot_credential_cards.py"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "d044542383e29bf8bbe74345f72be3b5cc72714868d20afce40c2c652c10039f",
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "-m",
+        "pytest",
+        "-o",
+        "addopts=",
+        "--junitxml=/workspace/scratch/rct-validation/np01_domain_bot/runtime/python01/TEST-python.xml",
+        "tests/test_start_handler.py",
+        "tests/test_password_changed.py",
+        "tests/test_bot_service_credentials.py",
+        "tests/test_bot_credential_cards.py",
+        "tests/test_event_dispatcher.py"
+      ]
+    },
+    {
+      "phase": "python02",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "15d43ab01672f8e9f4d186253fd69017741c731bfb288ce332e012bbaf7ba0fb",
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "-m",
+        "pytest",
+        "-o",
+        "addopts=",
+        "--junitxml=/workspace/scratch/rct-validation/np01_domain_bot/runtime/python02/TEST-python.xml",
+        "tests/test_start_handler.py",
+        "tests/test_password_changed.py",
+        "tests/test_bot_service_credentials.py",
+        "tests/test_bot_credential_cards.py",
+        "tests/test_event_dispatcher.py"
+      ]
+    },
+    {
+      "phase": "unit01",
+      "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+      "source_count": 7046,
+      "current_aa_difference_paths": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+        "services/notification-bot/tests/test_bot_credential_cards.py"
+      ],
+      "during_run_source_unchanged": true,
+      "snapshot_sha256": "eb5ce6592dd59bbcec07d29d37e8bcd83c1198004537a718168459c63bec6072",
+      "command": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:test",
+        "--tests",
+        "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+        ":services:auth-service:auth-app:test",
+        "--tests",
+        "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+        "--no-daemon",
+        "--max-workers=1",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+        "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+        "--console=plain",
+        "-I",
+        "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle"
+      ]
+    }
+  ],
+  "restored7046_current_exact": true
+}

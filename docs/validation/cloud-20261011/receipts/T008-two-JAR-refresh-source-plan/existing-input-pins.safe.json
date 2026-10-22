@@ -1,0 +1,15 @@
+{
+  "inputs": {
+    "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "/workspace/rct-cloud-setup/run-gradle.py": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+    "/workspace/rct-cloud-setup/jdk21/bin/java": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/build-academic.py": "f93efd0b1c55056abccd84f5deccd6cc363d2293af23c36f6b9f2e7b0a645745",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/refresh-boundary.py": "a6c56c607d4797e94de0c8e6b5b61b10e255c7308d904940ae1b242695f78272",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/inspect-academic.py": "ec0f1d6b06e0df15f83799865446e785835eb20f4c6167c7edde9f6eba11966f",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/stage-academic.py": "3c60e5aebc42d16b24f40a40c54c2544cdd5dd6b1a383f6caa79eca1064f8377",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/stage-monitor.py": "02f705deffdba883460099359f36785b6521af4554923e8a886517cbff6ac4e1",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/stage-app-writer.py": "f4c0ecea9653f82be0498457743f08906a15076d15d8e6b4ac3aac571abe5c75",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/runtime-binding.py": "be1488b5995accb02212c36e4ce919fe2ddac61de50eeeb9d7d43d58571ecc24"
+  },
+  "old_original_sources_immutable": true
+}

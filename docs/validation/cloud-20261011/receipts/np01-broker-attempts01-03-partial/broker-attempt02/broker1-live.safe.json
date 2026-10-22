@@ -1,0 +1,13 @@
+{
+  "state": "REAPED",
+  "child_pid": 223430,
+  "group": 223430,
+  "members_including_Z": [],
+  "reason": "SHARED_MEMORY_GROWTH_CAP",
+  "signal_count": 0,
+  "utc": "2026-10-12T07:49:41.200074+00:00",
+  "lease": "NP01_BROKER1",
+  "observer_pid": 223393,
+  "disk_free": 8354594816,
+  "shared_memory_current": 5107326976
+}

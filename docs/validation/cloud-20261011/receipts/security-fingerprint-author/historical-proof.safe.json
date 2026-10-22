@@ -1,0 +1,10 @@
+{
+  "baseline": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "history": "e99abf06062f8efd2697da4dc424658feaee08b0^..63647fc9b63175e1e32b0773d57affc637ea1065",
+  "commits": 26,
+  "scanner_version": "8.24.3",
+  "red": "baseline-historical.safe.json",
+  "green": "corrected-historical.safe.json",
+  "ignore_sha256": "b151fa8f6efc1340a37d1dc616aae0c803e5d2404ed063381f7128a5e03a1ba8",
+  "tracked_source_identity_preserved": true
+}

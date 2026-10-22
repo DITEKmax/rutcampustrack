@@ -1,0 +1,60 @@
+{
+  "scope": "COWN01 v2 independent readonly source/recorded-native recheck",
+  "verdict": "APPROVE_SOURCE_AND_RECORDED_CONTROLS",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 432,
+      "sha256": "10f9a45fbee05bfe8786ebe1e35a4badd72d2981dddb19d179cc49effa058e16"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 8505,
+      "sha256": "2f79d4c4a85b853343b7c8306805fb83eefda9edff9f465a61c2d10d6e1ae679"
+    },
+    {
+      "path": "actual-control-receipt-audit.json",
+      "bytes": 3406,
+      "sha256": "0eb60884e6471422b9e9653321270b26c188686e77333053de66ae304aac6215"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 1177,
+      "sha256": "ad96ed8ff954a05169d59214bc7cec54c3e348bd98b7b2d92d541d29893e0efa"
+    },
+    {
+      "path": "audit.py",
+      "bytes": 13096,
+      "sha256": "3af46c9d4a5fd61ac1fe16f83425c96f72e038d7cb332e4f2420120f5aedf750"
+    },
+    {
+      "path": "author24-root-original-identity.json",
+      "bytes": 387,
+      "sha256": "a55d31eba03facadb77a8c9ca77f3fd8c7e3f14eeae969fea61dab1c55a1aec0"
+    },
+    {
+      "path": "independent-preservation.json",
+      "bytes": 2693,
+      "sha256": "8434984a151512670bfab2260ba8163289b453384ed13b80e4d56a169dfb2bcd"
+    },
+    {
+      "path": "independent-pure-ownership.json",
+      "bytes": 725,
+      "sha256": "99994372a1f22bbe62a66270f6e697dbab1d8d390a97cc83126a4ff170cacd59"
+    },
+    {
+      "path": "restored-root-inputs.json",
+      "bytes": 1314,
+      "sha256": "a9e04436ecee9471840a33269be383098852352aaceac216edb06d360ee494ce"
+    },
+    {
+      "path": "verdict.json",
+      "bytes": 768,
+      "sha256": "22d0f9a964787c49451435b233e122c02e72194262a3e5361923846a2cf01938"
+    }
+  ],
+  "runtime_client_staging_isolation": "NOT_RUN",
+  "originals_immutable": true,
+  "new_control_children": 0,
+  "actual_signals": 0
+}

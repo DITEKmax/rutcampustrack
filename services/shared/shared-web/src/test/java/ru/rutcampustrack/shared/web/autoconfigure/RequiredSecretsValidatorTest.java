@@ -1,18 +1,19 @@
 package ru.rutcampustrack.shared.web.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.mock.env.MockEnvironment;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.assertThatNoException;
-
 /**
  * M14 G4 v2 — unit tests для {@link RequiredSecretsValidator}.
  *
  * <p>Покрывают:
+ *
  * <ul>
  *   <li>missing required vars → IllegalStateException с явным сообщением
  *   <li>blank required vars → trated as missing
@@ -30,10 +31,9 @@ class RequiredSecretsValidatorTest {
     private final SpringApplication app = new SpringApplication();
 
     /**
-     * M14 G9: validator теперь автоматически skip'ает себя если JUnit
-     * на classpath (universal test detection). Чтобы unit-тесты могли
-     * verify "throws when missing" путь — каждый test устанавливает
-     * `skip-junit-detection=true` для override.
+     * M14 G9: validator теперь автоматически skip'ает себя если JUnit на classpath (universal test
+     * detection). Чтобы unit-тесты могли verify "throws when missing" путь — каждый test
+     * устанавливает `skip-junit-detection=true` для override.
      */
     private static MockEnvironment newEnv() {
         MockEnvironment env = new MockEnvironment();
@@ -62,7 +62,7 @@ class RequiredSecretsValidatorTest {
     void blankRequiredVar_treatedAsMissing() {
         MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars", "GRPC_SECRET");
-        env.setProperty("GRPC_SECRET", "   ");  // whitespace-only
+        env.setProperty("GRPC_SECRET", "   "); // whitespace-only
 
         assertThatThrownBy(() -> validator.postProcessEnvironment(env, app))
                 .isInstanceOf(IllegalStateException.class)
@@ -73,7 +73,8 @@ class RequiredSecretsValidatorTest {
     @DisplayName("all required vars present → no exception")
     void allPresent_noException() {
         MockEnvironment env = newEnv();
-        env.setProperty("rutcampustrack.security.required-env-vars",
+        env.setProperty(
+                "rutcampustrack.security.required-env-vars",
                 "REDIS_PASSWORD,RABBITMQ_PASSWORD,INTERNAL_ISSUER_SECRET");
         env.setProperty("REDIS_PASSWORD", "real-redis-pass");
         env.setProperty("RABBITMQ_PASSWORD", "real-rabbit-pass");
@@ -125,7 +126,8 @@ class RequiredSecretsValidatorTest {
     @DisplayName("multiple missing vars — все указаны в exception message")
     void multipleMissing_allInMessage() {
         MockEnvironment env = newEnv();
-        env.setProperty("rutcampustrack.security.required-env-vars",
+        env.setProperty(
+                "rutcampustrack.security.required-env-vars",
                 "REDIS_PASSWORD,RABBITMQ_PASSWORD,INTERNAL_ISSUER_SECRET");
         env.setProperty("REDIS_PASSWORD", "set");
         // RABBITMQ_PASSWORD и INTERNAL_ISSUER_SECRET — missing
@@ -142,7 +144,8 @@ class RequiredSecretsValidatorTest {
     @DisplayName("CSV с пробелами и пустыми элементами — корректно парсится")
     void csvParsing_robustToWhitespace() {
         MockEnvironment env = newEnv();
-        env.setProperty("rutcampustrack.security.required-env-vars",
+        env.setProperty(
+                "rutcampustrack.security.required-env-vars",
                 " REDIS_PASSWORD ,  , RABBITMQ_PASSWORD ");
         env.setProperty("REDIS_PASSWORD", "set");
         env.setProperty("RABBITMQ_PASSWORD", "set");
@@ -151,7 +154,8 @@ class RequiredSecretsValidatorTest {
     }
 
     @Test
-    @DisplayName("M14 G9: JUnit на classpath → skip даже если vars missing (universal test detection)")
+    @DisplayName(
+            "M14 G9: JUnit на classpath → skip даже если vars missing (universal test detection)")
     void junitOnClasspath_skipsValidation() {
         // Не вызываем newEnv() (без skip-junit-detection override) →
         // validator должен skip'нуть из-за JUnit на classpath.

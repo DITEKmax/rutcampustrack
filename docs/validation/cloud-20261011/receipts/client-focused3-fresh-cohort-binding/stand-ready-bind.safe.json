@@ -1,0 +1,161 @@
+{
+  "schema": "RCT_FOCUS3_NEW_COHORT_BIND_V1",
+  "state": "PASS_FINITE_NEW_COHORT_READY_BIND_BROWSER_NOT_RUN",
+  "utc": "2026-10-12T17:36:17.342292+00:00",
+  "cohort": "restart-20261012-next01",
+  "root_execution_checkout_expected": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "r1_ready_sha256": "78178f656c9a8ce6e02dedc72210dff4526b2acdf62d77849e64d5c90c90dc43",
+  "r1_driver_sha256": "e54ca65d700b5e1945ceb581a462a323518c3bfd171cb8d77e008a2ce10e2ca6",
+  "r1_config_sha256": "9c468a6663f75dc8e36ab54f2436a3278aa584c4465791940d5efe7e1750c9de",
+  "node_finite_archive_sha256": "50e47d613de6b9850d176798d58c24417894f53ac3f32ff01b929c41934de66f",
+  "stand_stop_at": "2026-10-12T17:47:31.807265Z",
+  "host_cleanup_dispatch_at": "2026-10-12T17:46:31Z",
+  "recommended_browser_latest_stop_at": "2026-10-12T17:45:31Z",
+  "live8": [
+    {
+      "service": "mongo",
+      "tool_session": 72028,
+      "wrapper_pid": 346856,
+      "wrapper_birth_ticks": 7957874,
+      "child_pid": 346919,
+      "child_birth_ticks": 7958058,
+      "live_exact": true
+    },
+    {
+      "service": "academic",
+      "tool_session": 51069,
+      "wrapper_pid": 348923,
+      "wrapper_birth_ticks": 7972769,
+      "child_pid": 348926,
+      "child_birth_ticks": 7972786,
+      "live_exact": true
+    },
+    {
+      "service": "auth",
+      "tool_session": 60393,
+      "wrapper_pid": 354236,
+      "wrapper_birth_ticks": 8010588,
+      "child_pid": 354239,
+      "child_birth_ticks": 8010613,
+      "live_exact": true
+    },
+    {
+      "service": "schedule",
+      "tool_session": 88600,
+      "wrapper_pid": 354477,
+      "wrapper_birth_ticks": 8012465,
+      "child_pid": 354480,
+      "child_birth_ticks": 8012480,
+      "live_exact": true
+    },
+    {
+      "service": "attendance",
+      "tool_session": 5233,
+      "wrapper_pid": 354621,
+      "wrapper_birth_ticks": 8013239,
+      "child_pid": 354624,
+      "child_birth_ticks": 8013289,
+      "live_exact": true
+    },
+    {
+      "service": "bff",
+      "tool_session": 6757,
+      "wrapper_pid": 354781,
+      "wrapper_birth_ticks": 8014172,
+      "child_pid": 354785,
+      "child_birth_ticks": 8014219,
+      "live_exact": true
+    },
+    {
+      "service": "gateway",
+      "tool_session": 63122,
+      "wrapper_pid": 355186,
+      "wrapper_birth_ticks": 8016683,
+      "child_pid": 355194,
+      "child_birth_ticks": 8016811,
+      "live_exact": true
+    },
+    {
+      "service": "notification",
+      "tool_session": 29960,
+      "wrapper_pid": 355372,
+      "wrapper_birth_ticks": 8017515,
+      "child_pid": 355375,
+      "child_birth_ticks": 8017605,
+      "live_exact": true
+    }
+  ],
+  "live8_complete": true,
+  "artifact_receipt": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/source-artifact-preflight.safe.json",
+  "artifact_receipt_sha256": "0130c1d0c2ad4650bef2f0f37777386c75f3f3c26aae56cb61fa0742f9337d5b",
+  "jar8_fingerprints": [
+    {
+      "service": "auth",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "bytes": 100183493
+    },
+    {
+      "service": "academic",
+      "sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+      "bytes": 99760018
+    },
+    {
+      "service": "schedule",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "bytes": 93153993
+    },
+    {
+      "service": "attendance",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "bytes": 95976000
+    },
+    {
+      "service": "bff",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "bytes": 50139225
+    },
+    {
+      "service": "gateway",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "bytes": 62093389
+    },
+    {
+      "service": "notification",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "bytes": 86688703
+    },
+    {
+      "service": "renderer",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "bytes": 48918520
+    }
+  ],
+  "Vue22_allbytes_644_exact": true,
+  "JDK_source_fingerprint": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d",
+  "artifact_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "producer_vs_current_qualification": "Retained genuine producer; Root19 does not establish current embedded payload SHA or whole-client acceptance",
+  "teaching_instant": "2026-10-12T06:00:00.000Z",
+  "teaching_clock_sha256": "ffb6c41ae587278d82f8a950f3ea3ec3e529b6140ca5eff64dcc497ff1ca858d",
+  "security_time": "REAL_UNCHANGED",
+  "docker_post_barrier_path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/actual-next01/post-Docker-barrier.safe.json",
+  "docker_post_barrier_sha256": "3a91f019188dd06d670e30a2692546839d5a4389da852db9757ba05dc138e956",
+  "critical_TLS_Admin_FULL_API_edge_directspoof": "PASS_HOST_FINITE_REQUIRED_BARRIERS",
+  "private_ENV_key_body_credentials_read_or_copied": false,
+  "browser_API_launch_by_this_actor": "NOT_RUN",
+  "next": "Refresh all8 liveness and bind fresh host critical readiness receipt before Root browser grant; no launch from this partial snapshot",
+  "host_CURRENT_path": "/workspace/scratch/rct-validation/current_host_restart_ready_20261012/actual-next01/CURRENT.json",
+  "host_CURRENT_sha256": "00bd63b6ee40e5a52099f1e062cbce726c2cbcd0b8539bcdfd8d93c533927c0e",
+  "current_root_execution_checkout_sha": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "live8_fresh_proc_birth_check": true,
+  "host_readiness_receipt": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/stand-readiness.safe.json",
+  "host_readiness_receipt_sha256": "ecf9c0a90a723f8b503316020e663972e65ebdbd2f5c798172cd9792d2a10155",
+  "host_live8_receipt": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/live8-identities.safe.json",
+  "host_live8_receipt_sha256": "9249fcd0ba6ef7dc18201d2aee8aded702c02b67a051657558f95f6c1d63cd4b",
+  "health_endpoint_qualifications": {
+    "auth_liveness_status": 403,
+    "bff_liveness_status": 404,
+    "domain_admission_probes_pass": true
+  },
+  "readiness_body_credentials_tokens_read_or_published": false
+}

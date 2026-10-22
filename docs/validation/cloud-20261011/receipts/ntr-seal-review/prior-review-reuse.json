@@ -1,0 +1,289 @@
+{
+  "original_nine_receipt_hashes_verified": 9,
+  "nested_safe_input_hashes_verified": 98,
+  "original_archive_sha256": "53a1ffbea1d68a2b2e0040cc56af388b72bda09211c6a6c114e5fde886af3214",
+  "original_prior_notification_review": {
+    "commit": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+    "frozen": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+    "verdict": "CHANGES_REQUESTED",
+    "scope_files": 6,
+    "product_files_modified": 1,
+    "findings": [
+      {
+        "id": "NTR01",
+        "severity": "P2",
+        "category": "critical-test-quality",
+        "blocking": true,
+        "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+        "start_line": 71,
+        "end_line": 76,
+        "primary_line": 72,
+        "title": "Thirty-second TTL test accepts a prematurely shortened ticket lifetime",
+        "source_rule": [
+          "packet-notification-recovery-review.md: required genuine Auth race/30s TTL/logout",
+          "WsTicketService.java:38,87,100",
+          "docs/architecture/websocket-flow.md:46,49-50"
+        ],
+        "observed": "Oracle requires positive remaining TTL no greater than 30000ms, eventual key disappearance by 32s and 404 after disappearance; no lower lifetime or expiresAt oracle.",
+        "counterexample": "A ticket with one-second TTL sampled while live satisfies every assertion of the expiry method, while the client handshake capability expires prematurely.",
+        "oracle": "Verify the independent accepted 30s window with measured issuance/read timestamps and bounded tolerance, returned expiresAt, no premature expiry and eventual real expiry; fixed expected specification must not derive from mutable production TTL constant.",
+        "needed_correction": "Author strengthens this expiry method, proves one relevant shortened-TTL known-bad failure and restored focused PASS with source identities, preserving real Redis/security clocks and accepted production duration.",
+        "proof": "Source-static counterexample; actual controlled mutation NOT_RUN; current accepted-source run really took 30.461s.",
+        "product_defect_claim": false,
+        "reviewer_fixed": false
+      }
+    ],
+    "source_fix_assessment": "APPROVE the bounded sanitized provider failure propagation itself; complete six-file package awaits NTR01.",
+    "np02_actual_evidence": {
+      "before": "provider500 attempt1/success0, completed true, main ACK1, ready0/unacked0, DLQ0, exit1",
+      "after": "provider500 leaves completed false/released claim/main ACK0/DLQ1; manual same-event recovery + duplicate produce attempts2/success1/completed true/main ACK2/DLQ0, exit0"
+    },
+    "provider_http": "4 author actual aiogram/preferences HTTP PASS; binding/audience controlled; real Academic/Mongo/Telegram not established",
+    "auth_ticket": "3 author actual HTTP/PG/Redis PASS0skip; combined invocation exit1 due independent socket infrastructure error; actual expiry testcase30.461s",
+    "socket": "Corrected native WebSocket/STOMP/simple broker/registry/outbound HTTP1PASS0skip, controlled Auth authority; no combined real Auth logout chain",
+    "final_python": "9PASS0skip exact current tests, includes earlierOTP5/provider4; repeated runs not additive unique coverage",
+    "np01": {
+      "status": "GAP",
+      "severity": "P2",
+      "actual_oracle": "delivered_initial=false",
+      "generic_rpc_redaction": "unchanged .setInitialPassword(\"\")",
+      "correction": "proposal only; pending source outside approved six-file commit"
+    },
+    "infra_only_failures": [
+      "initial NP02 management counter KeyError",
+      "initial socket Boot fixture context failure"
+    ]
+  },
+  "five_unchanged_scope_sources_exact": true,
+  "original_actual_safe_outcomes": {
+    "NP02_before": {
+      "provider_http_status": 500,
+      "provider_attempts": 1,
+      "provider_successes": 0,
+      "dedup_completed": true,
+      "main": {
+        "messages_ready": 0,
+        "messages_unacknowledged": 0,
+        "ack": 1
+      },
+      "dlq": {
+        "messages_ready": 0,
+        "messages_unacknowledged": 0,
+        "ack": 0
+      },
+      "silent_loss": true,
+      "result": "COUNTEREXAMPLE",
+      "exit": 1,
+      "stderr_lines_not_persisted": 5
+    },
+    "NP02_after_counts": {
+      "result": "RECOVERY_PASS",
+      "failed_delivery": {
+        "provider_http_status": 500,
+        "provider_attempts": 1,
+        "provider_successes": 0,
+        "dedup_completed": false,
+        "claim_released": true,
+        "main": {
+          "messages_ready": 0,
+          "messages_unacknowledged": 0,
+          "ack": 0
+        },
+        "dlq": {
+          "messages_ready": 1,
+          "messages_unacknowledged": 0,
+          "ack": 0
+        },
+        "silent_loss": false
+      },
+      "manual_replay_same_event": true,
+      "provider_attempts": 2,
+      "provider_successes": 1,
+      "dedup_completed": true,
+      "main": {
+        "messages_ready": 0,
+        "messages_unacknowledged": 0,
+        "ack": 2
+      },
+      "dlq": {
+        "messages_ready": 0,
+        "messages_unacknowledged": 0,
+        "ack": 1
+      },
+      "duplicate_had_no_provider_effect": true,
+      "silent_loss": false,
+      "exit": 0,
+      "stderr_lines_not_persisted": 20
+    },
+    "NP02_after_native_exits": [
+      0,
+      0
+    ],
+    "NP03": {
+      "time": "2026-10-11T22:28:38.641240+00:00",
+      "action": "NP03_actual_http_terminal",
+      "session": 80583,
+      "exit": 0,
+      "tests": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "4",
+          "time": "10.925",
+          "timestamp": "2026-10-11T22:27:58.571549+00:00",
+          "hostname": "993a1bc854c1"
+        }
+      ],
+      "xml_sha256": "5cf4978946680d3ca5f1d7dfe75c60307d5244b8fa79b520396b7fea11e90968",
+      "result": "PASS",
+      "boundary": "actual aiogram+private preferences HTTP; controlled Academic binding/audience",
+      "product_changes": 0
+    },
+    "NP04": {
+      "time": "2026-10-11T22:32:22.500886+00:00",
+      "action": "NP04_selected_terminal",
+      "session": 72806,
+      "exit": 1,
+      "results": [
+        {
+          "boundary": "auth",
+          "tests": {
+            "name": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+            "tests": "3",
+            "skipped": "0",
+            "failures": "0",
+            "errors": "0",
+            "timestamp": "2026-10-11T22:30:47",
+            "hostname": "993a1bc854c1",
+            "time": "33.377"
+          },
+          "raw_xml_sha256": "147179a30131c116a36642c1c740e24c54e3c25f80382cf1a62fea18c1707ee2",
+          "safe_xml": "NP04-auth-safe.xml",
+          "safe_xml_sha256": "ec1a201521e4bd5dfc6bddd45811b6e6be015d1ac7a1802655677bcc3325e53d"
+        },
+        {
+          "boundary": "socket-before",
+          "tests": {
+            "name": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+            "tests": "1",
+            "skipped": "0",
+            "failures": "1",
+            "errors": "0",
+            "timestamp": "2026-10-11T22:31:39",
+            "hostname": "993a1bc854c1",
+            "time": "0.014"
+          },
+          "raw_xml_sha256": "f1961092e81e4a8aacba9e7909a55e56f7b1e4764a32df1d49b8b93a2f146d2a",
+          "safe_xml": "NP04-socket-before-safe.xml",
+          "safe_xml_sha256": "4112aab95c178a94c12b2f8392f38cdf3369d51a224f9f10fab535a7030c5e98"
+        }
+      ],
+      "classification": "Auth actual3PASS0skip; socket INFRA_ERROR context fixture, no product verdict",
+      "next": "NEW socket harness use plain Configuration as explicit root; rerun socket only; no Auth duplicate",
+      "product_changes": 0
+    },
+    "NP04_socket": {
+      "time": "2026-10-11T22:34:06.025981+00:00",
+      "action": "NP04_socket_corrected_terminal",
+      "session": 53267,
+      "exit": 0,
+      "tests": {
+        "name": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T22:33:23",
+        "hostname": "993a1bc854c1",
+        "time": "1.838"
+      },
+      "raw_xml_sha256": "271434ff06910f2da6f31180a5200b2ca4e1f6b93fb0ee5d9f0a9a973e70bed1",
+      "safe_xml_sha256": "abcfc1bab6a8e33e1668ad9b76a7746e664f07888cf3c9f2c8f7c3b92110eade",
+      "status": "PASS",
+      "boundary": "actual local WS handshake/STOMP/broker/native socket and HTTP live admission with controlled Auth authority; not combined real Auth→WS flow",
+      "product_changes": 0
+    },
+    "NP02_NP03_final_python": {
+      "time": "2026-10-11T22:39:47.870385+00:00",
+      "action": "final_python_terminal",
+      "session": 36827,
+      "exit": 0,
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "9",
+          "time": "10.736",
+          "timestamp": "2026-10-11T22:38:31.706136+00:00",
+          "hostname": "993a1bc854c1"
+        }
+      ],
+      "xml_sha256": "01a105471ca4692f7584ce9f9321678d295b2c892641a1eecdbdb901b37cce4d",
+      "result": "9PASS0skip",
+      "reason": "final Ruff source bytes/import correction",
+      "lease": "NOTIFY3"
+    },
+    "NP01": {
+      "time": "2026-10-11T22:24:29.438661+00:00",
+      "action": "NP01_actual_bridge_terminal",
+      "session": 30637,
+      "exit": 1,
+      "tests": {
+        "name": "ru.rutcampustrack.academic.integration.BotAdmissionProviderBridgeIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "1",
+        "errors": "0",
+        "timestamp": "2026-10-11T22:24:01",
+        "hostname": "993a1bc854c1",
+        "time": "11.882"
+      },
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "message": "org.opentest4j.AssertionFailedError: [accepted private first-start initial credential delivered] \nExpecting value to be true but was false",
+      "classification": "CONFIRMED_ACCEPTED_INITIAL_DISPATCH_GAP",
+      "source_head": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+      "raw_xml_sha256": "eb6753eddff454495bcda2de8e782cb1e52e68c43fd0e3cbb40d106f34bce99a",
+      "safe_xml": "NP01-before-safe.xml",
+      "safe_xml_sha256": "b56e8363d277834dad178496b2e95e213ed5e82fae15a44ade2439ff8037d9ff",
+      "observed_prior_assertions": [
+        "active own STUDENT grant group1 and unchanged initial credential exist",
+        "no-secret lookup denied UNAUTHENTICATED",
+        "current bound UID equals seeded user",
+        "one actual provider attempt",
+        "exact private recipient true"
+      ],
+      "actual_failed_oracle": "delivered_initial=false",
+      "product_changes": 0
+    }
+  },
+  "remaining_history_limits": {
+    "notification_final_source_current_vs_git": "exact all six files",
+    "notification_np02_green": "prelaunch fixed product/probe/wrapper hashes preserved; current product exact, probe AST/import-order bridge independently verified",
+    "notification_np03_and_np04": "new test prelaunch hashes preserved; all production dependencies independently unchanged from frozen; full per-phase dependency hash set not captured in supplied launch receipts",
+    "notification_np02_final_python": "exact final two test prelaunch hashes and terminal zero-skip XML; not duplicate unique coverage",
+    "recovery_first_control": "test hash timestamped 22:23:25.923882 before 22:23:26.310982 launch; product current and frozen equal; terminal run receipt carries product hash",
+    "recovery_final_control": "restored terminal exit0 and matching hashes supplied; separate immediate final prelaunch hash record UNKNOWN",
+    "raw_sensitive_application_log_review": "NOT_TRANSFERRED; static suppression/test marker proof only, not full secret-free production logging acceptance",
+    "reviewer_runtime": "NOT_RUN"
+  },
+  "original_before_source_bridge": {
+    "snapshot_sha256": "02b00a9c71bb7852d238e84184e5c53fca0cdf828cefe0934a4c998a0d2c824d",
+    "equals_frozen_product": true,
+    "prelaunch_hash_proof": "UNKNOWN: before actual command has HEAD/argv/resources but no product/probe hash timestamped before launch",
+    "terminal": "author original bounded counts and process exit preserved; not reviewer replay"
+  },
+  "recovery_scope": "Unchanged separate prior approval retained; no fresh recovery/source/runtime acceptance here.",
+  "new_292_ledger_does_not_fill_old_missing_dependencies": true,
+  "full_real_Auth_to_WebSocket_or_private_Telegram_chain": "NOT_ESTABLISHED",
+  "NP01": {
+    "severity": "P2",
+    "status": "GAP",
+    "actual_oracle": "delivered_initial=false",
+    "dedicated_transport": "Proposal only; not implemented or approved by this review",
+    "generic_redaction": "unchanged"
+  }
+}

@@ -4,30 +4,29 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
-import java.io.IOException;
-
 /**
  * Dual-mode user context filter — transition helper for C0-1 rollout.
  *
  * <ul>
- *   <li>If {@code X-Internal-Token} is present → validate and apply claims (strict path).</li>
- *   <li>If absent AND {@link InternalJwtProperties#legacyHeadersEnabled()} → fall back to
- *       {@code X-User-Id}/{@code X-User-Role}/{@code X-Group-Id}/{@code X-Is-Headman}.</li>
- *   <li>Otherwise → 401 Unauthorized.</li>
+ *   <li>If {@code X-Internal-Token} is present → validate and apply claims (strict path).
+ *   <li>If absent AND {@link InternalJwtProperties#legacyHeadersEnabled()} → fall back to {@code
+ *       X-User-Id}/{@code X-User-Role}/{@code X-Group-Id}/{@code X-Is-Headman}.
+ *   <li>Otherwise → 401 Unauthorized.
  * </ul>
  *
- * Downstream services extend this filter and implement the two {@code apply*} hooks
- * to bridge into their service-specific {@code RequestContext} (which depends on
- * the service's {@code UserRole} enum from its contract module).
+ * Downstream services extend this filter and implement the two {@code apply*} hooks to bridge into
+ * their service-specific {@code RequestContext} (which depends on the service's {@code UserRole}
+ * enum from its contract module).
  *
- * <p>M04 Группа 8 — KI-2 counter {@code internal_jwt_fallback_total{from,to}}
- * инкрементируется при silent fallback на legacy headers, чтобы видеть когда
- * service-to-service calls всё ещё работают без internal JWT.
+ * <p>M04 Группа 8 — KI-2 counter {@code internal_jwt_fallback_total{from,to}} инкрементируется при
+ * silent fallback на legacy headers, чтобы видеть когда service-to-service calls всё ещё работают
+ * без internal JWT.
  */
 public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
 
@@ -37,23 +36,24 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
     private final InternalJwtProperties properties;
     private final BusinessMetrics businessMetrics;
 
-    protected DualModeUserContextFilter(InternalJwtValidator validator,
-                                        InternalJwtProperties properties) {
+    protected DualModeUserContextFilter(
+            InternalJwtValidator validator, InternalJwtProperties properties) {
         this(validator, properties, null);
     }
 
-    protected DualModeUserContextFilter(InternalJwtValidator validator,
-                                        InternalJwtProperties properties,
-                                        BusinessMetrics businessMetrics) {
+    protected DualModeUserContextFilter(
+            InternalJwtValidator validator,
+            InternalJwtProperties properties,
+            BusinessMetrics businessMetrics) {
         this.validator = validator;
         this.properties = properties;
         this.businessMetrics = businessMetrics;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
         if (isExcludedPath(request)) {
             chain.doFilter(request, response);
@@ -84,7 +84,8 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
                     // шумит от уже отваленных 401). businessMetrics может
                     // быть null в юнит-тестах — защищаемся.
                     if (businessMetrics != null) {
-                        businessMetrics.internalJwtFallbackCounter("internal-jwt", "legacy-headers")
+                        businessMetrics
+                                .internalJwtFallbackCounter("internal-jwt", "legacy-headers")
                                 .increment();
                     }
                     chain.doFilter(request, response);
@@ -104,36 +105,33 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Internal token required");
     }
 
-    /**
-     * Hook for downstream service to write claims into service-specific RequestContext.
-     */
+    /** Hook for downstream service to write claims into service-specific RequestContext. */
     protected abstract void applyInternalJwt(InternalJwtClaims claims);
 
     /**
-     * Variant that exposes the exact validated token to request-scoped
-     * downstream context.  Existing service filters keep overriding the
-     * one-argument hook; the default delegates to it so this remains source
-     * compatible while preventing legacy headers from becoming an RPC actor.
+     * Variant that exposes the exact validated token to request-scoped downstream context. Existing
+     * service filters keep overriding the one-argument hook; the default delegates to it so this
+     * remains source compatible while preventing legacy headers from becoming an RPC actor.
      */
     protected void applyInternalJwt(InternalJwtClaims claims, String rawToken) {
         applyInternalJwt(claims);
     }
 
     /**
-     * Hook for downstream service to parse legacy X-User-* headers into RequestContext.
-     * Called only when {@link InternalJwtProperties#legacyHeadersEnabled()} is true.
+     * Hook for downstream service to parse legacy X-User-* headers into RequestContext. Called only
+     * when {@link InternalJwtProperties#legacyHeadersEnabled()} is true.
      */
     protected abstract void applyLegacyHeaders(HttpServletRequest request);
 
     /**
-     * Override to add service-specific exclusions; combine with
-     * {@link #isInfrastructurePath(HttpServletRequest)} via {@code super.isExcluded...}
-     * or the convenience method {@link #isInfrastructurePath(HttpServletRequest)}.
+     * Override to add service-specific exclusions; combine with {@link
+     * #isInfrastructurePath(HttpServletRequest)} via {@code super.isExcluded...} or the convenience
+     * method {@link #isInfrastructurePath(HttpServletRequest)}.
      *
-     * <p>Default returns {@link #isInfrastructurePath(HttpServletRequest)} — covers
-     * actuator / swagger / api-docs which MUST stay reachable even in strict mode
-     * (otherwise Docker HEALTHCHECK on {@code /actuator/health} fails and containers
-     * enter unhealthy loop, M03a Группа 16 audit finding H3).</p>
+     * <p>Default returns {@link #isInfrastructurePath(HttpServletRequest)} — covers actuator /
+     * swagger / api-docs which MUST stay reachable even in strict mode (otherwise Docker
+     * HEALTHCHECK on {@code /actuator/health} fails and containers enter unhealthy loop, M03a
+     * Группа 16 audit finding H3).
      */
     protected boolean isExcludedPath(HttpServletRequest request) {
         return isInfrastructurePath(request);
@@ -141,10 +139,11 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
 
     /**
      * Infrastructure paths that must bypass identity checks:
+     *
      * <ul>
-     *   <li>{@code /actuator/**} — Spring Boot health/metrics/prometheus.</li>
-     *   <li>{@code /api-docs**}, {@code /v3/api-docs**} — OpenAPI schema.</li>
-     *   <li>{@code /swagger-ui**} — dev/staging API explorer.</li>
+     *   <li>{@code /actuator/**} — Spring Boot health/metrics/prometheus.
+     *   <li>{@code /api-docs**}, {@code /v3/api-docs**} — OpenAPI schema.
+     *   <li>{@code /swagger-ui**} — dev/staging API explorer.
      * </ul>
      */
     protected static boolean isInfrastructurePath(HttpServletRequest request) {

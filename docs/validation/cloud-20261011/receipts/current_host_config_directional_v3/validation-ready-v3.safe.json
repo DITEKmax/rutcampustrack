@@ -1,0 +1,107 @@
+{
+  "utc": "2026-10-12T09:39:08.284118+00:00",
+  "finding": "HOSTCFG-G01",
+  "status": "PASS_SOURCE_SYNTHETIC_INPUTS_READY_FOR_FRESH_RECHECK",
+  "selected_corrected_generator_AST_actual_checks": 4,
+  "four_canonical32_tokens_sender_receiver_reserved_bot_match_and_distinct": true,
+  "original39_manifest_and_safe_inputs_byte_equal": true,
+  "original_guard_b78_unchanged": true,
+  "private_ENV_copy_count": 9,
+  "private_inventory_name_mode_only": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/academic.json",
+      "names_changed_only": [
+        "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+        "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+        "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+      ],
+      "bytes": 997,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/attendance.json",
+      "names_changed_only": [],
+      "bytes": 652,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/auth.json",
+      "names_changed_only": [],
+      "bytes": 592,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/bff.json",
+      "names_changed_only": [],
+      "bytes": 88,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/docker.env",
+      "names_changed_only": [],
+      "bytes": 886,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/gateway.json",
+      "names_changed_only": [],
+      "bytes": 187,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/inactive-bot-pair.json",
+      "names_changed_only": [
+        "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+        "BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+      ],
+      "bytes": 247,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/notification.json",
+      "names_changed_only": [
+        "BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+      ],
+      "bytes": 1080,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/schedule.json",
+      "names_changed_only": [
+        "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+        "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+      ],
+      "bytes": 632,
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  ],
+  "all_other_private_values_equal_no_digest_reported": true,
+  "original_privatekeys_not_read_in_final_check": true,
+  "attempt01_VAPID_read_copy_qualification": "See scope-correction.safe.json; exact NEW redundant copy removed, original preserved",
+  "seven_public_specs_only_private_file_pointers_changed": true,
+  "original_compose_tool_provenance_grant_template_byte_equal": true,
+  "exact_privatepath_pure_positive": 1,
+  "exact_privatepath_negatives_rejected": 3,
+  "JVM_Java_receiver_execution": "NOT_RUN; actual Java rules source counterpart qualified in original correction receipt",
+  "product_policy_or_validator_changed": false,
+  "credential_values_or_hashes_disclosed": false,
+  "apps_Docker_JVM_network_children": "NOT_RUN"
+}

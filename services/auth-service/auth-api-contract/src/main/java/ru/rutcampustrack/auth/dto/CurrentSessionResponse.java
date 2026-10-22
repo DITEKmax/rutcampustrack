@@ -2,7 +2,6 @@ package ru.rutcampustrack.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -19,8 +18,8 @@ public record CurrentSessionResponse(
         @Schema(nullable = true) String activeRole,
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<RoleGrantResponse> roles,
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean readOnly,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) PasswordPolicyResponse passwordPolicy
-) {
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+                PasswordPolicyResponse passwordPolicy) {
     public CurrentSessionResponse {
         requireUuid(sessionId, "sessionId");
         requirePositiveDecimal(userId, "userId");
@@ -42,7 +41,8 @@ public record CurrentSessionResponse(
         try {
             UUID parsed = UUID.fromString(value);
             if (!parsed.toString().equals(value)) {
-                throw new IllegalArgumentException(name + " must be a canonical lowercase UUID string");
+                throw new IllegalArgumentException(
+                        name + " must be a canonical lowercase UUID string");
             }
         } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException(name + " must be a UUID string", exception);

@@ -1,0 +1,74 @@
+{
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1114,
+      "sha256": "372a00bbda778858e188fb9df20dec556d711a8cc6c49c52825ffe2312e34a60"
+    },
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 321,
+      "sha256": "e51ae3721393ac0277c651d98bd577dfcc8f5dbf5ed46afaac8181193e5f0b0d"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 3399,
+      "sha256": "d8fc5081343fa79207523bc30918f8ec405bce571e6136905e1c63acf82d64e7"
+    },
+    {
+      "path": "cookie-reject-launch.safe.json",
+      "bytes": 320,
+      "sha256": "d77b9b052d67188b00b8de26ab9d9c336f6e69ecc503b25bd06f2a8e93587657"
+    },
+    {
+      "path": "cookie-reject-outcome.safe.json",
+      "bytes": 97,
+      "sha256": "6eb325043b8ffc8368852b080366be8dbd0e570da81ef710640b2e71029013ad"
+    },
+    {
+      "path": "cookie-reject-process.safe.json",
+      "bytes": 147,
+      "sha256": "12eeddbbd7ed39045c6c54bb93fc426bf83d5641b28086abd909d6c3e0a9f6d6"
+    },
+    {
+      "path": "cookie-reject-terminal.safe.json",
+      "bytes": 567,
+      "sha256": "761f66a82d4c3fc840414c556c89ba829726f02dba63402a9af4e56d7f4a6cee"
+    },
+    {
+      "path": "cookie-reject.safe.json",
+      "bytes": 949,
+      "sha256": "17231020295ec56042840a0c0e0596120abafa3ad95a591ca0de87f1e6a7f4e0"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 120,
+      "sha256": "0b469524685ce1aeee0e23873a0c364e35ea67b25e4d0546a969528589b5b73f"
+    },
+    {
+      "path": "witness-controls-launch.safe.json",
+      "bytes": 316,
+      "sha256": "14af28c6625551c879ee39c7dc2511fde6fbf8302ec8b6a5df8aacc6f6a93439"
+    },
+    {
+      "path": "witness-controls-outcome.safe.json",
+      "bytes": 100,
+      "sha256": "26eb67ddaeda45b19dc34d242bf73c21e88eda4f50ca38c7f6939108840acf9b"
+    },
+    {
+      "path": "witness-controls-process.safe.json",
+      "bytes": 147,
+      "sha256": "8006aa7b9916a586c7b156a75c8abee61f52a1461bba3efb913dff0d846822fd"
+    },
+    {
+      "path": "witness-controls-terminal.safe.json",
+      "bytes": 570,
+      "sha256": "ce9f78315b698ad57a226dcd5f6366a7dbc2ec53dc7e5f24240cf4cad8af2129"
+    },
+    {
+      "path": "witness-controls.safe.json",
+      "bytes": 2204,
+      "sha256": "945ff915b1dad0b6852535a0389b232e72b92ae57a8aa7224f13826ae6938c3f"
+    }
+  ]
+}

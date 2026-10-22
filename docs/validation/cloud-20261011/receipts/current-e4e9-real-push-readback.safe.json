@@ -1,0 +1,28 @@
+{
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_remote_PR_head_equal": true,
+  "pr": {
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+    "head": "e4e922add972586a342d49aeaafa93ff84715cac",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "advertised_merge": "6caa6a15fb6226e0342233665a8b324edcf98f2c",
+    "actual_checkout": "UNKNOWN_PENDING_CURRENT_CI"
+  },
+  "push": {
+    "supervisor": 662344,
+    "session": 91084,
+    "native_exit": 0,
+    "reaped": true
+  },
+  "inventory": {
+    "paths": 32,
+    "source": 11,
+    "partial_Q04_Q06_product_changes": "EXCLUDED_SEPARATE_WORKTREES"
+  },
+  "checks": "localformat/TSC/privacycontrols+independentreviews+6ordinaryhooks PASS forclientcheckingpackage; newJavaITcompiled butJavaformatter NOT_RUN; actualnewCIpending",
+  "acceptance": "IN_PROGRESS; newUserSearchIT expects meaningfulfailure onunchangedoldprod, noactualREDproofyet"
+}

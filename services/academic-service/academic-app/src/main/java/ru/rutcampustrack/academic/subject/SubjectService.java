@@ -7,13 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.assignment.AssignmentAuthority;
 import ru.rutcampustrack.academic.contract.dto.subject.AddSubjectTeacherRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.InitialAssignmentRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.UpdateSubjectRequest;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.Semester;
@@ -57,15 +58,16 @@ public class SubjectService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final ApplicationEventPublisher eventPublisher;
 
-    public SubjectService(SubjectRepository subjectRepository,
-                          SubjectLessonTypeRepository lessonTypeRepository,
-                          AssignmentRepository assignmentRepository,
-                          SemesterRepository semesterRepository,
-                          AssignmentAuthority assignmentAuthority,
-                          UserRoleGrantRepository grantRepository,
-                          RequestContext requestContext,
-                          ScheduleGrpcClient scheduleGrpcClient,
-                          ApplicationEventPublisher eventPublisher) {
+    public SubjectService(
+            SubjectRepository subjectRepository,
+            SubjectLessonTypeRepository lessonTypeRepository,
+            AssignmentRepository assignmentRepository,
+            SemesterRepository semesterRepository,
+            AssignmentAuthority assignmentAuthority,
+            UserRoleGrantRepository grantRepository,
+            RequestContext requestContext,
+            ScheduleGrpcClient scheduleGrpcClient,
+            ApplicationEventPublisher eventPublisher) {
         this.subjectRepository = subjectRepository;
         this.lessonTypeRepository = lessonTypeRepository;
         this.assignmentRepository = assignmentRepository;
@@ -113,20 +115,27 @@ public class SubjectService {
     public Subject createSubject(CreateSubjectRequest request) {
         Long groupId = requireHeadmanGroupId();
         if (request.teacherIds() != null && !request.teacherIds().isEmpty()) {
-            throw new BadRequestException("teacherIds",
-                    "Используйте initialAssignments с полными данными назначения");
+            throw new BadRequestException(
+                    "teacherIds", "Используйте initialAssignments с полными данными назначения");
         }
         List<SubjectType> lessonTypes = canonicalLessonTypes(request.type(), request.lessonTypes());
-        List<InitialAssignmentRequest> initialAssignments = request.initialAssignments() == null
-                ? List.of() : request.initialAssignments();
+        List<InitialAssignmentRequest> initialAssignments =
+                request.initialAssignments() == null ? List.of() : request.initialAssignments();
 
         // Every semester is locked in ascending ID order before any subject or
         // assignment row is written. This serializes create versus date edits.
-        List<Long> semesterIds = initialAssignments.stream()
-                .map(InitialAssignmentRequest::semesterId)
-                .distinct()
-                .sorted()
-                .toList();
+        List<Long> semesterIds =
+                initialAssignments.stream()
+                        .map(InitialAssignmentRequest::semesterId)
+                        .distinct()
+                        .sorted()
+                        .toList();
+        if (semesterIds.size() > 1) {
+            throw new ConflictException("Предмет должен принадлежать одному семестру");
+        }
+        if (semesterIds.isEmpty()) {
+            semesterIds = List.of(requireActiveSemester().getId());
+        }
         java.util.Map<Long, Semester> lockedSemesters = new java.util.LinkedHashMap<>();
         for (Long semesterId : semesterIds) {
             lockedSemesters.put(semesterId, assignmentAuthority.lockSemester(semesterId));
@@ -136,31 +145,36 @@ public class SubjectService {
         subject.setName(request.name());
         subject.setType(request.type());
         subject.setGroupId(groupId);
+        subject.setSemesterId(semesterIds.getFirst());
         Subject saved = subjectRepository.save(subject);
-        lessonTypeRepository.saveAll(lessonTypes.stream()
-                .map(type -> new SubjectLessonType(saved.getId(), type))
-                .toList());
+        lessonTypeRepository.saveAll(
+                lessonTypes.stream()
+                        .map(type -> new SubjectLessonType(saved.getId(), type))
+                        .toList());
 
-        assignmentAuthority.createInitialAssignmentsForNewSubject(saved.getId(),groupId,lockedSemesters,initialAssignments);
+        assignmentAuthority.createInitialAssignmentsForNewSubject(
+                saved.getId(), groupId, lockedSemesters, initialAssignments);
         return saved;
     }
 
-    private static List<SubjectType> canonicalLessonTypes(SubjectType scalarType,
-                                                           List<SubjectType> requested) {
+    private static List<SubjectType> canonicalLessonTypes(
+            SubjectType scalarType, List<SubjectType> requested) {
         if (scalarType == null) {
             throw new BadRequestException("type", "Тип предмета обязателен");
         }
         if (requested == null) {
             return List.of(scalarType);
         }
-        if (requested.isEmpty() || requested.size() > 3
+        if (requested.isEmpty()
+                || requested.size() > 3
                 || requested.stream().anyMatch(Objects::isNull)) {
-            throw new BadRequestException("lessonTypes", "Предмет должен иметь от 1 до 3 типов занятий");
+            throw new BadRequestException(
+                    "lessonTypes", "Предмет должен иметь от 1 до 3 типов занятий");
         }
         Set<SubjectType> distinct = new LinkedHashSet<>(requested);
         if (distinct.size() != requested.size() || !distinct.contains(scalarType)) {
-            throw new BadRequestException("lessonTypes",
-                    "Тип предмета должен входить в список уникальных типов занятий");
+            throw new BadRequestException(
+                    "lessonTypes", "Тип предмета должен входить в список уникальных типов занятий");
         }
         return List.copyOf(distinct);
     }
@@ -168,7 +182,8 @@ public class SubjectService {
     @Cacheable(value = "subject", key = "#id")
     @Transactional(readOnly = true)
     public Subject getSubject(Long id) {
-        return subjectRepository.findById(id)
+        return subjectRepository
+                .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", id));
     }
 
@@ -190,23 +205,32 @@ public class SubjectService {
             if (teacherId == null) {
                 return Page.empty(pageable);
             }
-            if (grantRepository.findByUserIdAndRoleAndStatus(
-                    teacherId, AssignmentAuthority.TEACHER_ROLE, AssignmentAuthority.ACTIVE_STATUS).isEmpty()) {
+            if (grantRepository
+                    .findByUserIdAndRoleAndStatus(
+                            teacherId,
+                            AssignmentAuthority.TEACHER_ROLE,
+                            AssignmentAuthority.ACTIVE_STATUS)
+                    .isEmpty()) {
                 throw new AccessDeniedException("У преподавателя нет активного права TEACHER");
             }
             Semester activeSemester = requireActiveSemester();
             LocalDate today = LocalDate.now(MOSCOW);
-            if (today.isBefore(activeSemester.getDateFrom()) || today.isAfter(activeSemester.getDateTo())) {
+            if (today.isBefore(activeSemester.getDateFrom())
+                    || today.isAfter(activeSemester.getDateTo())) {
                 return Page.empty(pageable);
             }
-            return subjectRepository.findAssignedToTeacher(teacherId, activeSemester.getId(), today, pageable);
+            return subjectRepository.findAssignedToTeacher(
+                    teacherId, activeSemester.getId(), today, pageable);
         }
         Long groupId = requestContext.getGroupId();
-        return groupId == null ? Page.empty(pageable) : subjectRepository.findByGroupId(groupId, pageable);
+        return groupId == null
+                ? Page.empty(pageable)
+                : subjectRepository.findByGroupId(groupId, pageable);
     }
 
     private Semester requireActiveSemester() {
-        return semesterRepository.findByIsActiveTrue()
+        return semesterRepository
+                .findByIsActiveTrue()
                 .orElseThrow(() -> new ConflictException("Активный семестр не найден"));
     }
 
@@ -216,22 +240,29 @@ public class SubjectService {
         Long groupId = requireHeadmanGroupId();
         Subject subject = lockSubject(id);
         assertSubjectBelongsToHeadmanGroup(subject, groupId);
-        List<SubjectType> requestedTypes = canonicalLessonTypes(request.type(), request.lessonTypes());
+        List<SubjectType> requestedTypes =
+                canonicalLessonTypes(request.type(), request.lessonTypes());
         List<SubjectLessonType> existing = lessonTypeRepository.findBySubjectId(id);
         for (SubjectLessonType row : existing) {
             if (!requestedTypes.contains(row.getLessonType())
-                    && assignmentRepository.existsBySubjectIdAndLessonType(id, row.getLessonType())) {
+                    && assignmentRepository.existsBySubjectIdAndLessonType(
+                            id, row.getLessonType())) {
                 throw new ConflictException("Нельзя удалить тип занятия с историей назначений");
             }
         }
-        Set<SubjectType> existingTypes = existing.stream()
-                .map(SubjectLessonType::getLessonType).collect(java.util.stream.Collectors.toSet());
-        lessonTypeRepository.deleteAll(existing.stream()
-                .filter(row -> !requestedTypes.contains(row.getLessonType()))
-                .toList());
-        lessonTypeRepository.saveAll(requestedTypes.stream()
-                .filter(type -> !existingTypes.contains(type))
-                .map(type -> new SubjectLessonType(id, type)).toList());
+        Set<SubjectType> existingTypes =
+                existing.stream()
+                        .map(SubjectLessonType::getLessonType)
+                        .collect(java.util.stream.Collectors.toSet());
+        lessonTypeRepository.deleteAll(
+                existing.stream()
+                        .filter(row -> !requestedTypes.contains(row.getLessonType()))
+                        .toList());
+        lessonTypeRepository.saveAll(
+                requestedTypes.stream()
+                        .filter(type -> !existingTypes.contains(type))
+                        .map(type -> new SubjectLessonType(id, type))
+                        .toList());
         subject.setName(request.name());
         subject.setType(request.type());
         return subjectRepository.save(subject);
@@ -247,8 +278,10 @@ public class SubjectService {
             throw new AssignmentClosureNotReadyException();
         }
         CountSubjectReferencesResponse refs = scheduleGrpcClient.countSubjectReferences(id);
-        if (refs.getScheduleItemsCount() > 0 || refs.getOneOffLessonsCount() > 0
-                || refs.getNonPlannedLessonsCount() > 0 || refs.getTotalLessonsCount() > 0) {
+        if (refs.getScheduleItemsCount() > 0
+                || refs.getOneOffLessonsCount() > 0
+                || refs.getNonPlannedLessonsCount() > 0
+                || refs.getTotalLessonsCount() > 0) {
             throw new ConflictException("Предмет используется расписанием и не может быть удалён");
         }
         lessonTypeRepository.deleteBySubjectId(id);
@@ -259,26 +292,34 @@ public class SubjectService {
     @Transactional
     public Assignment addTeacher(Long subjectId, Long teacherId, AddSubjectTeacherRequest request) {
         Long groupId = requireHeadmanGroupId();
+        Semester semester = assignmentAuthority.lockSemester(request.semesterId());
         Subject subject = lockSubject(subjectId);
         assertSubjectBelongsToHeadmanGroup(subject, groupId);
-        Semester semester = assignmentAuthority.lockSemester(request.semesterId());
         if (!Objects.equals(subjectId, subject.getId())) {
             throw new ResourceNotFoundException("Subject", "id", subjectId);
         }
         return assignmentAuthority.createWithLockedSemester(
-                teacherId, subjectId, groupId, semester, request.lessonType(),
-                request.validFrom(), request.validUntilExclusive());
+                teacherId,
+                subjectId,
+                groupId,
+                semester,
+                request.lessonType(),
+                request.validFrom(),
+                request.validUntilExclusive());
     }
 
-    public void removeTeacher(Long subjectId,
-                              Long teacherId,
-                              Long assignmentId,
-                              LocalDate requestedEnd, java.util.UUID requestKey) {
+    public void removeTeacher(
+            Long subjectId,
+            Long teacherId,
+            Long assignmentId,
+            LocalDate requestedEnd,
+            java.util.UUID requestKey) {
         closureService.close(assignmentId, subjectId, teacherId, requestedEnd, requestKey);
     }
 
     private Subject lockSubject(Long id) {
-        return subjectRepository.findByIdForUpdate(id)
+        return subjectRepository
+                .findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", id));
     }
 }

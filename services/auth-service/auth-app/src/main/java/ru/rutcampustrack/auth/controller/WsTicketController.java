@@ -13,12 +13,12 @@ import ru.rutcampustrack.auth.service.WsTicketService;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 
 /**
- * M03b Группа 3: issues short-lived tickets для WebSocket handshake.
- * Защищён access-JWT (Spring Security default + {@code JwtAuthenticationFilter}).
- * Никогда не отдаётся анонимно — {@code Authentication} обязателен.
+ * M03b Группа 3: issues short-lived tickets для WebSocket handshake. Защищён access-JWT (Spring
+ * Security default + {@code JwtAuthenticationFilter}). Никогда не отдаётся анонимно — {@code
+ * Authentication} обязателен.
  *
- * <p>Stores the principal created by the session-aware JWT filter and checks that
- * identity against current authority before issuing a socket capability.</p>
+ * <p>Stores the principal created by the session-aware JWT filter and checks that identity against
+ * current authority before issuing a socket capability.
  */
 @RestController
 public class WsTicketController implements WsTicketApi {
@@ -32,8 +32,8 @@ public class WsTicketController implements WsTicketApi {
     }
 
     @Override
-    public ResponseEntity<WsTicketResponse> issueTicket(Authentication authentication,
-                                                        HttpServletRequest request) {
+    public ResponseEntity<WsTicketResponse> issueTicket(
+            Authentication authentication, HttpServletRequest request) {
         SessionPrincipal principal = principal(authentication);
         if (principal.isBootstrap()) {
             throw new AuthSessionException(AuthSessionException.Code.BOOTSTRAP_SCOPE_DENIED);
@@ -45,7 +45,8 @@ public class WsTicketController implements WsTicketApi {
     }
 
     private static SessionPrincipal principal(Authentication authentication) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
             throw new InvalidCredentialsException();
         }
         return principal;

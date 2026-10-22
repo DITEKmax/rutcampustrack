@@ -1,0 +1,76 @@
+{
+  "time": "2026-10-12T05:02:56.716Z",
+  "Academic": {
+    "nativePassed": 153,
+    "nativeFailed": 292,
+    "errorType": "java.lang.IllegalStateException",
+    "stackSource": "AcademicFixtureResetListener.java:65",
+    "exactSourceGuard": "Application table inventory changed; review fixture reset scope",
+    "matchingFailures": 292,
+    "SQLStatePresent": 0,
+    "CausedByPresent": 0,
+    "sourcePredicate": "!TABLES.containsAll(actual) || actual.size() != TABLES.size()",
+    "newMigration": "V57__bot_credential_message_lifecycle.sql",
+    "createdTable": "bot_credential_messages",
+    "tableAbsentFromFixtureList": true,
+    "classification": "fixture inventory failure before TRUNCATE/seed/test; no product assertion verdict"
+  },
+  "Auth": {
+    "nativePassed": 167,
+    "nativeFailed": 2,
+    "errorType": "org.opentest4j.AssertionFailedError",
+    "failures": [
+      {
+        "method": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession",
+        "line": 304,
+        "expected": 1,
+        "actual": 4
+      },
+      {
+        "method": "passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart",
+        "line": 360,
+        "expected": 1,
+        "actual": 4
+      }
+    ],
+    "sourceAssertion": "password.changed payload.size()",
+    "classification": "outdated v1 size assertion candidate versus accepted v2/T002; source author/review required"
+  },
+  "Ruff": [
+    {
+      "code": "I001",
+      "message": "I001 [*] Import block is un-sorted or un-formatted",
+      "location": "bot/__main__.py:1:1"
+    },
+    {
+      "code": "I001",
+      "message": "I001 [*] Import block is un-sorted or un-formatted",
+      "location": "bot/notifications/password_changed.py:3:1"
+    },
+    {
+      "code": "I001",
+      "message": "I001 [*] Import block is un-sorted or un-formatted",
+      "location": "tests/np01_bridge_runner.py:3:1"
+    },
+    {
+      "code": "I001",
+      "message": "I001 [*] Import block is un-sorted or un-formatted",
+      "location": "tests/test_bot_credential_cards.py:3:1"
+    },
+    {
+      "code": "E501",
+      "message": "E501 Line too long (124 > 120)",
+      "location": "tests/test_bot_credential_cards.py:158:121"
+    },
+    {
+      "code": "E501",
+      "message": "E501 Line too long (132 > 120)",
+      "location": "tests/test_bot_credential_cards.py:199:121"
+    },
+    {
+      "code": "E501",
+      "message": "E501 Line too long (121 > 120)",
+      "location": "tests/test_bot_credential_cards.py:246:121"
+    }
+  ]
+}

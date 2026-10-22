@@ -1,0 +1,32 @@
+{
+  "schema": "CI_REVERSE_SYNTHETIC_CANONICALIZATION_NARROW_REVIEW_V1",
+  "verdict": "APPROVE_SOURCE",
+  "findings": [],
+  "commit": "5922fc7cab0d1b048179e54bbf5538ea3d1dfb12",
+  "parent": "d782f86094c7b7d9682bc80f896ccbec045d8aa0",
+  "manifest_sha256": "d9e357abc5a62e8f72bc3b15b4d6d9f158d280d5cedc135a1305c169288afa9d",
+  "path": "tests/e2e/.env.ci",
+  "line": 43,
+  "checks": {
+    "one_commit_path_before_equals_ca3d": true,
+    "only_reverse_value_exact_inverse": true,
+    "both43characters_same32decodedbytes": true,
+    "before_noncanonical_after_canonical": true,
+    "all_other_bytes_forward_size_lines_unchanged": true,
+    "git100644_native600_preserved": true,
+    "working_fixture_equal_commit_index_clean": true,
+    "old8DockerWIP_equal_retained_patch": true,
+    "critical3Source_equal_ca3d": true,
+    "manifest_pin": true
+  },
+  "source_boundary": "DirectedServiceCredential exact canonical predicate; Schedule AcademicGrpcClient221 preRPC rejection; AssignmentUnassignmentWriter44 call consistent",
+  "actual_nested503_cause": "NOT_DIRECTLY_OBSERVED",
+  "native_tests_API_browser_log_privateenv": "NOT_RUN",
+  "credential_values_hashes_fullenv_exported_or_copied": false,
+  "reviewer_checking_failure": "Initial native644 assumption failed after credential checks; corrected comparison proves native600 equal published Root fixture; Source untouched",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "next": "Root exact onecommit integration and changed-input normal CI genuine FIRST3; no client PASS from Source",
+  "effects": "Read-only public Source/Git blobs and synthetic credential RAM; own concise MD/JSON only; no Source fixes, native, network, copies, children or B013 action"
+}

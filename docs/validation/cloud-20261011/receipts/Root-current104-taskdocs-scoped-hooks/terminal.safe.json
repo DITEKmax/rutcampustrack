@@ -1,0 +1,86 @@
+{
+  "direct_pid": 522569,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 522569,
+      "start_ticks": 15216292
+    },
+    {
+      "pid": 522581,
+      "start_ticks": 15216306
+    },
+    {
+      "pid": 522588,
+      "start_ticks": 15216367
+    },
+    {
+      "pid": 522609,
+      "start_ticks": 15216388
+    },
+    {
+      "pid": 522617,
+      "start_ticks": 15216487
+    },
+    {
+      "pid": 522643,
+      "start_ticks": 15216498
+    },
+    {
+      "pid": 522646,
+      "start_ticks": 15216499
+    },
+    {
+      "pid": 522647,
+      "start_ticks": 15216499
+    },
+    {
+      "pid": 522639,
+      "start_ticks": 15216498
+    },
+    {
+      "pid": 522648,
+      "start_ticks": 15216526
+    },
+    {
+      "pid": 522672,
+      "start_ticks": 15216543
+    },
+    {
+      "pid": 522677,
+      "start_ticks": 15216543
+    },
+    {
+      "pid": 522678,
+      "start_ticks": 15216543
+    },
+    {
+      "pid": 522671,
+      "start_ticks": 15216542
+    },
+    {
+      "pid": 522715,
+      "start_ticks": 15216580
+    },
+    {
+      "pid": 522717,
+      "start_ticks": 15216580
+    },
+    {
+      "pid": 522718,
+      "start_ticks": 15216580
+    },
+    {
+      "pid": 522719,
+      "start_ticks": 15216580
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true
+}

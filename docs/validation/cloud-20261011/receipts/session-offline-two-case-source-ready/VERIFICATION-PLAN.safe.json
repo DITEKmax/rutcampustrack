@@ -1,0 +1,92 @@
+{
+  "state": "SOURCE_READY_NATIVE_CHECKS_PLANNED_NOT_RUN",
+  "verification_run_namespace": "/workspace/scratch/rct-validation/client_session_offline_acceptance/runs/attempt-90",
+  "requires_fresh_root_grant": true,
+  "supervisor": "unchanged bounded-child.py b78 with retained r1 callbacks; parameter-only checker, one phase at a time",
+  "precreation": "Root-granted caller must create only new private700 run/artifacts/supervision/private-tmp/transform-cache after fresh source/resource/time guards. No namespace has been created now.",
+  "environment": {
+    "RCT_SESSION_OFFLINE_RUN": "/workspace/scratch/rct-validation/client_session_offline_acceptance/runs/attempt-90",
+    "RCT_SESSION_OFFLINE_TYPES_OUTPUT": "/workspace/scratch/rct-validation/client_session_offline_acceptance/runs/attempt-90/supervision/types.safe.json",
+    "RCT_SESSION_OFFLINE_LIST_OUTPUT": "/workspace/scratch/rct-validation/client_session_offline_acceptance/runs/attempt-90/supervision/list.safe.json",
+    "RCT_E2E_SYNTHETIC_SEED": "true",
+    "PLAYWRIGHT_NO_COPY_PROMPT": "1",
+    "PWTEST_CACHE_DIR": "owned transform-cache",
+    "TMPDIR": "owned private-tmp"
+  },
+  "phases": [
+    {
+      "name": "SCOPED_FORMAT_CHECK",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.session-offline.config.ts",
+        "/workspace/rct-worktrees/client-session-offline/tests/e2e/session-offline-specs/mobile-session-offline.spec.ts"
+      ],
+      "closed_acceptance": "native0; exacttwo source bytes preserved; no product/framework formatting"
+    },
+    {
+      "name": "SCOPED_TYPES_ONLY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/scratch/rct-validation/client_session_offline_acceptance/typecheck-safe.cjs"
+      ],
+      "closed_acceptance": "native0 + types.safe.json pass true/error_count0/root_file_count2"
+    },
+    {
+      "name": "EXACT_TWO_DISCOVERY_ONLY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/workspace/rct-worktrees/client-session-offline/tests/e2e/playwright.session-offline.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--list",
+        "--reporter",
+        "/workspace/scratch/rct-validation/client_session_offline_acceptance/discovery-reporter.cjs"
+      ],
+      "closed_acceptance": "native0 + list.safe.json pass true/case_count2/unexpected0/lines260,367/projectchromium; --list only, protected fixture and API never executed"
+    }
+  ],
+  "limits": {
+    "per_phase_seconds": 180,
+    "node_managed_heap_mib": 512,
+    "owned_rss_sampled_soft_bytes": 1073741824,
+    "private_tmp_transform_cache_sampled_bytes": 33554432,
+    "workspace_tmp_floor_bytes": 4294967296,
+    "shared_stop_bytes": 16106127360,
+    "shared_reserve_bytes": 1073741824,
+    "cleanup_seconds": 60
+  },
+  "later_browser": {
+    "active_seconds": 360,
+    "cleanup_seconds": 60,
+    "dataset_seconds_unchanged": 180,
+    "test_seconds_unchanged": 60,
+    "node_managed_heap_mib": 512,
+    "owned_rss_sampled_soft_bytes": 1610612736,
+    "private_tmp_transform_cache_sampled_bytes": 33554432,
+    "expected_cases": 2,
+    "single_chromium_viewport": [
+      390,
+      844
+    ],
+    "workers": 1,
+    "retries": 0,
+    "readiness": "Root-adopted current next03 binding with artifact_source/runtime_mapping/critical_readiness/host_live8 four exact current SAFE facts; eight services and sixteen unique live births/direct PPIDs; host cleanup>=browser stop+60; source/payload/teaching-clock/TLS/PWA/SW equality and fresh capacity before any effects."
+  },
+  "qualifications": [
+    "Source checks are reading/data only; TypeScript/Prettier/discovery/browser/API NOT_RUN.",
+    "Original production SW D002 covers cached last-verified STUDENT homework, read-only/reconnect/foreign-marker/logout boundaries. Cached schedule and API cache/attachment inspection not demonstrated.",
+    "Server revocation evidence does not prove absolute session expiry or Moscow day rollover.",
+    "No roster/bot/TMA assertion dependency. Unchanged original dataset seed still uses Academic/Schedule/publication stack.",
+    "Sampled RSS/TMP/sharedUID limits do not prove hard OS/cgroup isolation.",
+    "Root657 imports remain frozen; diagnostic privacy changes are separately owned and not used here. Fresh Root current-source rebinding required if integrated before future dispatch."
+  ]
+}

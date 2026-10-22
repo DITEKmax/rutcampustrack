@@ -1,0 +1,1230 @@
+{
+  "root_frozen": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "export_observed": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "common_ancestor": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
+  "files": [
+    {
+      "path": "event-schemas/export.state.changed.json",
+      "export_sha256": "a6e3801d24ee86aa8c16dd2ce7fb69bd21097019cbdfe5f370f96263762a9ab6",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "binary/machine data or no agreed formatter for this language",
+      "format_tool": null,
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "event-schemas/export.state.changed.json",
+        "reason": "binary/machine data or no agreed formatter for this language"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "export_sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+      "root_sha256": "42583609af3c627a632bf1e7d89fb65fe5749206d984e281f5cd4cc7b7097a5a",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/scripts/generate-auth-types.mjs",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "export_sha256": "84a9594175c0e531836544983a53fb741ae11c6252064f0db12dd1aeaa7367eb",
+      "root_sha256": "34d4a5a2d07df3593d678168dbd0e104e3d96d6517e15de5a670900fa811b123",
+      "root_export_equal": false,
+      "disposition": "generated API/schema/protobuf",
+      "format_tool": null,
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/api/generated/academic.types.ts",
+        "reason": "generated API/schema/protobuf"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/auth.ts",
+      "export_sha256": "fe4863a4f4732090274e8961e3fcfd1f59aabf24b8e446a1edc92c51e5060ca6",
+      "root_sha256": "1a649725456237f23b0917b047eb6f0d85d6894f3638e978f5fcbaff91b5e2d0",
+      "root_export_equal": false,
+      "disposition": "generated API/schema/protobuf",
+      "format_tool": null,
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/api/generated/auth.ts",
+        "reason": "generated API/schema/protobuf"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-groups/AdminGroupsScreen.vue",
+      "export_sha256": "13e83194131e80b11d454591a9b82dd9459dd7dc58ed2a52a2ae2c6ceb42a32b",
+      "root_sha256": "8c860815a64d9eac1ca614b97f4f760554b89e19deb4e0c2d9c78e7551f6019a",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/admin-groups/AdminGroupsScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+      "export_sha256": "42a0d9c5151abc45dd391b00a703d2388ee4586234f69114b5036fb138ebcc6f",
+      "root_sha256": "2e05e6b5d011200395f0a82cd06827aa29fb288513cc78abf606bfcd2f2973ff",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "export_sha256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+      "root_sha256": "2f1175510b99ae30e7b252f8c4cd00dac4e6af4610037d873569bf51e498b817",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "export_sha256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+      "root_sha256": "4a3fdc898e9055efa251dd759e1f8942dda8e448c60c649957dd5b1a441402d1",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+      "export_sha256": "bf3ca73c75e902de02f95b5700fd686a8af629b8b16d333a5142341dd355dd84",
+      "root_sha256": "35b527ab0f1c18f77ad15cf23dac63ebfb137c13686c22d4c07441c20a1f83f6",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "export_sha256": "7a1bd9afd6faa2a73b69b2092c395b6a8ef19a87e38a2d197c36d5e577e0cf73",
+      "root_sha256": "c4dbbf8f702fc175864ba8344b73ace181fb5bd9a569f3cd87cf079ce1547981",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "export_sha256": "27cde6045a7353c03f4e67baf7750abb9fc4e5639eeb0b9cb425e50dbbf4e4b0",
+      "root_sha256": "9f05a079d493f295a68632dd033f5c4d0c1b73700652900007623c0fa0f4f7b7",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "export_sha256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+      "root_sha256": "446bef4ba7a6d0b97c06acd9cbd273defaa1e4cf5a66f9b008bdba1d54c73493",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+      "export_sha256": "fefc6eb88403d0a00647abf4207c4faef2e3679a0f5752f3265e3ad062a202b1",
+      "root_sha256": "780555f77421dcdfe860fc3c1ebfe7bb1e7ca1b7d98de41503ef56a01692767a",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+      "export_sha256": "9281420cea57ae28f617e9f3b7bc895e87deebb7152fb56338fda96a81b74488",
+      "root_sha256": "0c02599fb9d02f23d49df4c5ea85d2e90013861da34f87a6c55b22e1272d3d41",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+      "export_sha256": "fae2f2f6a68ceca06462f5e591495f2b965097fe393fde15484e0a0aca767944",
+      "root_sha256": "37cd9e1778696842d2ddb420c99f36ea77c2a803f54608dc2c4053b1daf05bd0",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+      "export_sha256": "f4298597641e9ada9830468a15e2542d6e4a0647feeba98711bddafa550e6c77",
+      "root_sha256": "c86bb02f051733a0c7448eab2066832e83bbf919277a05a8ed0f8c0be21b16e9",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+      "export_sha256": "0fa994711c8f51980581f80612b46ef9d85c5ce360f5234af5718efebeff28e4",
+      "root_sha256": "841ecb5d300f3d6f49f86f1bf3333c9f0c8ff4b921ae874965698f2012a75a8f",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/index.ts",
+      "export_sha256": "d89f09faceeafc7f586dc860df5ed1a48282934852816e020db365914b4be604",
+      "root_sha256": "9a612e9e7427faed5d68d00dfe892d05b19d8152bb80b18d9254e5aa22b7fd6b",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/index.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+      "export_sha256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+      "export_sha256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.pcss",
+      "export_sha256": "42660db6c9c979c97f3ded040a24c47c01e449f9b891c83acd1a214009e4bcbf",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/components/export-button.pcss",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "export_sha256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+      "export_sha256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+      "export_sha256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+      "export_sha256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+      "root_sha256": "ef69a78c7672b61554a985b9c675de021daf703915ffc4c4997e1be6acd94585",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-selector.test.ts",
+      "export_sha256": "5ee9f1b87d3d1606bafdf2716d3809ad7ffd9e261554825ca9a4f98d732420b0",
+      "root_sha256": "1c9b5c98a465640a5ddd9f251a725d5c43458b2a8d5a7f5e7349116738e6bf8a",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/mobile-core/src/shared/report-download-selector.test.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "export_sha256": "f4f88b8924987f88a2a41119741d73091609c06374cb269ee33c485e24151694",
+      "root_sha256": "dce07b983cba654e3d868cbe548a21f7627239186145fba31574987c46149401",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/pwa-vue/src/App.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/tma-vue/src/App.vue",
+      "export_sha256": "bfd4c3403560156185f8627d3f3927a259daf53d1897a4c091124b097aa50251",
+      "root_sha256": "c7d84ab35805f0ca9d467900b8aa0cee0ce6366e36a36dc227d1fa93a7f3e6de",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/tma-vue/src/App.vue",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.test.ts",
+      "export_sha256": "e13795fde9ad0cb4a564aceaf87b8d33fda9e6a09d36136395cae40e09e92d1b",
+      "root_sha256": "9f2c0d30516f6844344d5443a74e1eab84b0dbeddb437ebbacfac7da6187dd3e",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/tma-vue/src/report-download-adapter.test.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.ts",
+      "export_sha256": "6c6534b06d55ab56d351b674e04a0dd7fea9a7d180bbaea416206342b77515a7",
+      "root_sha256": "3c1a18e3b8836f540064ecfc2438cd87df0db4d5456ff67f3804865e78241478",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/tma-vue/src/report-download-adapter.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "frontends/tma-vue/src/tma-auth.test.ts",
+      "export_sha256": "772b4bf366268faea13e69069f200fa14731dc4e733e5ea026b9a25191a78dea",
+      "root_sha256": "57d04dc5cc268322aad96b663574c047f7cefd20ebce23a215ab491c2d078b4f",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "frontends/tma-vue/src/tma-auth.test.ts",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "proto/academic.proto",
+      "export_sha256": "33d15cb27f4812b16ff1bca9a1dd73acf1d18af4c595c5507f5989c766abcc49",
+      "root_sha256": "25ea5e2105de4aaa473b6dec9c6114ac99569a5da57aaa6c8072d3d1dbed1060",
+      "root_export_equal": false,
+      "disposition": "binary/machine data or no agreed formatter for this language",
+      "format_tool": null,
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "proto/academic.proto",
+        "reason": "binary/machine data or no agreed formatter for this language"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/build.gradle.kts",
+      "export_sha256": "ed56389767fdbb878fc21fe0f8cbab42e2f4b40a45e7099a3b96e8bf76eaae52",
+      "root_sha256": "ed56389767fdbb878fc21fe0f8cbab42e2f4b40a45e7099a3b96e8bf76eaae52",
+      "root_export_equal": true,
+      "disposition": "binary/machine data or no agreed formatter for this language",
+      "format_tool": null,
+      "status": "already byte equal",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-api-contract/build.gradle.kts",
+        "reason": "binary/machine data or no agreed formatter for this language"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/RegistryExportApi.java",
+      "export_sha256": "5bd173ad0e7ac3677a50be89d90ebe5135bef4aac874ff00e35de90eb96ec0d6",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/RegistryExportApi.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/RegistryExportModels.java",
+      "export_sha256": "c35ae3fc3713daebd44ca1699716b0f8322813dd3c6f9779efc861d37a536845",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/RegistryExportModels.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/StrictRegistryEnumDeserializer.java",
+      "export_sha256": "b5d5709c045c3ab295477e52b445f611614141234d728d20119b16cb8cecd3e0",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/StrictRegistryEnumDeserializer.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/AdminRegistryExportService.java",
+      "export_sha256": "ac55bb6d900e411cf6fed1b086e82b16f3df405796d4eaead970256cf382d478",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/AdminRegistryExportService.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryDocumentClient.java",
+      "export_sha256": "a61d4bab9c4938ba03360362c37c085ee53b4fc49873d4295a6f6f583587141f",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryDocumentClient.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportController.java",
+      "export_sha256": "76e287f74df6d5c73072320015d38a06ec2ba7bf535cf8cfccc81be8f65b2789",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportController.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportExceptionAdvice.java",
+      "export_sha256": "20d5a5fa9fee5483fb84df5e0d563aa840643adc8ed4d6ec422eebd8f7533427",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportExceptionAdvice.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportFormat.java",
+      "export_sha256": "d7cecdaae9488678a42eba08fe3e9b9cc8066f289b96fb61014b43f4abb39810",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportFormat.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryTableRenderer.java",
+      "export_sha256": "327fa2ea938eaed9cb7fdc39de0b73a4fa0565e2a14ef152f3f9f106bb98c3f9",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryTableRenderer.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "export_sha256": "fea33cfe019f9cedc2e89715ce57a1648ef64954df167761ae2fd45970301f7f",
+      "root_sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "export_sha256": "6cf3dec75b798ec2c6bdfd9985f7fbac87e76ecf54d5888be2d181fda0ecfa7b",
+      "root_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V56__durable_export_jobs.sql",
+      "export_sha256": "7122e81ef30143e1b98749817d10251ab019289d87743852c980b83693575d3b",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "historical Flyway versioned SQL; checksum must remain stable",
+      "format_tool": null,
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V56__durable_export_jobs.sql",
+        "reason": "historical Flyway versioned SQL; checksum must remain stable"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java",
+      "export_sha256": "8f4bf86db778ed09fe8c5cf5603a48e5f7a9197be191fed28c7ac95f8460593e",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "export_sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "root_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "export_sha256": "ac5d454c23c9b98826ea4930b0208a2a659cb4a740eb83401ec41514f4b83ebe",
+      "root_sha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
+      "export_sha256": "878b6b6115dadfd3c48f9ec9c0510604d6f54a62a18aea0e41278ef6771afca7",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java",
+      "export_sha256": "440053c8767b61ef20fefe5108c40fef71967def0a7f24f87d067339b3dae9f8",
+      "root_sha256": "20f02230cae09da854e11e631ebe548dec854efd1a56917892bc0c5f10f246a0",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadBackendProperties.java",
+      "export_sha256": "b63e54d169f72877d84845782b3b211a57a374783067696d8d53e0825f0f6684",
+      "root_sha256": "aa14d5efab955bda4ef8b0306cc099620b0c4052e3be8352085464850cd3c566",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadBackendProperties.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+      "export_sha256": "78196b389521b44f28ba89dee49b4121efc648952f7dc58fa9e77356506fb79c",
+      "root_sha256": "f41a024d302669a256be2c104dd8903a198b3662b3e3356a160c38d5c0c416d0",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+      "export_sha256": "f06f84172b353df2ee26bbd62fa2f29166306df7d1a04bfbad60f78b31a17403",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "export_sha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417",
+      "root_sha256": "7ab9ca4c8d9493319fd4753d874d58fda58562533361938d7ef9751cae904259",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/ReportApi.java",
+      "export_sha256": "583028f3ad89780110c625388478de4f3fadce5fa39bf1825003ae6197b043fb",
+      "root_sha256": "372ac1fa43e1ffb6b5e6d5913a4f146be27d9063f655ee3eddb8a51dbe67a810",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/ReportApi.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanSubjectJournalExportRequest.java",
+      "export_sha256": "8f4b14620eba9820cf09bdee39fa8840c32b4f9845c0651034dcad9f34c93b1f",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanSubjectJournalExportRequest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "export_sha256": "50b58f7423aa1e4996b89555a1c637369dd45c5a125c24a300351e0fa4d5d995",
+      "root_sha256": "876b0869ade459b9ce287303a461f306e8ebca922a0da78aeaf768f9f51b0ad1",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+      "export_sha256": "920bcd8f49ecfb199a040732181515ae428ebed4386e364dc40c49e44717f1c7",
+      "root_sha256": "4c2177caa9f728c3a33a927e45b5828c560c41f4c09f65b2dd7ed78d73105cbb",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTabularRenderer.java",
+      "export_sha256": "951c6c5cba168b4ff96b2952995c33ecd0aa880ae4fda549d625aa198a536c4b",
+      "root_sha256": "c7919058e0cd5326fe4ac1d6777fe14be6506dc4a8903d914bb5c04aba20eb57",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTabularRenderer.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+      "export_sha256": "46ebffcd5756fd91eef23ab5b78f361bdd3d995cf1f92c2e25450dd763c9b28f",
+      "root_sha256": "effe229e6c2dbe9c181372e20b2d517f2da01e81ba2b9c83586c58108465d9e6",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRenderer.java",
+      "export_sha256": "ce2eee4d46a7d070d71470aab7ada8cf61efed9a5fcc0886e24df7796b4f0222",
+      "root_sha256": "6e3bae758f0ac64d2cc5806deb1dca23c8053a34e8e46d152ce130d2381ec4ac",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRenderer.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportModel.java",
+      "export_sha256": "29f62c9e04c2cac7c1d8f3a8c53e75989a74a3836a0e0312c721240d04898a82",
+      "root_sha256": "0ea3dbf63da5d4916f8bb78121adb63872ef344c8dac00acb1b569be4c866ccc",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportModel.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+      "export_sha256": "a5d630f58b7821fd3f463e8a1aa6d48d0fb9dbf5ab91111d1b491afe7bf7c8d4",
+      "root_sha256": "5a3af24394a0cfde51974eb2edda0d9f520d298ed4617f5c6f02dd7bd7d8eb25",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanSubjectJournalServiceTest.java",
+      "export_sha256": "572746e579482f577f5edd29b9f37d8de34a884f60b219ef3623733731e15bdb",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanSubjectJournalServiceTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+      "export_sha256": "cb78ab3ca58cecffc44108ba97a7ec1a9cb780497caa978bc529bff4385f0310",
+      "root_sha256": "e530f1c3cddbde4f1a042a73d7f1dfcbe4e0005be361aee711b07ee7a15c40e7",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/ExportJobApi.java",
+      "export_sha256": "59dca00e57c0944d110807ae8378edb36dcc113525494e0868033d08a742abb1",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/ExportJobApi.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalExportJobApi.java",
+      "export_sha256": "cc5351d1366675ef75ed78998c332da8aaa5f3e3e892b8af2e84f89dfd9c09e8",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalExportJobApi.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+      "export_sha256": "0711b0258cf588b87b51eacebf92a42166c71cdaec1143ca722100d4ce157a52",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "export_sha256": "a7060d0ec98d5b0be0702a073ba1363f5c17de5bab0d8369f7aa6629da668790",
+      "root_sha256": "1cf99aa1a3f3312e253741c0a1d0adfe63ece260d46b9061153e217c3aa9b675",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "export_sha256": "ff8601e626feab612313f7187a3b013ca9650cbeb4ca68b77343c0ebe23e1db9",
+      "root_sha256": "12afe3519b5a3ec1a276751e08102ecd73ca4d97ea2bba08fc478ca9f1cd7626",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketRedemptionResponse.java",
+      "export_sha256": "aa6964059d43a68d34ca0eee88ee5344d03d91a4221ad8e102436513733813cc",
+      "root_sha256": "b8713d45af6ccbedc72ef10e02d6e202bf462baf7d610c082f9c07198372d7a9",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketRedemptionResponse.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/build.gradle.kts",
+      "export_sha256": "2b73dd93e93b58c26d51889c89e3c6814524b88f33084ad2a55b65ef7c03c397",
+      "root_sha256": "f298169c2e1c30042a7856d3f0089d6ee5306440aa3d95ddc247af7221830a6e",
+      "root_export_equal": false,
+      "disposition": "binary/machine data or no agreed formatter for this language",
+      "format_tool": null,
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/build.gradle.kts",
+        "reason": "binary/machine data or no agreed formatter for this language"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobController.java",
+      "export_sha256": "1534c6cb51816ba1301b9e0a1700ec4e0fe00ddac2c5b4366e4325485f3dc354",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobController.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobExceptionAdvice.java",
+      "export_sha256": "c74376ac5e0319ff5667e4bceee73a81b99730eb20488ad3cbf3dbc5ba1be8e2",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobExceptionAdvice.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "export_sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportNoStoreFilter.java",
+      "export_sha256": "6ef673d3e3252b4641ad836ef6871b4fbd4bba5c7e4ad844d3f621ed7f810a1c",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportNoStoreFilter.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+      "export_sha256": "2d2a5f40311f003a7db0367ca9363bf84ec18fa23c4328be4e7d69656240da42",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportStateEvent.java",
+      "export_sha256": "64ccc230bf508b159cab13311b5123170f5b79b305fdcc2faca509ffba5274f4",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportStateEvent.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/InternalExportJobController.java",
+      "export_sha256": "f43b6feafd9acf47920ea6478257415dc73cd91d37bae5d975a8a28d9b38c651",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/InternalExportJobController.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+      "export_sha256": "d519948b0fdef72d0f245d8deebdcfc5f7fa93c52dd597960c1f131b9e63039f",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "export_sha256": "e9176827943824ab5482d164246f5b0a09c5936eaf831f8f680330ba89d0670d",
+      "root_sha256": "c69dc2a62bb4e707fe502dc6b31f4e3b425456e41b8cd44af4cc00d32b4c4a59",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+      "export_sha256": "ecda9eae2f9f0f619f7cf63ef412332767b408a13f29855b33e0166b02e64b6d",
+      "root_sha256": "2d0e960b8408c71bc3ab434456718e6dd6e49064044973d2b1dac3cc9b841ed7",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+      "export_sha256": "1399edc9c564d8627d854dd138da43ace9517338ee298a485868ee8337d4ea79",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+      "export_sha256": "ef149ec5b3be6f8a17cf5675080ed271481233f551b5d66da499c15ea738276b",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportReportAuthorityTest.java",
+      "export_sha256": "7736a54950d86fa0c9fccdd034a16160d0d75ef6b595c2ec09c781623ed95945",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportReportAuthorityTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+      "export_sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+      "export_sha256": "639433e7fc5bb3508eacd439ebed24dfdd278441f16452e3f0f6cc4a50750a26",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "export_sha256": "a624ff4ea533b2a400489ac903f37ddbff7086d4faad8a0f918bd421af095818",
+      "root_sha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/resources/application-test.yml",
+      "export_sha256": "9776635dc228238dc706046b9db5d3ed9282ad30bb91aebc53bcf39482f53ef9",
+      "root_sha256": "ae7804f50dcdd33cb37567576faa4603a2f4647d6dcfea93a7e34132c9abfd3d",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing prettier",
+      "format_tool": "prettier",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/auth-service/auth-app/src/test/resources/application-test.yml",
+        "tool": "prettier"
+      }
+    },
+    {
+      "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+      "export_sha256": "d163fed7f2c018466027dbe6c5fd091677b74e86a0288e7940f4e864e773ac96",
+      "root_sha256": "6c85d71986d68185fa0cb2578de4ddd495b88c5c9e6ab88af2841dd3bad60f81",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsTicketClient.java",
+      "export_sha256": "e745c7de279d71836733100abc5e4c0aad57ec1f22d57ecc52493e3925bf12a5",
+      "root_sha256": "6d87c76db9dbd04dc5c3c4b9d99a84b38f3b3f204e47bcb73bcf487105b3c382",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsTicketClient.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumer.java",
+      "export_sha256": "f7aef1ad5022c224c21619c135e02870ac8294b7b4d00c65227af2d28ff343df",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumer.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "export_sha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd",
+      "root_sha256": "75984027093886bb62f72898a6ab838aba300196c450c4ce12c079bececc14c3",
+      "root_export_equal": false,
+      "disposition": "maintained author source eligible for existing java",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+        "tool": "java"
+      }
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+      "export_sha256": "190ef5ef9c6a1cf72495b9980213c16ff58935e7f234cfffe37de5b70d389289",
+      "root_sha256": null,
+      "root_export_equal": false,
+      "disposition": "new export author input: reclassify at final freeze",
+      "format_tool": "java",
+      "status": "expected export overlay candidate; not integrated",
+      "existing_classifier": {
+        "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+        "tool": "java"
+      }
+    }
+  ],
+  "limits": "Read-only forecast; integrator owns actual inventory/hunks; no root-only files assumed deleted; NP01 semantic sources not yet frozen."
+}

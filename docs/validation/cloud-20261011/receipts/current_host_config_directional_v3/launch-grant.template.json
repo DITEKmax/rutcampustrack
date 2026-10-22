@@ -1,0 +1,15 @@
+{
+  "launch_authorized": false,
+  "reviewed_guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "guard_review_manifest": "ROOT_MUST_FILL_AFTER_FRESH_INDEPENDENT_REVIEW",
+  "guard_review_manifest_sha256": "ROOT_MUST_FILL",
+  "config_manifest_sha256": "ROOT_MUST_FILL_AFTER_CONFIG_REVIEW",
+  "heavy_leases_released": {
+    "NP01_BROKER1": false,
+    "FORMAT_JAVA": false
+  },
+  "deadline_seconds": 1800,
+  "disk_floor_bytes": 4294967296,
+  "shared_stop_bytes": 16106127360,
+  "shared_memory_reserve_bytes": 1073741824
+}

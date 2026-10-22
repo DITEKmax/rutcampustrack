@@ -1,0 +1,13 @@
+{
+  "started_utc": "2026-10-12T00:27:48.031053+00:00",
+  "completed_utc": "2026-10-12T00:27:50.344859+00:00",
+  "command": "python3 /workspace/scratch/rct-validation/ntr_seal_review/audit.py",
+  "exit": 0,
+  "mode": "LIGHT_READ_ONLY_SOURCE_HASH_XML_ARCHIVE_AUDIT",
+  "reviewed_commit": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+  "independent_prelaunch_current_git_hashes": 292,
+  "all_prior_partial_and_author_original_inputs_preserved": true,
+  "runtime_replay": "NOT_RUN",
+  "source_edits": 0,
+  "children": 0
+}

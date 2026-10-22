@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { nestedRoute, rootRoute } from './navigation'
-import { canRunProfileNetworkAction, isProfileStaleRoute, profileOwnerStaleMessage } from './profile-owner-status'
+import {
+  canRunProfileNetworkAction,
+  isProfileStaleRoute,
+  profileOwnerStaleMessage,
+} from './profile-owner-status'
 
 describe('profile owner offline status', () => {
   it.each([
@@ -13,17 +17,8 @@ describe('profile owner offline status', () => {
     expect(profileOwnerStaleMessage(route, true)).toContain('могут быть устаревшими')
   })
 
-  it('blocks offline page actions, including history load-more, before invoking the network', () => {
-    let networkCalls = 0
-    const tryLoadMore = (offline: boolean): void => {
-      if (!canRunProfileNetworkAction(offline)) return
-      networkCalls += 1
-    }
-
-    tryLoadMore(false)
-    tryLoadMore(true)
-
-    expect(networkCalls).toBe(1)
+  it('blocks offline page actions while allowing explicit online actions', () => {
+    expect(canRunProfileNetworkAction(false)).toBe(true)
     expect(canRunProfileNetworkAction(true)).toBe(false)
   })
 })

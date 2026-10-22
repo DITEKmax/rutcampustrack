@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # M13 G25.3 — генерация self-signed TLS сертификатов для e2e nginx,
-# Schedule gRPC и Academic gRPC. Each gRPC server cert is trusted only by
+# Schedule, Academic, Attendance и Auth gRPC. Each gRPC server cert is trusted only by
 # clients of that service.
 #
 # Sertcfffts go в `tests/e2e/infra/certs/` (gitignored). Идемпотентно —
@@ -14,6 +14,23 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CERTS_DIR="${SCRIPT_DIR}/../certs"
+
+# Local stage17 provisions only a NEW child of its private owned run.
+if [ -n "${RCT_E2E_NEW_CERTS_DIR:-}" ]; then
+  CERTS_DIR="${RCT_E2E_NEW_CERTS_DIR}"
+  python3 - "${CERTS_DIR}" <<'PY_LOCAL_CERTS'
+import os, stat, sys
+from pathlib import Path
+target = Path(sys.argv[1])
+parent = target.parent
+info = parent.lstat()
+if (not target.is_absolute() or target.name != 'certs' or target.exists() or target.is_symlink()
+        or parent.is_symlink() or not stat.S_ISDIR(info.st_mode)
+        or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700
+        or not parent.name.startswith('rct-local-stage17-')):
+    raise SystemExit('New private local certificate destination required')
+PY_LOCAL_CERTS
+fi
 
 mkdir -p "${CERTS_DIR}"
 
@@ -65,6 +82,8 @@ verify_windows_container_key_readable() {
 set_server_key_owner() {
   local key_path="$1"
   local owner="$2:$3"
+  local mode="${4:-600}"
+  local reader_uid="${5:-$2}"
   local actual_owner
   local actual_mode
   local platform
@@ -72,7 +91,7 @@ set_server_key_owner() {
   platform="$(uname -s)"
   case "${platform}" in
     MINGW*|MSYS*)
-      if ! verify_windows_container_key_readable "${key_path}" "$2" "$3"; then
+      if ! verify_windows_container_key_readable "${key_path}" "${reader_uid}" "$3"; then
         return 1
       fi
       return
@@ -86,9 +105,9 @@ set_server_key_owner() {
   esac
 
   actual_mode="$(stat -c '%a' "${key_path}")"
-  if [ "${actual_mode}" != "600" ] && ! chmod 600 "${key_path}" 2>/dev/null; then
-    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chmod 600 "${key_path}"; then
-      echo "Cannot restrict ${key_path} to mode 0600." >&2
+  if [ "${actual_mode}" != "${mode}" ] && ! chmod "${mode}" "${key_path}" 2>/dev/null; then
+    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chmod "${mode}" "${key_path}"; then
+      echo "Cannot restrict ${key_path} to mode ${mode}." >&2
       return 1
     fi
   fi
@@ -101,15 +120,15 @@ set_server_key_owner() {
   fi
   actual_owner="$(stat -c '%u:%g' "${key_path}")"
   actual_mode="$(stat -c '%a' "${key_path}")"
-  if [ "${actual_mode}" != "600" ]; then
-    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chmod 600 "${key_path}"; then
-      echo "Cannot verify mode 0600 for ${key_path}." >&2
+  if [ "${actual_mode}" != "${mode}" ]; then
+    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chmod "${mode}" "${key_path}"; then
+      echo "Cannot verify mode ${mode} for ${key_path}." >&2
       return 1
     fi
     actual_mode="$(stat -c '%a' "${key_path}")"
   fi
-  if [ "${actual_owner}" != "${owner}" ] || [ "${actual_mode}" != "600" ]; then
-    echo "Private-key ownership check failed for ${key_path}: expected ${owner}:600." >&2
+  if [ "${actual_owner}" != "${owner}" ] || [ "${actual_mode}" != "${mode}" ]; then
+    echo "Private-key ownership check failed for ${key_path}: expected ${owner}:${mode}." >&2
     return 1
   fi
 }
@@ -171,5 +190,80 @@ else
   echo "Academic gRPC test certs already exist in ${CERTS_DIR} — keep them."
 fi
 
+# The Auth listener is a separate private TLS service. Its key never goes to clients.
+if [ ! -f "${CERTS_DIR}/auth-server.crt" ] || [ ! -f "${CERTS_DIR}/auth-server.key" ]; then
+  echo "Generating self-signed RSA-2048 Auth gRPC cert (SAN=auth-service) in ${CERTS_DIR}..."
+  AUTH_SUBJ="/CN=auth-service"
+  if [ -n "${MSYSTEM:-}" ] || [ -n "${WSL_DISTRO_NAME:-}" ]; then
+    AUTH_SUBJ="//CN=auth-service"
+  fi
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "${CERTS_DIR}/auth-server.key" \
+    -out "${CERTS_DIR}/auth-server.crt" \
+    -subj "${AUTH_SUBJ}" \
+    -addext "subjectAltName=DNS:auth-service"
+  chmod 644 "${CERTS_DIR}/auth-server.crt"
+  set_server_key_owner "${CERTS_DIR}/auth-server.key" 0 10004 640 65534
+else
+  set_server_key_owner "${CERTS_DIR}/auth-server.key" 0 10004 640 65534
+  echo "Auth gRPC test certs already exist in ${CERTS_DIR} — keep them."
+fi
+
+# File-only synthetic credentials: Docker mounts individual files, never this directory.
+# Readable file mode supports different non-root container UIDs; the host parent is 0700.
+AUTH_SECRETS_DIR="${CERTS_DIR}/auth-secrets"
+if [ -L "${AUTH_SECRETS_DIR}" ]; then
+  echo "Refusing a linked synthetic Auth secret directory." >&2
+  exit 1
+fi
+mkdir -p "${AUTH_SECRETS_DIR}"
+chmod 700 "${AUTH_SECRETS_DIR}"
+for name in bot-to-read-token mobile-bff-to-auth-token academic-to-auth-token attendance-to-auth-token auth-to-academic-presentation-token mobile-bff-to-academic-token mobile-bff-to-attendance-token mobile-bff-to-schedule-token attendance-bot-read-to-academic-token attendance-bot-read-to-schedule-token academic-report-to-attendance-token academic-report-to-schedule-token notification-to-academic-token bot-to-auth-token pg-legacy-runtime-password pg-migration-password pg-monitor-password pg-auth-runtime-password pg-auth-migration-password pg-academic-runtime-password; do
+  path="${AUTH_SECRETS_DIR}/${name}"
+  if [ -L "${path}" ] || { [ -e "${path}" ] && [ ! -f "${path}" ]; }; then
+    echo "Refusing a non-regular synthetic Auth secret file." >&2
+    exit 1
+  fi
+  if [ ! -f "${path}" ]; then
+    if [[ "${name}" == *-token ]]; then
+      # Existing directed-credential validators require canonical base64url(32 bytes).
+      (umask 077; set -o noclobber; openssl rand -base64 32 | tr '/+' '_-' | tr -d '=\r\n' > "${path}")
+    else
+      (umask 077; set -o noclobber; openssl rand -hex 32 | tr -d '\n' > "${path}")
+    fi
+  fi
+  chmod 444 "${path}"
+done
+
+if [ ! -f "${CERTS_DIR}/attendance-server.crt" ] || [ ! -f "${CERTS_DIR}/attendance-server.key" ]; then
+  echo "Generating self-signed RSA-2048 Attendance gRPC cert (SAN=attendance-service) in ${CERTS_DIR}..."
+  ATTENDANCE_SUBJ="/CN=attendance-service"
+  if [ -n "${MSYSTEM:-}" ] || [ -n "${WSL_DISTRO_NAME:-}" ]; then
+    ATTENDANCE_SUBJ="//CN=attendance-service"
+  fi
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "${CERTS_DIR}/attendance-server.key" \
+    -out "${CERTS_DIR}/attendance-server.crt" \
+    -subj "${ATTENDANCE_SUBJ}" \
+    -addext "subjectAltName=DNS:attendance-service"
+  chmod 644 "${CERTS_DIR}/attendance-server.crt"
+  set_server_key_owner "${CERTS_DIR}/attendance-server.key" 10003 10003
+else
+  set_server_key_owner "${CERTS_DIR}/attendance-server.key" 10003 10003
+  echo "Attendance gRPC test certs already exist in ${CERTS_DIR} — keep them."
+fi
+
+if [ ! -f "${CERTS_DIR}/mobile-bff-server.crt" ] || [ ! -f "${CERTS_DIR}/mobile-bff-server.key" ]; then
+  echo "Generating self-signed MobileBFF private gRPC test certificate."
+  MOBILE_BFF_SUBJ="/CN=mobile-bff"
+  if [ -n "${MSYSTEM:-}" ] || [ -n "${WSL_DISTRO_NAME:-}" ]; then MOBILE_BFF_SUBJ="//CN=mobile-bff"; fi
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "${CERTS_DIR}/mobile-bff-server.key" \
+    -out "${CERTS_DIR}/mobile-bff-server.crt" \
+    -subj "${MOBILE_BFF_SUBJ}" -addext "subjectAltName=DNS:mobile-bff"
+  chmod 644 "${CERTS_DIR}/mobile-bff-server.crt"
+fi
+set_server_key_owner "${CERTS_DIR}/mobile-bff-server.key" 10007 10007
+
 echo "Done:"
-ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."*
+ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."* "${CERTS_DIR}/attendance-server."* "${CERTS_DIR}/auth-server."* "${CERTS_DIR}/mobile-bff-server."*

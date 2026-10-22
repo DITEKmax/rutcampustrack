@@ -1,0 +1,38 @@
+{
+  "producer": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "checkout": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+  "job_id": 114769785951,
+  "command": "npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke",
+  "clean_passed": 9,
+  "flaky": 0,
+  "retries": 0,
+  "seconds": 17,
+  "native_cases": [
+    "✓  2 [chromium] › specs/auth-token-lifecycle.spec.ts:10:7 › Vue PWA auth lifecycle @smoke › wrong password does not establish a session (1.5s)",
+    "✓  1 [chromium] › specs/auth-token-lifecycle.spec.ts:25:7 › Vue PWA auth lifecycle @smoke › student login issues a protected cookie and uses the student grant (5.2s)",
+    "✓  3 [chromium] › specs/auth-token-lifecycle.spec.ts:44:7 › Vue PWA auth lifecycle @smoke › student cannot select admin; rejected selection preserves the current role (4.1s)",
+    "✓  4 [chromium] › specs/auth-token-lifecycle.spec.ts:60:7 › Vue PWA auth lifecycle @smoke › admin bootstrap requires explicit role selection in the Vue client (2.0s)",
+    "✓  5 [chromium] › specs/auth-token-lifecycle.spec.ts:75:7 › Vue PWA auth lifecycle @smoke › refresh rotates the cookie and reload recovers the same user session (3.9s)",
+    "✓  6 [chromium] › specs/auth-token-lifecycle.spec.ts:108:7 › Vue PWA auth lifecycle @smoke › logout clears the cookie, revokes the bearer and prevents recovery on reload (3.5s)",
+    "✓  7 [chromium] › specs/auth-token-lifecycle.spec.ts:126:7 › Vue PWA auth lifecycle @smoke › offline then online reload recovers authenticated navigation (2.3s)",
+    "✓  8 [chromium] › specs/mini-app.spec.ts:7:7 › Vue Telegram entry @smoke › tampered Telegram proof cannot expose role data or navigation (1.2s)",
+    "✓  9 [chromium] › specs/mini-app.spec.ts:27:7 › Vue Telegram entry @smoke › signed teacher entry loads the real session and shared profile with host Back (1.3s)"
+  ],
+  "backend": "Real isolated Docker composition/current production builds with synthetic seed; no HTTP route mocks in the executed two specs",
+  "seams": [
+    "wrong password no session/private navigation",
+    "student cookie attributes/current STUDENT grant/no browser token storage",
+    "student ADMIN denial403 preserves current role",
+    "admin neutral bootstrap then explicit role selection/profile",
+    "refresh cookie rotates and reload preserves same admitted session",
+    "logout clears cookie/bearer and refresh401/no reload recovery",
+    "offline→online reload recovers admitted session (no expired-offline snapshot claim)",
+    "tampered TMA HMAC401/no private role data/navigation/cookie",
+    "signed teacher TMA actual session/profile plus synthetic host Back/no token or initData storage"
+  ],
+  "limits": [
+    "Chromium only; external Telegram/native phone not exercised",
+    "New14 grant/helper/export sharedstand cases not executed here",
+    "Not full mobile/client acceptance or all matrix families"
+  ]
+}

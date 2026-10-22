@@ -1,18 +1,13 @@
 package ru.rutcampustrack.academic.contract.dto.homework;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
-
 import java.util.Objects;
 import java.util.UUID;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 
 @Schema(name = "HomeworkPublicationPendingResponse")
 public record HomeworkPublicationPendingResponse(
-        String homeworkId,
-        String bindingId,
-        UUID requestKey,
-        HomeworkPublicationState state
-) {
+        String homeworkId, String bindingId, UUID requestKey, HomeworkPublicationState state) {
     public HomeworkPublicationPendingResponse {
         requirePositiveDecimal(homeworkId, "homeworkId");
         requirePositiveDecimal(bindingId, "bindingId");

@@ -1,0 +1,48 @@
+{
+  "status": "SOURCE_READY_NODE_NOT_RUN",
+  "originalReadySHA256": "ee32281757a61a2d3438e9f883bb1257a07448b8ba932ea8e0551878c892f17f",
+  "originalNativeReportSHA256": "cb592ddb9c224327f0ebaa7fdecf15f95d6f4677ca64c5263d6947ac35504df7",
+  "rootHead": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "causeScope": "CONTROLLED_PUBLIC_WORKER_SERIALIZATION_ONLY",
+  "actualCIcause": "UNKNOWN",
+  "delta": "Only safe-reporter classifier: exact one Error: frame; exact RangeError: Invalid time value intrinsic UNKNOWNstage; reject other/double/dynamic/tail. artifact-privacy unchanged versus original approved diagnostic source.",
+  "files": {
+    "before/artifact-privacy.ts": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db",
+    "before/safe-reporter.ts": "7db6e044a9b462d608aca467729f37d60ff5c3a1e8a11b5851015aeb0b217ebe",
+    "source/artifact-privacy.ts": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db",
+    "source/safe-reporter.ts": "570aa4660422fb51ffdeb6dc95964f467fc88250c1002963907da0236053bc7c",
+    "serialization-controls.cjs": "b25478ff71b47dca5ab59dca7e53a292ef2e81c7e4789845d1f93a82a3541ca0",
+    "worker-control.cjs": "9c0e106d8dda14b4d49499cff939c61e901350640485a8ab9cd44719fd084ce9",
+    "worker-control.config.ts": "fa4f479b9e96e619dd4a1b3414dd3322328d286a26d98d4058a93d0b8c341633",
+    "artifact-privacy.ts.diff.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "safe-reporter.ts.diff.patch": "73f0f4c716ce2ce9fc0180299c41c2b4fc514b3c60a291561c11da3256794843"
+  },
+  "controlPlan": "One actual pinned serializeError/source before-after control phase (old24 causalredgreen retained, not replayed); then corrected publicbrowserfreeworker with individual closed rows retained beforecleanup; unchangedprivacy producer/interruption/missingguard; ownTWOformatwrite+check; scopedtypes. FreshRoot grant required.",
+  "nativeCommands": [
+    {
+      "name": "serialization",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/scratch/rct-validation/client_real_acceptance/ci-preobserver-serialization-r1/serialization-controls.cjs"
+      ]
+    },
+    {
+      "name": "worker",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/scratch/rct-validation/client_real_acceptance/ci-preobserver-serialization-r1/worker-control.cjs"
+      ]
+    }
+  ],
+  "privacyLimits": "No dynamic error.name/stack/getters/URL/codehash/PII/body persisted. Marker/raw serialized errors stay RAM/publiccontrols only. Output closed diagnostics per sourcecase9/17/23; canonical worker failed tests retained. V8managed512MiB, RSS1GiB/TMP32MiB sampledsoft; no hardallocation claim.",
+  "nativeState": "NOT_RUN",
+  "semanticSourceScope": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "requestedModel": "gpt-6.1-sol",
+  "requestedEffort": "xhigh",
+  "actualModelEffort": "UNKNOWN"
+}

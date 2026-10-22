@@ -1,0 +1,63 @@
+{
+  "source": "/workspace/scratch/rct-validation/gateway_claims_review",
+  "manifest": "review-manifest.json",
+  "files": [
+    {
+      "path": "evidence-reconciliation.json",
+      "original_sha256": "044a075765cd094069b2a96b9aa619214d4f6d78e54b9080363027426142e1ac",
+      "original_bytes": 27385,
+      "working_sha256": "044a075765cd094069b2a96b9aa619214d4f6d78e54b9080363027426142e1ac",
+      "working_bytes": 27385,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "opened-sources.json",
+      "original_sha256": "f4f0c6d04e71717e49e42fa50be91db471a2d27d6615d3331b4e48cca11c2380",
+      "original_bytes": 13938,
+      "working_sha256": "f4f0c6d04e71717e49e42fa50be91db471a2d27d6615d3331b4e48cca11c2380",
+      "working_bytes": 13938,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "review.md",
+      "original_sha256": "7c6cae6377d78743cfca482221a0444213736774e356d357e147e96ddd496ae3",
+      "original_bytes": 6542,
+      "working_sha256": "7c6cae6377d78743cfca482221a0444213736774e356d357e147e96ddd496ae3",
+      "working_bytes": 6542,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-equivalence.json",
+      "original_sha256": "da8d8cec1b08a26f5b7bda11c14cb53706241942452d81e44b67446dd497bfda",
+      "original_bytes": 3511,
+      "working_sha256": "da8d8cec1b08a26f5b7bda11c14cb53706241942452d81e44b67446dd497bfda",
+      "working_bytes": 3511,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "test-quality.json",
+      "original_sha256": "eb18485ef7b6e03ffd4cb3017f7b3126692d3c19fc427c89e772d1c5b7784dca",
+      "original_bytes": 3785,
+      "working_sha256": "eb18485ef7b6e03ffd4cb3017f7b3126692d3c19fc427c89e772d1c5b7784dca",
+      "working_bytes": 3785,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verdict.json",
+      "original_sha256": "3dcdd661f2f6d188f85cc65224a943d66ba6fe72692cd3646dd0621c400da20a",
+      "original_bytes": 2129,
+      "working_sha256": "3dcdd661f2f6d188f85cc65224a943d66ba6fe72692cd3646dd0621c400da20a",
+      "working_bytes": 2129,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "review-manifest.json",
+      "original_sha256": "d97f4e006ddaf90caf7ce721bdbbaedc739d216bbd91477e215feccf351a4b54",
+      "original_bytes": 1798,
+      "working_sha256": "d97f4e006ddaf90caf7ce721bdbbaedc739d216bbd91477e215feccf351a4b54",
+      "working_bytes": 1798,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

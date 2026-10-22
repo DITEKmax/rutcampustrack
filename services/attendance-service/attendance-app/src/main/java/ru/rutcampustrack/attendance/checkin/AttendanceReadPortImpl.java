@@ -1,5 +1,10 @@
 package ru.rutcampustrack.attendance.checkin;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -7,16 +12,10 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 /**
- * Implementation of AttendanceReadPort using MongoTemplate (D-14).
- * Lives in checkin/ package — allowed to import AttendanceDocument.
- * The interface (AttendanceReadPort) has zero checkin imports — isolation maintained.
+ * Implementation of AttendanceReadPort using MongoTemplate (D-14). Lives in checkin/ package —
+ * allowed to import AttendanceDocument. The interface (AttendanceReadPort) has zero checkin imports
+ * — isolation maintained.
  */
 @Component
 public class AttendanceReadPortImpl implements AttendanceReadPort {
@@ -30,8 +29,7 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
     @Override
     public List<AttendanceRecord> findByLessonId(Long lessonId) {
         Query query = new Query(Criteria.where("lesson_id").is(lessonId));
-        return mongoTemplate.find(query, AttendanceDocument.class)
-                .stream()
+        return mongoTemplate.find(query, AttendanceDocument.class).stream()
                 .map(this::toRecord)
                 .toList();
     }
@@ -39,7 +37,8 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
     @Override
     public List<AttendanceRecord> findByLessonIds(List<Long> lessonIds) {
         if (lessonIds == null || lessonIds.isEmpty()) return List.of();
-        Query query = new Query(Criteria.where("lesson_id").in(lessonIds.stream().distinct().toList()));
+        Query query =
+                new Query(Criteria.where("lesson_id").in(lessonIds.stream().distinct().toList()));
         return mongoTemplate.find(query, AttendanceDocument.class).stream()
                 .map(this::toRecord)
                 .toList();
@@ -47,12 +46,9 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
 
     @Override
     public List<AttendanceRecord> findByUserId(Long userId, Long semesterId) {
-        Query query = new Query(
-                Criteria.where("user_id").is(userId)
-                        .and("semester_id").is(semesterId)
-        );
-        return mongoTemplate.find(query, AttendanceDocument.class)
-                .stream()
+        Query query =
+                new Query(Criteria.where("user_id").is(userId).and("semester_id").is(semesterId));
+        return mongoTemplate.find(query, AttendanceDocument.class).stream()
                 .map(this::toRecord)
                 .toList();
     }
@@ -62,48 +58,50 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
         if (userIds == null || userIds.isEmpty()) {
             return Map.of();
         }
-        Query query = new Query(
-                Criteria.where("user_id").in(userIds)
-                        .and("semester_id").is(semesterId)
-        );
+        Query query =
+                new Query(Criteria.where("user_id").in(userIds).and("semester_id").is(semesterId));
         return mongoTemplate.find(query, AttendanceDocument.class).stream()
                 .map(this::toRecord)
-                .collect(Collectors.groupingBy(
-                        AttendanceRecord::userId,
-                        Collectors.toUnmodifiableList()));
+                .collect(
+                        Collectors.groupingBy(
+                                AttendanceRecord::userId, Collectors.toUnmodifiableList()));
     }
 
     @Override
-    public List<AttendanceRecord> findByGroupAndSubject(Long groupId, Long subjectId, LocalDate from, LocalDate to) {
-        Query query = new Query(
-                Criteria.where("group_id").is(groupId)
-                        .and("subject_id").is(subjectId)
-                        .and("lesson_date").gte(from).lte(to)
-        );
-        return mongoTemplate.find(query, AttendanceDocument.class)
-                .stream()
+    public List<AttendanceRecord> findByGroupAndSubject(
+            Long groupId, Long subjectId, LocalDate from, LocalDate to) {
+        Query query =
+                new Query(
+                        Criteria.where("group_id")
+                                .is(groupId)
+                                .and("subject_id")
+                                .is(subjectId)
+                                .and("lesson_date")
+                                .gte(from)
+                                .lte(to));
+        return mongoTemplate.find(query, AttendanceDocument.class).stream()
                 .map(this::toRecord)
                 .toList();
     }
 
     @Override
-    public List<AttendanceRecord> findByGroupAndDateRange(Long groupId, LocalDate from, LocalDate to) {
-        Query query = new Query(
-                Criteria.where("group_id").is(groupId)
-                        .and("lesson_date").gte(from).lte(to)
-        );
-        return mongoTemplate.find(query, AttendanceDocument.class)
-                .stream()
+    public List<AttendanceRecord> findByGroupAndDateRange(
+            Long groupId, LocalDate from, LocalDate to) {
+        Query query =
+                new Query(
+                        Criteria.where("group_id")
+                                .is(groupId)
+                                .and("lesson_date")
+                                .gte(from)
+                                .lte(to));
+        return mongoTemplate.find(query, AttendanceDocument.class).stream()
                 .map(this::toRecord)
                 .toList();
     }
 
     @Override
     public Optional<AttendanceRecord> findByLessonIdAndUserId(Long lessonId, Long userId) {
-        Query query = new Query(
-                Criteria.where("lesson_id").is(lessonId)
-                        .and("user_id").is(userId)
-        );
+        Query query = new Query(Criteria.where("lesson_id").is(lessonId).and("user_id").is(userId));
         return Optional.ofNullable(mongoTemplate.findOne(query, AttendanceDocument.class))
                 .map(this::toRecord);
     }
@@ -125,7 +123,6 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
                 doc.getAttachmentName(),
                 doc.getAttachmentContentType(),
                 doc.getAttachmentSize(),
-                AttendanceRevisions.effective(doc)
-        );
+                AttendanceRevisions.effective(doc));
     }
 }

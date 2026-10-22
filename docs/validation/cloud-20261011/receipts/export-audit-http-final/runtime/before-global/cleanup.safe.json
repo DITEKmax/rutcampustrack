@@ -1,0 +1,13 @@
+{
+  "time": "2026-10-12T02:54:27.477428+00:00",
+  "native": "9d31de exit0",
+  "cleanup": "standard Testcontainers/Ryuk; no manual resource deletion",
+  "own_session": "cc608126-84fe-4391-9285-a7e37c23f4ca",
+  "own3_ids_absent": [
+    "42e0ca3643a608a19b634caccf475c97cc62a17916f901675070cc44e77e83a9",
+    "da93573820ff9028b1f8bd26d4fade3c070c0ad079cac7f878a4e5f2d3c61991",
+    "3b73c38d140b2064c5e2d1ddff55f7d2a6afeab5cd17354e48f0537b1a3e60bd"
+  ],
+  "other_container_ids_preserved": [],
+  "free_bytes": 9508900864
+}

@@ -1,0 +1,44 @@
+{
+  "time": "2026-10-11T22:02:26.184207+00:00",
+  "session": 91703,
+  "exit": 1,
+  "tests": {
+    "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+    "tests": "6",
+    "skipped": "0",
+    "failures": "2",
+    "errors": "0",
+    "timestamp": "2026-10-11T22:01:56",
+    "hostname": "993a1bc854c1",
+    "time": "1.235"
+  },
+  "cases": [
+    {
+      "name": "iat fractional fixture at millisecond 0",
+      "failure": "org.opentest4j.AssertionFailedError: [controlled raw NumericDate boundary] \nexpected: 401 UNAUTHORIZED\n but was: null"
+    },
+    {
+      "name": "iat fractional fixture at millisecond 1",
+      "failure": null
+    },
+    {
+      "name": "iat fractional fixture at millisecond 999",
+      "failure": null
+    },
+    {
+      "name": "exp fractional fixture at millisecond 0",
+      "failure": "org.opentest4j.AssertionFailedError: [controlled raw NumericDate boundary] \nexpected: 401 UNAUTHORIZED\n but was: null"
+    },
+    {
+      "name": "exp fractional fixture at millisecond 1",
+      "failure": null
+    },
+    {
+      "name": "exp fractional fixture at millisecond 999",
+      "failure": null
+    }
+  ],
+  "safe_metadata": "NumericDate fixture field=iat millis=0 node=NUMBER integral=true fractional=false\nNumericDate fixture field=iat millis=1 node=NUMBER integral=false fractional=true\nNumericDate fixture field=iat millis=999 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=0 node=NUMBER integral=true fractional=false\nNumericDate fixture field=exp millis=1 node=NUMBER integral=false fractional=true\nNumericDate fixture field=exp millis=999 node=NUMBER integral=false fractional=true\n",
+  "xml_sha256": "472d82642b15cd705e99b6a6c1e5ea9d5cb84f2abe41065af962c2502b199b70",
+  "product_unchanged": true
+}

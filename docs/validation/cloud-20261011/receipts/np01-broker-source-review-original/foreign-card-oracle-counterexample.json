@@ -1,0 +1,7 @@
+{
+  "model": "Harmless independent ordinary dict; no authored provider/server/consumer runtime",
+  "global_contains_foreign_marker_after_wrong_new_card_removal": true,
+  "exact_new_foreign_key_preserved": false,
+  "source_case": "Initial foreign card at foreign_chat plus same-generation foreign card after rebind in own_chat",
+  "runtime": "NOT_RUN"
+}

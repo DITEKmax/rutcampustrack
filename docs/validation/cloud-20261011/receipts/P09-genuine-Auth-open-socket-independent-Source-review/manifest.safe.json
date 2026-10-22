@@ -1,0 +1,23 @@
+{
+  "schema": "P09_AUTH_SOCKET_SOURCE_REVIEW_SEAL_V1",
+  "verdict": "FINDINGS",
+  "files": {
+    "REPORT.md": {
+      "sha256": "7bff3bb57749b6bc4c59896f6db9b1dab835683d459bcac538bd1f3b0ca0285a",
+      "bytes": 8028
+    },
+    "REPORT.safe.json": {
+      "sha256": "dc61a12ebbcfb23a9fa00d81b970e42a3f29efd14b369ecb4163768744cb397e",
+      "bytes": 1658
+    },
+    "controls.safe.json": {
+      "sha256": "cb33a8da20778b1831399d96ed1dbae4a1090b903101503ecdba6e5fb1c834ab",
+      "bytes": 1578
+    },
+    "source-checks.py": {
+      "sha256": "63e711601798d68e879b13a6a03d6d0ef249e1c1f5e0f73c20443a4752ecd3c7",
+      "bytes": 3836
+    }
+  },
+  "private_runtime_data": "NONE"
+}

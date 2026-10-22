@@ -1,0 +1,12 @@
+{
+  "files": {
+    "HANDOFF.md": "79170edc949abc43d0e020422a20cfccd61ed7b7b49d84e38cd18045363c3726",
+    "product-final-inventory.safe.json": "57e817a88cf537c8944106a72d581bef5c97eb55213c82078c67a4c84a46d0e9",
+    "compose-source-inventory.safe.json": "a364c56d553e0da7a922c023903fa90c37beef266ce95bfc2c347b218bf71fd2",
+    "Auth-public-producer-existing.safe.json": "6a06231cdcb130be785746a12055cd1707eedfbfa30d9152c0eb37a3ee9a4ea8"
+  },
+  "native_pending": false,
+  "product_head": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d",
+  "product_inventory_paths": 4,
+  "parent_P07": "UNKNOWN"
+}

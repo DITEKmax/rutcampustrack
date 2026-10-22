@@ -1,0 +1,97 @@
+{
+  "verdict": "BOUNDED_PROPOSED_RECONCILIATION",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "root_snapshot": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+  "native_producer": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+  "actual_checkout": "ea0f8907df06cee20d75fa72c84b727f5a2f65bf",
+  "members": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 483,
+      "sha256": "909f5c5b74076ac0a2ab8e621d3f5338f3ce28f4b856d84bd6fda77fbe566f6a"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 714,
+      "sha256": "fe58a6a6adbf56d275f8998c98e9630a40013c1a82d7b66fe9cb4d8cfe1c2cb1"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 11316,
+      "sha256": "8065994157f90dd029d1410549390095d88e8c0831266b18465e98873a458485"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 525,
+      "sha256": "dec7e2e938b2cc26257ed836560cfeeda6b32c07f0362d451cd1062dcb0955da"
+    },
+    {
+      "path": "critical-current-source.safe.json",
+      "bytes": 5079,
+      "sha256": "9e976d8c5d011188001de296f39df131c30c3493219faa52c29a260e9d7ef43f"
+    },
+    {
+      "path": "current-input-reuse.safe.json",
+      "bytes": 897,
+      "sha256": "895261e7c473026fb75ef464fb8c54780c7793f2e34c3ee6dbf46572a1822f5d"
+    },
+    {
+      "path": "derived-family-view.safe.json",
+      "bytes": 234489,
+      "sha256": "11a18c42728219db810e94f61a715eb8ebcda39342a2d020bf3b208675422ad2"
+    },
+    {
+      "path": "identity-and-normalized-joins.safe.json",
+      "bytes": 9917,
+      "sha256": "275d5c47b3fcaf626475139f8f31bc21afc002760f239a1ddb2bc716d6f2dd82"
+    },
+    {
+      "path": "normalized-case-links.safe.json",
+      "bytes": 21291,
+      "sha256": "1ef6ad08ef39ce38b859125764e322c4468144c99d15225af018534dec68b192"
+    },
+    {
+      "path": "prioritized-missing-oracles.safe.json",
+      "bytes": 7663,
+      "sha256": "96f3a055a3c09c6b051cd0f489c7d21cafbddd5290f544528f716523d7fa5b09"
+    },
+    {
+      "path": "proposed-research-dispositions.safe.json",
+      "bytes": 10245,
+      "sha256": "b99875856de653dc827039d2e0ca303d096edc1a4e07c2b7554257012d0261aa"
+    },
+    {
+      "path": "queue-reference-anomaly.safe.json",
+      "bytes": 21311,
+      "sha256": "967e4bf9027ac1a0295edbddab889c7fbb7c9042febe03fe7c25deb363af60be"
+    },
+    {
+      "path": "restoration.safe.json",
+      "bytes": 2256,
+      "sha256": "3201f48e859c67b34070ec5ecd6501d5d971197f0cf3ab84fed93fa07e4a6e4c"
+    },
+    {
+      "path": "schema-L08-supplement.safe.json",
+      "bytes": 1251,
+      "sha256": "6519bfc9e4307ef49fefe349b8e9eddeb21411228181e64248812407f0d034a4"
+    },
+    {
+      "path": "selected-current-native.safe.json",
+      "bytes": 95726,
+      "sha256": "0796c7d5692980dca3e3320f9c185ca5bfebbba5b2e63703f4ce75dd99eee83c"
+    },
+    {
+      "path": "source-and-evidence-ledger.safe.json",
+      "bytes": 3900,
+      "sha256": "621c131fee9faa1f9c769dd9d669722536dd5651a539454bcec87c0993376f4a"
+    },
+    {
+      "path": "source-ref-encoding.safe.json",
+      "bytes": 570,
+      "sha256": "05dd4c4fa24fe8792e4060048f876cd757e676458c1b05176de29a7f4c2b04b7"
+    }
+  ],
+  "scope": "Only own NEW safe receipts/normalized derived view; no Root/oldseal edits, no raw/private/runtime files",
+  "selectedModelEffort": "gpt-6.1-sol/xhigh",
+  "actualModelEffort": "UNKNOWN"
+}

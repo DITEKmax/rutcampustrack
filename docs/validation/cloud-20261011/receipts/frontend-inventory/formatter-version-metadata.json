@@ -1,0 +1,36 @@
+[
+  {
+    "name": "prettier3.6.2",
+    "url": "https://registry.npmjs.org/prettier/3.6.2",
+    "status": 200,
+    "version": "3.6.2",
+    "engines": {
+      "node": ">=14"
+    }
+  },
+  {
+    "name": "ruff0.11.13",
+    "url": "https://pypi.org/pypi/ruff/0.11.13/json",
+    "status": 200,
+    "version": "0.11.13",
+    "requires_python": ">=3.7"
+  },
+  {
+    "name": "googleJavaFormat1.25.2",
+    "url": "https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.25.2/google-java-format-1.25.2.pom",
+    "status": 200,
+    "pom_bytes": 11220
+  },
+  {
+    "name": "spotless7.0.4",
+    "url": "https://plugins.gradle.org/m2/com/diffplug/spotless/com.diffplug.spotless.gradle.plugin/7.0.4/com.diffplug.spotless.gradle.plugin-7.0.4.pom",
+    "status": 200,
+    "pom_bytes": 668
+  },
+  {
+    "url": "https://api.github.com/repos/darold/pgFormatter/releases/tags/v5.6",
+    "tag": "v5.6",
+    "published_at": "2025-03-17T13:19:25Z",
+    "draft": false
+  }
+]

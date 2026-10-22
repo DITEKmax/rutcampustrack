@@ -1,0 +1,40 @@
+{
+  "schema": "RCT_CLOUD_FIRST3_DATE_SOURCE_MANIFEST",
+  "files": [
+    {
+      "path": "focus3.config.ts",
+      "sha256": "2b8f4ceccb0752dbec178870821ceab5d6482edccbfafc51fa966f44ba6a70f2",
+      "bytes": 2466
+    },
+    {
+      "path": "focus3.spec.ts",
+      "sha256": "9ede9ee2ef0e999eac1308f62e8e9ac8e736370e9ee3b89601934c31af489373",
+      "bytes": 1048
+    },
+    {
+      "path": "run-focus3.py",
+      "sha256": "e543aafe15317663dc14fd49cdd7bf9d927cbe2c999b4700c5121fcd2bd058b5",
+      "bytes": 15989
+    },
+    {
+      "path": "controls.safe.json",
+      "sha256": "1a9d7b9eccbd3330faf0357a06198318f6d2552d9bdfa568a6c8003791ae3336",
+      "bytes": 986
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "fa13ca7ac82ba94ea09baed4b23c96f01ac00b9dd2c01e9b87ed10646e39ba37",
+      "bytes": 2563
+    },
+    {
+      "path": "source-preparation-erratum.safe.json",
+      "sha256": "ea56a7a8f4231041944964c11880ff072a493ae2fc8a31cfdf097d1072d97538",
+      "bytes": 394
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "0dcc8a2ac9b118d2cd1a57f6928b492b7077ef228d62646e2b0ef91542389ce8",
+      "bytes": 15113
+    }
+  ]
+}

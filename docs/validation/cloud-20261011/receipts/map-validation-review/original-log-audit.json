@@ -1,0 +1,209 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01.log",
+    "sha256": "14e94e08e7cbb6c7c1a00db9606c6ab7470af2557a970f06927187da29daff59",
+    "bytes": 13202,
+    "lines": 186,
+    "safe_outcome_fragments": [
+      {
+        "line": 137,
+        "text": "CampusMapFileBoundaryIT > svgDoctypeCannotResolveAnExternalEntityOrPublishAFile() FAILED"
+      },
+      {
+        "line": 138,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 140,
+        "text": "CampusMapFileBoundaryIT > decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory() FAILED"
+      },
+      {
+        "line": 141,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 143,
+        "text": "CampusMapFileBoundaryIT > undecodablePngCannotPublishAnyInventoryOrFile(String) > [1] corruption=header-only FAILED"
+      },
+      {
+        "line": 144,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 146,
+        "text": "CampusMapFileBoundaryIT > undecodablePngCannotPublishAnyInventoryOrFile(String) > [2] corruption=truncated FAILED"
+      },
+      {
+        "line": 147,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 149,
+        "text": "CampusMapFileBoundaryIT > foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes() FAILED"
+      },
+      {
+        "line": 150,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 152,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [1] child=<script>alert(1)</script> FAILED"
+      },
+      {
+        "line": 153,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 155,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [2] child=<image href='https://example.invalid/rct-file-marker'/> FAILED"
+      },
+      {
+        "line": 156,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 158,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [3] child=<rect onload='alert(1)'/> FAILED"
+      },
+      {
+        "line": 159,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 161,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image> FAILED"
+      },
+      {
+        "line": 162,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 164,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image> FAILED"
+      },
+      {
+        "line": 165,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 167,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/> FAILED"
+      },
+      {
+        "line": 168,
+        "text": "    java.lang.ClassCastException at CampusMapFileBoundaryIT.java:110"
+      },
+      {
+        "line": 170,
+        "text": "16 tests completed, 11 failed"
+      },
+      {
+        "line": 172,
+        "text": "> Task :services:academic-service:academic-app:integrationTest FAILED"
+      },
+      {
+        "line": 185,
+        "text": "BUILD FAILED in 1m 52s"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02.log",
+    "sha256": "b722222ec3bdcef9c17b4bbbb131205c00d0936dffa963faf4331da86599ed60",
+    "bytes": 7466,
+    "lines": 115,
+    "safe_outcome_fragments": [
+      {
+        "line": 84,
+        "text": "CampusMapFileBoundaryIT > undecodablePngCannotPublishAnyInventoryOrFile(String) > [1] corruption=header-only FAILED"
+      },
+      {
+        "line": 87,
+        "text": "CampusMapFileBoundaryIT > undecodablePngCannotPublishAnyInventoryOrFile(String) > [2] corruption=truncated FAILED"
+      },
+      {
+        "line": 90,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image> FAILED"
+      },
+      {
+        "line": 93,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image> FAILED"
+      },
+      {
+        "line": 96,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/> FAILED"
+      },
+      {
+        "line": 99,
+        "text": "16 tests completed, 5 failed"
+      },
+      {
+        "line": 101,
+        "text": "> Task :services:academic-service:academic-app:integrationTest FAILED"
+      },
+      {
+        "line": 114,
+        "text": "BUILD FAILED in 1m 17s"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03.log",
+    "sha256": "eae0404e4b1a5c86248908212f70684ec269aa7b43b3db8eb3d334582f589c86",
+    "bytes": 7518,
+    "lines": 115,
+    "safe_outcome_fragments": [
+      {
+        "line": 84,
+        "text": "CampusMapFileBoundaryIT > undecodablePngCannotPublishAnyInventoryOrFile(String) > [1] corruption=header-only FAILED"
+      },
+      {
+        "line": 87,
+        "text": "CampusMapFileBoundaryIT > undecodablePngCannotPublishAnyInventoryOrFile(String) > [2] corruption=truncated FAILED"
+      },
+      {
+        "line": 90,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image> FAILED"
+      },
+      {
+        "line": 93,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image> FAILED"
+      },
+      {
+        "line": 96,
+        "text": "CampusMapFileBoundaryIT > svgCannotPublishScriptOrForeignResourceReferences(String) > [6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/> FAILED"
+      },
+      {
+        "line": 99,
+        "text": "13 tests completed, 5 failed"
+      },
+      {
+        "line": 101,
+        "text": "> Task :services:academic-service:academic-app:integrationTest FAILED"
+      },
+      {
+        "line": 114,
+        "text": "BUILD FAILED in 55s"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04.log",
+    "sha256": "40e34fb31a84182a85c842b86c703301b78ac451ec7a52c3f2a9defcf6c72cc2",
+    "bytes": 5957,
+    "lines": 88,
+    "safe_outcome_fragments": [
+      {
+        "line": 87,
+        "text": "BUILD SUCCESSFUL in 1m 44s"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/commit-map-01.log",
+    "sha256": "6720bb89fe22f1ca1bcfc7ca8c7caadef85fe3a5b2da051334d647b8a3dec58b",
+    "bytes": 435,
+    "lines": 4,
+    "safe_outcome_fragments": []
+  }
+]

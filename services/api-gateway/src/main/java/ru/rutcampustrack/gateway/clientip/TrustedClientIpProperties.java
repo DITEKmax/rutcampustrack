@@ -1,21 +1,20 @@
 package ru.rutcampustrack.gateway.clientip;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  * Explicit address list for the single trusted edge in front of Gateway.
  *
- * <p>The list is deliberately address based. Host-name resolution, CIDR
- * matching and private-range inference would make the source of the forwarded
- * identity ambiguous, so values are canonicalized once during startup.</p>
+ * <p>The list is deliberately address based. Host-name resolution, CIDR matching and private-range
+ * inference would make the source of the forwarded identity ambiguous, so values are canonicalized
+ * once during startup.
  */
 @Component
 @ConfigurationProperties(prefix = "rutcampustrack.gateway.client-ip")
@@ -30,9 +29,10 @@ public class TrustedClientIpProperties {
     }
 
     public void setTrustedProxyAddresses(List<String> trustedProxyAddresses) {
-        this.trustedProxyAddresses = trustedProxyAddresses == null
-                ? new ArrayList<>()
-                : new ArrayList<>(trustedProxyAddresses);
+        this.trustedProxyAddresses =
+                trustedProxyAddresses == null
+                        ? new ArrayList<>()
+                        : new ArrayList<>(trustedProxyAddresses);
     }
 
     public boolean isRequired() {
@@ -59,9 +59,12 @@ public class TrustedClientIpProperties {
                 throw new IllegalStateException(
                         "rutcampustrack.gateway.client-ip.trusted-proxy-addresses contains a blank value");
             }
-            String canonicalAddress = TrustedClientIpResolver.canonicalizeLiteral(configuredAddress)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "rutcampustrack.gateway.client-ip.trusted-proxy-addresses accepts IP literals only"));
+            String canonicalAddress =
+                    TrustedClientIpResolver.canonicalizeLiteral(configuredAddress)
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalStateException(
+                                                    "rutcampustrack.gateway.client-ip.trusted-proxy-addresses accepts IP literals only"));
             canonical.add(canonicalAddress);
         }
         if (required && canonical.isEmpty()) {

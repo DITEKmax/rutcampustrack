@@ -1,12 +1,11 @@
 package ru.rutcampustrack.academic.group;
 
 import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.entity.Group;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * JPA Specification helpers для {@link Group}.

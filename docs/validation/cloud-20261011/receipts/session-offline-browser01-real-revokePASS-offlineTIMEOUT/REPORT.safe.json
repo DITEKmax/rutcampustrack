@@ -1,0 +1,124 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_BROWSER01_FINITE_SAFE",
+  "state": "ONE_REVOKE_PASS_ONE_D002_TIMEOUT_CAUSE_UNKNOWN",
+  "utc": "2026-10-13T02:05:15.036540+00:00",
+  "tool_session": 81966,
+  "tool_native_exit": 0,
+  "browser_native_exit": 1,
+  "browser_native_qualification": "Reviewed caller returns0 for settled supervision even when browser/tests native1; preserve both statuses.",
+  "producer_source_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "execution_checkout_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "cohort": "restart-20261013-next03",
+  "cohort_binding_sha256": "3932c62c6ffd811dc46f9aecc0e31f1afb168828cb0f3ab528721182c91f387f",
+  "ready_sha256": "a70464a263ecab3e9b2d5fed33f2edb0d90f38889cb80fc766bcc75f8c304b76",
+  "all_known_births": [
+    {
+      "pid": 443353,
+      "start_ticks": 11068491
+    },
+    {
+      "pid": 443376,
+      "start_ticks": 11068604
+    },
+    {
+      "pid": 443444,
+      "start_ticks": 11069016
+    },
+    {
+      "pid": 443501,
+      "start_ticks": 11069162
+    },
+    {
+      "pid": 443483,
+      "start_ticks": 11069150
+    },
+    {
+      "pid": 443485,
+      "start_ticks": 11069154
+    },
+    {
+      "pid": 443486,
+      "start_ticks": 11069154
+    },
+    {
+      "pid": 443515,
+      "start_ticks": 11069199
+    },
+    {
+      "pid": 443529,
+      "start_ticks": 11069207
+    },
+    {
+      "pid": 443878,
+      "start_ticks": 11071565
+    }
+  ],
+  "all_known_births_absent_or_replaced": true,
+  "no_signals": true,
+  "private_tmp_removed": true,
+  "private_transform_cache_removed": true,
+  "root19_own6_runtime_clock_deps7_unchanged": true,
+  "safe_results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 260,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 9025,
+        "errorCount": 0,
+        "errorLocations": []
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 367,
+        "project": "chromium",
+        "status": "timedOut",
+        "expectedStatus": "passed",
+        "durationMs": 60160,
+        "errorCount": 2,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 367
+          },
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 367
+          }
+        ]
+      }
+    ]
+  },
+  "finite_evidence": [
+    {
+      "original_line": 260,
+      "status": "PASS_FINITE",
+      "scope": "Same-user second real session revokes browser session DELETE204; reload login/no authenticated navigation; former bearer auth/session401. CLIENT-FE-AUTH-04/JS-STUDENT-25 finite remote-revoke only; no absolute expiry/full family claim."
+    },
+    {
+      "original_line": 367,
+      "status": "TIMEOUT_CAUSE_AND_PHASE_UNKNOWN",
+      "scope": "Unchanged D002 test deadline60s. Error locations are test declaration367 only; no observer/closed stage witness. Do not infer SW readiness/controller/warm cache/offline/reconnect/scope/logout assertions completed or product cause."
+    }
+  ],
+  "peaks": {
+    "owned_rss_bytes": 823230464,
+    "run_allocated_bytes": 565248,
+    "shared_memory_bytes": 13221191680
+  },
+  "qualifications": [
+    "One genuine Chromium390x844/worker1/retry0; canonical originalassertions/Protectedtest/SafeReporter unchanged.",
+    "No raw errors/stacks/context/body/HTTP/log/credentials read, printed or retained in this receipt.",
+    "Academic96/currentRoot657, other7 retained old908 producer provenance; host stand unchanged and remains Root-owned.",
+    "No identical rerun, timeout increase, product/assertion change or full parent promotion.",
+    "Sampled RSS/TMP/sharedUID controls do not establish hard OS isolation."
+  ],
+  "next_step": "Root records finite remote-revoke PASS and D002 unknown timeout; if accepteddiagnostic needed, author minimum closed-stage observation proposal and independent Source review/new grant, no raw error/context read or blind rerun."
+}

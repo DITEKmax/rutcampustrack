@@ -17,6 +17,7 @@ const ADMIN_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', is_headman: false, group_
 const STUDENT_TOKEN = makeJwt({ sub: '3', role: 'STUDENT', is_headman: false, group_id: 5, exp: 9999999999 });
 const HEADMAN_TOKEN = makeJwt({ sub: '4', role: 'STUDENT', is_headman: true, group_id: 5, exp: 9999999999 });
 const REFRESH_TOKEN = 'refresh-token-abc';
+const REDIRECT = new UrlTree();
 
 describe('authGuard', () => {
   let authService: AuthService;
@@ -29,7 +30,7 @@ describe('authGuard', () => {
         {
           provide: Router,
           useValue: {
-            createUrlTree: vi.fn((commands: string[]) => ({ commands }) as unknown as UrlTree),
+            createUrlTree: vi.fn(() => REDIRECT),
             navigate: vi.fn(),
           },
         },
@@ -51,7 +52,7 @@ describe('authGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       authGuard({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
 });
@@ -67,7 +68,7 @@ describe('roleGuard', () => {
         {
           provide: Router,
           useValue: {
-            createUrlTree: vi.fn((commands: string[]) => ({ commands }) as unknown as UrlTree),
+            createUrlTree: vi.fn(() => REDIRECT),
             navigate: vi.fn(),
           },
         },
@@ -90,7 +91,7 @@ describe('roleGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(['ADMIN'])({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/teacher/dashboard']);
   });
 
@@ -99,7 +100,7 @@ describe('roleGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(['TEACHER'])({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/admin/dashboard']);
   });
 
@@ -108,7 +109,7 @@ describe('roleGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(['ADMIN'])({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
 
@@ -117,7 +118,7 @@ describe('roleGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(['ADMIN'])({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/student/dashboard']);
   });
 
@@ -126,7 +127,7 @@ describe('roleGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(['ADMIN'])({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/headman/dashboard']);
   });
 
@@ -135,7 +136,7 @@ describe('roleGuard', () => {
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(['TEACHER'])({} as any, {} as any)
     );
-    expect(result).not.toBe(true);
+    expect(result).toBe(REDIRECT);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/student/dashboard']);
   });
 });

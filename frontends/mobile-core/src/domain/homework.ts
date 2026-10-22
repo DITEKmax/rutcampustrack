@@ -7,6 +7,66 @@ export interface HomeworkDateRange {
   to: string
 }
 
+export type HomeworkPeriodMode = 'day' | 'week' | 'month'
+
+export function clampHomeworkDate(date: string, semester: HomeworkDateRange): string {
+  return date < semester.from ? semester.from : date > semester.to ? semester.to : date
+}
+
+export function homeworkPeriodRange(
+  mode: HomeworkPeriodMode,
+  date: string,
+  semester: HomeworkDateRange,
+): HomeworkDateRange | null {
+  if (!isHomeworkDate(date) || !normalizeHomeworkRange(semester)) return null
+  const selected = clampHomeworkDate(date, semester)
+  let from = selected,
+    to = selected
+  if (mode === 'week') {
+    const weekday = (new Date(`${selected}T12:00:00Z`).getUTCDay() + 6) % 7
+    from = addHomeworkDays(selected, -weekday)
+    to = addHomeworkDays(from, 6)
+  } else if (mode === 'month') {
+    from = selected.slice(0, 7) + '-01'
+    const end = new Date(`${from}T12:00:00Z`)
+    end.setUTCMonth(end.getUTCMonth() + 1, 0)
+    to = end.toISOString().slice(0, 10)
+  }
+  return { from: clampHomeworkDate(from, semester), to: clampHomeworkDate(to, semester) }
+}
+
+export function shiftHomeworkPeriod(mode: HomeworkPeriodMode, date: string, step: number): string {
+  if (mode !== 'month') return addHomeworkDays(date, step * (mode === 'week' ? 7 : 1))
+  const value = new Date(`${date.slice(0, 7)}-01T12:00:00Z`)
+  value.setUTCMonth(value.getUTCMonth() + step)
+  const end = new Date(value)
+  end.setUTCMonth(end.getUTCMonth() + 1, 0)
+  value.setUTCDate(Math.min(Number(date.slice(8)), end.getUTCDate()))
+  return value.toISOString().slice(0, 10)
+}
+
+/** Selected-period views are lesson-date projections, never completion-date unions. */
+export function groupHomeworkPeriod(
+  feed: StudentHomework,
+  range: HomeworkDateRange,
+): HomeworkGroup[] {
+  const items = dedupeHomeworkItems(feed.items)
+    .filter((item) => item.lessonDate >= range.from && item.lessonDate <= range.to)
+    .sort(itemOrder)
+  const groups: HomeworkGroup[] = []
+  for (let date = range.from; date <= range.to; date = addHomeworkDays(date, 1)) {
+    groups.push({
+      key: `lesson-date:${date}`,
+      kind: 'lesson-date',
+      date,
+      monthLabel: formatHomeworkMonth(date),
+      label: formatHomeworkDate(date, feed.serverNow),
+      items: items.filter((item) => item.lessonDate === date),
+    })
+  }
+  return groups
+}
+
 export type HomeworkGroupKind = 'completed-today' | 'lesson-date'
 
 export interface HomeworkGroup {
@@ -54,7 +114,9 @@ export function isHomeworkDate(value: string): boolean {
   const [year, month, day] = value.split('-').map(Number)
   if (!year || !month || !day) return false
   const date = new Date(Date.UTC(year, month - 1, day))
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  )
 }
 
 export function compareHomeworkDates(left: string, right: string): number {
@@ -94,7 +156,11 @@ function itemOrder(left: StudentHomeworkItem, right: StudentHomeworkItem): numbe
   if (dateOrder !== 0) return dateOrder
   const completionOrder = Number(left.completed) - Number(right.completed)
   if (completionOrder !== 0) return completionOrder
-  if (left.lessonNumber !== right.lessonNumber) return (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) - (right.lessonNumber ?? Number.MAX_SAFE_INTEGER)
+  if (left.lessonNumber !== right.lessonNumber)
+    return (
+      (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) -
+      (right.lessonNumber ?? Number.MAX_SAFE_INTEGER)
+    )
   const subjectOrder = left.subject.name.localeCompare(right.subject.name, 'ru')
   if (subjectOrder !== 0) return subjectOrder
   return left.id.localeCompare(right.id)
@@ -115,8 +181,12 @@ export function dedupeHomeworkItems(items: readonly StudentHomeworkItem[]): Stud
 }
 
 export function isCompletedToday(item: StudentHomeworkItem, serverNow: string): boolean {
-  return item.completed && item.completedAt !== null && moscowDate(item.completedAt) !== null
-    && moscowDate(item.completedAt) === moscowDate(serverNow)
+  return (
+    item.completed &&
+    item.completedAt !== null &&
+    moscowDate(item.completedAt) !== null &&
+    moscowDate(item.completedAt) === moscowDate(serverNow)
+  )
 }
 
 /**
@@ -125,8 +195,12 @@ export function isCompletedToday(item: StudentHomeworkItem, serverNow: string): 
  */
 export function groupHomework(feed: StudentHomework): HomeworkGroup[] {
   const unique = dedupeHomeworkItems(feed.items)
-  const completedToday = unique.filter((item) => isCompletedToday(item, feed.serverNow)).sort(itemOrder)
-  const chronological = unique.filter((item) => !isCompletedToday(item, feed.serverNow)).sort(itemOrder)
+  const completedToday = unique
+    .filter((item) => isCompletedToday(item, feed.serverNow))
+    .sort(itemOrder)
+  const chronological = unique
+    .filter((item) => !isCompletedToday(item, feed.serverNow))
+    .sort(itemOrder)
   const groups: HomeworkGroup[] = []
 
   if (completedToday.length > 0) {
@@ -184,7 +258,9 @@ export function homeworkRangeKey(range: HomeworkDateRange | null): string {
   return range ? `${range.from}:${range.to}` : 'current'
 }
 
-export function normalizeHomeworkRange(range: HomeworkDateRange | null | undefined): HomeworkDateRange | null {
+export function normalizeHomeworkRange(
+  range: HomeworkDateRange | null | undefined,
+): HomeworkDateRange | null {
   if (!range || !isHomeworkDate(range.from) || !isHomeworkDate(range.to)) return null
   if (compareHomeworkDates(range.from, range.to) > 0) return null
   return { from: range.from, to: range.to }
@@ -195,7 +271,10 @@ export function normalizeHomeworkRange(range: HomeworkDateRange | null | undefin
  * semester start is always the lower bound, so repeated navigation cannot
  * escape the server-authorized semester.
  */
-export function previousHomeworkRange(feed: StudentHomework | null, pageSize = 7): HomeworkDateRange | null {
+export function previousHomeworkRange(
+  feed: StudentHomework | null,
+  pageSize = 7,
+): HomeworkDateRange | null {
   if (!feed || !isHomeworkDate(feed.from) || !isHomeworkDate(feed.semester.dateFrom)) return null
   const end = addHomeworkDays(feed.from, -1)
   if (compareHomeworkDates(end, feed.semester.dateFrom) < 0) return null

@@ -1,0 +1,48 @@
+{
+  "direct_pid": 359531,
+  "native_exit": 1,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 359531,
+      "start_ticks": 8048427
+    },
+    {
+      "pid": 359677,
+      "start_ticks": 8048933
+    },
+    {
+      "pid": 359691,
+      "start_ticks": 8049142
+    },
+    {
+      "pid": 359723,
+      "start_ticks": 8049379
+    },
+    {
+      "pid": 359724,
+      "start_ticks": 8049395
+    },
+    {
+      "pid": 359738,
+      "start_ticks": 8049595
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": false,
+  "peaks": {
+    "owned_rss_bytes": 330612736,
+    "run_allocated_bytes": 593920,
+    "shared_memory_bytes": 10913468416
+  },
+  "private_tmp_removed": true,
+  "case_count": 3,
+  "project": "chromium",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout_sha": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1"
+}

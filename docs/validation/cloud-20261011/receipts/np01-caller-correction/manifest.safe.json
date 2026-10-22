@@ -1,0 +1,48 @@
+{
+  "status": "SEALED_CALLER_SOURCE_CORRECTION_PENDING_INDEPENDENT_RECHECK_NO_NATIVE_GRANT",
+  "entries": [
+    {
+      "path": "run-stage.py",
+      "sha256": "afb5a9fdbf420a24399168384817d06c7e6faeb6debcbef25fd9770fade8fdce",
+      "bytes": 11848,
+      "mode": "0600"
+    },
+    {
+      "path": "caller-boundary.py",
+      "sha256": "bdc061d878ba852bf757ae6cc1b861d090af4c4b948e208abe1e5d90a1831cd3",
+      "bytes": 8181,
+      "mode": "0600"
+    },
+    {
+      "path": "native-procedure.safe.json",
+      "sha256": "6302a3c501d1caacb3c336a5d39d45b875604c4a10884a7fcfefa12b9ed11ab8",
+      "bytes": 11207,
+      "mode": "0600"
+    },
+    {
+      "path": "pure-controls.py",
+      "sha256": "2388a6fd6218bf0d274a9961913143e7166c6819e352c37b3c21a9bf52cec131",
+      "bytes": 10699,
+      "mode": "0600"
+    },
+    {
+      "path": "pure-controls-final.safe.json",
+      "sha256": "aa38c1080a09b8e976a23cf1f0c9462261b518ad3bf73c880a6fd866fbb2e5ce",
+      "bytes": 6319,
+      "mode": "0600"
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "cbdfcc09bbf0726d24dabb4cc8cc81a40e5455483592cb6eb4f818bd9c33514b",
+      "bytes": 2038,
+      "mode": "0600"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "2a9291aec27ce07e7854d3fe3ad91a30890eec2a947fe8aeeca431f12e04e0aa",
+      "bytes": 2992,
+      "mode": "0600"
+    }
+  ],
+  "original_sourceprep_zip_sha256": "8384a33ae7cdaf43a7036d4fc0409cd96c412824ffab48c77834033c5771d313"
+}

@@ -1,0 +1,19 @@
+{
+  "phase": "format",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rct-worktrees/client-current-artifacts/frontends/node_modules/prettier/bin/prettier.cjs",
+    "--write",
+    "--config",
+    "/workspace/rct-worktrees/client-ci-first3/.prettierrc.json",
+    "/workspace/rct-worktrees/client-ci-first3/.github/workflows/ci.yml",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/playwright.first3.config.ts",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/first3-specs/mobile-first3.spec.ts",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/first3-observer.ts"
+  ],
+  "deadlineSeconds": 171,
+  "grantPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/private/node-format-correction-grant02.json",
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "diagnosticPublicSourceOnly": true
+}

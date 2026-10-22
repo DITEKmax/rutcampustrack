@@ -1,0 +1,144 @@
+{
+  "production": [
+    {
+      "path": "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "050685c769dbaa503fa70871db30c2e50c46c5b6968f834ff98e83babe2934cb",
+      "bytes": 99554566,
+      "digest_matches_inspection_prelaunch_and_actual_receipt": true,
+      "start_class": "ru.rutcampustrack.academic.AcademicApplication",
+      "main_class_exists": true,
+      "embedded_git_commit": "10a213344673c84af4efc6b501a8084bbf5045be",
+      "embedded_commit_matches_frozen_source": true,
+      "educational_classes": [
+        {
+          "entry": "BOOT-INF/lib/shared-web-api-0.1.0.jar!/ru/rutcampustrack/shared/web/time/EducationalTime.class",
+          "sha256": "771e0cad8760c2d2ce0907593e3139a12a24d88b26b63624fabdecb9ca8830e3"
+        }
+      ],
+      "exact_single_api_class_matches_receipt": true,
+      "fixture_absent_recursive": true,
+      "shared_web_auto_configuration_entries": [
+        "BOOT-INF/lib/shared-web-0.1.0.jar!/ru/rutcampustrack/shared/web/autoconfigure/SharedWebAutoConfiguration.class"
+      ],
+      "shared_web_starter_filename_present": true,
+      "nested_archives_inspected": 183,
+      "maximum_nesting_depth": 1
+    },
+    {
+      "path": "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "1a16ca01201277336ceece0e75d23b3bb54f1c4d28c2923a4253550a25fe1a64",
+      "bytes": 93018667,
+      "digest_matches_inspection_prelaunch_and_actual_receipt": true,
+      "start_class": "ru.rutcampustrack.schedule.ScheduleApplication",
+      "main_class_exists": true,
+      "embedded_git_commit": "10a213344673c84af4efc6b501a8084bbf5045be",
+      "embedded_commit_matches_frozen_source": true,
+      "educational_classes": [
+        {
+          "entry": "BOOT-INF/lib/shared-web-api-0.1.0.jar!/ru/rutcampustrack/shared/web/time/EducationalTime.class",
+          "sha256": "771e0cad8760c2d2ce0907593e3139a12a24d88b26b63624fabdecb9ca8830e3"
+        }
+      ],
+      "exact_single_api_class_matches_receipt": true,
+      "fixture_absent_recursive": true,
+      "shared_web_auto_configuration_entries": [
+        "BOOT-INF/lib/shared-web-0.1.0.jar!/ru/rutcampustrack/shared/web/autoconfigure/SharedWebAutoConfiguration.class"
+      ],
+      "shared_web_starter_filename_present": true,
+      "nested_archives_inspected": 174,
+      "maximum_nesting_depth": 1
+    },
+    {
+      "path": "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "b8cfb9ef42a531aecfb4cb701fe6151e78d25b302d5db0ad84dd23e2f582a997",
+      "bytes": 95835362,
+      "digest_matches_inspection_prelaunch_and_actual_receipt": true,
+      "start_class": "ru.rutcampustrack.attendance.AttendanceApplication",
+      "main_class_exists": true,
+      "embedded_git_commit": "10a213344673c84af4efc6b501a8084bbf5045be",
+      "embedded_commit_matches_frozen_source": true,
+      "educational_classes": [
+        {
+          "entry": "BOOT-INF/lib/shared-web-api-0.1.0.jar!/ru/rutcampustrack/shared/web/time/EducationalTime.class",
+          "sha256": "771e0cad8760c2d2ce0907593e3139a12a24d88b26b63624fabdecb9ca8830e3"
+        }
+      ],
+      "exact_single_api_class_matches_receipt": true,
+      "fixture_absent_recursive": true,
+      "shared_web_auto_configuration_entries": [
+        "BOOT-INF/lib/shared-web-0.1.0.jar!/ru/rutcampustrack/shared/web/autoconfigure/SharedWebAutoConfiguration.class"
+      ],
+      "shared_web_starter_filename_present": true,
+      "nested_archives_inspected": 197,
+      "maximum_nesting_depth": 1
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "784f1ec15c05d18b0ac9dcf876abd2f1d5c51cc0b9ba94626458ecc0bd4b6c23",
+      "bytes": 50003899,
+      "digest_matches_inspection_prelaunch_and_actual_receipt": true,
+      "start_class": "ru.rutcampustrack.mobilebff.MobileBffApplication",
+      "main_class_exists": true,
+      "embedded_git_commit": "10a213344673c84af4efc6b501a8084bbf5045be",
+      "embedded_commit_matches_frozen_source": true,
+      "educational_classes": [
+        {
+          "entry": "BOOT-INF/lib/shared-web-api-0.1.0.jar!/ru/rutcampustrack/shared/web/time/EducationalTime.class",
+          "sha256": "771e0cad8760c2d2ce0907593e3139a12a24d88b26b63624fabdecb9ca8830e3"
+        }
+      ],
+      "exact_single_api_class_matches_receipt": true,
+      "fixture_absent_recursive": true,
+      "shared_web_auto_configuration_entries": [],
+      "shared_web_starter_filename_present": false,
+      "nested_archives_inspected": 103,
+      "maximum_nesting_depth": 1
+    }
+  ],
+  "fixture": {
+    "path": "/workspace/rct-worktrees/client-runtime/build/e2e-clock/clock-fixture.jar",
+    "sha256": "517a1289709392596e774dde06c7144d748d45061e055dfabc185e9c21e6236a",
+    "bytes": 4140,
+    "classes": [
+      "ru/rutcampustrack/e2e/ClockInitializer.class",
+      "ru/rutcampustrack/e2e/FileClock.class"
+    ],
+    "hash_matches_actual_and_inspection_prelaunch": true,
+    "only_two_fixture_classes": true,
+    "distinct_from_stale049ab": true
+  },
+  "inspection_receipt": {
+    "session_id": 3534,
+    "terminal_chunk": "e52122",
+    "native_exits": [
+      0,
+      0
+    ],
+    "argv_sequence": [
+      [
+        "python3",
+        "tests/e2e/backend-clock/verify-jar-isolation.py",
+        "build/e2e-clock/clock-fixture.jar",
+        "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+        "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+        "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+        "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar"
+      ],
+      [
+        "python3",
+        "/workspace/scratch/rct-validation/client_runtime_developer/check-built-educational-class.py"
+      ]
+    ],
+    "cwd": "/workspace/rct-worktrees/client-runtime",
+    "prelaunch_utc": "2026-10-11T23:07:35.670093+00:00",
+    "terminal_utc": "2026-10-11T23:07:38.645533+00:00",
+    "log_sha256": "d71bed4e39e2567c12c0b5458a264d8a31af259aa4abe61eee545a9845ab14b6",
+    "log_hash_matches_receipt": true,
+    "inspector_prelaunch_source_hash_matches": {
+      "tests/e2e/backend-clock/verify-jar-isolation.py": true,
+      "/workspace/scratch/rct-validation/client_runtime_developer/check-built-educational-class.py": true
+    }
+  },
+  "verification_kind": "Reviewer own recursive ZIP metadata/class-byte hashing only; no Java/JVM/Gradle/apps/process execution.",
+  "limit": "Embedded Git commit and captured source hashes bind these exact built artifacts to10a; no proof of root-integrated runtime graph or client/security/geo/D005/CC03 behavior."
+}

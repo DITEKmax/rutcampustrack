@@ -1,0 +1,13 @@
+{
+  "state": "REAPED",
+  "child_pid": 238375,
+  "group": 238375,
+  "members_including_Z": [],
+  "reason": "SUPERVISION_ERROR",
+  "signal_count": 0,
+  "utc": "2026-10-12T08:00:46.538784+00:00",
+  "lease": "NP01_BROKER1",
+  "observer_pid": 238338,
+  "disk_free": 8347488256,
+  "shared_memory_current": 4724916224
+}

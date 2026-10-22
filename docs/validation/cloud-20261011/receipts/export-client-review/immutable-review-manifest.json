@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-11T23:04:12.623454+00:00",
+  "directory": "/workspace/scratch/rct-validation/export_client_review",
+  "reviewRevision": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "base": "21587695782fc5da3cee9c58589f9bed652e53e6",
+  "endingObservedHead": "f2631845a04054befe50f3a2d4196a90beb77956",
+  "all27ClientBytesStillFrozen": true,
+  "sourceVerdict": "CHANGES_REQUESTED",
+  "testQualityVerdict": "CHANGES_REQUESTED",
+  "runtimeVerdict": "NOT_RUN",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedEffort": "xhigh",
+  "actualModel": "UNKNOWN",
+  "actualEffort": "UNKNOWN",
+  "readOnlyProduct": true,
+  "onlyWrites": "own scratch directory",
+  "artifactCount": 8,
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 878,
+      "sha256": "ae41c08abece59c64cff695208a89bf85ef870749c7c17657e1dec006095d807"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 14655,
+      "sha256": "041e44e4d0366b068bedd5197ee92fdaff94b695f6d1e7378c081680734354ff"
+    },
+    {
+      "path": "author-evidence-verification.json",
+      "bytes": 9793,
+      "sha256": "9bfa99bd2ca9fba5d3bb9edf6742017db800e683883f45866e1093a1f39f3f12"
+    },
+    {
+      "path": "contract-compatibility.json",
+      "bytes": 2253,
+      "sha256": "28bacea5ebe6d4c94938e7a97d97c51015a57d980279dd612ced629a06d5e9f8"
+    },
+    {
+      "path": "ending-source-check.json",
+      "bytes": 654,
+      "sha256": "8e27bd2fb8dbf4a1cafe69a9151f2a4348fb27def8d630690ae7ae6bf91589e1"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 3756,
+      "sha256": "45878a7bc40086c28ee0a5a2cf6c3f9e5ccafab817a01321c0b48b4b3051fcf6"
+    },
+    {
+      "path": "source-equivalence.json",
+      "bytes": 12517,
+      "sha256": "add03e74134203ee771a02d33f8f37b27ea0d6b1510a1a6078fb34c3c6d9222f"
+    },
+    {
+      "path": "source-ledger.json",
+      "bytes": 25545,
+      "sha256": "dcb876463ce250db5048586a02e7d4d0d6489bdc2779a12ad6bb73975656640e"
+    }
+  ],
+  "immutablePolicy": "new correction/recheck artifacts use a new directory; do not overwrite this receipt"
+}

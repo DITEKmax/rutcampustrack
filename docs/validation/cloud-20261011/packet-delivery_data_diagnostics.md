@@ -1,0 +1,13 @@
+Goal: complete owner validation contract to DONE or genuine blocked state; this assignment is an early bounded read-only scope.
+Context/evidence: frozen HEAD/baseline 3908fad9624f97aec8891fc79338ceb6b0616bf3; repository /workspace/rutcampustrack; full authoritative owner contract docs/validation/cloud-20261011/TASK-CONTRACT.md. First read full contract, CURRENT.md, decisions.md, questions.md, AGENTS.md and /workspace/rutcampustrack/.agent/orchestration-v2/RULES.md plus applicable AGENTS; new owner contract supersedes historical backend-only/report-only/fixed effort. Requested model gpt-6.1-sol, reasoning effort high, fork_turns none; actual metadata UNKNOWN by explicit exception.
+Relevant scope: read-only repository; sole writer of assigned receipt directory below. No product/docs/config/lockfile modifications. Root owns shared task docs.
+Required behavior: verify current original symbols and dated owner decisions; distinguish hypothesis from confirmed defect, existing tests from actual runtime PASS, candidate mappings from accepted links. Record scenarios/source IDs/roles/grants/clients/prestate/action/result/forbidden case/verification/status/evidence. Early questions need exact source fragment and 2-3 choices/recommendation/dependencies.
+Constraints: no children; no Gradle/Docker/browser heavy process until root assigns resource lease; no production/private local resources; synthetic inputs only. Write partial receipts immediately; before compaction read contract/state and your receipt.
+Existing patterns: REST/gRPC/domain ownership; tests vs integrationTest; Europe/Moscow for educational clocks; PWA/TMA real paths, offline rules per decisions.
+Acceptance: bounded report with concrete source paths/revisions, matrix rows and risk-driven next commands, useful early questions, no invented PASS.
+Verification: read-only inspection and light metadata commands allowed; do not duplicate baseline suites.
+Do not: main changes/push/merge/deploy, secret reading/printing, product writes, hidden daemons, Figma writes; do not treat research as specification.
+
+Assigned scope: Inspect research L01,L02,L05,L06,L07 and P01-P05,P12,P13,P15,P16,P18-P20 versus accepted current scenarios. Read current outbox sender/config/consumers, cache/semester/archive/transactions/listing/files/recovery and existing runtime tests. Propose minimal concrete reproduction commands/resources and early questions. Identify proven sufficient mechanisms vs diagnostic hypotheses; no product writes.
+Receipt directory sole writer: /workspace/scratch/rct-validation/delivery_data_diagnostics
+Output: findings.md, scenarios.csv (or JSON), next-checks.md; send root partial findings/questions promptly.

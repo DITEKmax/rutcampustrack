@@ -1,0 +1,30 @@
+{
+  "state": "SOURCE_RESOLUTION_COMPLETE_IMPLEMENTATION_PACKET_READY",
+  "np01": "GAP",
+  "cleanup": "ACCEPTED_REQUIRED_GAP_SOURCE_ONLY_NO_CURRENT_CROSS_LAYER_PROOF",
+  "productQuestions": [],
+  "roleResolution": "Anyactive durableown grant eligible; no studentonlywhitelist/defaultADMINsessionactivation",
+  "existingVersionInventory": "No credential/bindingversion; roles_version grant/adminonly;session_version persession;updated_at notgeneration",
+  "technicalProposal": "Add2monotonicusers columns+metadata-onlydurablecardtable inexistingAcademicPG; exact2protectedRPCs andpasswordchanged explicitv2; nonsecretplaceholderthenpersistIDbeforecredentialedit",
+  "storageCounterexample": "ProdRedisallkeys-lru; existingrequest7day/OTPTTLtrackers insufficientassolecredentialcardauthority",
+  "sourceRows": 29,
+  "plannedCases": 19,
+  "scope": "Ownnew scratchonly; noproduction/source/commonconfig/proto/manifest/matrixwrites",
+  "runtimeRuns": 0,
+  "children": 0,
+  "parentFamilyPromotions": 0,
+  "remainingDependencies": [
+    "Rootcommoncontract/ownerfreeze",
+    "SoleAPI/proto/Flyway/generatedwriter assignment",
+    "Disjointbot/Academicnewdomain/Authproducerwriter assignment",
+    "Configsettings/narrownonglobalgeneratorhandoff",
+    "SyntheticTLS/capacity grant foractualproof",
+    "Independentsecurity/concurrencyreview of cohesiveimplementation"
+  ],
+  "limits": [
+    "Current bot changesnotimplemented",
+    "Legacyuntrackedcards cannotbereconstructed",
+    "No proofliveTelegram/providerage-windowsemantics",
+    "No exactlyonce/zeroraceclaim untilactualorderedrender/cleanuprecoverycontrols pass"
+  ]
+}

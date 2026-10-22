@@ -1,0 +1,144 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "pg02",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 1,
+  "disk_aborted": false,
+  "seconds": 46.821,
+  "counts": {
+    "tests": 19,
+    "failures": 19,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[1] role=student",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[2] role=teacher",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[3] role=headman",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[4] role=FULL",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[5] role=LIMITED",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "olderEventLeavesLaterInitialGenerationAndForeignAccountCardUntouched()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "changedPasswordNeverExposesLeftoverInitialOrLoginFromDedicatedRead()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "archiveAndFinalDeleteKeepOriginalExactCleanupIdentity()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[1] state=IN_FLIGHT",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[2] state=UNCERTAIN",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "credentialRollbackRestoresGenerationAndTrackerInvalidation()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "cursorPagesIncludeEveryUnresolvedInvalidatedCard()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "orphanHeadmanAndRevokedOnlyRestoreCannotGrantOwnInitial()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "bindingAndGrantLossInvalidateKnownCardWithoutNewCredentials()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "simultaneousRegistrationHasOneRenderPermitAndMetadataOnlyDurability()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "privateForeignAndUnknownReadModesFailClosed()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "eventBeforeRegistrationAndRebindingFenceOldSnapshots()",
+      "status": "FAIL",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException"
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 101193,
+      "sha256": "8da6790601eef63d8a1fcb195a347f29b7540cc4d6c9b877339c2fbbb9b5968e"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "7481698ad1dc5ac2c78fe65056f84980df3c123d30fc4bf668e5b29c5d5ee012",
+  "free_bytes": 9456971776,
+  "utc": "2026-10-12T02:58:47Z"
+}

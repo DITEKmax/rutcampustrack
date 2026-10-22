@@ -7,8 +7,17 @@ describe('CampusMapClient generation boundary', () => {
     let generation = 1
     let releaseBody: ((value: Blob) => void) | undefined
     const response = new Response('image', { headers: { 'Content-Type': 'image/png' } })
-    vi.spyOn(response, 'blob').mockImplementation(() => new Promise(resolve => { releaseBody = resolve }))
-    const client = new CampusMapClient({ accessToken: () => 'synthetic', currentGeneration: () => generation, fetcher: async () => response })
+    vi.spyOn(response, 'blob').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseBody = resolve
+        }),
+    )
+    const client = new CampusMapClient({
+      accessToken: () => 'synthetic',
+      currentGeneration: () => generation,
+      fetcher: async () => response,
+    })
     const pending = client.downloadAsset('20', '200', '1', 'png', 'asset-png')
     await Promise.resolve()
     await Promise.resolve()
@@ -17,17 +26,26 @@ describe('CampusMapClient generation boundary', () => {
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })
   it('rejects empty or mismatched canonical PNG bytes', async () => {
-    for (const blob of [new Blob([], { type: 'image/png' }), new Blob(['<svg/>'], { type: 'image/svg+xml' })]) {
-      const client = new CampusMapClient({ accessToken: () => 'synthetic', fetcher: async () => new Response(blob) })
-      await expect(client.downloadAsset('20', '200', '1', 'png', 'asset-png')).rejects.toThrow('некорректный файл')
+    for (const blob of [
+      new Blob([], { type: 'image/png' }),
+      new Blob(['<svg/>'], { type: 'image/svg+xml' }),
+    ]) {
+      const client = new CampusMapClient({
+        accessToken: () => 'synthetic',
+        fetcher: async () => new Response(blob),
+      })
+      await expect(client.downloadAsset('20', '200', '1', 'png', 'asset-png')).rejects.toThrow(Error)
     }
   })
   it('rejects an asset response that crosses the authenticated owner generation', async () => {
     let generation = 4
     let releaseResponse: ((response: Response) => void) | undefined
-    const fetcher = vi.fn(() => new Promise<Response>((resolve) => {
-      releaseResponse = resolve
-    }))
+    const fetcher = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          releaseResponse = resolve
+        }),
+    )
     const client = new CampusMapClient({
       accessToken: () => 'token-a',
       currentGeneration: () => generation,
@@ -36,10 +54,12 @@ describe('CampusMapClient generation boundary', () => {
 
     const pending = client.downloadAsset('20', '200', '1', 'svg', 'asset-1')
     generation = 5
-    releaseResponse?.(new Response(new Blob(['<svg />']), {
-      status: 200,
-      headers: { 'Content-Type': 'image/svg+xml' },
-    }))
+    releaseResponse?.(
+      new Response(new Blob(['<svg />']), {
+        status: 200,
+        headers: { 'Content-Type': 'image/svg+xml' },
+      }),
+    )
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(fetcher).toHaveBeenCalledTimes(1)
@@ -50,7 +70,12 @@ describe('AdminMapClient destructive operation boundary', () => {
   it('does not replay a non-idempotent creation after 401 or silently continue with a refreshed session', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => new Response('{}', { status: 401 }))
     const onUnauthorized = vi.fn(async () => {})
-    const client = new AdminMapClient({ accessToken: () => null, currentGeneration: () => 1, fetcher, onUnauthorized })
+    const client = new AdminMapClient({
+      accessToken: () => null,
+      currentGeneration: () => 1,
+      fetcher,
+      onUnauthorized,
+    })
     await expect(client.createBuilding('2')).rejects.toBeInstanceOf(MapApiError)
     expect(fetcher).toHaveBeenCalledTimes(1)
     expect(onUnauthorized).not.toHaveBeenCalled()
@@ -59,9 +84,20 @@ describe('AdminMapClient destructive operation boundary', () => {
   it('sends deletion once to the captured ID and does not refresh or replay a 401', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => new Response('{}', { status: 401 }))
     const onUnauthorized = vi.fn(async () => {})
-    const client = new AdminMapClient({ accessToken: () => 'token-a', currentGeneration: () => 1, fetcher, onUnauthorized })
-    const payload = { operationId: 'operation-a', previewDigest: 'a'.repeat(64), password: 'test-password' }
-    await expect(client.deleteInventory('FLOOR', '200', payload)).rejects.toBeInstanceOf(MapApiError)
+    const client = new AdminMapClient({
+      accessToken: () => 'token-a',
+      currentGeneration: () => 1,
+      fetcher,
+      onUnauthorized,
+    })
+    const payload = {
+      operationId: 'operation-a',
+      previewDigest: 'a'.repeat(64),
+      password: 'test-password',
+    }
+    await expect(client.deleteInventory('FLOOR', '200', payload)).rejects.toBeInstanceOf(
+      MapApiError,
+    )
     expect(fetcher).toHaveBeenCalledTimes(1)
     expect(onUnauthorized).not.toHaveBeenCalled()
     expect(fetcher.mock.calls[0]?.[0]).toBe('/api/academic/map/floors/200/deletion')
@@ -72,9 +108,15 @@ describe('AdminMapClient destructive operation boundary', () => {
     let generation = 1
     let releaseBody: ((value: unknown) => void) | undefined
     const response = new Response('{}')
-    vi.spyOn(response, 'json').mockImplementation(() => new Promise((resolve) => { releaseBody = resolve }))
+    vi.spyOn(response, 'json').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseBody = resolve
+        }),
+    )
     const client = new AdminMapClient({
-      accessToken: () => 'token-a', currentGeneration: () => generation,
+      accessToken: () => 'token-a',
+      currentGeneration: () => generation,
       fetcher: vi.fn(async () => response),
     })
     const pending = client.deletionPreview('FLOOR', '200')
@@ -89,8 +131,12 @@ describe('AdminMapClient destructive operation boundary', () => {
     let generation = 1
     const fetcher = vi.fn<typeof fetch>(async () => new Response('{}', { status: 401 }))
     const client = new AdminMapClient({
-      accessToken: () => 'token-a', currentGeneration: () => generation, fetcher,
-      onUnauthorized: async () => { generation = 2 },
+      accessToken: () => 'token-a',
+      currentGeneration: () => generation,
+      fetcher,
+      onUnauthorized: async () => {
+        generation = 2
+      },
     })
     await expect(client.listBuildings()).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(fetcher).toHaveBeenCalledTimes(1)
@@ -98,43 +144,124 @@ describe('AdminMapClient destructive operation boundary', () => {
 })
 
 describe('AdminMapClient atomic plan publication', () => {
-  const slot=(format: 'png'|'svg')=>({format,state:'ready',id:'asset',bytes:3,contentType:format==='png'?'image/png':'image/svg+xml'})
-  const plan = {buildingId:'20',floorId:'200',version:'1',catalogRevision:'r1',png:slot('png'),svg:slot('svg')}
-  const file = new File(['map'], 'plan.png', {type:'image/png'})
+  const slot = (format: 'png' | 'svg') => ({
+    format,
+    state: 'ready',
+    id: 'asset',
+    bytes: 3,
+    contentType: format === 'png' ? 'image/png' : 'image/svg+xml',
+  })
+  const plan = {
+    buildingId: '20',
+    floorId: '200',
+    version: '1',
+    catalogRevision: 'r1',
+    png: slot('png'),
+    svg: slot('svg'),
+  }
+  const file = new File(['map'], 'plan.png', { type: 'image/png' })
   it('preserves exact 64-digit codes and multipart fields while requiring the frozen ACK', async () => {
-    const fetcher=vi.fn<typeof fetch>(async()=>Response.json({status:'created',buildingCreated:true,floorCreated:true,plan},{status:201}))
-    const client=new AdminMapClient({accessToken:()=>null,fetcher})
-    expect(await client.uploadPlan({buildingCode:'9'.repeat(64),floorCode:'2',png:file})).toMatchObject({status:'created'})
-    const [url,init]=fetcher.mock.calls[0]!;expect(url).toBe('/api/academic/map/plans')
-    const form=init!.body as FormData;expect(form.get('buildingCode')).toBe('9'.repeat(64));expect(form.get('floorCode')).toBe('2');expect(form.get('label')).toBeNull();expect(form.get('png')).toBeInstanceOf(File)
+    const fetcher = vi.fn<typeof fetch>(async () =>
+      Response.json(
+        { status: 'created', buildingCreated: true, floorCreated: true, plan },
+        { status: 201 },
+      ),
+    )
+    const client = new AdminMapClient({ accessToken: () => null, fetcher })
+    expect(
+      await client.uploadPlan({ buildingCode: '9'.repeat(64), floorCode: '2', png: file }),
+    ).toMatchObject({ status: 'created' })
+    const [url, init] = fetcher.mock.calls[0]!
+    expect(url).toBe('/api/academic/map/plans')
+    const form = init!.body as FormData
+    expect(form.get('buildingCode')).toBe('9'.repeat(64))
+    expect(form.get('floorCode')).toBe('2')
+    expect(form.get('label')).toBeNull()
+    expect(form.get('png')).toBeInstanceOf(File)
     expect(new Headers(init!.headers).has('Content-Type')).toBe(false)
   })
-  it('rejects spaces, signs, leading zeroes, exponent, Unicode digits and overlength before fetch',async()=>{
-    const fetcher=vi.fn<typeof fetch>();const client=new AdminMapClient({accessToken:()=>null,fetcher})
-    for(const code of [' 1','1 ','+1','-1','01','1e2','1.0','١','９','9'.repeat(65),'0',''])await expect(client.uploadPlan({buildingCode:code,floorCode:'1',png:file})).rejects.toBeInstanceOf(TypeError)
-    await expect(client.uploadPlan({buildingCode:'1',floorCode:'1'})).rejects.toBeInstanceOf(TypeError)
-    await expect(client.uploadPlan({buildingCode:'1',floorCode:'1',png:file,label:'x'.repeat(256)})).rejects.toBeInstanceOf(TypeError)
+  it('rejects spaces, signs, leading zeroes, exponent, Unicode digits and overlength before fetch', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+    const client = new AdminMapClient({ accessToken: () => null, fetcher })
+    for (const code of [
+      ' 1',
+      '1 ',
+      '+1',
+      '-1',
+      '01',
+      '1e2',
+      '1.0',
+      '١',
+      '９',
+      '9'.repeat(65),
+      '0',
+      '',
+    ])
+      await expect(
+        client.uploadPlan({ buildingCode: code, floorCode: '1', png: file }),
+      ).rejects.toBeInstanceOf(TypeError)
+    await expect(client.uploadPlan({ buildingCode: '1', floorCode: '1' })).rejects.toBeInstanceOf(
+      TypeError,
+    )
+    await expect(
+      client.uploadPlan({ buildingCode: '1', floorCode: '1', png: file, label: 'x'.repeat(256) }),
+    ).rejects.toBeInstanceOf(TypeError)
     expect(fetcher).not.toHaveBeenCalled()
   })
-  it('rejects malformed/status-mismatched acknowledgements without replay',async()=>{
-    for(const body of [{status:'created',buildingCreated:false,floorCreated:false,plan},{status:'replaced',buildingCreated:true,floorCreated:true,plan},{status:'replaced',buildingCreated:false,floorCreated:false,plan:{...plan,png:{}}},{status:'other',plan},{}]){
-      const fetcher=vi.fn<typeof fetch>(async()=>Response.json(body,{status:200}));const client=new AdminMapClient({accessToken:()=>null,fetcher})
-      await expect(client.uploadPlan({buildingCode:'1',floorCode:'1',png:file})).rejects.toBeInstanceOf(TypeError);expect(fetcher).toHaveBeenCalledTimes(1)
+  it('rejects malformed/status-mismatched acknowledgements without replay', async () => {
+    for (const body of [
+      { status: 'created', buildingCreated: false, floorCreated: false, plan },
+      { status: 'replaced', buildingCreated: true, floorCreated: true, plan },
+      {
+        status: 'replaced',
+        buildingCreated: false,
+        floorCreated: false,
+        plan: { ...plan, png: {} },
+      },
+      { status: 'other', plan },
+      {},
+    ]) {
+      const fetcher = vi.fn<typeof fetch>(async () => Response.json(body, { status: 200 }))
+      const client = new AdminMapClient({ accessToken: () => null, fetcher })
+      await expect(
+        client.uploadPlan({ buildingCode: '1', floorCode: '1', png: file }),
+      ).rejects.toBeInstanceOf(TypeError)
+      expect(fetcher).toHaveBeenCalledTimes(1)
     }
   })
-  it('rejects upload JSON completed after generation changes',async()=>{
-    let generation=1;let release!:(value:unknown)=>void
-    const response=new Response('{}',{status:201});response.json=()=>new Promise(resolve=>{release=resolve})
-    const client=new AdminMapClient({accessToken:()=>null,currentGeneration:()=>generation,fetcher:async()=>response})
-    const pending=client.uploadPlan({buildingCode:'1',floorCode:'1',png:file});await Promise.resolve();await Promise.resolve()
-    generation=2;release({status:'created',buildingCreated:false,floorCreated:false,plan})
+  it('rejects upload JSON completed after generation changes', async () => {
+    let generation = 1
+    let release!: (value: unknown) => void
+    const response = new Response('{}', { status: 201 })
+    response.json = () =>
+      new Promise((resolve) => {
+        release = resolve
+      })
+    const client = new AdminMapClient({
+      accessToken: () => null,
+      currentGeneration: () => generation,
+      fetcher: async () => response,
+    })
+    const pending = client.uploadPlan({ buildingCode: '1', floorCode: '1', png: file })
+    await Promise.resolve()
+    await Promise.resolve()
+    generation = 2
+    release({ status: 'created', buildingCreated: false, floorCreated: false, plan })
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })
-  it('never refreshes/replays upload after 401 or a lost ACK',async()=>{
-    const onUnauthorized=vi.fn(async()=>{})
-    for(const fetcher of [vi.fn<typeof fetch>(async()=>new Response('{}',{status:401})),vi.fn<typeof fetch>(async()=>{throw new TypeError('lost ACK')})]){
-      const client=new AdminMapClient({accessToken:()=>null,fetcher,onUnauthorized})
-      await expect(client.uploadPlan({buildingCode:'1',floorCode:'1',png:file})).rejects.toThrow();expect(fetcher).toHaveBeenCalledTimes(1)
+  it('never refreshes/replays upload after 401 or a lost ACK', async () => {
+    const onUnauthorized = vi.fn(async () => {})
+    for (const fetcher of [
+      vi.fn<typeof fetch>(async () => new Response('{}', { status: 401 })),
+      vi.fn<typeof fetch>(async () => {
+        throw new TypeError('lost ACK')
+      }),
+    ]) {
+      const client = new AdminMapClient({ accessToken: () => null, fetcher, onUnauthorized })
+      await expect(
+        client.uploadPlan({ buildingCode: '1', floorCode: '1', png: file }),
+      ).rejects.toThrow()
+      expect(fetcher).toHaveBeenCalledTimes(1)
     }
     expect(onUnauthorized).not.toHaveBeenCalled()
   })

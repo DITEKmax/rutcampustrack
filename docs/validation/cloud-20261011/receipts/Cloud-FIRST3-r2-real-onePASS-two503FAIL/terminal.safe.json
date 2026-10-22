@@ -1,0 +1,109 @@
+{
+  "direct_pid": 414260,
+  "native_exit": 1,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 414260,
+      "start_ticks": 10185602
+    },
+    {
+      "pid": 414291,
+      "start_ticks": 10185925
+    },
+    {
+      "pid": 414304,
+      "start_ticks": 10186045
+    },
+    {
+      "pid": 414306,
+      "start_ticks": 10186051
+    },
+    {
+      "pid": 414307,
+      "start_ticks": 10186052
+    },
+    {
+      "pid": 414323,
+      "start_ticks": 10186059
+    },
+    {
+      "pid": 414378,
+      "start_ticks": 10186125
+    },
+    {
+      "pid": 414384,
+      "start_ticks": 10186134
+    },
+    {
+      "pid": 414794,
+      "start_ticks": 10188625
+    },
+    {
+      "pid": 415031,
+      "start_ticks": 10190315
+    },
+    {
+      "pid": 415044,
+      "start_ticks": 10190480
+    },
+    {
+      "pid": 415046,
+      "start_ticks": 10190486
+    },
+    {
+      "pid": 415047,
+      "start_ticks": 10190486
+    },
+    {
+      "pid": 415062,
+      "start_ticks": 10190496
+    },
+    {
+      "pid": 415077,
+      "start_ticks": 10190531
+    },
+    {
+      "pid": 415090,
+      "start_ticks": 10190541
+    }
+  ],
+  "adopted_waitpid_receipts": [
+    {
+      "pid": 414307,
+      "start_ticks": 10186052,
+      "native_exit": 0
+    },
+    {
+      "pid": 414306,
+      "start_ticks": 10186051,
+      "native_exit": 0
+    },
+    {
+      "pid": 415047,
+      "start_ticks": 10190486,
+      "native_exit": 0
+    },
+    {
+      "pid": 415046,
+      "start_ticks": 10190486,
+      "native_exit": 0
+    }
+  ],
+  "supervision_error_type": null,
+  "phase_success": false,
+  "peaks": {
+    "owned_rss_bytes": 870899712,
+    "run_allocated_bytes": 786432,
+    "shared_memory_bytes": 11899580416
+  },
+  "private_tmp_removed": true,
+  "case_count": 3,
+  "project": "chromium",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout_sha": "18451c9dacc08625f038313ef2d62e36b3ba6423"
+}

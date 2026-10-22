@@ -1,0 +1,38 @@
+# Goal
+Produce genuine CURRENT eight production BootJARs and production PWA/TMA bundles under ARTIFACT_BUILD1 BUILD_ONLY. Complete; no application/browser/runtime acceptance or staging authorization inferred.
+
+# Context/evidence
+FULL root contract/status/decisions/questions/resources restored, then packet-current-client-artifacts. Sole fresh artifact WT `/workspace/rct-worktrees/client-current-artifacts`, branch codex/client-current-artifacts-20261012, frozen root908fc8c27be82e4a0d7db7bf4d7b2c4a62225916. Baseline3908; remote25668/draftPR2 unchanged by this author. Requested Sol6.1/high; actual UNKNOWN. Old eec3 production artifacts and original29+Renderer6+guard13 seals remain immutable and byte-exact.
+
+# Relevant scope
+Sole writer NEW scratch `/workspace/scratch/rct-validation/current_client_artifacts` and ignored build/dist/own dependency namespace outputs in assigned WT. No tracked product/config/lock/generator/test/document changes. Full source-input manifest7350 SHA/bytes/modes preserved before/after. Created source plan, ordinary bounded build runner, safe phase/artifact/source receipts, read-only payload/capacity proposals and this handoff. Raw build logs retained private600 and excluded from the safe transfer manifest. Artifact binaries remain at their exact build paths listed in eight-production-jars/production-vue-bundles; no duplicate JAR copy allocation.
+
+# Required behavior
+Actual normal wrapper bootJar tasks for Auth, Academic, Schedule, Attendance, mobile BFF, Gateway, NotificationWeb and Renderer: offline cached dependencies, no-daemon/no-parallel/max-workers1, Gradle heap768MiB/metaspace256MiB, no test/integrationTest/fixture/extraction tasks. Native0. Existing normal npm build scripts for PWA and TMA each run vue-tsc --noEmit then vite build, VITE_MOBILE_FIXTURE_MODE=false and public bases/app/ and/mini-app/. Both native0; PWA service worker/precache/version/manifest outputs present. No mocktransport/UI source changes or new web.
+
+Current frontend lock and four package manifests are byte-identical to the old installed source. Reused readonly pinned third-party package directories through a NEW thin node_modules namespace; own.bin/current@rct workspace links ensure current project/core source, and own Vite temp metadata stays in this WT. All8272 old installed file SHA/modes/symlink targets and pathset remained unchanged; no package installation/lock edits. Exact current TS path aliases and Vite mobile-core aliases were opened before reuse.
+
+All eight built JARs inspected by ZIP read only: full SHA/bytes/allocated blocks/mode, CRC all members, unfolded Main-Class/Start-Class, current loader/main class, classpath/layer indices and recursive absence of teaching-fixture classes in every nested dependency. Existing source verifier require_fixture_absent reused unchanged. Seven apps embed exact908 git.commit.id. Renderer is excluded from the canonical seven-app git.properties generator; its producer is the actual fresh boot8 build and7350 source identity, not a nonexistent embedded stamp. First inspection falsely assumed all8 embed git.properties; saved inspection-attempt1 and corrected only own inspector. No product/source fix or build repetition was required.
+
+# Constraints
+Fresh preflight source WT allocated409,034,752B/free8,159,346,688B; shared cgroup memory4.09GB/max17.179GB and cpu.max4CPU. Build monitor enforced4GiB free floor,1GiB shared-memory reserve, conservative new-own source/build/output ceiling1.5GiB before/every2s/after each phase. Selected proxy/public CA environment only; no parent Java/Spring/unrelated credential copy. Source checksum before/after each phase; child/stdout/stderr raw log private600, user output status scalars only. All build process groups empty at phase end; parent/phase PIDs terminal.
+
+Actual JDK/Node executable/version/SHA are recorded in artifact-inspection-result. Host Debian OpenJDK21 differs from production image Temurin; Node24.19 build differs from Node24.14 Docker builder. This is the authorized host build of unchanged genuine production inputs, with those provenance qualifications. No production-container/JDK/UID/isolation/runtime PASS.
+
+# Existing patterns
+Production JarLauncher and source main classes retained; four EducationalTime consumers get their external fixture only in a later approved teaching lane. All current production JARs have no fixture. Renderer future full standard-layer/app read-only overlay remains preferred: current loader/manifest/classes/libraries/indices mask stale image payload, while genuine retained native image/JRE/LibreOffice/Poppler/fonts/USER app/entrypoint stay. No propertyLoader/clock/TLS/security adaptation.
+
+# Acceptance criteria
+Eight CURRENT JARs + two production Vue dist native0/source identity/artifact metadata ready. Source7350 SHA/modes exact; old dependencies/source/artifacts/seals retained. Current JARs total636,913,341 logical bytes/636,960,768 allocated bytes. Latest own WT1,239,162,880B + scratch3,944,448B =1,243,107,328B (<1,610,612,736B cap; final seal may add small safe metadata). Free7,326,609,408B >4,294,967,296B floor; shared memory4.546GB. No product scenario or actual client PASS claimed.
+
+# Verification / exact next proposal
+Read-only ZIP SHA+mode union across all8 current payloads:166,383,274 distinct logical bytes,172,953,600 bytes rounded to4KiB files. This is NOT measured extraction allocation. Future ordered layers: dependencies → spring-boot-loader → snapshot-dependencies → application, CONTENTS union, exact mapped current JAR member bytes/modes/pathset, no extras/symlinks/ambiguous collisions; sameSHA+mode hardlinks only, all roots frozen/COW before future writes. A provisional192MiB staging reserve allows directory/receipt overhead; actual allocation after separate root grant is mandatory. No extraction/staging/key/TLS/app/browser/Docker allocation performed.
+
+Conservative next-stage requirement:4GiB floor + current9-container logical copy estimate2,707,241,745B +1GiB writable/data reserve +192MiB staging ≈8,277,277,457B pre-staging free. Current free is about950,668,049B short of that conservative plan. Logical image/payload estimates are not actual VFS runtime allocation. Root may separately authorize measured staging within remaining~367MB own allocation cap, but future data/app startup capacity is NOT established.
+
+Readonly exact frozen-source duplicate proposal494 files/303,800,320 currently allocated bytes, compared against retained readonly eec3 source snapshot; no dedup mutation/grant assumed. Smaller presentation15/179,781,632B and archive4/8,384,512B proposals overlap this superset and must NOT be summed. Any root-selected physical dedup must preserve every path/SHA/mode/source/JAR/evidence, freeze both producers and enforce atomic COW before any later write. These candidates alone do not close the conservative runtime shortfall. No global prune/foreign active source/output cleanup.
+
+Root next: accept safe current artifact/source seal → exact staging/key/resource grant and actual staging measurement → reviewed current8 payload/current7 host specs/private env/fixture/TLS/routes → remeasure adequate runtime capacity/UID/cgroup limits → separate actual data/apps/browser grant and genuine finite client/export/recovery matrix. Artifact build lease can release now; no author process or application remains active.
+
+# Do not
+No app/JAR product startup, extraction/fullstaging, data/container/network creation, image builds/pulls, keys/TLS generation, browser, production/private bot/old key access, source/config/lock mutation, original seal rewrite, main/push/deploy, global prune or child agents/model fallback. Preserve all historical/current bodies and source/evidence.

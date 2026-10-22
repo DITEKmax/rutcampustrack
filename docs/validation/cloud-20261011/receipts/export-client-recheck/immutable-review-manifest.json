@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-11T23:24:26.049097+00:00",
+  "directory": "/workspace/scratch/rct-validation/export_client_review/ecr-recheck",
+  "reviewRevision": "a7c86e1bb180c209f0a0c65680040f2ab40d79f1",
+  "originalReviewRevision": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "originalManifestSHA256": "7fda0f35f1a10de83657563d0f21437bb6a9250c3a9ee016217484e2b3f9c6c2",
+  "originalEightPayloadsPreserved": true,
+  "sourceVerdict": "APPROVE",
+  "testQualityVerdict": "APPROVE",
+  "browserBackendNativeVerdict": "NOT_RUN",
+  "scope": "six ECR01-03 correction paths and relevant effects only",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedEffort": "xhigh",
+  "actualModel": "UNKNOWN",
+  "actualEffort": "UNKNOWN",
+  "reviewerOnlyWrites": "/workspace/scratch/rct-validation/export_client_review/ecr-recheck",
+  "reviewerProductRuntimeMutationsChildren": false,
+  "endingObservedHead": "12dcbcf4808f3d63ce1f33d70b6ee266117e91d4",
+  "endingSixClientSourcesFrozen": true,
+  "artifactCount": 6,
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 937,
+      "sha256": "fe63095e6fa7fa87b79a8fba4d8af60f4508a9593cdd3a11eb5bd78001e154fd"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 9963,
+      "sha256": "77030905c41eeb23237cf1ea9e64427281aa3fd6b4b64faf4dafe5f0652c162d"
+    },
+    {
+      "path": "author-evidence-verification.json",
+      "bytes": 32972,
+      "sha256": "145da72da7126ec6cf077e316757b92041dc10553e3c40b9e77bf9ebcae76d5d"
+    },
+    {
+      "path": "finding-statuses.json",
+      "bytes": 2292,
+      "sha256": "90d40cc4111b5c48e826e89dc08c5d93e507ecfbd491823559952d8d32b359f9"
+    },
+    {
+      "path": "source-equivalence.json",
+      "bytes": 6196,
+      "sha256": "be3976333d6aed55cb02691c4d43cdf5fcfa60f89d9c7dc9a30d7d862528d97c"
+    },
+    {
+      "path": "source-ledger.json",
+      "bytes": 8914,
+      "sha256": "a20489d664e58be8130b7aaa5a51d1930db0e3b1c09faddb65cc342ab1b12d27"
+    }
+  ],
+  "immutablePolicy": "future correction receipts use a new directory; do not overwrite this receipt"
+}

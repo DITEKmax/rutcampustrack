@@ -1,0 +1,9 @@
+[
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "previous_sha256": "8660f1e49daa90dcfb4319ab9b4aa6634f2acf76021878c18bb09a38bfd1e05e",
+    "current_sha256": "bf44a550a966709fb266131bb1639c3ddb501f0b292df9c9c8b09eef3ed3e18a",
+    "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+    "status": "PASSED"
+  }
+]

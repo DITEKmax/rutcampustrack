@@ -1,0 +1,95 @@
+{
+  "cache": [
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/gradlew",
+      "exists": true,
+      "bytes": 8763,
+      "mode": "0o600",
+      "executable": false,
+      "sha256": "c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/gradle/wrapper/gradle-wrapper.jar",
+      "exists": true,
+      "bytes": 43583,
+      "mode": "0o600",
+      "executable": false,
+      "sha256": "2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046",
+      "members": 33,
+      "authJdbcMainPresent": false,
+      "bootClasses": false
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/jdk21/bin/java",
+      "exists": true,
+      "bytes": 12328,
+      "mode": "0o755",
+      "executable": true,
+      "sha256": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d"
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/jdk21/bin/javac",
+      "exists": true,
+      "bytes": 12424,
+      "mode": "0o755",
+      "executable": true,
+      "sha256": "55859b80e7a9c4c4736be19ad3addeb35112ca6d17a30c4e0e116afc0a499bdb"
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/bot-venv/bin/python",
+      "exists": true,
+      "bytes": 30894944,
+      "mode": "0o755",
+      "executable": true,
+      "sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7"
+    },
+    {
+      "path": "/workspace/.gradle/wrapper/dists/gradle-8.12-bin/cetblhg4pflnnks72fxwobvgv/gradle-8.12/lib/gradle-launcher-8.12.jar",
+      "exists": true,
+      "bytes": 321085,
+      "mode": "0o600",
+      "executable": false,
+      "sha256": "4421cff6e2e451424f8e5f2deb5d4c919a6f5f405cbe7bc286bfd8e8b51f4d3a",
+      "members": 272,
+      "authJdbcMainPresent": false,
+      "bootClasses": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/services/auth-service/auth-app/build/libs/auth-app-0.1.0-plain.jar",
+      "exists": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "exists": false
+    }
+  ],
+  "pinned_venv_dist_infos": [
+    "aio_pika-9.5.3.dist-info",
+    "aiogram-3.29.1.dist-info",
+    "aiohttp-3.14.3.dist-info",
+    "grpcio-1.73.0.dist-info",
+    "grpcio_tools-1.73.0.dist-info",
+    "protobuf-6.31.0.dist-info",
+    "redis-5.2.1.dist-info"
+  ],
+  "source_inventory_definition": "tracked except docs/, .agent/, and *.md",
+  "source_inventory_rows": 3211,
+  "root_NP_source_mismatch": [],
+  "process_tally": {
+    "tail:S": 1,
+    "cloud-agent-log:S": 1,
+    "caas-prefix-tra:S": 1,
+    "dockerd:S": 1,
+    "containerd:S": 1,
+    "codex:S": 2,
+    "git:Z": 161,
+    "containerd-shim:Z": 250,
+    "java:Z": 6,
+    "esbuild:Z": 16,
+    "codex-linux-san:S": 1,
+    "bwrap:S": 1,
+    "bash:S": 1,
+    "python3:S": 1,
+    "ps:R": 1
+  }
+}

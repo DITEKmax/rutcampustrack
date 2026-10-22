@@ -1,0 +1,34 @@
+{
+  "utc": "2026-10-12T05:48:52.366779+00:00",
+  "root_from": "b671a956d1bb0b38ec4e44f8144338315f862c9f",
+  "author": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "review": "receipts/ci731-compatibility-review APPROVE_SOURCE_ONLY",
+  "actualCIbefore": "731/ba64 Auth2expected1actual4/Academic292inventoryguard/Ruff7",
+  "paths": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "author_sha256": "ba9e35c4105e64a55d71027dc077fa0fee87ca0ffdaa16e1a5de51cfb3183533"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "author_sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "author_sha256": "828a2cad57d9124734a429863a7db4513767f0775f3e9e3130d3d39d69f3e7fa"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "author_sha256": "573b4e1218e27008cdf98b3a9b8d6dae9c354a5783b9fc73899ee6b061eb852a"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "author_sha256": "c91c068b4b157bf267d4791d6920715ef228cf2abec3f950a7367c6794e1e1ca"
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "author_sha256": "fc6d9f6a8c4bba73b25885758bf55bad0f74abfd42c5b906b3ce2e2b6c128baf"
+    }
+  ],
+  "runtime": "new2Authassertions/closedreset/fullAuth+Academic suites+selectivecriticaltest sensitivity PENDING"
+}

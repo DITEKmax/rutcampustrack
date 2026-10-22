@@ -1,0 +1,63 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/page-0001.png",
+    "bytes": 4985,
+    "sha256": "e48aa4742310b0acbc3d5aee66bd74389dc93a695fd85022cb8d15cb45f47bc0",
+    "matches_author_manifest": true,
+    "png_signature": "89504e470d0a1a0a",
+    "width": 596,
+    "height": 842
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/pages.zip",
+    "bytes": 5690,
+    "sha256": "9e005259a6f9f82a80cea46a7cb8e6261746d8969bdf17c1fed9934dacda5621",
+    "matches_author_manifest": true,
+    "members": [
+      {
+        "name": "page-0001.png",
+        "sha256": "e48aa4742310b0acbc3d5aee66bd74389dc93a695fd85022cb8d15cb45f47bc0"
+      },
+      {
+        "name": "page-0002.png",
+        "sha256": "c84673b667464b9c28728ea08f515273e72639c989ccaa2fcf3a249008787355"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/first-page.png",
+    "bytes": 4985,
+    "sha256": "e48aa4742310b0acbc3d5aee66bd74389dc93a695fd85022cb8d15cb45f47bc0",
+    "matches_author_manifest": true,
+    "png_signature": "89504e470d0a1a0a",
+    "width": 596,
+    "height": 842
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/two-pages.docx",
+    "bytes": 1247,
+    "sha256": "21d37cb9556cdb3f33bd74ff314b9f48e34593d243d9ed9c6003fbba9ad23b8a",
+    "matches_author_manifest": true,
+    "members": [
+      "[Content_Types].xml",
+      "_rels/.rels",
+      "word/document.xml"
+    ],
+    "document_contains_both_texts": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/two-pages.pdf",
+    "bytes": 14641,
+    "sha256": "dbd1d47f0bf35103158246db781a467ef79e7e10e39f7f675768c0a9826e3b76",
+    "matches_author_manifest": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-green-artifacts/page-0002.png",
+    "bytes": 5283,
+    "sha256": "c84673b667464b9c28728ea08f515273e72639c989ccaa2fcf3a249008787355",
+    "matches_author_manifest": true,
+    "png_signature": "89504e470d0a1a0a",
+    "width": 596,
+    "height": 842
+  }
+]

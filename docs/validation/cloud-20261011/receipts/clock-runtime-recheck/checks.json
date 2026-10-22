@@ -1,0 +1,12 @@
+{
+  "current_all6599_sha_matches": true,
+  "all_native_source_log_bridges_match": true,
+  "selected_original_xml_digests_counts_and_timestamps_match": true,
+  "both_failures_point_to_exact_source_no_throwable_assertion": true,
+  "exact_wrong_fixture_and_restore_sha": true,
+  "four_distinct_expected_app_main_classes": true,
+  "artifacts_fingerprints_current_oneclass_fixture_absent": true,
+  "bff_shared_web_starter_and_autoconfig_contents_absent": true,
+  "fresh_fixture_exact_two_classes": true,
+  "prior16sealed_members_preserved": true
+}

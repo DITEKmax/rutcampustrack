@@ -1,0 +1,159 @@
+{
+  "schema": "P10_UNICODE_REAL_HTTP_ACTUAL02_PASS_V1",
+  "utc": "2026-10-13T17:39:20.170758+00:00",
+  "status": "FINITE_SELECTED_CASE_PASS",
+  "session": 58493,
+  "start_chunk": "b88f1c",
+  "final_chunk": "46a5ce",
+  "grant_sha256": "3dd282889c8881fc1fa4ace7b12f50cb133836426bd63fd9c9e5cbad103f5162",
+  "terminal": {
+    "direct_pid": 536966,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 536966,
+        "start_ticks": 16672188,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 536967,
+        "start_ticks": 16672194,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 536999,
+        "start_ticks": 16672323,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 537234,
+        "start_ticks": 16675283,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 537237,
+        "start_ticks": 16675308,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 537448,
+        "start_ticks": 16678546,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 538458,
+        "start_ticks": 16683535,
+        "same_birth_absent": true
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "container_settled": true,
+    "utc": "2026-10-13T17:37:35.485184+00:00",
+    "peaks": {
+      "memory": 9161117696,
+      "min_workspace_free": 5530746880,
+      "owned_rss": 1787338752,
+      "log_bytes": 6873
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "fresh_selected_JUnit": {
+    "parseaccepted": true,
+    "source_path": "/workspace/rct-worktrees/shared-validator-execution-20261013/services/auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+    "class": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries()",
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "selected_case_count": 1,
+    "all_case_and_suite_counts_consistent": true,
+    "mtime_after_grant_and_prior_XML": true,
+    "mode600_nofollow_UID_nlink1_bound1MiB": true,
+    "strictUTF8_declaration_DTD_entity_NUL_gate": true,
+    "raw_XML_retained_unhashed": true
+  },
+  "all8_owned_births_fresh_absent": true,
+  "births": [
+    {
+      "pid": 536853,
+      "start_ticks": 16672102,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536966,
+      "start_ticks": 16672188,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536967,
+      "start_ticks": 16672194,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536999,
+      "start_ticks": 16672323,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 537234,
+      "start_ticks": 16675283,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 537237,
+      "start_ticks": 16675308,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 537448,
+      "start_ticks": 16678546,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 538458,
+      "start_ticks": 16683535,
+      "same_birth_absent": true
+    }
+  ],
+  "container_settled": true,
+  "owned_container_roles": {
+    "postgres": 1,
+    "mongo": 0,
+    "rabbitmq": 1,
+    "redis": 1,
+    "ryuk": 1,
+    "probe": 0
+  },
+  "owned_active_ids_empty": true,
+  "original_foreign0_11_3_exact": true,
+  "containers_SAFE_path": "/tmp/rct-p10-cache-directive-http-20261013-attempt02/containers.safe.json",
+  "containers_SAFE_sha256": "ed7cbac033b76cc35e02fb766fe11a58ea3a61205a1e03f34c3e6138a3b56821",
+  "TMP_absent": true,
+  "authority_absent": true,
+  "all18_source_inputs_match": true,
+  "source_supplement_match": true,
+  "source_commit": "a0e3577ec98d7dfb2bc2638527debf4639d29db1",
+  "test_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "WT_clean": true,
+  "native_terminal_before_active_margin": true,
+  "final_before_active_margin": true,
+  "final_before_hard_stop": true,
+  "margin_remaining_seconds": 26.99891,
+  "no_private_body_message_stack_credential_ENV_URI_or_private_content_hash_export": true,
+  "qualification": "Exactly one genuine existing UnicodeHTTP method PASS after minimal no-store oracle and append-only fixture cleanup fixes. OriginalCI1184RED, HTTP01cleanupFAIL and checkingFAIL retained. ParentP10/matrix not automatically closed; significant credential regression sensitivity and current normalCI still required. No other case, mutation, SDK/archive retry, product change or B013 action."
+}

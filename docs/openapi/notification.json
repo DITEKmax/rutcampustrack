@@ -101,7 +101,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "put" : {
         "tags" : [ "Notification Preferences" ],
@@ -198,7 +201,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/preferences/v2" : {
@@ -286,7 +292,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "put" : {
         "tags" : [ "notification-inbox-controller" ],
@@ -382,7 +391,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/inbox/{id}/read-state" : {
@@ -488,7 +500,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/push/subscribe" : {
@@ -580,7 +595,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "delete" : {
         "tags" : [ "Push" ],
@@ -670,7 +688,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/mark-all-read" : {
@@ -752,7 +773,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/inbox/mark-all-read" : {
@@ -840,360 +864,10 @@
               }
             }
           }
-        }
-      }
-    },
-    "/internal/bot/notification-preferences/{userId}/{telegramId}" : {
-      "get" : {
-        "tags" : [ "bot-notification-preferences-controller" ],
-        "operationId" : "getPreferences_1",
-        "parameters" : [ {
-          "name" : "X-Bot-Preferences-Token",
-          "in" : "header",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "userId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "telegramId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "category",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "type",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/BotNotificationPreferencesDto"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Ошибка валидации запроса",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Доступ запрещён",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429" : {
-            "description" : "Превышен лимит запросов",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Внутренняя ошибка сервера",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post" : {
-        "tags" : [ "bot-notification-preferences-controller" ],
-        "operationId" : "updatePreferences_1",
-        "parameters" : [ {
-          "name" : "X-Bot-Preferences-Token",
-          "in" : "header",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "userId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }, {
-          "name" : "telegramId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UpdateBotNotificationPreferencesRequest"
-              }
-            }
-          },
-          "required" : true
         },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/BotNotificationPreferencesDto"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Ошибка валидации запроса",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Доступ запрещён",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429" : {
-            "description" : "Превышен лимит запросов",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Внутренняя ошибка сервера",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/alert" : {
-      "post" : {
-        "tags" : [ "alert-controller" ],
-        "operationId" : "receive",
-        "parameters" : [ {
-          "name" : "Authorization",
-          "in" : "header",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "type" : "object",
-                "additionalProperties" : { }
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "type" : "object"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Ошибка валидации запроса",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Доступ запрещён",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429" : {
-            "description" : "Превышен лимит запросов",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Внутренняя ошибка сервера",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/{id}/read" : {
@@ -1283,7 +957,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/push/vapid-public-key" : {
@@ -1372,7 +1049,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications" : {
@@ -1484,7 +1164,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/unread-count" : {
@@ -1573,7 +1256,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/inbox" : {
@@ -1686,7 +1372,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/inbox/unread-count" : {
@@ -1774,7 +1463,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/notifications/catalog" : {
@@ -1862,7 +1554,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     }
   },
@@ -2122,71 +1817,6 @@
           "unreadCount" : {
             "type" : "integer",
             "format" : "int64"
-          }
-        }
-      },
-      "UpdateBotNotificationPreferencesRequest" : {
-        "type" : "object",
-        "properties" : {
-          "requestKey" : {
-            "type" : "string"
-          },
-          "operation" : {
-            "type" : "string",
-            "enum" : [ "TOGGLE_GLOBAL", "TOGGLE_CATEGORY", "SET_GLOBAL", "SET_CATEGORY", "SET_MUTE", "MUTE_FOR", "CLEAR_MUTE" ]
-          },
-          "category" : {
-            "type" : "string"
-          },
-          "enabled" : {
-            "type" : "boolean"
-          },
-          "mutedUntil" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "durationSeconds" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        }
-      },
-      "BotNotificationPreferencesDto" : {
-        "type" : "object",
-        "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "telegramId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "globalEnabled" : {
-            "type" : "boolean"
-          },
-          "categories" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "boolean"
-            }
-          },
-          "mutedUntil" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "canonicalCategories" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "boolean"
-            }
-          },
-          "canonicalMutedUntil" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "eligible" : {
-            "type" : "boolean"
           }
         }
       },
@@ -2552,6 +2182,14 @@
             "example" : "Имя не может быть пустым"
           }
         }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Public access token. Gateway validates the current session and supplies service identity.",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
       }
     }
   }

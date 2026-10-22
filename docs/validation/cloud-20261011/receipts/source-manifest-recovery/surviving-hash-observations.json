@@ -1,0 +1,119 @@
+[
+  {
+    "original_line": 30927,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "7548598907f114cf747410fc1d75c47e97eb35d421232174e671b4292c956ba3",
+        "current_canonical_matches": [
+          "repo-history:.planning/milestones/v9.0-phases/49-nginx-routing-landing-dead-link-fix/49-VERIFICATION.md"
+        ]
+      },
+      {
+        "surviving_hash": "99e04ab385ba282829e1a468b4dc50433a924bfffa970f503221d07814c6a540",
+        "current_canonical_matches": [
+          "repo-history:.planning/milestones/v9.0-phases/50-basehref-migration-unified-login/50-02-PLAN.md"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 31277,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "8c99e6761fcced5e339d424601b52fafd6e87198c936d26f7360bdbe25962534",
+        "current_canonical_matches": [
+          "repo-history:.planning/milestones/v8.0-phases/44-nginx-reverse-proxy-ssl/44-RESEARCH.md"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 31800,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "712fcdd8074e43b2fc495ffac9cba3ff51ff2975518d91bddc0d597cebfd1137",
+        "current_canonical_matches": [
+          "kit:_work/renders/part-22-23/admin-41-user-detail-pre-fix.png"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 32269,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "3f2208c1241d2a074ec519cb4974f4223347e3945e534a447ba13ba19d3e78be",
+        "current_canonical_matches": [
+          "kit:_work/prompts/part-15-headman-113-owner-polish-4.md"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 33933,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "9312d1a1d468e5bfdaf224979df19fde7fd2585a93d368ffd632a03d20cdbff6",
+        "current_canonical_matches": [
+          "kit:_work/renders/part-21-headman-mobile-polish-2/family-28-management.png"
+        ]
+      },
+      {
+        "surviving_hash": "9d0eea4cd8151b749a3b6edb88e8c912ed02f751f54cb80c646167fa49402095",
+        "current_canonical_matches": [
+          "kit:_work/renders/part-22-23/admin-49-profile.png"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 34417,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "9db24fa8394a3c66ca5d7072f4c835ec8acc7adcf3071d02d500aac54b127572",
+        "current_canonical_matches": [
+          "kit:_work/prompts/part-15-admin-owner-corrections-2-1920.md"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 34609,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "b5d29aa199977f22125bd11949e567f6cf1d44404e2a74421c43ff37e5058b43",
+        "current_canonical_matches": [
+          "kit:_work/prompts/part-15-batch-5-build-1920.md"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 34690,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "0db76f4335c5d100319f0518fd54d23f99e17e66b8612ba393d73503d9723be4",
+        "current_canonical_matches": [
+          "kit:_work/prompts/part-15-admin-calendar-wide-1920.md"
+        ]
+      },
+      {
+        "surviving_hash": "6407b07ce9217833c2f412e0d40caa3dd063fe38310e4fba5c6e40099ba4d476",
+        "current_canonical_matches": [
+          "kit:_work/renders/headman-mobile/21-roster-list.png"
+        ]
+      }
+    ]
+  },
+  {
+    "original_line": 34811,
+    "surviving_hash_observations": [
+      {
+        "surviving_hash": "0272d789fe169dd0b674b62477f0518d3fcad180a002ab0cd1be21de9176c71b",
+        "current_canonical_matches": [
+          "kit:_work/student-1024-repair-trend.png"
+        ]
+      }
+    ]
+  }
+]

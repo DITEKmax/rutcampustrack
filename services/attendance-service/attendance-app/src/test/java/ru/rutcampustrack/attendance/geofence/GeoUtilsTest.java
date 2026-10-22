@@ -1,13 +1,12 @@
 package ru.rutcampustrack.attendance.geofence;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
+import org.junit.jupiter.api.Test;
+
 /**
- * Unit tests for GeoUtils Haversine distance calculation.
- * No Spring context — pure math unit tests.
+ * Unit tests for GeoUtils Haversine distance calculation. No Spring context — pure math unit tests.
  * GeoUtils is package-private, so test is in same package.
  */
 class GeoUtilsTest {

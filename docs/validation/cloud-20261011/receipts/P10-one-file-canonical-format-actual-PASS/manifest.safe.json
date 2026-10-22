@@ -1,0 +1,58 @@
+{
+  "schema": "P10_FORMAT_ACTUAL_SAFE_SEAL_V1",
+  "files": {
+    "REPORT.precommit.safe.json": {
+      "sha256": "ffb3e65f9e564b88b1702efe76e10c49d1c66c37cf59662a71bf7b36d6958e15",
+      "bytes": 2530
+    },
+    "REPORT.safe.json": {
+      "sha256": "2d2fb1d8cd4adf634927676a98111fafd9ed136167206c5a12e63eb4ca5e9923",
+      "bytes": 3288
+    },
+    "child-exit.safe.json": {
+      "sha256": "0849db4a0b7391d48c2cb70ee4cc4b56672a052b36510fc8199e65323b9b4f4e",
+      "bytes": 19
+    },
+    "compile-bound-after-formatted-source-manifest.safe.json": {
+      "sha256": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+      "bytes": 2853
+    },
+    "compile-bound-after-grant-template.private.json": {
+      "sha256": "8aa37309f1aa84c014103cb4a7f895e25dea124752eeb0928a28c8c3bab7e0e5",
+      "bytes": 1085
+    },
+    "compile-bound-after-green-plan.safe.json": {
+      "sha256": "b4fc9144eec1531006526b9108f655c2d987fb7891ecc445ea1fe7a895f0d5d3",
+      "bytes": 1654
+    },
+    "compile-unbound-before-formatted-source-manifest.safe.json": {
+      "sha256": "d6db3e0de71fc0455dc0157a42c1ae323774a0511846c133b6fe7f79b00b9e69",
+      "bytes": 2742
+    },
+    "compile-unbound-before-grant-template.private.json": {
+      "sha256": "b07dd01b513dffacd84bfff3514c0f8fdb2efa483802b0d021e8753420893016",
+      "bytes": 961
+    },
+    "compile-unbound-before-green-plan.safe.json": {
+      "sha256": "75dfb30f400a2723e926724d4620079a1665c622b5c260af3115223625c54549",
+      "bytes": 1481
+    },
+    "dispatch.safe.json": {
+      "sha256": "7c9ecd135aa3a73b111c797a23ca24ea4b1ffa37a0c202ef843ffa4432a95e31",
+      "bytes": 318
+    },
+    "semantic-before.java": {
+      "sha256": "a2865bfef3dc00c1208476677e82dea0b30e75679e454b1ab226a53a3dbc7e33",
+      "bytes": 72883
+    },
+    "supervisor.safe.json": {
+      "sha256": "d54e7dc9f5d42f3f7acde87d395cbfcd3bd800eeaf30ccc5e40b73be8f0b8d86",
+      "bytes": 117
+    },
+    "terminal.safe.json": {
+      "sha256": "01f4db8f1872017b8d24de92ebfbc54349bef46250d5d00c5982995c3cdacd53",
+      "bytes": 970
+    }
+  },
+  "excluded": "Private rawformatterlog/body/hash and actualRootgrant omitted."
+}

@@ -1,0 +1,36 @@
+{
+  "tool_session": 91335,
+  "first_chunk": "3a47d6",
+  "terminal_chunk": "9db892",
+  "first_tool_elapsed_seconds": 1.00122195,
+  "terminal_poll_elapsed_seconds": 2.2605e-05,
+  "native_exit": 0,
+  "source_children": "NONE",
+  "captured_supervisor": {
+    "pid": 395577,
+    "start_ticks": 9807919,
+    "ppid": 525
+  },
+  "captured_supervisor_absent": true,
+  "signals_sent": 0,
+  "outputs": [
+    {
+      "phase": "STAGE_COMPLETION",
+      "state": "VALIDATING_ALL1797"
+    },
+    {
+      "phase": "STAGE_COMPLETION",
+      "state": "FINALIZE_EXISTING_ONLY",
+      "verified_existing": 1797,
+      "copied": 0
+    },
+    {
+      "phase": "STAGE",
+      "full_app": true,
+      "original7_artifacts_unchanged": true,
+      "runtime": false
+    }
+  ],
+  "exact_total_wall_time": "UNKNOWN_NOT_RETAINED",
+  "native_lease": "RELEASED"
+}

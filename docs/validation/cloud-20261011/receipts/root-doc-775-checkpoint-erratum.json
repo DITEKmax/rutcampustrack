@@ -1,0 +1,11 @@
+{
+  "time": "2026-10-12T11:46:55.564659+00:00",
+  "scope": "ROOT-DOC-CHECKPOINT-WHITESPACE-CORRECTION",
+  "outcome": "ROOT_SEQUENCING_ERROR_ACKNOWLEDGED_CORRECTED",
+  "commit": "775cfd03bd5ed4279dac0594bce44295fde4baad",
+  "precommit_six": "PASS276",
+  "git_diff_check_before_commit": "FAIL2 copiedCSVCRLF",
+  "cause": "Root calledcommit withoutgating secondtool on firstexit; no hook/gate weakening intended",
+  "correction": "onecopiedCSV CRLF->LF exactparsedrows +indexworkingSHA; originalimmutablearchive unchanged",
+  "next": "separate ordinarydoccorrectioncommit onlyafterbothscopedhooks+diffcheckPASS"
+}

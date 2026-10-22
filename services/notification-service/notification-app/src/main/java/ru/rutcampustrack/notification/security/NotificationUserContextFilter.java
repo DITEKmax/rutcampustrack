@@ -10,23 +10,23 @@ import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 
 /**
- * M03a: notification-service adaptation of {@link DualModeUserContextFilter}.
- * Bridges Internal JWT claims (or legacy X-User-* headers) into {@link RequestContext}.
+ * M03a: notification-service adaptation of {@link DualModeUserContextFilter}. Bridges Internal JWT
+ * claims (or legacy X-User-* headers) into {@link RequestContext}.
  *
- * Note: WebSocket handshake flow uses {@code TicketHandshakeInterceptor}
- * (M03b Группа 4) with single-use Redis ticket consumed via auth-service
- * {@code /internal/consume-ws-ticket}. Only REST endpoints (/push/*) use
- * this filter.
+ * <p>Note: WebSocket handshake flow uses {@code TicketHandshakeInterceptor} (M03b Группа 4) with
+ * single-use Redis ticket consumed via auth-service {@code /internal/consume-ws-ticket}. Only REST
+ * endpoints (/push/*) use this filter.
  */
 @Component
 public class NotificationUserContextFilter extends DualModeUserContextFilter {
 
     private final RequestContext requestContext;
 
-    public NotificationUserContextFilter(InternalJwtValidator validator,
-                                         InternalJwtProperties properties,
-                                         RequestContext requestContext,
-                                         BusinessMetrics businessMetrics) {
+    public NotificationUserContextFilter(
+            InternalJwtValidator validator,
+            InternalJwtProperties properties,
+            RequestContext requestContext,
+            BusinessMetrics businessMetrics) {
         super(validator, properties, businessMetrics);
         this.requestContext = requestContext;
     }
@@ -73,7 +73,8 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
         String path = request.getRequestURI();
         return path.startsWith("/ws")
                 || (("GET".equals(request.getMethod()) || "POST".equals(request.getMethod()))
-                    && path.matches("/internal/bot/notification-preferences/[1-9][0-9]*/[1-9][0-9]*"))
+                        && path.matches(
+                                "/internal/bot/notification-preferences/[1-9][0-9]*/[1-9][0-9]*"))
                 || path.startsWith("/internal/alert")
                 || path.startsWith("/csp-report")
                 || isInfrastructurePath(request);

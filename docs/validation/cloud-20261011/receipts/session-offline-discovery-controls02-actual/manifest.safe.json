@@ -1,0 +1,66 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_NODE02_SEAL",
+  "files": [
+    {
+      "path": "DISCOVERY-CONTROLS.safe.json",
+      "sha256": "abb713795a0dac6379c62e17af03bced45efb02ef6d8babbf0ac08430113020e",
+      "bytes": 340
+    },
+    {
+      "path": "REPORT.safe.json",
+      "sha256": "6c53c87e29e58c076294014f7a150fc6b0dddb57607085c845bf41a79f3cfa85",
+      "bytes": 2814
+    },
+    {
+      "path": "after-controls.safe.json",
+      "sha256": "7e3e2329a6dec399cdbd16c7d436220c7812bc313465b6ec699bc8b457c44076",
+      "bytes": 456
+    },
+    {
+      "path": "after-launch.safe.json",
+      "sha256": "8283f287b1b50cb8905e024ce5a50f27f40d6064dc390e1919468e7c2548d0b2",
+      "bytes": 444
+    },
+    {
+      "path": "after-process.safe.json",
+      "sha256": "441028674e15ed5a534a2fda22f2cd7f657a39aeeda6630a9e788ed7afcd090e",
+      "bytes": 147
+    },
+    {
+      "path": "after-terminal.safe.json",
+      "sha256": "bc90bbee0abee5aa8926db408391afb6d8f58fdd4d9867030edd57e607d254d7",
+      "bytes": 564
+    },
+    {
+      "path": "before-controls.safe.json",
+      "sha256": "280b95fb66bb75c1463161edccbc91b27b9257f68486838f5cf8dc8741158450",
+      "bytes": 460
+    },
+    {
+      "path": "before-launch.safe.json",
+      "sha256": "e7b60ef10cf2a3e310f0926dda2cdac63ad3590f8a30a2a8fd8c333d34134edb",
+      "bytes": 446
+    },
+    {
+      "path": "before-process.safe.json",
+      "sha256": "d5473551ec957bb0039fb0657c54d8a927685b12f364629b99c9aab01c57fe9e",
+      "bytes": 147
+    },
+    {
+      "path": "before-terminal.safe.json",
+      "sha256": "4dc3dac2a04f21aa04bb03b9a88ef090696a5d26eff3d2a3f7854ff78d50fe9d",
+      "bytes": 565
+    },
+    {
+      "path": "list.safe.json",
+      "sha256": "966b609db082fb91d66d81cd5061370cbc1313be691c5a4a08f5a1ba5d120280",
+      "bytes": 219
+    },
+    {
+      "path": "supervisor.safe.json",
+      "sha256": "946e9fa63d5bce19fbf0ecdb291d1841dc9d3ad8a6dd3ae06fb1d0bf00f525cb",
+      "bytes": 152
+    }
+  ],
+  "report_sha256": "6c53c87e29e58c076294014f7a150fc6b0dddb57607085c845bf41a79f3cfa85"
+}

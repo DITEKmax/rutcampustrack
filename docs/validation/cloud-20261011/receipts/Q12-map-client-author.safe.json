@@ -1,0 +1,500 @@
+{
+  "started_utc": "2026-10-14T05:33:28.416177+00:00",
+  "base": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+  "branch": "codex/q12-map-client-20261014",
+  "scope": "One new tests/e2e/specs/mobile-map-lifecycle.spec.ts only; no product/UI/common config edits.",
+  "source_ids": [
+    "JS-ADMIN-23",
+    "JS-ADMIN-25",
+    "JS-STUDENT-24",
+    "MAP-01",
+    "MAP-02",
+    "MAP-03",
+    "D004",
+    "D008"
+  ],
+  "flow": "ADMIN API uploads valid68BPNG+simpleSVG; realSTUDENT Vue selectsownbuilding/floor, displaysSVG/currentlabel/version and downloadsactualPNG; PNG-onlyreplacement keepsfloor and SVGcontent withnewversion, oldimmutablepublishedPNG/SVGlinks readable. HEADMAN andLIMITEDUSERS_VIEW uploads403/noeffect; mismatchedbuilding-floor404.",
+  "limits": "NoUIuploadclaim (publisherAPI explicitly), no inventedheadmanuploadpermission/groupprivatecampusmaps; nozoom/pan/legend/D008boundaries/SVGnegative/delete/fullQ12claim. D004legendEXCLUDED; D008unchanged.",
+  "acceptance": "SVG_ORACLE_CORRECTION_SOURCE_LOCAL_PASS_ONLY; narrowindependentP2recheck pending; actualbrowser/backendNOT_RUN.",
+  "preserved_refs": [
+    "84f0e3c33ed431f4944f5ae6f2c77290d2ea6a94",
+    "2b048c2d8fa71e616c378c1f04a2a1b528213f29",
+    "490bac73bce08e220f08ecd71f9b66a6474e28d7"
+  ],
+  "active_native": null,
+  "active_session": null,
+  "source_pins": {
+    "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "docs/product/decisions/2026-10-11-map-legend-deferred.md": "b929529c2b36a5be3c4098d8628dacf06bcc6a0c4c8a14f1e89cc7915c2713ff",
+    "docs/product/decisions/2026-10-11-png-validation-resource-budget.md": "7f85a3aba9aac1481135859dc4c4734bb0122d7effee622f5484df2ff6829759",
+    "frontends/mobile-core/src/features/map/MapScreen.vue": "8acce83d306f1e314589997103930a054f3e7922e268f0985fc93654c6801806",
+    "frontends/mobile-core/src/api/map-client.ts": "4487918bac44914ee88ac06e4d05bc5dd8857ed2f55bfde8d5081bd8bcf40297",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java": "873455f73ba37c3706baa19df4f809cf8989d1e46f613cda862495a6579b6fe8",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java": "9b827f2ca1ee62236d023ddb782b4a0c61bf98a156df35a61a373027579bc03a",
+    "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/map/MapQueryFacade.java": "63c034f563704cfb883a3dd6e3b5c12bf0ed304ba103eca8707c30d92bb44756"
+  },
+  "source_before_checks_sha256": "bf03892b756ed521f6891fd17bdba4c5b11619f534d9891d64e988c08378e8a3",
+  "png_input_proof": [
+    {
+      "bytes": 68,
+      "sha256": "4cb53c9929e9acd7f4cdee39ad064c9ad9c1a1278fc24aeb2c055b977b237abc",
+      "dimensions": [
+        1,
+        1
+      ],
+      "chunk_crc_and_zlib_roundtrip": true
+    },
+    {
+      "bytes": 68,
+      "sha256": "69ec20c56116e9add99ed85c867ec2e8821915ae52d458f363573ed95bb6b3ad",
+      "dimensions": [
+        1,
+        1
+      ],
+      "chunk_crc_and_zlib_roundtrip": true
+    }
+  ],
+  "status": "COMMITTED_SVG_CORRECTION_SOURCE_LOCAL_PASS_PENDING_TARGETED_RECHECK",
+  "verification_plan": "Only cached Prettierapply/exactidempotency/check and strictselectednewfile+actualimports with unchanged e2e compilerOptions. Unchanged b78 fresh120s/heap512MiB/treeRSS512MiB/workspacegrowth256MiB/floor4GiB/shared15GiB/reserve1GiB. No browser/server/network/Java/DB/Docker. Existing privacy guards reused unchanged.",
+  "issued_utc": "2026-10-14T05:44:15.372018+00:00",
+  "stop_utc": "2026-10-14T05:46:15.372033+00:00",
+  "commands": [
+    {
+      "phase": "FORMAT_APPLY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "specs/mobile-map-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "specs/mobile-map-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "specs/mobile-map-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "phase": "STRICT_SELECTED_FILE_TSC",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "-e",
+        "const ts=require(process.argv[1]);const config=ts.readConfigFile('tsconfig.json',ts.sys.readFile);if(config.error)process.exit(1);const parsed=ts.parseJsonConfigFileContent(config.config,ts.sys,process.cwd());if(parsed.errors.length)process.exit(1);const program=ts.createProgram(['specs/mobile-map-lifecycle.spec.ts'],{...parsed.options,noEmit:true});process.exit(ts.getPreEmitDiagnostics(program).length?1:0);",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js"
+      ]
+    },
+    {
+      "phase": "SVG_ORACLE_SOURCE_COUNTEREXAMPLE",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "-e",
+        "\nconst fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),ts=require(process.argv[1]);\nconst oldText=fs.readFileSync(process.argv[2],'utf8'),newText=fs.readFileSync(process.argv[3],'utf8'),vue=fs.readFileSync(process.argv[4],'utf8');\nconst parse=text=>ts.createSourceFile('source.ts',text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);\nfunction unique(root,accept){const found=[];function walk(n){if(accept(n))found.push(n);ts.forEachChild(n,walk)}walk(root);assert.equal(found.length,1);return found[0]}\nconst oldRoot=parse(oldText),newRoot=parse(newText),script=vue.substring(vue.indexOf('>')+1,vue.indexOf('</script>')),vueRoot=parse(script);\nconst oldImage=unique(oldRoot,n=>ts.isArrowFunction(n)&&n.parameters.length===1&&n.parameters[0].name.getText(oldRoot)==='image'&&n.body.getText(oldRoot).includes('naturalWidth')).getText(oldRoot);\nconst svgPredicate=unique(newRoot,n=>ts.isArrowFunction(n)&&n.parameters.length===0&&n.body.getText(newRoot).includes(\"getAttribute('href')\")&&n.body.getText(newRoot).includes('src === href')).getText(newRoot);\nconst preview=unique(vueRoot,n=>ts.isVariableDeclaration(n)&&n.name.getText(vueRoot)==='previewUrl').initializer.arguments[0].getText(vueRoot);\nconst compile=code=>ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;\nclass SyntheticImage{constructor(){this.complete=true;this.naturalWidth=1}}\nasync function check(hasSvg,wrongImage=false){const selector={svgUrl:{value:hasSvg?'blob:SYNTHETIC_SVG':null},pngUrl:{value:'blob:SYNTHETIC_PNG'}};vm.runInNewContext(compile('globalThis.choose='+preview),selector);const chosen=selector.choose();const actual=wrongImage?'blob:SYNTHETIC_PNG':chosen;const box={HTMLImageElement:SyntheticImage,svgDownload:{getAttribute:async()=>hasSvg?'blob:SYNTHETIC_SVG':null},preview:{getAttribute:async()=>actual}};vm.runInNewContext(compile('globalThis.oldImage='+oldImage+';globalThis.newPredicate='+svgPredicate),box);return {old:box.oldImage(new SyntheticImage()),current:await box.newPredicate(),fallback:chosen==='blob:SYNTHETIC_PNG'}}\n(async()=>{const missing=await check(false),wrong=await check(true,true),good=await check(true);assert.deepEqual(missing,{old:true,current:false,fallback:true});assert.deepEqual(wrong,{old:true,current:false,fallback:false});assert.deepEqual(good,{old:true,current:true,fallback:false});fs.writeFileSync(process.argv[5],JSON.stringify({actual_production_preview_selector_extracted:true,old_actual_image_predicate_accepts_png_fallback:missing.old&&missing.fallback,new_actual_svg_predicate_rejects_missing_svg:!missing.current,new_actual_svg_predicate_rejects_png_with_svg_link:!wrong.current,new_actual_svg_predicate_accepts_svg:good.current,browser_or_backend_started:false}),{flag:'wx',mode:0o600})})().catch(()=>process.exit(1));\n",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js",
+        "/tmp/rct-q12-svg-check-b_5ulu1s/original.ts",
+        "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/specs/mobile-map-lifecycle.spec.ts",
+        "/workspace/rct-worktrees/first3-spec-frame-20261013/frontends/mobile-core/src/features/map/MapScreen.vue",
+        "/tmp/rct-q12-svg-check-b_5ulu1s/proof.safe.json"
+      ]
+    }
+  ],
+  "command_cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e",
+  "peaks": {
+    "rss": 346144768,
+    "shared": 5891248128
+  },
+  "all_recorded_births_absent": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "failure": "Initial selected-file TSC exited1; formatter apply/idempotency/check passed, exact compiler diagnostic not yet exposed because unchanged guard suppresses stdout. Next only bounded diagnostic TSC, not full rerun.",
+  "updated_utc": "2026-10-14T05:38:58.888432+00:00",
+  "diagnostic_plan": "Fresh120s unchangedb78/caps, only selectedTSC diagnostic capture. No sourceedit/browser/network. Static source compiler errors only, no runtime values.",
+  "diagnostic_issued_utc": "2026-10-14T05:36:45.510379+00:00",
+  "tsc_diagnostic_run": {
+    "direct_pid": 648824,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 648824,
+        "start_ticks": 20999848
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "tsc_diagnostics": [
+    {
+      "file": "mobile-map-lifecycle.spec.ts",
+      "code": 2345,
+      "line": 224,
+      "message": "Argument of type 'Model' is not assignable to parameter of type 'Plan'.   Type 'Model' is missing the following properties from type 'Plan': buildingId, floorId, version, label, and 2 more."
+    }
+  ],
+  "type_correction": "ActualTS2345 historical Actor.call genericModel not assignable to localPlan; added same explicit JSON Plan assertion already used for upload JSON. Runtime code/assertions unchanged. Prior failedTSC/diagnostic retained; repeat only affected one-file checks justified by correction.",
+  "initial_attempt_check_results": [
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 0.716,
+      "result": {
+        "direct_pid": 648696,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 648696,
+            "start_ticks": 20995081
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 0.514,
+      "result": {
+        "direct_pid": 648707,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 648707,
+            "start_ticks": 20995151
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.565,
+      "result": {
+        "direct_pid": 648718,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 648718,
+            "start_ticks": 20995203
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "STRICT_SELECTED_FILE_TSC",
+      "seconds": 2.629,
+      "result": {
+        "direct_pid": 648729,
+        "native_exit": 1,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 648729,
+            "start_ticks": 20995259
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": false
+      }
+    }
+  ],
+  "repeat_reason": "SingleTS2345 genericModel/Plan assertion corrected; finalcase title clarifies actualVuecurrentPNG versus APIhistoricalreadback. Only affectednewfile checks repeat; no prior privacy/baseline/runtime replay.",
+  "check_results": [
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 0.889,
+      "result": {
+        "direct_pid": 650029,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650029,
+            "start_ticks": 21044837
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 0.768,
+      "result": {
+        "direct_pid": 650040,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650040,
+            "start_ticks": 21044924
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.679,
+      "result": {
+        "direct_pid": 650051,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650051,
+            "start_ticks": 21045002
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "STRICT_SELECTED_FILE_TSC",
+      "seconds": 2.537,
+      "result": {
+        "direct_pid": 650062,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650062,
+            "start_ticks": 21045066
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "SVG_ORACLE_SOURCE_COUNTEREXAMPLE",
+      "seconds": 0.569,
+      "result": {
+        "direct_pid": 650069,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 650069,
+            "start_ticks": 21045320
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  ],
+  "native_seconds": 5.442,
+  "native_runs": 5,
+  "source_after_sha256": "74b5ee09020304da9ed1fd2a9ddfb0fbb55f56fe3701ce6029450549c8671fec",
+  "source_lines": 250,
+  "source_after_blob": "009f252d5ddba02c7efa068abeec24f4a332ab29",
+  "scope_final": "Only mobile-map-lifecycle.spec.ts correction within viewAndDownload: actualSVG200/MIME/length/bytes plus visibleSVGbloblink==imgsrc. AllinitialAPIpublication/permissions/history and entiretailafterPNGdownload byteidentical to1ed78.",
+  "cleanup": "Download.delete finally removes only each own browserdownload; existing page/request/dataset fixture owns context lifecycle. All data synthetic/disposableRootCI; no mapcatalog delete/reset, no newcommonhelper. AllownedlocalNodePIDs/link/TMP reaped/absent.",
+  "independent_review": "PENDING_SAME_REVIEWER_TARGETED_SVG_ORACLE_RECHECK",
+  "next": "Normalonefilecorrectioncommit→sameindependenttargetedrecheck→Rootcommonconfig/CI. Actualbrowser/backendNOT_RUN.",
+  "normal_commit_exit": 0,
+  "normal_commit_output": "[codex/q12-map-client-20261014 0c532275] test(e2e): distinguish SVG map preview from PNG fallback\n 1 file changed, 19 insertions(+), 1 deletion(-)\n",
+  "hooks_bypassed": false,
+  "commit": "0c53227592b75722e64bfce21ac3f22ddf182ee9",
+  "worktree_clean": true,
+  "original_reviewed_commit": "1ed78ddb36a845f78a68c07a291af952bf76b93a",
+  "original_reviewed_source_sha256": "b6782deedf00de341d4c470a9ddcab38670959f129e6a60a4d99cab82b6b6e55",
+  "original_local_check_results": [
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 0.748,
+      "result": {
+        "direct_pid": 649057,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 649057,
+            "start_ticks": 21007257
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 0.64,
+      "result": {
+        "direct_pid": 649068,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 649068,
+            "start_ticks": 21007332
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.829,
+      "result": {
+        "direct_pid": 649079,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 649079,
+            "start_ticks": 21007397
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "STRICT_SELECTED_FILE_TSC",
+      "seconds": 3.167,
+      "result": {
+        "direct_pid": 649090,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 649090,
+            "start_ticks": 21007480
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  ],
+  "svg_oracle_correction": {
+    "finding": "P2 genericcomplete/naturalWidth admittedPNGfallback whileclaimingSVGview; originalwholeSourceotherscoherent.",
+    "review": "/workspace/scratch/rct-validation/q07_client_review/q12-review.safe.md",
+    "correction": "ObserveactualcurrentSVGresponse MIME/length/exactoriginalSVGbytes; requireactualrenderedimgsrc equalsrealvisibleSVGdownloadblobhref beforeloadedimagepredicate. PreservePNGbrowserbody/download/history/negativegrants.",
+    "verification_plan": "Sameb78fresh120s/caps fourcachedchecks+meaningfulnarrow actualSource AST/VM control: originalgenericimagepredicate acceptsPNGfallback; newrenderedSVGpredicate rejectsfallback/mismatchedPNGsrc and acceptsSVG. No browser/server/productmutations.",
+    "active_native": null,
+    "active_session": null,
+    "runtime": "NOT_RUN",
+    "updated_utc": "2026-10-14T05:44:57.945762+00:00",
+    "proof_source": "\nconst fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),ts=require(process.argv[1]);\nconst oldText=fs.readFileSync(process.argv[2],'utf8'),newText=fs.readFileSync(process.argv[3],'utf8'),vue=fs.readFileSync(process.argv[4],'utf8');\nconst parse=text=>ts.createSourceFile('source.ts',text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);\nfunction unique(root,accept){const found=[];function walk(n){if(accept(n))found.push(n);ts.forEachChild(n,walk)}walk(root);assert.equal(found.length,1);return found[0]}\nconst oldRoot=parse(oldText),newRoot=parse(newText),script=vue.substring(vue.indexOf('>')+1,vue.indexOf('</script>')),vueRoot=parse(script);\nconst oldImage=unique(oldRoot,n=>ts.isArrowFunction(n)&&n.parameters.length===1&&n.parameters[0].name.getText(oldRoot)==='image'&&n.body.getText(oldRoot).includes('naturalWidth')).getText(oldRoot);\nconst svgPredicate=unique(newRoot,n=>ts.isArrowFunction(n)&&n.parameters.length===0&&n.body.getText(newRoot).includes(\"getAttribute('href')\")&&n.body.getText(newRoot).includes('src === href')).getText(newRoot);\nconst preview=unique(vueRoot,n=>ts.isVariableDeclaration(n)&&n.name.getText(vueRoot)==='previewUrl').initializer.arguments[0].getText(vueRoot);\nconst compile=code=>ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;\nclass SyntheticImage{constructor(){this.complete=true;this.naturalWidth=1}}\nasync function check(hasSvg,wrongImage=false){const selector={svgUrl:{value:hasSvg?'blob:SYNTHETIC_SVG':null},pngUrl:{value:'blob:SYNTHETIC_PNG'}};vm.runInNewContext(compile('globalThis.choose='+preview),selector);const chosen=selector.choose();const actual=wrongImage?'blob:SYNTHETIC_PNG':chosen;const box={HTMLImageElement:SyntheticImage,svgDownload:{getAttribute:async()=>hasSvg?'blob:SYNTHETIC_SVG':null},preview:{getAttribute:async()=>actual}};vm.runInNewContext(compile('globalThis.oldImage='+oldImage+';globalThis.newPredicate='+svgPredicate),box);return {old:box.oldImage(new SyntheticImage()),current:await box.newPredicate(),fallback:chosen==='blob:SYNTHETIC_PNG'}}\n(async()=>{const missing=await check(false),wrong=await check(true,true),good=await check(true);assert.deepEqual(missing,{old:true,current:false,fallback:true});assert.deepEqual(wrong,{old:true,current:false,fallback:false});assert.deepEqual(good,{old:true,current:true,fallback:false});fs.writeFileSync(process.argv[5],JSON.stringify({actual_production_preview_selector_extracted:true,old_actual_image_predicate_accepts_png_fallback:missing.old&&missing.fallback,new_actual_svg_predicate_rejects_missing_svg:!missing.current,new_actual_svg_predicate_rejects_png_with_svg_link:!wrong.current,new_actual_svg_predicate_accepts_svg:good.current,browser_or_backend_started:false}),{flag:'wx',mode:0o600})})().catch(()=>process.exit(1));\n",
+    "proof_source_sha256": "d12ff8473c437f4cdb1bc0012e9aaa4f0c27765942d1a922a8e98dee7cdefac9",
+    "proof_argv": "cachedtypescript, gitshow1ed78oldfixture, correctedworkingfixture, unchangedMapScreen.vue, ownTMPsafeoutput",
+    "prefix_before_view_helper_byte_identical": true,
+    "tail_after_png_download_byte_identical": true,
+    "source_after_sha256": "74b5ee09020304da9ed1fd2a9ddfb0fbb55f56fe3701ce6029450549c8671fec",
+    "control_result": {
+      "actual_production_preview_selector_extracted": true,
+      "old_actual_image_predicate_accepts_png_fallback": true,
+      "new_actual_svg_predicate_rejects_missing_svg": true,
+      "new_actual_svg_predicate_rejects_png_with_svg_link": true,
+      "new_actual_svg_predicate_accepts_svg": true,
+      "browser_or_backend_started": false
+    }
+  },
+  "svg_oracle_source_proof": {
+    "actual_production_preview_selector_extracted": true,
+    "old_actual_image_predicate_accepts_png_fallback": true,
+    "new_actual_svg_predicate_rejects_missing_svg": true,
+    "new_actual_svg_predicate_rejects_png_with_svg_link": true,
+    "new_actual_svg_predicate_accepts_svg": true,
+    "browser_or_backend_started": false
+  }
+}

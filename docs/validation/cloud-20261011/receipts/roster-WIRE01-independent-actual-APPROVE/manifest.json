@@ -1,0 +1,13 @@
+{
+  "verdict": "APPROVE_FINITE_EVIDENCE",
+  "files": {
+    "REPORT.md": {
+      "bytes": 760,
+      "sha256": "3b24f895699a3f6be4294f9ad9d0c8fe8eacb1580e320b480ee6398daf313c42"
+    },
+    "REVIEW.safe.json": {
+      "bytes": 4063,
+      "sha256": "d8d8ff279a4524a519844c98b0129e1ae4a0f2d97780537f34dee299279c8815"
+    }
+  }
+}

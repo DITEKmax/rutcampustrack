@@ -1,0 +1,98 @@
+{
+  "scope": "Q15 GitHub Actions workflow validation correction",
+  "producer_before": "d3a9bd9b3675183e21b434a002eacce068d5ea49",
+  "run_id": 38520098241,
+  "failure_class": "CHECKING_CONFIGURATION",
+  "cause": "runner context unavailable in job-level env at ci.yml:324:35",
+  "correction": "same path initialized through GITHUB_ENV in an explicit 1min step; step budgets19/job20min; all drill/cleanup assertions and resource thresholds retained",
+  "command": [
+    "go",
+    "run",
+    "github.com/rhysd/actionlint/cmd/actionlint@v1.7.11",
+    "-shellcheck=",
+    "-pyflakes=",
+    ".github/workflows/ci.yml"
+  ],
+  "before": {
+    "direct_pid": 652656,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 652656,
+        "start_ticks": 21204951
+      },
+      {
+        "pid": 652667,
+        "start_ticks": 21205403
+      },
+      {
+        "pid": 652673,
+        "start_ticks": 21205429
+      },
+      {
+        "pid": 652679,
+        "start_ticks": 21205565
+      },
+      {
+        "pid": 652689,
+        "start_ticks": 21205593
+      },
+      {
+        "pid": 652692,
+        "start_ticks": 21205619
+      },
+      {
+        "pid": 652698,
+        "start_ticks": 21205633
+      },
+      {
+        "pid": 652701,
+        "start_ticks": 21205651
+      },
+      {
+        "pid": 652704,
+        "start_ticks": 21205714
+      },
+      {
+        "pid": 652720,
+        "start_ticks": 21205805
+      },
+      {
+        "pid": 652723,
+        "start_ticks": 21206166
+      },
+      {
+        "pid": 652729,
+        "start_ticks": 21206170
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false
+  },
+  "after": {
+    "direct_pid": 652922,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 652922,
+        "start_ticks": 21236431
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "limits": "120s deadline/1MiB private log/4GiB filesystem floors/shared memory15GiB+1GiBreserve; ownRSS/diskgrowth not enforced by this checking helper",
+  "acceptance": "actual CI/client/files after correction NOT_RUN; no product PASS inferred"
+}

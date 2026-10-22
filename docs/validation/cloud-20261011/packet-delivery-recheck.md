@@ -1,0 +1,9 @@
+# Goal / Context
+Independent narrow DR01/DR02 recheck of frozen0e717157c20a05bf30d97cedd50d9a05f4192b5a vs previouslyreviewed21e784e1. Restore currentrootTASK-CONTRACT/CURRENT/decisions/questions/resources (now D006/D007 ownerexports, unrelateddelivery), initialdelivery_review immutablefindings, ownauthor /workspace/scratch/rct-validation/delivery_developer safeupdatedreview-packet/dr01-correction/run-manifest. Prior sender/cache evidence reuse.
+# Scope / Constraints
+READONLY reviewer retainedSol6.1/xhigh actualUNKNOWN; ownreceipts /workspace/scratch/rct-validation/delivery_recheck. InputcleanWTdelivery. Noheavy/product/sharedwrites/children. Authoralonecorrection.
+# Required behavior / Acceptance / Verification
+DR01 productionAttendanceStudentGrpcServiceImpl optional getter movedintoexistingtry; standaloneoptions/commandfailclosed stays. Actualhandler/cache/client mockblockingstub seam focused139line1test proves alreadyauthorizedfullprojectionread preserved/noactions/nooptionsquery underGetActiveSemesterUNAVAILABLE. Meaningfulred54717 terminal1/one relevantfail/no skip then identicalgreen34800 terminal0; independentlyreconcile source/assertions/commands/XMLsafeartifacts. This seamnotactualNetty/fulladmission; prior3actualRPCMongo cachecases remainqualification.
+DR02 exactsafeactualcommandmanifest14invocations, properbaseline/WIP/unknownhistorical/environment bits, correctedoldred1log; green2capturedexit/sessionremainUNKNOWN no inventedrerun. Current13filesC3M10D0 baseline; only2correctionfiles. No new broker/cache/sender changes; no repetitionneeded. Separateimmutableverdict/findings/source/evidence and explicitclosure/limits. Blockingfindingsauthorfix, rootintegratesafteracceptance.
+# Do not
+No productfix/reviewselfcorrection, no runtime/push/deploy/secrets/authorityrewrites/newpolicy/scheduler.

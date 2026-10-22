@@ -1,0 +1,28 @@
+{
+  "utc": "2026-10-13T03:27:25.924421+00:00",
+  "scope": "NEXT04_ACTUAL_READONLY18_PREFLIGHT_ONLY",
+  "tool_chunk": "cfa96b",
+  "tool_exit_code": 0,
+  "persistent_tool_session": null,
+  "collector_supervisor_PID_birth": "NOT_CAPTURED_FAST_TERMINAL; no inventedbirthabsence",
+  "child_calls": "Only blocking subprocess.run Dockerreadmetadata; native0 terminal and no visible app/browser names confirmedbyexisting18gate",
+  "source_manifest": {
+    "path": "/workspace/scratch/rct-validation/current_host_restart_next04_parameters/source/manifest.json",
+    "sha256": "95e43a914cf866e6ccd58b0fcbb305534b9cd7c0580adf2e6e16f2b378266afc"
+  },
+  "preflight_caller_sha256": "d366fd0d04b3ccac0570e535c221f09fdc301234877f1fd39aa3d1d8ce4c5a30",
+  "resources": {
+    "workspace_free": 9429684224,
+    "tmp_free": 7500517376,
+    "shared": 5097697280,
+    "maximum": 17179869184
+  },
+  "preDocker_margin_bytes": 48865574,
+  "all18_PASS": true,
+  "blockers": [],
+  "private_grant_newcohort_absent": true,
+  "current159_exact_noextras_metadata": true,
+  "no_startup_API_privatevalue_reads_datawrite": true,
+  "clients_source_ready_and_parameter_verification_still_Root_prerequisites": true,
+  "runtime_authority": "NONE"
+}

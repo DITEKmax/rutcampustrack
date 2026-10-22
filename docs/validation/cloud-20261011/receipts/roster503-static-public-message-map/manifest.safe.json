@@ -1,0 +1,15 @@
+{
+  "schema": "safe-static-source-addendum-v1",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1369,
+      "sha256": "bb9fee2f7a7d9e9c5d33b89a55ea9650880600a906c88aa30a926550a8be44fd"
+    },
+    {
+      "path": "source-mapping.safe.json",
+      "bytes": 5065,
+      "sha256": "2779db3baf8e4a05da2ad483c8f69e0ac4c32af677524a34db1ae051a2e781d2"
+    }
+  ]
+}

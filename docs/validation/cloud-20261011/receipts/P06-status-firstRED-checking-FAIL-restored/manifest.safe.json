@@ -1,0 +1,6 @@
+{
+  "files": {
+    "REPORT.safe.json": "3fb3f89fbd9738c6f9d0fbcf528169d35b66c82b33fc4872b4db2a381ed171e8"
+  },
+  "excluded": "Rawprivate XML/log original runtimeSource/tmp artifacts; no bodyhashes"
+}

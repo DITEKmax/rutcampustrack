@@ -291,7 +291,7 @@ jobs:
       # подпись + запись в Rekor transparency log.
       - name: Cosign sign image (keyless)
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: '1'
         run: |
           cosign sign --yes \
             ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }}
@@ -300,7 +300,7 @@ jobs:
       # cosign attach, после этого verify может проверить SBOM origin.
       - name: Cosign attest SBOM (keyless)
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: '1'
         run: |
           # attest использует тот же keyless-flow что и sign
           cosign attest --yes \
@@ -336,7 +336,7 @@ jobs:
 
       - name: Verify signatures (13 images)
         env:
-          COSIGN_EXPERIMENTAL: "1"
+          COSIGN_EXPERIMENTAL: '1'
         run: |
           set -e
           IMAGES=(api-gateway mobile-bff auth-service academic-service schedule-service attendance-service document-renderer-service notification-web notification-bot pwa-nginx mini-app-nginx web-panel-nginx landing-nginx)
@@ -410,12 +410,12 @@ jobs:
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans --wait --wait-timeout 120
 
-            # --- Reload Grafana/Loki/Promtail when observability config changes ---
+            # --- Reload Grafana/Loki/Alloy when observability config changes ---
             # Grafana provisioning (datasources/dashboards) is loaded from
             # ./infra/grafana/provisioning at container start. `docker compose
             # up -d` does not restart containers whose image/env did not change,
             # so config-only changes (e.g. new dashboard JSON, datasource uid)
-            # stay invisible until a manual restart. Same for Loki/Promtail yaml.
+            # stay invisible until a manual restart. Same for Loki YAML/Alloy config.
             # We look at the last git pull delta and restart only what's needed.
             echo "--- Checking observability config changes ---"
             CHANGED=$(git diff --name-only HEAD@{1} HEAD 2>/dev/null || true)
@@ -427,9 +427,9 @@ jobs:
               echo "Loki config changed — restarting rct-loki"
               docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart loki
             } || true
-            echo "$CHANGED" | grep -qE '^infra/promtail/' && {
-              echo "Promtail config changed — restarting rct-promtail"
-              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart promtail
+            echo "$CHANGED" | grep -qE '^infra/alloy/' && {
+              echo "Alloy config changed — restarting rct-alloy"
+              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart alloy
             } || true
             echo "$CHANGED" | grep -qE '^infra/prometheus/' && {
               echo "Prometheus config changed — restarting rct-prometheus"
@@ -448,19 +448,9 @@ jobs:
             docker exec rct-nginx nginx -s reload
             sleep 2
 
-            # --- Smoke test: verify /login returns web-panel Angular HTML ---
-            # Phase 50 invariant: /login MUST be served by web-panel-nginx
-            # (Angular SPA, ~19KB) and NOT by mini-app/pwa/landing.
-            # If Content-Length is suspiciously small (<5000 bytes), the catch-all
-            # location / is misrouted — fail the deployment immediately.
-            echo "--- Smoke test: GET /login ---"
-            LOGIN_SIZE=$(curl -s -o /dev/null -w "%{size_download}" https://ruttrack.site/login)
-            echo "GET /login returned $LOGIN_SIZE bytes"
-            if [ "$LOGIN_SIZE" -lt 5000 ]; then
-              echo "FATAL: /login returned $LOGIN_SIZE bytes — expected web-panel Angular HTML (~19KB)"
-              echo "This usually means nginx routing is misconfigured or web-panel-nginx is unhealthy."
-              exit 1
-            fi
-            echo "✓ Smoke test passed: /login is served by web-panel"
+            # Exact HTTP/MIME and revision artifact identity, including its owned JS asset.
+            # This reads the existing container and nginx routes; it performs no deployment.
+            echo "--- Smoke test: GET /login and revision-bound asset ---"
+            python3 scripts/verify-served-web-panel.py https://ruttrack.site "$IMAGE_TAG"
 
             docker logout ghcr.io

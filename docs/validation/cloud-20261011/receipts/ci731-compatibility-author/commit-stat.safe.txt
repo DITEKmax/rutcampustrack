@@ -1,0 +1,15 @@
+commit ff43303e59f424f999ce7d02e2a68a48bbaebdc1
+Author:     Maxim Ditkovskiy <maxditek@gmail.com>
+AuthorDate: Mon Oct 12 05:15:37 2026 +0000
+Commit:     Maxim Ditkovskiy <maxditek@gmail.com>
+CommitDate: Mon Oct 12 05:15:37 2026 +0000
+
+    test(np01): align accepted v2 metadata and fixture inventory
+
+ .../integration/AcademicFixtureResetListener.java  |  1 +
+ .../auth/integration/AuthOtpFlowIT.java            | 37 ++++++++++++++++++++--
+ services/notification-bot/bot/__main__.py          |  4 +--
+ .../bot/notifications/password_changed.py          |  1 +
+ .../notification-bot/tests/np01_bridge_runner.py   |  2 +-
+ .../tests/test_bot_credential_cards.py             | 14 +++++---
+ 6 files changed, 50 insertions(+), 9 deletions(-)

@@ -1,0 +1,324 @@
+{
+  "artifacts": [
+    {
+      "id": 11719530075,
+      "name": "safe-integration-outcomes-api-gateway-1",
+      "size_in_bytes": 1339,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719530075",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719530075/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:30:30Z",
+      "expires_at": "2026-10-18T23:30:30Z",
+      "updated_at": "2026-10-11T23:30:30Z",
+      "digest": "sha256:6e4c3638642e55500490ce6ad87aeceecb4e09030ee49936b679cb8a9262bdb6",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/7669c2ba-18a6-4b40-8aa7-0ec931c65f18/safe-integration-outcomes-api-gateway-1.zip",
+        "size_bytes": 1339
+      }
+    },
+    {
+      "id": 11719500562,
+      "name": "safe-integration-outcomes-schedule-service-1",
+      "size_in_bytes": 10774,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719500562",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719500562/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:35:53Z",
+      "expires_at": "2026-10-18T23:35:52Z",
+      "updated_at": "2026-10-11T23:35:53Z",
+      "digest": "sha256:c889101fd51f52dd568435e07a9445adcb455c3f70927b1d7d713a23164210b7",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/5a5260d4-27bc-4873-913f-3c54a04033a2/safe-integration-outcomes-schedule-service-1.zip",
+        "size_bytes": 10774
+      }
+    },
+    {
+      "id": 11719450597,
+      "name": "safe-unit-outcomes-api-gateway-1",
+      "size_in_bytes": 5834,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719450597",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719450597/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:34:13Z",
+      "expires_at": "2026-10-18T23:34:12Z",
+      "updated_at": "2026-10-11T23:34:13Z",
+      "digest": "sha256:47fcf5a1958bc25fb3e01b9f4f93dbd8546a322e2db8d8c236d323870b76532a",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/e70def8f-8c74-465b-8924-735d3d689b74/safe-unit-outcomes-api-gateway-1.zip",
+        "size_bytes": 5834
+      }
+    },
+    {
+      "id": 11719430751,
+      "name": "safe-integration-outcomes-auth-service-1",
+      "size_in_bytes": 6913,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719430751",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719430751/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:36:31Z",
+      "expires_at": "2026-10-18T23:36:30Z",
+      "updated_at": "2026-10-11T23:36:31Z",
+      "digest": "sha256:dde4404d5ee526b6b088941e034c6226e624265ec9943084d20b0faa7029a6d5",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/8daf2e84-a3c1-473b-a723-6610d3d9ffd9/safe-integration-outcomes-auth-service-1.zip",
+        "size_bytes": 6913
+      }
+    },
+    {
+      "id": 11719167418,
+      "name": "safe-integration-outcomes-attendance-service-1",
+      "size_in_bytes": 12433,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719167418",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719167418/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:36:01Z",
+      "expires_at": "2026-10-18T23:36:01Z",
+      "updated_at": "2026-10-11T23:36:01Z",
+      "digest": "sha256:8e635ec1da4ac16f742a41cf4e5c5500286d242fd01b882e1af415d4f2e002a0",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/89af6eb9-6930-496c-80fa-9363898ab180/safe-integration-outcomes-attendance-service-1.zip",
+        "size_bytes": 12433
+      }
+    },
+    {
+      "id": 11719102777,
+      "name": "safe-integration-outcomes-academic-service-1",
+      "size_in_bytes": 19454,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719102777",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11719102777/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:37:54Z",
+      "expires_at": "2026-10-18T23:37:53Z",
+      "updated_at": "2026-10-11T23:37:54Z",
+      "digest": "sha256:8ff450fb0a1370dea997d92db27e0a4fa3863a8dfb496eba492810bc52dfa14f",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/60be89a9-1d9b-40ff-946f-231a31ad84c2/636-integration-academic.zip",
+        "size_bytes": 19454
+      }
+    },
+    {
+      "id": 11718972638,
+      "name": "safe-unit-outcomes-auth-service-1",
+      "size_in_bytes": 7275,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718972638",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718972638/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:34:09Z",
+      "expires_at": "2026-10-18T23:34:08Z",
+      "updated_at": "2026-10-11T23:34:09Z",
+      "digest": "sha256:61c9339cc80dc58015eaf9f58b97c3de8cfc1386b6a09c0419821ecc002950f5",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/f37c825f-6e81-4c6b-9ccf-f42313f4c13c/safe-unit-outcomes-auth-service-1.zip",
+        "size_bytes": 7275
+      }
+    },
+    {
+      "id": 11718823099,
+      "name": "safe-unit-outcomes-attendance-service-1",
+      "size_in_bytes": 14651,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718823099",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718823099/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:33:28Z",
+      "expires_at": "2026-10-18T23:33:27Z",
+      "updated_at": "2026-10-11T23:33:28Z",
+      "digest": "sha256:4a37b54ce8d81b9d2f761b850c7ef73becfd1a9676c1cc712b76099897b62670",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/4184085d-d2d9-4999-9bf8-012c6246bbb3/safe-unit-outcomes-attendance-service-1.zip",
+        "size_bytes": 14651
+      }
+    },
+    {
+      "id": 11718792984,
+      "name": "safe-unit-outcomes-academic-service-1",
+      "size_in_bytes": 14719,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718792984",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718792984/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:32:59Z",
+      "expires_at": "2026-10-18T23:32:58Z",
+      "updated_at": "2026-10-11T23:32:59Z",
+      "digest": "sha256:1546d07400b65b5b03e34cfd4f12079fff1dc3e129928a037d41d5f80da6c965",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/21cb8afb-7b6c-491f-9663-48befc58336c/safe-unit-outcomes-academic-service-1.zip",
+        "size_bytes": 14719
+      }
+    },
+    {
+      "id": 11718743176,
+      "name": "safe-unit-outcomes-notification-service-1",
+      "size_in_bytes": 7295,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718743176",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718743176/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:32:47Z",
+      "expires_at": "2026-10-18T23:32:47Z",
+      "updated_at": "2026-10-11T23:32:47Z",
+      "digest": "sha256:ebbbb08dcddd8925f32dd577c9102f4cf3a56e10df405db4e5784c3ba9b0c0ab",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/5a901e47-66d8-438d-85d3-da181bdee353/safe-unit-outcomes-notification-service-1.zip",
+        "size_bytes": 7295
+      }
+    },
+    {
+      "id": 11718708644,
+      "name": "safe-integration-outcomes-notification-service-1",
+      "size_in_bytes": 3987,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718708644",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718708644/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:34:20Z",
+      "expires_at": "2026-10-18T23:34:19Z",
+      "updated_at": "2026-10-11T23:34:20Z",
+      "digest": "sha256:8985cb06ce982f76e95c161663fa309f2919ba607554054e9f0f85976d29537e",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/7f9fae76-c06f-4a75-be38-bc6bb10e6dfb/safe-integration-outcomes-notification-service-1.zip",
+        "size_bytes": 3987
+      }
+    },
+    {
+      "id": 11718619123,
+      "name": "safe-unit-outcomes-schedule-service-1",
+      "size_in_bytes": 5407,
+      "url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718619123",
+      "archive_download_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/artifacts/11718619123/zip",
+      "expired": false,
+      "created_at": "2026-10-11T23:32:20Z",
+      "expires_at": "2026-10-18T23:32:20Z",
+      "updated_at": "2026-10-11T23:32:20Z",
+      "digest": "sha256:4d1956a7fecde179f9d90576a88692496f94a60b94011c06736f6531f1fa672b",
+      "workflow_run": {
+        "id": 38184430139,
+        "repository_id": 1194500358,
+        "head_repository_id": 1194500358,
+        "head_branch": "codex/server-validation-20261011",
+        "head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065"
+      },
+      "local": {
+        "path": "/workspace/attachments/b3655de5-70bf-4d9a-b646-1ae5b065bfea/safe-unit-outcomes-schedule-service-1.zip",
+        "size_bytes": 5407
+      }
+    }
+  ],
+  "runs": {
+    "workflow_runs": [
+      {
+        "id": 38184430135,
+        "name": "OpenAPI Drift Guard",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 27,
+        "jobs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430135/jobs",
+        "logs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430135/logs",
+        "workflow_id": 265174507
+      },
+      {
+        "id": 38184430147,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_number": 72,
+        "jobs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430147/jobs",
+        "logs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430147/logs",
+        "workflow_id": 266693434
+      },
+      {
+        "id": 38184430134,
+        "name": "Coverage",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 96,
+        "jobs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430134/jobs",
+        "logs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430134/logs",
+        "workflow_id": 265174506
+      },
+      {
+        "id": 38184430139,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 227,
+        "jobs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430139/jobs",
+        "logs_url": "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/38184430139/logs",
+        "workflow_id": 257591226
+      }
+    ]
+  }
+}

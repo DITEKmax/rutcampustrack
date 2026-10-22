@@ -14,7 +14,11 @@ function publicBase(mode: string): string {
 
 export default defineConfig(({ mode }) => ({
   base: publicBase(mode),
-  resolve: { alias: { '@rct/mobile-core': fileURLToPath(new URL('../mobile-core/src/index.ts', import.meta.url)) } },
+  resolve: {
+    alias: {
+      '@rct/mobile-core': fileURLToPath(new URL('../mobile-core/src/index.ts', import.meta.url)),
+    },
+  },
   optimizeDeps: browserDependencyOptimization,
   plugins: [vue()],
   css: {
@@ -22,13 +26,17 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     ...developmentServer(
-    loadEnv(mode, '.', ''),
-    5176,
-    loadEnv(mode, '.', '').VITE_API_PROXY_TARGET ?? 'http://localhost:8080',
+      loadEnv(mode, '.', ''),
+      5176,
+      loadEnv(mode, '.', '').VITE_API_PROXY_TARGET ?? 'http://localhost:8080',
     ),
-    fs: { allow: [
-      searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
-      realpathSync(fileURLToPath(new URL('../node_modules/@fontsource-variable/onest', import.meta.url))),
-    ] },
+    fs: {
+      allow: [
+        searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
+        realpathSync(
+          fileURLToPath(new URL('../node_modules/@fontsource-variable/onest', import.meta.url)),
+        ),
+      ],
+    },
   },
 }))

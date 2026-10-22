@@ -2,10 +2,12 @@ package ru.rutcampustrack.gateway.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -14,13 +16,14 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
 import reactor.core.publisher.Mono;
+
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 import ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter;
@@ -38,9 +41,9 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Exchanges one locally validated access token for a live, signed internal
- * identity.  The downstream request is trusted only after both the authority
- * response and the internal JWT agree with the original access expectations.
+ * Exchanges one locally validated access token for a live, signed internal identity. The downstream
+ * request is trusted only after both the authority response and the internal JWT agree with the
+ * original access expectations.
  */
 @Component
 public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
@@ -63,15 +66,16 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
     private final InternalJwtIssuerClient client;
     private final PublicKeyConfig publicKeyConfig;
 
-    public InternalJwtIssuerFilter(InternalJwtIssuerClient client,
-                                   PublicKeyConfig publicKeyConfig) {
+    public InternalJwtIssuerFilter(
+            InternalJwtIssuerClient client, PublicKeyConfig publicKeyConfig) {
         this.client = client;
         this.publicKeyConfig = publicKeyConfig;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String accessToken = exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE);
+        String accessToken =
+                exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE);
         if (accessToken == null || accessToken.isBlank()) {
             return chain.filter(exchange);
         }
@@ -80,36 +84,58 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         try {
             expectations = readExpectations(exchange);
         } catch (RuntimeException e) {
+            log.warn(
+                    "semester.preview failure source=GATEWAY_ISSUER_FILTER stage=EXPECTATIONS"
+                        + " status=NONE cause={}",
+                    e instanceof IllegalArgumentException || e instanceof JwtException
+                            ? "IDENTITY_REJECTED"
+                            : "UNEXPECTED");
             return serviceUnavailable(exchange);
         }
 
         return client.admit(accessToken)
                 .flatMap(response -> prepareForwardedChain(exchange, chain, response, expectations))
-                .onErrorResume(InternalAdmissionDeniedException.class,
-                        error -> problem(exchange, error.publicStatus(), publicTitle(error.publicCode()),
-                                publicDetail(error.publicCode()), error.publicCode()))
-                .onErrorResume(InternalIssuerUnavailableException.class,
+                .onErrorResume(
+                        InternalAdmissionDeniedException.class,
+                        error ->
+                                problem(
+                                        exchange,
+                                        error.publicStatus(),
+                                        publicTitle(error.publicCode()),
+                                        publicDetail(error.publicCode()),
+                                        error.publicCode()))
+                .onErrorResume(
+                        InternalIssuerUnavailableException.class,
                         error -> serviceUnavailable(exchange))
-                .onErrorResume(DownstreamChainFailure.class,
-                        error -> Mono.error(error.getCause()));
+                .onErrorResume(DownstreamChainFailure.class, error -> Mono.error(error.getCause()));
     }
 
-    private Mono<Void> prepareForwardedChain(ServerWebExchange exchange,
-                                             GatewayFilterChain chain,
-                                             AuthAdmissionResponse response,
-                                             AccessExpectations expectations) {
+    private Mono<Void> prepareForwardedChain(
+            ServerWebExchange exchange,
+            GatewayFilterChain chain,
+            AuthAdmissionResponse response,
+            AccessExpectations expectations) {
         final ServerWebExchange forwardedExchange;
         try {
             validateAdmission(response, expectations);
-            ServerHttpRequest request = exchange.getRequest().mutate()
-                    .headers(InternalJwtIssuerFilter::removeIdentityHeaders)
-                    .header(INTERNAL_TOKEN_HEADER, response.internalToken())
-                    .build();
-            exchange.getAttributes().put(
-                    JwtAuthenticationFilter.AUTHENTICATED_USER_ID_ATTRIBUTE,
-                    response.userId());
+            ServerHttpRequest request =
+                    exchange.getRequest()
+                            .mutate()
+                            .headers(InternalJwtIssuerFilter::removeIdentityHeaders)
+                            .header(INTERNAL_TOKEN_HEADER, response.internalToken())
+                            .build();
+            exchange.getAttributes()
+                    .put(
+                            JwtAuthenticationFilter.AUTHENTICATED_USER_ID_ATTRIBUTE,
+                            response.userId());
             forwardedExchange = exchange.mutate().request(request).build();
         } catch (RuntimeException e) {
+            log.warn(
+                    "semester.preview failure source=GATEWAY_ISSUER_FILTER stage=FORWARDED_IDENTITY"
+                        + " status=NONE cause={}",
+                    e instanceof IllegalArgumentException || e instanceof JwtException
+                            ? "IDENTITY_REJECTED"
+                            : "UNEXPECTED");
             return Mono.error(unavailable(e));
         }
 
@@ -125,17 +151,23 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
     }
 
     private static AccessExpectations readExpectations(ServerWebExchange exchange) {
-        String userId = requiredAttribute(exchange, JwtAuthenticationFilter.EXPECTED_USER_ID_ATTRIBUTE);
-        String sessionId = requiredAttribute(exchange, JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE);
-        String sessionVersion = requiredAttribute(
-                exchange, JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE);
-        String rolesVersion = requiredAttribute(
-                exchange, JwtAuthenticationFilter.EXPECTED_ROLES_VERSION_ATTRIBUTE);
-        Instant accessExpiry = exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE);
+        String userId =
+                requiredAttribute(exchange, JwtAuthenticationFilter.EXPECTED_USER_ID_ATTRIBUTE);
+        String sessionId =
+                requiredAttribute(exchange, JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE);
+        String sessionVersion =
+                requiredAttribute(
+                        exchange, JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE);
+        String rolesVersion =
+                requiredAttribute(
+                        exchange, JwtAuthenticationFilter.EXPECTED_ROLES_VERSION_ATTRIBUTE);
+        Instant accessExpiry =
+                exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE);
         if (accessExpiry == null) {
             throw new IllegalArgumentException("missing access expiry expectation");
         }
-        return new AccessExpectations(userId, sessionId, sessionVersion, rolesVersion, accessExpiry);
+        return new AccessExpectations(
+                userId, sessionId, sessionVersion, rolesVersion, accessExpiry);
     }
 
     private static String requiredAttribute(ServerWebExchange exchange, String name) {
@@ -146,9 +178,10 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         return string;
     }
 
-    private void validateAdmission(AuthAdmissionResponse response,
-                                   AccessExpectations expectations) {
-        if (response == null || response.internalToken() == null
+    private void validateAdmission(
+            AuthAdmissionResponse response, AccessExpectations expectations) {
+        if (response == null
+                || response.internalToken() == null
                 || response.internalToken().isBlank()
                 || response.internalToken().length() > 16_384
                 || response.expiresAt() == null) {
@@ -157,12 +190,15 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
 
         String userId = requirePositiveLongString(response.userId(), "userId");
         String sessionId = requireCanonicalUuid(response.sessionId(), "sessionId");
-        String sessionVersion = requirePositiveLongString(response.sessionVersion(), "sessionVersion");
+        String sessionVersion =
+                requirePositiveLongString(response.sessionVersion(), "sessionVersion");
         String rolesVersion = requirePositiveLongString(response.rolesVersion(), "rolesVersion");
         String role = requireKnownRole(response.role());
         String status = requireAdmissionStatus(response.status());
-        String groupId = response.groupId() == null
-                ? null : requirePositiveLongString(response.groupId(), "groupId");
+        String groupId =
+                response.groupId() == null
+                        ? null
+                        : requirePositiveLongString(response.groupId(), "groupId");
 
         if (!expectations.userId().equals(userId)
                 || !expectations.sessionId().equals(sessionId)
@@ -180,73 +216,109 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
             throw new IllegalArgumentException("readOnly flag does not match status");
         }
 
-        verifyInternalToken(response, userId, sessionId, sessionVersion, rolesVersion,
-                role, status, groupId, expectations.accessExpiry());
+        verifyInternalToken(
+                response,
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                expectations.accessExpiry());
     }
 
-    private void verifyInternalToken(AuthAdmissionResponse response,
-                                     String userId,
-                                     String sessionId,
-                                     String sessionVersion,
-                                     String rolesVersion,
-                                     String role,
-                                     String status,
-                                     String groupId,
-                                     Instant accessExpiry) {
-        verifyInternalToken(response, userId, sessionId, sessionVersion, rolesVersion,
-                role, status, groupId, accessExpiry, null, null);
+    private void verifyInternalToken(
+            AuthAdmissionResponse response,
+            String userId,
+            String sessionId,
+            String sessionVersion,
+            String rolesVersion,
+            String role,
+            String status,
+            String groupId,
+            Instant accessExpiry) {
+        verifyInternalToken(
+                response,
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                accessExpiry,
+                null,
+                null);
     }
 
     void verifyInternalReportDownloadToken(
-            AuthAdmissionResponse response,
-            Instant ticketExpiresAt,
-            String reportBindingHash
-    ) {
-        if (response == null || response.internalToken() == null
-                || response.internalToken().isBlank() || response.internalToken().length() > 16_384
-                || response.expiresAt() == null || ticketExpiresAt == null
-                || reportBindingHash == null || !reportBindingHash.matches("[0-9a-f]{64}")) {
+            AuthAdmissionResponse response, Instant ticketExpiresAt, String reportBindingHash) {
+        if (response == null
+                || response.internalToken() == null
+                || response.internalToken().isBlank()
+                || response.internalToken().length() > 16_384
+                || response.expiresAt() == null
+                || ticketExpiresAt == null
+                || reportBindingHash == null
+                || !reportBindingHash.matches("[0-9a-f]{64}")) {
             throw new IllegalArgumentException("incoherent report-ticket admission response");
         }
         String userId = requirePositiveLongString(response.userId(), "userId");
         String sessionId = requireCanonicalUuid(response.sessionId(), "sessionId");
-        String sessionVersion = requirePositiveLongString(response.sessionVersion(), "sessionVersion");
+        String sessionVersion =
+                requirePositiveLongString(response.sessionVersion(), "sessionVersion");
         String rolesVersion = requirePositiveLongString(response.rolesVersion(), "rolesVersion");
         String role = requireKnownRole(response.role());
         String status = requireAdmissionStatus(response.status());
-        String groupId = response.groupId() == null
-                ? null : requirePositiveLongString(response.groupId(), "groupId");
+        String groupId =
+                response.groupId() == null
+                        ? null
+                        : requirePositiveLongString(response.groupId(), "groupId");
         if (response.isHeadman() != "HEADMAN".equals(role)
                 || ("HEADMAN".equals(role) && groupId == null)
                 || response.readOnly() != TERMINAL_STATUSES.contains(status)
                 || !ticketExpiresAt.isAfter(Instant.now())
                 || ticketExpiresAt.isAfter(Instant.now().plusSeconds(60))) {
-            throw new IllegalArgumentException("report-ticket admission identity or expiry is invalid");
+            throw new IllegalArgumentException(
+                    "report-ticket admission identity or expiry is invalid");
         }
-        verifyInternalToken(response, userId, sessionId, sessionVersion, rolesVersion,
-                role, status, groupId, ticketExpiresAt, reportBindingHash, ticketExpiresAt.toString());
+        verifyInternalToken(
+                response,
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                ticketExpiresAt,
+                reportBindingHash,
+                ticketExpiresAt.toString());
     }
 
-    private void verifyInternalToken(AuthAdmissionResponse response,
-                                     String userId,
-                                     String sessionId,
-                                     String sessionVersion,
-                                     String rolesVersion,
-                                     String role,
-                                     String status,
-                                     String groupId,
-                                     Instant accessExpiry,
-                                     String expectedReportBindingHash,
-                                     String expectedReportTicketExpiry) {
+    private void verifyInternalToken(
+            AuthAdmissionResponse response,
+            String userId,
+            String sessionId,
+            String sessionVersion,
+            String rolesVersion,
+            String role,
+            String status,
+            String groupId,
+            Instant accessExpiry,
+            String expectedReportBindingHash,
+            String expectedReportTicketExpiry) {
         try {
             PublicKey publicKey = publicKeyConfig.getPublicKey();
             if (!(publicKey instanceof RSAPublicKey)) {
                 throw new IllegalStateException("Gateway public key is not RSA");
             }
-            Jws<Claims> parsed = Jwts.parser()
-                    .verifyWith(publicKey)
-                    .build()
-                    .parseSignedClaims(response.internalToken());
+            Jws<Claims> parsed =
+                    Jwts.parser()
+                            .verifyWith(publicKey)
+                            .build()
+                            .parseSignedClaims(response.internalToken());
             if (!"RS256".equals(parsed.getHeader().getAlgorithm())) {
                 throw new IllegalArgumentException("internal JWT algorithm must be RS256");
             }
@@ -271,16 +343,20 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
                     || !sessionVersion.equals(requirePositiveLongStringClaim(claims, "sv"))
                     || !rolesVersion.equals(requirePositiveLongStringClaim(claims, "rv"))
                     || !role.equals(requireKnownRole(requireExactStringClaim(claims, "role")))
-                    || !status.equals(requireAdmissionStatus(requireExactStringClaim(claims, "status")))) {
+                    || !status.equals(
+                            requireAdmissionStatus(requireExactStringClaim(claims, "status")))) {
                 throw new IllegalArgumentException("internal JWT identity does not match response");
             }
 
-            String tokenGroupId = optionalPositiveLongStringClaim(claims, originalPayload, "group_id");
+            String tokenGroupId =
+                    optionalPositiveLongStringClaim(claims, originalPayload, "group_id");
             if (groupId == null ? tokenGroupId != null : !groupId.equals(tokenGroupId)) {
                 throw new IllegalArgumentException("internal JWT group does not match response");
             }
-            if (!Boolean.valueOf(response.isHeadman()).equals(requireBooleanClaim(claims, "is_headman"))
-                    || !Boolean.valueOf(response.readOnly()).equals(requireBooleanClaim(claims, "readOnly"))) {
+            if (!Boolean.valueOf(response.isHeadman())
+                            .equals(requireBooleanClaim(claims, "is_headman"))
+                    || !Boolean.valueOf(response.readOnly())
+                            .equals(requireBooleanClaim(claims, "readOnly"))) {
                 throw new IllegalArgumentException("internal JWT flags do not match response");
             }
 
@@ -291,7 +367,8 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
 
             Instant tokenExpiry = expiresAt.toInstant();
             if (!response.expiresAt().equals(tokenExpiry) || tokenExpiry.isAfter(accessExpiry)) {
-                throw new IllegalArgumentException("internal JWT expiry does not match response/access");
+                throw new IllegalArgumentException(
+                        "internal JWT expiry does not match response/access");
             }
         } catch (JwtException | IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("internal JWT is incoherent", e);
@@ -315,14 +392,17 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
     }
 
     private static void requireBoundedUppercase(String value, String name) {
-        if (value == null || value.isBlank() || value.length() > MAX_WIRE_STRING_LENGTH
+        if (value == null
+                || value.isBlank()
+                || value.length() > MAX_WIRE_STRING_LENGTH
                 || !value.matches("[A-Z][A-Z0-9_]*")) {
             throw new IllegalArgumentException(name + " is outside the wire bounds");
         }
     }
 
     private static String requirePositiveLongString(String value, String name) {
-        if (value == null || value.length() > MAX_WIRE_STRING_LENGTH
+        if (value == null
+                || value.length() > MAX_WIRE_STRING_LENGTH
                 || !value.matches("[1-9][0-9]*")) {
             throw new IllegalArgumentException(name + " must be a positive Java-Long string");
         }
@@ -350,7 +430,8 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         return value;
     }
 
-    private static Date requireWholeSecondDate(Claims claims, JsonNode originalPayload, String name) {
+    private static Date requireWholeSecondDate(
+            Claims claims, JsonNode originalPayload, String name) {
         JsonNode raw = originalPayload.get(name);
         if (raw == null || !raw.isIntegralNumber() || !raw.canConvertToLong()) {
             throw new IllegalArgumentException(name + " must be a whole-second NumericDate");
@@ -399,9 +480,8 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         return requireCanonicalUuid(value, name);
     }
 
-    private static String optionalPositiveLongStringClaim(Claims claims,
-                                                         JsonNode originalPayload,
-                                                         String name) {
+    private static String optionalPositiveLongStringClaim(
+            Claims claims, JsonNode originalPayload, String name) {
         if (!originalPayload.has(name)) {
             return null;
         }
@@ -422,7 +502,8 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
 
     private static String requireExactStringClaim(Claims claims, String name) {
         Object raw = claims.get(name);
-        if (!(raw instanceof String value) || value.isBlank()
+        if (!(raw instanceof String value)
+                || value.isBlank()
                 || value.length() > MAX_WIRE_STRING_LENGTH) {
             throw new IllegalArgumentException(name + " must be a bounded string");
         }
@@ -442,7 +523,8 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
                 throw new IllegalArgumentException("JWT audience is not allowed");
             }
         } else if (raw instanceof Collection<?> values) {
-            if (values.size() != 1 || !(values.iterator().next() instanceof String value)
+            if (values.size() != 1
+                    || !(values.iterator().next() instanceof String value)
                     || !expected.equals(value)) {
                 throw new IllegalArgumentException("JWT audience must be a singleton");
             }
@@ -450,7 +532,8 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
             throw new IllegalArgumentException("JWT audience has an invalid type");
         }
         Set<String> parsedAudience = claims.getAudience();
-        if (parsedAudience == null || parsedAudience.size() != 1
+        if (parsedAudience == null
+                || parsedAudience.size() != 1
                 || !parsedAudience.contains(expected)) {
             throw new IllegalArgumentException("JWT audience must be a singleton");
         }
@@ -458,9 +541,7 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
 
     private static void removeIdentityHeaders(HttpHeaders headers) {
         List<String> names = List.copyOf(headers.keySet());
-        names.stream()
-                .filter(InternalJwtIssuerFilter::isIdentityHeader)
-                .forEach(headers::remove);
+        names.stream().filter(InternalJwtIssuerFilter::isIdentityHeader).forEach(headers::remove);
     }
 
     private static boolean isIdentityHeader(String name) {
@@ -473,21 +554,27 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Void> serviceUnavailable(ServerWebExchange exchange) {
-        return problem(exchange, HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable",
-                "Dependency unavailable", "DEPENDENCY_UNAVAILABLE");
+        return problem(
+                exchange,
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Service Unavailable",
+                "Dependency unavailable",
+                "DEPENDENCY_UNAVAILABLE");
     }
 
-    private Mono<Void> problem(ServerWebExchange exchange,
-                               HttpStatus status,
-                               String title,
-                               String detail,
-                               String code) {
+    private Mono<Void> problem(
+            ServerWebExchange exchange,
+            HttpStatus status,
+            String title,
+            String detail,
+            String code) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
         response.getHeaders().setContentType(MediaType.APPLICATION_PROBLEM_JSON);
         response.getHeaders().setCacheControl("no-store");
-        String body = "{\"status\":%d,\"title\":\"%s\",\"detail\":\"%s\",\"code\":\"%s\"}"
-                .formatted(status.value(), title, detail, code);
+        String body =
+                "{\"status\":%d,\"title\":\"%s\",\"detail\":\"%s\",\"code\":\"%s\"}"
+                        .formatted(status.value(), title, detail, code);
         DataBuffer buffer = response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
         return response.writeWith(Mono.just(buffer));
     }
@@ -518,12 +605,12 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         return new InternalIssuerUnavailableException("Auth authority unavailable", cause);
     }
 
-    private record AccessExpectations(String userId,
-                                      String sessionId,
-                                      String sessionVersion,
-                                      String rolesVersion,
-                                      Instant accessExpiry) {
-    }
+    private record AccessExpectations(
+            String userId,
+            String sessionId,
+            String sessionVersion,
+            String rolesVersion,
+            Instant accessExpiry) {}
 
     private static final class DownstreamChainFailure extends RuntimeException {
         private DownstreamChainFailure(Throwable cause) {

@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-12T02:54:27.617286+00:00",
+  "free_bytes": 9508892672,
+  "cpu_count": 5,
+  "java_process_metadata": [
+    "11771       1 java            Z",
+    "33249       1 java            Z",
+    "33286       1 java            Z",
+    "149519       1 java            Z",
+    "149559       1 java            Z",
+    "163814       1 java            Z"
+  ],
+  "containers": []
+}

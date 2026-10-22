@@ -1,0 +1,18 @@
+# Goal
+Fresh independent SOURCE recheck whole corrected Clock/harness package before consumer runtime and any applications/browser; close source CC01/CC02/CC03 separately from actualruntimeproof.
+# Context/evidence
+Read FULL TASK-CONTRACT/current/decisions/questions/resources, applicableAGENTS/RULES/source/verification skills and original receipts/client-clock-review. Requested freshSol6.1/xhigh/forknone actualUNKNOWN. Stableauthor WT /workspace/rct-worktrees/client-runtime clean6e2376c39fa733a0e645d5d929f132a6448a953d; correctedharnessaa62 precedes it, original049ab kept in history. Rootcurrent2f5f6e327f346c0656eb8ce63901c55bb65cce1f. Author scratchclient_runtime_developer clock-correction-source-ready.md/.json,clock-correction-source-isolation.json,browser-date-source-audit.json and correctionsCC02/CC03 receipts. Separateconfige8ebe/dependency4ae sourceaccepted/integrated; securitydc3/0c61 independentlyreviewed/preserved.
+# Relevant scope
+READ ONLY allcriticalClockconsumers/externalfixture/build/harness/newtests/currentoriginalsources; writeONLY /workspace/scratch/rct-validation/client_clock_typed_review. No runtime/Java/Gradle/Docker/browser/apps/product/tests/config/rootdocs/children. Inspect combined final assigned Clock+harness diff, not only latestcommit; repeatedalreadyacceptedsecuritycode only source-equivalence, no newsecurityredesign.
+# Required behavior
+CC01 EducationalTime composition NOT Clocksubtype, sole normalClockreal defaultfactories andfallback/ObjectProvider/directconstructor compatibility, actual sessionrefresh expiry and attachment uploadcreated/download/retention/descriptors/cleanup stayreal at everyconsumer. Explicit13main-path finiteeducational lane neededschedule publication/window/receipt/BFF date/retry; unchanged outsideconsumersnotimplicitlyshifted. No globalClock substitution/auth expiry disable/reflectionrouting/productionfixturedependency. Parse currentclass consumer clocks aftersemanticchanges; tests should expose relevantmix includingshifteddatepast/future, live/expired authority and retained/expired storagebytes. CC02 recursive nestedJAR scanner/all6 actualfunction controls/red049ab, ordinaryproductionbuildgraph/defaultclasspath no fixture. CC03 changedvalidpayloadsamekey409 exactcode+public/headmanreportimmutablemarkRevision+originalackreplay, requiredbackend sensitivity STILL NOT_RUN. BrowserfixedDate audit auth/token/session heuristics and eligiblefinitegeo lane vs ordinaryrealDate; excludedsecurityUI clocks must not be falsely accepted. Testclock mustnot make validbrowser path unreachable.
+# Constraints
+No blanketfullproductTimecoverage/productionJARisolation claim fromdryrun. Sourceapprovalonlycanunlock actualconsumercompile/tests, not apps/browser until runtimecontrols accepted. Allcriticalpriorfindingsexplicit disposition and pendingevidence preserved.
+# Existing patterns
+Existingshared-web domain wrapper/SpringDI/fourconfigs and sameproductiondefaults; publicAPI/proto/grants unchanged. Security BFF enumfixpresent with hashes; preserve mixedtimepartition.
+# Acceptance criteria
+APPROVE_SOURCE or CHANGES_REQUESTED exactseverity/paths/currentoriginal/evidence. Explicit runtime prerequisites before apps; actualconsumer tests meaningful sourceoracles/safeequivalentcounterexample design, no syntaxonlytestclaims. Immutable source/evidence/transfermanifest outputs.
+# Verification
+Open critical originals independently; sourcehashes/diffscope/actualexistinglightJava/Python/TScontrol receipts, max18Java syntax parser NOTcompiler. No sufficientPASSrepeat.
+# Do not
+No productfix byreviewer/newgrants/ordinalDB/no expiryweakening, no launchstale049ab buildJAR, no originalsource clocks assumed fromsummary alone.

@@ -1,0 +1,43 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_common_review",
+  "manifest": "sealed-common-final-manifest.safe.json",
+  "files": [
+    {
+      "path": "common-final-review.safe.json",
+      "original_sha256": "9a08f52d5fed12e8f561893838c25fe4627ce07d22fc24f9cfbc9782b9813abc",
+      "original_bytes": 5122,
+      "working_sha256": "9a08f52d5fed12e8f561893838c25fe4627ce07d22fc24f9cfbc9782b9813abc",
+      "working_bytes": 5122,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "common-final-independent-check.safe.json",
+      "original_sha256": "9e2cf68d17bc68e1d60281f5cd054bfdd6c16438bf72dacada2b7748f63f234f",
+      "original_bytes": 10113,
+      "working_sha256": "9e2cf68d17bc68e1d60281f5cd054bfdd6c16438bf72dacada2b7748f63f234f",
+      "working_bytes": 10113,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-common-final.py",
+      "original_sha256": "54f3ae0b6c6ca4405453f2e66a3e6377b6fb4f100e53375a0299a1f29eb27500",
+      "original_bytes": 10632,
+      "working_sha256": "54f3ae0b6c6ca4405453f2e66a3e6377b6fb4f100e53375a0299a1f29eb27500",
+      "working_bytes": 10632,
+      "transformation": "byte equal; copied source losslessly wrapped",
+      "working_path": "verify-common-final.py.readable.zip",
+      "working_archive_member": "verify-common-final.py",
+      "working_container_sha256": "9ad7ce2ff9ffa49b174aea886c9c774f94b99fc583fb262fc8553ce44a5a57c3",
+      "working_container_bytes": 4038
+    },
+    {
+      "path": "sealed-common-final-manifest.safe.json",
+      "original_sha256": "d86987063b658d2a097bbc74d74ca71135f365ac1f182eab4edd9c0f3671b376",
+      "original_bytes": 573,
+      "working_sha256": "d86987063b658d2a097bbc74d74ca71135f365ac1f182eab4edd9c0f3671b376",
+      "working_bytes": 573,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

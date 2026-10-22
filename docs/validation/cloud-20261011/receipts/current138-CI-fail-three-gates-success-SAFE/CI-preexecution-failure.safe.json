@@ -1,0 +1,60 @@
+{
+  "producer": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+  "workflow_run": {
+    "id": 38327774818,
+    "name": ".github/workflows/ci.yml",
+    "event": "push",
+    "head_sha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_attempt": 1,
+    "created_at": "2026-10-13T00:32:46Z",
+    "updated_at": "2026-10-13T00:32:46Z",
+    "run_started_at": "2026-10-13T00:32:46Z",
+    "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38327774818",
+    "path": ".github/workflows/ci.yml"
+  },
+  "jobs": [],
+  "public_suite_read": {
+    "producer": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+    "run_id": 38327774818,
+    "credential_headers_used": false,
+    "connector_endpoint_status": "INVALID_ARGUMENT",
+    "results": [
+      {
+        "endpoint": "check-suite",
+        "carrier_bytes": 8060,
+        "carrier_sha256": "7b70e53878dae643df0dce8e918f52a3463b7d7905029cba929ea146dbc4134a",
+        "id": 103844845457,
+        "head_sha": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+        "status": "completed",
+        "conclusion": "failure",
+        "latest_check_runs_count": 0
+      },
+      {
+        "endpoint": "suite-check-runs",
+        "carrier_bytes": 33,
+        "carrier_sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170",
+        "total_count": 0,
+        "check_runs": []
+      }
+    ],
+    "raw_body_persisted": false
+  },
+  "check_annotations_available": false,
+  "actual_source_cause": "NOT_EXPOSED_BY_API",
+  "actual_FIRST3": "NOT_RUN",
+  "current_503_boundary_dependency_code_operationHint_bodyState": "NO_ACTUAL_RUNTIME_OBSERVATION",
+  "source_only_candidate": {
+    "path": ".github/workflows/ci.yml",
+    "lines": [
+      322,
+      323,
+      324
+    ],
+    "expression_context": "runner.temp in job-level env",
+    "actual_annotation_confirmation": false
+  },
+  "raw_source_validation_HTML_logs_runtime_body_read": false,
+  "source_mutation": false
+}

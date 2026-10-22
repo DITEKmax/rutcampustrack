@@ -31,15 +31,16 @@ describe('deriveStudentChartData', () => {
           records: [
             { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
             { date: '2026-03-02', lessonNumber: 1, status: 'free_attendance', symbol: 'сп' },
-            { date: '2026-03-03', lessonNumber: 1, status: 'absent', symbol: 'н' },
+            { date: '2026-03-03', lessonNumber: 1, status: 'present', symbol: '+' },
           ],
         },
       ],
     });
     const result = deriveStudentChartData(journal);
-    expect(result).toHaveLength(2);
-    expect(result[0]).toMatchObject({ present: 1, absent: 1, excused: 1 });
-    expect(result[1]).toMatchObject({ present: 1, absent: 1, excused: 1 });
+    expect(result).toEqual([
+      { name: 'Иванов Иван', present: 1, absent: 1, excused: 1 },
+      { name: 'Петров Пётр', present: 2, absent: 0, excused: 1 },
+    ]);
   });
 
   it('excludes cancelled records from counts', () => {

@@ -1,0 +1,26 @@
+{
+  "scope": "NARROW_SCD_MARKER_CUTOFF_001_SOURCE_RECHECK",
+  "verdict": "APPROVE_SOURCE",
+  "original_review_manifest_sha256": "52a841257fbefa25fa057ef2ac90f3bb85580554d4a5490bf0c3dd0de1c30079",
+  "correction_manifest_sha256": "50444d54dd0d5f117620ca00999366ab0f6ea60a631844849d35b4b31bac3e41",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 6563,
+      "sha256": "036b86ec21affc6e0c9b3d66ca3b9acdeb3f34263b1e052a51384eb02f66433e",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 1399,
+      "sha256": "ab5df908ad9afa86a10df96f5bb7261d8972e697c3b3057242ec9dd7a058ba5b",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3417,
+      "sha256": "1ada52375a8a3b61545da25063e066f2a65639de72de54a2725237dbe7e142ea",
+      "mode": "0o400"
+    }
+  ]
+}

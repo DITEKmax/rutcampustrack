@@ -1,0 +1,22 @@
+[
+  {
+    "xml": "auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "name": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession()",
+    "exception_type": "org.opentest4j.AssertionFailedError",
+    "source_frames": [],
+    "numeric_boolean_assertion": "",
+    "message_sha256": "eed6ba67463c38516e00ef3d534c742198ba84b1993165ca493b6c14518b496d",
+    "xml_sha256": "d24165edee458e832e60d634379f989f391ee6b0060ab23a7b6ffaea8d91c1e7"
+  },
+  {
+    "xml": "auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "name": "passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart()",
+    "exception_type": "org.opentest4j.AssertionFailedError",
+    "source_frames": [],
+    "numeric_boolean_assertion": "",
+    "message_sha256": "eed6ba67463c38516e00ef3d534c742198ba84b1993165ca493b6c14518b496d",
+    "xml_sha256": "d24165edee458e832e60d634379f989f391ee6b0060ab23a7b6ffaea8d91c1e7"
+  }
+]

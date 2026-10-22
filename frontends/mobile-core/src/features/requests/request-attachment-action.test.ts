@@ -14,24 +14,40 @@ import type { RequestAttachmentViewState } from './types'
 
 function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
   let resolve!: (value: T) => void
-  const promise = new Promise<T>((resolvePromise) => { resolve = resolvePromise })
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise
+  })
   return { promise, resolve }
 }
 
-function actionSetup(overrides: Partial<{
-  openPopup: () => RequestAttachmentPopup | null
-  download: () => Promise<Blob>
-}> = {}): {
+function actionSetup(
+  overrides: Partial<{
+    openPopup: () => RequestAttachmentPopup | null
+    download: () => Promise<Blob>
+  }> = {},
+): {
   deps: RequestAttachmentActionDependencies
   state: RequestAttachmentViewState
   popup: RequestAttachmentPopup
   setContext: (identity: string | null, generation: number) => void
-  calls: { download: number; close: number; navigate: number; released: string[]; errors: unknown[] }
+  calls: {
+    download: number
+    close: number
+    navigate: number
+    released: string[]
+    errors: unknown[]
+  }
 } {
   let identity: string | null = 'owner-1'
   let generation = 0
   const popup: RequestAttachmentPopup = { location: { href: '' }, opener: null }
-  const calls = { download: 0, close: 0, navigate: 0, released: [] as string[], errors: [] as unknown[] }
+  const calls = {
+    download: 0,
+    close: 0,
+    navigate: 0,
+    released: [] as string[],
+    errors: [] as unknown[],
+  }
   const state: RequestAttachmentViewState = { status: 'idle', error: null }
   const deps: RequestAttachmentActionDependencies = {
     ownerIdentity: identity,
@@ -51,10 +67,15 @@ function actionSetup(overrides: Partial<{
       calls.navigate += 1
       target.location.href = url
     },
-    closePopup: () => { calls.close += 1 },
+    closePopup: () => {
+      calls.close += 1
+    },
     setState: (next) => Object.assign(state, next),
     onError: (error) => calls.errors.push(error),
-    errorMessage: (error) => error instanceof Error ? error.message : 'HTTP ' + String((error as { status?: number }).status ?? 'unknown'),
+    errorMessage: (error) =>
+      error instanceof Error
+        ? error.message
+        : 'HTTP ' + String((error as { status?: number }).status ?? 'unknown'),
   }
   return {
     deps,
@@ -76,7 +97,10 @@ describe('request attachment download', () => {
   function downloadSetup(download?: () => Promise<Blob>) {
     const setup = actionSetup(download ? { download } : {})
     const saved: string[] = []
-    const deps: RequestAttachmentDownloadDependencies = { ...setup.deps, save: (url) => saved.push(url) }
+    const deps: RequestAttachmentDownloadDependencies = {
+      ...setup.deps,
+      save: (url) => saved.push(url),
+    }
     return { ...setup, deps, saved }
   }
 
@@ -88,25 +112,34 @@ describe('request attachment download', () => {
     expect(setup.state.status).toBe('idle')
   })
 
-  it.each(['request change', 'context invalidation', 'dispose'] as const)('does not publish a late blob after %s', async (reason) => {
-    const response = deferred<Blob>()
-    const setup = downloadSetup(() => response.promise)
-    let created = 0
-    setup.deps.createObjectUrl = () => { created += 1; return 'blob:stale' }
-    const operation = runRequestAttachmentDownload(setup.deps)
-    if (reason === 'request change') setup.setContext('owner-2', 0)
-    else if (reason === 'context invalidation') setup.setContext('owner-1', 1)
-    else setup.deps.isDisposed = () => true
-    response.resolve(new Blob(['stale']))
-    await operation
-    expect(created).toBe(0)
-    expect(setup.saved).toEqual([])
-    expect(setup.calls.errors).toEqual([])
-  })
+  it.each(['request change', 'context invalidation', 'dispose'] as const)(
+    'does not publish a late blob after %s',
+    async (reason) => {
+      const response = deferred<Blob>()
+      const setup = downloadSetup(() => response.promise)
+      let created = 0
+      setup.deps.createObjectUrl = () => {
+        created += 1
+        return 'blob:stale'
+      }
+      const operation = runRequestAttachmentDownload(setup.deps)
+      if (reason === 'request change') setup.setContext('owner-2', 0)
+      else if (reason === 'context invalidation') setup.setContext('owner-1', 1)
+      else setup.deps.isDisposed = () => true
+      response.resolve(new Blob(['stale']))
+      await operation
+      expect(created).toBe(0)
+      expect(setup.saved).toEqual([])
+      expect(setup.calls.errors).toEqual([])
+    },
+  )
 
   it('releases an allocated URL when its owner changes during allocation', async () => {
     const setup = downloadSetup()
-    setup.deps.createObjectUrl = () => { setup.setContext(null, 1); return 'blob:stale' }
+    setup.deps.createObjectUrl = () => {
+      setup.setContext(null, 1)
+      return 'blob:stale'
+    }
     await runRequestAttachmentDownload(setup.deps)
     expect(setup.saved).toEqual([])
     expect(setup.calls.released).toEqual(['blob:stale'])
@@ -114,23 +147,30 @@ describe('request attachment download', () => {
 
   it('releases the URL if the browser cannot start the download', async () => {
     const setup = downloadSetup()
-    setup.deps.save = () => { throw new Error('download blocked') }
+    setup.deps.save = () => {
+      throw new Error('download blocked')
+    }
     await runRequestAttachmentDownload(setup.deps)
     expect(setup.calls.released).toEqual(['blob:request-1'])
     expect(setup.state).toEqual({ status: 'error', error: 'download blocked' })
   })
 
-  it.each([403, 404, 410, 503])('reports HTTP %i without allocating or saving a file', async (status) => {
-    const setup = downloadSetup(() => Promise.reject({ status }))
-    await runRequestAttachmentDownload(setup.deps)
-    expect(setup.saved).toEqual([])
-    expect(setup.calls.released).toEqual([])
-    expect(setup.state).toEqual({ status: 'error', error: `HTTP ${status}` })
-  })
+  it.each([403, 404, 410, 503])(
+    'reports HTTP %i without allocating or saving a file',
+    async (status) => {
+      const setup = downloadSetup(() => Promise.reject({ status }))
+      await runRequestAttachmentDownload(setup.deps)
+      expect(setup.saved).toEqual([])
+      expect(setup.calls.released).toEqual([])
+      expect(setup.state).toEqual({ status: 'error', error: `HTTP ${status}` })
+    },
+  )
 
   it('ignores a late denial from an old context', async () => {
     let reject!: (cause: unknown) => void
-    const response = new Promise<Blob>((_, rejectPromise) => { reject = rejectPromise })
+    const response = new Promise<Blob>((_, rejectPromise) => {
+      reject = rejectPromise
+    })
     const setup = downloadSetup(() => response)
     const operation = runRequestAttachmentDownload(setup.deps)
     setup.setContext(null, 1)
@@ -181,10 +221,14 @@ describe('request attachment action', () => {
       set opener(_value: unknown) {
         throw new Error('opener setter rejected')
       },
-      close: () => { closeCalls += 1 },
+      close: () => {
+        closeCalls += 1
+      },
     }
 
-    expect(() => openRequestAttachmentPopup({ open: () => popup })).toThrow('opener setter rejected')
+    expect(() => openRequestAttachmentPopup({ open: () => popup })).toThrow(
+      'opener setter rejected',
+    )
     expect(closeCalls).toBe(1)
   })
 
@@ -202,7 +246,11 @@ describe('request attachment action', () => {
   })
 
   it('shows a retryable inline error for HTTP 410', async () => {
-    const setup = actionSetup({ download: async () => { throw { status: 410 } } })
+    const setup = actionSetup({
+      download: async () => {
+        throw { status: 410 }
+      },
+    })
 
     runRequestAttachmentOpen(setup.deps)
     await settlePromiseChain()
@@ -214,7 +262,11 @@ describe('request attachment action', () => {
   })
 
   it('shows a retryable inline error for HTTP 5xx', async () => {
-    const setup = actionSetup({ download: async () => { throw { status: 503 } } })
+    const setup = actionSetup({
+      download: async () => {
+        throw { status: 503 }
+      },
+    })
 
     runRequestAttachmentOpen(setup.deps)
     await settlePromiseChain()
@@ -224,7 +276,11 @@ describe('request attachment action', () => {
   })
 
   it('shows a retryable inline error for a network failure', async () => {
-    const setup = actionSetup({ download: async () => { throw new TypeError('Сеть недоступна') } })
+    const setup = actionSetup({
+      download: async () => {
+        throw new TypeError('Сеть недоступна')
+      },
+    })
 
     runRequestAttachmentOpen(setup.deps)
     await settlePromiseChain()
@@ -251,7 +307,9 @@ describe('request attachment action', () => {
 
   it('surfaces popup isolation failure without downloading or navigating', () => {
     const setup = actionSetup({
-      openPopup: () => { throw new Error('opener setter rejected') },
+      openPopup: () => {
+        throw new Error('opener setter rejected')
+      },
     })
 
     runRequestAttachmentOpen(setup.deps)

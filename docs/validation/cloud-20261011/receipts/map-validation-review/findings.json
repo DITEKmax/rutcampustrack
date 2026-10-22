@@ -1,0 +1,51 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "frozen_commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "findings": [
+    {
+      "id": "MVR01",
+      "severity": "P2",
+      "blocking": true,
+      "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "line": 616,
+      "contract": [
+        "docs/wireframes/admin/135-admin-map.md:147",
+        "TASK-CONTRACT.md:D004"
+      ],
+      "counterexample": "counterexample-xml-stylesheet.svg",
+      "summary": "Document-level xml-stylesheet external href is never inspected; exact original bytes reach publication.",
+      "required_correction": "Inspect parsed document processing instructions; actual bad-revision PG/MVC admission/readback then corrected 400/no writes; preserve XML declaration/safe content."
+    },
+    {
+      "id": "MVR02",
+      "severity": "P2",
+      "blocking": true,
+      "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "line": 707,
+      "contract": [
+        "docs/wireframes/admin/135-admin-map.md:147",
+        "TASK-CONTRACT.md:D004"
+      ],
+      "counterexample": "counterexample-image-set.svg",
+      "summary": "CSS image-set string URLs are outside the url-only resource extractor.",
+      "required_correction": "Validate/reject string-resource CSS functions and escaped/vendor forms; actual PG/MVC 400/no writes and safe style/fragment/raster controls."
+    },
+    {
+      "id": "MVR03",
+      "severity": "P2",
+      "blocking": true,
+      "status": "SOURCE_RESOURCE_RISK_LATENCY_NOT_RUN",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "line": 536,
+      "contract": [
+        "TASK-CONTRACT.md:4 upload stability/resource boundaries",
+        "packet-map-validation-review.md:Required behavior CPUinflated bound"
+      ],
+      "counterexample": "Valid 1x1000000000 depth1 color0 noninterlaced PNG; zlib 2000000000 zero bytes compressed under10MiB; 1000000000 synchronous row iterations. Construction candidate only; no attack generated/inflated.",
+      "summary": "New scanline validator lacks a practical row/inflated work budget despite compressed-input and fixed-buffer memory bounds.",
+      "required_correction": "Bound validator work/deadline with overflow-safe per-pass work accounting, preserve accepted wide/colors/Adam7 cases, and run a scaled high-compression many-row case under bounded author lease."
+    }
+  ]
+}

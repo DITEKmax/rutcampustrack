@@ -1,0 +1,59 @@
+{
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1674,
+      "sha256": "6bf3fe4d43e6981acf4942a453bc82751ab24e976f826022434b60a486e80521"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 2272,
+      "sha256": "6e39404b9c3a877e7c5b423e16ea026fac745e108a2fe1fd9508bda49f6e8d3c"
+    },
+    {
+      "path": "mechanical.diff.patch",
+      "bytes": 8495,
+      "sha256": "4e202a88b3b2c9ad4c462d0367fce4ad98729683099ecefd6ebe98a607c39574"
+    },
+    {
+      "path": "mechanical.patch",
+      "bytes": 8907,
+      "sha256": "6d9a1aadae921df6bb5e64ea5e9dca144f3a25437fa703a061dfb15d35dc44c9"
+    },
+    {
+      "path": "native01.safe.zip",
+      "bytes": 8755,
+      "sha256": "69a781129ecffb78ff61a3dc9c75d8ce4af26ada2a37382993947220ec941d4b"
+    },
+    {
+      "path": "native02.safe.zip",
+      "bytes": 21609,
+      "sha256": "c1f42c9bf39ff1c1bb327c291e96f386be56d45026147483bd56599aa95f6e17"
+    },
+    {
+      "path": "native03.safe.zip",
+      "bytes": 7117,
+      "sha256": "b6b6ba9c398a65b1d07508929d02dcef29f247aa82ca7a99bfd1ba898a686a83"
+    },
+    {
+      "path": "native04.safe.zip",
+      "bytes": 12344,
+      "sha256": "02694fd637912ffe15d1a3c7d71db84f7b2601fa09b1604f986c1eef250ea324"
+    },
+    {
+      "path": "semantic.patch",
+      "bytes": 9215,
+      "sha256": "e10f1dc08ba82543be2ab2adbd5361d7f9a280075d0fb867d4aeb0fce36e32bd"
+    },
+    {
+      "path": "source/artifact-privacy.ts",
+      "bytes": 2979,
+      "sha256": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea"
+    },
+    {
+      "path": "source/safe-reporter.ts",
+      "bytes": 9061,
+      "sha256": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9"
+    }
+  ]
+}

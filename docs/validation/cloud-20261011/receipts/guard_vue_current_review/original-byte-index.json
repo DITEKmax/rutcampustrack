@@ -1,0 +1,149 @@
+{
+  "source": "/workspace/scratch/rct-validation/guard_vue_current_review",
+  "manifest": "immutable-review-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "2adf6f7725f22cc4ecce7f120d1de06649818d41833cca18d885d9f30fa74f6c",
+      "original_bytes": 2160,
+      "working_sha256": "2adf6f7725f22cc4ecce7f120d1de06649818d41833cca18d885d9f30fa74f6c",
+      "working_bytes": 2160,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "efcbde2eed9e5c99746f94edc43fffb8c23b2622f4a5103ff5337b71ab37e7fd",
+      "original_bytes": 2103,
+      "working_sha256": "efcbde2eed9e5c99746f94edc43fffb8c23b2622f4a5103ff5337b71ab37e7fd",
+      "working_bytes": 2103,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "2b737ee36dc4b88c890666a69be19ed7041123fbcd40fe7d6a74ebb42ef8e35b",
+      "original_bytes": 8831,
+      "working_sha256": "2b737ee36dc4b88c890666a69be19ed7041123fbcd40fe7d6a74ebb42ef8e35b",
+      "working_bytes": 8831,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "8753d8bc2599e2823efa6450dd1396cf463f33c6355990898a5522ff8277a823",
+      "original_bytes": 719,
+      "working_sha256": "8753d8bc2599e2823efa6450dd1396cf463f33c6355990898a5522ff8277a823",
+      "working_bytes": 719,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "bounded-child.py",
+      "original_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+      "original_bytes": 9745,
+      "working_sha256": "aecc5c244f8100572edf7c57395d80dd5bbac318e80716465ac6d3dcab2163c4",
+      "working_bytes": 3202,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "bounded-child.py.readable.zip"
+    },
+    {
+      "path": "findings.safe.json",
+      "original_sha256": "0fe2a0203595c83dc5cf5d8e3d2e0d52d73d11c3fb20203add12eebd110d63f0",
+      "original_bytes": 543,
+      "working_sha256": "0fe2a0203595c83dc5cf5d8e3d2e0d52d73d11c3fb20203add12eebd110d63f0",
+      "working_bytes": 543,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "guard-source-proof.json",
+      "original_sha256": "8b2ca08ff3eeef2daa79dfeaab68c7098dd59aa9e1e825b76495467fa7c7e2d0",
+      "original_bytes": 1415,
+      "working_sha256": "8b2ca08ff3eeef2daa79dfeaab68c7098dd59aa9e1e825b76495467fa7c7e2d0",
+      "working_bytes": 1415,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "input-seal-verification.json",
+      "original_sha256": "f6aa3cea24e97930c1ed61c756e03f963a3922c29c8b4ab6ac283f4fb33a3025",
+      "original_bytes": 1581,
+      "working_sha256": "f6aa3cea24e97930c1ed61c756e03f963a3922c29c8b4ab6ac283f4fb33a3025",
+      "working_bytes": 1581,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ownership-controls-result.json",
+      "original_sha256": "3fcb07e627183f74a24df1d50fde711bf294bd3179d3810d16aed06330671a90",
+      "original_bytes": 863,
+      "working_sha256": "3fcb07e627183f74a24df1d50fde711bf294bd3179d3810d16aed06330671a90",
+      "working_bytes": 863,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ownership-controls.py",
+      "original_sha256": "8e33402521a322ac9a18756089ca3bd42932bbe1e1783a9226a371503a32ed23",
+      "original_bytes": 3546,
+      "working_sha256": "e4dc77dc02f0f2042a56a50b6401a5432e1978eb09ee9fbd37767fbdc3eb2180",
+      "working_bytes": 1591,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "ownership-controls.py.readable.zip"
+    },
+    {
+      "path": "preservation.safe.json",
+      "original_sha256": "44744b0ac7dd17ee67b92832652cf2e18c092ddd68653967782d39aed8097521",
+      "original_bytes": 5483,
+      "working_sha256": "44744b0ac7dd17ee67b92832652cf2e18c092ddd68653967782d39aed8097521",
+      "working_bytes": 5483,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proc-race-controls-result.json",
+      "original_sha256": "b0cb94de554213bcadeb2b740feed82edaa790c74d3985ca87e3c9224af12019",
+      "original_bytes": 2399,
+      "working_sha256": "b0cb94de554213bcadeb2b740feed82edaa790c74d3985ca87e3c9224af12019",
+      "working_bytes": 2399,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "proc-race-controls.py",
+      "original_sha256": "a1fca6a627c73725662caac9e949d331ce22601d510c9a295c40bee1587f780e",
+      "original_bytes": 6423,
+      "working_sha256": "0b0380093c66cf6b247fcca4a14b84f7a365517259685d69e3ec6c52e158bb26",
+      "working_bytes": 2495,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "proc-race-controls.py.readable.zip"
+    },
+    {
+      "path": "verification-native.safe.json",
+      "original_sha256": "0663abf3d857678fedc08a32d1c2e686f5fce15d57396544060b06e64338aa43",
+      "original_bytes": 607,
+      "working_sha256": "0663abf3d857678fedc08a32d1c2e686f5fce15d57396544060b06e64338aa43",
+      "working_bytes": 607,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify.py",
+      "original_sha256": "afafbcdaf648ef6dc6d2b8a1ce4b2f2bd89dfb288a283144c510859c4f67c5cf",
+      "original_bytes": 13761,
+      "working_sha256": "04b851972f7ccc89e5aa92fb3a8b052af571d178970df61f6c97a4dd2512f919",
+      "working_bytes": 4914,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "verify.py.readable.zip"
+    },
+    {
+      "path": "vue-actual-preservation-proof.json",
+      "original_sha256": "337afaeae22c6bbc45c4096dec2d026df4ebe53fb4cd9994bf85912c21d49af6",
+      "original_bytes": 17083,
+      "working_sha256": "337afaeae22c6bbc45c4096dec2d026df4ebe53fb4cd9994bf85912c21d49af6",
+      "working_bytes": 17083,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "original_sha256": "c61b4647f8467726d2fdc308c2fb046fa1e3552c99e2b2294f1c8524c1c6fb36",
+      "original_bytes": 3191,
+      "working_sha256": "2a34fc928c9520ec13208cd240c7ceb7b544572cb7e8d6b7113dde1447d6e663",
+      "working_bytes": 1509,
+      "transformation": "external original manifest byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "immutable-review-manifest.json.readable.zip"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

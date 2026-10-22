@@ -1,0 +1,23 @@
+{
+  "schema": "P10_PRIVACY_REVIEW_SEAL_V1",
+  "files": {
+    "REPORT.md": {
+      "sha256": "148a57a1fd75bc99d7c6d086cdcf5a7d8cb54290a3f4b2c8c75ca577b792dd86",
+      "bytes": 7475
+    },
+    "REPORT.safe.json": {
+      "sha256": "405264bbded2ae2f91f39ebfb74338c859cf4187c26f8ead02640e37d327a831",
+      "bytes": 2027
+    },
+    "controls.safe.json": {
+      "sha256": "811c17742cef8ba3b5d833879213d24064b9793db05c61435af17d5f36294b48",
+      "bytes": 3022
+    },
+    "review-controls.py": {
+      "sha256": "961c7f24c1c2cba9161cea48ae3b61bbd39f4778d419ebc441facf26b1b5cc8b",
+      "bytes": 12597
+    }
+  },
+  "private_runtime_data": "NONE",
+  "verdict": "FINDINGS"
+}

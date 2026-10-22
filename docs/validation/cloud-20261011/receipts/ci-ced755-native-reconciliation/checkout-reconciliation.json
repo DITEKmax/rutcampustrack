@@ -1,0 +1,200 @@
+{
+  "executed_job_checkouts_verified": [
+    {
+      "run": 38212208080,
+      "job_id": 114688682169,
+      "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682262,
+      "name": "Python Lint & Test",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682340,
+      "name": "Mobile Vue workspace",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682362,
+      "name": "Java unit \u2014 attendance-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682375,
+      "name": "ShellCheck scripts",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682408,
+      "name": "Java IT \u2014 api-gateway",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682425,
+      "name": "Java unit \u2014 api-gateway",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682433,
+      "name": "Playwright E2E auth flow",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682468,
+      "name": "Java IT \u2014 attendance-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682473,
+      "name": "Java unit \u2014 auth-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682474,
+      "name": "Java IT \u2014 auth-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682477,
+      "name": "Java IT \u2014 notification-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682482,
+      "name": "Grafana dashboards structure",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682495,
+      "name": "Java unit \u2014 schedule-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682558,
+      "name": "Java unit \u2014 notification-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682561,
+      "name": "Java IT \u2014 academic-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682582,
+      "name": "Java IT \u2014 schedule-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208080,
+      "job_id": 114688682585,
+      "name": "Java unit \u2014 academic-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682176,
+      "name": "Mobile Vue coverage \u2014 PWA, TMA, mobile-core",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682357,
+      "name": "Java coverage \u2014 academic-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682380,
+      "name": "Java coverage \u2014 notification-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682387,
+      "name": "Python coverage \u2014 notification-bot",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682436,
+      "name": "Java coverage \u2014 auth-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682475,
+      "name": "Java coverage \u2014 api-gateway",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682483,
+      "name": "Java coverage \u2014 schedule-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208093,
+      "job_id": 114688682491,
+      "name": "Java coverage \u2014 attendance-service",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208106,
+      "job_id": 114688682153,
+      "name": "Gitleaks (secrets)",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208106,
+      "job_id": 114688682360,
+      "name": "Trivy (config \u2014 Dockerfile + compose)",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208106,
+      "job_id": 114688682366,
+      "name": "Trivy (filesystem)",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    },
+    {
+      "run": 38212208096,
+      "job_id": 114688682117,
+      "name": "OpenAPI \u2194 generated types drift",
+      "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+    }
+  ],
+  "skipped_jobs": [
+    {
+      "run": 38212208093,
+      "job_id": 114690560453,
+      "name": "Diff coverage report",
+      "checkout": "NOT_EXECUTED"
+    },
+    {
+      "run": 38212208106,
+      "job_id": 114688683231,
+      "name": "Trivy (built images)",
+      "checkout": "NOT_EXECUTED"
+    }
+  ],
+  "all30actualcheckout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+  "noPRmergecandidateinference": true
+}

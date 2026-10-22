@@ -1,0 +1,23 @@
+{
+  "schema": "P10_OPERATION_R1_REVIEW_SEAL_V1",
+  "verdict": "FINDINGS",
+  "files": {
+    "REPORT.md": {
+      "sha256": "98c9cc2631648ccfc123e991934f4dd17aee237a9e4e44493b0f8eed57b49f35",
+      "bytes": 5663
+    },
+    "REPORT.safe.json": {
+      "sha256": "97e9c7fbc4e39b57b35ec08729a671462b979aff0d936705c54457cb027acf6b",
+      "bytes": 1656
+    },
+    "controls.safe.json": {
+      "sha256": "ab319b353161e679671cf98504d754f47375fd36d26985b792a03be9cc6f798e",
+      "bytes": 3080
+    },
+    "review-controls.py": {
+      "sha256": "09f79a84d2e57571cb0c05224022c76f8ee2631dfc4dc9dd738362625e7f64a1",
+      "bytes": 8919
+    }
+  },
+  "private_runtime_data": "NONE"
+}

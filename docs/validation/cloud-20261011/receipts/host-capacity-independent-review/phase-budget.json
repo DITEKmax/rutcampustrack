@@ -1,0 +1,25 @@
+{
+  "time": "2026-10-12T05:20:26.981217+00:00",
+  "fresh_free_bytes": 7195074560,
+  "budget_components": {
+    "floor": 4294967296,
+    "final": 201326592,
+    "transient": 134217728,
+    "Docker9": 2707241745,
+    "runtime_growth": 1073741824
+  },
+  "phase_exclusivity_required": true,
+  "staging_lane_bytes": 4630511616,
+  "runtime_lane_bytes": 8277277457,
+  "peak_phase_ordered_bytes": 8277277457,
+  "historical_sum_all_bytes": 8411495185,
+  "potential_all4422_bytes": 1172307968,
+  "potential_current_explicit_exclusion_bytes": 960409600,
+  "potential_all4422_after_runtime_headroom": 90105071,
+  "potential_explicit_exclusion_after_runtime_headroom": -121793297,
+  "actual_recovered_bytes": 0,
+  "actual_staging_bytes": "UNKNOWN",
+  "actual_container_bytes": "UNKNOWN",
+  "resource_mutations": false,
+  "inference": "full4422 potential arithmetic only, exact exclusions leave deficit; no capacity/startup grant"
+}

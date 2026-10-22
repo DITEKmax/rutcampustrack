@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-12T00:45:32.973408+00:00",
+  "phase": "ebsr-crosslayer-after-2",
+  "commit": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "counts": {
+    "tests": 18,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "classification": "SEVENTEEN_CASES_PASS_PLUS_ONE_LATE_FIXTURE_SELECTOR_FAILURE",
+  "fresh_worker_observed_passed_assertions": [
+    "READY state",
+    "one backend dispatch",
+    "valid job and lease headers",
+    "HTTP200 saved exact bytes",
+    "no-store",
+    "one safe audit fact"
+  ],
+  "remaining_failure": {
+    "test": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes",
+    "line": 123,
+    "expected": 1,
+    "actual": 0,
+    "cause": "Fixture uses envelope payload field jobId, but actual producer/accepted JSON schema/consumer use canonical snake_case job_id",
+    "disposition": "Correct SQL field name to job_id; preserve exact one READY outbox fact expectation; product unchanged"
+  },
+  "product_sources_unchanged": true,
+  "eleven_before3_rule_violations": "now meet their individual expected assertions; worker case later fails on independent fixture selector",
+  "skips": 0
+}

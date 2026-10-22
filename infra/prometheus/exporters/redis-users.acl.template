@@ -1,0 +1,2 @@
+user default on #__APPLICATION_PASSWORD_SHA256__ ~* &* +@all
+user rct_monitor on #__MONITOR_PASSWORD_SHA256__ resetkeys resetchannels -@all +ping +info +client|setname +slowlog|len

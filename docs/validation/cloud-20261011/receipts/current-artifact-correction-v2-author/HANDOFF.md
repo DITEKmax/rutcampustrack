@@ -1,0 +1,30 @@
+# Goal
+Correct fresh independent COWN01/P2 ownership-admission finding in NEW v2 source and safe receipts, preserving original23 and every earlier seal/artifact. No product or application execution.
+
+# Context/evidence
+FULL RootTASK/CURRENT/resources/decisions/questions plus appended packet-current-artifact-correction restored; actual original helper/reviewer ownership witness and verdict reopened. Rootlocal009476554070f70458f57e5b97e5d795ff41f3bf, lastpublished731, artifactproducer908, baseline3908. RequestedSol6.1/high actualUNKNOWN. Prior23 SHA486729 immutable, reviewed helper7a5420... immutable; new capacity31 SHA4c2702... also immutable. Reviewer author independence retained.
+
+# Relevant scope
+Sole writer NEW /workspace/scratch/rct-validation/current_artifact_corrections_v2. Copied only five necessary own public helper/control/preservation source files from prior23, recorded exact copies, then changed NEW bounded-child.py ownership predicate/identity recording, extended NEW preserve.py to include prior23/newcapacity31, and created pure ownership controls/source diff/receipts. No product/worktree/build/JAR/dependency/dist/rootdoc edits; no child agents. Exact NEW inventory in manifest.json.
+
+# Required behavior
+Prior helper selected a foreign record solely because numericgroup/session matched a recorded old launch PID, even when knownPID100 birthtick10 had been replaced by currentforeign PID100/tick20/PPID999. Its refresh then overwrote known20, allowing later pidfd binding to that wrongly admitted current record. This is a pure actual-AST source defect; no actual kernel PIDwrap/reuse or foreign signal occurred.
+
+NEW owned_records removes numericgroup/session as ownership authority entirely. Before positive adoption/ancestry/recorded-identity selection, a known PID with any different birth tick is ineligible, including a misleading direct-parent or group likeness. Positive ownership is fresh single-invocation PPIDself adoption (no pre-existing child), transitive ancestry through an already eligible owned record, or an already recorded exact PID/birth pair. A rejected changed ancestor cannot admit outsiders. remember_identities uses guarded setdefault and never overwrites a recorded birth tick; mismatch raises. A conflicting current direct/adopted child is an observation error, not a successful terminal empty-tree proof. Group stays in API/status as diagnostic information only.
+
+# Constraints
+Process-local Linux subreaper, explicit minimal env, exact pidfd signalling, direct Popen reaping/adopted exact waitpid, allstates includingZ, bounded TERM/KILL and nonthrowing repeated signals/reportfailure settlement remain unchanged from prior corrected source. No new daemon/controlplane/framework/transport/clock/security workaround. API remains low-level supervision: future callers need existing approved path/environment/artifact/TLS/resource guards and new reviewed execution grants. Standalone CLI native2 BLOCKED. No app/JVM/Gradle/npm/Docker/browser/network/keys/COW/dedup/staging/source mutation grant.
+
+# Existing patterns
+Pure exact-AST witness reproduces prior7a admission of reviewerforeign100/20, then proves NEW rejection and immutableknown100/10. Additional pure controls reject unknownforeignsamegroup, changedknowndirectparent and poisonedancestor-child. Ownedpositive direct100/10, escaped descendant300/12, adoptedZ400/15 and its descendant500/16 remain selected; after direct exit the recorded/adopted identities remain correctly owned. Bad remember input cannot overwrite prior known identities. Pure controls create/signal zero processes.
+
+Actual allowed harmless stdlib controls execute only NEW source files with unchanged recorded currentSHA: old group-filterZ counterexample controller reaps only its NEW child; normal direct/adoptedZ exit0; deadline and two actual SIGINT/SIGTERM paths kill/reap TERM-ignoring parent and grandchild (grandchild creates a different session), native-9 with phase_success=false; during-settlement callback TypeError remains honest error/phasefalse but completes exact reap. One tree at a time, fixed public PATH/LANG/LC_ALL, DEVNULL child I/O, disk4GiB/shared1GiB reserve, <=8s phases/<=4s settlement. New CURRENT/append-only attempts contain exact PID/group/native states; all new identities and supervisor absent afterward. No wrong-signal/PID-reuse runtime test.
+
+# Acceptance criteria
+COWN01 SOURCE_CORRECTION_READY_FOR_FRESH_RECHECK; pure foreign-rejection/positive-ownership assertions and actual harmless reaping controls native0 at helperf539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706. Original helper7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a unchanged. No actual artifact/app/browser/runtime acceptance inferred. Old201385/201430 remainZ/PPID1, never mutated/reparented/reaped; original live-only qualification remains required.
+
+# Verification
+ownership-controls.py native0 against exact old/new function AST; controls.py native0 against exact NEW helper/source hashes, all unchanged during run. preserve.py native0 confirms162 original safe files24+29+6+13+36+23+31, source7350 SHA/bytes/modes, deps8272 SHA/modes/symlink targets/fullpathset, old8+current8 JAR SHA (currentmodes exact),22 Vue SHA/bytes/modes. Original raw private logs were not opened. Source diff contains only NEW ownership predicate/nooverwrite/conflict guard; v2 preservation extension remains separate. AST/JSON parse and final manifest file identities checked. Build provenance remains actualTemurin21.0.12.1+1/LinuxGNU, Debian13 hostOS, future runtimeJDKUNKNOWN as prior23 qualification; no JVM was executed here.
+
+# Do not
+No edits to original23/36/capacity31/72/source/JARs/dependencies or rootdocs; no oldPID1/init intervention or arbitraryPID/group signalling, no actualPIDwrap attempt, credentials/env/key/rawbody read, product/gates weakening, production/main/Deploy/private18514/bot/network/daemon/children/model fallback. Parent assigns fresh independent v2 source recheck before any dependent launch; capacity plan remains read-only with actualrecovery0.

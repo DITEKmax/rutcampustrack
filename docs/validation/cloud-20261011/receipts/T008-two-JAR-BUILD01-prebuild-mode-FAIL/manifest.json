@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/OUTCOME.safe.json",
+      "sha256": "3d1ccb0e2618686a16d0273e4ab3799d32e45549ab15a6279b63a2e1ce6a7706",
+      "size": 2075
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/tracked-mode-mismatches.safe.json",
+      "sha256": "04f4e0513a8727cb4482eace1d6b48b91bb2bd533294644fdc4228410c4eedad",
+      "size": 275465
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/build-error.safe.json",
+      "sha256": "dbc6e7949544fae30a4343ffd3286eccac63327e3289112365d66dc24255d424",
+      "size": 451
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/build-supervisor.safe.json",
+      "sha256": "9c1f01f2fc0fc8279d3b868d1777a5cdeb94f998546f59239aac2a9fb67d16a4",
+      "size": 117
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/clone-terminal.safe.json",
+      "sha256": "1201f529f2f4a20488a9272ffb6fb63972a49ef565ec62084154770aa9fd3b0f",
+      "size": 395
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/sparse-config-terminal.safe.json",
+      "sha256": "749814a4461f3b2970cd3a258ff6be2d374f21f3245a4943219f72a7967cded5",
+      "size": 395
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare/actual-build01-partial/checkout-terminal.safe.json",
+      "sha256": "2a19b073b91c422fb8629c30936b2380a7630e0eb3a838257698563ab9fedec7",
+      "size": 395
+    }
+  ],
+  "no_private_grant_sourcepayloads_logs": true
+}

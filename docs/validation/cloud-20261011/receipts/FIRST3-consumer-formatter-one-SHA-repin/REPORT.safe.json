@@ -1,0 +1,10 @@
+{
+  "utc": "2026-10-13T10:23:48.986535+00:00",
+  "scope": "FIRST3_ROOT_CONSUMER_FORMATTER_ONLY_REPIN",
+  "old_schema_sha256": "517ba6261f0ff8251151f25835178f54505fadce426cedce19501b9b01d6a213",
+  "new_schema_sha256": "e47e3636b6843641b96ceac59b13e9c7988060f87128829f52e92bf8e73b7c22",
+  "single_literal_inverse_exact": true,
+  "source_head": "UNBOUND_FUTURE_ROOT_PUSH",
+  "reporter_sha256": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336",
+  "qualification": "ONLYpublicreporterSHA fromactualformatter7phase. No newalgorithm/11mapping/reader/caps/authority/runbinding. Old517b preserved. Freshfiniteindependentactualandrepinrecheck beforeRootintegration/push; nativeclientcauseUNKNOWN."
+}

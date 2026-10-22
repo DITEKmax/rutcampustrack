@@ -1,0 +1,176 @@
+{
+  "commit": "2003948d83b2603967aa29f6434217c2a29453e1",
+  "files": [
+    {
+      "file": "CURRENT.md",
+      "sha256": "794e0ab0ea364268f8abbe8891032a823411646e373babcb099e662e419a8dff",
+      "bytes": 1121,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "attempts.ndjson",
+      "sha256": "d2bca5ece61e375f00d3c5bc0fbdb23005683ed8b65f2cc83f0348bdeb79b770",
+      "bytes": 6272,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "baseline-command.json",
+      "sha256": "809b2296236c57fb6f2197be34c91058bb4fadafaca77f723c1b5fff6199f191",
+      "bytes": 965,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "baseline-result.json",
+      "sha256": "82cc1bb19656ddb5cf85b63da2bed8c1cd08cb852ba804d02db8cc24b5fdad47",
+      "bytes": 723,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "baseline-selected.log",
+      "sha256": "c37f38d9ed4ccd83a56d6ceec626903075ff6877661336a74ff9e9af5c5c9616",
+      "bytes": 2438,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "baseline-selected.xml",
+      "sha256": "22b9e3b9e744d76ddf5057290ac15057caf6f5e6ccb18596564debc86c78a35d",
+      "bytes": 5562,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "commit.log",
+      "sha256": "0cc481a5506da53db5eeaa7f16560baa2f3db95f8bd2a24fed2d233814eb2138",
+      "bytes": 172,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "completion.json",
+      "sha256": "9003ca79f9c0eb89f142b9e9feeb63d133243f46f905358ded488037547f6f9c",
+      "bytes": 675,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "final-selected-green.log",
+      "sha256": "105233695b339828f19d7aa33e5d89857ccf7fab83e6cefa536b26173831541b",
+      "bytes": 2495,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "final-selected-green.xml",
+      "sha256": "3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897",
+      "bytes": 7237,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "green-command.json",
+      "sha256": "fb4dea672658814161f47124ae779a8445ad2ec8ea4a74fa4c6fa35290038bbf",
+      "bytes": 1042,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "green-result.json",
+      "sha256": "81d5b5598c2a36ea8a184f90bb3526c27f5900d52af762851968cffcc0899960",
+      "bytes": 1093,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "inventory.json",
+      "sha256": "ba135b7085a8589f2270e684f58ecb50075c243879b162b75ed7591e7627c0d4",
+      "bytes": 548,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "review-packet.md",
+      "sha256": "ba38f87c5e695a32d224ca5f6d7bde33616198894fb684ecfe36ef3646abd4f1",
+      "bytes": 5656,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "source-ledger.json",
+      "sha256": "a166b0dd04bab361e8f7171a8edd0040d48f592a3b706722f46c2b88695793d2",
+      "bytes": 795,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "structural-boundary-red.log",
+      "sha256": "4bd56be95a3f141d7906e8a267c0ddf2ca91c4fc7fcd41e69178248a163f2d9e",
+      "bytes": 3360,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "structural-boundary-red.xml",
+      "sha256": "472d82642b15cd705e99b6a6c1e5ea9d5cb84f2abe41065af962c2502b199b70",
+      "bytes": 11726,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "structural-command.json",
+      "sha256": "78870e17ae816804d0abe36244bf4dfad573ffaacfa9054a06f9a4411d545d49",
+      "bytes": 756,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "structural-result.json",
+      "sha256": "752b4346863899ac1b75ea8864185540dfda693b90b4fbdd8350edc9ba2f147f",
+      "bytes": 1791,
+      "sensitive_findings": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    }
+  ]
+}

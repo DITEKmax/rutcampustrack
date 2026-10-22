@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-12T03:36:52.466812+00:00",
+  "status": "SOURCE_READY_RUNTIME_NOT_RUN",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "baseline": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "heap_commit": "d4b2a533008954691673c263d2a3e57bdc554f84",
+  "held_fulltransitive_candidate": "34c0bd739e5092e693e35a19a144fb9df6970d91",
+  "final_corrective_commit": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "owned_path": "services/academic-service/academic-app/build.gradle.kts",
+  "final_file_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "tracked_inventory": [
+    "services/academic-service/academic-app/build.gradle.kts"
+  ],
+  "source_diff": "exactheap5lines+artifactonlyTESTdependency4lines; allotherbaselinebytes unchanged",
+  "checks": {
+    "exact_byte_preservation": "PASS",
+    "diff_check": "PASS",
+    "clean_worktree": "PASS",
+    "prior7filemanifest_preserved": "PASS",
+    "originalproposal_seal_preserved": "PASS",
+    "Gradle_Kotlin_Groovy_compilation": "NOT_RUN",
+    "runtime_classpath_fullAcademicIT": "NOT_RUN_NO_LEASE"
+  },
+  "runtime_allocation": "NONE",
+  "integration_note": "Use final exact onepath bytes/netdependency patch; held fulltransitive34c0 must not appear as an accepted root revision or run. Prior candidate history remains own author worktree unchanged.",
+  "original_transfer_manifest_sha256": "daf98f716d0c61ccb27c65a2d3f12de8da1c5dbc5ac1765b2512bd096afe9987",
+  "original_proposal_sha256": "fc5325a60235187d080b5e16bf3aa955efc7100a35192f9e0a8fac1f55861f96",
+  "required_runtime": "exactAuthmainartifact-only resolved graph delta; existingAcademic security unchanged; compile realAuth/currentAcademic/broker test; ownresourcesfirst; duplicatecanonicalclassesbyteequal; fullunfilteredAcademictest/IT+naming+2query+newbroker; freshremotegates"
+}

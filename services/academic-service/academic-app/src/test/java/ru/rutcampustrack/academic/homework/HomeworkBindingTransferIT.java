@@ -1,8 +1,17 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,23 +21,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.SemesterArchiveOperation;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.event.LessonTransferEventConsumer;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 /** Real Academic PostgreSQL participant and publication checks for chained transfers. */
 class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
@@ -65,27 +65,44 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         archiveOperationIds.clear();
         bindingIds.clear();
         activeSemesterIds.clear();
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            activeSemesterIds.addAll(jdbcTemplate.queryForList(
-                    "SELECT id FROM semesters WHERE is_active = true", Long.class));
-            actorId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
-            groupId = jdbcTemplate.queryForObject("SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
-            subjectId = jdbcTemplate.queryForObject("""
-                    INSERT INTO subjects (name, type, group_id)
-                    VALUES (?, 'lecture', ?) RETURNING id
-                    """, Long.class, "transfer-it-subject-" + UUID.randomUUID(), groupId);
-            jdbcTemplate.update("INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')",
-                    subjectId);
-            int year = ThreadLocalRandom.current().nextInt(2200, 3000);
-            semesterId = jdbcTemplate.queryForObject("""
-                    INSERT INTO semesters (name, date_from, date_to, is_active, created_at)
-                    VALUES (?, ?, ?, false, NOW()) RETURNING id
-                    """, Long.class, "transfer-it-semester-" + UUID.randomUUID(),
-                    LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31));
-        });
+        actorId = identityFixture.canonical().studentId();
+        groupId = identityFixture.canonical().groupId();
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            activeSemesterIds.addAll(
+                                    jdbcTemplate.queryForList(
+                                            "SELECT id FROM semesters WHERE is_active = true",
+                                            Long.class));
+                            subjectId =
+                                    jdbcTemplate.queryForObject(
+                                            """
+                                            INSERT INTO subjects (name, type, group_id)
+                                            VALUES (?, 'lecture', ?) RETURNING id
+                                            """,
+                                            Long.class,
+                                            "transfer-it-subject-" + UUID.randomUUID(),
+                                            groupId);
+                            jdbcTemplate.update(
+                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type)"
+                                            + " VALUES (?, 'lecture')",
+                                    subjectId);
+                            int year = ThreadLocalRandom.current().nextInt(2200, 3000);
+                            semesterId =
+                                    jdbcTemplate.queryForObject(
+                                            """
+INSERT INTO semesters (name, date_from, date_to, is_active, created_at)
+VALUES (?, ?, ?, false, NOW()) RETURNING id
+""",
+                                            Long.class,
+                                            "transfer-it-semester-" + UUID.randomUUID(),
+                                            LocalDate.of(year, 1, 1),
+                                            LocalDate.of(year, 12, 31));
+                        });
     }
 
-    // The owned database is reset before each test; protected history stays intact during the scenario.
+    // The owned database is reset before each test; protected history stays intact during the
+    // scenario.
 
     @Test
     void activeAndPendingPublicationFollowAThroughBToCAndAckIsDurable() throws Exception {
@@ -93,22 +110,69 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         bindingIds.add(activeBindingId);
         UUID activeRequestKey = UUID.randomUUID();
         byte[] activeHash = hashByte(11);
-        Homework active = publicationPersistence.persistPending(groupId, subjectId, semesterId,
-                "Preserved title", "Preserved description", "https://example.test/homework",
-                actorId, SOURCE_DATE, 1, activeBindingId, activeRequestKey, activeHash);
-        active = publicationPersistence.activate(active.getId(), actorId, activeRequestKey,
-                activeBindingId, activeHash);
+        Homework active =
+                publicationPersistence.persistPending(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        "Preserved title",
+                        "Preserved description",
+                        "https://example.test/homework",
+                        actorId,
+                        SOURCE_DATE,
+                        1,
+                        activeBindingId,
+                        activeRequestKey,
+                        activeHash);
+        active =
+                publicationPersistence.activate(
+                        active.getId(), actorId, activeRequestKey, activeBindingId, activeHash);
         long activeHomeworkId = active.getId();
-        jdbcTemplate.update("UPDATE homeworks SET due_reminder_sent_at = NOW() WHERE id = ?", activeHomeworkId);
+        jdbcTemplate.update(
+                "UPDATE homeworks SET due_reminder_sent_at = NOW() WHERE id = ?", activeHomeworkId);
 
-        Map<String, Object> activeFirst = event(activeBindingId, activeHomeworkId, actorId,
-                activeRequestKey, activeHash, "ACTIVE", 1, 1, "a", 10001, 10002,
-                501, SOURCE_DATE, 1, MIDDLE_DATE, 2);
-        Map<String, Object> activeSecond = event(activeBindingId, activeHomeworkId, actorId,
-                activeRequestKey, activeHash, "ACTIVE", 2, 2, "b", 10002, 10003,
-                502, MIDDLE_DATE, 2, TARGET_DATE, 3);
-        operationIds.add(UUID.fromString(((Map<?, ?>) activeFirst.get("payload")).get("operation_id").toString()));
-        operationIds.add(UUID.fromString(((Map<?, ?>) activeSecond.get("payload")).get("operation_id").toString()));
+        Map<String, Object> activeFirst =
+                event(
+                        activeBindingId,
+                        activeHomeworkId,
+                        actorId,
+                        activeRequestKey,
+                        activeHash,
+                        "ACTIVE",
+                        1,
+                        1,
+                        "a",
+                        10001,
+                        10002,
+                        501,
+                        SOURCE_DATE,
+                        1,
+                        MIDDLE_DATE,
+                        2);
+        Map<String, Object> activeSecond =
+                event(
+                        activeBindingId,
+                        activeHomeworkId,
+                        actorId,
+                        activeRequestKey,
+                        activeHash,
+                        "ACTIVE",
+                        2,
+                        2,
+                        "b",
+                        10002,
+                        10003,
+                        502,
+                        MIDDLE_DATE,
+                        2,
+                        TARGET_DATE,
+                        3);
+        operationIds.add(
+                UUID.fromString(
+                        ((Map<?, ?>) activeFirst.get("payload")).get("operation_id").toString()));
+        operationIds.add(
+                UUID.fromString(
+                        ((Map<?, ?>) activeSecond.get("payload")).get("operation_id").toString()));
         transferConsumer.onEvent(activeFirst);
         transferConsumer.onEvent(activeSecond);
         transferConsumer.onEvent(activeSecond);
@@ -120,28 +184,57 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(movedActive.getTitle()).isEqualTo("Preserved title");
         assertThat(movedActive.getDescription()).isEqualTo("Preserved description");
         assertThat(movedActive.getLink()).isEqualTo("https://example.test/homework");
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT due_reminder_sent_at IS NULL FROM homeworks WHERE id = ?", Boolean.class, activeHomeworkId))
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT due_reminder_sent_at IS NULL FROM homeworks WHERE id = ?",
+                                Boolean.class,
+                                activeHomeworkId))
                 .isTrue();
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT encode(payload_hash, 'hex') FROM homeworks WHERE id = ?
-                """, String.class, activeHomeworkId)).isEqualTo(java.util.HexFormat.of().formatHex(activeHash));
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
-                """, Integer.class, activeBindingId)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
-                """, Integer.class, operationIds.get(0), operationIds.get(1))).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT COUNT(*) FROM academic_outbox
-                 WHERE event_type = 'homework.updated'
-                   AND payload #>> '{payload,homework_id}' = ?
-                """, Integer.class, Long.toString(activeHomeworkId))).isEqualTo(2);
-        List<String> activeAcks = jdbcTemplate.queryForList("""
-                SELECT payload::text FROM academic_outbox
-                 WHERE event_type = 'lesson.transfer.participant.applied'
-                   AND payload #>> '{payload,operation_id}' IN (?, ?)
-                """, String.class, operationIds.get(0).toString(), operationIds.get(1).toString());
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+                                SELECT encode(payload_hash, 'hex') FROM homeworks WHERE id = ?
+                                """,
+                                String.class,
+                                activeHomeworkId))
+                .isEqualTo(java.util.HexFormat.of().formatHex(activeHash));
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
+""",
+                                Integer.class,
+                                activeBindingId))
+                .isEqualTo(2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
+""",
+                                Integer.class,
+                                operationIds.get(0),
+                                operationIds.get(1)))
+                .isEqualTo(2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+                                SELECT COUNT(*) FROM academic_outbox
+                                 WHERE event_type = 'homework.updated'
+                                   AND payload #>> '{payload,homework_id}' = ?
+                                """,
+                                Integer.class,
+                                Long.toString(activeHomeworkId)))
+                .isEqualTo(2);
+        List<String> activeAcks =
+                jdbcTemplate.queryForList(
+                        """
+                        SELECT payload::text FROM academic_outbox
+                         WHERE event_type = 'lesson.transfer.participant.applied'
+                           AND payload #>> '{payload,operation_id}' IN (?, ?)
+                        """,
+                        String.class,
+                        operationIds.get(0).toString(),
+                        operationIds.get(1).toString());
         assertThat(activeAcks).hasSize(2);
         for (String ack : activeAcks) {
             JsonNode payload = objectMapper.readTree(ack).path("payload");
@@ -153,75 +246,194 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         bindingIds.add(pendingBindingId);
         UUID pendingRequestKey = UUID.randomUUID();
         byte[] pendingHash = hashByte(12);
-        Map<String, Object> pendingFirst = event(pendingBindingId, null, actorId,
-                pendingRequestKey, pendingHash, "PENDING", 1, 1, "c", 20001, 20002,
-                601, SOURCE_DATE, 1, MIDDLE_DATE, 2);
-        Map<String, Object> pendingSecond = event(pendingBindingId, null, actorId,
-                pendingRequestKey, pendingHash, "PENDING", 2, 2, "d", 20002, 20003,
-                602, MIDDLE_DATE, 2, TARGET_DATE, 3);
-        UUID pendingFirstOperation = UUID.fromString(
-                ((Map<?, ?>) pendingFirst.get("payload")).get("operation_id").toString());
-        UUID pendingSecondOperation = UUID.fromString(
-                ((Map<?, ?>) pendingSecond.get("payload")).get("operation_id").toString());
+        Map<String, Object> pendingFirst =
+                event(
+                        pendingBindingId,
+                        null,
+                        actorId,
+                        pendingRequestKey,
+                        pendingHash,
+                        "PENDING",
+                        1,
+                        1,
+                        "c",
+                        20001,
+                        20002,
+                        601,
+                        SOURCE_DATE,
+                        1,
+                        MIDDLE_DATE,
+                        2);
+        Map<String, Object> pendingSecond =
+                event(
+                        pendingBindingId,
+                        null,
+                        actorId,
+                        pendingRequestKey,
+                        pendingHash,
+                        "PENDING",
+                        2,
+                        2,
+                        "d",
+                        20002,
+                        20003,
+                        602,
+                        MIDDLE_DATE,
+                        2,
+                        TARGET_DATE,
+                        3);
+        UUID pendingFirstOperation =
+                UUID.fromString(
+                        ((Map<?, ?>) pendingFirst.get("payload")).get("operation_id").toString());
+        UUID pendingSecondOperation =
+                UUID.fromString(
+                        ((Map<?, ?>) pendingSecond.get("payload")).get("operation_id").toString());
         operationIds.add(pendingFirstOperation);
         operationIds.add(pendingSecondOperation);
         transferConsumer.onEvent(pendingFirst);
         transferConsumer.onEvent(pendingSecond);
 
-        assertThat(jdbcTemplate.queryForMap("""
-                SELECT source_lesson_id, target_lesson_id, source_date, target_date, state
-                  FROM homework_binding_transfer_markers WHERE binding_id = ?
-                """, pendingBindingId))
+        assertThat(
+                        jdbcTemplate.queryForMap(
+                                """
+SELECT source_lesson_id, target_lesson_id, source_date, target_date, state
+  FROM homework_binding_transfer_markers WHERE binding_id = ?
+""",
+                                pendingBindingId))
                 .containsEntry("source_lesson_id", 20001L)
                 .containsEntry("target_lesson_id", 20003L)
                 .containsEntry("source_date", java.sql.Date.valueOf(SOURCE_DATE))
                 .containsEntry("target_date", java.sql.Date.valueOf(TARGET_DATE))
                 .containsEntry("state", "PENDING");
 
-        Homework materialized = publicationPersistence.persistPending(groupId, subjectId, semesterId,
-                "Late publication", "Late description", null, actorId, SOURCE_DATE, 1,
-                pendingBindingId, pendingRequestKey, pendingHash);
+        Homework materialized =
+                publicationPersistence.persistPending(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        "Late publication",
+                        "Late description",
+                        null,
+                        actorId,
+                        SOURCE_DATE,
+                        1,
+                        pendingBindingId,
+                        pendingRequestKey,
+                        pendingHash);
         assertThat(materialized.getLessonDate()).isEqualTo(TARGET_DATE);
         assertThat(materialized.getLessonNumber()).isEqualTo(3);
         assertThat(materialized.getPublicationState()).isEqualTo(HomeworkPublicationState.PENDING);
-        Homework activated = publicationPersistence.activate(materialized.getId(), actorId,
-                pendingRequestKey, pendingBindingId, pendingHash);
+        Homework activated =
+                publicationPersistence.activate(
+                        materialized.getId(),
+                        actorId,
+                        pendingRequestKey,
+                        pendingBindingId,
+                        pendingHash);
         assertThat(activated.getPublicationState()).isEqualTo(HomeworkPublicationState.ACTIVE);
         assertThat(activated.getLessonDate()).isEqualTo(TARGET_DATE);
-        assertThat(jdbcTemplate.queryForMap("""
-                SELECT homework_id, source_lesson_id, target_lesson_id, source_date, target_date, state
-                  FROM homework_binding_transfer_markers WHERE binding_id = ?
-                """, pendingBindingId))
+        assertThat(
+                        jdbcTemplate.queryForMap(
+                                """
+SELECT homework_id, source_lesson_id, target_lesson_id, source_date, target_date, state
+  FROM homework_binding_transfer_markers WHERE binding_id = ?
+""",
+                                pendingBindingId))
                 .containsEntry("homework_id", materialized.getId())
                 .containsEntry("source_lesson_id", 20001L)
                 .containsEntry("target_lesson_id", 20003L)
                 .containsEntry("source_date", java.sql.Date.valueOf(SOURCE_DATE))
                 .containsEntry("target_date", java.sql.Date.valueOf(TARGET_DATE))
                 .containsEntry("state", "APPLIED");
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
-                """, Integer.class, pendingBindingId)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
-                """, Integer.class, pendingFirstOperation, pendingSecondOperation)).isEqualTo(2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
+""",
+                                Integer.class,
+                                pendingBindingId))
+                .isEqualTo(2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
+""",
+                                Integer.class,
+                                pendingFirstOperation,
+                                pendingSecondOperation))
+                .isEqualTo(2);
     }
 
     @Test
-    void sameSlotTransferKeepsActualIdsAndLateConfirmationCannotMoveIdentityBack() throws Exception {
-        long binding = nextBindingId(); bindingIds.add(binding);
-        UUID key = UUID.randomUUID(); byte[] hash = hashByte(31);
-        Homework pending = publicationPersistence.persistPending(groupId, subjectId, semesterId, "Same slot", null,
-                null, actorId, SOURCE_DATE, 1, binding, key, hash);
-        var accepted = ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse.newBuilder().setBindingId(binding)
-                .setHomeworkId(pending.getId()).setGroupId(groupId).setSubjectId(subjectId).setSemesterId(semesterId)
-                .setDate(SOURCE_DATE.toString()).setLessonNumber(1).setBindingMode("LESSON").setRevision(2).setOccurrenceId(501)
-                .setState(ru.rutcampustrack.schedule.grpc.HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE)
-                .setCurrentLesson(ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder().setLessonId(10001).setOccurrenceId(501)
-                    .setGroupId(groupId).setSubjectId(subjectId).setSemesterId(semesterId).setDate(SOURCE_DATE.toString()).setLessonNumber(1)).build();
-        Homework active = publicationPersistence.activate(pending.getId(), actorId, key, binding, hash, accepted);
-        Map<String,Object> transfer = event(binding, active.getId(), actorId, key, hash, "ACTIVE", 2, 1, "a",
-                10001, 10002, 501, SOURCE_DATE, 1, SOURCE_DATE, 1);
-        operationIds.add(UUID.fromString(((Map<?,?>) transfer.get("payload")).get("operation_id").toString()));
+    void sameSlotTransferKeepsActualIdsAndLateConfirmationCannotMoveIdentityBack()
+            throws Exception {
+        long binding = nextBindingId();
+        bindingIds.add(binding);
+        UUID key = UUID.randomUUID();
+        byte[] hash = hashByte(31);
+        Homework pending =
+                publicationPersistence.persistPending(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        "Same slot",
+                        null,
+                        null,
+                        actorId,
+                        SOURCE_DATE,
+                        1,
+                        binding,
+                        key,
+                        hash);
+        var accepted =
+                ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse.newBuilder()
+                        .setBindingId(binding)
+                        .setHomeworkId(pending.getId())
+                        .setGroupId(groupId)
+                        .setSubjectId(subjectId)
+                        .setSemesterId(semesterId)
+                        .setDate(SOURCE_DATE.toString())
+                        .setLessonNumber(1)
+                        .setBindingMode("LESSON")
+                        .setRevision(2)
+                        .setOccurrenceId(501)
+                        .setState(
+                                ru.rutcampustrack.schedule.grpc.HomeworkBindingState
+                                        .HOMEWORK_BINDING_STATE_ACTIVE)
+                        .setCurrentLesson(
+                                ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                                        .setLessonId(10001)
+                                        .setOccurrenceId(501)
+                                        .setGroupId(groupId)
+                                        .setSubjectId(subjectId)
+                                        .setSemesterId(semesterId)
+                                        .setDate(SOURCE_DATE.toString())
+                                        .setLessonNumber(1))
+                        .build();
+        Homework active =
+                publicationPersistence.activate(
+                        pending.getId(), actorId, key, binding, hash, accepted);
+        Map<String, Object> transfer =
+                event(
+                        binding,
+                        active.getId(),
+                        actorId,
+                        key,
+                        hash,
+                        "ACTIVE",
+                        2,
+                        1,
+                        "a",
+                        10001,
+                        10002,
+                        501,
+                        SOURCE_DATE,
+                        1,
+                        SOURCE_DATE,
+                        1);
+        operationIds.add(
+                UUID.fromString(
+                        ((Map<?, ?>) transfer.get("payload")).get("operation_id").toString()));
         transferConsumer.onEvent(transfer);
         transferConsumer.onEvent(transfer);
         publicationPersistence.activate(active.getId(), actorId, key, binding, hash, accepted);
@@ -230,16 +442,32 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(current.getPlacementOccurrenceId()).isEqualTo(501L);
         assertThat(current.getPlacementBindingRevision()).isEqualTo(3L);
         assertThat(current.getRevision()).isEqualTo(1);
-        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE homeworks SET placement_lesson_id = 10001, placement_binding_revision = 2 WHERE id = ?", active.getId()))
-                .isInstanceOf(org.springframework.dao.DataAccessException.class).hasMessageContaining("cannot move backwards");
-        List<String> actions = jdbcTemplate.queryForList("SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.action-recorded' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
-                String.class, active.getId().toString());
+        assertThatThrownBy(
+                        () ->
+                                jdbcTemplate.update(
+                                        "UPDATE homeworks SET placement_lesson_id = 10001,"
+                                                + " placement_binding_revision = 2 WHERE id = ?",
+                                        active.getId()))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class)
+                .hasMessageContaining("cannot move backwards");
+        List<String> actions =
+                jdbcTemplate.queryForList(
+                        "SELECT payload::text FROM academic_outbox WHERE event_type ="
+                            + " 'homework.action-recorded' AND payload #>> '{payload,homework_id}'"
+                            + " = ? ORDER BY id",
+                        String.class,
+                        active.getId().toString());
         assertThat(actions).hasSize(3);
-        for (String action : actions) assertThat(ru.rutcampustrack.academic.events.EventSchemaValidator.validate("homework.action-recorded.json", action)).isEmpty();
+        for (String action : actions)
+            assertThat(
+                            ru.rutcampustrack.academic.events.EventSchemaValidator.validate(
+                                    "homework.action-recorded.json", action))
+                    .isEmpty();
         JsonNode edit = objectMapper.readTree(actions.get(1)).path("payload");
         assertThat(edit.path("before").path("lesson_id").asLong()).isEqualTo(10001);
         assertThat(edit.path("after").path("lesson_id").asLong()).isEqualTo(10002);
-        assertThat(objectMapper.readTree(actions.get(2)).path("payload").path("lesson_id").asLong()).isEqualTo(10002);
+        assertThat(objectMapper.readTree(actions.get(2)).path("payload").path("lesson_id").asLong())
+                .isEqualTo(10002);
     }
 
     @Test
@@ -249,90 +477,165 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         UUID bindingRequestKey = UUID.randomUUID();
         byte[] bindingHash = hashByte(23);
         long occurrenceId = 701L;
-        Map<String, Object> transferEvent = event(bindingId, null, actorId,
-                bindingRequestKey, bindingHash, "PENDING", 1, 1, "e", 20001, 20002,
-                occurrenceId, SOURCE_DATE, 1, MIDDLE_DATE, 2);
+        Map<String, Object> transferEvent =
+                event(
+                        bindingId,
+                        null,
+                        actorId,
+                        bindingRequestKey,
+                        bindingHash,
+                        "PENDING",
+                        1,
+                        1,
+                        "e",
+                        20001,
+                        20002,
+                        occurrenceId,
+                        SOURCE_DATE,
+                        1,
+                        MIDDLE_DATE,
+                        2);
         UUID transferSourceEventId = UUID.fromString((String) transferEvent.get("event_id"));
         transferConsumer.onEvent(transferEvent);
 
-        long adminId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
-        var archive = archiveCommands.startOrReplay(
-                semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        long adminId = identityFixture.canonical().adminId();
+        var administrator = identityFixture.select(adminId, AuthRole.ADMIN);
+        UUID archiveKey = UUID.randomUUID();
+        SemesterArchiveOperation archive;
+        try (var ignored = identityFixture.request(administrator, archiveKey)) {
+            archive =
+                    archiveCommands.startOrReplay(
+                            semesterId, adminId, archiveKey, SemesterArchiveAction.ARCHIVE);
+        }
         archiveOperationIds.add(archive.getOperationId());
         AcademicSemesterArchiveBarrierTransaction.BindingResolution resolution =
-                archiveBarrier.preparePendingBindingResolution(archive.getOperationId(), semesterId,
-                        archive.getStateVersion(), bindingId, occurrenceId, actorId,
-                        bindingRequestKey, bindingHash, 1L);
-        assertThat(resolution.kind()).isEqualTo(
-                AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind.CANCEL_UNPUBLISHED);
+                archiveBarrier.preparePendingBindingResolution(
+                        archive.getOperationId(),
+                        semesterId,
+                        archive.getStateVersion(),
+                        bindingId,
+                        occurrenceId,
+                        actorId,
+                        bindingRequestKey,
+                        bindingHash,
+                        1L);
+        assertThat(resolution.kind())
+                .isEqualTo(
+                        AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind
+                                .CANCEL_UNPUBLISHED);
 
         UUID cancellationEventId = UUID.randomUUID();
-        archiveBarrier.recordCancellationEvent(archive.getOperationId(), semesterId,
-                archive.getStateVersion(), bindingId, bindingRequestKey, occurrenceId,
-                1L, cancellationEventId);
-        Map<String, Object> cancellationEvent = archivedBindingEvent(
-                bindingId, occurrenceId, actorId, bindingRequestKey, cancellationEventId, semesterId);
+        archiveBarrier.recordCancellationEvent(
+                archive.getOperationId(),
+                semesterId,
+                archive.getStateVersion(),
+                bindingId,
+                bindingRequestKey,
+                occurrenceId,
+                1L,
+                cancellationEventId);
+        Map<String, Object> cancellationEvent =
+                archivedBindingEvent(
+                        bindingId,
+                        occurrenceId,
+                        actorId,
+                        bindingRequestKey,
+                        cancellationEventId,
+                        semesterId);
         archiveConsumer.onEvent(cancellationEvent);
         archiveConsumer.onEvent(cancellationEvent);
 
-        Map<String, Object> marker = jdbcTemplate.queryForMap("""
-                SELECT state, source_event_id, batch_index, operation_id
-                  FROM homework_binding_transfer_markers WHERE binding_id = ?
-                """, bindingId);
+        Map<String, Object> marker =
+                jdbcTemplate.queryForMap(
+                        """
+                        SELECT state, source_event_id, batch_index, operation_id
+                          FROM homework_binding_transfer_markers WHERE binding_id = ?
+                        """,
+                        bindingId);
         assertThat(marker.get("state")).isEqualTo("CANCELLED_UNPUBLISHED");
         assertThat(marker.get("source_event_id")).isEqualTo(transferSourceEventId);
         assertThat(marker.get("source_event_id")).isNotEqualTo(cancellationEventId);
         assertThat(marker.get("batch_index")).isEqualTo(0);
 
-        Map<String, Object> admission = jdbcTemplate.queryForMap("""
-                SELECT source_event_id, terminal_event_id, resolution_state, consumed_at
-                  FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND binding_id = ?
-                """, archive.getOperationId(), bindingId);
+        Map<String, Object> admission =
+                jdbcTemplate.queryForMap(
+                        """
+                        SELECT source_event_id, terminal_event_id, resolution_state, consumed_at
+                          FROM academic_semester_archive_publication_admissions
+                         WHERE operation_id = ? AND binding_id = ?
+                        """,
+                        archive.getOperationId(),
+                        bindingId);
         assertThat(admission.get("source_event_id")).isEqualTo(transferSourceEventId);
         assertThat(admission.get("terminal_event_id")).isEqualTo(cancellationEventId);
-        assertThat(admission.get("source_event_id")).isNotEqualTo(admission.get("terminal_event_id"));
+        assertThat(admission.get("source_event_id"))
+                .isNotEqualTo(admission.get("terminal_event_id"));
         assertThat(admission.get("resolution_state")).isEqualTo("CANCELLED_UNPUBLISHED");
         assertThat(admission.get("consumed_at")).isNotNull();
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT count(*) FROM lesson_transfer_receipts
-                 WHERE source_event_id = ? AND result = 'APPLIED'
-                """, Long.class, transferSourceEventId)).isEqualTo(1L);
-        assertThat(jdbcTemplate.queryForObject("""
-                SELECT count(*) FROM academic_semester_archive_effect_receipts
-                 WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
-                   AND state = 'APPLIED'
-                """, Long.class, cancellationEventId)).isEqualTo(1L);
-        Map<String, Object> effectReceipt = jdbcTemplate.queryForMap("""
-                SELECT payload_hash, acknowledgement_event_id
-                  FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
-                """, cancellationEventId);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+                                SELECT count(*) FROM lesson_transfer_receipts
+                                 WHERE source_event_id = ? AND result = 'APPLIED'
+                                """,
+                                Long.class,
+                                transferSourceEventId))
+                .isEqualTo(1L);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                """
+SELECT count(*) FROM academic_semester_archive_effect_receipts
+ WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
+   AND state = 'APPLIED'
+""",
+                                Long.class,
+                                cancellationEventId))
+                .isEqualTo(1L);
+        Map<String, Object> effectReceipt =
+                jdbcTemplate.queryForMap(
+                        """
+                        SELECT payload_hash, acknowledgement_event_id
+                          FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
+                        """,
+                        cancellationEventId);
         UUID firstAcknowledgementEventId = (UUID) effectReceipt.get("acknowledgement_event_id");
-        List<Map<String, Object>> acknowledgements = jdbcTemplate.queryForList("""
-                SELECT payload ->> 'event_id' AS event_id,
-                       payload #>> '{payload,source_event_id}' AS source_event_id,
-                       payload #>> '{payload,target}' AS target,
-                       payload #>> '{payload,source_event_type}' AS source_event_type,
-                       payload #>> '{payload,semester_id}' AS semester_id,
-                       payload #>> '{payload,payload_hash}' AS payload_hash,
-                       payload #>> '{payload,result}' AS result
-                  FROM academic_outbox
-                 WHERE event_type = 'semester.archive.effect.ack'
-                   AND payload #>> '{payload,source_event_id}' = ?
-                """, cancellationEventId.toString());
+        List<Map<String, Object>> acknowledgements =
+                jdbcTemplate.queryForList(
+                        """
+                        SELECT payload ->> 'event_id' AS event_id,
+                               payload #>> '{payload,source_event_id}' AS source_event_id,
+                               payload #>> '{payload,target}' AS target,
+                               payload #>> '{payload,source_event_type}' AS source_event_type,
+                               payload #>> '{payload,semester_id}' AS semester_id,
+                               payload #>> '{payload,payload_hash}' AS payload_hash,
+                               payload #>> '{payload,result}' AS result
+                          FROM academic_outbox
+                         WHERE event_type = 'semester.archive.effect.ack'
+                           AND payload #>> '{payload,source_event_id}' = ?
+                        """,
+                        cancellationEventId.toString());
         assertThat(acknowledgements).hasSize(2);
-        List<String> acknowledgementEventIds = acknowledgements.stream()
-                .map(acknowledgement -> (String) acknowledgement.get("event_id")).toList();
-        assertThat(acknowledgementEventIds).doesNotHaveDuplicates()
+        List<String> acknowledgementEventIds =
+                acknowledgements.stream()
+                        .map(acknowledgement -> (String) acknowledgement.get("event_id"))
+                        .toList();
+        assertThat(acknowledgementEventIds)
+                .doesNotHaveDuplicates()
                 .contains(firstAcknowledgementEventId.toString());
-        String effectHash = java.util.HexFormat.of().formatHex((byte[]) effectReceipt.get("payload_hash"));
-        assertThat(acknowledgements).allSatisfy(acknowledgement -> assertThat(acknowledgement)
-                .containsEntry("source_event_id", cancellationEventId.toString())
-                .containsEntry("target", "ACADEMIC")
-                .containsEntry("source_event_type", "homework.binding.archived")
-                .containsEntry("semester_id", Long.toString(semesterId))
-                .containsEntry("payload_hash", effectHash)
-                .containsEntry("result", "APPLIED"));
+        String effectHash =
+                java.util.HexFormat.of().formatHex((byte[]) effectReceipt.get("payload_hash"));
+        assertThat(acknowledgements)
+                .allSatisfy(
+                        acknowledgement ->
+                                assertThat(acknowledgement)
+                                        .containsEntry(
+                                                "source_event_id", cancellationEventId.toString())
+                                        .containsEntry("target", "ACADEMIC")
+                                        .containsEntry(
+                                                "source_event_type", "homework.binding.archived")
+                                        .containsEntry("semester_id", Long.toString(semesterId))
+                                        .containsEntry("payload_hash", effectHash)
+                                        .containsEntry("result", "APPLIED"));
     }
 
     @Test
@@ -341,17 +644,55 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         bindingIds.add(bindingId);
         UUID requestKey = UUID.randomUUID();
         byte[] bindingHash = hashByte(21);
-        Homework homework = publicationPersistence.persistPending(groupId, subjectId, semesterId,
-                "One-off title", "One-off description", "https://example.test/one-off", actorId,
-                SOURCE_DATE, 1, bindingId, requestKey, bindingHash);
-        homework = publicationPersistence.activate(homework.getId(), actorId, requestKey, bindingId, bindingHash);
+        Homework homework =
+                publicationPersistence.persistPending(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        "One-off title",
+                        "One-off description",
+                        "https://example.test/one-off",
+                        actorId,
+                        SOURCE_DATE,
+                        1,
+                        bindingId,
+                        requestKey,
+                        bindingHash);
+        homework =
+                publicationPersistence.activate(
+                        homework.getId(), actorId, requestKey, bindingId, bindingHash);
         long homeworkId = homework.getId();
-        jdbcTemplate.update("INSERT INTO homework_completions(homework_id, student_id) VALUES (?, ?)", homeworkId, actorId);
-        Map<String, Object> originalCompletion = jdbcTemplate.queryForMap(
-                "SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?", homeworkId);
-        Map<String, Object> transfer = oneOffEvent(event(bindingId, homeworkId, actorId, requestKey, bindingHash,
-                "ACTIVE", 1, 1, "a", 10001, 10002, 501, SOURCE_DATE, 1, TARGET_DATE, 3));
-        UUID operation = UUID.fromString(((Map<?, ?>) transfer.get("payload")).get("operation_id").toString());
+        jdbcTemplate.update(
+                "INSERT INTO homework_completions(homework_id, student_id) VALUES (?, ?)",
+                homeworkId,
+                actorId);
+        Map<String, Object> originalCompletion =
+                jdbcTemplate.queryForMap(
+                        "SELECT id, student_id, completed_at FROM homework_completions WHERE"
+                                + " homework_id = ?",
+                        homeworkId);
+        Map<String, Object> transfer =
+                oneOffEvent(
+                        event(
+                                bindingId,
+                                homeworkId,
+                                actorId,
+                                requestKey,
+                                bindingHash,
+                                "ACTIVE",
+                                1,
+                                1,
+                                "a",
+                                10001,
+                                10002,
+                                501,
+                                SOURCE_DATE,
+                                1,
+                                TARGET_DATE,
+                                3));
+        UUID operation =
+                UUID.fromString(
+                        ((Map<?, ?>) transfer.get("payload")).get("operation_id").toString());
         operationIds.add(operation);
         transferConsumer.onEvent(transfer);
         transferConsumer.onEvent(transfer); // Same delivery id keeps the existing dedup semantics.
@@ -365,32 +706,87 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(moved.getDescription()).isEqualTo("One-off description");
         assertThat(moved.getLink()).isEqualTo("https://example.test/one-off");
         assertThat(moved.getPublicationState()).isEqualTo(HomeworkPublicationState.ACTIVE);
-        assertThat(jdbcTemplate.queryForMap("SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?", homeworkId))
+        assertThat(
+                        jdbcTemplate.queryForMap(
+                                "SELECT id, student_id, completed_at FROM homework_completions"
+                                        + " WHERE homework_id = ?",
+                                homeworkId))
                 .isEqualTo(originalCompletion);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_binding_transfer_history WHERE binding_id = ?", Long.class, bindingId)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id = ?", Long.class, operation)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox WHERE event_type = 'lesson.transfer.participant.applied' AND payload #>> '{payload,operation_id}' = ?", Long.class, operation.toString())).isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM homework_binding_transfer_history WHERE"
+                                        + " binding_id = ?",
+                                Long.class,
+                                bindingId))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id ="
+                                        + " ?",
+                                Long.class,
+                                operation))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM academic_outbox WHERE event_type ="
+                                        + " 'lesson.transfer.participant.applied' AND payload #>>"
+                                        + " '{payload,operation_id}' = ?",
+                                Long.class,
+                                operation.toString()))
+                .isEqualTo(1);
 
         for (int variant = 0; variant < 7; variant++) {
             Map<String, Object> tampered = copyTransfer(transfer);
             Map<String, Object> source = transferSnapshot(tampered, "source");
             Map<String, Object> target = transferSnapshot(tampered, "target");
             switch (variant) {
-                case 0 -> { source.put("one_off_lesson_id", 90002L); target.put("one_off_lesson_id", 90002L); }
-                case 1 -> { tampered.put("event_version", 1); source.remove("one_off_lesson_id"); target.remove("one_off_lesson_id");
-                    source.put("schedule_item_id", 30001L); target.put("schedule_item_id", 30001L); }
+                case 0 -> {
+                    source.put("one_off_lesson_id", 90002L);
+                    target.put("one_off_lesson_id", 90002L);
+                }
+                case 1 -> {
+                    tampered.put("event_version", 1);
+                    source.remove("one_off_lesson_id");
+                    target.remove("one_off_lesson_id");
+                    source.put("schedule_item_id", 30001L);
+                    target.put("schedule_item_id", 30001L);
+                }
                 case 2 -> source.put("schedule_item_id", 30001L);
-                case 3 -> { source.put("one_off_lesson_id", null); target.put("one_off_lesson_id", null); }
-                case 4 -> { source.put("one_off_lesson_id", -1L); target.put("one_off_lesson_id", -1L); }
+                case 3 -> {
+                    source.put("one_off_lesson_id", null);
+                    target.put("one_off_lesson_id", null);
+                }
+                case 4 -> {
+                    source.put("one_off_lesson_id", -1L);
+                    target.put("one_off_lesson_id", -1L);
+                }
                 case 5 -> target.put("one_off_lesson_id", 90002L);
                 case 6 -> target.put("group_id", groupId + 1);
                 default -> throw new AssertionError();
             }
-            assertThatThrownBy(() -> transferConsumer.onEvent(tampered)).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> transferConsumer.onEvent(tampered))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_binding_transfer_history WHERE binding_id = ?", Long.class, bindingId)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id = ?", Long.class, operation)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForMap("SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?", homeworkId)).isEqualTo(originalCompletion);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM homework_binding_transfer_history WHERE"
+                                        + " binding_id = ?",
+                                Long.class,
+                                bindingId))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id ="
+                                        + " ?",
+                                Long.class,
+                                operation))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForMap(
+                                "SELECT id, student_id, completed_at FROM homework_completions"
+                                        + " WHERE homework_id = ?",
+                                homeworkId))
+                .isEqualTo(originalCompletion);
     }
 
     private Map<String, Object> oneOffEvent(Map<String, Object> envelope) {
@@ -402,7 +798,9 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
             snapshot.put("assigned_teacher_id", 30003L);
             snapshot.put("lesson_type", "lecture");
             snapshot.put("week_type_snapshot", "all");
-            snapshot.put("day_of_week", LocalDate.parse((String) snapshot.get("date")).getDayOfWeek().getValue());
+            snapshot.put(
+                    "day_of_week",
+                    LocalDate.parse((String) snapshot.get("date")).getDayOfWeek().getValue());
         }
         return envelope;
     }
@@ -412,7 +810,8 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         UUID eventId = UUID.randomUUID();
         eventIds.add(eventId);
         copy.put("event_id", eventId.toString());
-        Map<String, Object> payload = new LinkedHashMap<>((Map<String, Object>) original.get("payload"));
+        Map<String, Object> payload =
+                new LinkedHashMap<>((Map<String, Object>) original.get("payload"));
         payload.put("source", new LinkedHashMap<>(transferSnapshot(original, "source")));
         payload.put("target", new LinkedHashMap<>(transferSnapshot(original, "target")));
         copy.put("payload", payload);
@@ -420,7 +819,8 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> transferSnapshot(Map<String, Object> envelope, String field) {
+    private static Map<String, Object> transferSnapshot(
+            Map<String, Object> envelope, String field) {
         return (Map<String, Object>) ((Map<String, Object>) envelope.get("payload")).get(field);
     }
 
@@ -434,13 +834,23 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         return result;
     }
 
-    private Map<String, Object> event(long bindingId, Long homeworkId, long bindingActor,
-                                      UUID bindingRequestKey, byte[] bindingHash, String bindingState,
-                                      long bindingRevision, long sourceOccurrenceRevision,
-                                      String hashPrefix,
-                                      long sourceLessonId, long targetLessonId, long occurrenceId,
-                                      LocalDate sourceDate, int sourceNumber,
-                                      LocalDate targetDate, int targetNumber) {
+    private Map<String, Object> event(
+            long bindingId,
+            Long homeworkId,
+            long bindingActor,
+            UUID bindingRequestKey,
+            byte[] bindingHash,
+            String bindingState,
+            long bindingRevision,
+            long sourceOccurrenceRevision,
+            String hashPrefix,
+            long sourceLessonId,
+            long targetLessonId,
+            long occurrenceId,
+            LocalDate sourceDate,
+            int sourceNumber,
+            LocalDate targetDate,
+            int targetNumber) {
         UUID operationId = UUID.randomUUID();
         UUID eventId = UUID.randomUUID();
         eventIds.add(eventId);
@@ -464,10 +874,24 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         payload.put("transfer_revision", sourceOccurrenceRevision + 1);
         payload.put("source_lesson_id", sourceLessonId);
         payload.put("target_lesson_id", targetLessonId);
-        payload.put("source", snapshot(sourceLessonId, occurrenceId, sourceDate, sourceNumber,
-                1, sourceOccurrenceRevision));
-        payload.put("target", snapshot(targetLessonId, occurrenceId, targetDate, targetNumber,
-                1, sourceOccurrenceRevision + 1));
+        payload.put(
+                "source",
+                snapshot(
+                        sourceLessonId,
+                        occurrenceId,
+                        sourceDate,
+                        sourceNumber,
+                        1,
+                        sourceOccurrenceRevision));
+        payload.put(
+                "target",
+                snapshot(
+                        targetLessonId,
+                        occurrenceId,
+                        targetDate,
+                        targetNumber,
+                        1,
+                        sourceOccurrenceRevision + 1));
         payload.put("batch_index", 0);
         payload.put("batch_count", 1);
         payload.put("bindings", List.of(binding));
@@ -482,9 +906,13 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         return envelope;
     }
 
-    private Map<String, Object> archivedBindingEvent(long bindingId, long occurrenceId,
-                                                     long bindingActor, UUID requestKey,
-                                                     UUID eventId, long eventSemesterId) {
+    private Map<String, Object> archivedBindingEvent(
+            long bindingId,
+            long occurrenceId,
+            long bindingActor,
+            UUID requestKey,
+            UUID eventId,
+            long eventSemesterId) {
         eventIds.add(eventId);
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("binding_id", bindingId);
@@ -506,8 +934,13 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         return envelope;
     }
 
-    private Map<String, Object> snapshot(long lessonId, long occurrenceId, LocalDate date,
-                                         int lessonNumber, long lessonRevision, long occurrenceRevision) {
+    private Map<String, Object> snapshot(
+            long lessonId,
+            long occurrenceId,
+            LocalDate date,
+            int lessonNumber,
+            long lessonRevision,
+            long occurrenceRevision) {
         Map<String, Object> snapshot = new LinkedHashMap<>();
         snapshot.put("lesson_id", lessonId);
         snapshot.put("schedule_item_id", 30001L);

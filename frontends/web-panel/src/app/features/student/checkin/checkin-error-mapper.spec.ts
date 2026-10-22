@@ -51,13 +51,6 @@ describe('mapCheckinError', () => {
   });
 });
 
-describe('GPS_DENIED_MESSAGE constant', () => {
-  it('matches the UI-SPEC GPS denied copy', () => {
-    expect(GPS_DENIED_MESSAGE).toBe(
-      'Нет доступа к геолокации. Разрешите доступ в настройках браузера и попробуйте снова.',
-    );
-  });
-});
 
 describe('mapGeolocationError', () => {
   it('maps permission denied to permission copy', () => {

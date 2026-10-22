@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -20,13 +22,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
 /**
- * REST API contract for one-off lesson management (Phase 60-03, D-04/D-08/D-09/D-22).
- * HTTP mappings are defined ONLY here per contract-first rule.
- * Controllers implement this interface without duplicating annotations.
+ * REST API contract for one-off lesson management (Phase 60-03, D-04/D-08/D-09/D-22). HTTP mappings
+ * are defined ONLY here per contract-first rule. Controllers implement this interface without
+ * duplicating annotations.
  */
 @Tag(name = "One-off Lessons", description = "Разовые пары старосты")
 @RequestMapping("/schedule/one-off-lessons")
@@ -34,11 +33,16 @@ public interface OneOffLessonApi {
 
     @Operation(summary = "Создать разовую пару (HEADMAN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Разовая пара создана"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа (не староста этой группы)"),
-            @ApiResponse(responseCode = "409", description = "Физический слот занят, назначение изменилось или ключ запроса использован с другим содержимым"),
-            @ApiResponse(responseCode = "503", description = "Academic Service недоступен")
+        @ApiResponse(responseCode = "201", description = "Разовая пара создана"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав доступа (не староста этой группы)"),
+        @ApiResponse(
+                responseCode = "409",
+                description =
+                        "Физический слот занят, назначение изменилось или ключ запроса использован с другим содержимым"),
+        @ApiResponse(responseCode = "503", description = "Academic Service недоступен")
     })
     @PostMapping
     ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
@@ -53,11 +57,15 @@ public interface OneOffLessonApi {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo);
 
-    @Operation(summary = "Отменить текущую физическую разовую пару с сохранением истории (HEADMAN, любая дата D-22)")
+    @Operation(
+            summary =
+                    "Отменить текущую физическую разовую пару с сохранением истории (HEADMAN, любая дата D-22)")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Разовая пара отменена, история сохранена"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Разовая пара не найдена")
+        @ApiResponse(
+                responseCode = "204",
+                description = "Разовая пара отменена, история сохранена"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Разовая пара не найдена")
     })
     @DeleteMapping("/{id}")
     ResponseEntity<Void> deleteOneOffLesson(@PathVariable Long id);

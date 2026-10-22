@@ -222,6 +222,9 @@ message LessonResponse {
   string transfer_state = 27; // PENDING, COMPLETED, ERROR, or empty
   optional string cancellation_reason = 29;
   int64 occurrence_revision = 28; // concurrency token for recurring lesson lifecycle commands
+  // Durable slot-change provenance through this physical generation. Room-only
+  // changes and restored/reassigned generations do not create a move.
+  bool moved = 30;
 }
 
 message LessonsResponse {

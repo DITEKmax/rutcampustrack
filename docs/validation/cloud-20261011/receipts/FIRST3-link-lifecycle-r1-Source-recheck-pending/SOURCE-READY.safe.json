@@ -1,0 +1,136 @@
+{
+  "schema": "RCT_FIRST3_DATASET_CHECKING_SOURCE_READY_V1",
+  "utc": "2026-10-13 10:02:30 UTC",
+  "state": "SOURCE_READY_LIFECYCLE_R1_NARROW_REVIEW_AND_FRESH_GRANT_PENDING_NATIVE_NOT_RUN",
+  "producer_head": "8ca6f041aa7ebb44c6eeb848b38c517a6dfc6e97",
+  "producer_source_unchanged": true,
+  "independent_producer_consumer_review": "APPROVE_f52c2eec51fb48e009058e8e8b1b1091c9fbd7f1df8c27c7516cf02df63b29f3",
+  "consumer_scope": "Root517b/111e UNBOUND future/author read only",
+  "plan": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/native-plan/PLAN.safe.json",
+    "sha256": "97ed159fda15ddb6d8cf3cd5da04a12313d0ef7ea6c2e7ebf6f77ca442408d20"
+  },
+  "caller": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/native-plan/run-approved-node.py",
+    "sha256": "b278d0ee9f3eac08f57ff2ce658d7d2d249e57f2b60b19f6e0de9d038f9bb1b2",
+    "derived_from": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/native-plan/run-approved-node.py",
+    "unchanged_boundaries": {
+      "statusCallbackByteExact": true,
+      "resourceObserverByteExact": true,
+      "sourcePinValidationByteExact": true,
+      "freshInitialFloorsMemoryUtcLastByteExact": true,
+      "typecheckSafeCheckerByteExact": true,
+      "guardB78Unchanged": true
+    }
+  },
+  "false_grant": {
+    "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/native-plan/grant.template.safe.json",
+    "sha256": "d4c91984e920f45b641460291ddcbbc67e5ba4655833cb31a6c456e6417d7df8",
+    "authorized_by_root": false,
+    "allow_format_write": false,
+    "live_utc_parameters": "UNBOUND_FRESH_ROOT_UTC",
+    "interpretation": "Caller rejects false authorization before effects; template is no execution grant."
+  },
+  "exact_launch_schema": {
+    "argv": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/native-plan/run-approved-node.py",
+      "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/private/root-node-grant01.json"
+    ],
+    "cwd": "/workspace/rct-worktrees/first3-dataset-correction-20261013",
+    "scope_new_own_run": "/tmp/rct-first3-dataset-check-20261013-attempt01-lifecycle-r1",
+    "network": false,
+    "dispatch": "NOT_RUN_REQUIRE_NORMAL_APPROVAL_FRESH_ROOT_GRANT"
+  },
+  "targeted_phases": [
+    "dataset-red",
+    "dataset-green",
+    "worker",
+    "privacy",
+    "format-write",
+    "format-check",
+    "types"
+  ],
+  "oracles": {
+    "red": "Only old0/100/200 actualgenerator code invalid and oldactualActor400 lacksclosedtuple fail; failure retention/private wipe pass; native1 mustjoin exact4 false controls/6rows/parser0, not mereexit1.",
+    "green": "40 fixed controls; actualinitialize firstgroup intercepted/all256 valid/exact90oldacceptedcodevalues; actualActor.stub11\u00d713 status tuples; no errorbody reads; wrong/private/accessor/prototype/core8/first32/statusasserts intact.",
+    "worker": "One actual Playwright worker expectedFAIL beforebody, same producer helper400 marker; synthetic private stackcanary notexported; actualActor400 SourceVM stub separately. No real HTTP/auth/cause proof.",
+    "privacy": "Unchanged source59fff/e018/5e7c3 producer/interruption/missingguard tests; browserNOT_STARTED.",
+    "format_type": "Canonical only2TS apply/check + unchanged safe1125checker strictTS5.9.3; same compiler policy, original4FIRST3entrypoints/currentimports."
+  },
+  "changed_effects": {
+    "dependency_link": {
+      "path": "/workspace/rct-worktrees/first3-dataset-correction-20261013/tests/e2e/node_modules",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules"
+    },
+    "creation": "Known absent link only; explicitRootgrantmatchesplan; canonicalnofollowparent/target/UID; cheapfreshresourceobserver plus UTC-last before creation. No install/targetwrites/foreignreplacement.",
+    "cleanup": "Finally retains primary exception; active guard call stays UNKNOWN until returned terminal result is immediately tracked. Cleanup only when all tracked children are literal settled/reaped True and no active call is unknown. Original exact canonical parent/inode/link inode/UID/type/target guard retained. Uncertain creation, foreign replacement, active/unknown/unsettled/unreaped child deny unlink. Fixed CLI emits only CLOSED blocked facts, preserves failure exit.",
+    "namespace": "Run exactly plan fixed NEW /tmp namespace; existing directory refused.",
+    "numeric": "Same existing180phase/900active+60cleanup/512heap/1GiBRSS/32MiBTMP/floors4GiB/sharedstop15GiB/reserve1GiB. Added equality assertions bind granted numericcaps to unchanged plan intent; fresh active UTC span bounded<=900. No capraise."
+  },
+  "static_checks": {
+    "immutable_pins": {
+      "expected": 26,
+      "observed": 26,
+      "pass": true,
+      "badPaths": []
+    },
+    "whole_two_CJS_grammar_parse_V8": "PASS_NO_BODIES_EXECUTED",
+    "caller_syntax": "PYTHON_AST_PARSE_AND_SELECTED_RAM_ONLY_NO_NATIVE_CHILD_DISPATCH",
+    "old_status_observer_pin_validation_UTC_first_effect_bytes": "EXACT",
+    "producer_worktree_clean_at8ca6": true,
+    "source_payload_bytes": 91889,
+    "source_prefix_before_lifecycle_byte_exact_except_base_namespace": true,
+    "unchanged_public_helpers": [
+      "typecheck-safe.cjs",
+      "tsconfig.ci-first3.json",
+      "worker-control.cjs",
+      "dataset-controls.cjs",
+      "before/safe-reporter.ts",
+      "before/mobile-dataset.ts",
+      "before/artifact-privacy.ts",
+      "controls/dataset-http.control.spec.ts"
+    ]
+  },
+  "dependencies": {
+    "existing_cached_directory": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules",
+    "own_link_currently": "ABSENT_NOT_CREATED",
+    "canonical_TSVM_loader": "Existing pattern/canonical__dirname binding; TEST_USERS dependency stub empty inVM. Worker imports producer helper only; no credential fixture values import.",
+    "typecheck": "Static current publicTypeScript program imports originalusers source for types as before; no private runtime credentials/body/stand input read/output."
+  },
+  "resource_estimate": {
+    "active_seconds": "60-180 ESTIMATE_ACTUAL_UNKNOWN",
+    "source_bytes": 91889,
+    "tmp_increment": "EXPECTED_SMALL_UNCHANGED32MiB_SAMPLED_STOP_ACTUAL_UNKNOWN",
+    "peak_RSS": "ACTUAL_UNKNOWN_UNCHANGED1GiB_SAMPLED_STOP",
+    "isolated_runtime": "No server/browser/DB/Docker/API/network; one cacheddep symlink metadata; all new TMP/cache/output scoped own namespace"
+  },
+  "residual": [
+    "Actual checking NOT_RUN, no current CI/threecase cause promotion.",
+    "Root narrow independent review of changed lifecycle plus new packet binding only; no unchanged infrastructure re-review.",
+    "Any canonical formatter delta is mechanical-only owncommit; originalsemantic2ffd stays separate.",
+    "No B013 action/rephrase/othermodel/nativeRoot changes.",
+    "All raw marker/error/source/body texts stay RAM/private; only closed booleans/counts/codes leave checking children.",
+    "A call that raises before returning terminal proof remains active UNKNOWN, even if a mock or exception description says a child settled; link is retained for explicit later proof/owner cleanup."
+  ],
+  "lifecycle_correction": {
+    "finding": "FIRST3-OWN-LINK-CLEANUP-ON-EXCEPTION",
+    "old_packet_preserved": true,
+    "old_source_ready_sha256": "5e436af859e271921e24b9ef1cc1cb38484244114e7a8891afabef1ca7c8adcd",
+    "old_caller_sha256": "d2f628e4613df94ebb3f4c803d4de73fae8aaee100c7f74dd5039862cdde65aa",
+    "new_caller_sha256": "b278d0ee9f3eac08f57ff2ce658d7d2d249e57f2b60b19f6e0de9d038f9bb1b2",
+    "ram_helper": {
+      "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/check-lifecycle-selected-ast.py",
+      "sha256": "4fecf479a1679343923bb0287a18482c5e728173cad95048737b97e8e2b00f3c"
+    },
+    "ram_receipt": {
+      "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan-link-lifecycle-r1/lifecycle-controls.safe.json",
+      "sha256": "f1d347088a470e5bf6726d3e4d8e5be2f0373149929541f448d29016c02d9a7a"
+    },
+    "old_counterexamples": 2,
+    "new_controls": 18,
+    "all_controls_passed": true,
+    "actual_fs_link_or_child_effects": false,
+    "mock_qualification": "Selected real caller AST only; mocked FS/guard/clock/receipt in Python RAM. Not native Node or real child lifecycle proof. No private artifacts read."
+  }
+}

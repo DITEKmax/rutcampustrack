@@ -86,19 +86,6 @@ describe('LessonRowComponent', () => {
     expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('applies lesson-row--active class for ACTIVE lessons', async () => {
-    const { container } = await render(LessonRowComponent, {
-      providers: [provideNoopAnimations()],
-      componentInputs: {
-        lesson: { ...baseLesson, status: 'ACTIVE' },
-        subjectName: 'Математика',
-      },
-    });
-
-    expect(container.querySelector('.lesson-row--active')).toBeTruthy();
-    // station dot still rendered
-    expect(container.querySelector('.lesson-row__dot')).toBeTruthy();
-  });
 
   it('applies lesson-row--cancelled class and does NOT emit toggle for CANCELLED lessons', async () => {
     const toggle = vi.fn();

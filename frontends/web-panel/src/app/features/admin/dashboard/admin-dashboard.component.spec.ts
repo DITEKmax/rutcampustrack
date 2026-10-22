@@ -26,9 +26,6 @@ describe('AdminDashboardComponent', () => {
     httpMock.verify();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
 
   function flushGroups(): void {
     // Dashboard also lists groups for the §4.4 table; answer with an empty page.

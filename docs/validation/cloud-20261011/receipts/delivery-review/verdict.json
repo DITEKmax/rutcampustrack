@@ -1,0 +1,14 @@
+{
+  "input_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "verdict": "CHANGES_REQUESTED",
+  "blocking_findings": [
+    "DR-01",
+    "DR-02"
+  ],
+  "findings_path": "/workspace/scratch/rct-validation/delivery_review/findings.md",
+  "correction_owner": "delivery author, narrow caller/test extension assigned by root if needed",
+  "required_recheck": "DR-01 changed caller/test meaningful red/green plus DR-02 actual safe command manifest; no unrelated repeated PASS",
+  "product_fix_by_reviewer": false,
+  "runtime_by_reviewer": "NOT_RUN"
+}

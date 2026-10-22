@@ -4,23 +4,22 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * M16 G6 — value object для audit log entry. Передаётся в
- * {@link AuditLogStorage#store(AuditLogEntry)}.
+ * M16 G6 — value object для audit log entry. Передаётся в {@link
+ * AuditLogStorage#store(AuditLogEntry)}.
  *
  * <p>Все поля nullable кроме {@code action} и {@code createdAt}:
+ *
  * <ul>
- *   <li>{@code userId} — может быть {@code null} если ADMIN action не requires
- *       authenticated user (system maintenance) либо если контекст не доступен
- *       (тест без RequestContext).</li>
- *   <li>{@code targetType}/{@code targetId} — необязательно. Aspect не знает
- *       какой именно ресурс затрагивает action (это знает контроллер). На
- *       v1 заполняются как {@code null}; будущая фаза может добавить
- *       extraction из method args через {@code @AuditTarget} param annotation.</li>
- *   <li>{@code correlationId} — MDC trace_id если есть. Используется для
- *       связки audit-row с distributed trace в Tempo.</li>
- *   <li>{@code extras} — произвольные ключи-значения для будущего расширения
- *       без миграции схемы (например {@code {"role": "ADMIN", "ip": "..."}}).</li>
- *   <li>{@code errorMessage} — заполняется только при {@code succeeded=false}.</li>
+ *   <li>{@code userId} — может быть {@code null} если ADMIN action не requires authenticated user
+ *       (system maintenance) либо если контекст не доступен (тест без RequestContext).
+ *   <li>{@code targetType}/{@code targetId} — необязательно. Aspect не знает какой именно ресурс
+ *       затрагивает action (это знает контроллер). На v1 заполняются как {@code null}; будущая фаза
+ *       может добавить extraction из method args через {@code @AuditTarget} param annotation.
+ *   <li>{@code correlationId} — MDC trace_id если есть. Используется для связки audit-row с
+ *       distributed trace в Tempo.
+ *   <li>{@code extras} — произвольные ключи-значения для будущего расширения без миграции схемы
+ *       (например {@code {"role": "ADMIN", "ip": "..."}}).
+ *   <li>{@code errorMessage} — заполняется только при {@code succeeded=false}.
  * </ul>
  */
 public record AuditLogEntry(
@@ -32,8 +31,7 @@ public record AuditLogEntry(
         Map<String, Object> extras,
         boolean succeeded,
         String errorMessage,
-        Instant createdAt
-) {
+        Instant createdAt) {
 
     /** Builder for ergonomic construction (большинство полей optional). */
     public static Builder builder(String action) {
@@ -58,18 +56,57 @@ public record AuditLogEntry(
             this.action = action;
         }
 
-        public Builder userId(Long userId) { this.userId = userId; return this; }
-        public Builder targetType(String t) { this.targetType = t; return this; }
-        public Builder targetId(Long id) { this.targetId = id; return this; }
-        public Builder correlationId(String id) { this.correlationId = id; return this; }
-        public Builder extras(Map<String, Object> e) { this.extras = e; return this; }
-        public Builder succeeded(boolean s) { this.succeeded = s; return this; }
-        public Builder errorMessage(String m) { this.errorMessage = m; return this; }
-        public Builder createdAt(Instant t) { this.createdAt = t; return this; }
+        public Builder userId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder targetType(String t) {
+            this.targetType = t;
+            return this;
+        }
+
+        public Builder targetId(Long id) {
+            this.targetId = id;
+            return this;
+        }
+
+        public Builder correlationId(String id) {
+            this.correlationId = id;
+            return this;
+        }
+
+        public Builder extras(Map<String, Object> e) {
+            this.extras = e;
+            return this;
+        }
+
+        public Builder succeeded(boolean s) {
+            this.succeeded = s;
+            return this;
+        }
+
+        public Builder errorMessage(String m) {
+            this.errorMessage = m;
+            return this;
+        }
+
+        public Builder createdAt(Instant t) {
+            this.createdAt = t;
+            return this;
+        }
 
         public AuditLogEntry build() {
-            return new AuditLogEntry(userId, action, targetType, targetId,
-                    correlationId, extras, succeeded, errorMessage, createdAt);
+            return new AuditLogEntry(
+                    userId,
+                    action,
+                    targetType,
+                    targetId,
+                    correlationId,
+                    extras,
+                    succeeded,
+                    errorMessage,
+                    createdAt);
         }
     }
 }

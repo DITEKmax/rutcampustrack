@@ -6,17 +6,15 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Set;
 
 /**
- * M02 Группа 8 — валидатор event payload'а против JSON Schema из
- * {@code event-schemas/*.json}. Использует networknt, резолвит
- * {@code $ref: "_common.json#/..."} автоматически (sibling-файл из той же
- * директории).
+ * M02 Группа 8 — валидатор event payload'а против JSON Schema из {@code event-schemas/*.json}.
+ * Использует networknt, резолвит {@code $ref: "_common.json#/..."} автоматически (sibling-файл из
+ * той же директории).
  *
  * <p>Используется contract-тестами этого сервиса ({@code *ContractIT}).
  */
@@ -26,13 +24,14 @@ public final class EventSchemaValidator {
 
     /**
      * @return путь к {@code event-schemas/} относительно корня репо
-     *   (services/schedule-service/schedule-app → ../../../event-schemas).
+     *     (services/schedule-service/schedule-app → ../../../event-schemas).
      */
     public static Path schemasDir() {
-        return Path.of("").toAbsolutePath()
-                .getParent()   // services/schedule-service
-                .getParent()   // services
-                .getParent()   // repo root
+        return Path.of("")
+                .toAbsolutePath()
+                .getParent() // services/schedule-service
+                .getParent() // services
+                .getParent() // repo root
                 .resolve("event-schemas");
     }
 
@@ -43,15 +42,15 @@ public final class EventSchemaValidator {
     }
 
     /**
-     * Валидирует JSON payload (string) против schema. Возвращает empty set
-     * если payload валиден, иначе — violations.
+     * Валидирует JSON payload (string) против schema. Возвращает empty set если payload валиден,
+     * иначе — violations.
      */
-    public static Set<ValidationMessage> validate(String schemaFilename, String jsonPayload) throws IOException {
+    public static Set<ValidationMessage> validate(String schemaFilename, String jsonPayload)
+            throws IOException {
         JsonSchema schema = loadSchema(schemaFilename);
         JsonNode node = MAPPER.readTree(jsonPayload);
         return schema.validate(node);
     }
 
-    private EventSchemaValidator() {
-    }
+    private EventSchemaValidator() {}
 }

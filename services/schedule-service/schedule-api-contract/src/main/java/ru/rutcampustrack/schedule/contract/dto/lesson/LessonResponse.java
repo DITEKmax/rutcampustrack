@@ -1,23 +1,24 @@
 package ru.rutcampustrack.schedule.contract.dto.lesson;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-
 /**
  * Response DTO for lesson view — combines fields from both Lesson and ScheduleItem (VIEW-02, D-16).
- * Extends RepresentationModel for HATEOAS Level 3 compliance.
- * No Lombok — contract modules use plain Java classes with explicit constructors and getters.
- * <p>
- * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
- * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
+ * Extends RepresentationModel for HATEOAS Level 3 compliance. No Lombok — contract modules use
+ * plain Java classes with explicit constructors and getters.
+ *
+ * <p>D-16: teacherId removed. Teacher access to journals is resolved via JOIN ScheduleItem ×
+ * TeacherSubjectGroup, not by slot-level teacher assignment.
  */
-@Schema(description = "Пара (конкретное занятие на дату) — объединение полей Lesson и ScheduleItem с HATEOAS-ссылками")
+@Schema(
+        description =
+                "Пара (конкретное занятие на дату) — объединение полей Lesson и ScheduleItem с HATEOAS-ссылками")
 public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     private Long id;
@@ -37,16 +38,16 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private Long blockedByUserId;
     private OffsetDateTime blockedAt;
     private String cancelReason;
+
     /**
-     * user_id старосты/админа, отменившего пару (M09 G5, dev branch).
-     * NULL для строк, отменённых до миграции V13, или для не-CANCELLED.
+     * user_id старосты/админа, отменившего пару (M09 G5, dev branch). NULL для строк, отменённых до
+     * миграции V13, или для не-CANCELLED.
      */
     private Long cancelledBy;
-    /**
-     * Момент отмены UTC. NULL для строк, отменённых до миграции V13,
-     * или для не-CANCELLED.
-     */
+
+    /** Момент отмены UTC. NULL для строк, отменённых до миграции V13, или для не-CANCELLED. */
     private OffsetDateTime cancelledAt;
+
     private OffsetDateTime createdAt;
     private Long occurrenceId;
     private Long assignmentId;
@@ -55,45 +56,120 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private String lessonType;
     private Long generation;
     private Long revision;
-    @Schema(description = "Текущая revision пары в расписании; передавай её как expectedRevision при следующем переносе")
+
+    @Schema(
+            description =
+                    "Текущая revision пары в расписании; передавай её как expectedRevision при следующем переносе")
     private Long occurrenceRevision;
+
     private boolean current;
     private String transferOperationId;
     private String transferState;
 
     public LessonResponse() {}
 
-    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
-                           LocalDate date, LessonStatus status,
-                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
-                           LocalTime endTime, WeekType weekType, String room,
-                           boolean geoBlocked, String cancelReason, OffsetDateTime createdAt) {
-        this(id, scheduleItemId, groupId, subjectId, date, status,
-                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
-                geoBlocked, false, null, null, cancelReason, null, null, createdAt);
+    public LessonResponse(
+            Long id,
+            Long scheduleItemId,
+            Long groupId,
+            Long subjectId,
+            LocalDate date,
+            LessonStatus status,
+            Short dayOfWeek,
+            Short lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            WeekType weekType,
+            String room,
+            boolean geoBlocked,
+            String cancelReason,
+            OffsetDateTime createdAt) {
+        this(
+                id,
+                scheduleItemId,
+                groupId,
+                subjectId,
+                date,
+                status,
+                dayOfWeek,
+                lessonNumber,
+                startTime,
+                endTime,
+                weekType,
+                room,
+                geoBlocked,
+                false,
+                null,
+                null,
+                cancelReason,
+                null,
+                null,
+                createdAt);
     }
 
-    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
-                           LocalDate date, LessonStatus status,
-                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
-                           LocalTime endTime, WeekType weekType, String room,
-                           boolean geoBlocked, boolean blockedByHeadman,
-                           Long blockedByUserId, OffsetDateTime blockedAt,
-                           String cancelReason, OffsetDateTime createdAt) {
-        this(id, scheduleItemId, groupId, subjectId, date, status,
-                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
-                geoBlocked, blockedByHeadman, blockedByUserId, blockedAt,
-                cancelReason, null, null, createdAt);
+    public LessonResponse(
+            Long id,
+            Long scheduleItemId,
+            Long groupId,
+            Long subjectId,
+            LocalDate date,
+            LessonStatus status,
+            Short dayOfWeek,
+            Short lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            WeekType weekType,
+            String room,
+            boolean geoBlocked,
+            boolean blockedByHeadman,
+            Long blockedByUserId,
+            OffsetDateTime blockedAt,
+            String cancelReason,
+            OffsetDateTime createdAt) {
+        this(
+                id,
+                scheduleItemId,
+                groupId,
+                subjectId,
+                date,
+                status,
+                dayOfWeek,
+                lessonNumber,
+                startTime,
+                endTime,
+                weekType,
+                room,
+                geoBlocked,
+                blockedByHeadman,
+                blockedByUserId,
+                blockedAt,
+                cancelReason,
+                null,
+                null,
+                createdAt);
     }
 
-    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
-                           LocalDate date, LessonStatus status,
-                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
-                           LocalTime endTime, WeekType weekType, String room,
-                           boolean geoBlocked, boolean blockedByHeadman,
-                           Long blockedByUserId, OffsetDateTime blockedAt,
-                           String cancelReason, Long cancelledBy, OffsetDateTime cancelledAt,
-                           OffsetDateTime createdAt) {
+    public LessonResponse(
+            Long id,
+            Long scheduleItemId,
+            Long groupId,
+            Long subjectId,
+            LocalDate date,
+            LessonStatus status,
+            Short dayOfWeek,
+            Short lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            WeekType weekType,
+            String room,
+            boolean geoBlocked,
+            boolean blockedByHeadman,
+            Long blockedByUserId,
+            OffsetDateTime blockedAt,
+            String cancelReason,
+            Long cancelledBy,
+            OffsetDateTime cancelledAt,
+            OffsetDateTime createdAt) {
         this.id = id;
         this.scheduleItemId = scheduleItemId;
         this.groupId = groupId;
@@ -116,20 +192,56 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
         this.createdAt = createdAt;
     }
 
-    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
-                           LocalDate date, LessonStatus status,
-                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
-                           LocalTime endTime, WeekType weekType, String room,
-                           boolean geoBlocked, boolean blockedByHeadman,
-                           Long blockedByUserId, OffsetDateTime blockedAt,
-                           String cancelReason, Long cancelledBy, OffsetDateTime cancelledAt,
-                           OffsetDateTime createdAt, Long occurrenceId, Long assignmentId,
-                           Long semesterId, Long assignedTeacherId, String lessonType,
-                           Long generation, Long revision, boolean current) {
-        this(id, scheduleItemId, groupId, subjectId, date, status,
-                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
-                geoBlocked, blockedByHeadman, blockedByUserId, blockedAt,
-                cancelReason, cancelledBy, cancelledAt, createdAt);
+    public LessonResponse(
+            Long id,
+            Long scheduleItemId,
+            Long groupId,
+            Long subjectId,
+            LocalDate date,
+            LessonStatus status,
+            Short dayOfWeek,
+            Short lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            WeekType weekType,
+            String room,
+            boolean geoBlocked,
+            boolean blockedByHeadman,
+            Long blockedByUserId,
+            OffsetDateTime blockedAt,
+            String cancelReason,
+            Long cancelledBy,
+            OffsetDateTime cancelledAt,
+            OffsetDateTime createdAt,
+            Long occurrenceId,
+            Long assignmentId,
+            Long semesterId,
+            Long assignedTeacherId,
+            String lessonType,
+            Long generation,
+            Long revision,
+            boolean current) {
+        this(
+                id,
+                scheduleItemId,
+                groupId,
+                subjectId,
+                date,
+                status,
+                dayOfWeek,
+                lessonNumber,
+                startTime,
+                endTime,
+                weekType,
+                room,
+                geoBlocked,
+                blockedByHeadman,
+                blockedByUserId,
+                blockedAt,
+                cancelReason,
+                cancelledBy,
+                cancelledAt,
+                createdAt);
         this.occurrenceId = occurrenceId;
         this.assignmentId = assignmentId;
         this.semesterId = semesterId;

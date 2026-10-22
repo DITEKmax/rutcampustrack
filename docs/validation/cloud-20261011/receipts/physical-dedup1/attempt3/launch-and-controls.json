@@ -1,0 +1,15 @@
+{
+  "utc": "2026-10-12T06:36:36.831398+00:00",
+  "source_sha256": "d8153cde3522d2d9dd5f2d882790a5bc5ba5f2e4d13c3c32098768bf87de0603",
+  "parser": "PASS",
+  "exact_source_batch_utc_regression": "PASS",
+  "resume_prefix250_seal": "243973abdc195790417ec0b3564850261d2c705fa103a8798005448ef1df6705",
+  "scope": "same exact10831; skip250verified rows; fresh preflight all12153; only10581 physical replacements remaining",
+  "command": [
+    "python3",
+    "/workspace/scratch/rct-validation/physical_dedup1/attempt3/dedup.py"
+  ],
+  "children": 0,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual": "UNKNOWN"
+}

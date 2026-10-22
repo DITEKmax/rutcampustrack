@@ -1,0 +1,19 @@
+{
+  "phases": [
+    {
+      "phase": "prettier",
+      "native_exit": 0,
+      "success": true,
+      "all_births_absent": true
+    },
+    {
+      "phase": "types",
+      "native_exit": 0,
+      "success": true,
+      "all_births_absent": true
+    }
+  ],
+  "source_unchanged": true,
+  "completed_utc": "2026-10-13T19:19:51.165613+00:00",
+  "browser_server_API": false
+}

@@ -1,0 +1,63 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_config",
+  "manifest": "sealed-safe-manifest.json",
+  "files": [
+    {
+      "path": "verification.safe.json",
+      "original_sha256": "c5ebe239e956ce307cd0139bfabaf8bfdcefbf1aa76dabcece5be4f74f1cc914",
+      "original_bytes": 1568,
+      "working_sha256": "c5ebe239e956ce307cd0139bfabaf8bfdcefbf1aa76dabcece5be4f74f1cc914",
+      "working_bytes": 1568,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-config.py",
+      "original_sha256": "c886805e546086e6086403c69fe140721e7a7da5b3d39e41d39649f3c42c4d4e",
+      "original_bytes": 5889,
+      "working_sha256": "c886805e546086e6086403c69fe140721e7a7da5b3d39e41d39649f3c42c4d4e",
+      "working_bytes": 5889,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.safe.ndjson",
+      "original_sha256": "17801a328592fce0c89710c4ad78f3b8665039c89653732671a3782563c5e670",
+      "original_bytes": 548,
+      "working_sha256": "17801a328592fce0c89710c4ad78f3b8665039c89653732671a3782563c5e670",
+      "working_bytes": 548,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "consumer-api-packet.safe.json",
+      "original_sha256": "82ef32d7b81c00e6d3d93074af23fa9a99d9ff20fc6ea16269d4bff6d8821a6f",
+      "original_bytes": 1810,
+      "working_sha256": "82ef32d7b81c00e6d3d93074af23fa9a99d9ff20fc6ea16269d4bff6d8821a6f",
+      "working_bytes": 1810,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "commit-checks.safe.json",
+      "original_sha256": "90e151a6168f8babe025fad33fa8040f97be5563cdbc1bc87d540346fbaf5627",
+      "original_bytes": 969,
+      "working_sha256": "90e151a6168f8babe025fad33fa8040f97be5563cdbc1bc87d540346fbaf5627",
+      "working_bytes": 969,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "original_sha256": "4569f2f74c078c71425ef8214777241ea53305a5f5d743f99db48ff74157f167",
+      "original_bytes": 627,
+      "working_sha256": "4569f2f74c078c71425ef8214777241ea53305a5f5d743f99db48ff74157f167",
+      "working_bytes": 627,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-safe-manifest.json",
+      "original_sha256": "92bb6c2c1a2782fb7671b10d8e7275ea22b71f181918129b90bcd0380a43205b",
+      "original_bytes": 814,
+      "working_sha256": "92bb6c2c1a2782fb7671b10d8e7275ea22b71f181918129b90bcd0380a43205b",
+      "working_bytes": 814,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

@@ -1,0 +1,6 @@
+{
+  "path": "docs/sources/manifest.yaml",
+  "sha256": "e64d7da3f462bda440f478ffb253291eb5c62b4fe8d1cf6e8b46ad0361db3d10",
+  "normalization": "existingEOFhook removed2emptyfinal lines; sourceentries/values unchanged; originalrepairproof retained separately",
+  "time": "2026-10-11T20:11:46.349852+00:00"
+}

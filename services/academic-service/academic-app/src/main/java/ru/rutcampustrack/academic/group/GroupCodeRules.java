@@ -1,13 +1,12 @@
 package ru.rutcampustrack.academic.group;
 
-import ru.rutcampustrack.academic.entity.Group;
-
 import java.util.Locale;
 import java.util.Optional;
+import ru.rutcampustrack.academic.entity.Group;
 
 /**
- * Canonical group-code rules shared by all writers. A group name remains the display identity, while the split code
- * fields are kept in step with it whenever the name is changed.
+ * Canonical group-code rules shared by all writers. A group name remains the display identity,
+ * while the split code fields are kept in step with it whenever the name is changed.
  */
 public final class GroupCodeRules {
 
@@ -15,8 +14,7 @@ public final class GroupCodeRules {
 
     private static final GroupNameParser PARSER = new GroupNameParser();
 
-    private GroupCodeRules() {
-    }
+    private GroupCodeRules() {}
 
     /** Canonical code, with a validated duration for the current programme. */
     public record CanonicalCode(
@@ -34,9 +32,10 @@ public final class GroupCodeRules {
             if (currentCourse >= trainingDurationYears) {
                 return null;
             }
-            String nextNumeric = (currentCourse + 1)
-                    + Integer.toString(programType.getDigit())
-                    + numericCode.charAt(2);
+            String nextNumeric =
+                    (currentCourse + 1)
+                            + Integer.toString(programType.getDigit())
+                            + numericCode.charAt(2);
             return fromParts(alphabeticCode, nextNumeric, trainingDurationYears);
         }
     }
@@ -56,24 +55,24 @@ public final class GroupCodeRules {
     }
 
     /**
-     * Validate and normalize the split code supplied by the registry writer.
-     * The first numeric digit is the current course; the middle digit must be
-     * a registered programme type; and the course cannot exceed the supplied
-     * duration.
+     * Validate and normalize the split code supplied by the registry writer. The first numeric
+     * digit is the current course; the middle digit must be a registered programme type; and the
+     * course cannot exceed the supplied duration.
      */
-    public static CanonicalCode fromParts(String alphabeticCode,
-                                          String numericCode,
-                                          Integer trainingDurationYears) {
+    public static CanonicalCode fromParts(
+            String alphabeticCode, String numericCode, Integer trainingDurationYears) {
         String prefix = normalizeAlphabeticCode(alphabeticCode);
         String numeric = normalizeNumericCode(numericCode);
-        if (trainingDurationYears == null || trainingDurationYears < 1
+        if (trainingDurationYears == null
+                || trainingDurationYears < 1
                 || trainingDurationYears > MAX_COURSE) {
-            throw new InvalidCodeException("trainingDurationYears",
-                    "Срок обучения должен быть от 1 до 5 лет");
+            throw new InvalidCodeException(
+                    "trainingDurationYears", "Срок обучения должен быть от 1 до 5 лет");
         }
         int course = Character.digit(numeric.charAt(0), 10);
         if (course < 1 || course > MAX_COURSE || course > trainingDurationYears) {
-            throw new InvalidCodeException("numericCode",
+            throw new InvalidCodeException(
+                    "numericCode",
                     "Первая цифра цифрового кода должна быть от 1 до 5 и не больше срока обучения");
         }
         int typeDigit = Character.digit(numeric.charAt(1), 10);
@@ -82,28 +81,28 @@ public final class GroupCodeRules {
     }
 
     /**
-     * Parse an active name.  A missing duration is derived only from a known
-     * programme types 1/7 only, which preserves the old compatibility rule.
-     * Other types require an explicit stored/supplied duration.
+     * Parse an active name. A missing duration is derived only from a known programme types 1/7
+     * only, which preserves the old compatibility rule. Other types require an explicit
+     * stored/supplied duration.
      */
     public static CanonicalCode fromName(String name, Integer trainingDurationYears) {
         final GroupNameParser.ParsedName parsed;
         try {
             parsed = PARSER.parse(name);
         } catch (IllegalArgumentException error) {
-            throw new InvalidCodeException("name", "Имя группы должно содержать буквенный код и три цифры; курс — от 1 до 5");
+            throw new InvalidCodeException(
+                    "name",
+                    "Имя группы должно содержать буквенный код и три цифры; курс — от 1 до 5");
         }
         ProgramType type = ProgramType.fromDigit(parsed.type());
-        String numeric = Integer.toString(parsed.course())
-                + parsed.type() + parsed.number();
-        int duration = trainingDurationYears == null
-                ? type.getMaxCourse() : trainingDurationYears;
+        String numeric = Integer.toString(parsed.course()) + parsed.type() + parsed.number();
+        int duration = trainingDurationYears == null ? type.getMaxCourse() : trainingDurationYears;
         return fromParts(parsed.prefix(), numeric, duration);
     }
 
     /**
-     * Safe compatibility projection for legacy rows.  Invalid or contradictory
-     * names stay unknown instead of receiving an invented duration.
+     * Safe compatibility projection for legacy rows. Invalid or contradictory names stay unknown
+     * instead of receiving an invented duration.
      */
     public static Optional<CanonicalCode> legacy(String name) {
         try {
@@ -129,16 +128,15 @@ public final class GroupCodeRules {
         }
         String normalized = value.trim().toUpperCase(Locale.ROOT);
         if (!normalized.matches("^[А-ЯЁ][А-ЯЁа-яё]{1,3}$")) {
-            throw new InvalidCodeException("alphabeticCode",
-                    "Буквенный код: 2–4 кириллических символа");
+            throw new InvalidCodeException(
+                    "alphabeticCode", "Буквенный код: 2–4 кириллических символа");
         }
         return normalized;
     }
 
     private static String normalizeNumericCode(String value) {
         if (value == null || !value.trim().matches("^\\d{3}$")) {
-            throw new InvalidCodeException("numericCode",
-                    "Цифровой код должен содержать 3 цифры");
+            throw new InvalidCodeException("numericCode", "Цифровой код должен содержать 3 цифры");
         }
         return value.trim();
     }

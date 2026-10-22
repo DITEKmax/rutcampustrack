@@ -1,7 +1,15 @@
 package ru.rutcampustrack.attendance.excuse;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,46 +31,31 @@ import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTes
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
-
 /**
  * Contract test (AC-7) for excuse event publishing.
  *
- * <p>Publishes real ExcuseTicket events through the fanout exchange using a private
- * test queue bound for the duration of the test. Parses the received JSON and asserts
- * the fields that notification-bot {@code headman_alerts.py} reads.
+ * <p>Publishes real ExcuseTicket events through the fanout exchange using a private test queue
+ * bound for the duration of the test. Parses the received JSON and asserts the fields that
+ * notification-bot {@code headman_alerts.py} reads.
  *
- * <p><b>Local-env note.</b> Requires Docker for the MongoDB + RabbitMQ Testcontainers;
- * boots from {@link AbstractAttendanceIntegrationTest}. On a dev machine without
- * Docker Desktop running this class is expected to fail early in Spring context boot
- * (RyukResourceReaper) — same mode as every other *IT in this module. CI with Docker
- * available runs it normally.
+ * <p><b>Local-env note.</b> Requires Docker for the MongoDB + RabbitMQ Testcontainers; boots from
+ * {@link AbstractAttendanceIntegrationTest}. On a dev machine without Docker Desktop running this
+ * class is expected to fail early in Spring context boot (RyukResourceReaper) — same mode as every
+ * other *IT in this module. CI with Docker available runs it normally.
  */
 class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
 
-    @Autowired
-    private ExcuseService excuseService;
+    @Autowired private ExcuseService excuseService;
 
-    @Autowired
-    private ExcuseRepository excuseRepository;
+    @Autowired private ExcuseRepository excuseRepository;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    @Autowired private RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private RabbitAdmin rabbitAdmin;
+    @Autowired private RabbitAdmin rabbitAdmin;
 
-    @Autowired
-    private org.springframework.amqp.core.AmqpAdmin amqpAdmin;
+    @Autowired private org.springframework.amqp.core.AmqpAdmin amqpAdmin;
 
     // RequestContext is a request-scoped bean; the service calls getUserId/getGroupId/isHeadman.
     // Stub it via MockitoBean in the integration profile would be cleaner, but we can also
@@ -100,31 +93,42 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         when(requestContext.getGroupId()).thenReturn(10L);
         when(requestContext.isHeadman()).thenReturn(false);
         when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
-        when(academicGrpcClient.isHeadman(777L, 10L)).thenReturn(
-                ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
-        when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), org.mockito.ArgumentMatchers.eq(10L)))
-                .thenAnswer(inv -> ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
-                        .setId(inv.getArgument(0)).setGroupId(10L).setSemesterId(1L).build());
+        when(academicGrpcClient.isHeadman(777L, 10L))
+                .thenReturn(
+                        ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder()
+                                .setIsHeadman(true)
+                                .build());
+        when(scheduleGrpcClient.requireAttendanceMutationReady(
+                        anyLong(), org.mockito.ArgumentMatchers.eq(10L)))
+                .thenAnswer(
+                        inv ->
+                                ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
+                                        .setId(inv.getArgument(0))
+                                        .setGroupId(10L)
+                                        .setSemesterId(1L)
+                                        .build());
         // D-25: return matching LessonInfo for every requested id in group 10.
-        when(scheduleGrpcClient.getLessonsByIds(anyList())).thenAnswer(inv -> {
-            List<Long> ids = inv.getArgument(0);
-            return ids.stream()
-                    .map(id -> LessonInfo.newBuilder()
-                            .setLessonId(id)
-                            .setGroupId(10L)
-                            .setSemesterId(1L)
-                            .build())
-                    .toList();
-        });
+        when(scheduleGrpcClient.getLessonsByIds(anyList()))
+                .thenAnswer(
+                        inv -> {
+                            List<Long> ids = inv.getArgument(0);
+                            return ids.stream()
+                                    .map(
+                                            id ->
+                                                    LessonInfo.newBuilder()
+                                                            .setLessonId(id)
+                                                            .setGroupId(10L)
+                                                            .setSemesterId(1L)
+                                                            .build())
+                                    .toList();
+                        });
     }
 
     @Test
     void createExcuse_publishesRequestedEvent_matchingBotContract() throws Exception {
-        CreateExcuseRequest req = new CreateExcuseRequest(
-                List.of(1L, 2L),
-                ExcuseType.ILLNESS,
-                "Болею, справка будет"
-        );
+        CreateExcuseRequest req =
+                new CreateExcuseRequest(
+                        List.of(1L, 2L), ExcuseType.ILLNESS, "Болею, справка будет");
 
         ExcuseTicket saved = excuseService.createExcuse(req);
         assertThat(saved.getId()).isNotNull();
@@ -159,18 +163,20 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void updateStatus_publishesDecidedEvent_matchingBotContract() throws Exception {
-        // Seed a SUBMITTED ticket directly (skip createExcuse to avoid a second event on the queue).
-        ExcuseTicket ticket = ExcuseTicket.builder()
-                .studentId(100L)
-                .groupId(10L)
-                .semesterId(1L)
-                .studentName("Иванов Иван")
-                .lessonIds(List.of(5L))
-                .excuseType(ExcuseType.FREE_ATTENDANCE)
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(java.time.Instant.now())
-                .updatedAt(java.time.Instant.now())
-                .build();
+        // Seed a SUBMITTED ticket directly (skip createExcuse to avoid a second event on the
+        // queue).
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .studentId(100L)
+                        .groupId(10L)
+                        .semesterId(1L)
+                        .studentName("Иванов Иван")
+                        .lessonIds(List.of(5L))
+                        .excuseType(ExcuseType.FREE_ATTENDANCE)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(java.time.Instant.now())
+                        .updatedAt(java.time.Instant.now())
+                        .build();
         ticket = excuseRepository.save(ticket);
         // Drain anything residual (belt-and-braces).
         amqpAdmin.purgeQueue(testQueueName, false);
@@ -181,8 +187,8 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         when(requestContext.getGroupId()).thenReturn(10L);
         when(requestContext.isHeadman()).thenReturn(true);
 
-        UpdateExcuseStatusRequest decision = new UpdateExcuseStatusRequest(
-                ExcuseTicketStatus.APPROVED, "справка предоставлена");
+        UpdateExcuseStatusRequest decision =
+                new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, "справка предоставлена");
 
         ExcuseTicket decided = excuseService.updateStatus(ticket.getId(), decision);
         assertThat(decided.getStatus()).isEqualTo(ExcuseTicketStatus.APPROVED);
@@ -205,7 +211,8 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
     private org.springframework.amqp.core.Message receiveEvent(String eventType) throws Exception {
         long deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos();
         while (System.nanoTime() < deadline) {
-            org.springframework.amqp.core.Message message = rabbitTemplate.receive(testQueueName, 250);
+            org.springframework.amqp.core.Message message =
+                    rabbitTemplate.receive(testQueueName, 250);
             if (message == null) continue;
             String receivedType = mapper.readTree(message.getBody()).path("event_type").asText();
             if (eventType.equals(receivedType)) return message;

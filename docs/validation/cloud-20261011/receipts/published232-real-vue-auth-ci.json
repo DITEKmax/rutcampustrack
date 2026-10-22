@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-11",
+  "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "workflow": "CI",
+  "run_id": 38178275849,
+  "event": "pull_request",
+  "job_id": 114585195291,
+  "job_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291",
+  "checkout_merge_sha": "3c11306db1217d90b5e827a8ff267b68c0c0c972",
+  "source": "native decoded original GitHub job log selected safe lines",
+  "safe_original_lines": [
+    "2026-10-11T21:56:06.1678255Z 3c11306db1217d90b5e827a8ff267b68c0c0c972",
+    "2026-10-11T22:09:11.4172256Z ##[group]Run npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke",
+    "2026-10-11T22:09:13.3256741Z Running 9 tests using 2 workers",
+    "2026-10-11T22:09:16.0182102Z   \u2713  2 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:10:7 \u203a Vue PWA auth lifecycle @smoke \u203a wrong password does not establish a session (1.7s)",
+    "2026-10-11T22:09:20.2344687Z   \u2713  1 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:23:7 \u203a Vue PWA auth lifecycle @smoke \u203a student login issues a protected cookie and uses the student grant (5.9s)",
+    "2026-10-11T22:09:21.2729957Z   \u2713  3 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:37:7 \u203a Vue PWA auth lifecycle @smoke \u203a student cannot select admin; rejected selection preserves the current role (5.2s)",
+    "2026-10-11T22:09:22.3361046Z   \u2713  4 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:50:7 \u203a Vue PWA auth lifecycle @smoke \u203a admin bootstrap requires explicit role selection in the Vue client (1.9s)",
+    "2026-10-11T22:09:25.0103708Z   \u2713  5 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:62:7 \u203a Vue PWA auth lifecycle @smoke \u203a refresh rotates the cookie and reload recovers the same user session (3.6s)",
+    "2026-10-11T22:09:25.4855216Z   \u2713  6 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:86:7 \u203a Vue PWA auth lifecycle @smoke \u203a logout clears the cookie, revokes the bearer and prevents recovery on reload (3.1s)",
+    "2026-10-11T22:09:26.4450493Z   \u2713  8 [chromium] \u203a specs/mini-app.spec.ts:7:7 \u203a Vue Telegram entry @smoke \u203a tampered Telegram proof cannot expose role data or navigation (883ms)",
+    "2026-10-11T22:09:27.1847349Z   \u2713  7 [chromium] \u203a specs/auth-token-lifecycle.spec.ts:99:7 \u203a Vue PWA auth lifecycle @smoke \u203a offline then online reload recovers authenticated navigation (2.1s)",
+    "2026-10-11T22:09:28.5176171Z   \u2713  9 [chromium] \u203a specs/mini-app.spec.ts:19:7 \u203a Vue Telegram entry @smoke \u203a signed teacher entry loads the real session and shared profile with host Back (2.0s)",
+    "2026-10-11T22:09:28.5854685Z   9 passed (16.1s)"
+  ],
+  "limits": [
+    "9 genuine production Vue/isolated HTTPS backend Chromium auth smoke; no WebKit, production SW or offline cache acceptance.",
+    "serviceWorkers:block. Offline then online reload checks online recovery, not D002 cachedoffline expiry rule.",
+    "Original static test names/counts/command/checkout lines only; full logs/credentials/requestbodies excluded.",
+    "Published232 checkpoint; root e587/newexport/client changes are separate dependency/current revision checks. No global client-family PASS."
+  ],
+  "source_identity": [
+    {
+      "path": "tests/e2e/specs/auth-token-lifecycle.spec.ts",
+      "tested_revision_sha256": "fda9b934deff0e4f4ad439bd13c2aabbb8d96101bbbe86343ed57988dae9a61a",
+      "current_working_sha256": "fda9b934deff0e4f4ad439bd13c2aabbb8d96101bbbe86343ed57988dae9a61a",
+      "byte_equal": true
+    },
+    {
+      "path": "tests/e2e/specs/mini-app.spec.ts",
+      "tested_revision_sha256": "db30ab5f2aa028569245639a91bce8add06b24e5fdb52735145207e688f8800a",
+      "current_working_sha256": "db30ab5f2aa028569245639a91bce8add06b24e5fdb52735145207e688f8800a",
+      "byte_equal": true
+    },
+    {
+      "path": "tests/e2e/fixtures/pwa-auth.ts",
+      "tested_revision_sha256": "f4c83cdaedebfbfc566d003620f432f6ad208215b1147bd4fe68fb05075c6f3d",
+      "current_working_sha256": "f4c83cdaedebfbfc566d003620f432f6ad208215b1147bd4fe68fb05075c6f3d",
+      "byte_equal": true
+    },
+    {
+      "path": "tests/e2e/playwright.config.ts",
+      "tested_revision_sha256": "68a65544888457cda318b5b631309398b752eb2d6f8151612f863de50ccb017b",
+      "current_working_sha256": "68a65544888457cda318b5b631309398b752eb2d6f8151612f863de50ccb017b",
+      "byte_equal": true
+    },
+    {
+      "path": "docker-compose.e2e.yml",
+      "tested_revision_sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383",
+      "current_working_sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383",
+      "byte_equal": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "tested_revision_sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "current_working_sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "byte_equal": true
+    }
+  ]
+}

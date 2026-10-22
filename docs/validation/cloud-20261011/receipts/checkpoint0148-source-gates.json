@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-12T01:49:01.619858+00:00",
+  "phase": "root-checkpoint0148-precommit",
+  "producer_source": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "exit": 1,
+  "hook_summary": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...............................................................Passed",
+    "check json...............................................................Passed",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Failed"
+  ],
+  "raw_log_private": "/workspace/scratch/rct-validation/root-checkpoint0148.precommit.raw.log",
+  "scope": "authorized own taskdocs/D009/manifest; ignoredownchecks localonly"
+}

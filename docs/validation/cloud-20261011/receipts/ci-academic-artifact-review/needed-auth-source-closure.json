@@ -1,0 +1,166 @@
+{
+  "domain_current_head": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "sources": [
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "sha256": "913c31f242faaddd0a8cc45261e318f03ab53e3a65656cc96a0510d10b767352",
+      "read_kind": "critical current NP01 v2 source/constructor/executed password transaction fragments"
+    },
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedEvent.java",
+      "sha256": "39f5cfb2babd8884f474bef35f183d74ce3d0b21139227f3cdccf165d203b173",
+      "read_kind": "critical current NP01 v2 source/constructor/executed password transaction fragments"
+    },
+    {
+      "path": "/workspace/rct-worktrees/np01-domain-bot/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "read_kind": "critical current NP01 v2 source/constructor/executed password transaction fragments"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/DomainEvent.java",
+      "sha256": "ce11e19f9429873dfb7eb93956d3b65d254ff97e2d98d372784b71b4c96c86e8",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxEntity.java",
+      "sha256": "6ff383a5602070d90fc75bbc283438f33158eb139305f9376c1867216b4cb665",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxPublisherJob.java",
+      "sha256": "06d30e52860d1ebc071e2bcbb87ea686208d8f33b8804ed64dfc273520997b3d",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitOutboxEventSender.java",
+      "sha256": "ced222870303b444c7b5a928c2708cce8d649f01f17950815f35efbfaecd3dc0",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitConfig.java",
+      "sha256": "0605aa5aff68fac9334f69fa4f399f6f87ef4cacfbb224e69aad1601e67d306b",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+      "sha256": "e2359d56192147072c5162644e6d11ffcba7504c054e0fe1cf96dda8e0e338cf",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+      "sha256": "2232e8973b0804a43bbf84d51fbaf432f35c72a1c6a709a175b302dce35857fd",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java",
+      "sha256": "171b2644b245770368a865b7907942578ec12343b8a4282f7023f5824c940dce",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+      "sha256": "d27f6ff82baa41308de2eacf9bdd83bc4505481ffc2763fbee94f8ebac3ef1ac",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+      "sha256": "8ffda7a8cc0019aa8d8d158219357d7ab550bd1b66881a58652dc873d5fb5963",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+      "sha256": "0c076e9bf5cf002542ef35931e0bac26fb5f1f5558bd39c7fdfaf6e1c0c5857f",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java",
+      "sha256": "615acd1676e9e74ad34a1e73a48a45255269e7ef410cbd3bbbf5a70daa34d61e",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java",
+      "sha256": "f89e60c86a9e3a5cae9e3790ecda3d258e024b38969030e246db26ae0360d32f",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+      "sha256": "bc9fc4491495733bb803d439971967251f298c2ef5f0d4ed9260a97b1af123ec",
+      "read_kind": "producer class source or ports/models signature import scan"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+      "sha256": "f842d7621c3e28268d0f6f491d3326a4991dbeef0e6d1a3197982114dd7adc0f",
+      "read_kind": "producer class source or ports/models signature import scan"
+    }
+  ],
+  "imports": [
+    "com.fasterxml.jackson.databind.ObjectMapper",
+    "io.micrometer.core.instrument.MeterRegistry",
+    "jakarta.persistence.Entity",
+    "jakarta.persistence.Table",
+    "java.nio.charset.StandardCharsets",
+    "java.time.Instant",
+    "java.util.HashSet",
+    "java.util.List",
+    "java.util.Objects",
+    "java.util.Set",
+    "java.util.UUID",
+    "net.javacrumbs.shedlock.spring.annotation.SchedulerLock",
+    "org.springframework.amqp.AmqpException",
+    "org.springframework.amqp.core.FanoutExchange",
+    "org.springframework.amqp.core.MessageBuilder",
+    "org.springframework.amqp.core.MessageDeliveryMode",
+    "org.springframework.amqp.core.MessageProperties",
+    "org.springframework.amqp.rabbit.connection.ConnectionFactory",
+    "org.springframework.amqp.rabbit.core.RabbitTemplate",
+    "org.springframework.amqp.support.converter.Jackson2JsonMessageConverter",
+    "org.springframework.context.annotation.Bean",
+    "org.springframework.context.annotation.Configuration",
+    "org.springframework.scheduling.annotation.Scheduled",
+    "org.springframework.stereotype.Component",
+    "org.springframework.transaction.annotation.Transactional",
+    "ru.rutcampustrack.auth.session.model.AuthMethod",
+    "ru.rutcampustrack.auth.session.model.AuthRole",
+    "ru.rutcampustrack.auth.session.model.RoleGrant",
+    "ru.rutcampustrack.auth.session.model.SecurityEvent",
+    "ru.rutcampustrack.auth.session.model.SessionSnapshot",
+    "ru.rutcampustrack.auth.session.model.SessionState",
+    "ru.rutcampustrack.shared.outbox.OutboxEventSender",
+    "ru.rutcampustrack.shared.outbox.OutboxPublisherJob",
+    "ru.rutcampustrack.shared.outbox.OutboxStorage",
+    "ru.rutcampustrack.shared.outbox.jpa.OutboxEntity"
+  ],
+  "external_type_mapping": [
+    {
+      "types": "JDK time/sql/util/io",
+      "existing_provider": "Java21"
+    },
+    {
+      "types": "Spring JDBC/Tx/context/annotations",
+      "existing_provider": "Academic Boot JPA/JDBC/web/context"
+    },
+    {
+      "types": "Jackson mapper/core/annotations",
+      "existing_provider": "Academic Boot web + shared-outbox"
+    },
+    {
+      "types": "RabbitTemplate/RabbitOperations/Message/ConnectionFactory/FanoutExchange",
+      "existing_provider": "Academic starter-amqp"
+    },
+    {
+      "types": "Jakarta JPA/Hibernate JSONB",
+      "existing_provider": "Academic starter-data-jpa + shared-outbox"
+    },
+    {
+      "types": "Micrometer/SLF4J/ShedLock",
+      "existing_provider": "Academic shared-observability/logback/ShedLock"
+    },
+    {
+      "types": "shared event envelope/EventVersion/AbstractEventPublisher and outbox storage/publisher/sender/JPA",
+      "existing_provider": "Academic direct shared-events/shared-outbox"
+    }
+  ],
+  "specific_missing_type": "None identified in needed constructor/signature/execution source closure. Actual compilation/linking NOT_RUN.",
+  "cycle": "Auth main has AuthAPI/shared dependencies; Gateway dependency is Auth TEST-only and not exported by selected main variant. No Auth-main→Academic-app edge.",
+  "auto_configuration": "Auth main resources have application/profile/logback files; no AutoConfiguration.imports or spring.factories. AcademicApplication scans its own academic package; no scan expanded by build edit.",
+  "proto": "Both consume same canonical academic.proto/protoc/grpc generator version/root Java21 settings; actual variant/generated class/resource equality is still NOT_RUN."
+}

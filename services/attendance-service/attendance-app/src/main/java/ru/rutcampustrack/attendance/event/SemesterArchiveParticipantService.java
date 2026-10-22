@@ -2,17 +2,16 @@ package ru.rutcampustrack.attendance.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
-
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /** Applies the versioned Academic command to Attendance's durable write barrier. */
 @Service
@@ -30,10 +29,11 @@ public class SemesterArchiveParticipantService {
     private final OutboxStorage outboxStorage;
     private final ObjectMapper objectMapper;
 
-    public SemesterArchiveParticipantService(MongoTemplate mongoTemplate,
-                                             SemesterArchiveFence fence,
-                                             OutboxStorage outboxStorage,
-                                             ObjectMapper objectMapper) {
+    public SemesterArchiveParticipantService(
+            MongoTemplate mongoTemplate,
+            SemesterArchiveFence fence,
+            OutboxStorage outboxStorage,
+            ObjectMapper objectMapper) {
         this.mongoTemplate = mongoTemplate;
         this.fence = fence;
         this.outboxStorage = outboxStorage;
@@ -42,14 +42,16 @@ public class SemesterArchiveParticipantService {
 
     public boolean hasReceipt(Map<String, Object> envelope) {
         Command command = parse(envelope);
-        SemesterArchiveParticipantReceiptDocument receipt = mongoTemplate.findById(
-                command.operationId() + ":" + command.command(),
-                SemesterArchiveParticipantReceiptDocument.class);
+        SemesterArchiveParticipantReceiptDocument receipt =
+                mongoTemplate.findById(
+                        command.operationId() + ":" + command.command(),
+                        SemesterArchiveParticipantReceiptDocument.class);
         if (receipt == null) {
             return false;
         }
         if (!matches(receipt, command)) {
-            throw new IllegalArgumentException("Semester archive command identity changed on replay");
+            throw new IllegalArgumentException(
+                    "Semester archive command identity changed on replay");
         }
         return true;
     }
@@ -58,10 +60,11 @@ public class SemesterArchiveParticipantService {
     public void apply(Map<String, Object> envelope) {
         Command command = parse(envelope);
         String receiptId = command.operationId() + ":" + command.command();
-        SemesterArchiveParticipantReceiptDocument receipt = mongoTemplate.findById(
-                receiptId, SemesterArchiveParticipantReceiptDocument.class);
+        SemesterArchiveParticipantReceiptDocument receipt =
+                mongoTemplate.findById(receiptId, SemesterArchiveParticipantReceiptDocument.class);
         if (receipt != null && !matches(receipt, command)) {
-            throw new IllegalArgumentException("Semester archive command identity changed on replay");
+            throw new IllegalArgumentException(
+                    "Semester archive command identity changed on replay");
         }
         if (receipt != null && !"PENDING".equals(receipt.getStatus())) {
             enqueueAcknowledgement(receipt);
@@ -72,8 +75,12 @@ public class SemesterArchiveParticipantService {
         SemesterArchiveFenceDocument current = fence.lock(command.semesterId(), now);
         Transition transition = transition(current, command);
         if (transition.nextFenceState() != null) {
-            fence.transition(command.semesterId(), command.stateVersion(), command.operationId(),
-                    transition.nextFenceState(), now);
+            fence.transition(
+                    command.semesterId(),
+                    command.stateVersion(),
+                    command.operationId(),
+                    transition.nextFenceState(),
+                    now);
         }
 
         if (receipt == null) {
@@ -148,18 +155,20 @@ public class SemesterArchiveParticipantService {
                 }
                 yield pending("RESTORE_RELEASE_VERSION_MISMATCH");
             }
-            default -> throw new IllegalArgumentException("Unsupported semester archive participant command");
+            default ->
+                    throw new IllegalArgumentException(
+                            "Unsupported semester archive participant command");
         };
     }
 
     private String blockingEffectReason(long semesterId) {
-        Query effectErrors = Query.query(Criteria.where("semester_id").is(semesterId)
-                .and("result").is("ERROR"));
+        Query effectErrors =
+                Query.query(Criteria.where("semester_id").is(semesterId).and("result").is("ERROR"));
         if (mongoTemplate.exists(effectErrors, SemesterArchiveEffectReceiptDocument.class)) {
             return "ATTENDANCE_EFFECT_REQUIRES_RECONCILIATION";
         }
-        Query transferErrors = Query.query(Criteria.where("semester_id").is(semesterId)
-                .and("result").is("ERROR"));
+        Query transferErrors =
+                Query.query(Criteria.where("semester_id").is(semesterId).and("result").is("ERROR"));
         if (mongoTemplate.exists(transferErrors, LessonTransferReceiptDocument.class)) {
             return "ATTENDANCE_TRANSFER_REQUIRES_RECONCILIATION";
         }
@@ -179,15 +188,17 @@ public class SemesterArchiveParticipantService {
         payload.put("status", receipt.getStatus());
         payload.put("blocking_reason", receipt.getBlockingReason());
         try {
-            String json = objectMapper.writeValueAsString(
-                    EventEnvelope.build(ACK_EVENT_TYPE, payload));
+            String json =
+                    objectMapper.writeValueAsString(EventEnvelope.build(ACK_EVENT_TYPE, payload));
             outboxStorage.save(ACK_EVENT_TYPE, json);
         } catch (JsonProcessingException error) {
-            throw new IllegalStateException("Failed to serialize semester archive participant acknowledgement", error);
+            throw new IllegalStateException(
+                    "Failed to serialize semester archive participant acknowledgement", error);
         }
     }
 
-    private static boolean matches(SemesterArchiveParticipantReceiptDocument receipt, Command command) {
+    private static boolean matches(
+            SemesterArchiveParticipantReceiptDocument receipt, Command command) {
         return command.operationId().equals(receipt.getOperationId())
                 && command.semesterId() == receipt.getSemesterId()
                 && command.stateVersion() == receipt.getStateVersion()
@@ -195,10 +206,12 @@ public class SemesterArchiveParticipantService {
     }
 
     private static Command parse(Map<String, Object> envelope) {
-        if (envelope == null || !EVENT_TYPE.equals(envelope.get("event_type"))
+        if (envelope == null
+                || !EVENT_TYPE.equals(envelope.get("event_type"))
                 || !SOURCE.equals(envelope.get("source"))
                 || integer(envelope.get("event_version"), "event_version") != EVENT_VERSION) {
-            throw new IllegalArgumentException("Unsupported or untrusted semester archive command envelope");
+            throw new IllegalArgumentException(
+                    "Unsupported or untrusted semester archive command envelope");
         }
         requireCorrelationId(envelope.get("trace_id"));
         uuid(envelope.get("event_id"), "event_id");
@@ -209,15 +222,16 @@ public class SemesterArchiveParticipantService {
         Object rawCommand = raw.get("command");
         if (!(rawCommand instanceof String command)
                 || !command.equals("PREPARE_ARCHIVE")
-                && !command.equals("SEAL_ARCHIVE")
-                && !command.equals("PREPARE_RESTORE")
-                && !command.equals("RELEASE_RESTORE")) {
+                        && !command.equals("SEAL_ARCHIVE")
+                        && !command.equals("PREPARE_RESTORE")
+                        && !command.equals("RELEASE_RESTORE")) {
             throw new IllegalArgumentException("Unsupported semester archive participant command");
         }
         return new Command(
                 uuid(raw.get("operation_id"), "operation_id"),
                 positive(raw.get("semester_id"), "semester_id"),
-                nonNegative(raw.get("state_version"), "state_version"), command);
+                nonNegative(raw.get("state_version"), "state_version"),
+                command);
     }
 
     private static String uuid(Object value, String field) {
@@ -248,7 +262,10 @@ public class SemesterArchiveParticipantService {
     }
 
     private static long integer(Object value, String field) {
-        if (!(value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long)) {
+        if (!(value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long)) {
             throw new IllegalArgumentException(field + " must be an integer");
         }
         return ((Number) value).longValue();
@@ -260,7 +277,8 @@ public class SemesterArchiveParticipantService {
         }
     }
 
-    private record Command(String operationId, long semesterId, long stateVersion, String command) { }
+    private record Command(
+            String operationId, long semesterId, long stateVersion, String command) {}
 
-    private record Transition(String nextFenceState, String ackStatus, String blockingReason) { }
+    private record Transition(String nextFenceState, String ackStatus, String blockingReason) {}
 }

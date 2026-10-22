@@ -23,13 +23,15 @@ spring:
                   - X-Requested-With
                   - Idempotency-Key
                 allow-credentials: true
+                exposed-headers:
+                  - X-Request-Id
                 max-age: 3600
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
   endpoint:
     health:
       # M04 QA6: prod не переопределяет — default уже always.

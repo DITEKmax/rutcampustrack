@@ -1,0 +1,85 @@
+{
+  "state": "PASS_COMPILE_ONLY",
+  "tool_session": 51560,
+  "tool_exit": 0,
+  "observed_utc": "2026-10-12T18:50:05.027405+00:00",
+  "supervisor": {
+    "pid": 368909,
+    "recorded_birth": 8460624,
+    "current_birth": null,
+    "recorded_birth_absent": true
+  },
+  "known_births": [
+    {
+      "pid": 368941,
+      "recorded_birth": 8460724,
+      "current_birth": null,
+      "recorded_birth_absent": true
+    },
+    {
+      "pid": 368983,
+      "recorded_birth": 8460839,
+      "current_birth": null,
+      "recorded_birth_absent": true
+    },
+    {
+      "pid": 369067,
+      "recorded_birth": 8462964,
+      "current_birth": null,
+      "recorded_birth_absent": true
+    },
+    {
+      "pid": 369071,
+      "recorded_birth": 8462985,
+      "current_birth": null,
+      "recorded_birth_absent": true
+    },
+    {
+      "pid": 369133,
+      "recorded_birth": 8465717,
+      "current_birth": null,
+      "recorded_birth_absent": true
+    },
+    {
+      "pid": 369136,
+      "recorded_birth": 8465739,
+      "current_birth": null,
+      "recorded_birth_absent": true
+    }
+  ],
+  "compile_run": "/workspace/scratch/rct-validation/enum_filtered_locale_developer/compile_caller_bash/compile-attempt-01",
+  "producer_source_base": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "test_sha256": "5a4a7ad3daceb99d16005bc555bbb460bb6088fbd92cb19e9f49e08970d56e0a",
+  "production_original_sha256": "4f62d5ac9724c9524697145734577954fbdf54c68162bd1af5e0166f376e98f9",
+  "classes": [
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/integration/AcademicGrpcIT.class",
+      "bytes": 42254,
+      "sha256": "bf6ec858a278f0cd7c1d213eb35f2c5b5d15109aecd8c58be53230295875de81",
+      "mtime_ns": 1791830880966622559,
+      "fresh": true,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/integration/AcademicGrpcIT$FilteredUserRow.class",
+      "bytes": 1842,
+      "sha256": "ac821ba6d9939ca5a2db3916f6d4e80b41a6ac24b0a5007f34a1658d0e25d948",
+      "mtime_ns": 1791830880959812539,
+      "fresh": true,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/integration/AcademicGrpcIT$FilteredUsers.class",
+      "bytes": 2482,
+      "sha256": "10cfdbe9216c264b169259fe0cd30ca3df4e35802e57a128ee043f84883e0544",
+      "mtime_ns": 1791830880959812539,
+      "fresh": true,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "test_API_Docker": "NOT_RUN",
+  "qualification": "compile-only, source/classes/reaping proof; no functional RED/GREEN or product/locale verdict"
+}

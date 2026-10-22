@@ -15,7 +15,8 @@ COPY services/document-renderer-service/document-renderer-app/build.gradle.kts \
 COPY services/document-renderer-service/document-renderer-app/src \
      services/document-renderer-service/document-renderer-app/src
 
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service; serialize writers to that cache.
+RUN --mount=type=cache,id=rct-gradle-document-renderer,target=/root/.gradle,sharing=locked \
     chmod +x gradlew && ./gradlew :services:document-renderer-service:document-renderer-app:bootJar --no-daemon -x test
 
 FROM eclipse-temurin:21-jre-jammy AS extractor

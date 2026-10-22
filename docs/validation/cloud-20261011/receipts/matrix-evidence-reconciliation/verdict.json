@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-11T21:40:07.383339+00:00",
+  "verdict": "RECONCILIATION_READY_FOR_ROOT",
+  "scope": "Bounded evidence/source/finite queue proposals; no global implementation/client acceptance",
+  "input_revision": "c898889b7932bf8d139a23be15a0b34762f3a387",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "proposed_product_PASS_children": 14,
+  "supporting_harness_PASS": 1,
+  "whole_family_PASS_promotions": 0,
+  "whole_boundary_PASS_promotions": 0,
+  "finite_queue_groups": 48,
+  "families_routed": 218,
+  "boundaries_routed": 52,
+  "request_provenance_records": 175,
+  "L_P_dispositions": 29,
+  "new_owner_questions": 0,
+  "reviewer_runtime": "NOT_RUN",
+  "product_shared_writes": false,
+  "children": 0,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "verification": "JSON shape/required fields/source/selected XML identity and referential coverage checks PASS; not product test",
+  "limitations": [
+    "Historical security exactargv UNKNOWN",
+    "New security/export/clock/DATA3 packages not accepted here",
+    "Current checkpoint CI not final",
+    "Actual client/provider/restore/domain-export oracles remain UNKNOWN"
+  ]
+}

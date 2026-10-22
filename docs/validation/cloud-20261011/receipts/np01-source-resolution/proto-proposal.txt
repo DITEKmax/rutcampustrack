@@ -1,0 +1,73 @@
+PROPOSAL ONLY — insert additively into existing rutcampustrack.academic package.
+Common writer must freeze exact names; no existing methods/numbers/reserved changed.
+
+rpc GetOwnBotInitialCredentials(BotOwnInitialCredentialsRequest) returns (BotOwnInitialCredentialsResponse);
+rpc ManageOwnBotCredentialMessages(BotCredentialMessagesRequest) returns (BotCredentialMessagesResponse);
+
+message BotOwnInitialCredentialsRequest {
+  int64 telegram_sender_id = 1;
+  int64 private_chat_id = 2;
+  int64 expected_user_id = 3;
+  int64 expected_telegram_binding_version = 4; // 0 only initial snapshot, positive for recheck
+  int64 expected_credentials_version = 5; // 0 only initial snapshot, positive for recheck
+}
+message BotOwnInitialCredentialsResponse {
+  bool found = 1;
+  int64 user_id = 2;
+  string login = 3;
+  string initial_password = 4;
+  bool password_changed = 5;
+  int64 telegram_binding_version = 6;
+  int64 credentials_version = 7;
+  bool eligible = 8;
+}
+message BotCredentialMessageReference {
+  int64 record_id = 1;
+  int64 user_id = 2;
+  int64 private_chat_id = 3;
+  int64 message_id = 4;
+  int64 telegram_binding_version = 5;
+  int64 credentials_version = 6;
+  int64 record_revision = 7;
+}
+message RegisterBotCredentialMessage {
+  BotCredentialMessageReference message = 1; // record_id/revision absent on first register
+}
+message ListInvalidatedBotCredentialMessages {
+  int64 user_id = 1;
+  int64 invalidated_credentials_version = 2;
+  string event_id = 3;
+  int64 after_record_id = 4;
+  int32 page_size = 5; // technical bounded batches1..200; iterate every page, no card lifetime/count policy
+}
+message CompleteBotCredentialMessageCleanup {
+  BotCredentialMessageReference message = 1;
+  int64 invalidated_credentials_version = 2;
+  string event_id = 3;
+}
+message CompleteBotCredentialMessageRender {
+  BotCredentialMessageReference message = 1;
+}
+message BotCredentialMessagesRequest {
+  oneof command {
+    RegisterBotCredentialMessage register = 1;
+    ListInvalidatedBotCredentialMessages list_invalidated = 2;
+    CompleteBotCredentialMessageCleanup complete_cleanup = 3;
+    CompleteBotCredentialMessageRender complete_render = 4;
+  }
+}
+enum BotCredentialMessageDisposition {
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_UNSPECIFIED = 0;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_REGISTERED = 1;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_INVALIDATED_LIST = 2;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_COMPLETED = 3;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_RENDER_COMPLETED = 4;
+  BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_REQUIRED = 5;
+}
+message BotCredentialMessagesResponse {
+  BotCredentialMessageDisposition disposition = 1;
+  repeated BotCredentialMessageReference messages = 2;
+  int64 next_after_record_id = 3; // 0 when fixed invalidation generation has no more records
+}
+
+Statuses: missing identity/plaintext/malformed token UNAUTHENTICATED; wrong directed caller/UID/binding/outside-own-scope PERMISSION_DENIED; malformed positive IDs/unknown oneof INVALID_ARGUMENT; unavailable DB/store UNAVAILABLE; registration stale generation FAILED_PRECONDITION. Not-found response reveals no credentials. Any false/noteligible response has initial blank. Do not treat UNKNOWN enum0 as success. List is bounded and iterates all fixed-generation records; no silent truncation leaving old initial cards uncleared. complete_render is idempotent exact-record metadata transition: if generation now invalidated, return current safe reference with CLEANUP_REQUIRED instead of erasing the record. Cleanup completion must not outrun unresolved credential rendering; server CAS/pending-render state and bounded recovery must be reviewed with actual concurrency controls before claiming acceptance.

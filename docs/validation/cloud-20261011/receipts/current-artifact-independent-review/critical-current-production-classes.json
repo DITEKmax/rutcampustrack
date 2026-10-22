@@ -1,0 +1,19 @@
+{
+  "scope": "selected actual current classes; no JVM/linker/application run",
+  "entries": [
+    {
+      "service": "auth",
+      "checks": {
+        "v2_password_event_identity_keys_present": true,
+        "artifact_payload_class_SHA": "ef384d94eb422dc0b05c747d78581461509062bf8cf8ec6eac42fbcd0b4c2541"
+      }
+    },
+    {
+      "service": "academic",
+      "checks": {
+        "dedicated_bot_service_class_present": true,
+        "Auth_TEST_artifact_absent_from_production_libs": true
+      }
+    }
+  ]
+}

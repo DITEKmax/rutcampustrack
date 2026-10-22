@@ -50,12 +50,6 @@ function setup(month: Date, items: HomeworkItem[]): {
 describe('StudentHomeworkMonthViewComponent', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
-  it('matrix has exactly 42 cells (6 weeks × 7 days)', () => {
-    const month = new Date(2026, 3, 1); // April 2026
-    const { component } = setup(month, []);
-    const allCells = component.cells;
-    expect(allCells.length).toBe(42);
-  });
 
   it('click on a cell emits dateSelected with the cell date', () => {
     const month = new Date(2026, 3, 1); // April 2026
@@ -67,7 +61,8 @@ describe('StudentHomeworkMonthViewComponent', () => {
     expect(buttons.length).toBe(42);
     buttons[0].click();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveLength(1);
+    expect([emitted[0].getFullYear(), emitted[0].getMonth() + 1, emitted[0].getDate()]).toEqual([2026, 3, 30]);
   });
 
   it('cell count matches number of homework items for that date', () => {

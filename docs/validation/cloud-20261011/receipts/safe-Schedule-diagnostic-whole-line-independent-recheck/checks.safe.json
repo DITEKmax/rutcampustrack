@@ -1,0 +1,27 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "finding": "SCD-MARKER-CUTOFF-001 CLOSED_SOURCE",
+  "original_review_manifest_sha256": "52a841257fbefa25fa057ef2ac90f3bb85580554d4a5490bf0c3dd0de1c30079",
+  "original_source_manifest_sha256": "9cafda102559d0f2b062fc0bfda816611d331121cee8e5c75a3412c761a0d3c9",
+  "correction_manifest_sha256": "50444d54dd0d5f117620ca00999366ab0f6ea60a631844849d35b4b31bac3e41",
+  "checks": [
+    "original13+two_seals_unchanged_NEW11_hashes_exact",
+    "NEW_ZIP12_CRC_unique_canonical_exact",
+    "Java_and_workflow_BYTE_IDENTICAL_original_full_review_inherited",
+    "collector_AST_outside_one_function_exact_all_whitelists_case_scope_bounds_intact",
+    "original18_harness_controls_AST_exact_only2_new_meaningful_regressions",
+    "ORIGINAL_exact_cutoff_false_marker_RED_to_NEW_UNKNOWN_no_leak",
+    "8_cutoff_overbudget_fourthline_negatives_UNKNOWN",
+    "9_complete_EOF_LF_CRLF_header_exact2048_3rdline_positives",
+    "whole_message_positive_malformed_and_conflicting_complete_marker_negatives",
+    "LF_separator_lookahead2048_positive_2049_negative"
+  ],
+  "checks_count": 10,
+  "native_Java_DB_API_format_CI": "NOT_RUN",
+  "actual_XML_log_private_reads": 0,
+  "source_fix_or_target_import": false,
+  "original_full_review_or_suite_replay": false,
+  "historical96_CAP_cause": "UNKNOWN",
+  "selected_requested_model": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

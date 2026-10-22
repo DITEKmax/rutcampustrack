@@ -1,10 +1,9 @@
 package ru.rutcampustrack.auth.security;
 
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-
 import java.util.Objects;
 import java.util.UUID;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
 
 /** Immutable JWT identity carried into protected public session operations. */
 public record SessionPrincipal(
@@ -16,8 +15,7 @@ public record SessionPrincipal(
         RoleStatus selectedStatus,
         Long groupId,
         boolean headman,
-        boolean readOnly
-) {
+        boolean readOnly) {
     public SessionPrincipal {
         if (userId <= 0 || sessionVersion <= 0 || rolesVersion <= 0) {
             throw new IllegalArgumentException("session identity values must be positive");
@@ -25,7 +23,8 @@ public record SessionPrincipal(
         sessionId = Objects.requireNonNull(sessionId, "sessionId");
         if (selectedRole == null) {
             if (selectedStatus != null || groupId != null || headman || readOnly) {
-                throw new IllegalArgumentException("bootstrap principal cannot carry selected identity");
+                throw new IllegalArgumentException(
+                        "bootstrap principal cannot carry selected identity");
             }
         } else {
             selectedStatus = Objects.requireNonNull(selectedStatus, "selectedStatus");

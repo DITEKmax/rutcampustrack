@@ -1,12 +1,27 @@
 package ru.rutcampustrack.schedule.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -18,48 +33,27 @@ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import org.junit.jupiter.api.BeforeEach;
-import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
-
 /**
  * Contract test для {@code lesson.reminder} (NOTIF unification).
  *
- * <p>Сценарий: ACTIVE lesson, время — за серединой пары, marker
- * {@code reminder_midpoint_sent_at} ещё null. Job публикует event,
- * payload должен соответствовать {@code event-schemas/lesson.reminder.json}.
+ * <p>Сценарий: ACTIVE lesson, время — за серединой пары, marker {@code reminder_midpoint_sent_at}
+ * ещё null. Job публикует event, payload должен соответствовать {@code
+ * event-schemas/lesson.reminder.json}.
  */
 class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    @Autowired
-    LessonReminderJob job;
+    @Autowired LessonReminderJob job;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
-    @MockitoBean
-    Clock clock;
+    @MockitoBean Clock clock;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
     @BeforeEach
     void fixtureAuthority() {
@@ -86,17 +80,17 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
         job.runReminders();
 
-        Optional<OutboxRecord> reminder = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.reminder".equals(r.eventType()))
-                .findFirst();
-        assertThat(reminder)
-                .as("lesson.reminder должен быть записан в outbox")
-                .isPresent();
+        Optional<OutboxRecord> reminder =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.reminder".equals(r.eventType()))
+                        .findFirst();
+        assertThat(reminder).as("lesson.reminder должен быть записан в outbox").isPresent();
 
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "lesson.reminder.json", reminder.get().payload());
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("lesson.reminder.json", reminder.get().payload());
         assertThat(errors)
-                .as("lesson.reminder payload должен соответствовать event-schemas/lesson.reminder.json")
+                .as(
+                        "lesson.reminder payload должен соответствовать event-schemas/lesson.reminder.json")
                 .isEmpty();
         assertThat(reminderPhase(reminder.get())).isEqualTo("midpoint");
     }
@@ -112,13 +106,14 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
         job.runReminders();
 
-        Optional<OutboxRecord> reminder = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.reminder".equals(r.eventType()))
-                .findFirst();
+        Optional<OutboxRecord> reminder =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.reminder".equals(r.eventType()))
+                        .findFirst();
         assertThat(reminder).isPresent();
 
-        Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "lesson.reminder.json", reminder.get().payload());
+        Set<ValidationMessage> errors =
+                EventSchemaValidator.validate("lesson.reminder.json", reminder.get().payload());
         assertThat(errors).isEmpty();
         assertThat(reminderPhase(reminder.get())).isEqualTo("near_end");
     }
@@ -133,15 +128,19 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         when(clock.getZone()).thenReturn(MOSCOW);
 
         job.runReminders();
-        long firstCount = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.reminder".equals(r.eventType())).count();
+        long firstCount =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.reminder".equals(r.eventType()))
+                        .count();
         assertThat(firstCount).isEqualTo(1L);
 
         // Второй tick — marker reminder_midpoint_sent_at уже выставлен,
         // повторно не публикуется.
         job.runReminders();
-        long secondCount = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.reminder".equals(r.eventType())).count();
+        long secondCount =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.reminder".equals(r.eventType()))
+                        .count();
         assertThat(secondCount).isEqualTo(1L);
     }
 
@@ -157,8 +156,9 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
         job.runReminders();
 
-        boolean any = outboxStorage.findPending(100).stream()
-                .anyMatch(r -> "lesson.reminder".equals(r.eventType()));
+        boolean any =
+                outboxStorage.findPending(100).stream()
+                        .anyMatch(r -> "lesson.reminder".equals(r.eventType()));
         assertThat(any).isFalse();
     }
 
@@ -173,9 +173,10 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
         job.runReminders();
 
-        List<OutboxRecord> reminders = outboxStorage.findPending(100).stream()
-                .filter(r -> "lesson.reminder".equals(r.eventType()))
-                .toList();
+        List<OutboxRecord> reminders =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "lesson.reminder".equals(r.eventType()))
+                        .toList();
         assertThat(reminders).hasSize(1);
         assertThat(reminderPhase(reminders.get(0))).isEqualTo("near_end");
     }

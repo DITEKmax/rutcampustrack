@@ -1,0 +1,20 @@
+{
+  "schema": "EXACT_SAFE_ARCHIVE_SPLIT_FOR_EXISTING_1MIB_GATE_V1",
+  "whole_archive_name": "safe-final-reconciliation.zip",
+  "whole_bytes": 1140870,
+  "whole_sha256": "1403cd72e242c42f07a5bd67d78d17ccbb75a507144d67258bf1e8667b04f805",
+  "ordered_parts": [
+    {
+      "path": "safe-final-reconciliation.zip.part01",
+      "bytes": 750000,
+      "sha256": "b74b0048d4f332c48b7040a8ee23ffa07d3bcbde9ee78d1ae2e12f545b03f233"
+    },
+    {
+      "path": "safe-final-reconciliation.zip.part02",
+      "bytes": 390870,
+      "sha256": "ac780b7b68d99424ca970e65452100e9e5cb241928e92b03eb8ccf4021c227e6"
+    }
+  ],
+  "source_manifest_sha256": "faa4d5c93f35c1b5cf090f07f1ccfb8246ccf99c8ff8491006df92d27c165ad2",
+  "qualification": "Concatenate orderedparts asrawbytes, verifywholeSHA/CRC; exactoriginalarchive preserved, no recompression or gateweakening. FullSAFE archive1140870B exceedsunchanged1MiB precommitsinglefilegate; split750000+390870. No rawprivatepayload included."
+}

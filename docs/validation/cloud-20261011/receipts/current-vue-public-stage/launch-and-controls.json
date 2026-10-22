@@ -1,0 +1,25 @@
+{
+  "utc": "2026-10-12T07:47:09.389403+00:00",
+  "source_sha256": "ce2191922fb085368965d1778a4734ce831e616b8a05c14d25445cccdb9ce087",
+  "parser": "PASS",
+  "exact_source_path_guard_positive": "PASS",
+  "exact_source_traversal_counterexamples_rejected": [
+    "../escape",
+    "assets/../escape",
+    "assets//x",
+    "assets/./x",
+    "/absolute",
+    "C:/escape",
+    "assets\\escape",
+    ".",
+    ""
+  ],
+  "command": [
+    "python3",
+    "/workspace/scratch/rct-validation/current_vue_stage/copy.py"
+  ],
+  "packet": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-current-vue-public-stage.md",
+  "children": 0,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual": "UNKNOWN"
+}

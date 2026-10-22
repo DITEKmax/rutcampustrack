@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: 1b9e35d3ef9e0a1181a16578682da2a9c948357045ba127c573fcffd97afc25d
+// Contract: Auth session/role; SHA-256: e571a08edf9dfad1abc53033389a3ec381cb6c3a0afb0c8a820e47afc571c0ef
 
 export interface paths {
     "/auth/account-history": {
@@ -20,7 +20,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    [path: `/auth/admin/users/${number}/password-reset-link`]: {
+    "/auth/admin/users/{userId}/password-reset-link": {
         parameters: {
             query?: never;
             header?: never;
@@ -48,6 +48,57 @@ export interface paths {
         put?: never;
         /** Change the current user's password */
         post: operations["changePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/headman/students/{studentId}/generated-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate a version-checked own-group password */
+        post: operations["generateHeadmanMemberPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/headman/students/{studentId}/initial-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a current own-group generated credential */
+        get: operations["readHeadmanMemberCredential"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/headman/students/{studentId}/password-reset-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue an own-group one-use recovery link */
+        post: operations["issueHeadmanMemberResetLink"];
         delete?: never;
         options?: never;
         head?: never;
@@ -249,7 +300,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Issue or reissue a browser-bound LOGIN challenge */
-        post: operations["issue_1"];
+        post: operations["issue"];
         delete?: never;
         options?: never;
         head?: never;
@@ -344,23 +395,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/report-download-tickets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Issue a short-lived URL for one allowlisted report */
-        post: operations["issue"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/auth/session": {
         parameters: {
             query?: never;
@@ -412,7 +446,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    [path: `/auth/sessions/${string}`]: {
+    "/auth/sessions/{sessionId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -538,7 +572,7 @@ export interface components {
              *     }
              */
             extras?: {
-                [key: string]: Record<string, never>;
+                [key: string]: unknown;
             };
             /**
              * @description Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)
@@ -593,77 +627,19 @@ export interface components {
              */
             message?: string;
             /** @description Отклонённое значение */
-            rejectedValue?: Record<string, never>;
+            rejectedValue?: unknown;
         };
-        /** @description Current headman's own group roster export; group is selected by the server */
-        HeadmanGroupCompositionParameters: {
+        HeadmanCredentialView: {
+            credentialsVersion: string;
             /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
+            origin: "initial" | "headman_reset";
+            password: string;
+            /** @enum {string} */
+            state: "GENERATED" | "STUDENT_CHANGED" | "UNAVAILABLE";
+            studentId: string;
         };
-        /** @description A bounded text or numeric headman statistics filter */
-        HeadmanStatsFilter: {
-            contains?: string;
-            field: string;
-            maximum?: number;
-            minimum?: number;
-        };
-        /** @description Headman current-group statistics export parameters */
-        HeadmanStatsParameters: {
-            filters?: components["schemas"]["HeadmanStatsFilter"][];
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            lessonTypes?: string[];
-            /** Format: int64 */
-            semesterId?: number;
-            sorts?: components["schemas"]["HeadmanStatsSort"][];
-            /** Format: int64 */
-            subjectId?: number;
-        };
-        /** @description One priority-ordered headman statistics sort field */
-        HeadmanStatsSort: {
-            descending?: boolean;
-            field: string;
-        };
-        /** @description Current-group headman trend chart export parameters */
-        HeadmanStatsTrendParameters: {
-            /** @enum {string} */
-            bucketUnit?: "DAY" | "WEEK";
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            lessonTypes?: string[];
-            /** @enum {string} */
-            mode: "SEMESTER" | "WEEK" | "SUBJECT";
-            /** Format: int64 */
-            semesterId?: number;
-            /** Format: int64 */
-            subjectId?: number;
-            /** Format: date */
-            weekStart?: string;
-        };
-        /** @description Current headman weekly export parameters */
-        HeadmanWeeklyCurrentParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            /** Format: date */
-            weekStart: string;
-        };
-        /** @description Selected headman weekly export parameters */
-        HeadmanWeeklySelectedParameters: {
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            weekStarts: string[];
-        };
-        /** @description One allowlisted report and its bounded export parameters */
-        IssueReportDownloadTicketRequest: {
-            headmanGroupComposition?: components["schemas"]["HeadmanGroupCompositionParameters"];
-            headmanStats?: components["schemas"]["HeadmanStatsParameters"];
-            headmanStatsTrend?: components["schemas"]["HeadmanStatsTrendParameters"];
-            headmanWeeklyCurrent?: components["schemas"]["HeadmanWeeklyCurrentParameters"];
-            headmanWeeklySelected?: components["schemas"]["HeadmanWeeklySelectedParameters"];
-            /** @enum {string} */
-            kind: "TEACHER_JOURNAL" | "TEACHER_STATS" | "HEADMAN_WEEKLY_CURRENT" | "HEADMAN_WEEKLY_SELECTED" | "HEADMAN_STATS" | "HEADMAN_STATS_TREND" | "HEADMAN_GROUP_COMPOSITION";
-            teacherJournal?: components["schemas"]["TeacherJournalParameters"];
-            teacherStats?: components["schemas"]["TeacherStatsParameters"];
+        HeadmanGeneratedPasswordRequest: {
+            expectedCredentialsVersion: string;
         };
         LoginRequest: {
             login: string;
@@ -794,13 +770,6 @@ export interface components {
             /** Format: int64 */
             ttl?: number;
         };
-        /** @description Short-lived report download capability */
-        ReportDownloadTicketResponse: {
-            downloadPath?: string;
-            /** Format: date-time */
-            expiresAt?: string;
-            suggestedFilename?: string;
-        };
         RoleGrantResponse: {
             contextLabel?: string;
             grantId: string;
@@ -819,39 +788,6 @@ export interface components {
             /** Format: int64 */
             expiresIn?: number;
             session: components["schemas"]["CurrentSessionResponse"];
-        };
-        /** @description Complete teacher subject journal parameters */
-        TeacherJournalParameters: {
-            /** Format: date */
-            dateFrom?: string;
-            /** Format: date */
-            dateTo?: string;
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            /** Format: int64 */
-            groupId: number;
-            lessonId?: string;
-            lessonTypes: string[];
-            pastOnly?: boolean;
-            /** Format: int64 */
-            semesterId: number;
-            /** Format: int64 */
-            subjectId: number;
-        };
-        /** @description Teacher statistics export parameters */
-        TeacherStatsParameters: {
-            filters?: string[];
-            /** @enum {string} */
-            format: "docx" | "pdf" | "png" | "html" | "xlsx";
-            /** Format: int64 */
-            groupId?: number;
-            lessonTypes?: string[];
-            scope: string;
-            /** Format: int64 */
-            semesterId: number;
-            sorts?: string[];
-            /** Format: int64 */
-            subjectId?: number;
         };
         TmaAuthRequest: {
             initData: string;
@@ -1132,6 +1068,265 @@ export interface operations {
             };
         };
     };
+    generateHeadmanMemberPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                studentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HeadmanGeneratedPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HeadmanCredentialView"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    readHeadmanMemberCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                studentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HeadmanCredentialView"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    issueHeadmanMemberResetLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                studentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminPasswordResetLinkResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     login: {
         parameters: {
             query?: never;
@@ -1210,6 +1405,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Required authentication storage unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2000,7 +2204,7 @@ export interface operations {
             };
         };
     };
-    issue_1: {
+    issue: {
         parameters: {
             query?: never;
             header?: never;
@@ -2520,102 +2724,6 @@ export interface operations {
             };
         };
     };
-    issue: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IssueReportDownloadTicketRequest"];
-            };
-        };
-        responses: {
-            /** @description Report download ticket issued */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Missing or invalid access token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description No current selectable report session */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ticket issuance limit exceeded */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Session or ticket store unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReportDownloadTicketResponse"];
-                };
-            };
-        };
-    };
     currentSession: {
         parameters: {
             query?: never;
@@ -3123,6 +3231,52 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Required authentication storage unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
+    };
+}
+
+export interface paths {
+    [path: `/auth/admin/users/${number}/password-reset-link`]: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue a one-use recovery link under a current active ADMIN session */
+        post: operations["issueLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    [path: `/auth/sessions/${string}`]: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke one of the current user's sessions */
+        delete: operations["revokeSession"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
 }

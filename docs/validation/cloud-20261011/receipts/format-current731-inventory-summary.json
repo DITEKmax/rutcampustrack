@@ -1,0 +1,37 @@
+{
+  "utc": "2026-10-12T04:57:36.997385+00:00",
+  "sourceproducer": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+  "input": "trackedgitfiles/currentclassifier; no formatmutation",
+  "counts": {
+    "excluded": 5202,
+    "prettier": 967,
+    "sql": 6,
+    "python": 120,
+    "java": 1589
+  },
+  "preservation_reasons": {
+    "byte-exact historical/source/evidence copy": 2103,
+    "binary/machine data or no agreed formatter for this language": 2762,
+    "documentation/source registry; separate owner review": 35,
+    "preserved source registry/hash receipt; separate byte owner": 4,
+    "immutable verification evidence/source copy; preserve exact bytes": 33,
+    "generated build/vendor/artifact": 6,
+    "dependency lockfile; managed by native dependency tool": 4,
+    "intentional fixture/snapshot bytes; explicit review required": 17,
+    "generated API/schema/protobuf": 14,
+    "generated dist; landing/dist is canonical author source": 135,
+    "historical Flyway versioned SQL; checksum must remain stable": 89
+  },
+  "eligible_doc_views": [
+    "docs/milestones/M05-performance/seed-perf.sql",
+    "docs/validation/cloud-20261011/receipts/current-client-artifacts/manifest.json",
+    "docs/validation/cloud-20261011/receipts/export-audit-http-author/manifest.safe.json",
+    "docs/validation/cloud-20261011/receipts/host-guard-correction-author/manifest.json",
+    "docs/validation/cloud-20261011/receipts/host-runtime-prepare/manifest.json",
+    "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py"
+  ],
+  "qualification": "review copied/machine manifest dispositions before mechanical pass; no format performed",
+  "archive": "format-current731-inventory.zip",
+  "original_inventory_sha256": "9cc54eb280ad3e116bebdd5b12c0d823ad9269be481b70d4ef7c71455297b5a2",
+  "zip_sha256": "a3d33782461a3c1b0fe4951a219be2f45db52fb86f98e287c9d7bc8546681f18"
+}

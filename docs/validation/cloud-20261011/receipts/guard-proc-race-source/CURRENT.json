@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-12T08:16:03.048180+00:00",
+  "status": "SOURCE_READY_FOR_FRESH_INDEPENDENT_REVIEW",
+  "active_owned_process": null,
+  "children": 0,
+  "new_guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "next": "Parent fresh independent source review before any consumer copy/retry/runtime grant"
+}

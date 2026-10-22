@@ -1,0 +1,42 @@
+{
+  "name": "bad-identity",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_inputs_unchanged": 7032,
+  "native_session_id": 76358,
+  "native_exit_code": 1,
+  "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "identityAttemptCasAndTerminalReceiptsCannotBeRewritten()",
+      "status": "FAIL",
+      "seconds": "2.699",
+      "failure_type": "java.lang.AssertionError",
+      "intended_assertion": true,
+      "safe_expected": "unsafe metadata transition rejected",
+      "safe_actual": "SQL transition returned normally; expected rejection assertion failed"
+    }
+  ],
+  "native_xml": [
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT.xml",
+      "sha256": "f227a0b931ea29d3d499218c55fe029f851ebe549177ff81facce9dfde102cb3",
+      "bytes": 13778,
+      "tests": 1
+    }
+  ],
+  "terminal_sha256": "3cb76e0e6ba1d51a72adf10b81b1323d7bb52f9cce5b69a135423ec066e8b579",
+  "container_ids": [
+    "147cb2d1ec0e286c062d7f9a372969f6cb24be79dc6dffaa69acc9f8da8a291f"
+  ],
+  "free_bytes": 5878452224,
+  "lease": "NP01_CONTRACT1",
+  "utc": "2026-10-12T02:04:11Z",
+  "limits": "Common migration/PostgreSQL and selected legacy Flyway only; no AcademicTLS/Authproducer/bot/provider full acceptance."
+}

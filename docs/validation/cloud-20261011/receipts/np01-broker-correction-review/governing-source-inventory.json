@@ -1,0 +1,42 @@
+{
+  "observed_utc": "2026-10-12T05:15:36.793423+00:00",
+  "files": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+      "lines": 403
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "bytes": 9725,
+      "sha256": "e1db975342020167dbf8a0fdb9b0f9717aeca3c71a5db7343a9b58ddaeae4633",
+      "lines": 33
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "bytes": 16719,
+      "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+      "lines": 105
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+      "lines": 63
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "bytes": 4523,
+      "sha256": "5664447ab5551083162500583e1be8a4d662c2c75e05915fcc76565b28c769b1",
+      "lines": 24
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-np01-broker-source-review.md",
+      "bytes": 3476,
+      "sha256": "5f9bfd15931192e542d0e98dc5996ff5c22539a86f9568e0cb927d3725968233",
+      "lines": 13
+    }
+  ],
+  "root_docs": "Read only; Root may append new outcomes independently; no source runtime grant inferred"
+}

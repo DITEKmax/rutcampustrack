@@ -103,7 +103,10 @@ export interface HeadmanRequestsApiOptions {
 }
 
 export class HeadmanRequestsApiError extends Error {
-  constructor(readonly response: Response, readonly problem: unknown) {
+  constructor(
+    readonly response: Response,
+    readonly problem: unknown,
+  ) {
     super(problemDetail(problem) ?? `HTTP ${response.status}`)
     this.name = 'HeadmanRequestsApiError'
   }
@@ -120,8 +123,10 @@ export class HeadmanRequestsApi {
     const bucket = filters.bucket ?? 'OPEN'
     const page = filters.page ?? 0
     const size = filters.size ?? 20
-    if (page < 0 || !Number.isSafeInteger(page)) throw new RangeError('page must be a non-negative integer')
-    if (size < 1 || size > 100 || !Number.isSafeInteger(size)) throw new RangeError('size must be between 1 and 100')
+    if (page < 0 || !Number.isSafeInteger(page))
+      throw new RangeError('page must be a non-negative integer')
+    if (size < 1 || size > 100 || !Number.isSafeInteger(size))
+      throw new RangeError('size must be between 1 and 100')
     const query = new URLSearchParams({ bucket, page: String(page), size: String(size) })
     if (filters.type) query.set('type', filters.type)
     if (filters.studentName?.trim()) query.set('studentName', filters.studentName.trim())
@@ -133,7 +138,11 @@ export class HeadmanRequestsApi {
       assertDate(filters.coverageDateTo, 'coverageDateTo')
       query.set('coverageDateTo', filters.coverageDateTo)
     }
-    if (filters.coverageDateFrom && filters.coverageDateTo && filters.coverageDateFrom > filters.coverageDateTo) {
+    if (
+      filters.coverageDateFrom &&
+      filters.coverageDateTo &&
+      filters.coverageDateFrom > filters.coverageDateTo
+    ) {
       throw new RangeError('coverageDateFrom must be before or equal to coverageDateTo')
     }
     return this.request<unknown>(`/api/attendance/requests?${query.toString()}`).then(normalizePage)
@@ -141,18 +150,34 @@ export class HeadmanRequestsApi {
 
   get(requestId: string): Promise<HeadmanRequestDetail> {
     assertId(requestId)
-    return this.request<unknown>(`/api/attendance/requests/${encodeURIComponent(requestId)}`).then(normalizeDetail)
+    return this.request<unknown>(`/api/attendance/requests/${encodeURIComponent(requestId)}`).then(
+      normalizeDetail,
+    )
   }
 
-  decide(requestId: string, decision: 'APPROVED' | 'REJECTED', reason?: string | null, selection?: HeadmanRequestDecisionInput): Promise<HeadmanRequestDetail> {
+  decide(
+    requestId: string,
+    decision: 'APPROVED' | 'REJECTED',
+    reason?: string | null,
+    selection?: HeadmanRequestDecisionInput,
+  ): Promise<HeadmanRequestDetail> {
     assertId(requestId)
-    if (decision !== 'APPROVED' && decision !== 'REJECTED') throw new TypeError('Unsupported request decision')
+    if (decision !== 'APPROVED' && decision !== 'REJECTED')
+      throw new TypeError('Unsupported request decision')
     const normalizedReason = reason?.trim() || null
-    if (decision === 'REJECTED' && !normalizedReason) throw new TypeError('A rejection reason is required')
-    return this.request<unknown>(`/api/attendance/requests/${encodeURIComponent(requestId)}/decision`, {
-      method: 'POST',
-      body: JSON.stringify({ decision, ...(normalizedReason ? { reason: normalizedReason } : {}), ...selection }),
-    }).then(normalizeDetail)
+    if (decision === 'REJECTED' && !normalizedReason)
+      throw new TypeError('A rejection reason is required')
+    return this.request<unknown>(
+      `/api/attendance/requests/${encodeURIComponent(requestId)}/decision`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          decision,
+          ...(normalizedReason ? { reason: normalizedReason } : {}),
+          ...selection,
+        }),
+      },
+    ).then(normalizeDetail)
   }
 
   async downloadAttachment(requestId: string, attachmentId: string): Promise<Blob> {
@@ -171,7 +196,7 @@ export class HeadmanRequestsApi {
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.response(path, init, retried)
     if (!response.ok) throw await this.apiError(response)
-    const value = await response.json() as T
+    const value = (await response.json()) as T
     this.options.assertCurrent?.()
     return value
   }
@@ -181,7 +206,8 @@ export class HeadmanRequestsApi {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
@@ -193,7 +219,11 @@ export class HeadmanRequestsApi {
 
   private async apiError(response: Response): Promise<HeadmanRequestsApiError> {
     let problem: unknown = null
-    try { problem = await response.json() } catch { /* Preserve HTTP status. */ }
+    try {
+      problem = await response.json()
+    } catch {
+      /* Preserve HTTP status. */
+    }
     this.options.assertCurrent?.()
     return new HeadmanRequestsApiError(response, problem)
   }
@@ -225,7 +255,8 @@ export function createGenerationBoundHeadmanRequestsApi(
       assertCurrent()
     },
   }
-  const transport = fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const transport =
+    fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   options.fetcher = async (input, init) => {
     assertCurrent()
     const response = await transport(input, init)
@@ -237,9 +268,12 @@ export function createGenerationBoundHeadmanRequestsApi(
 
 function normalizePage(value: unknown): HeadmanRequestPage {
   const record = asRecord(value)
-  const content = Array.isArray(record?.content) ? record.content.map(normalizeSummary).filter(isValue) : []
+  const content = Array.isArray(record?.content)
+    ? record.content.map(normalizeSummary).filter(isValue)
+    : []
   const totalElements = integerValue(record?.totalElements)
-  if (totalElements === null || totalElements < 0) throw new Error('Сервер не подтвердил число заявок')
+  if (totalElements === null || totalElements < 0)
+    throw new Error('Сервер не подтвердил число заявок')
   return {
     content,
     page: integerValue(record?.page) ?? 0,
@@ -253,38 +287,90 @@ function normalizeDetail(value: unknown): HeadmanRequestDetail {
   const record = asRecord(value)
   const summary = normalizeSummary(record?.summary)
   if (!summary) throw new Error('Сервер вернул неполную заявку')
-  const lessons = Array.isArray(record?.lessons) ? record.lessons.map(normalizeLesson).filter(isValue) : []
-  const attachments = Array.isArray(record?.attachments) ? record.attachments.map(normalizeAttachment).filter(isValue) : []
+  const lessons = Array.isArray(record?.lessons)
+    ? record.lessons.map(normalizeLesson).filter(isValue)
+    : []
+  const attachments = Array.isArray(record?.attachments)
+    ? record.attachments.map(normalizeAttachment).filter(isValue)
+    : []
   let currentAffectedLessons: HeadmanRequestLesson[] | null | undefined
   if (record && 'currentAffectedLessons' in record) {
-    if (record.currentAffectedLessons === null && summary.status !== 'PENDING') currentAffectedLessons = null
+    if (record.currentAffectedLessons === null && summary.status !== 'PENDING')
+      currentAffectedLessons = null
     else {
-      if (!Array.isArray(record.currentAffectedLessons)) throw new Error('Сервер не подтвердил текущие пары заявки')
+      if (!Array.isArray(record.currentAffectedLessons))
+        throw new Error('Сервер не подтвердил текущие пары заявки')
       currentAffectedLessons = record.currentAffectedLessons.map(normalizeLesson).filter(isValue)
-      if (currentAffectedLessons.length !== record.currentAffectedLessons.length || currentAffectedLessons.some((lesson) => lesson.lessonId === null) || new Set(currentAffectedLessons.map((lesson) => lesson.lessonId)).size !== currentAffectedLessons.length) throw new Error('Сервер вернул неполные текущие пары заявки')
+      if (
+        currentAffectedLessons.length !== record.currentAffectedLessons.length ||
+        currentAffectedLessons.some((lesson) => lesson.lessonId === null) ||
+        new Set(currentAffectedLessons.map((lesson) => lesson.lessonId)).size !==
+          currentAffectedLessons.length
+      )
+        throw new Error('Сервер вернул неполные текущие пары заявки')
     }
   }
-  const decisionRevision = record?.decisionRevision == null ? null : stringValue(record.decisionRevision)
-  if (decisionRevision !== null && !/^[a-f0-9]{64}$/.test(decisionRevision)) throw new Error('Сервер вернул неполную версию решения')
+  const decisionRevision =
+    record?.decisionRevision == null ? null : stringValue(record.decisionRevision)
+  if (decisionRevision !== null && !/^[a-f0-9]{64}$/.test(decisionRevision))
+    throw new Error('Сервер вернул неполную версию решения')
   const receipt = asRecord(record?.decisionSelection)
   let decisionSelection: HeadmanRequestDecisionSelection | null = null
   if (record?.decisionSelection != null) {
-    const requestKey = stringValue(receipt?.requestKey), expectedRevision = stringValue(receipt?.expectedRevision)
-    if (!requestKey || !expectedRevision || !Array.isArray(receipt?.includedLessons) || !Array.isArray(receipt?.excludedLessons)) throw new Error('Сервер вернул неполное подтверждение решения')
-    const includedLessons = receipt.includedLessons.map(normalizeLesson), excludedLessons = receipt.excludedLessons.map(normalizeLesson)
-    if ([...includedLessons, ...excludedLessons].some((lesson) => !lesson?.occurrenceId || !lesson.lessonId)) throw new Error('Сервер не подтвердил состав решения')
-    decisionSelection = { requestKey, expectedRevision, includedLessons: includedLessons as HeadmanRequestLesson[], excludedLessons: excludedLessons as HeadmanRequestLesson[] }
+    const requestKey = stringValue(receipt?.requestKey),
+      expectedRevision = stringValue(receipt?.expectedRevision)
+    if (
+      !requestKey ||
+      !expectedRevision ||
+      !Array.isArray(receipt?.includedLessons) ||
+      !Array.isArray(receipt?.excludedLessons)
+    )
+      throw new Error('Сервер вернул неполное подтверждение решения')
+    const includedLessons = receipt.includedLessons.map(normalizeLesson),
+      excludedLessons = receipt.excludedLessons.map(normalizeLesson)
+    if (
+      [...includedLessons, ...excludedLessons].some(
+        (lesson) => !lesson?.occurrenceId || !lesson.lessonId,
+      )
+    )
+      throw new Error('Сервер не подтвердил состав решения')
+    decisionSelection = {
+      requestKey,
+      expectedRevision,
+      includedLessons: includedLessons as HeadmanRequestLesson[],
+      excludedLessons: excludedLessons as HeadmanRequestLesson[],
+    }
   }
-  return { summary, lessons, attachments, decisionRevision, decisionSelection, ...(currentAffectedLessons === undefined ? {} : { currentAffectedLessons }) }
+  return {
+    summary,
+    lessons,
+    attachments,
+    decisionRevision,
+    decisionSelection,
+    ...(currentAffectedLessons === undefined ? {} : { currentAffectedLessons }),
+  }
 }
 
 function normalizeSummary(value: unknown): HeadmanRequestSummary | null {
   const record = asRecord(value)
   const id = stringValue(record?.id)
   const kind = record?.kind === 'EXCUSE' || record?.kind === 'LATE_CHECKIN' ? record.kind : null
-  const status = record?.status === 'PENDING' || record?.status === 'APPROVED'
-    || record?.status === 'REJECTED' || record?.status === 'CANCELLED' ? record.status : null
+  const status =
+    record?.status === 'PENDING' ||
+    record?.status === 'APPROVED' ||
+    record?.status === 'REJECTED' ||
+    record?.status === 'CANCELLED'
+      ? record.status
+      : null
   if (!id || !kind || !status) return null
+  const lessonCount = positiveInteger(record?.lessonCount)
+  const alreadyMarkedCount = integerValue(record?.alreadyMarkedCount)
+  if (
+    lessonCount === null ||
+    (kind === 'EXCUSE' &&
+      (alreadyMarkedCount === null || alreadyMarkedCount < 0 || alreadyMarkedCount > lessonCount))
+  )
+    throw new Error('Сервер не подтвердил количество пар заявки')
   return {
     id,
     kind,
@@ -295,8 +381,9 @@ function normalizeSummary(value: unknown): HeadmanRequestSummary | null {
     comment: stringValue(record?.comment),
     coverageStart: stringValue(record?.coverageStart),
     coverageEnd: stringValue(record?.coverageEnd),
-    lessonCount: integerValue(record?.lessonCount) ?? 0,
-    alreadyMarkedCount: integerValue(record?.alreadyMarkedCount) ?? 0,
+    lessonCount,
+    // Legacy LATE_CHECKIN summaries did not require this undisplayed EXCUSE count.
+    alreadyMarkedCount: alreadyMarkedCount ?? 0,
     hasAttachments: record?.hasAttachments === true,
     createdAt: stringValue(record?.createdAt),
     updatedAt: stringValue(record?.updatedAt),
@@ -356,7 +443,7 @@ function assertDate(value: string, name: string): void {
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null ? value as Record<string, unknown> : null
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null
 }
 
 function stringValue(value: unknown): string | null {
@@ -380,11 +467,14 @@ function problemDetail(value: unknown): string | null {
   const record = asRecord(value)
   return typeof record?.detail === 'string'
     ? record.detail
-    : typeof record?.title === 'string' ? record.title : null
+    : typeof record?.title === 'string'
+      ? record.title
+      : null
 }
 
 function decimalId(value: unknown): string | null {
   if (value == null) return null
-  if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value)) throw new Error('Сервер вернул некорректный идентификатор пары')
+  if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value))
+    throw new Error('Сервер вернул некорректный идентификатор пары')
   return value
 }

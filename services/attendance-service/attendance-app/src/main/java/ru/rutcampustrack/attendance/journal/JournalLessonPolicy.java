@@ -1,9 +1,5 @@
 package ru.rutcampustrack.attendance.journal;
 
-import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -11,25 +7,26 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Locale;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 /**
  * Shared server-side timing and metadata gate for the headman journal.
  *
- * <p>The schedule service owns the lesson snapshot. Attendance must not infer
- * editability from a UTC date alone or from the local wall clock of the
- * attendance process, so this policy always evaluates the concrete start
- * instant in Moscow and requires the immutable semester metadata.</p>
+ * <p>The schedule service owns the lesson snapshot. Attendance must not infer editability from a
+ * UTC date alone or from the local wall clock of the attendance process, so this policy always
+ * evaluates the concrete start instant in Moscow and requires the immutable semester metadata.
  */
 public final class JournalLessonPolicy {
 
     public static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    private JournalLessonPolicy() {
-    }
+    private JournalLessonPolicy() {}
 
     /**
-     * Validates the metadata needed by both report and write paths and returns
-     * the normalized status and real start instant.
+     * Validates the metadata needed by both report and write paths and returns the normalized
+     * status and real start instant.
      */
     public static Timing requireTiming(LessonResponse lesson) {
         if (lesson == null || lesson.getId() <= 0) {
@@ -54,7 +51,9 @@ public final class JournalLessonPolicy {
         } catch (RuntimeException ex) {
             throw new BadRequestException("Время начала пары недоступно");
         }
-        return new Timing(date, normalizedStatus(lesson.getStatus()),
+        return new Timing(
+                date,
+                normalizedStatus(lesson.getStatus()),
                 LocalDateTime.of(date, start).atZone(MOSCOW).toInstant());
     }
 

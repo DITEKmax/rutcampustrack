@@ -1,0 +1,38 @@
+{
+  "pass": true,
+  "count": 3,
+  "failed": 0,
+  "controls": [
+    {
+      "code": "OLD_COOKIE_BEFORE_REJECTION_FALSE_NOOP_CONFIRMATION",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_ATTEMPT_OWNED_BEFORE_FETCH",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_OWN_COOKIE_LOGOUT_CONFIRMED_AND_DISPOSED",
+      "passed": true
+    }
+  ],
+  "before": {
+    "beforeCleanupOwnedCookie": true,
+    "logoutConfirmed": true,
+    "contextDisposed": true,
+    "logoutStatus": "NOT_NEEDED",
+    "cookieStillPresent": true,
+    "logoutCalls": 0,
+    "attempted": false
+  },
+  "after": {
+    "beforeCleanupOwnedCookie": true,
+    "logoutConfirmed": true,
+    "contextDisposed": true,
+    "logoutStatus": "204",
+    "cookieStillPresent": false,
+    "logoutCalls": 1,
+    "attempted": true
+  },
+  "qualification": "Actual oldr1/newr2 functions with public cookie-before-fetch-reject adapter; no real HTTP/auth/credentials/client acceptance."
+}

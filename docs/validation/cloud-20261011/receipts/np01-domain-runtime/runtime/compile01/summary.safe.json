@@ -1,0 +1,13 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "compile01",
+  "utc": "2026-10-12T02:52:25.015496+00:00",
+  "native_exit": 1,
+  "qualification": "HARNESS_SETUP_FAILURE",
+  "gradle_started": false,
+  "jvm_started": false,
+  "testcontainers_started": false,
+  "cause": "git ls-files quoted nonascii filename; switched scratch runner to NUL-delimited path bytes",
+  "product_runtime": "NOT_RUN",
+  "next": "compile02"
+}

@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-12T05:41:22.186971+00:00",
+  "verdict": "CHANGES_REQUESTED_SOURCE_OWNERSHIP",
+  "reviewed_helper_SHA": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+  "author_manifest_SHA": "486729fbf44eb6770a7504686831f614e15a2d949255a932c2b830b0da18a0a8",
+  "original_findings": {
+    "AR-C01": "historical live-only qualification and Z/reaping controls corrected; new ownershipfinding blocks reusable supervisor",
+    "AR-P01": "CLOSED"
+  },
+  "new_findings": [
+    {
+      "id": "COWN01",
+      "priority": "P2",
+      "file": "/workspace/scratch/rct-validation/current_artifact_corrections/bounded-child.py",
+      "line": 44,
+      "kind": "exactAST source counterexample numeric group/session admits different known PID/startticks; no actual foreignsignal/PIDwrap"
+    }
+  ],
+  "original23_review_unchanged": true,
+  "original108_preserved": true,
+  "source7350_deps8272_JAR16_Vue22_equal": true,
+  "actual_author_controls": "qualified four actual stdlib outcomes/input hashes; reviewer replay NOT_RUN",
+  "reviewer_children": 0,
+  "runtime": "NOT_RUN",
+  "stage": "NOT_RUN",
+  "source_shared_writes": 0,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN"
+}

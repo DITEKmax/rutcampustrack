@@ -13,7 +13,7 @@
 #      - BOT_TOKEN / TMA_BOT_TOKEN / BOT_ALERT_TOKEN — Telegram regex.
 #      - VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY — base64url, нужная длина.
 #      - VAPID_SUBJECT — mailto: URL либо https:// URL.
-#      - SWAGGER_HTPASSWD — login:hash, hash начинается с $$apr1$$ или $$2y$$.
+#      - SWAGGER_HTPASSWD — login:hash, hash начинается с literal $apr1$ или literal $2y$.
 #      - ALERT_WEBHOOK_SECRET — hex 64 chars (32 bytes).
 #      - PASSWORD'ы — длина ≥ 8.
 #      - URL'ы (CORS_ALLOWED_ORIGIN, MINI_APP_URL, MINI_APP_WEB_URL,
@@ -85,6 +85,8 @@ while IFS= read -r line || [ -n "$line" ]; do
         value="${BASH_REMATCH[2]}"
         # Strip surrounding double-quotes если есть.
         if [[ "$value" =~ ^\"(.*)\"$ ]]; then
+            value="${BASH_REMATCH[1]}"
+        elif [[ "$value" =~ ^\'(.*)\'$ ]]; then
             value="${BASH_REMATCH[1]}"
         fi
         ENV[$key]="$value"
@@ -483,11 +485,11 @@ if [ -n "$ws_origins" ]; then
     fi
 fi
 
-# SWAGGER_HTPASSWD — формат «login:$$apr1$$...» либо «login:$$2y$$...».
-# Двойные `$$` — обязательны для docker-compose escape.
+# SWAGGER_HTPASSWD: login:$apr1$... / login:$2y$..., single-quoted in env-file.
+# Literal dollar signs are retained; doubling them changes the password hash.
 swagger_pwd=$(env_get SWAGGER_HTPASSWD)
-if ! [[ "$swagger_pwd" =~ ^[a-zA-Z0-9_]+:\$\$(apr1|2y) ]]; then
-    err "SWAGGER_HTPASSWD format error: должен быть 'login:\$\$apr1\$\$...' или 'login:\$\$2y\$\$...' (DOUBLE dollar для docker-compose escape!). Generate: htpasswd -nB swagger | sed 's/\$/\$\$/g'"
+if ! [[ "$swagger_pwd" =~ ^[a-zA-Z0-9_]+:\$(apr1|2y)\$ ]]; then
+    err "SWAGGER_HTPASSWD format error: use a literal login:hash in single quotes; do not double dollar signs"
 fi
 
 # ALERT_WEBHOOK_SECRET — hex 64 chars (32 bytes).

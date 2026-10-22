@@ -1,0 +1,5 @@
+# Optional standalone scope ONLY: combine with docker-compose.observability-apps.yml.
+# This file is deliberately absent from the production release command.
+services:
+  glitchtip-db:
+    ports: ["127.0.0.1:15434:5432"]

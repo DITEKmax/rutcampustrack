@@ -124,3 +124,4 @@ tests/e2e/infra/certs/
 # Already tracked process canon remains tracked; do not untrack automatically.
 /.agent/
 /.codex/
+/.secrets/

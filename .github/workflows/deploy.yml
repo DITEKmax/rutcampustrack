@@ -47,15 +47,18 @@ jobs:
     #   2. workflow_run.conclusion = 'success' И head_branch = 'main' И event = 'push'
     # Fork-PR'ы и feature-branch'и НЕ дают deploy даже если CI green.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main' &&
-       github.event.workflow_run.event == 'push')
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
+      - name: Validate exact release SHA
+        run: '[[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]'
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ env.DEPLOY_SHA }}
@@ -234,10 +237,11 @@ jobs:
     name: SBOM + cosign sign
     needs: build-push
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main' &&
-       github.event.workflow_run.event == 'push')
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -349,108 +353,18 @@ jobs:
           done
           echo "✓ All 13 images verified via Fulcio/Rekor"
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-          IMAGE_TAG: ${{ env.DEPLOY_SHA }}
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          # Cold VPS pulls of all production images can exceed appleboy's
-          # default 10m command timeout while `docker compose pull` downloads layers.
-          command_timeout: 45m
-          envs: GHCR_TOKEN,IMAGE_TAG
-          script: |
-            set -e
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u ditekmax --password-stdin
-            cd /opt/rutcampustrack
-            git pull --ff-only
-            [ -f /opt/rutcampustrack/nginx/dhparam.pem ] || openssl dhparam -out /opt/rutcampustrack/nginx/dhparam.pem 2048
-            docker volume create rutcampustrack_jwt-keys >/dev/null 2>&1 || true
-            # M14 G3 — JWT key generation на VPS, first-deploy pattern.
-            # Idempotent через `[ -f ]` filesystem guard: ключи генерятся только
-            # если их нет (первый deploy на чистом volume), на повторных deploy —
-            # skip. Это предотвращает invalidate всех issued JWT при каждом
-            # deploy. Если требуется rotation — операторе нужно вручную rm
-            # ключи в volume (см. docs/runbooks/secret-rotation.md).
-            #
-            # CSO HIGH-05 fix: explicit PKCS#8 conversion. JwtService.loadPrivateKey
-            # использует PKCS8EncodedKeySpec (auth/.../JwtService.java:21) — ждёт
-            # `-----BEGIN PRIVATE KEY-----`. Поведение `openssl genrsa` зависит от
-            # OpenSSL major version: 1.x → PKCS#1 (BEGIN RSA PRIVATE KEY → boot
-            # exception), 3.x → PKCS#8. Alpine `latest` сейчас на 3.x но это
-            # implicit dependency — explicit pipeline `pkcs8 -topk8 -nocrypt`
-            # гарантирует PKCS#8 независимо от alpine/openssl версии.
-            # Identical pipeline в auth-service/Dockerfile:69-79 (M13 G25.15).
-            #
-            # kid.txt: JwtService.init() сам сгенерит UUID если файла нет
-            # (JwtService.java:88-91), но pre-generate его here для consistency
-            # с auth-service Dockerfile build-time generation.
-            docker run --rm -v rutcampustrack_jwt-keys:/keys alpine sh -c \
-              "apk add --no-cache openssl >/dev/null 2>&1 && \
-               if [ ! -f /keys/private.key ]; then \
-                 openssl genrsa -out /tmp/private.key.pkcs1 3072 2>/dev/null && \
-                 openssl pkcs8 -topk8 -nocrypt -in /tmp/private.key.pkcs1 -out /keys/private.key && \
-                 openssl rsa -in /keys/private.key -pubout -out /keys/public.key 2>/dev/null && \
-                 rm /tmp/private.key.pkcs1 && \
-                 head -c 4 /dev/urandom | od -A n -t x1 | tr -d ' \n' > /keys/kid.txt; \
-               fi && \
-               chown -R 100:101 /keys && \
-               chmod 600 /keys/private.key /keys/kid.txt && \
-               chmod 644 /keys/public.key"
-            # IMAGE_TAG=${{ env.DEPLOY_SHA }} pins commit-specific images (M06 QD1, 13 P1-1).
-            # compose reads ${IMAGE_TAG:-latest} per service block. `latest` tag still
-            # pushed for zero-downtime redeploy via `docker compose pull`, но конкретный
-            # rollback возможен через `IMAGE_TAG=<sha> docker compose up -d`.
-            export IMAGE_TAG
-            echo ".deployed-sha=$IMAGE_TAG" > /opt/rutcampustrack/.deployed-sha
-            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
-            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans --wait --wait-timeout 120
+          ref: ${{ env.DEPLOY_SHA }}
+          fetch-depth: 0
 
-            # --- Reload Grafana/Loki/Alloy when observability config changes ---
-            # Grafana provisioning (datasources/dashboards) is loaded from
-            # ./infra/grafana/provisioning at container start. `docker compose
-            # up -d` does not restart containers whose image/env did not change,
-            # so config-only changes (e.g. new dashboard JSON, datasource uid)
-            # stay invisible until a manual restart. Same for Loki YAML/Alloy config.
-            # We look at the last git pull delta and restart only what's needed.
-            echo "--- Checking observability config changes ---"
-            CHANGED=$(git diff --name-only HEAD@{1} HEAD 2>/dev/null || true)
-            echo "$CHANGED" | grep -qE '^infra/grafana/' && {
-              echo "Grafana provisioning changed — restarting rct-grafana"
-              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart grafana
-            } || true
-            echo "$CHANGED" | grep -qE '^infra/loki/' && {
-              echo "Loki config changed — restarting rct-loki"
-              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart loki
-            } || true
-            echo "$CHANGED" | grep -qE '^infra/alloy/' && {
-              echo "Alloy config changed — restarting rct-alloy"
-              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart alloy
-            } || true
-            echo "$CHANGED" | grep -qE '^infra/prometheus/' && {
-              echo "Prometheus config changed — restarting rct-prometheus"
-              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart prometheus
-            } || true
-
-            # --- Reload main nginx after git pull (Phase 50.1 fix) ---
-            # rct-nginx bind-mounts ./nginx/conf.d as read-only volume. git pull
-            # updates files on disk, but the nginx process keeps the old config
-            # in memory until SIGHUP. Without this reload, config changes only
-            # take effect after the 6-hour internal sleep loop in compose command.
-            # See Phase 50 incident: catch-all `location /` was on disk but not in
-            # memory, causing /login to return mini-app HTML instead of web-panel.
-            echo "--- Reloading rct-nginx config ---"
-            docker exec rct-nginx nginx -t
-            docker exec rct-nginx nginx -s reload
-            sleep 2
-
-            # Exact HTTP/MIME and revision artifact identity, including its owned JS asset.
-            # This reads the existing container and nginx routes; it performs no deployment.
-            echo "--- Smoke test: GET /login and revision-bound asset ---"
-            python3 scripts/verify-served-web-panel.py https://ruttrack.site "$IMAGE_TAG"
-
-            docker logout ghcr.io
+      - name: Deliver exact revision and private inputs through pinned SSH
+        env:
+          PROD_ENV: ${{ secrets.PROD_ENV }}
+          PROD_SECRET_FILES_B64: ${{ secrets.PROD_SECRET_FILES_B64 }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: bash scripts/deliver-release.sh

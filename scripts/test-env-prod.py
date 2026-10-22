@@ -32,7 +32,7 @@ def main():
         VAPID_PUBLIC_KEY="A" * 87, VAPID_PRIVATE_KEY="A" * 43,
         VAPID_SUBJECT="mailto:synthetic@example.invalid", MONGODB_REPLICA_SET_KEY="A" * 1024,
         GRPC_SECRET="A" * 44, INTERNAL_ISSUER_SECRET="B" * 44,
-        SWAGGER_HTPASSWD="synthetic:$$apr1$$synthetic-only", ALERT_WEBHOOK_SECRET="a" * 64,
+        SWAGGER_HTPASSWD="'synthetic:$apr1$synthetic-only'", ALERT_WEBHOOK_SECRET="a" * 64,
         ADMIN_TELEGRAM_IDS="1", COMPOSE_PROJECT_NAME="rct-synthetic-preflight",
     )
     for name in ("BOT_TOKEN", "TMA_BOT_TOKEN", "BOT_ALERT_TOKEN"):

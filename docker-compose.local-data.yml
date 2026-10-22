@@ -1,0 +1,17 @@
+# Supported local data-only stack; combine with prod + operator files.
+# Separate container names, project volumes and network; no real providers.
+services:
+  postgres-academic:
+    container_name: rct-local-data-postgres-academic
+  postgres-schedule:
+    container_name: rct-local-data-postgres-schedule
+  mongo-attendance:
+    container_name: rct-local-data-mongo
+  redis:
+    container_name: rct-local-data-redis
+  redis-cache:
+    container_name: rct-local-data-redis-cache
+  rabbitmq:
+    container_name: rct-local-data-rabbitmq
+  notification-bot:
+    profiles: [manual-local-bot]

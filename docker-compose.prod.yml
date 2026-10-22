@@ -399,6 +399,8 @@ services:
       SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:?SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN must be set}
       ACADEMIC_GRPC_CERTIFICATE_CHAIN: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_PRIVATE_KEY: file:/run/rct-academic-tls/academic-server.key
+      ATTENDANCE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-attendance-tls/attendance-server.crt
+      ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
@@ -428,6 +430,7 @@ services:
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
     expose:
       - '9091'
     networks:
@@ -538,6 +541,8 @@ services:
     logging: *bounded-logs
     environment:
       ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
+      ATTENDANCE_GRPC_CERTIFICATE_CHAIN: file:/run/rct-attendance-tls/attendance-server.crt
+      ATTENDANCE_GRPC_PRIVATE_KEY: file:/run/rct-attendance-tls/attendance-server.key
       ATTENDANCE_BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
       ATTENDANCE_BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
       SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
@@ -584,6 +589,8 @@ services:
       - source: academic-report-to-attendance-service-token
         target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
     volumes:
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.key:/run/rct-attendance-tls/attendance-server.key:ro
       - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
@@ -851,6 +858,8 @@ services:
       BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
       BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
       BOT_READ_ATTENDANCE_GRPC_CA_PATH: file:/run/rct-attendance-tls/attendance-server.crt
+      ATTENDANCE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-attendance-tls/attendance-server.crt
+      ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
       BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
       SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId

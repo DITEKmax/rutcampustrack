@@ -1,0 +1,24 @@
+# Include with docker-compose.prod.yml. Access only through SSH forwarding.
+services:
+  postgres-academic:
+    ports: ["127.0.0.1:15432:5432"]
+  postgres-schedule:
+    ports: ["127.0.0.1:15433:5432"]
+  mongo-attendance:
+    ports: ["127.0.0.1:27018:27017"]
+  redis:
+    ports: ["127.0.0.1:16379:6379"]
+  redis-cache:
+    ports: ["127.0.0.1:16380:6379"]
+  rabbitmq:
+    ports: ["127.0.0.1:15672:15672", "127.0.0.1:15673:5672"]
+  prometheus:
+    ports: ["127.0.0.1:19090:9090"]
+  alertmanager:
+    ports: ["127.0.0.1:19093:9093"]
+  loki:
+    ports: ["127.0.0.1:13100:3100"]
+  tempo:
+    ports: ["127.0.0.1:13200:3200"]
+  grafana:
+    ports: ["127.0.0.1:13000:3000"]

@@ -35,7 +35,13 @@ const route = useRoute();
 const loading = ref(false),
   error = ref<string | null>(null),
   busy = ref(false);
-const start = ref(weekStart(today())),
+const start = ref(
+    weekStart(
+      typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
+        ? route.query.date
+        : today(),
+    ),
+  ),
   mode = ref<'week' | 'subject'>('week'),
   subjectId = ref(0),
   type = ref('');
@@ -141,7 +147,13 @@ async function load() {
     lessons.value = result;
     reports.value = attendance;
     const linked = Number(route.query.lesson);
-    if (linked && result.some((lesson) => lesson.id === linked)) await loadAudit(linked);
+    if (linked && result.some((lesson) => lesson.id === linked)) {
+      await loadAudit(linked);
+      const userId = Number(route.query.student),
+        lesson = result.find((item) => item.id === linked),
+        entry = attendance.get(linked)?.entries.find((item) => item.userId === userId);
+      if (lesson && entry) await choose(lesson, entry);
+    }
   } catch (cause) {
     if (run === revision) error.value = message(cause);
   } finally {

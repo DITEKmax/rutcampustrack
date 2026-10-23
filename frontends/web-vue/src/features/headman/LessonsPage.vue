@@ -8,6 +8,7 @@ import {
   shallowReactive,
   shallowRef,
 } from 'vue';
+import { useRoute } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
 import { message, webSession } from '../../auth/session';
 import {
@@ -43,7 +44,12 @@ const state = shallowReactive(
         : feature.writable(),
   ),
 );
-const date = ref(today()),
+const route = useRoute();
+const date = ref(
+    typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
+      ? route.query.date
+      : today(),
+  ),
   error = ref<string | null>(null),
   selected = shallowRef<HeadmanJournalLesson | null>(null);
 const task = ref<'ROOM' | 'TRANSFER' | 'CANCEL' | 'RESTORE' | 'ONE_OFF' | null>(null);
@@ -75,6 +81,9 @@ async function load() {
     feature.assertCurrent();
     if (selected.value)
       selected.value = state.lessons.find((lesson) => lesson.id === selected.value?.id) ?? null;
+    else if (!task.value && route.query.lesson)
+      selected.value =
+        state.lessons.find((lesson) => lesson.id === Number(route.query.lesson)) ?? null;
   } catch (cause) {
     error.value = message(cause);
   }
@@ -439,7 +448,7 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
           }}</button
         ><RouterLink
           class="web-button"
-          :to="{ name: 'headman-attendance', query: { lesson: selected.id } }"
+          :to="{ name: 'headman-attendance', query: { lesson: selected.id, date: selected.date } }"
           >Журнал и история</RouterLink
         ></div
       ></section

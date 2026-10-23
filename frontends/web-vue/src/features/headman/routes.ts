@@ -1,13 +1,13 @@
 import type { RouteRecordRaw } from 'vue-router'
-import HomePage from './HomePage.vue'
-import JournalPage from './JournalPage.vue'
-import StatisticsPage from './StatisticsPage.vue'
-import HomeworkPage from './HomeworkPage.vue'
-import RequestsPage from './RequestsPage.vue'
-import GroupPage from './GroupPage.vue'
-import SubjectsPage from './SubjectsPage.vue'
-import SchedulePage from './SchedulePage.vue'
-import LessonsPage from './LessonsPage.vue'
+const HomePage = () => import('./HomePage.vue')
+const JournalPage = () => import('./JournalPage.vue')
+const StatisticsPage = () => import('./StatisticsPage.vue')
+const HomeworkPage = () => import('./HomeworkPage.vue')
+const RequestsPage = () => import('./RequestsPage.vue')
+const GroupPage = () => import('./GroupPage.vue')
+const SubjectsPage = () => import('./SubjectsPage.vue')
+const SchedulePage = () => import('./SchedulePage.vue')
+const LessonsPage = () => import('./LessonsPage.vue')
 
 export const headmanRoutes: RouteRecordRaw[] = [
   {

@@ -112,6 +112,7 @@ async function open() {
         class="web-notice"
         >Выбери предмет и тип занятия для предметного журнала.</p
       ><ReportExport
+        :key="`journal-${mode}`"
         :transport="feature.transport"
         :scope="`journal-${mode}`"
         :report="report"

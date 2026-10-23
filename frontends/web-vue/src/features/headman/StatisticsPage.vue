@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, shallowRef } from 'vue';
 import { message } from '../../auth/session';
-import { useHeadmanFeature, dateLabel, today, weekStart } from './context';
+import { useWebLiveRefresh } from '../../app/live';
+import { useHeadmanFeature, dateLabel, today, weekStart, addDays } from './context';
 import {
   toHeadmanStatsReportRequest,
   toHeadmanStatsTrendReportRequest,
@@ -59,6 +60,8 @@ const trendReport = computed(() =>
     ? toHeadmanStatsTrendReportRequest(appliedTrend.value, trendFormat.value)
     : null,
 );
+const appliedDraft = ref('');
+const dirty = computed(() => appliedDraft.value !== JSON.stringify(draft));
 let run = 0;
 const percent = (value: number, denominator: number) =>
   denominator === 0
@@ -82,6 +85,7 @@ async function load(reset = false) {
       overview.value = summary;
       draft.semesterId = semesters.activeSemesterId ?? semesters.semesters[0]?.id ?? 0;
     }
+    const frozenDraft = JSON.stringify(draft);
     const query: HeadmanStatsQuery = {
       ...(draft.semesterId ? { semesterId: draft.semesterId } : {}),
       subjectId: draft.subjectId || null,
@@ -123,6 +127,7 @@ async function load(reset = false) {
     trend.value = dynamics;
     applied.value = query;
     appliedTrend.value = trendQuery;
+    appliedDraft.value = frozenDraft;
   } catch (cause) {
     if (revision === run) error.value = message(cause);
   } finally {
@@ -130,6 +135,9 @@ async function load(reset = false) {
   }
 }
 onMounted(() => load());
+useWebLiveRefresh(() => load(), {
+  blocked: () => loading.value || dirty.value || !!selected.value,
+});
 </script>
 <template>
   <HeadmanPage
@@ -336,10 +344,10 @@ onMounted(() => load());
       >
       <StudentDetail
         v-if="selected"
-        :key="`${selected}:${draft.semesterId}`"
+        :key="`${selected}:${applied?.semesterId}`"
         :feature="feature"
         :student-id="selected"
-        :semester-id="draft.semesterId"
+        :semester-id="applied?.semesterId"
       />
       <div class="headman-actions"
         ><label class="web-field"
@@ -394,8 +402,12 @@ onMounted(() => load());
       ><TrendChart
         v-if="trend"
         :points="trend.points"
-        :from="draft.mode === 'WEEK' ? draft.week : trend.context.semesterFrom"
-        :to="trend.context.semesterTo" /><div
+        :from="appliedTrend?.mode === 'WEEK' ? appliedTrend.weekStart : trend.context.semesterFrom"
+        :to="
+          appliedTrend?.mode === 'WEEK'
+            ? addDays(appliedTrend.weekStart, 6)
+            : trend.context.semesterTo
+        " /><div
         v-if="trend"
         class="headman-actions"
         ><label class="web-field"

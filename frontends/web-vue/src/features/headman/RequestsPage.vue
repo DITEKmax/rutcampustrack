@@ -25,7 +25,9 @@ const loading = ref(false),
   error = ref<string | null>(null);
 const filters = reactive({
   bucket: 'OPEN' as HeadmanRequestBucket,
-  type: '' as HeadmanRequestKind | '',
+  type: (route.query.type === 'EXCUSE' || route.query.type === 'LATE_CHECKIN'
+    ? route.query.type
+    : '') as HeadmanRequestKind | '',
   name: '',
   from: '',
   to: '',

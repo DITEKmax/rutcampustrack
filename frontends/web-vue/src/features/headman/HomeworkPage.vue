@@ -395,6 +395,51 @@ async function showHistory(item: HeadmanManagedHomework) {
     error.value = message(cause);
   }
 }
+function historyFields(snapshot: unknown) {
+  if (!snapshot || typeof snapshot !== 'object') return [];
+  const value = snapshot as Record<string, unknown>;
+  const fields = [
+    ['title', 'Заголовок'],
+    ['description', 'Описание'],
+    ['link', 'Ссылка'],
+    ['bindingMode', 'Размещение'],
+    ['lessonDate', 'Дата'],
+    ['lessonNumber', 'Номер пары'],
+    ['lessonType', 'Тип занятия'],
+  ] as const;
+  return fields
+    .filter(([key]) => key in value)
+    .map(([key, label]) => {
+      const item = value[key];
+      const text =
+        item === null || item === ''
+          ? 'Не указано'
+          : key === 'bindingMode'
+            ? item === 'LESSON'
+              ? 'На пару'
+              : 'На дату'
+            : key === 'lessonDate' && typeof item === 'string'
+              ? dateLabel(item)
+              : key === 'lessonType' && typeof item === 'string'
+                ? (lessonTypes[item] ?? item)
+                : typeof item === 'string' || typeof item === 'number'
+                  ? String(item)
+                  : 'Неизвестное значение';
+      return { key, label, text };
+    });
+}
+function historyAction(action: string) {
+  return (
+    (
+      {
+        CREATED: 'Опубликовано',
+        EDITED: 'Изменено',
+        DELETED: 'Удалено',
+        ARCHIVED: 'В архиве',
+      } as Record<string, string>
+    )[action] ?? action
+  );
+}
 onMounted(load);
 useWebLiveRefresh(load, {
   blocked: () => busy.value || loading.value || editor.value || !!pending.value,
@@ -629,11 +674,34 @@ useWebLiveRefresh(load, {
           :key="entry.id"
           ><p
             >{{ new Date(entry.occurredAt).toLocaleString('ru-RU') }} ·
-            {{ entry.actorDisplayName ?? `Автор №${entry.actorId}` }} · {{ entry.action }} · версия
-            {{ entry.revision }}</p
+            {{
+              entry.actorDisplayName ?? (entry.actorId ? `Автор №${entry.actorId}` : 'Система')
+            }}
+            · {{ historyAction(entry.action) }} · версия {{ entry.revision }}</p
           ><details
             ><summary>Изменения</summary
-            ><pre>{{ JSON.stringify({ before: entry.before, after: entry.after }, null, 2) }}</pre>
+            ><div class="headman-work-grid">
+              <section
+                v-for="[snapshot, label] in [
+                  [entry.before, 'До изменения'],
+                  [entry.after, 'После изменения'],
+                ]"
+                :key="String(label)"
+              >
+                <h3>{{ label }}</h3>
+                <dl
+                  v-if="historyFields(snapshot).length"
+                  class="headman-facts"
+                >
+                  <template
+                    v-for="field in historyFields(snapshot)"
+                    :key="field.key"
+                    ><dt>{{ field.label }}</dt
+                    ><dd><LinkifiedText :text="field.text" /></dd
+                  ></template> </dl
+                ><p v-else>Нет записи</p>
+              </section>
+            </div>
           </details></li
         ></ol
       ><p v-if="!history.length">История пока пуста.</p></section

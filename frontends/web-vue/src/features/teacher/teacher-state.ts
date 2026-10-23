@@ -11,6 +11,8 @@ import {
 } from '../../../../mobile-core/src/features/teacher/teacher-client'
 
 export function teacherError(cause: unknown): string {
+  if (cause instanceof TypeError) return 'Не удалось связаться с сервером. Повтори попытку.'
+  if (cause instanceof DOMException && cause.name === 'AbortError') return 'Сервер не ответил вовремя. Повтори попытку.'
   if (cause instanceof TeacherApiError) {
     if (cause.response.status === 403)
       return 'Доступ изменился. Доступны только твои текущие группы и назначенные предметы.'

@@ -44,6 +44,7 @@
           "reason": { "type": "string", "minLength": 1 },
           "screenshot": { "type": "string", "description": "Relative separate PNG path inside gallery directory" },
           "imageHeight": { "type": "integer", "minimum": 1 },
+          "imageWidth": { "type": "integer", "minimum": 1 },
           "bytes": { "type": "integer", "minimum": 1 },
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "provenance": { "const": "real-runtime" },
@@ -56,7 +57,7 @@
         },
         "allOf": [{
           "if": { "properties": { "status": { "const": "captured" } } },
-          "then": { "required": ["screenshot", "imageHeight", "bytes", "sha256", "provenance", "capturedAt", "url"] },
+          "then": { "required": ["screenshot", "imageWidth", "imageHeight", "bytes", "sha256", "provenance", "capturedAt", "url"] },
           "else": { "required": ["reason"], "not": { "required": ["screenshot"] } }
         }]
       }

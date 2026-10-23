@@ -55,7 +55,7 @@ function verify(manifest, directory) {
     if (entry.status === 'captured') {
       assert(entry.provenance === 'real-runtime' && entry.capturedAt && entry.url, 'Runtime provenance required');
       const png = pngInfo(screenshotPath(directory, entry.screenshot));
-      assert(png.width === entry.width && png.height === entry.imageHeight && png.bytes === entry.bytes && png.sha256 === entry.sha256, 'PNG dimensions/hash/manifest mismatch');
+      assert(png.width === entry.imageWidth && png.height === entry.imageHeight && png.bytes === entry.bytes && png.sha256 === entry.sha256, 'PNG dimensions/hash/manifest mismatch');
     } else {
       assert(!entry.screenshot && entry.reason, 'Unknown/blocked entries need a reason and no claimed screenshot');
     }
@@ -136,7 +136,7 @@ async function capture(options) {
         sourceCheck(plan);
         const image = pngInfo(file);
         const layout = await page.evaluate(() => ({ horizontalOverflow: document.documentElement.scrollWidth > innerWidth, resolvedColorScheme: getComputedStyle(document.documentElement).colorScheme }));
-        Object.assign(entry, image, layout, { viewportHeight: scenario.height || 1000, imageHeight: image.height, screenshot: relative, status: 'captured', provenance: 'real-runtime', capturedAt: new Date().toISOString(), url: page.url(), http, javascriptErrors: errors });
+        Object.assign(entry, image, layout, { width: scenario.width, imageWidth: image.width, viewportHeight: scenario.height || 1000, imageHeight: image.height, screenshot: relative, status: 'captured', provenance: 'real-runtime', capturedAt: new Date().toISOString(), url: page.url(), http, javascriptErrors: errors });
         delete entry.height;
       } catch (error) {
         Object.assign(entry, { status: 'blocked', reason: `Action ${stepIndex + 1} (${scenario.actions[stepIndex]?.type || 'capture'}) failed: ${error.name}`, http, javascriptErrors: errors });

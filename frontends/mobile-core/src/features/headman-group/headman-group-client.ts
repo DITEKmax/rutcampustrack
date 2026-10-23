@@ -72,7 +72,7 @@ export type HeadmanCredentialView = {
 } & (
   | {
       readonly state: 'GENERATED'
-      readonly origin: 'initial' | 'headman_reset'
+      readonly origin: 'initial' | 'headman_reset' | 'admin_reset'
       readonly password: string
     }
   | {
@@ -647,7 +647,7 @@ function normalizeCredential(value: unknown, studentId: number): HeadmanCredenti
     return invalid()
   if (
     value.state === 'GENERATED' &&
-    (value.origin === 'initial' || value.origin === 'headman_reset') &&
+    (value.origin === 'initial' || value.origin === 'headman_reset' || value.origin === 'admin_reset') &&
     typeof value.password === 'string' &&
     value.password.length > 0 &&
     value.password.length <= 128

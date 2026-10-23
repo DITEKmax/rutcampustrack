@@ -36,7 +36,9 @@ PWA/TMA существующие операции сохраняются; их l
 ## Что завершено в этом пакете
 
 - Получено новое явное GO, создан draft PR3, сохранён полный контракт в Git.
-  Goal API в текущем каталоге отсутствует; активация persistent API Goal не заявлена.
+  На старте get/create Goal API отсутствовали. 2026-10-24 автоматический
+  goal_continuation подтвердил существующую цель в продукте; доступен stop_goal.
+  Из-за общего Q-ENV-001 требуется outcome blocked, не complete.
 - Сверены исходные branch/main revisions. Продуктовый checkout не создан:
   executor не предоставлен.
 - Реальное remote Figma чтение root и небольших auth/attendance contexts
@@ -90,3 +92,11 @@ Main, другие PR/global settings не менялись. Merge/deploy/produc
 и первый настоящий student homework read/completion flow в обеих темах,
 адресная local verification, независимое review и runtime HTML evidence.
 Продолжать независимые role/mobile пакеты без ожидания визуальной приёмки владельца.
+
+## Checkpoint автоматического продолжения — 2026-10-24 00:08 МСК
+
+Свежие status/diagnostics/pwd: тот же environment ID, pending/offline,
+revisions16/16, failure=null, records=[], shell недоступен. Публикация среды
+владельцем пока не подтверждена. Условия продолжения и UI evidence:
+[CLOUD-ENV-DIAGNOSTICS.md](CLOUD-ENV-DIAGNOSTICS.md).
+Работа не завершена; implemented0/117, locally verified0/117 без изменений.

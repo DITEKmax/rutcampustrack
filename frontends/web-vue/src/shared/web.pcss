@@ -506,9 +506,21 @@ h3 {
     display: block;
     flex-basis: 100%;
   }
-  .web-date-pager {
-    flex-wrap: wrap;
+  .web-period-modes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    inline-size: 100%;
+    min-inline-size: 0;
   }
+  .web-period-modes .web-button { padding-inline: var(--space-2); }
+  .web-date-pager {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    inline-size: 100%;
+    min-inline-size: 0;
+  }
+  .web-period-label { min-inline-size: 0; overflow-wrap: anywhere; }
+  .web-date-pager .web-button:last-child { grid-column: 1 / -1; }
   .web-date-pager .web-button:last-child {
     flex-basis: 100%;
   }
@@ -545,3 +557,28 @@ h3 {
 .web-field .web-code-input { text-align: center; letter-spacing: var(--space-3); font-variant-numeric: tabular-nums; }
 .web-qr-content { display: grid; justify-items: center; gap: var(--space-4); text-align: center; }
 .web-qr-image { inline-size: 12rem; block-size: 12rem; max-inline-size: 100%; object-fit: contain; background: white; border-radius: var(--radius-lg); }
+
+[data-theme='light'] .web-auth {
+  background-image: url('/assets/auth-background-original.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.web-code-control {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-3);
+  inline-size: min(100%, 21.75rem);
+  justify-self: center;
+}
+.web-code-control input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  cursor: text;
+}
+.web-code-control:focus-within { outline: var(--web-border) solid var(--color-text-primary); outline-offset: var(--space-2); border-radius: var(--radius-lg); }
+.web-code-cell { display: grid; place-items: center; aspect-ratio: 1; border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-full); font-size: var(--font-size-body); color: var(--color-text-primary); }

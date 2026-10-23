@@ -7,13 +7,14 @@ import './app/live';
 
 watch(
   () => [webSession.phase.value, webSession.snapshot.value?.activeRole] as const,
-  ([phase]) => {
-    if (phase === 'guest') void router.replace({ name: 'login' });
+  ([phase], [previousPhase]) => {
+    if (phase === 'guest' && previousPhase !== 'starting' && !router.currentRoute.value.meta.guest)
+      void router.replace({ name: 'login' });
     else if (phase === 'ready') {
       const route = router.currentRoute.value;
       const role = webSession.snapshot.value?.activeRole;
       if (
-        route.name === 'login' ||
+        route.meta.guest ||
         (route.meta.requiredRoles && (!role || !route.meta.requiredRoles.includes(role)))
       )
         void router.replace({ name: 'role-home' });

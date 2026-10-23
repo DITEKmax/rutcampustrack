@@ -11,8 +11,12 @@
   },
   "dependencies": {
     "@fontsource-variable/onest": "5.2.8",
+    "@rct/mobile-core": "0.1.0",
+    "qrcode": "1.5.4",
     "vue": "3.5.42",
-    "vue-router": "4.6.4",
-    "@rct/mobile-core": "0.1.0"
+    "vue-router": "4.6.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "1.5.6"
   }
 }

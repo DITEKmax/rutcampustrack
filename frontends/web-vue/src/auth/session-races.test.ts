@@ -66,12 +66,55 @@ describe('authoritative web session concurrency', () => {
     const changeRole = webSession.selectRole('HEADMAN')
     await conflictReceived.promise
     // Drain the conflict response so its reconciliation is waiting on the held refresh.
-    await new Promise<void>(resolve => setImmediate(resolve))
+    await new Promise<void>((resolve) => setImmediate(resolve))
     slowRefresh.resolve(Response.json({ accessToken: 'obsolete-token' }))
     await Promise.all([oldRefresh, changeRole])
     expect(webSession.phase.value).toBe('ready')
     expect(webSession.busy.value).toBe(false)
     expect(webSession.snapshot.value).toMatchObject({ activeRole: 'STUDENT', sessionVersion: '2' })
     expect(webSession.accessToken()).toBe('current-token')
+  })
+})
+
+describe('guest authentication lifetime', () => {
+  it('does not open an abandoned QR session after its delayed exchange returns', async () => {
+    const exchange = deferred<{ accessToken: string }>()
+    vi.stubGlobal('fetch', async () => Response.json(session('1')))
+    const { webSession } = await import('./session')
+    webSession.invalidate()
+    let mounted = true
+    const authentication = webSession.authenticate(
+      () => exchange.promise,
+      () => mounted,
+    )
+    mounted = false
+    webSession.cancelAuthentication()
+    exchange.resolve({ accessToken: 'abandoned-token' })
+    await authentication
+    expect(webSession.phase.value).toBe('guest')
+    expect(webSession.snapshot.value).toBeNull()
+    expect(webSession.accessToken()).toBeNull()
+    expect(webSession.busy.value).toBe(false)
+  })
+
+  it('publishes OTP login only with the authoritative role/session snapshot', async () => {
+    const authority = deferred<Response>()
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/verify-by-code'))
+        return Response.json({ accessToken: 'otp-token' })
+      return authority.promise
+    })
+    const { webSession } = await import('./session')
+    webSession.invalidate()
+    const authentication = webSession.loginOtp('123456')
+    await new Promise<void>((resolve) => setImmediate(resolve))
+    expect(webSession.snapshot.value).toBeNull()
+    expect(webSession.phase.value).toBe('guest')
+    authority.resolve(Response.json(session('1')))
+    await authentication
+    expect(webSession.phase.value).toBe('ready')
+    expect(webSession.snapshot.value?.roles).toHaveLength(2)
+    webSession.cancelAuthentication()
+    expect(webSession.phase.value).toBe('ready')
   })
 })

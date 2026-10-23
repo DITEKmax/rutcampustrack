@@ -107,18 +107,21 @@ async function bootstrap() {
   }
 }
 
-async function login(login: string, password: string) {
+async function authenticate(
+  request: () => Promise<{ accessToken: string }>,
+  isCurrent = () => true,
+) {
   const revision = ++operation
   busy.value = true
   error.value = null
   try {
-    const result = await client.login({ login, password })
-    if (revision !== operation) return
+    const result = await request()
+    if (revision !== operation || !isCurrent()) return
     token.value = result.accessToken
     const current = await client.getSnapshot()
-    if (revision === operation) acceptSession(current)
+    if (revision === operation && isCurrent()) acceptSession(current)
   } catch (cause) {
-    if (revision === operation) {
+    if (revision === operation && isCurrent()) {
       // A lost login response may have set the refresh cookie. Read it back once.
       if (!(cause instanceof AuthRequestError) || cause.status === undefined) {
         try {
@@ -132,8 +135,22 @@ async function login(login: string, password: string) {
       if (token.value) phase.value = 'error'
     }
   } finally {
-    if (revision === operation) busy.value = false
+    if (revision === operation) {
+      busy.value = false
+    }
   }
+}
+
+function cancelAuthentication() {
+  if (busy.value && (phase.value === 'guest' || phase.value === 'starting')) invalidate()
+}
+
+function login(login: string, password: string) {
+  return authenticate(() => client.login({ login, password }))
+}
+
+function loginOtp(code: string) {
+  return authenticate(() => client.loginOtp({ code }))
 }
 
 async function selectRole(role: ProfileRole) {
@@ -212,6 +229,9 @@ export const webSession = {
   bootstrap,
   refresh,
   login,
+  loginOtp,
+  authenticate,
+  cancelAuthentication,
   selectRole,
   logout,
 }

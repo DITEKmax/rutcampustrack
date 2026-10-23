@@ -178,6 +178,8 @@ export class HeadmanHomeworkApi {
     const occurrenceRevision = positiveDecimal(row.occurrenceRevision)
     const date = textValue(row.date)
     const lessonNumber = positiveNumber(row.lessonNumber)
+    const responseLessonType =
+      typeof row.lessonType === 'string' ? row.lessonType.toUpperCase() : null
     if (
       !id ||
       !occurrenceId ||
@@ -187,7 +189,7 @@ export class HeadmanHomeworkApi {
       positiveNumber(row.groupId) !== groupId ||
       positiveNumber(row.subjectId) !== subjectId ||
       positiveNumber(row.semesterId) !== semesterId ||
-      row.lessonType !== lessonType
+      responseLessonType !== lessonType
     )
       throw new Error('Некорректная ближайшая пара')
     return {

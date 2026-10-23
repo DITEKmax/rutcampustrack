@@ -5,12 +5,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.jsonwebtoken.Jwts;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +25,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
 import ru.rutcampustrack.auth.service.JwtService;
@@ -32,13 +34,6 @@ import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 class JwtAuthenticationFilterPurposeTest {
 
@@ -173,6 +168,8 @@ class JwtAuthenticationFilterPurposeTest {
         for (RequestSpec request :
                 List.of(
                         new RequestSpec("GET", "/auth/session"),
+                        new RequestSpec("GET", "/auth/device-preferences"),
+                        new RequestSpec("PUT", "/auth/device-preferences"),
                         new RequestSpec("PUT", "/auth/session/active-role"),
                         new RequestSpec("GET", "/auth/sessions"),
                         new RequestSpec("POST", "/auth/logout"),
@@ -195,6 +192,10 @@ class JwtAuthenticationFilterPurposeTest {
         for (RequestSpec request :
                 List.of(
                         new RequestSpec("GET", "/auth/account-history"),
+                        new RequestSpec("POST", "/auth/device-preferences"),
+                        new RequestSpec("DELETE", "/auth/device-preferences"),
+                        new RequestSpec("GET", "/auth/device-preferences/"),
+                        new RequestSpec("PUT", "/auth/device-preferences/child"),
                         new RequestSpec("POST", "/auth/change-password"),
                         new RequestSpec("GET", "/auth/session/child"),
                         new RequestSpec("GET", "/auth/sessions/other"),

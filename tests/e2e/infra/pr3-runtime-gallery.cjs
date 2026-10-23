@@ -72,7 +72,7 @@ function generate(manifest, directory) {
   return result;
 }
 function locator(page, action) {
-  if (action.label) return page.getByLabel(action.label, { exact: true });
+  if (action.label) return page.getByLabel(action.label, { exact: action.exact ?? false });
   if (action.role) return page.getByRole(action.role, { name: action.name, exact: true });
   assert(action.selector, 'Action requires selector, label, or role');
   return page.locator(action.selector);

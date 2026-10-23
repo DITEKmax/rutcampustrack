@@ -132,7 +132,8 @@ const permissionLabels = {
       @revoke="(id) => act(() => p.state.terminateSession(id))"
     />
     <SecurityForm
-      :policy="webSession.snapshot.value!.passwordPolicy"
+      v-if="webSession.snapshot.value"
+      :policy="webSession.snapshot.value.passwordPolicy"
       :busy="p.busy.value"
       :uncertain="p.uncertain.value"
       @dirty="dirty = $event"

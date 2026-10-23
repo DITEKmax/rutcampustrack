@@ -120,7 +120,10 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
       >
         Только чтение
       </p>
-      <RouterView :key="webSession.generation.value" />
+      <RouterView
+        v-if="webSession.snapshot.value"
+        :key="webSession.generation.value"
+      />
     </main>
   </div>
 </template>

@@ -61,7 +61,7 @@ onBeforeUnmount(() => preview.dispose());
         v-if="!state.url"
         class="web-button"
         :disabled="expired || state.status === 'loading'"
-        @click="preview.load"
+        @click="preview.load()"
       >
         {{
           state.status === 'loading'

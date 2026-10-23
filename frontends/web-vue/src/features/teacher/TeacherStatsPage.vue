@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import {
   toTeacherStatsReportSelector,
   type TeacherStatsFilter,
@@ -17,6 +18,7 @@ import TeacherExport from './TeacherExport.vue';
 import { teacherLessonTypeLabel } from '../../../../mobile-core/src/features/teacher/teacher-ui-format';
 
 const scope = useTeacherScope();
+const route = useRoute();
 const selection = useTeacherSelection(scope);
 const stats = useTeacherResource<TeacherStatsResponse>(scope);
 const kind = ref<TeacherStatsScope>('students');
@@ -29,6 +31,8 @@ const memory = reactive<
   students: { sorts: [], filters: [], types: [] },
   groups: { sorts: [], filters: [], types: [] },
 });
+const requestedName = typeof route.query.studentName === 'string' ? route.query.studentName.trim().slice(0, 128) : '';
+if (requestedName) memory.students.filters = [{ column: 'displayName', contains: requestedName }];
 const loadedQuery = shallowRef<TeacherStatsQuery | null>(null);
 const allTypes = computed(() => [
   ...new Set(
@@ -56,6 +60,10 @@ const query = computed<TeacherStatsQuery | null>(() => {
 });
 function load() {
   const requested = query.value;
+  const previous = loadedQuery.value;
+  const sameContext = previous && requested && previous.scope === requested.scope &&
+    previous.groupId === requested.groupId && previous.subjectId === requested.subjectId &&
+    JSON.stringify(previous.lessonTypes) === JSON.stringify(requested.lessonTypes);
   loadedQuery.value = null;
   if (!requested) {
     stats.clear();
@@ -66,7 +74,7 @@ function load() {
     scope.transport.assertCurrent();
     if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
     return data;
-  });
+  }, sameContext ? (_old, next) => next : undefined);
 }
 function changeScope(value: TeacherStatsScope) {
   if (kind.value === value) return;

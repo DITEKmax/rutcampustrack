@@ -233,7 +233,7 @@ watch(
                 <RouterLink
                   :to="{
                     name: 'teacher-stats',
-                    query: { group: student.groupId, student: student.id },
+                    query: { group: student.groupId, studentName: student.displayName },
                   }"
                 >
                   {{ student.displayName }} · {{ student.groupName }}

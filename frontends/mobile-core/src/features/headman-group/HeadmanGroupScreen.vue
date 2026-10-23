@@ -269,7 +269,7 @@ function credentialLabel(studentId: number): string {
   const value = credentials.values.value[studentId];
   if (value?.state === 'STUDENT_CHANGED') return 'Пароль сменён студентом';
   if (value?.state === 'GENERATED')
-    return `${value.origin === 'initial' ? 'Начальный пароль' : 'Сброшен старостой'}: ${value.password}`;
+    return `${value.origin === 'initial' ? 'Начальный пароль' : value.origin === 'admin_reset' ? 'Сброшен администратором' : 'Сброшен старостой'}: ${value.password}`;
   return 'Пароль недоступен';
 }
 function confirmCredential(action: 'generate' | 'link'): void {

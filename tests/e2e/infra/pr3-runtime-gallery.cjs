@@ -105,13 +105,21 @@ async function capture(options) {
   const { chromium } = requirePlaywright('playwright');
   const browser = await chromium.launch({ headless: true, ...(options.chromium ? { executablePath: options.chromium } : {}) });
   const manifest = { schemaVersion: 1, generatedAt: new Date().toISOString(), source: plan.source, runtime: plan.runtime, harnessRevision: git(path.resolve(__dirname, '../../..'), 'rev-parse', 'HEAD'), browserVersion: browser.version(), browserSettings: { serviceWorkers: 'block', timezoneId: 'Europe/Moscow', locale: 'ru-RU', fullPage: true }, entries: [] };
+  const sessions = new Map(); // Reuse one in-memory login for related named states.
   try {
     for (const scenario of plan.scenarios) {
       const entry = { screenId: scenario.screenId, stateId: scenario.stateId, title: scenario.title, description: scenario.description, theme: scenario.theme, width: scenario.width, sourceRevision: plan.source.revision, limitations: scenario.limitations || [], status: 'unknown' };
       entry.id = id(entry);
       if (scenario.skipReason) { entry.reason = scenario.skipReason; manifest.entries.push(entry); continue; }
-      const context = await browser.newContext({ viewport: { width: scenario.width, height: scenario.height || 1000 }, colorScheme: scenario.theme === 'light' ? 'light' : 'dark', locale: 'ru-RU', timezoneId: 'Europe/Moscow', serviceWorkers: 'block' });
-      const page = await context.newPage();
+      let session = scenario.sessionGroup && sessions.get(scenario.sessionGroup);
+      if (!session) {
+        const context = await browser.newContext({ viewport: { width: scenario.width, height: scenario.height || 1000 }, colorScheme: scenario.theme === 'light' ? 'light' : 'dark', locale: 'ru-RU', timezoneId: 'Europe/Moscow', serviceWorkers: 'block' });
+        session = { context, page: await context.newPage() };
+        if (scenario.sessionGroup) sessions.set(scenario.sessionGroup, session);
+      }
+      const { context, page } = session;
+      await page.setViewportSize({ width: scenario.width, height: scenario.height || 1000 });
+      await page.emulateMedia({ colorScheme: scenario.theme === 'light' ? 'light' : 'dark' });
       const http = [], errors = [];
       page.on('pageerror', error => errors.push(error.name));
       page.on('response', response => { const url = new URL(response.url()); if (url.pathname.startsWith('/api/')) http.push({ method: response.request().method(), path: url.pathname, status: response.status() }); });
@@ -134,7 +142,9 @@ async function capture(options) {
         Object.assign(entry, { status: 'blocked', reason: `Action ${stepIndex + 1} (${scenario.actions[stepIndex]?.type || 'capture'}) failed: ${error.name}`, http, javascriptErrors: errors });
       } finally {
         for (const step of scenario.cleanup || []) { try { await action(page, step); } catch { entry.limitations.push('Cleanup did not complete; check owned synthetic state/session.'); } }
-        await context.close();
+        page.removeAllListeners('pageerror');
+        page.removeAllListeners('response');
+        if (!scenario.sessionGroup) await context.close();
       }
       manifest.entries.push(entry);
       write(path.join(directory, 'manifest.json'), manifest);
@@ -154,6 +164,6 @@ async function main() {
     console.log(JSON.stringify(options.command === 'generate' ? generate(manifest, directory) : verify(manifest, directory)));
     return;
   }
-  console.log('Usage:\n  node pr3-runtime-gallery.cjs capture --plan PLAN.json --out NEW_DIR --playwright-root /repo/tests/e2e [--chromium /usr/bin/chromium]\n  node pr3-runtime-gallery.cjs generate --manifest DIR/manifest.json\n  node pr3-runtime-gallery.cjs verify --manifest DIR/manifest.json\n\nPlan: {source:{root,revision,paths:[]},runtime:{provenance:"real-runtime",synthetic:true,backendSourceRevision,backendScope:[],limitations:[]},scenarios:[{screenId,stateId,title,description,theme,width,height,actions:[],cleanup:[],limitations:[]}]}. Actions: goto(url), fill/select(value), click, check/expectChecked(checked), wait(state); locators: selector or label or role+name; optional expectResponse:{path,method,status}. No interception/evaluation actions. Unknown scenarios use skipReason. Credentials are never saved by the helper.');
+  console.log('Usage:\n  node pr3-runtime-gallery.cjs capture --plan PLAN.json --out NEW_DIR --playwright-root /repo/tests/e2e [--chromium /usr/bin/chromium]\n  node pr3-runtime-gallery.cjs generate --manifest DIR/manifest.json\n  node pr3-runtime-gallery.cjs verify --manifest DIR/manifest.json\n\nPlan: {source:{root,revision,paths:[]},runtime:{provenance:"real-runtime",synthetic:true,backendSourceRevision,backendScope:[],limitations:[]},scenarios:[{screenId,stateId,title,description,theme,width,height,sessionGroup,actions:[],cleanup:[],limitations:[]}]}. Related sessionGroup scenarios reuse a single in-memory login. Actions: goto(url), fill/select(value), click, check/expectChecked(checked), wait(state); locators: selector or label or role+name; optional expectResponse:{path,method,status}. No interception/evaluation actions. Unknown scenarios use skipReason. Credentials are never saved by the helper.');
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

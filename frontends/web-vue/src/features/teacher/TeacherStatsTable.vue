@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import type {
   TeacherStatsFilter,
   TeacherStatsResponse,
@@ -26,6 +26,13 @@ const drafts = reactive<Record<string, { minimum: string; maximum: string }>>({}
 const textDraft = ref(''),
   firstInput = ref<HTMLInputElement | null>(null);
 let trigger: HTMLButtonElement | null = null;
+let returnFocusAfterLoad = false;
+watch(() => props.busy, async busy => {
+  if (busy || !returnFocusAfterLoad) return;
+  await nextTick();
+  if (trigger?.isConnected && (document.activeElement === document.body || document.activeElement === trigger)) trigger.focus();
+  returnFocusAfterLoad = false;
+});
 const nameColumn = computed(() => (props.data.scope === 'groups' ? 'groupName' : 'displayName'));
 const metrics = [
   { key: 'present', label: 'Присутствия', symbol: '+' },
@@ -69,6 +76,7 @@ async function openFilter(column: string, event: MouseEvent) {
 }
 function closeFilter() {
   filterColumn.value = null;
+  returnFocusAfterLoad = true;
   trigger?.focus();
 }
 function apply() {

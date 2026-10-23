@@ -1,5 +1,7 @@
 # RutCampusTrack — автономная замена Angular web-panel на Vue
 
+> **Актуальный статус 2026-10-23:** новое GO владельца получено; создан [draft PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3). Старые PREPARATION/NOT STARTED/STOP ниже относятся к подготовке. Полномочия и границы: [GOAL-CONTRACT.md](GOAL-CONTRACT.md); фактический старт и технический блокер: [START-REPORT.md](START-REPORT.md); решения: [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). GitHub-проверки PAUSED. Без merge/deploy.
+
 Статус: PREPARED / CLOUD NOT SENT / IMPLEMENTATION NOT STARTED.
 Разрешена отдельная подготовительная ветка с документацией и паузой workflows.
 Дата решений: 2026-10-23, Europe/Moscow.

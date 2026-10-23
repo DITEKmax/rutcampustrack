@@ -16,8 +16,8 @@ Runtime model telemetry not provided by spawn result; no silent fallback.
 
 Root coordinates/docs/Git delivery for feature branch; product code assigned
 to sole developers in separate worktrees once executor exists. Main has NO writer.
-SCREEN-ACTION-MAP.csv temporarily assigned solely to api_inventory; root does not
-write it until explicit handoff. Other docs root-owned. SLOTS holds resources.
+SCREEN-ACTION-MAP.csv delivered and ownership returned to root. All current docs
+are root-owned. No active product writers; SLOTS holds resources.
 
 Figma remote read/context/screenshots PASS for actual returned nodes; this is
 design evidence only. ZIP attached in chat, NOT downloaded/integrity checked.
@@ -25,11 +25,15 @@ Executor pending/offline, failure null; no usable terminal/checkout/dev stand.
 No runtime/typecheck/build PASS. Continued connector work is authorized.
 
 Owner resolved Q-PROD-001: web bell/history/toasts only, no channels preferences.
-Q-PROD-002: student own attendance export deferred. Q-ENV-001 technical wait.
-Functional denominator provisional; no completion percentage asserted.
+Q-PROD-002: student own attendance export deferred. Q-PROD-003: users only
+archive/restore, no final deletion. Q-ENV-001 technical wait.
+Map:117 active actions; implemented0/117, locally verified0/117. Denominator
+provisional; no completion percentage asserted. PROGRESS.md links details.
 
-Next: receive map handoff, publish concise PROGRESS/PR checkpoint; await usable
-executor, inspect policy/files/WIP, clone/reuse actual branch HEAD without reset,
+Map/PROGRESS and first PR checkpoint published. Theme implementation proposal
+saved in docs/plans/web-vue-pr3/THEME-CONTRACT.md (API not implemented).
+Next: await usable executor, inspect policy/files/WIP,
+clone/reuse actual branch HEAD without reset,
 verify ZIP, allocate worktrees/owners and isolated synthetic dev resources,
 deliver Vue auth/shell + first student homework read/completion path, review,
 then independent role packages and full mobile light/device theme persistence.

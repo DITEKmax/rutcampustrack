@@ -80,10 +80,10 @@
   block-size: var(--rct-headman-status-size);
   border: var(--rct-border-hairline) solid currentColor;
   border-radius: var(--rct-radius-full);
-  color: var(--rct-color-status-excused-fill);
+  color: var(--rct-color-status-excused-text);
 }
 .headman-requests__symbol[data-status='ABSENT'] {
-  color: var(--rct-color-status-absent-fill);
+  color: var(--rct-color-status-absent-text);
 }
 .headman-requests__group {
   display: grid;
@@ -343,8 +343,8 @@
   background: var(--rct-color-surface-base);
 }
 .headman-requests__actions button.headman-requests__primary {
-  background: var(--rct-color-success-text);
-  color: var(--rct-color-status-on-fill);
+  background: var(--rct-color-status-present-fill);
+  color: var(--rct-color-status-present-on-fill);
 }
 .headman-requests__student[data-status='PENDING'] {
   background: var(--rct-warning-surface);

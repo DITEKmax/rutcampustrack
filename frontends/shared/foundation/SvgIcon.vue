@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import './svg.pcss';
-const props = defineProps<{ src: string; width?: number; height?: number }>();
+const props = defineProps<{ src: string; width?: number; height?: number; alt?: string }>();
 const maskStyle = computed(() => ({
   '--rct-svg-source': `url("${props.src}")`,
   '--rct-svg-width': `${(props.width ?? 16) / 16}rem`,
@@ -13,6 +13,8 @@ const maskStyle = computed(() => ({
   <i
     class="rct-svg-icon"
     :style="maskStyle"
-    aria-hidden="true"
+    :aria-hidden="alt ? undefined : true"
+    :aria-label="alt || undefined"
+    :role="alt ? 'img' : undefined"
   />
 </template>

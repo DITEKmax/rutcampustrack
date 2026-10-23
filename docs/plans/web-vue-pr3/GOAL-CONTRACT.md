@@ -1,13 +1,32 @@
 # Постоянный контракт цели — Vue web redesign
 
-## Решение и полномочия
+## Действующий запуск — 2026-10-24
+
+Владелец явно запустил существующую цель в этом чате: довести существующий
+PR №3 до просмотра перед отдельным включением GitHub-проверок. Ожидание GO
+после readiness снято. Разрешены автономная реализация полного принятого
+объёма, commits/pushes только в codex/web-vue-redesign и обновления PR/docs.
+Новый Goal/PR не создавать. Без main writes/merge/deploy/production.
+CI/Coverage/Security/OpenAPI остаются workflow_dispatch/PAUSED до отдельной
+команды; их пауза не блокирует завершение цели при остальных выполненных критериях.
+
+Текущая среда работает; ZIP проверен полностью. Evidence:
+[READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). Старые pending/offline
+и outcome=blocked ниже — историческая диагностика, не текущий блокер.
+Исходный remote/checkout HEAD37a15451c1a5647e5267f5ebf2fa388a349e61c1.
+Принятые Q-PROD решения и исходные117 active действий сохраняются.
+Завершение — реальная функциональная замена Angular, достаточные локальные
+проверки и независимое review с исправлениями, runtime HTML-галерея/evidence,
+актуальные карта/прогресс/вопросы и изменения доступны в существующем PR.
+
+## Историческое решение и полномочия
 
 2026-10-23 (Europe/Moscow), новое прямое GO владельца передано в чат
 «Разрабатывать веб-интерфейс» 01a16a4a-688a-711a-8943-07f6bd32f05b
 из чата 01a12bea-f8eb-7c43-afc1-242d08755c13 с явного разрешения владельца.
 
 Это GO на автономную реализацию, commits/pushes в `codex/web-vue-redesign`
-и новый draft PR в main. Создан PR: https://github.com/DITEKmax/rutcampustrack/pull/3.
+и обновление существующего draft PR в main. PR: https://github.com/DITEKmax/rutcampustrack/pull/3.
 Main, production, merge и deploy не разрешены.
 
 Старые PREPARATION/NOT STARTED, запреты читать облако/отправлять работу,

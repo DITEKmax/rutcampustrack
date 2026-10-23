@@ -1,48 +1,46 @@
-# CURRENT — Vue web redesign, 2026-10-23
+# CURRENT — PR3 readiness, 2026-10-24
 
-Owner GO active for branch `codex/web-vue-redesign`, draft
-https://github.com/DITEKmax/rutcampustrack/pull/3 → main.
-No merge/deploy/production changes. Latest task decision supersedes old frontend
-STOP/preparation/model assignments for THIS task only.
-Full contract and actual checkpoint:
-[GOAL-CONTRACT](../../docs/plans/web-vue-pr3/GOAL-CONTRACT.md),
-[START-REPORT](../../docs/plans/web-vue-pr3/START-REPORT.md),
-[OPEN-QUESTIONS](../../docs/plans/web-vue-pr3/OPEN-QUESTIONS.md).
+Current owner instruction: READINESS ONLY in the new published cloud machine.
+Wait for the owner's separate Goal launch. No new persistent Goal, product
+implementation, commit/push, PR mutation, main writes, merge/deploy/production.
+Historical GO/automatic continuation in earlier checkpoints does not activate
+product work in this chat. Owner's intended future main model: GPT-6.1 Sol ultra.
 
-Automatic goal_continuation received 2026-10-24: existing product Goal confirmed.
-Get/create Goal tools still unavailable; stop_goal is now provided. Common
-Q-ENV-001 requires blocked outcome until executor restoration/publication result.
-Contract and resume conditions tracked in Git; objective is NOT complete.
-Owner main-model choice GPT-6.1 Sol ultra retained; child settings discretionary.
-Current read-only analysis children requested explicitly gpt-6.1-sol/high.
-Runtime model telemetry not provided by spawn result; no silent fallback.
+Existing draft PR3: https://github.com/DITEKmax/rutcampustrack/pull/3
+Checkout /workspace/rutcampustrack, local branch codex/web-vue-redesign.
+Remote/PR/local HEAD checked via MCP, gh/API and Git fetch/ls-remote:
+37a15451c1a5647e5267f5ebf2fa388a349e61c1. No rollback/reset/clean/force push.
+Only readiness docs are local WIP; no product/lockfile/workflow changes.
 
-Root coordinates/docs/Git delivery for feature branch; product code assigned
-to sole developers in separate worktrees once executor exists. Main has NO writer.
-SCREEN-ACTION-MAP.csv delivered and ownership returned to root. All current docs
-are root-owned. No active product writers; SLOTS holds resources.
+Current observations:
+[READINESS-CHECK-20261024](../../docs/plans/web-vue-pr3/READINESS-CHECK-20261024.md).
+Contract remains [GOAL-CONTRACT](../../docs/plans/web-vue-pr3/GOAL-CONTRACT.md);
+all requested contract/docs/map and applicable AGENTS/RULES were read.
+Old ENVIRONMENT-HANDOFF pending/offline describes a different machine.
 
-Figma remote read/context/screenshots PASS for actual returned nodes; this is
-design evidence only. ZIP attached in chat, NOT downloaded/integrity checked.
-Executor pending/offline, failure null; no usable terminal/checkout/dev stand.
-No runtime/typecheck/build PASS. Continued connector work is authorized.
+Figma current-chat PASS: real design context AND screenshot1550:3168, read-only.
+GitHub MCP, shell gh/REST and Git fetch PASS independently; writes not attempted.
+Actual shell/Docker/JDK21/Gradle/Node/Chromium ready. cgroup16GiB,4CPU quota.
+One isolated minimal project rct-pr3-setup was started: seven containers healthy.
+Four bootJars48/48 UP-TO-DATE. Real API login/roles/active-role/BFF/roster/logout
+PASS; Chromium login/session200, screenshots inspected, no page JS errors.
+Today NOT VERIFIED: schedule503, notification unread-count500, absent downstream
+services. No fake downstream success. Runtime stopped; volumes/images retained.
 
-Owner resolved Q-PROD-001: web bell/history/toasts only, no channels preferences.
-Q-PROD-002: student own attendance export deferred. Q-PROD-003: users only
-archive/restore, no final deletion. Q-ENV-001 technical wait.
-Map:117 active actions; implemented0/117, locally verified0/117. Denominator
-provisional; no completion percentage asserted. PROGRESS.md links details.
+Q-ENV-001 and Q-INPUT-001 resolved. Three wrappers downloaded/validated;
+binary reassembly size87568617/SHA256 matched; CRC/safe paths422 entries PASS;
+388 PNG manifests/hashes/dimensions and34 handoff files verified,140 expected
+narrow light gaps. Inputs: /workspace/rct-pr3-setup/inputs/handoff-20261023-validated;
+evidence: /workspace/rct-pr3-setup/archive-check. No owner answer currently needed.
+Three Q-PROD decisions stay resolved:
+web bell/history/toasts without channels UI; student own export deferred;
+users archive/restore only. Teacher/grants and cancelled legacy scope retained.
 
-Map/PROGRESS and first PR checkpoint published. Theme implementation proposal
-saved in docs/plans/web-vue-pr3/THEME-CONTRACT.md (API not implemented).
-Next: await usable executor, inspect policy/files/WIP,
-clone/reuse actual branch HEAD without reset,
-verify ZIP, allocate worktrees/owners and isolated synthetic dev resources,
-deliver Vue auth/shell + first student homework read/completion path, review,
-then independent role packages and full mobile light/device theme persistence.
+Map117 active: AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8/ADMIN34.
+Implemented0/117 (0%); locally verified0/117 (0%) for this Vue iteration.
+Environment readiness is not feature delivery. CI/Coverage/Security/OpenAPI
+PAUSED, workflow_dispatch only, not PASS; no workflow dispatched.
 
-CI/Coverage/Security/OpenAPI PAUSED with workflow_dispatch only. Keep pause
-through all integration and Angular wiring; owner enables after review.
-Prior CI repair receipt remains docs/operations/ci-repair-20261011.md and is
-NOT current validation of this iteration. No old deployment/production resources
-were accessed or changed.
+Root owns common docs and readiness report; no product writers/worktrees.
+SLOTS records resource state. Readiness complete within the minimal stand scope;
+wait for owner's separate Goal launch. No product readiness claimed.

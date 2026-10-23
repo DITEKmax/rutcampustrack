@@ -1,34 +1,33 @@
-# SLOTS — Vue web redesign, 2026-10-23
+# SLOTS — PR3 readiness, 2026-10-24
 
-Scope branch codex/web-vue-redesign; PR3 draft → main. NO main writer.
-Runtime ceiling root +6 children; no hidden coordinator or CLI orchestrator.
+Only readiness authorized; separate Goal launch pending. Existing PR3 branch
+codex/web-vue-redesign; root+6 children runtime ceiling. NO main/product writer.
+Root owns common docs; no product worktrees/parallel writers allocated.
 
-| Owner | Scope | State | Checkout/resources |
+| Owner | Scope | State | Resources |
 |---|---|---|---|
-| root | coordination, common docs, branch Git delivery | active | GitHub connector only |
-| api_inventory | API/story inventory + assigned CSV delivered; ownership returned to root | completed/released | no processes |
-| theme_analysis | theme foundation + device-preferences contract research | completed, no product writes | GitHub connector only |
+| root | readiness coordination, shell/backend/browser, common docs | checkpoint; waiting for Goal | /workspace/rutcampustrack; no product writes |
+| github_readiness | MCP-only PR/ref/permission read | complete | no shell/processes/writes |
+| contract_readiness | complete saved contract/map read | complete | explicit gpt-6.1-sol/high; read-only |
+| archive_readiness | wrappers, binary reassembly, ZIP/manifest validation | complete | only /workspace/rct-pr3-setup/archive-check and inputs; explicit gpt-6.1-sol/high |
 
-All child requests use gpt-6.1-sol/high; owner permits discretionary future
-settings for this task. Spawn replies do not expose runtime model metadata.
-Review must be independent of product author. Root/lead/reviewer do not write
-product code.
+Spawn tools do not expose runtime model telemetry; requested settings do not
+prove actual model. Future main model per owner: GPT-6.1 Sol ultra.
+No hidden orchestrator/children; no product team has started.
 
-HEAVY: FREE / not allocated. Executor pending/offline, no usable terminal.
-No worktrees, frontend servers, DB/queues/topics/volumes or ports created.
-No tests/builds/containers/browser processes started. Resource availability and
-dependency/network readiness unknown. Never infer resource isolation from
-worktree isolation; assign namespace/ports/DB/topics/volumes before dev startup.
+HEAVY: FREE after one root lease. Actual cgroup16GiB RAM, CPU quota4 cores,
+about30GiB workspace free. Stand namespace rct-pr3-setup, network
+rct-pr3-setup_private_net, own setup-postgres/setup-redis/setup-rabbit named
+volumes, Gateway127.0.0.1:18080, PWA15175/TMA15176. No fixed container_name.
+Only this project was started/stopped; seven services were healthy and core API
+smoke passed. Owned frontend process groups and project containers/network
+stopped/removed; data volumes/images retained. No global Docker cleanup.
 
-Future ownership to assign before writes: web foundation/auth/shell/routes/API
-bootstrap/configs/lockfile one owner; neutral font/token/mixin/theme/mobile App
-integration one owner; generated/backend device contract one owner; role feature
-paths separate. Root owns all current docs including delivered map. No active child writers.
+Logs/screenshots: /workspace/rct-pr3-setup/readiness-*-20261024.*.
+Schedule/Attendance/Notification and other extended services remain unprepared;
+Today not verified (schedule503, notification unread500). No full suite/CI.
+Four current-source bootJars verified UP-TO-DATE, no dependency reinstall.
 
-Do not use ordinary compose fixed container_name for parallel stands.
-Prefer existing isolated synthetic standalone harness after inspecting actual
-runtime proxy/CA/network policy. One heavy lease until capacity proves a second.
-
-No merge/deploy/production; GitHub CI/Coverage/Security/OpenAPI PAUSED.
-Prior 2026-10-11 repair resource receipts remain in
-docs/operations/ci-repair-20261011.md; none were inspected or cleaned here.
+Future foundation/tokens/generated/contracts/config/lockfiles owners are not
+yet assigned. Assign only after Goal, using isolated worktrees/resources and
+independent review. Keep CI/Coverage/Security/OpenAPI workflow_dispatch/PAUSED.

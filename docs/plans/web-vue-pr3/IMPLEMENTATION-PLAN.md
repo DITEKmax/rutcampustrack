@@ -1,6 +1,6 @@
 # План новой Vue web-панели и светлых тем PWA/TMA
 
-> **Актуальный статус 2026-10-23:** новое GO владельца получено; создан [draft PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3). Старые PREPARATION/NOT STARTED/STOP ниже относятся к подготовке. Полномочия и границы: [GOAL-CONTRACT.md](GOAL-CONTRACT.md); фактический старт и технический блокер: [START-REPORT.md](START-REPORT.md); решения: [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). GitHub-проверки PAUSED. Без merge/deploy.
+> **Актуальный статус 2026-10-24:** отдельный Goal запущен владельцем после успешной readiness. Продолжается существующий PR №3; создавать другой PR/Goal нельзя. Первый пакет: shared foundation + web auth/shell/student homework real flow; параллельно mobile theme и backend device contract. Полномочия: GOAL-CONTRACT.md; факты: READINESS-CHECK-20261024.md. CI PAUSED, без merge/deploy.
 
 Подготовлено 2026-10-23. Это план будущей реализации, не объявление её старта.
 Канон требований — OWNER-BRIEF.md и последние сообщения OWNER-MESSAGES.md.
@@ -20,8 +20,8 @@
 Все существующие PWA/TMA экраны дополнительно получают светлую тему;
 их прочие принятые сценарии и права сохраняются.
 
-Работа идёт в отдельной ветке и затем одном новом PR в main, ожидаемый №3.
-Номер назначает GitHub. Создать draft PR после будущего GO, не занимать чужой PR.
+Работа идёт в существующей ветке codex/web-vue-redesign и существующем draft PR №3.
+Не создавать другой PR; обновлять текущий после законченных пакетов.
 Не merge, не deploy, не менять production, firewall, ключи и бэкапы.
 Автоматические GitHub-проверки временно приостановлены в версии этой ветки:
 CI-DEVELOPMENT-POLICY.md. Включение — отдельное решение владельца после

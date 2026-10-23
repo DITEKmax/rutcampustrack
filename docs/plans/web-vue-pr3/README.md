@@ -1,10 +1,10 @@
 # Подготовка новой Vue web-панели — будущий PR №3
 
-> **Актуальный статус 2026-10-23:** новое GO владельца получено; создан [draft PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3). Старые PREPARATION/NOT STARTED/STOP ниже относятся к подготовке. Полномочия и границы: [GOAL-CONTRACT.md](GOAL-CONTRACT.md); фактический старт и технический блокер: [START-REPORT.md](START-REPORT.md); решения: [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). GitHub-проверки PAUSED. Без merge/deploy.
+> **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
 Дата решений: 2026-10-23. Ветка `codex/web-vue-redesign`, база main
 `aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Это подготовка, реализация не начата.
-PR/облачный чат ещё не созданы; фактический номер PR назначит GitHub.
+Первоначальная подготовка ниже — исторический материал; существующий PR имеет №3.
 
 ## Читать по порядку
 

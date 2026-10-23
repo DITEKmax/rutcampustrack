@@ -1,6 +1,12 @@
 # PROGRESS — Vue web redesign
 
-Срез 2026-10-23 (Europe/Moscow).
+Срез 2026-10-24 (Europe/Moscow).
+
+Существующий Goal отдельно запущен владельцем после readiness. Среда и ZIP
+проверены; Q-ENV-001/Q-INPUT-001 закрыты. Актуальные факты:
+[READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). Ниже прежняя
+история, её pending/offline не описывает новую машину. Первый продуктовый
+пакет в работе; до его реализации/проверки counts остаются нулевыми.
 PR: https://github.com/DITEKmax/rutcampustrack/pull/3 (draft).
 Полный контракт: [GOAL-CONTRACT.md](GOAL-CONTRACT.md).
 Факты среды и следующий пользовательский пакет: [START-REPORT.md](START-REPORT.md).

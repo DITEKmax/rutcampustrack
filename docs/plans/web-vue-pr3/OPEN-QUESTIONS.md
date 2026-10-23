@@ -6,7 +6,12 @@
 
 ## Q-ENV-001 — облачный executor
 
-**Тип:** техническая зависимость. **Статус:** waiting for environment.
+**Тип:** техническая зависимость. **Статус:** RESOLVED 2026-10-24 для новой среды.
+Настоящие shell, checkout, Git fetch/gh/API, Docker, core backend/login/data и
+Chromium screenshot проверены. См. [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md).
+Полный «Сегодня» требует расширения минимального стенда после Goal.
+Ниже историческая диагностика прежней машины, не текущий блокер.
+
 Figma/GitHub connectors доступны, но `exec_command` отвечает
 «No usable execution environment», `download_file` —
 «requires a ready execution workspace». Environment status:
@@ -22,6 +27,20 @@ desired running, observed pending, connectivity offline, failure null.
 Рекомендация: дождаться штатного executor, сохранить checkpoint; продолжать
 независимые connector reads и подготовку карты. Срок старта неизвестен.
 Не выдавать отсутствие машины за дефект продукта или PASS.
+
+## Q-INPUT-001 — передача большого ZIP
+
+**Тип:** техническая зависимость. **Статус:** RESOLVED 2026-10-24.
+Единый файл87568617bytes превышает лимит download_file32MiB; точная ошибка:
+`file exceeds the executor transfer limit of 32 MiB`. Владелец передал три
+ZIP-обёртки transfer-01/02/03; каждая реально скачана в текущую среду.
+Проверены wrapper CRC/safe paths, TRANSFER-MANIFEST/части и бинарная сборка;
+исходные size87568617/SHA256 совпали, CRC/safe paths422 entries PASS,
+388 PNG сверены по bytes/hash/dimensions с JSON/CSV manifests;34 handoff на месте.
+Подтверждены33 logical screens/8 widths и ровно140 ожидаемых narrow light gaps.
+Evidence: `/workspace/rct-pr3-setup/archive-check/report.md` и
+[READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md).
+Ответа владельца не требуется; это проверка входных данных, не новая реализация.
 
 ## Q-PROD-001 — настройки каналов уведомлений в web
 

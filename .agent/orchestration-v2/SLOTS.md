@@ -1,7 +1,34 @@
-# SLOTS — 2026-10-11
+# SLOTS — Vue web redesign, 2026-10-23
 
-Root sole MAIN/docs/Git integrator. Repair ACCEPTED on main source dd50cd088fadf92f6fc9879ad7379e0e619200e1: CI38154842678 SUCCESS18jobs/browser9of9PASS; Coverage38154842675 SUCCESS8; Security38154842677 SUCCESS3scanners. All10E2Ebuilds/startup/runnercleanupPASS. Final receipt only report/process metadata. Cause/evidence URLs docs/operations/ci-repair-20261011.md.
+Scope branch codex/web-vue-redesign; PR3 draft → main. NO main writer.
+Runtime ceiling root +6 children; no hidden coordinator or CLI orchestrator.
 
-All eight assigned authors/reviewers RELEASED. WorkflowWT2c213a362/teacherAuthWTa3fe8d026 independently reviewed and integrated; other stable source revisions retained in report. No children/new coordinator layer/background agents. New work only by owner assignment. Models for new tasks gpt-6.1-sol/xhigh explicitowner11Oct; flags confirmed/runtime metadataUNKNOWN.
+| Owner | Scope | State | Checkout/resources |
+|---|---|---|---|
+| root | coordination, common docs, branch Git delivery | active | GitHub connector only |
+| api_inventory | read-only API/story inventory; sole SCREEN-ACTION-MAP.csv writer until handoff | map delivery | GitHub connector only |
+| theme_analysis | theme foundation + device-preferences contract research | completed, no product writes | GitHub connector only |
 
-HEAVY FREE. No local fullstack/suite duplication after passed source. Existing18514/6KEEP/1757rollbackrefs/privateenv/certs/backups untouched; BotOFF/tunnelOFF. Own testcontainer/runner resources cleaned. No manualdeploy/productionmigration/rotation. Frozen contract .agent/evidence/ci-repair-20261011/CONTRACT.md.
+All child requests use gpt-6.1-sol/high; owner permits discretionary future
+settings for this task. Spawn replies do not expose runtime model metadata.
+Review must be independent of product author. Root/lead/reviewer do not write
+product code.
+
+HEAVY: FREE / not allocated. Executor pending/offline, no usable terminal.
+No worktrees, frontend servers, DB/queues/topics/volumes or ports created.
+No tests/builds/containers/browser processes started. Resource availability and
+dependency/network readiness unknown. Never infer resource isolation from
+worktree isolation; assign namespace/ports/DB/topics/volumes before dev startup.
+
+Future ownership to assign before writes: web foundation/auth/shell/routes/API
+bootstrap/configs/lockfile one owner; neutral font/token/mixin/theme/mobile App
+integration one owner; generated/backend device contract one owner; role feature
+paths separate. Root common docs except explicit temporary map handoff above.
+
+Do not use ordinary compose fixed container_name for parallel stands.
+Prefer existing isolated synthetic standalone harness after inspecting actual
+runtime proxy/CA/network policy. One heavy lease until capacity proves a second.
+
+No merge/deploy/production; GitHub CI/Coverage/Security/OpenAPI PAUSED.
+Prior 2026-10-11 repair resource receipts remain in
+docs/operations/ci-repair-20261011.md; none were inspected or cleaned here.

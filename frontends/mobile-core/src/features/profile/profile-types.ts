@@ -23,7 +23,7 @@ export type ProfileRoute =
   | 'security'
   | 'sessions'
   | 'history'
-export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA'
+export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA' | 'QR'
 export type ProfileHistoryType =
   | 'LOGIN'
   | 'ROLE_CHANGED'

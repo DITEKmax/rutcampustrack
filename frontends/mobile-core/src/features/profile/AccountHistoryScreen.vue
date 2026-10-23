@@ -34,6 +34,7 @@ const props = withDefaults(
 function authMethodLabel(method: ProfileHistoryEvent['authMethod']): string | null {
   if (method === 'PASSWORD') return 'вход по паролю';
   if (method === 'OTP') return 'вход по одноразовому коду';
+  if (method === 'QR') return 'вход по QR-коду';
   if (method === 'TMA') return 'вход через Telegram';
   return null;
 }

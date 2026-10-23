@@ -588,7 +588,7 @@ function adaptAuthMethod(
   value: unknown,
   operation: string,
 ): NonNullable<ProfileSessionSummary['authMethod']> {
-  if (value === 'PASSWORD' || value === 'OTP' || value === 'TMA') return value
+  if (value === 'PASSWORD' || value === 'OTP' || value === 'TMA' || value === 'QR') return value
   throw new AuthPayloadError(operation, 'Сервер вернул неизвестный способ входа', value)
 }
 

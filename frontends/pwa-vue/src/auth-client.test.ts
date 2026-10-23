@@ -178,6 +178,38 @@ describe('generated Auth client adapter', () => {
     expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer old-token')
   })
 
+  it('keeps real QR browser entries in session and account-history projections', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        response({
+          items: [
+            {
+              sessionId,
+              authMethod: 'QR',
+              clientLabel: 'Chrome',
+              locationLabel: null,
+              createdAt: '2026-10-24T08:00:00Z',
+              lastSeenAt: '2026-10-24T09:00:00Z',
+              current: false,
+            },
+          ],
+          nextCursor: null,
+        }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          items: [
+            { id: 'qr-event', type: 'LOGIN', occurredAt: '2026-10-24T08:00:00Z', authMethod: 'QR' },
+          ],
+          nextCursor: null,
+        }),
+      )
+    const client = createAuthClient({ fetcher, accessToken: () => 'profile-token' })
+    expect((await client.listSessions()).items[0]?.authMethod).toBe('QR')
+    expect((await client.listHistory()).items[0]?.authMethod).toBe('QR')
+  })
+
   it('uses generated cursor query shapes and keeps security mutations typed', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
@@ -370,9 +402,11 @@ describe('own-profile Telegram binding projection', () => {
       })
       const rejected = client.getOwnTelegramId('42')
       await expect(rejected).rejects.toMatchObject({
-        code: 'UNKNOWN', details: undefined, message: expect.stringMatching(/\S/),
+        code: 'UNKNOWN',
+        details: undefined,
+        message: expect.stringMatching(/\S/),
       })
-      await rejected.catch(error => {
+      await rejected.catch((error) => {
         expect((error as Error).message).not.toContain(String(body.telegramId))
         expect((error as Error).message).not.toContain(JSON.stringify(body))
       })
@@ -416,8 +450,10 @@ describe('D024 code-only OTP and incoming browser proof', () => {
       JSON.stringify({ ...raw, version: 2 }),
       JSON.stringify({ ...raw, issuerSecret: 'private' }),
     ]) {
-      try { parseBrowserLoginProof(value); throw new Error('accepted-invalid-proof') }
-      catch (error) {
+      try {
+        parseBrowserLoginProof(value)
+        throw new Error('accepted-invalid-proof')
+      } catch (error) {
         expect(error).toBeInstanceOf(Error)
         expect((error as Error).message).not.toContain('accepted-invalid-proof')
         expect((error as Error).message).not.toContain(value)
@@ -461,7 +497,7 @@ describe('D024 code-only OTP and incoming browser proof', () => {
     )
     const rejected = client.previewBrowserLogin(proof)
     await expect(rejected).rejects.toMatchObject({ message: expect.stringMatching(/\S/) })
-    await rejected.catch(error => {
+    await rejected.catch((error) => {
       expect((error as Error).message).not.toContain(proof.approvalToken)
       expect((error as Error).message).not.toContain(proof.challengeId)
     })

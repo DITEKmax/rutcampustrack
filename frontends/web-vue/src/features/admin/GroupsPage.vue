@@ -4,6 +4,7 @@ import { onBeforeRouteLeave, RouterLink } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
 import {
   AdminGroupsClient,
+  AdminGroupsApiError,
   adminGroupProgramTypes,
   type AdminGroup,
   type AdminGroupsPage,
@@ -45,6 +46,7 @@ const candidateId = ref<number>(),
   promotion = shallowRef<PromotionSummary | null>(null);
 const canManage = computed(() => admin.can('GROUPS_MANAGE'));
 const locked = computed(() => busy.value || pending.value || unknownWrite.value);
+admin.guardUnfinished(() => locked.value);
 const exportSelector = computed(() => {
   const [field, direction] = sort.value.split(',');
   return { ...applied.value, sorts: [{ field: field!, descending: direction === 'desc' }] };
@@ -90,6 +92,7 @@ function beginCreate() {
 }
 async function save() {
   await admin.run(async () => {
+    let acknowledged = false;
     try {
       if (creating.value) {
         const value = await client.createGroup(
@@ -103,14 +106,21 @@ async function save() {
         admin.assertCurrent();
         selected.value = value;
         creating.value = false;
+        name.value = value.name;
       } else if (selected.value)
         await client.renameGroup(selected.value, name.value, duration.value, admin.signal);
       admin.assertCurrent();
+      acknowledged = true;
       await load();
       notice.value = 'Группа сохранена.';
     } catch (cause) {
       admin.assertCurrent();
-      if (!(cause && typeof cause === 'object' && 'response' in cause)) unknownWrite.value = true;
+      if (
+        !acknowledged &&
+        !(cause instanceof RangeError) &&
+        (!(cause instanceof AdminGroupsApiError) || cause.response.status >= 500)
+      )
+        unknownWrite.value = true;
       throw cause;
     }
   }, 'GROUPS_MANAGE');
@@ -263,7 +273,7 @@ onBeforeRouteLeave(() => {
 onMounted(() => admin.init('GROUPS_VIEW', () => load()));
 useWebLiveRefresh(
   () =>
-    admin.run(async () => {
+    admin.refresh(async () => {
       await admin.requirePermission('GROUPS_VIEW');
       await load(page.value?.number ?? 0);
     }),

@@ -53,11 +53,11 @@ export function useAdmin() {
     assertCurrent()
     if (!can(code)) throw new Error('У тебя нет права на это действие.')
   }
-  async function run(task: () => Promise<void>, permission?: string) {
+  async function run(task: () => Promise<void>, permission?: string, retainNotice = false) {
     if (busy.value) return
     busy.value = true
     error.value = ''
-    notice.value = ''
+    if (!retainNotice) notice.value = ''
     try {
       assertCurrent()
       if (permission) await requirePermission(permission)
@@ -92,11 +92,22 @@ export function useAdmin() {
     })
     if (mounted) loading.value = false
   }
+  const refresh = (task: () => Promise<void>) => run(task, undefined, true)
   onBeforeUnmount(() => {
     mounted = false
     controller.abort()
     authority.value = null
   })
+  function guardUnfinished(unfinished: () => boolean) {
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (unfinished()) {
+        event.preventDefault()
+        event.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', beforeUnload)
+    onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
+  }
   return {
     options,
     access,
@@ -109,11 +120,46 @@ export function useAdmin() {
     full,
     assertCurrent,
     run,
+    refresh,
     init,
     refreshAuthority,
     requirePermission,
+    guardUnfinished,
     signal: controller.signal,
   }
+}
+
+/** Persist only an adapter-validated nonsecret recovery reference under the admitted identity. */
+export function bindAdminRecovery(
+  options: { sessionScopeFor(): string | null; assertCurrent(): void },
+  kind: 'users' | 'access',
+  client: {
+    bindIdentityRecovery(
+      scope: string | null,
+      saved: unknown,
+      persist: (value: unknown) => void,
+    ): void
+  },
+) {
+  const scope = options.sessionScopeFor()
+  const key = scope ? `rct:web:identity:${kind}:v1:${scope}` : null
+  let saved: unknown = null
+  try {
+    saved = key ? JSON.parse(sessionStorage.getItem(key) ?? 'null') : null
+  } catch {
+    /* Memory recovery still works. */
+  }
+  client.bindIdentityRecovery(scope, saved, (value) => {
+    options.assertCurrent()
+    try {
+      if (key) {
+        if (value) sessionStorage.setItem(key, JSON.stringify(value))
+        else sessionStorage.removeItem(key)
+      }
+    } catch {
+      /* Never persist proofs or secrets. */
+    }
+  })
 }
 
 export const roleLabels = {

@@ -47,4 +47,8 @@ describe('admin credentials authority and CAS', () => {
       await expect(client.read(12)).rejects.toThrow('подтвердить')
     }
   })
+  it('keeps revoked-session HTTP401 identifiable even without a JSON error body', async () => {
+    const client = setup(async () => new Response('', { status: 401 }))
+    await expect(client.read(12)).rejects.toMatchObject({ status: 401 })
+  })
 })

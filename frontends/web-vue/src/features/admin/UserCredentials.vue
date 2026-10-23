@@ -26,6 +26,7 @@ const link = shallowRef<AdminRecoveryLink | null>(null);
 const confirming = ref(false);
 const unknownVersion = ref<string | null>(null);
 const revokedSelf = ref(false);
+admin.guardUnfinished(() => busy.value || !!unknownVersion.value);
 const selfTarget = String(props.user.id) === webSession.snapshot.value?.userId;
 const self = computed(() => String(props.user.id) === webSession.snapshot.value?.userId);
 const allowed = computed(

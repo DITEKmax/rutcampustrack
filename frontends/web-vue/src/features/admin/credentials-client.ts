@@ -41,13 +41,22 @@ export class CredentialsClient {
             body: JSON.stringify({ expectedCredentialsVersion: version }),
           }),
     })
-    const value: unknown = await response.json()
+    let value: unknown = null
+    try {
+      value = await response.json()
+    } catch {
+      this.transport.assertCurrent()
+      if (response.ok) throw new Error('Не удалось подтвердить данные пароля.')
+    }
     this.transport.assertCurrent()
     if (!response.ok) {
-      const problem = value as { detail?: string }
+      const detail =
+        value && typeof value === 'object' && 'detail' in value && typeof value.detail === 'string'
+          ? value.detail
+          : null
       throw new CredentialsError(
         response.status,
-        problem.detail ?? `Не удалось получить пароль (HTTP ${response.status}).`,
+        detail ?? `Не удалось получить пароль (HTTP ${response.status}).`,
       )
     }
     if (!value || typeof value !== 'object')

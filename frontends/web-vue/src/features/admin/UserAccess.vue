@@ -6,19 +6,22 @@ import type {
   AdminAccessMode,
   AdminAccessProfile,
 } from '../../../../mobile-core/src/features/admin-access/admin-access-client';
-import { useAdmin } from './use-admin';
+import { useAdmin, bindAdminRecovery } from './use-admin';
 import PermissionFields from './PermissionFields.vue';
 import AdminState from './AdminState.vue';
 const props = defineProps<{ userId: number }>();
 const emit = defineEmits<{ saved: []; locked: [value: boolean] }>();
 const admin = useAdmin();
+bindAdminRecovery(admin.options, 'access', admin.access);
 const { loading, busy, error, notice, full } = admin;
 const profile = shallowRef<AdminAccessProfile | null>(null);
 const catalog = shallowRef<AdminAccessCatalog | null>(null);
 const mode = ref<AdminAccessMode>('LIMITED');
 const permissions = ref<string[]>([]);
 const confirmRevoke = ref(false);
-const pending = ref(false);
+const pending = ref(Boolean(admin.access.failedIdentityOperation));
+admin.guardUnfinished(() => pending.value || busy.value);
+emit('locked', pending.value);
 async function load() {
   const [p, c] = await Promise.all([
     admin.access.getUserAccess(props.userId),

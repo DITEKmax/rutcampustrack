@@ -62,6 +62,7 @@ type UnknownDeletion = {
 const unknownPublication = shallowRef<UnknownPublication | null>(null),
   unknownDeletion = shallowRef<UnknownDeletion | null>(null);
 const locked = computed(() => busy.value || !!unknownPublication.value || !!unknownDeletion.value);
+admin.guardUnfinished(() => locked.value);
 const rows = computed(() =>
   inventory.value
     .filter((b) => !selectedBuilding.value || b.id === selectedBuilding.value)
@@ -74,6 +75,8 @@ const statuses = {
   failed: 'Ошибка обработки',
 };
 const objectUrls = new Set<string>();
+// Current server command only clears the pointer; all-version/file final deletion is not ready.
+const permanentDeletionAvailable = false;
 async function load() {
   const value = await client.listBuildings(admin.signal);
   admin.assertCurrent();
@@ -260,6 +263,10 @@ async function previewDeletion() {
 }
 async function removePlan() {
   await admin.run(async () => {
+    if (!permanentDeletionAvailable)
+      throw new Error(
+        'Окончательное удаление всех версий и файлов пока не поддерживается сервером.',
+      );
     const p = deletionPreview.value;
     if (!p || !admin.can('CAMPUS_MAP_MANAGE')) throw new Error('Нужны права управления картой.');
     const reference: UnknownDeletion = {
@@ -329,7 +336,7 @@ onBeforeUnmount(() => {
 onMounted(() => admin.init('CAMPUS_MAP_MANAGE', load));
 useWebLiveRefresh(
   () =>
-    admin.run(async () => {
+    admin.refresh(async () => {
       await admin.requirePermission('CAMPUS_MAP_MANAGE');
       await load();
     }),
@@ -615,7 +622,13 @@ useWebLiveRefresh(
           v-if="admin.can('DATA_DELETE')"
           class="admin-form web-stack"
         >
-          <h3>Окончательное удаление</h3><label class="web-field">Удалить<select
+          <h3>Окончательное удаление</h3><p
+            v-if="!permanentDeletionAvailable"
+            class="web-notice"
+          >
+            Окончательное удаление недоступно: сервер пока не удаляет все версии и файлы схемы.
+            Предпросмотр показывает только текущие файлы.
+          </p><label class="web-field">Удалить<select
             v-model="deleteFormat"
             :disabled="locked"
             @change="deletionPreview = null"
@@ -641,7 +654,7 @@ useWebLiveRefresh(
               type="password"
               autocomplete="current-password"
               required
-              :disabled="busy"
+              :disabled="busy || !permanentDeletionAvailable"
             ></label><div class="admin-actions">
               <button
                 type="button"
@@ -652,7 +665,7 @@ useWebLiveRefresh(
                 Отмена
               </button><button
                 class="web-button web-button-danger"
-                :disabled="locked"
+                :disabled="locked || !permanentDeletionAvailable"
               >
                 Подтвердить удаление
               </button>

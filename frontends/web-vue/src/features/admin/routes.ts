@@ -1,46 +1,40 @@
 import type { RouteRecordRaw } from 'vue-router'
-import UsersPage from './UsersPage.vue'
-import DashboardPage from './DashboardPage.vue'
-import GroupsPage from './GroupsPage.vue'
-import SemestersPage from './SemestersPage.vue'
-import MapPage from './MapPage.vue'
-import AttendancePage from './AttendancePage.vue'
 
 export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/admin/dashboard',
     name: 'admin-dashboard',
-    component: DashboardPage,
+    component: () => import('./DashboardPage.vue'),
     meta: { label: 'Главная', requiredRoles: ['ADMIN'] },
   },
   {
     path: '/admin/users',
     name: 'admin-users',
-    component: UsersPage,
+    component: () => import('./UsersPage.vue'),
     meta: { label: 'Пользователи', requiredRoles: ['ADMIN'] },
   },
   {
     path: '/admin/groups',
     name: 'admin-groups',
-    component: GroupsPage,
+    component: () => import('./GroupsPage.vue'),
     meta: { label: 'Группы', requiredRoles: ['ADMIN'] },
   },
   {
     path: '/admin/semesters',
     name: 'admin-semesters',
-    component: SemestersPage,
+    component: () => import('./SemestersPage.vue'),
     meta: { label: 'Семестры', requiredRoles: ['ADMIN'] },
   },
   {
     path: '/admin/map',
     name: 'admin-map',
-    component: MapPage,
+    component: () => import('./MapPage.vue'),
     meta: { label: 'Карта', requiredRoles: ['ADMIN'] },
   },
   {
     path: '/admin/attendance',
     name: 'admin-attendance',
-    component: AttendancePage,
+    component: () => import('./AttendancePage.vue'),
     meta: { label: 'Посещаемость групп', requiredRoles: ['ADMIN'], navHidden: true },
   },
 ]

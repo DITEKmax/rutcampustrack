@@ -15,7 +15,7 @@ import type {
   AdminAccessCatalog,
   AdminAccessMode,
 } from '../../../../mobile-core/src/features/admin-access/admin-access-client';
-import { useAdmin, roleLabels, statusLabels } from './use-admin';
+import { useAdmin, bindAdminRecovery, roleLabels, statusLabels } from './use-admin';
 import AdminState from './AdminState.vue';
 import GroupPicker from './GroupPicker.vue';
 import PermissionFields from './PermissionFields.vue';
@@ -27,6 +27,7 @@ import './admin.pcss';
 const admin = useAdmin();
 const { loading, busy, error, notice, full } = admin;
 const users = new AdminUsersClient(admin.options);
+bindAdminRecovery(admin.options, 'users', users);
 const page = shallowRef<AdminUsersPage | null>(null);
 const selected = shallowRef<AdminUser | null>(null);
 const search = ref('');
@@ -51,8 +52,10 @@ const groupId = ref<number>();
 const catalog = shallowRef<AdminAccessCatalog | null>(null);
 const accessMode = ref<AdminAccessMode>('LIMITED'),
   permissions = ref<string[]>([]);
-const pending = ref(false),
-  childLocked = ref(false);
+const pending = ref(Boolean(users.failedIdentityOperation)),
+  accessLocked = ref(false),
+  credentialLocked = ref(false);
+const childLocked = computed(() => accessLocked.value || credentialLocked.value);
 const roleToUpdate = ref<'STUDENT' | 'TEACHER' | 'ADMIN'>('STUDENT');
 const targetStatus = ref<AdminRoleStatus>('ACTIVE');
 const targetGroupId = ref<number>(),
@@ -64,6 +67,7 @@ const archiveRecovery = ref(false);
 const initialReceipt = shallowRef<{ login: string; password: string } | null>(null);
 let loadRevision = 0;
 const locked = computed(() => busy.value || pending.value || childLocked.value);
+admin.guardUnfinished(() => locked.value);
 const canManage = computed(() => admin.can('USERS_MANAGE'));
 const canArchive = computed(() => admin.can('USERS_ARCHIVE'));
 const activeGrant = computed(() =>
@@ -341,6 +345,34 @@ async function recover() {
     notice.value = 'Операция восстановлена.';
   });
 }
+async function reconcileStoredArchive() {
+  await admin.run(
+    async () =>
+      identity(async () => {
+        const preview = archive.value;
+        if (!archiveRecovery.value || !preview) return;
+        try {
+          await users.reconcileIdentityOperation(
+            {
+              archivePreviewDigest: preview.previewDigest,
+              ...(password.value ? { password: password.value } : {}),
+            },
+            admin.signal,
+          );
+        } finally {
+          password.value = '';
+        }
+        admin.assertCurrent();
+        await users.resumeIdentityOperation();
+        admin.assertCurrent();
+        archiveRecovery.value = false;
+        archive.value = null;
+        await load();
+        notice.value = 'Архивация восстановлена и подтверждена.';
+      }),
+    'USERS_ARCHIVE',
+  );
+}
 function chooseRole() {
   targetStatus.value = activeGrant.value?.status ?? 'ACTIVE';
 }
@@ -361,7 +393,7 @@ onBeforeRouteLeave(() => {
 onMounted(() => admin.init('USERS_VIEW', () => load()));
 useWebLiveRefresh(
   () =>
-    admin.run(async () => {
+    admin.refresh(async () => {
       await admin.requirePermission('USERS_VIEW');
       await load(page.value?.number ?? 0);
     }),
@@ -688,14 +720,16 @@ useWebLiveRefresh(
           v-if="full"
           :key="`access-${selected.id}`"
           :user-id="selected.id"
-          @locked="childLocked = $event"
+          :inert="credentialLocked"
+          @locked="accessLocked = $event"
           @saved="admin.run(() => load(page?.number ?? 0))"
         />
         <UserCredentials
           v-if="admin.can('USER_CREDENTIALS_MANAGE')"
           :key="`credentials-${selected.id}`"
           :user="selected"
-          @locked="childLocked = $event"
+          :inert="accessLocked"
+          @locked="credentialLocked = $event"
         />
         <div
           v-if="canArchive"
@@ -718,7 +752,7 @@ useWebLiveRefresh(
           </button>
         </div>
         <form
-          v-if="archive"
+          v-if="archive && !archiveRecovery"
           class="admin-panel admin-form"
           @submit.prevent="archiveUser"
         >
@@ -753,6 +787,31 @@ useWebLiveRefresh(
         </form>
       </template>
     </section>
+    <form
+      v-if="archiveRecovery && archive"
+      class="admin-panel admin-form"
+      @submit.prevent="reconcileStoredArchive"
+    >
+      <h2>Восстановить архивацию пользователя {{ archive.userId }}?</h2><p>
+        Связанных групп: {{ archive.linkedGroupCount }}. Отметок:
+        {{ archive.attendanceMarksCount }}. Текущие роли и сессии будут отозваны, история
+        сохранится.
+      </p><label
+        v-if="archive.requiresPassword"
+        class="web-field"
+      >Твой пароль<input
+        v-model="password"
+        type="password"
+        autocomplete="current-password"
+        required
+        :disabled="busy"
+      ></label><button
+        class="web-button web-button-danger"
+        :disabled="busy"
+      >
+        Подтвердить восстановление архивации
+      </button>
+    </form>
     <div
       v-if="pending"
       class="web-notice"

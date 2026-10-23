@@ -63,7 +63,7 @@ const percent = (value: number | null) =>
   value === null ? 'Нет данных' : `${value.toLocaleString('ru-RU', { maximumFractionDigits: 2 })}%`;
 useWebLiveRefresh(
   () =>
-    admin.run(async () => {
+    admin.refresh(async () => {
       await admin.requirePermission('DASHBOARD_VIEW');
       await load(report.value?.page ?? 0);
     }),

@@ -85,7 +85,7 @@ onMounted(async () => {
   live.run(() =>
     useWebLiveRefresh(
       () =>
-        admin.run(async () => {
+        admin.refresh(async () => {
           await admin.requirePermission('DASHBOARD_VIEW');
           await load();
         }),

@@ -151,6 +151,7 @@ async function save() {
       semesterType: semesterType.value,
       academicYear: academicYear.value,
     };
+    let acknowledged = false;
     try {
       const value = selected.value
         ? await client.updateSemester(selected.value.id, input)
@@ -158,11 +159,13 @@ async function save() {
       admin.assertCurrent();
       selected.value = value;
       editing.value = false;
+      acknowledged = true;
       await load();
       notice.value = 'Семестр сохранён.';
     } catch (cause) {
       admin.assertCurrent();
-      if (!hasDefiniteRejection(cause)) uncertain.value = true;
+      if (!acknowledged && !(cause instanceof RangeError) && !hasDefiniteRejection(cause))
+        uncertain.value = true;
       throw cause;
     }
   }, 'SEMESTERS_MANAGE');
@@ -397,7 +400,7 @@ onMounted(() => {
 });
 useWebLiveRefresh(
   async () => {
-    await admin.run(async () => {
+    await admin.refresh(async () => {
       await admin.requirePermission('SEMESTERS_VIEW');
       await load();
     });

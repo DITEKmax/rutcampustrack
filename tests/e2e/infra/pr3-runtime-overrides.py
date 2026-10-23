@@ -92,6 +92,10 @@ def main():
     origins += [f"http://{host}:{port}" for host in ["127.0.0.1", "localhost"] for port in [14210, 14220, 14230, 14240]]
     origins = list(dict.fromkeys(origins))
     services.setdefault("api-gateway", {}).setdefault("environment", {})["SPRING_APPLICATION_JSON"] = json.dumps({"spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-origins": origins})
+    if "notification-web" in services:
+        # SockJS validates browser Origin independently from the Gateway REST CORS.
+        socket_origins = [f"http://{host}:{port}" for host in ["127.0.0.1", "localhost"] for port in [14210, 14220, 14230, 14240, 15175, 15176]]
+        services["notification-web"]["environment"]["NOTIFICATION_WS_ALLOWED_ORIGINS"] = ",".join(socket_origins)
     args.output.write_text(yaml.safe_dump({"services": services, "volumes": volumes}, sort_keys=False))
     print("Prepared disposable runtime override; credential values were not inspected.")
 

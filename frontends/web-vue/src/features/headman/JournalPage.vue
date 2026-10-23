@@ -24,6 +24,7 @@ import {
   weekStart,
 } from './context';
 import HeadmanPage from './HeadmanPage.vue';
+import JournalExport from './JournalExport.vue';
 
 const feature = useHeadmanFeature();
 const route = useRoute();
@@ -396,6 +397,16 @@ onMounted(load);
       class="web-notice"
       >В выбранном периоде пар нет.</p
     >
+    <JournalExport
+      :feature="feature"
+      :subject-id="subjectId"
+      :lesson-types="
+        type ? [type] : (subjects.find((subject) => subject.id === subjectId)?.lessonTypes ?? [])
+      "
+      :active="!!semester?.active"
+      :mode="mode"
+      :week-start="start"
+    />
     <section
       v-if="selected"
       ref="detail"

@@ -194,3 +194,31 @@
     --headman-name-width: 10rem;
   }
 }
+.headman-trend {
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+.headman-trend line {
+  stroke: var(--rct-color-border-default);
+}
+.headman-trend text {
+  fill: var(--rct-color-text-secondary);
+  font-family: inherit;
+  font-size: var(--rct-font-size-caption);
+}
+.headman-trend path {
+  fill: none;
+  stroke-width: 3;
+}
+.headman-trend-plus {
+  stroke: var(--rct-color-status-present-text);
+}
+.headman-trend-combined {
+  stroke: var(--rct-color-status-excused-text);
+  stroke-dasharray: 7 5;
+}
+.headman-trend-point {
+  fill: var(--rct-color-status-present-text);
+  cursor: pointer;
+}

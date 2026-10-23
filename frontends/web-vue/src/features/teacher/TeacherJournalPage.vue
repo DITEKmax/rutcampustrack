@@ -18,6 +18,7 @@ import TeacherRegion from './TeacherRegion.vue';
 import TeacherFilters from './TeacherFilters.vue';
 import TeacherNotice from './TeacherNotice.vue';
 import TeacherMark from './TeacherMark.vue';
+import { teacherAttendanceLabel } from './teacher-mark';
 import TeacherExcusePanel from './TeacherExcusePanel.vue';
 import TeacherExport from './TeacherExport.vue';
 
@@ -249,7 +250,7 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
                 <button
                   v-if="student.cells.find((cell) => cell.lessonId === lesson.id)?.ticketId"
                   class="teacher-cell-button"
-                  :aria-label="`Открыть заявку: ${student.displayName}, ${shortDate(lesson.date)}`"
+                  :aria-label="`Открыть заявку: ${student.displayName}, ${shortDate(lesson.date)}, ${teacherAttendanceLabel(student.cells.find(cell => cell.lessonId === lesson.id))}`"
                   @focus="
                     activeStudent = student.studentId;
                     activeLesson = lesson.id;

@@ -10,6 +10,7 @@ import { shortDate, useTeacherResource, useTeacherScope } from './teacher-state'
 import TeacherRegion from './TeacherRegion.vue';
 import TeacherNotice from './TeacherNotice.vue';
 import TeacherMark from './TeacherMark.vue';
+import { teacherAttendanceLabel } from './teacher-mark';
 import TeacherExcusePanel from './TeacherExcusePanel.vue';
 import TeacherExport from './TeacherExport.vue';
 
@@ -155,7 +156,7 @@ const exportRequest = computed(() => {
                   <button
                     v-if="student.ticketId"
                     class="teacher-cell-button"
-                    :aria-label="`Открыть заявку: ${student.displayName}`"
+                    :aria-label="`Открыть заявку: ${student.displayName}, ${teacherAttendanceLabel(student)}`"
                     @click="ticketId = student.ticketId"
                   >
                     <TeacherMark :cell="student" />

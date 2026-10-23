@@ -1,34 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { journalMark } from '../../../../mobile-core/src/features/teacher/teacher-journal-model';
+import { teacherAttendanceKind, teacherAttendanceLabel } from './teacher-mark';
 import type {
   TeacherJournalCell,
   TeacherRosterEntry,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
 const props = defineProps<{ cell?: TeacherJournalCell | TeacherRosterEntry | null | undefined }>();
-const kind = computed(() =>
-  journalMark(
-    props.cell
-      ? { ...props.cell, lessonId: 'lessonId' in props.cell ? props.cell.lessonId : 0 }
-      : null,
-  ),
-);
-const label = computed(
-  () =>
-    ({
-      present: 'Присутствовал',
-      excused: 'Уважительная причина',
-      absent: 'Отсутствовал',
-      none: 'Нет отметки',
-    })[kind.value ?? 'none'],
-);
+const kind = computed(() => teacherAttendanceKind(props.cell));
+const label = computed(() => teacherAttendanceLabel(props.cell));
 </script>
 <template>
   <span
     class="teacher-mark"
     :class="`teacher-mark-${kind ?? 'none'}`"
     :title="label"
-    :aria-label="`${label}${cell?.autoAbsent ? ', автоматически' : ''}${cell?.pendingTicket ? ', заявка на рассмотрении' : ''}`"
+    :aria-label="label"
   >
     {{ kind === 'present' ? '+' : kind === 'excused' ? 'у' : kind === 'absent' ? 'н' : '—' }}
     <span

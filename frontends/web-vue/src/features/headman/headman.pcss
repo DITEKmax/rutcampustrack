@@ -246,3 +246,36 @@
 .headman-page .web-button {
   align-self: start;
 }
+.headman-schedule {
+  --headman-day-width: 12rem;
+  min-inline-size: calc(var(--headman-day-width) * 6 + 7rem);
+  table-layout: fixed;
+}
+.headman-schedule th:first-child {
+  inline-size: 7rem;
+}
+.headman-schedule td {
+  vertical-align: top;
+}
+.headman-slot {
+  display: grid;
+  gap: var(--rct-space-1);
+  padding: var(--rct-space-3);
+  min-block-size: var(--rct-control-height);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-primary);
+  font: inherit;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.headman-slot span {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+.headman-slot-free {
+  border-style: dashed;
+  background: var(--rct-color-state-success-bg);
+  color: var(--rct-color-state-success-text);
+}

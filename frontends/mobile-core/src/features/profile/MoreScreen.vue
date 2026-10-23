@@ -21,7 +21,6 @@ const props = withDefaults(
     onNavigate: undefined,
     assistantEnabled: false,
     mapEnabled: false,
-    theme: 'dark',
     onNotifications: undefined,
     unreadCount: null,
   },

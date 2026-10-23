@@ -58,7 +58,6 @@ const props = withDefaults(
     theme?: 'dark' | 'light';
   }>(),
   {
-    theme: 'dark',
     reportDownload: null,
     accessClient: null,
     authority: null,

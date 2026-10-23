@@ -64,7 +64,6 @@ const props = withDefaults(
     focusedLessonId: null,
     requestLessonId: null,
     requestOptionId: null,
-    theme: 'dark',
     terminal: false,
     showDock: false,
   },

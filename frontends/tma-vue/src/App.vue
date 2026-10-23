@@ -1469,6 +1469,7 @@ onBeforeUnmount(() => {
     />
   </Teleport>
   <RoleSwitchScreen
+    :theme="resolvedTheme"
     v-if="authView === 'role' && profile"
     :snapshot="profile"
     :pending-role="pendingRole"
@@ -1735,6 +1736,7 @@ onBeforeUnmount(() => {
     @back="closeAdminRoleSwitch"
   >
     <RoleSwitchScreen
+      :theme="resolvedTheme"
       compact
       :snapshot="profile"
       :pending-role="pendingRole"

@@ -19,7 +19,7 @@ import {
 const props = withDefaults(
   defineProps<{
     state: StatisticsReadState<StatisticsSubjectDetailData>;
-    theme?: StatisticsTheme;
+    theme?: StatisticsTheme | undefined;
     range?: StatisticsGraphRange;
     semesterStartsOn?: string;
     semesterEndsOn?: string;
@@ -28,7 +28,6 @@ const props = withDefaults(
   {
     semesterStartsOn: '',
     semesterEndsOn: '',
-    theme: 'dark',
     range: 'weeks',
     terminal: false,
   },

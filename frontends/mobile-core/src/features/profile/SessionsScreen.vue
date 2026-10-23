@@ -36,7 +36,6 @@ const props = withDefaults(
     onBack: undefined,
     onRetry: undefined,
     onLogoutAll: undefined,
-    theme: 'dark',
   },
 );
 

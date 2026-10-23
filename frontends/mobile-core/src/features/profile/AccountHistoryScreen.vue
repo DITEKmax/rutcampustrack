@@ -28,7 +28,6 @@ const props = withDefaults(
     onBack: undefined,
     onRetry: undefined,
     onLoadMore: undefined,
-    theme: 'dark',
   },
 );
 

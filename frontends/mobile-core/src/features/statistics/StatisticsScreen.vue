@@ -38,7 +38,6 @@ const props = withDefaults(
     selectedSubjectId: null,
     detailState: null,
     range: 'weeks',
-    theme: 'dark',
     terminal: false,
     showDock: false,
     rankingVisible: false,

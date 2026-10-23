@@ -41,7 +41,6 @@ const props = withDefaults(
     onRecover: undefined,
     recoveryLabel: 'Не помню текущий пароль',
     onChangePassword: undefined,
-    theme: 'dark',
     ownerKey: null,
   },
 );

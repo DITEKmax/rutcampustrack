@@ -2348,6 +2348,7 @@ onBeforeUnmount(() => {
     @proof-consumed="clearDirectPasswordResetProof"
   />
   <RoleSwitchScreen
+    :theme="resolvedTheme"
     v-else-if="authView === 'role'"
     :snapshot="authSnapshot"
     :pending-role="pendingRole"
@@ -2614,6 +2615,7 @@ onBeforeUnmount(() => {
     @back="closeAdminRoleSwitch"
   >
     <RoleSwitchScreen
+      :theme="resolvedTheme"
       compact
       :snapshot="authSnapshot"
       :pending-role="pendingRole"

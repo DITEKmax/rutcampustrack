@@ -45,7 +45,6 @@ const props = withDefaults(
     logoutBusy: false,
     showActiveRole: true,
     showRoleSwitch: true,
-    theme: 'dark',
   },
 );
 

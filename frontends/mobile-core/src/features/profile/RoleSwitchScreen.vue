@@ -36,7 +36,6 @@ const props = withDefaults(
     onBack: undefined,
     onSelectRole: undefined,
     compact: false,
-    theme: 'dark',
   },
 );
 

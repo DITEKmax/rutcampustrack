@@ -21,6 +21,8 @@ import {
   lessonTypes,
   lessonTypeCode,
   markLabels,
+  sourceLabel,
+  actionLabel,
   markSymbols,
   today,
   useHeadmanFeature,
@@ -465,7 +467,7 @@ useWebLiveRefresh(load, {
       >
       <p
         >{{ subjectName(selected.lesson.subjectId) }} · {{ markLabels[selected.entry.status]
-        }}{{ selected.entry.source ? ` · ${selected.entry.source}` : '' }}</p
+        }}{{ selected.entry.source ? ` · ${sourceLabel(selected.entry.source)}` : '' }}</p
       >
       <p
         v-if="selected.entry.approvedTicket"
@@ -573,7 +575,7 @@ useWebLiveRefresh(load, {
           v-for="action in audit"
           :key="action.id"
           ><time>{{ new Date(action.occurredAt).toLocaleString('ru-RU') }}</time> ·
-          {{ action.actor?.displayName ?? 'Система' }} · {{ action.action }} ·
+          {{ action.actor?.displayName ?? 'Система' }} · {{ actionLabel(action.action) }} ·
           {{ action.outcome === 'APPLIED' ? 'Применено' : 'Отклонено'
           }}<span v-if="action.student"> · {{ action.student.displayName }}</span
           ><p v-if="action.errorCode">{{ action.errorCode }}</p

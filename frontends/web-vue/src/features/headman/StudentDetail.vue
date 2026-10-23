@@ -2,7 +2,7 @@
 import { onMounted, ref, shallowRef, watch } from 'vue';
 import { message } from '../../auth/session';
 import type { HeadmanFeature } from './context';
-import { dateLabel, lessonTypes, markLabels } from './context';
+import { dateLabel, lessonTypes, markLabels, sourceLabel } from './context';
 import type {
   HeadmanStatsStudentDetailResponse,
   HeadmanStatsTrendResponse,
@@ -156,7 +156,7 @@ onMounted(load);
                 {{ lesson.lessonNumber }}</td
               ><td>{{ markLabels[lesson.status ?? 'EMPTY'] }}</td
               ><td
-                >{{ lesson.source ?? '—'
+                >{{ sourceLabel(lesson.source)
                 }}<RouterLink
                   v-if="lesson.approvedTicket"
                   :to="{ name: 'headman-requests', query: { request: lesson.approvedTicket.id } }"

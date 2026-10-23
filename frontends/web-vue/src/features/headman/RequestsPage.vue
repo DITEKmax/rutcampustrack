@@ -17,7 +17,14 @@ import {
   type FrozenRequestDecision,
 } from '../../../../mobile-core/src/features/headman-requests/request-decision';
 import HeadmanPage from './HeadmanPage.vue';
-import { useHeadmanFeature, dateLabel, lessonTypes, markLabels, saveBlob } from './context';
+import {
+  useHeadmanFeature,
+  dateLabel,
+  lessonTypes,
+  markLabels,
+  reasonLabel,
+  saveBlob,
+} from './context';
 const feature = useHeadmanFeature(),
   route = useRoute();
 const loading = ref(false),
@@ -252,7 +259,7 @@ useWebLiveRefresh(load, {
             ><th scope="row">{{ request.studentName }}</th
             ><td
               >{{ request.kind === 'EXCUSE' ? 'Уважительная причина' : 'Апелляция отметки'
-              }}<p>{{ request.reason }}</p></td
+              }}<p>{{ reasonLabel(request.reason) }}</p></td
             ><td>{{ dateLabel(request.coverageStart) }} — {{ dateLabel(request.coverageEnd) }}</td
             ><td
               >{{ request.lessonCount
@@ -306,7 +313,7 @@ useWebLiveRefresh(load, {
           @click="detail = null"
           >Закрыть</button
         ></div
-      ><p>{{ detail.summary.reason }}</p
+      ><p>{{ reasonLabel(detail.summary.reason) }}</p
       ><p v-if="detail.summary.comment">{{ detail.summary.comment }}</p
       ><p v-if="detail.summary.decisionComment">Решение: {{ detail.summary.decisionComment }}</p
       ><p class="headman-muted"

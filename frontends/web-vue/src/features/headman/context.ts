@@ -137,6 +137,50 @@ export const markSymbols: Readonly<Record<string, string>> = {
   CANCELLED: '×',
   UNSUPPORTED: '?',
 }
+export function sourceLabel(value: string | null | undefined) {
+  const labels: Readonly<Record<string, string>> = {
+    STUDENT_GEO: 'Геоотметка',
+    HEADMAN: 'Староста',
+    AUTO_SCHEDULER: 'Автоматически',
+    LATE_CHECKIN: 'Апелляция',
+    HEADMAN_EXCUSE: 'Уважительная причина',
+  }
+  return value ? (labels[value.toUpperCase()] ?? 'Другой источник') : '—'
+}
+export function reasonLabel(value: string | null | undefined) {
+  const labels: Readonly<Record<string, string>> = {
+    ILLNESS: 'Болезнь',
+    MEDICAL_EXAMINATION: 'Медосмотр',
+    COMPETITION_PARTICIPATION: 'Соревнование',
+    FAMILY_CIRCUMSTANCES: 'Семейные обстоятельства',
+    SUMMONS: 'Повестка',
+    UNIVERSITY_ORDER: 'Приказ университета',
+    EXEMPTION: 'Освобождение',
+    OTHER: 'Другое',
+  }
+  return value ? (labels[value] ?? value) : '—'
+}
+export function actionLabel(value: string) {
+  const labels: Readonly<Record<string, string>> = {
+    ATTENDANCE_SET: 'Отметка изменена',
+    ATTENDANCE_CLEARED: 'Отметка снята',
+    GEO_ATTEMPT: 'Попытка геоотметки',
+    AUTO_ABSENT: 'Автоматическая отметка «н»',
+    REQUEST_SUBMITTED: 'Заявка подана',
+    REQUEST_DECIDED: 'По заявке принято решение',
+    REQUEST_CANCELLED: 'Заявка отозвана',
+    ROOM_CHANGED: 'Аудитория изменена',
+    LESSON_CREATED: 'Пара создана',
+    LESSON_EDITED: 'Пара изменена',
+    LESSON_CANCELLED: 'Пара отменена',
+    LESSON_RESTORED: 'Пара восстановлена',
+    LESSON_TRANSFERRED: 'Пара перенесена',
+    HOMEWORK_CREATED: 'Выдано домашнее задание',
+    HOMEWORK_EDITED: 'Домашнее задание изменено',
+    HOMEWORK_ARCHIVED: 'Домашнее задание в архиве',
+  }
+  return labels[value] ?? `Другое действие (${value})`
+}
 export function saveBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')

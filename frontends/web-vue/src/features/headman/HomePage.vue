@@ -14,6 +14,8 @@ import {
   lessonTypes,
   lessonTypeCode,
   markLabels,
+  sourceLabel,
+  actionLabel,
   today,
   useHeadmanFeature,
 } from './context';
@@ -139,7 +141,7 @@ useWebLiveRefresh(() => load(true), { blocked: () => loading.value });
                 v-for="entry in report.entries"
                 :key="entry.userId"
                 ><th scope="row">{{ entry.displayName }}</th
-                ><td>{{ markLabels[entry.status] }} · {{ entry.source ?? '—' }}</td
+                ><td>{{ markLabels[entry.status] }} · {{ sourceLabel(entry.source) }}</td
                 ><td
                   ><RouterLink
                     class="web-button"
@@ -161,7 +163,7 @@ useWebLiveRefresh(() => load(true), { blocked: () => loading.value });
             v-for="action in audit?.items"
             :key="action.id"
             >{{ new Date(action.occurredAt).toLocaleTimeString('ru-RU') }} ·
-            {{ action.actor?.displayName ?? 'Система' }} · {{ action.action }} ·
+            {{ action.actor?.displayName ?? 'Система' }} · {{ actionLabel(action.action) }} ·
             {{ action.outcome === 'APPLIED' ? 'Применено' : 'Отклонено' }}</li
           ></ol
         ><p v-if="!audit?.items.length">Действий пока нет.</p

@@ -6,7 +6,7 @@ Runtime ceiling root +6 children; no hidden coordinator or CLI orchestrator.
 | Owner | Scope | State | Checkout/resources |
 |---|---|---|---|
 | root | coordination, common docs, branch Git delivery | active | GitHub connector only |
-| api_inventory | read-only API/story inventory; sole SCREEN-ACTION-MAP.csv writer until handoff | map delivery | GitHub connector only |
+| api_inventory | API/story inventory + assigned CSV delivered; ownership returned to root | completed/released | no processes |
 | theme_analysis | theme foundation + device-preferences contract research | completed, no product writes | GitHub connector only |
 
 All child requests use gpt-6.1-sol/high; owner permits discretionary future
@@ -23,7 +23,7 @@ worktree isolation; assign namespace/ports/DB/topics/volumes before dev startup.
 Future ownership to assign before writes: web foundation/auth/shell/routes/API
 bootstrap/configs/lockfile one owner; neutral font/token/mixin/theme/mobile App
 integration one owner; generated/backend device contract one owner; role feature
-paths separate. Root common docs except explicit temporary map handoff above.
+paths separate. Root owns all current docs including delivered map. No active child writers.
 
 Do not use ordinary compose fixed container_name for parallel stands.
 Prefer existing isolated synthetic standalone harness after inspecting actual

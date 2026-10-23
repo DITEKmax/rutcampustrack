@@ -135,7 +135,7 @@ async function capture(options) {
         await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
         sourceCheck(plan);
         const image = pngInfo(file);
-        const layout = await page.evaluate(() => ({ horizontalOverflow: document.documentElement.scrollWidth > innerWidth, resolvedColorScheme: getComputedStyle(document.documentElement).colorScheme }));
+        const layout = await page.evaluate(() => ({ horizontalOverflow: document.documentElement.scrollWidth > innerWidth, rootFontSize: getComputedStyle(document.documentElement).fontSize, resolvedColorScheme: getComputedStyle(document.documentElement).colorScheme }));
         Object.assign(entry, image, layout, { width: scenario.width, imageWidth: image.width, viewportHeight: scenario.height || 1000, imageHeight: image.height, screenshot: relative, status: 'captured', provenance: 'real-runtime', capturedAt: new Date().toISOString(), url: page.url(), http, javascriptErrors: errors });
         delete entry.height;
       } catch (error) {

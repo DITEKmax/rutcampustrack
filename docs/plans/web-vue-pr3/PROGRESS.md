@@ -35,6 +35,12 @@ auth/generated/backend contracts — backend_device, common docs — root.
 runtime обеих тем/адаптива, затем расширение ролей. Owner screen approval не
 требуется. Angular сохраняется до полной функциональной замены.
 
+Ранний shared foundation patch4c020f332 интегрирован как bf0ad0a02;
+независимое review в работе, общая тема ещё не принята. Harness0c1d6045f
+интегрирован0f6638c10. Реальный API-путь homework populated read → completion
+write/readback → undo/readback PASS на extended stand; это backend evidence,
+новый web flow ещё не подтверждён и counts не увеличены.
+
 ## Проверено / ограничения
 
 Figma actual context+screenshot, GitHub MCP+gh/API+Git fetch, shell/JDK/Gradle/
@@ -47,6 +53,9 @@ ACT-ADMIN-GROUP-FINAL-DELETE и ACT-ADMIN-REGENERATE-PASSWORD остаются �
 API implementation gaps. Не исключать их из117. Candidate дополнительной
 разовой правки пары не разрешает новые поля без существенного решения.
 Три Q-PROD решения сохранены; новых продуктовых вопросов пока нет.
+Q-ENV-002: original Figma asset downloads с www.figma.com блокирует proxy
+CONNECT403; владельцу отправлен точный запрос на разрешение host. Независимая
+работа продолжается, assets не подменяются screenshots.
 
 Runtime HTML-галерея новой web реализации ещё не создана; reference PNG не
 выдаётся за runtime. Actual локальные проверки первого пакета ещё ожидаются.

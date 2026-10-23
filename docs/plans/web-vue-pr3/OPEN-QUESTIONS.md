@@ -42,6 +42,23 @@ Evidence: `/workspace/rct-pr3-setup/archive-check/report.md` и
 [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md).
 Ответа владельца не требуется; это проверка входных данных, не новая реализация.
 
+## Q-ENV-002 — скачивание оригинальных Figma assets
+
+**Тип:** техническая зависимость. **Статус:** waiting for owner network policy.
+Figma MCP реально возвращает design context/screenshot, но `curl` временного
+original asset URL через наследуемый proxy с разрешённой network sandbox
+получает `CONNECT tunnel failed, response 403`. Файл политики restricted не
+содержит `www.figma.com`. `download_assets` для исходного auth background также
+возвращает URL того же host; доступного альтернативного source URL не выдал.
+
+Владельцу отправлен вопрос: разрешить HTTPS `www.figma.com` в используемой
+облачной среде. Затронуты original auth background и следующие PNG/SVG assets;
+API/shell/theme/другие экраны продолжаются. Screenshot/crop не подменяет
+оригинальный asset; CONNECT policy не обходится direct network/отключением TLS.
+После ответа/публикации — повторить один bounded source download и сохранить
+локальный файл. Текст вопроса/положительный ответ сами по себе не доказывают
+применённый доступ.
+
 ## Q-PROD-001 — настройки каналов уведомлений в web
 
 **Статус:** RESOLVED — web preferences UI исключён решением владельца.

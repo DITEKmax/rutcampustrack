@@ -87,6 +87,7 @@ async function action(page, step) {
   if (step.type === 'goto') await page.goto(step.url, { waitUntil: 'domcontentloaded' });
   else if (step.type === 'fill') await target.fill(step.value);
   else if (step.type === 'click') await target.click();
+  else if (step.type === 'hover') await target.hover();
   else if (step.type === 'select') await target.selectOption(step.value);
   else if (step.type === 'check') await target.setChecked(step.checked);
   else if (step.type === 'wait') await target.waitFor({ state: step.state || 'visible' });

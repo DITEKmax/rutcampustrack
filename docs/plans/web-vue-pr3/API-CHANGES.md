@@ -55,3 +55,47 @@ Browser evidence: `/workspace/rct-pr3-runtime/theme-api-smoke-20261024.log` and
 `/workspace/rct-worktrees/theme-foundation/.agent/evidence/pr3-theme/20261024/`.
 HTTP Secure-cookie readback uses the browser page fetch; a separate APIRequestContext
 is not equivalent to the application cookie behavior. No cookie flag was relaxed.
+
+## API-002 — administrator credential generation/readback
+
+Status: source52eb8520 integrated after independent backend PASS. New web
+consumer is in progress; ACT-ADMIN-REGENERATE-PASSWORD not counted complete.
+Real Auth/PostgreSQL HTTP6 + shared Headman regression4 + Authfilter9 + OpenAPI
+snapshot/schema/types PASS. Production migration/deployment not performed.
+
+Adds GET /api/auth/admin/users/{userId}/initial-password (audited permitted
+readback/disclosure) and POST /api/auth/admin/users/{userId}/generated-password.
+Existing password-reset-link route is unchanged. POST requires
+{expectedCredentialsVersion:positive canonical decimal string}. Both return
+{userId,credentialsVersion,state:GENERATED|USER_CHANGED|UNAVAILABLE,
+origin:initial|headman_reset|admin_reset|null,password:string|null}, no-store;
+only GENERATED discloses generated material. Own changed password is never read.
+
+Live ADMIN + USER_CREDENTIALS_MANAGE and AuthAdminAccess rules are preserved:
+FULL can target active ADMIN including self; LIMITED cannot target active ADMIN.
+Missing404 CREDENTIAL_TARGET_NOT_FOUND, fenced/archived409 CREDENTIAL_TARGET_UNAVAILABLE,
+stale version409 CREDENTIAL_VERSION_CONFLICT, invalid400 INVALID_REQUEST,
+authority/commit503. RFC9457 codes normalize existing flat code and extras.code.
+Identity/session locks remain held through commit; secure generation and one
+shared mutation retain hash/CAS/reset-ticket invalidation/all-session revocation,
+audit and outbox atomicity. No secret/hash in event/audit/log/error payload.
+
+Unknown POST result must be read back before any further decision; never blindly
+regenerate with a fresh version. Same version cannot rotate twice. Successful
+self target revokes the actor too; UI must warn and show returned material only
+in volatile memory. Unknown self result requires fresh permitted administrator
+or existing recovery; an old bearer cannot read back after session revocation.
+
+Compatibility: additive endpoint + Auth FlywayV16 enum check extension admin_reset;
+existing endpoints and historical Academic migrations unchanged. Shared Headman
+reader/mutation extracted; relevant lifecycle/rollback/concurrentCAS regressions
+PASS. PWA/TMA manual origin decoder and caption now accept admin_reset (web owner
+compatibility commits integrated); generated Auth types come from backend owner.
+No new web operation is silently ported into mobile navigation.
+
+[Independent review](../../validation/web-vue-pr3/review/admin-generation-REVIEW-52eb8520.md)
+records source acceptance and UI/runtime limits. Original summary and checks:
+`/tmp/admin-generated-password-summary-20261024.md`,
+`/tmp/admin-generated-password-checks-20261024.json`. Final source-matched AuthJAR
+SHA256 3f8d9d0e9ea3bd944b774c2a05246df9b3a35caa2d19aae8b8570aba68c5dc05;
+stand rollout remains runtime-owner coordinated, not proof of web UI completion.

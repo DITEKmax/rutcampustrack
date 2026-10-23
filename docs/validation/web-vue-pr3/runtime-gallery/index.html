@@ -1,0 +1,320 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>PR3 · Runtime gallery</title><style>body{font:16px system-ui;margin:0;background:#101216;color:#e5e7eb}main{max-width:1400px;margin:auto;padding:24px}h1{margin-bottom:8px}h2{font-size:20px}p,li{line-height:1.5}a{color:#8cbcff}code,pre{overflow-wrap:anywhere;white-space:pre-wrap}input{font:inherit;width:min(90%,600px);padding:12px;border:1px solid #677080;border-radius:8px;background:#1a1e26;color:inherit}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;margin-top:24px}article{background:#1a1e26;border:1px solid #353c49;border-radius:12px;padding:18px;min-width:0}article img{display:block;width:100%;height:auto;max-height:700px;object-fit:contain;object-position:top;border:1px solid #353c49}.tag{font-size:13px;border:1px solid #8291a5;padding:3px 8px;border-radius:5px}.blocked,.reason{color:#ffc280}.unknown{color:#c9cdd5}details{margin-top:12px}pre{font-size:12px}small{display:block}article[hidden]{display:none}</style><main><h1>PR3 · Runtime gallery</h1><p>Снято в реальном синтетическом стенде. Captured означает сохранённый снимок; это не утверждение о полной продуктовой или визуальной приёмке. Unknown/blocked не считаются успешными.</p><p>20/20 снимков · 2026-10-23T22:35:16.902Z · <a href="manifest.json" download>Manifest JSON</a></p><p>Frontend revision: <code>cab5b8a2f9149cf9da22da0d411bf37739dd9746</code><br>Backend revision: <code>df81d17fa5dc311fa4c4cc7fd9352c2b3aed8999</code><br>Real backend scope: API Gateway, Auth, Academic, Schedule, Postgres, Redis, RabbitMQ, Mobile BFF, Attendance, Notification, MongoDB replica set</p><ul><li>Scope: actual web password login and STUDENT Homework only; no other screen acceptance is claimed.</li><li>Auth canonical background asset remains blocked by environment access (Q-ENV-002); this gallery records the actual implementation with that visual gap.</li><li>Today and notification unread-count HTTP200 verified. Renderer/export services and external providers are outside this minimal runtime scope.</li></ul><label>Поиск по экрану, состоянию, теме, ширине и статусу<br><input id="filter" type="search" placeholder="Например: homework dark 1440"></label><div class="grid"><article data-search="web-auth-password/default/dark/1440 вход · dark captured"><header><span class="tag captured">captured</span><h2>Вход · dark</h2><code>WEB-AUTH-PASSWORD/default/dark/1440</code></header><p>Реальная форма входа до ввода данных, тема выбрана через интерфейс.</p><a href="screenshots/WEB-AUTH-PASSWORD__default__dark__1440.png"><img loading="lazy" src="screenshots/WEB-AUTH-PASSWORD__default__dark__1440.png" width="1440" height="1000" alt="Вход · dark"></a><p>2026-10-23T22:35:17.941Z · 1440×1000 · <a href="screenshots/WEB-AUTH-PASSWORD__default__dark__1440.png" download>PNG</a></p><ul><li>Канонический фоновый asset отсутствует: Q-ENV-002.</li></ul><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/login&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;path&quot;: &quot;/api/auth/refresh&quot;,
+      &quot;status&quot;: 401
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-auth-password/default/light/1440 вход · light captured"><header><span class="tag captured">captured</span><h2>Вход · light</h2><code>WEB-AUTH-PASSWORD/default/light/1440</code></header><p>Реальная форма входа до ввода данных, тема выбрана через интерфейс.</p><a href="screenshots/WEB-AUTH-PASSWORD__default__light__1440.png"><img loading="lazy" src="screenshots/WEB-AUTH-PASSWORD__default__light__1440.png" width="1440" height="1000" alt="Вход · light"></a><p>2026-10-23T22:35:18.418Z · 1440×1000 · <a href="screenshots/WEB-AUTH-PASSWORD__default__light__1440.png" download>PNG</a></p><ul><li>Канонический фоновый asset отсутствует: Q-ENV-002.</li></ul><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/login&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;path&quot;: &quot;/api/auth/refresh&quot;,
+      &quot;status&quot;: 401
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/1440 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/1440</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1440.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1440.png" width="1440" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:20.024Z · 1440×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1440.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;path&quot;: &quot;/api/auth/refresh&quot;,
+      &quot;status&quot;: 401
+    },
+    {
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;path&quot;: &quot;/api/auth/login&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/session&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;path&quot;: &quot;/api/auth/refresh&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/session&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/v1/student/homework&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/v1/student/homework&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;PUT&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/1920 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/1920</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1920.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1920.png" width="1920" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:20.360Z · 1920×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1920.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/1280 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/1280</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1280.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1280.png" width="1280" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:20.682Z · 1280×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1280.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/1024 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/1024</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1024.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1024.png" width="1024" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:21.011Z · 1024×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1024.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/768 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/768</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__768.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__768.png" width="768" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:21.326Z · 768×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__768.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/600 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/600</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__600.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__600.png" width="600" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:21.639Z · 600×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__600.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/425 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/425</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__425.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__425.png" width="425" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:21.957Z · 425×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__425.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/dark/300 домашнее задание · неделя · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · dark</h2><code>WEB-STUDENT-HOMEWORK/populated-week/dark/300</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__300.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__300.png" width="300" height="1000" alt="Домашнее задание · неделя · dark"></a><p>2026-10-23T22:35:22.246Z · 300×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__300.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/1440 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/1440</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1440.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1440.png" width="1440" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:22.602Z · 1440×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1440.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;PUT&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/1920 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/1920</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1920.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1920.png" width="1920" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:22.919Z · 1920×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1920.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/1280 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/1280</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1280.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1280.png" width="1280" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:23.213Z · 1280×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1280.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/1024 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/1024</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1024.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1024.png" width="1024" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:23.521Z · 1024×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1024.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/768 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/768</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__768.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__768.png" width="768" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:23.817Z · 768×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__768.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/600 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/600</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__600.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__600.png" width="600" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:24.099Z · 600×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__600.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/425 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/425</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__425.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__425.png" width="425" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:24.381Z · 425×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__425.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/populated-week/light/300 домашнее задание · неделя · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · неделя · light</h2><code>WEB-STUDENT-HOMEWORK/populated-week/light/300</code></header><p>Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__300.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__300.png" width="300" height="1000" alt="Домашнее задание · неделя · light"></a><p>2026-10-23T22:35:24.686Z · 300×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__300.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/completed-week/dark/1440 домашнее задание · выполнено · dark captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · выполнено · dark</h2><code>WEB-STUDENT-HOMEWORK/completed-week/dark/1440</code></header><p>Личная отметка выполнения установлена настоящим PUT200; после съёмки снимается, сессия отзывается через UI.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__completed-week__dark__1440.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__completed-week__dark__1440.png" width="1440" height="1000" alt="Домашнее задание · выполнено · dark"></a><p>2026-10-23T22:35:25.242Z · 1440×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__completed-week__dark__1440.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;PUT&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;PUT&quot;,
+      &quot;path&quot;: &quot;/api/v1/student/homework/1/completion&quot;,
+      &quot;status&quot;: 200
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article>
+<article data-search="web-student-homework/completed-week/light/1440 домашнее задание · выполнено · light captured"><header><span class="tag captured">captured</span><h2>Домашнее задание · выполнено · light</h2><code>WEB-STUDENT-HOMEWORK/completed-week/light/1440</code></header><p>Личная отметка выполнения установлена настоящим PUT200; после съёмки снимается, сессия отзывается через UI.</p><a href="screenshots/WEB-STUDENT-HOMEWORK__completed-week__light__1440.png"><img loading="lazy" src="screenshots/WEB-STUDENT-HOMEWORK__completed-week__light__1440.png" width="1440" height="1000" alt="Домашнее задание · выполнено · light"></a><p>2026-10-23T22:35:25.560Z · 1440×1000 · <a href="screenshots/WEB-STUDENT-HOMEWORK__completed-week__light__1440.png" download>PNG</a></p><details><summary>Runtime evidence</summary><pre>{
+  &quot;sourceRevision&quot;: &quot;cab5b8a2f9149cf9da22da0d411bf37739dd9746&quot;,
+  &quot;url&quot;: &quot;http://127.0.0.1:14210/student/homework&quot;,
+  &quot;http&quot;: [
+    {
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;PUT&quot;,
+      &quot;path&quot;: &quot;/api/auth/device-preferences&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;PUT&quot;,
+      &quot;path&quot;: &quot;/api/v1/student/homework/1/completion&quot;,
+      &quot;status&quot;: 200
+    },
+    {
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;path&quot;: &quot;/api/auth/logout&quot;,
+      &quot;status&quot;: 204
+    }
+  ],
+  &quot;javascriptErrors&quot;: []
+}</pre></details></article></div><p>Открой index.html локально рядом с manifest.json и папкой screenshots. Изображения отдельные; публикация сайта не требуется.</p></main><script>document.querySelector('#filter').addEventListener('input',event=>{const terms=event.target.value.toLowerCase().split(/\s+/).filter(Boolean);for(const card of document.querySelectorAll('article'))card.hidden=!terms.every(term=>card.dataset.search.includes(term));});</script></html>

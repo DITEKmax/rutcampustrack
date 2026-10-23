@@ -103,7 +103,8 @@ h3 {
 }
 .web-button-primary,
 .web-button-primary:hover:not(:disabled),
-.router-link-active.web-button {
+.router-link-active.web-button,
+.router-link-active.web-button:hover:not(:disabled) {
   background: var(--color-surface-inverse);
   border-color: var(--color-surface-inverse);
   color: var(--color-text-on-inverse);
@@ -112,6 +113,11 @@ h3 {
   background: var(--color-accent-now);
   color: var(--color-accent-on-now);
   border-color: var(--color-accent-now);
+}
+.web-button-selected:hover:not(:disabled) {
+  background: var(--color-accent-now-hover);
+  border-color: var(--color-accent-now-hover);
+  color: var(--color-accent-on-now);
 }
 .web-error {
   color: var(--color-state-danger-text);

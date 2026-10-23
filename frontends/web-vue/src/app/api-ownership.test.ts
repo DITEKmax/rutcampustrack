@@ -119,4 +119,43 @@ describe('web API request ownership', () => {
     expect(refreshed).toBe(true)
     expect(completed).toBe(true)
   })
+
+  it('keeps a late previous-account read out of the current visible state', async () => {
+    let releaseRead!: (response: Response) => void
+    const heldRead = new Promise<Response>((resolve) => {
+      releaseRead = resolve
+    })
+    let currentUser: '42' | '43' = '42'
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input)
+      if (path.endsWith('/login')) {
+        const login = (JSON.parse(String(init?.body)) as { login: string }).login
+        currentUser = login === 'anna' ? '42' : '43'
+        return Response.json({ accessToken: `token-${currentUser}` })
+      }
+      if (path.endsWith('/logout')) return new Response(null, { status: 204 })
+      if (path.endsWith('/session')) return Response.json(snapshot(currentUser))
+      if (path === '/api/academic/users/me') return heldRead
+      throw new Error(`Unexpected request: ${path}`)
+    })
+    const { webSession } = await import('../auth/session')
+    const { createWebTransport, WebAuthorityChangedError } = await import('./api')
+    await webSession.login('anna', 'password')
+    const transport = createWebTransport()
+    let visibleProfile: unknown = null
+    const reading = transport
+      .fetcher('/api/academic/users/me')
+      .then(async (response) => {
+        const profile: unknown = await response.json()
+        transport.assertCurrent()
+        visibleProfile = profile
+      })
+      .catch((error) => error as unknown)
+    await webSession.logout()
+    await webSession.login('boris', 'password')
+    releaseRead(Response.json({ userId: '42', displayName: 'Анна' }))
+    expect(await reading).toBeInstanceOf(WebAuthorityChangedError)
+    expect(webSession.snapshot.value?.userId).toBe('43')
+    expect(visibleProfile).toBeNull()
+  })
 })

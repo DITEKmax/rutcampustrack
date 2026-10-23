@@ -8,30 +8,48 @@ export class WebAuthorityChangedError extends Error {
   }
 }
 
-/** One admitted feature instance owns every initial request and token-refresh retry. */
-export function createStudentApi(): StudentApi {
-  const owner = webSession.identity.value
-  const assertOwner = () => {
-    if (webSession.identity.value !== owner) throw new WebAuthorityChangedError()
-  }
-  return new StudentApi({
-    accessToken: () => {
-      assertOwner()
-      return webSession.accessToken()
-    },
-    onUnauthorized: async () => {
-      assertOwner()
-      await webSession.refresh()
-      assertOwner()
-    },
-  })
+export interface WebTransport {
+  fetcher: typeof fetch
+  accessToken(): string | null
+  onUnauthorized(): Promise<void>
+  assertCurrent(): void
 }
 
-/** Shared transport for role adapters; caller owns decoding and mutation reconciliation. */
-export async function webFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const headers = new Headers(init.headers)
-  headers.set('Accept', 'application/json')
-  const token = webSession.accessToken()
-  if (token) headers.set('Authorization', `Bearer ${token}`)
-  return fetch(path, { ...init, headers, credentials: 'include' })
+/** One feature instance owns its requests, explicit recovery, and async continuations. */
+export function createWebTransport(): WebTransport {
+  const owner = webSession.identity.value
+  const assertCurrent = () => {
+    if (webSession.identity.value !== owner) throw new WebAuthorityChangedError()
+  }
+  const accessToken = () => {
+    assertCurrent()
+    return webSession.accessToken()
+  }
+  return {
+    accessToken,
+    assertCurrent,
+    fetcher: async (input, init) => {
+      assertCurrent()
+      const headers = new Headers(input instanceof Request ? input.headers : undefined)
+      for (const [name, value] of new Headers(init?.headers)) headers.set(name, value)
+      if (!headers.has('Accept')) headers.set('Accept', 'application/json')
+      const token = accessToken()
+      if (token) headers.set('Authorization', `Bearer ${token}`)
+      else headers.delete('Authorization')
+      const response = await fetch(input, { ...init, headers, credentials: 'include' })
+      assertCurrent()
+      return response
+    },
+    // Refresh is explicit. Callers must reconcile uncertain mutations rather than replay them.
+    onUnauthorized: async () => {
+      assertCurrent()
+      await webSession.refresh()
+      assertCurrent()
+    },
+  }
+}
+
+/** The existing adapter retries only a rejected HTTP 401, under the same admitted owner. */
+export function createStudentApi(): StudentApi {
+  return new StudentApi(createWebTransport())
 }

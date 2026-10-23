@@ -310,8 +310,10 @@ public class AdminRegistryExportService {
                         leaseId,
                         kind);
         try {
+            // Parse both wire representations to normalize IntNode/LongNode for small IDs.
             if (rows.size() != 1
-                    || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query))) {
+                    || !mapper.readTree(rows.getFirst())
+                            .equals(mapper.readTree(mapper.writeValueAsString(query)))) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Разрез задания изменился");
             }
         } catch (com.fasterxml.jackson.core.JsonProcessingException invalid) {

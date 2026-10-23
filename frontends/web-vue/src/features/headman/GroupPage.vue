@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
 import { message, webSession } from '../../auth/session';
+import { HeadmanGroupApiError } from '../../../../mobile-core/src/features/headman-group/headman-group-client';
 import { useHeadmanFeature, dateLabel } from './context';
 import type {
   HeadmanAssistant,
@@ -214,19 +215,20 @@ async function confirm() {
   const frozen = step.snapshot;
   busy.value = true;
   error.value = null;
+  let conflict = false;
   try {
     feature.assertCurrent();
-    if (frozen.assistantId && !frozen.after.length)
-      await feature.group.revokeAssistant(frozen.assistantId);
-    else if (frozen.assistantId)
-      await feature.group.updatePermissions(frozen.assistantId, frozen.after);
+    if (frozen.assistantId)
+      await feature.group.updatePermissions(frozen.assistantId, frozen.after, frozen.before);
     else await feature.group.assignAssistant(feature.groupId, frozen.memberId, frozen.after);
     feature.assertCurrent();
   } catch (cause) {
+    conflict = cause instanceof HeadmanGroupApiError && cause.response.status === 409;
     uncertain.value = true;
-    error.value = `${message(cause)}. Проверь текущие права; повторная запись не отправляется.`;
+    error.value = conflict
+      ? 'Права помощника уже изменились. Черновик сохранён; проверь актуальные права и подтверди свой выбор заново.'
+      : `${message(cause)}. Проверь текущие права; повторная запись не отправляется.`;
   } finally {
-    busy.value = false;
     // Reading authority resolves the result; it never repeats assign/update/revoke.
     try {
       const latest = await feature.group.listAssistants(feature.groupId);
@@ -235,15 +237,23 @@ async function confirm() {
       const actual =
         latest.find((item) => item.studentId === frozen.memberId && item.active)?.permissions ?? [];
       if (
+        !conflict &&
         actual.length === frozen.after.length &&
         actual.every((code) => frozen.after.includes(code))
       )
         error.value = null;
-      draft.value = [...actual];
+      if (conflict) {
+        const labels = actual.map(
+          (code) => options.value.find((option) => option.code === code)?.label ?? code,
+        );
+        error.value += ` Актуальные права: ${labels.join(', ') || 'нет'}.`;
+      } else draft.value = [...actual];
       uncertain.value = false;
       revision++;
     } catch {
       uncertain.value = true;
+    } finally {
+      busy.value = false;
     }
   }
 }

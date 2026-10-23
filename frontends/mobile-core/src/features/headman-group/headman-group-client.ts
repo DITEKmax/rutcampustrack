@@ -333,14 +333,21 @@ export class HeadmanGroupApi {
   async updatePermissions(
     assistantId: number,
     permissions: readonly HeadmanAssistantPermission[],
+    expectedPermissions?: readonly HeadmanAssistantPermission[],
   ): Promise<HeadmanAssistant> {
     assertPositiveInteger(assistantId, 'assistantId')
     const normalized = normalizePermissions(permissions)
-    if (normalized.length === 0) throw new RangeError('permissions must not be empty')
+    if (normalized.length === 0 && expectedPermissions === undefined)
+      throw new RangeError('permissions must not be empty without an expected snapshot')
     return normalizeAssistant(
       await this.request<unknown>(`/api/academic/assistants/${assistantId}/permissions`, {
         method: 'PATCH',
-        body: JSON.stringify({ permissions: normalized }),
+        body: JSON.stringify({
+          permissions: normalized,
+          ...(expectedPermissions === undefined
+            ? {}
+            : { expectedPermissions: normalizePermissions(expectedPermissions) }),
+        }),
       }),
     )
   }
@@ -647,7 +654,9 @@ function normalizeCredential(value: unknown, studentId: number): HeadmanCredenti
     return invalid()
   if (
     value.state === 'GENERATED' &&
-    (value.origin === 'initial' || value.origin === 'headman_reset' || value.origin === 'admin_reset') &&
+    (value.origin === 'initial' ||
+      value.origin === 'headman_reset' ||
+      value.origin === 'admin_reset') &&
     typeof value.password === 'string' &&
     value.password.length > 0 &&
     value.password.length <= 128

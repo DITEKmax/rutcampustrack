@@ -4,8 +4,8 @@ import { router } from './app/router';
 import { webSession } from './auth/session';
 
 watch(
-  () => webSession.phase.value,
-  (phase) => {
+  () => [webSession.phase.value, webSession.snapshot.value?.activeRole] as const,
+  ([phase]) => {
     if (phase === 'guest') void router.replace({ name: 'login' });
     else if (phase === 'ready') {
       const route = router.currentRoute.value;

@@ -13,10 +13,7 @@ export default defineConfig(({ mode }) => {
     server: {
       ...developmentServer(env, 14210, target),
       fs: {
-        allow: [
-          searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
-          '/workspace/rutcampustrack/frontends/node_modules',
-        ],
+        allow: [searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url)))],
       },
     },
     preview: {

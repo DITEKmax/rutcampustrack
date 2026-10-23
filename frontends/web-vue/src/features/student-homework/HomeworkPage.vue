@@ -4,6 +4,9 @@ import { formatHomeworkDate } from '../../../../mobile-core/src/domain/homework'
 import { webSession } from '../../auth/session';
 import HomeworkCard from './HomeworkCard.vue';
 import { useWebHomework } from './use-homework';
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
+import previousIcon from '../../../../mobile-core/src/assets/headman-homework-previous.svg';
+import nextIcon from '../../../../mobile-core/src/assets/headman-homework-next.svg';
 
 const h = useWebHomework();
 const modes = [
@@ -27,11 +30,11 @@ const periodLabel = computed(() => {
   <section
     class="web-homework web-stack"
     data-screen-id="WEB-STUDENT-HOMEWORK"
-    @pointerenter="h.interacting.value = true"
-    @pointerleave="h.interacting.value = false"
-    @focusin="h.interacting.value = true"
+    @pointerenter="h.pointerWithin.value = true"
+    @pointerleave="h.pointerWithin.value = false"
+    @focusin="h.focusWithin.value = true"
     @focusout="
-      h.interacting.value = Boolean(
+      h.focusWithin.value = Boolean(
         ($event.relatedTarget as Node | null) && $el.contains($event.relatedTarget),
       )
     "
@@ -61,10 +64,7 @@ const periodLabel = computed(() => {
           :disabled="!h.canStep(-1) || h.loading.value"
           @click="h.step(-1)"
         >
-          <img
-            src="../../../../mobile-core/src/assets/headman-homework-previous.svg"
-            alt=""
-          >
+          <SvgIcon :src="previousIcon" />
         </button>
         <span
           class="web-period-label"
@@ -76,10 +76,7 @@ const periodLabel = computed(() => {
           :disabled="!h.canStep(1) || h.loading.value"
           @click="h.step(1)"
         >
-          <img
-            src="../../../../mobile-core/src/assets/headman-homework-next.svg"
-            alt=""
-          >
+          <SvgIcon :src="nextIcon" />
         </button>
         <button
           class="web-button"

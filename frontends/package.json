@@ -32,7 +32,8 @@
     "dev:pwa": "npm run dev --workspace @rct/pwa-vue",
     "dev:tma": "npm run dev --workspace @rct/tma-vue",
     "dev:web": "npm run dev --workspace @rct/web-vue",
-    "build:web": "npm run build --workspace @rct/web-vue"
+    "build:web": "npm run build --workspace @rct/web-vue",
+    "test:web": "vitest run web-vue/src"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

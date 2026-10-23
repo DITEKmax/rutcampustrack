@@ -20,6 +20,7 @@ const busy = ref(false)
 const error = ref<string | null>(null)
 const generation = ref(0)
 let refreshFlight: Promise<void> | null = null
+let refreshOwner: number | null = null
 let operation = 0
 const client = createAuthClient({ accessToken: () => token.value })
 
@@ -37,8 +38,19 @@ function acceptSession(value: ProfileSnapshot) {
 }
 
 async function refresh() {
-  if (refreshFlight) return refreshFlight
+  if (refreshFlight) {
+    if (refreshOwner === operation) return refreshFlight
+    const caller = operation
+    try {
+      await refreshFlight
+    } catch {
+      /* Reconcile the current operation after an obsolete refresh settles. */
+    }
+    if (caller !== operation) return
+    return refresh()
+  }
   const revision = operation
+  refreshOwner = revision
   refreshFlight = (async () => {
     try {
       const result = await client.refresh()
@@ -166,7 +178,12 @@ export const webSession = {
   busy: readonly(busy),
   error: readonly(error),
   generation: readonly(generation),
-  roles: computed(() => snapshot.value?.roles.filter((grant) => grant.selectable) ?? []),
+  roles: computed(
+    () =>
+      snapshot.value?.roles.filter(
+        (grant) => grant.selectable || grant.role === snapshot.value?.activeRole,
+      ) ?? [],
+  ),
   accessToken: () => token.value,
   bootstrap,
   refresh,

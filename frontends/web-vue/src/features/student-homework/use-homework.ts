@@ -24,11 +24,14 @@ export function useWebHomework() {
   const itemErrors = reactive<Record<string, string>>({})
   const pending = reactive<Record<string, boolean>>({})
   const desired = reactive<Record<string, boolean>>({})
-  const interacting = ref(false)
+  const pointerWithin = ref(false)
+  const focusWithin = ref(false)
+  const interacting = computed(() => pointerWithin.value || focusWithin.value)
   const uncertain = reactive<Record<string, boolean>>({})
   const identity = webSession.generation.value
   let alive = true
   let request = 0
+  let mutationRevision = 0
   let timer: ReturnType<typeof setInterval> | undefined
   const current = () => alive && webSession.generation.value === identity
   const semester = computed(() =>
@@ -68,11 +71,12 @@ export function useWebHomework() {
 
   async function load(background = false) {
     const revision = ++request
+    const writesAtStart = mutationRevision
     if (!background) loading.value = true
     try {
       const requestedRange = range.value
       const result = await studentApi.getHomework(requestedRange?.from, requestedRange?.to)
-      if (!current() || revision !== request) return
+      if (!current() || revision !== request || writesAtStart !== mutationRevision) return
       feed.value = result
       forbidden.value = false
       error.value = null
@@ -85,11 +89,12 @@ export function useWebHomework() {
         selected.value = initial
       }
     } catch (cause) {
-      if (!current() || revision !== request) return
+      if (!current() || revision !== request || writesAtStart !== mutationRevision) return
       forbidden.value = cause instanceof StudentApiError && cause.response.status === 403
       error.value = message(cause)
     } finally {
       if (current() && revision === request) loading.value = false
+      if (current() && revision === request && writesAtStart !== mutationRevision) void load(true)
     }
   }
 
@@ -116,6 +121,7 @@ export function useWebHomework() {
     if (pending[item.id] || uncertain[item.id] || webSession.snapshot.value?.readOnly || !current())
       return
     pending[item.id] = true
+    mutationRevision++
     desired[item.id] = completed
     delete itemErrors[item.id]
     try {
@@ -142,9 +148,13 @@ export function useWebHomework() {
       try {
         const latest = await studentApi.getHomework(range.value?.from, range.value?.to)
         if (!current()) return
-        feed.value = latest
-        if (latest.items.find((value) => value.id === item.id)?.completed !== completed)
-          itemErrors[item.id] = message(cause)
+        const actual = latest.items.find((value) => value.id === item.id)
+        if (actual && feed.value)
+          feed.value = {
+            ...feed.value,
+            items: feed.value.items.map((value) => (value.id === item.id ? actual : value)),
+          }
+        if (actual?.completed !== completed) itemErrors[item.id] = message(cause)
       } catch {
         if (current()) {
           uncertain[item.id] = true
@@ -153,6 +163,7 @@ export function useWebHomework() {
         }
       }
     } finally {
+      mutationRevision++
       if (current()) {
         delete desired[item.id]
         pending[item.id] = false
@@ -204,7 +215,8 @@ export function useWebHomework() {
     itemErrors,
     pending,
     uncertain,
-    interacting,
+    pointerWithin,
+    focusWithin,
     load,
     complete,
     reconcile,

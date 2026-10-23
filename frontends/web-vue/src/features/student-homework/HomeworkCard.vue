@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { StudentHomeworkItem } from '../../../../mobile-core/src/api/types';
 import { validateHomeworkLink } from '../../../../mobile-core/src/domain/homework';
 import LinkifiedText from '../../shared/LinkifiedText.vue';
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
+import externalLinkIcon from '../../../../mobile-core/src/assets/homework-external-link.svg';
 
 const props = defineProps<{
   item: StudentHomeworkItem;
@@ -16,6 +18,24 @@ const href = computed(() =>
   props.item.link && validateHomeworkLink(props.item.link).supported ? props.item.link : null,
 );
 const domain = computed(() => (href.value ? new URL(href.value).host : ''));
+const description = ref<HTMLElement | null>(null);
+const expanded = ref(false);
+const canExpand = ref(false);
+let observer: ResizeObserver | undefined;
+const measureDescription = () => {
+  if (!expanded.value && description.value) canExpand.value = description.value.scrollHeight > description.value.clientHeight + 1;
+};
+onMounted(() => {
+  observer = new ResizeObserver(measureDescription);
+  if (description.value) observer.observe(description.value);
+  measureDescription();
+});
+onUnmounted(() => observer?.disconnect());
+watch(() => props.item.description, async () => {
+  expanded.value = false;
+  await nextTick();
+  measureDescription();
+});
 </script>
 
 <template>
@@ -50,9 +70,22 @@ const domain = computed(() => (href.value ? new URL(href.value).host : ''));
         @change="$emit('complete', ($event.target as HTMLInputElement).checked)"
       ><span>Выполнено</span></label>
     </header>
-    <div class="web-homework-description">
+    <div
+      ref="description"
+      class="web-homework-description"
+      :class="{ 'is-expanded': expanded }"
+    >
       <LinkifiedText :text="item.description" />
     </div>
+    <button
+      v-if="canExpand || expanded"
+      class="web-button web-description-toggle"
+      :aria-expanded="expanded"
+      :aria-label="`${expanded ? 'Свернуть' : 'Развернуть'} описание задания ${item.title || item.subject.name}`"
+      @click="expanded = !expanded"
+    >
+      {{ expanded ? 'Свернуть' : 'Полное задание' }}
+    </button>
     <a
       v-if="href"
       class="web-homework-link"
@@ -60,10 +93,7 @@ const domain = computed(() => (href.value ? new URL(href.value).host : ''));
       target="_blank"
       rel="noopener noreferrer"
     >{{ domain }}
-      <img
-        src="../../../../mobile-core/src/assets/homework-external-link.svg"
-        alt="(в новой вкладке)"
-      ></a>
+      <SvgIcon :src="externalLinkIcon" /><span class="web-sr-only"> (в новой вкладке)</span></a>
     <div
       v-if="error"
       class="web-error"

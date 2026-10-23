@@ -32,6 +32,7 @@ export default defineConfig({
       'mobile-core/src/**/*.test.ts',
       'pwa-vue/src/**/*.test.ts',
       'tma-vue/src/**/*.test.ts',
+      'web-vue/src/**/*.test.ts',
     ],
     coverage: {
       provider: 'v8',

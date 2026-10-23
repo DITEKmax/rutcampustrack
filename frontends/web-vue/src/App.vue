@@ -2,6 +2,8 @@
 import { watch } from 'vue';
 import { router } from './app/router';
 import { webSession } from './auth/session';
+import ReauthenticationReceipt from './auth/ReauthenticationReceipt.vue';
+import './app/live';
 
 watch(
   () => [webSession.phase.value, webSession.snapshot.value?.activeRole] as const,
@@ -21,6 +23,7 @@ watch(
 </script>
 
 <template>
+  <ReauthenticationReceipt />
   <main
     v-if="
       webSession.phase.value === 'starting' ||

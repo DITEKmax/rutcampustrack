@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { webSession } from '../auth/session';
-import { webFeatures } from '../app/features';
-const features = computed(() =>
-  webFeatures.filter(
-    (feature) =>
-      webSession.snapshot.value?.activeRole &&
-      feature.meta?.requiredRoles?.includes(webSession.snapshot.value.activeRole),
-  ),
-);
+import { canShowFeature, webFeatures } from '../app/features';
+const features = computed(() => webFeatures.filter(canShowFeature));
 </script>
 
 <template>

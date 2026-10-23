@@ -5,11 +5,15 @@ import LoginPage from '../auth/LoginPage.vue'
 import AppShell from '../shell/AppShell.vue'
 import RoleLanding from '../shell/RoleLanding.vue'
 import { webFeatures } from './features'
+import { webAssistantAccess } from './assistant'
+import type { HeadmanAssistantPermission } from '../../../mobile-core/src/features/headman-group/headman-group-client'
 
 declare module 'vue-router' {
   interface RouteMeta {
     requiredRoles?: readonly ProfileRole[]
     label?: string
+    navHidden?: boolean
+    assistantPermission?: HeadmanAssistantPermission
   }
 }
 
@@ -40,5 +44,13 @@ router.beforeEach(async (to) => {
     (!session.activeRole || !to.meta.requiredRoles.includes(session.activeRole))
   )
     return { name: 'role-home' }
+  if (session.activeRole === 'STUDENT' && to.meta.assistantPermission) {
+    try {
+      if (!(await webAssistantAccess.load()).includes(to.meta.assistantPermission))
+        return { name: 'role-home' }
+    } catch {
+      return { name: 'role-home' }
+    }
+  }
   return true
 })

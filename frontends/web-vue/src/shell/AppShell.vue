@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { webFeatures } from '../app/features';
+import { canShowFeature, webFeatures } from '../app/features';
 import { webSession } from '../auth/session';
 import ThemeSelect from '../shared/ThemeSelect.vue';
 import RoleSwitcher from './RoleSwitcher.vue';
@@ -16,13 +16,7 @@ const initials = computed(
       .map((part) => part[0])
       .join('') ?? '',
 );
-const navigation = computed(() =>
-  webFeatures.filter(
-    (feature) =>
-      webSession.snapshot.value?.activeRole &&
-      feature.meta?.requiredRoles?.includes(webSession.snapshot.value.activeRole),
-  ),
-);
+const navigation = computed(() => webFeatures.filter(canShowFeature));
 </script>
 
 <template>

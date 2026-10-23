@@ -31,6 +31,14 @@ function clearSession() {
   phase.value = 'guest'
 }
 
+/** Called only after a server-confirmed own-session revocation or credential replacement. */
+function invalidate() {
+  ++operation
+  clearSession()
+  busy.value = false
+  error.value = null
+}
+
 function authorityIdentity(value: ProfileSnapshot | null): string | null {
   return value
     ? JSON.stringify([
@@ -46,8 +54,8 @@ function authorityIdentity(value: ProfileSnapshot | null): string | null {
 
 function acceptSession(value: ProfileSnapshot) {
   const changedAuthority = authorityIdentity(snapshot.value) !== authorityIdentity(value)
-  snapshot.value = value
   if (changedAuthority) generation.value++
+  snapshot.value = value
   phase.value = 'ready'
 }
 
@@ -187,6 +195,7 @@ export function message(cause: unknown): string {
 }
 
 export const webSession = {
+  invalidate,
   identity: computed(() => authorityIdentity(snapshot.value)),
   snapshot: readonly(snapshot),
   phase: readonly(phase),

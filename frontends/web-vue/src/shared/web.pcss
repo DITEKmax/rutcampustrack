@@ -128,6 +128,11 @@ h3 {
   border: var(--web-border) solid var(--color-border-default);
   border-radius: var(--radius-lg);
 }
+.web-panel { padding: var(--space-5); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); background: var(--color-surface-raised); }
+.web-page-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
+.web-button-danger, .web-button-danger:hover:not(:disabled) { color: var(--color-text-on-fill-strong); background: var(--color-state-danger-fill); border-color: var(--color-state-danger-fill); }
+.web-reauthentication-receipt { margin: var(--space-4); }
+.web-password-receipt { font-size: var(--font-size-title-block); overflow-wrap: anywhere; user-select: all; }
 .web-session-state {
   min-block-size: 100dvh;
   display: flex;

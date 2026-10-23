@@ -76,7 +76,7 @@ async function openFilter(column: string, event: MouseEvent) {
 }
 function closeFilter() {
   filterColumn.value = null;
-  returnFocusAfterLoad = true;
+  returnFocusAfterLoad = false;
   trigger?.focus();
 }
 function apply() {
@@ -89,6 +89,7 @@ function apply() {
     } else next.push(...parseTeacherStatsRanges(props.data.scope, { [column]: drafts[column]! }));
     emit('filter', next);
     closeFilter();
+    returnFocusAfterLoad = true;
   } catch (cause) {
     filterError.value = cause instanceof Error ? cause.message : 'Проверь диапазон.';
   }

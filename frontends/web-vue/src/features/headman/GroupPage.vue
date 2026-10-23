@@ -89,11 +89,10 @@ const draft = ref<HeadmanAssistantPermission[]>([]),
   dialog = ref<HTMLDialogElement | null>(null);
 const budget = shallowRef<HeadmanLateCheckinBudget | null>(null),
   increase = ref(1),
-  budgetIntent = shallowRef<
-    (HeadmanBudgetIncrease & { studentId: number; beforeLimit: number }) | null
-  >(null);
+  budgetIntent = shallowRef<(HeadmanBudgetIncrease & { studentId: number }) | null>(null);
 const rosterFormats = shallowRef<readonly HeadmanRosterFormat[]>([]),
   format = ref<ReportDownloadFormat>('xlsx');
+const budgetStorage = `rct:web:headman:budget:${webSession.identity.value}`;
 let revision = 0;
 const credentials = useHeadmanCredentials(() => ({
   api: feature.group,
@@ -129,6 +128,30 @@ async function load() {
     options.value = catalog;
     semesters.value = periods;
     rosterFormats.value = formats;
+    const savedBudget = sessionStorage.getItem(budgetStorage);
+    if (savedBudget && !budgetIntent.value) {
+      const value: unknown = JSON.parse(savedBudget);
+      if (
+        !value ||
+        typeof value !== 'object' ||
+        !('studentId' in value) ||
+        typeof value.studentId !== 'number' ||
+        !members.value.some((member) => member.id === value.studentId) ||
+        !('semesterId' in value) ||
+        typeof value.semesterId !== 'number' ||
+        !('increase' in value) ||
+        typeof value.increase !== 'number' ||
+        !Number.isSafeInteger(value.increase) ||
+        value.increase <= 0 ||
+        !('requestKey' in value) ||
+        typeof value.requestKey !== 'string'
+      )
+        throw new Error('Не удалось восстановить исходное увеличение бюджета.');
+      budgetIntent.value = value as HeadmanBudgetIncrease & { studentId: number };
+      selectedId.value = value.studentId;
+      selectedTab.value = 'budget';
+      await readBudget();
+    }
     uncertain.value = false;
     if (selected.value) draft.value = [...(assistant.value?.permissions ?? [])];
   } catch (cause) {
@@ -246,9 +269,14 @@ async function increaseBudget(recover = false) {
     semesterId: budget.value.semesterId,
     increase: increase.value,
     requestKey: crypto.randomUUID(),
-    beforeLimit: budget.value.limit,
   };
-  budgetIntent.value = pending;
+  try {
+    sessionStorage.setItem(budgetStorage, JSON.stringify(pending));
+    budgetIntent.value = pending;
+  } catch {
+    error.value = 'Не удалось сохранить исходный запрос. Увеличение не отправлено.';
+    return;
+  }
   busy.value = true;
   try {
     if (recover) {
@@ -257,15 +285,17 @@ async function increaseBudget(recover = false) {
       budget.value = actual;
       if (actual.semesterId !== pending.semesterId)
         throw new Error('Семестр изменился. Предыдущую команду нельзя повторить.');
-      if (actual.limit >= pending.beforeLimit + pending.increase) {
-        budgetIntent.value = null;
-        return;
-      }
+      // An unrelated increase proves no result for our command. The original key below
+      // retrieves the immutable receipt validated by StudentRequestService.budgetReplay.
     }
     const result = await feature.group.increaseLateCheckinBudget(pending.studentId, pending);
     feature.assertCurrent();
     budget.value = result;
     budgetIntent.value = null;
+    sessionStorage.removeItem(budgetStorage);
+    const latest = await feature.group.getLateCheckinBudget(pending.studentId);
+    feature.assertCurrent();
+    budget.value = latest;
     error.value = null;
   } catch (cause) {
     error.value = `${message(cause)}. Сохранена исходная команда увеличения бюджета.`;

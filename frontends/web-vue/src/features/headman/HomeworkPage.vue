@@ -26,6 +26,11 @@ import {
 } from '../../../../mobile-core/src/features/homework/headman-homework-state';
 import { readPublishedHomeworks } from '../../../../mobile-core/src/features/homework/headman-published-homework';
 import HeadmanPage from './HeadmanPage.vue';
+import {
+  homeworkEditMatches,
+  homeworkPlacementChanged,
+  canonicalHomeworkText,
+} from './homework-edit-state';
 import LinkifiedText from '../../shared/LinkifiedText.vue';
 
 const feature = useHeadmanFeature();
@@ -96,6 +101,7 @@ let run = 0,
   placementRun = 0;
 function persist(value: Pending | null) {
   feature.assertCurrent();
+  if (value && value.kind !== 'delete') canonicalHomeworkText(value.input);
   if (value) sessionStorage.setItem(recoveryKey, JSON.stringify(value));
   else sessionStorage.removeItem(recoveryKey);
   pending.value = value;
@@ -112,7 +118,17 @@ function restore() {
   )
     throw new Error('Не удалось прочитать незавершённое изменение ДЗ.');
   // The typed client validates the frozen payload before any potential recovery write.
-  pending.value = value as Pending;
+  const restored = value as Pending;
+  if (restored.kind !== 'delete') {
+    try {
+      canonicalHomeworkText(restored.input);
+    } catch (cause) {
+      sessionStorage.removeItem(recoveryKey);
+      error.value = message(cause);
+      return;
+    }
+  }
+  pending.value = restored;
 }
 async function load() {
   const revision = ++run;
@@ -164,6 +180,7 @@ function openEditor(item: HeadmanManagedHomework | null = null) {
 async function findNext() {
   const revision = ++placementRun;
   nextLesson.value = null;
+  placementLoading.value = false;
   if (!draft.bound || !draft.subjectId || !semester.value) return;
   placementLoading.value = true;
   try {
@@ -225,22 +242,27 @@ function placement(): HeadmanHomeworkPlacementInput {
 async function save() {
   if (!writable.value || busy.value || pending.value || !semester.value) return;
   try {
-    if (draft.link && !/^https?:\/\//i.test(draft.link))
-      throw new Error('Основная ссылка должна начинаться с https:// или http://.');
+    const text = canonicalHomeworkText(draft);
     if (editing.value) {
       if (!editing.value.revision) throw new Error('Версия задания не подтверждена.');
-      const changedPlacement =
-        draft.bound !== (editing.value.bindingMode === 'LESSON') ||
-        draft.date !== editing.value.lessonDate ||
-        draft.lessonType !== editing.value.lessonType;
+      const candidate: HeadmanHomeworkPlacementInput = {
+        bindingMode: draft.bound ? 'LESSON' : 'DATE',
+        lessonDate: draft.date,
+        lessonNumber: draft.bound
+          ? (nextLesson.value?.lessonNumber ?? editing.value.lessonNumber)
+          : null,
+        lessonType: draft.lessonType,
+        ...(draft.bound && nextLesson.value?.occurrenceId
+          ? { selectedOccurrenceId: nextLesson.value.occurrenceId }
+          : {}),
+      };
+      const changedPlacement = homeworkPlacementChanged(editing.value, candidate);
       persist({
         kind: 'edit',
         id: editing.value.id,
         semesterId: semester.value.id,
         input: {
-          title: draft.title,
-          description: draft.description,
-          link: draft.link,
+          ...text,
           expectedRevision: editing.value.revision,
           requestKey: crypto.randomUUID(),
           ...(changedPlacement ? placement() : {}),
@@ -251,9 +273,7 @@ async function save() {
         kind: 'create',
         receipt: null,
         input: {
-          title: draft.title,
-          description: draft.description,
-          link: draft.link,
+          ...text,
           groupId: feature.groupId,
           subjectId: draft.subjectId,
           semesterId: semester.value.id,
@@ -313,24 +333,8 @@ async function execute(recover: boolean) {
           await load();
           throw new Error('Задание перешло в архив. Изменение недоступно.');
         }
-        if (actual.revision !== operation.input.expectedRevision) {
-          const same =
-            actual.title === operation.input.title.trim() &&
-            (actual.description ?? '') === (operation.input.description ?? '') &&
-            (actual.link ?? '') === (operation.input.link ?? '') &&
-            (operation.input.lessonDate === undefined ||
-              actual.lessonDate === operation.input.lessonDate) &&
-            (operation.input.bindingMode === undefined ||
-              actual.bindingMode === operation.input.bindingMode);
-          persist(null);
-          editor.value = false;
-          await load();
-          if (!same)
-            throw new Error(
-              'Задание изменилось. Показана текущая версия; проверь её перед новым редактированием.',
-            );
-          return;
-        }
+        // A changed revision cannot prove which command wrote it. The original keyed PUT
+        // returns its immutable receipt, or a conflict; it never gets a fresh identity.
       }
     }
     feature.assertCurrent();
@@ -342,9 +346,12 @@ async function execute(recover: boolean) {
         error.value = 'Публикация принята и ещё выполняется. Проверь её состояние.';
         return;
       }
-    } else if (operation.kind === 'edit')
-      await feature.homework.updateHomework(operation.id, operation.input);
-    else await feature.homework.deleteHomework(operation.id);
+    } else if (operation.kind === 'edit') {
+      const result = await feature.homework.updateHomework(operation.id, operation.input);
+      feature.assertCurrent();
+      if (!result || !homeworkEditMatches(result, operation.input))
+        throw new Error('Сервер не подтвердил полное содержимое и размещение исходного изменения.');
+    } else await feature.homework.deleteHomework(operation.id);
     feature.assertCurrent();
     persist(null);
     editor.value = false;

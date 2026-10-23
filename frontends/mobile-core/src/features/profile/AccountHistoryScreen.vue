@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import type {
   ProfileHistoryEvent,
   ProfileRequestError,
@@ -65,11 +66,10 @@ function loadMore(): void {
           aria-label="Назад"
           @click="onBack?.()"
         >
-          <img
+          <SvgIcon
             :src="historyPrevious"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-history-title"

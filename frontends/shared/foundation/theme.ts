@@ -138,7 +138,10 @@ export function createTheme(options: ThemeOptions = {}): ThemeController {
   function setMode(nextMode: ThemeMode): void {
     if (disposed) return
     const normalized = normalizeMode(nextMode)
-    if (normalized === mode) return
+    if (normalized === mode) {
+      notify()
+      return
+    }
     mode = normalized
     resolvedMode = resolve()
     apply()

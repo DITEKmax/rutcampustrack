@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { MobileHostAdapter } from '../../shared/host';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
@@ -1121,19 +1122,17 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                 aria-label="Предыдущая неделя"
                 @click="shiftCalendar(-1)"
               >
-                <img
+                <SvgIcon
                   :src="previousIcon"
-                  alt=""
-                >
+                />
               </button><button
                 type="button"
                 aria-label="Следующая неделя"
                 @click="shiftCalendar(1)"
               >
-                <img
+                <SvgIcon
                   :src="nextIcon"
-                  alt=""
-                >
+                />
               </button>
             </div>
           </div>
@@ -1181,10 +1180,9 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           type="button"
           @click="openDetail(item)"
         >
-          <span><strong>{{ subjectName(item.subjectId) }}</strong><span>{{ item.title }}</span></span><img
+          <span><strong>{{ subjectName(item.subjectId) }}</strong><span>{{ item.title }}</span></span><SvgIcon
             :src="nextIcon"
-            alt=""
-          >
+          />
         </button>
       </template>
       <template v-else-if="view === 'detail' && detail">
@@ -1229,10 +1227,9 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               type="button"
               @click="openUrl(detail.link)"
             >
-              <img
+              <SvgIcon
                 :src="linkIcon"
-                alt=""
-              >Материалы
+              />Материалы
             </button><p v-else>
               Материал сейчас недоступен.
             </p>
@@ -1332,11 +1329,10 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             :aria-expanded="subjectListOpen"
             @click="subjectListOpen = !subjectListOpen"
           >
-            <span><small>Предмет</small>{{ selectedSubject?.name ?? 'Выбери предмет' }}</span><img
+            <span><small>Предмет</small>{{ selectedSubject?.name ?? 'Выбери предмет' }}</span><SvgIcon
               :src="downIcon"
-              alt=""
               :class="{ 'headman-homework__up': subjectListOpen }"
-            >
+            />
           </button>
           <p
             v-if="editing"
@@ -1369,11 +1365,10 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               :aria-expanded="typeListOpen"
               @click="typeListOpen = !typeListOpen"
             >
-              <span><small>Тип занятия</small>{{ lessonType ? typeName(lessonType) : 'Выбери тип' }}</span><img
+              <span><small>Тип занятия</small>{{ lessonType ? typeName(lessonType) : 'Выбери тип' }}</span><SvgIcon
                 :src="downIcon"
-                alt=""
                 :class="{ 'headman-homework__up': typeListOpen }"
-              >
+              />
             </button>
             <div
               v-if="typeListOpen"
@@ -1428,20 +1423,18 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
                     :disabled="retryLocked"
                     @click="shiftCalendar(-1)"
                   >
-                    <img
+                    <SvgIcon
                       :src="previousIcon"
-                      alt=""
-                    >
+                    />
                   </button><button
                     type="button"
                     aria-label="Следующий месяц"
                     :disabled="retryLocked"
                     @click="shiftCalendar(1)"
                   >
-                    <img
+                    <SvgIcon
                       :src="nextIcon"
-                      alt=""
-                    >
+                    />
                   </button>
                 </div>
               </div>

@@ -95,13 +95,14 @@
   cursor: pointer;
 }
 
-.profile-back img,
+.profile-back :is(img, .rct-svg-icon),
 .profile-appearance .profile-back .mobile-icon {
   inline-size: var(--rct-space-4);
   block-size: var(--rct-space-4);
 }
 
 .profile-icon {
+  color: var(--rct-color-text-secondary);
   flex: 0 0 var(--rct-profile-icon-size, var(--rct-space-6));
   inline-size: var(--rct-profile-icon-size, var(--rct-space-6));
   block-size: var(--rct-profile-icon-size, var(--rct-space-6));
@@ -451,7 +452,7 @@
   @mixin rct-focus-ring;
 }
 
-.profile-field__toggle img {
+.profile-field__toggle :is(img, .rct-svg-icon) {
   inline-size: var(--rct-profile-control-icon-size, var(--rct-space-5));
   block-size: var(--rct-profile-control-icon-size, var(--rct-space-5));
 }

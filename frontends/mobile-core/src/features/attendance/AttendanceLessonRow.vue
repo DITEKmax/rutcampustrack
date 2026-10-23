@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, ref, watch } from 'vue';
 import roomIcon from '../../assets/room-light.svg';
 import lessonTypeIcon from '../../assets/lesson-type-light.svg';
@@ -145,19 +146,21 @@ function optionLabel(option: AttendanceRequestOption): string {
       </p>
       <div class="attendance-lesson-row__metadata">
         <span>
-          <img
+          <SvgIcon
+            :width="10"
+            :height="10"
             :src="roomIcon"
-            alt=""
             aria-hidden="true"
-          >
+          />
           {{ lesson.schedule.room ?? 'Аудитория уточняется' }}
         </span>
         <span>
-          <img
+          <SvgIcon
+            :width="10"
+            :height="10"
             :src="lessonTypeIcon"
-            alt=""
             aria-hidden="true"
-          >
+          />
           {{ lessonTypeLabel(lesson.type) }}
         </span>
       </div>

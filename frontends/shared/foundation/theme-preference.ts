@@ -1,7 +1,12 @@
 import { THEME_MODES, type ThemeMode } from './theme'
 export const THEME_PREFERENCE_KEY = 'rct.theme'
-export const LEGACY_THEME_PREFERENCE_KEYS = ['rct.mobile.theme', 'rct.web.theme'] as const
-type ThemeStorage = Pick<Storage, 'getItem' | 'setItem'>
+export const LEGACY_THEME_PREFERENCE_KEYS = [
+  'rct.mobile.theme',
+  'ruttrack.theme',
+  'web-panel.theme',
+  'rct.web.theme',
+] as const
+type ThemeStorage = Pick<Storage, 'getItem' | 'setItem'> & Partial<Pick<Storage, 'removeItem'>>
 export function isThemeMode(value: unknown): value is ThemeMode {
   return THEME_MODES.some((mode) => mode === value)
 }
@@ -21,7 +26,13 @@ export function createThemePreference(
       for (const key of LEGACY_THEME_PREFERENCE_KEYS) {
         const legacy = storage()?.getItem(key)
         if (isThemeMode(legacy)) {
-          storage()?.setItem(THEME_PREFERENCE_KEY, legacy)
+          try {
+            const store = storage()
+            store?.setItem(THEME_PREFERENCE_KEY, legacy)
+            for (const oldKey of LEGACY_THEME_PREFERENCE_KEYS) store?.removeItem?.(oldKey)
+          } catch {
+            /* Read-only storage can still supply a valid legacy choice. */
+          }
           return legacy
         }
       }
@@ -43,7 +54,7 @@ export function createThemePreference(
     const mode = change.key === null ? null : isThemeMode(change.newValue) ? change.newValue : null
     for (const listener of [...listeners]) listener(mode)
   }
-  events?.addEventListener('storage', changed)
+  events?.addEventListener?.('storage', changed)
   return {
     read,
     write(mode: ThemeMode): void {
@@ -61,7 +72,7 @@ export function createThemePreference(
       }
     },
     dispose(): void {
-      events?.removeEventListener('storage', changed)
+      events?.removeEventListener?.('storage', changed)
       listeners.clear()
     },
   }

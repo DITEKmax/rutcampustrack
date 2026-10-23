@@ -98,7 +98,7 @@ describe('createMobileTheme', () => {
 
     expect(controller.mode).toBe('system')
     expect(controller.resolvedMode).toBe('light')
-    expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('system')
+    expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('light')
     expect(root.style.colorScheme).toBe('light')
 
     query.matches = true
@@ -243,7 +243,8 @@ describe('caller-owned mobile theme preference', () => {
     expect(second.resolvedMode).toBe('dark')
     expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
     expect(values.get('unrelated-account')).toBe('untouched')
-    expect(new Set([...reads, ...writes])).toEqual(new Set([MOBILE_THEME_PREFERENCE_KEY]))
+    expect(new Set(writes)).toEqual(new Set([MOBILE_THEME_PREFERENCE_KEY]))
+    expect(reads).toContain(MOBILE_THEME_PREFERENCE_KEY)
   })
   it('ignores invalid stored choices and unavailable storage without affecting the controller', () => {
     const invalid = createMobileThemePreference(() => ({

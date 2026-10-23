@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import type { ProfileResolvedTheme, ProfileRoute } from './profile-types';
@@ -121,13 +122,14 @@ function navigate(route: ProfileRoute): void {
           name="assistant"
           class="profile-icon"
         />
-        <img
+        <SvgIcon
+          :width="24"
+          :height="24"
           v-else
           class="profile-icon"
-          :src="item.icon ?? undefined"
-          alt=""
+          :src="item.icon!"
           aria-hidden="true"
-        >
+        />
         <span>{{ item.label }}</span>
       </button>
       <button

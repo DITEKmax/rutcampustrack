@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from 'vue';
 import {
   AdminAccessApiError,
@@ -180,8 +181,18 @@ const themePreference = createMobileThemePreference(() =>
 const theme =
   typeof document === 'undefined'
     ? null
-    : createMobileTheme({ mode: themePreference.read() ?? 'dark', lockedMode: 'dark' });
-const stopThemePreference = theme?.subscribe(({ mode }) => themePreference.write(mode));
+    : createMobileTheme({ mode: themePreference.read() ?? 'system' });
+const resolvedTheme = ref(theme?.resolvedMode ?? 'light');
+const stopThemeSnapshot = theme?.subscribe((snapshot) => {
+  resolvedTheme.value = snapshot.resolvedMode;
+});
+const themeMirror = theme
+  ? createDeviceThemeMirror({
+      theme,
+      preference: themePreference,
+      transport: createDeviceThemeTransport(requestFetcher),
+    })
+  : null;
 const snapshotStore = new SemesterSnapshotStore();
 
 const api = shallowRef<StudentApi | null>(null);
@@ -323,6 +334,24 @@ const authView = ref<
   | 'admin-role-switch'
 >(directPasswordRecoveryEntry ? 'password-recovery' : 'login');
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null);
+watch(
+  () =>
+    [
+      auth.accessToken.value,
+      authSnapshot.value?.userId,
+      authSnapshot.value?.sessionId,
+      auth.resetGeneration.value,
+    ] as const,
+  ([accessToken, userId, sessionId, generation]) => {
+    themeMirror?.setSession(
+      accessToken && userId && sessionId
+        ? { accessToken, key: `${generation}:${userId}:${sessionId}` }
+        : null,
+    );
+  },
+  { immediate: true },
+);
+
 const authError = shallowRef<ProfileRequestError | null>(null);
 const persistedLogoutState = auth.explicitLogoutState();
 const logoutPending = ref(false);
@@ -2103,6 +2132,7 @@ function goOffline(): void {
 }
 
 function goOnline(): void {
+  themeMirror?.reconcile();
   // Reconnect must verify the current session before restoring mutation
   // authority. Bootstrap mounts a fresh bound owner only after getSession and
   // schedule have passed the generation gate.
@@ -2211,7 +2241,9 @@ onBeforeUnmount(() => {
       'controllerchange',
       onServiceWorkerControllerChange,
     );
-  stopThemePreference?.();
+  stopThemeSnapshot?.();
+  themeMirror?.dispose();
+  themePreference.dispose();
   theme?.dispose();
 });
 </script>
@@ -2374,7 +2406,7 @@ onBeforeUnmount(() => {
   <MapScreen
     v-else-if="mapViewVisible"
     :client="mapClient"
-    theme="dark"
+    :theme="resolvedTheme"
   />
   <AdminShell
     v-else-if="adminMoreViewVisible"
@@ -2403,7 +2435,7 @@ onBeforeUnmount(() => {
       :unread-count="notificationUnread.count"
       :client="adminDashboardApi"
       :invalidation-revision="adminDashboardRevision"
-      theme="dark"
+      :theme="resolvedTheme"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
       @open-attendance="navigateAdmin('attendance')"
@@ -2442,7 +2474,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="host.backOwner === 'product'"
-      theme="dark"
+      :theme="resolvedTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -2460,7 +2492,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="host.backOwner === 'product'"
-      theme="dark"
+      :theme="resolvedTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -2478,7 +2510,7 @@ onBeforeUnmount(() => {
       ref="adminTaskOwner"
       :authority="adminAuthority"
       :client="adminSemesterApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
@@ -2499,7 +2531,7 @@ onBeforeUnmount(() => {
       :access-client="adminAccessActionsApi"
       :authority="adminAuthority"
       :client="adminUsersApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -2518,7 +2550,7 @@ onBeforeUnmount(() => {
       :report-download="reportDownload"
       :authority="adminAuthority"
       :client="adminGroupsApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, ref, watch } from 'vue';
 import BrowserLoginApprovalForm from './BrowserLoginApprovalForm.vue';
 import type { BrowserLoginApprovalPort } from './browser-login-approval';
@@ -204,12 +205,13 @@ function logout(): void {
               :aria-disabled="isBootstrapUnavailable(item.route)"
               @click="navigate(item.route)"
             >
-              <img
+              <SvgIcon
+                :width="24"
+                :height="24"
                 class="profile-icon"
                 :src="item.icon"
-                alt=""
                 aria-hidden="true"
-              >
+              />
               <span>{{ item.label }}</span>
             </button>
           </div>

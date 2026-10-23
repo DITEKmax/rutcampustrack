@@ -11,6 +11,7 @@ const marker = `RCT_PUBLIC_CONTROL_${randomUUID()}`
 const red = process.argv.includes('--unprotected')
 const lateControl = 'late fixture diagnostics are safe before the producer attachment'
 const missingGuardControl = 'privacy guard rejects before an explicit operation fixture'
+const startupControl = 'first fixture failure survives sanitizer without raw data'
 const emit = (value) => {
   const text = JSON.stringify(value)
   if (process.env.RCT_E2E_CONTROL_RECEIPT_PATH)
@@ -21,7 +22,7 @@ const files = (path) =>
   readdirSync(path, { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory() ? files(join(path, entry.name)) : [join(path, entry.name)],
   )
-function run(name, interrupted, missingGuard = false) {
+function run(name, interrupted, missingGuard = false, startup = false) {
   const artifacts = join(output, name)
   const supervision = join(output, `${name}-supervision`)
   mkdirSync(supervision)
@@ -33,7 +34,7 @@ function run(name, interrupted, missingGuard = false) {
       'test',
       '--config',
       'playwright.artifact-control.config.ts',
-      ...(missingGuard
+      ...(startup ? ['--grep', startupControl] : missingGuard
         ? ['--grep', missingGuardControl]
         : red || interrupted
           ? ['--grep', lateControl]
@@ -50,6 +51,7 @@ function run(name, interrupted, missingGuard = false) {
         RCT_E2E_CONTROL_UNPROTECTED: String(red),
         RCT_E2E_CONTROL_INTERRUPT: String(interrupted),
         RCT_E2E_CONTROL_MISSING_GUARD: String(missingGuard),
+        RCT_E2E_CONTROL_STARTUP_DIAGNOSTIC: String(startup),
       },
     },
   )
@@ -116,6 +118,15 @@ try {
     const guardPassed = guardControl && Object.values(guardControl).every((value) => value === true)
     const interrupted = run('interrupted', true)
     const missingGuard = run('missing-guard', false, true)
+    const startup = run('startup', false, false, true)
+    const startupFailure = startup.report?.results[0]?.startupFailure
+    const startupPassed = startup.childStatus === 0 && startup.markerAbsent &&
+      startup.report?.diagnosticScope === 'LOCAL_CLIENT_FIRST_FAILURE' &&
+      startup.report?.results.length === 1 && startup.report.results[0].status === 'failed' &&
+      startup.report.results[0].expectedStatus === 'failed' &&
+      startupFailure?.stage === 'DATASET_SETUP' &&
+      startupFailure.reportedTransportCode === 'ECONNREFUSED' &&
+      startupFailure.reportedSourceFrame?.file === 'PRIVACY_CONTROL'
     const missingGuardRejectedBeforeOperation =
       missingGuard.childStatus === 0 &&
       missingGuard.markerAbsent &&
@@ -141,7 +152,7 @@ try {
       producerPassed &&
       normal.producer.markerAbsent === true &&
       interruptionPassed &&
-      missingGuardRejectedBeforeOperation
+      missingGuardRejectedBeforeOperation && startupPassed
     // Never forward raw child output, even if this control detects a leak.
     emit({
       state: passed ? 'PRIVACY_BOUNDARIES_PASSED' : 'PRIVACY_CONTROL_FAILED',
@@ -157,6 +168,7 @@ try {
       interruptionBoundary: interrupted.producer,
       interruptionPassed,
       missingGuardRejectedBeforeOperation,
+      startupPassed,
       browser: 'NOT_STARTED',
     })
     if (!passed) process.exitCode = 1

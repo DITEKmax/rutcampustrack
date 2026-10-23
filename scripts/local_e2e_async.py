@@ -1,10 +1,11 @@
-"""Disposable Ubuntu stage17 lane. No hosted CI identity and no private stand environment.
+"""Disposable Ubuntu browser lanes. No hosted CI identity and no private stand environment.
 
 Run with the activated local-stand Python: python3 scripts/local_e2e_async.py openapi
 All child output is private; only closed phase/status receipts reach the terminal.
 """
 
 import argparse
+import datetime
 import fcntl
 import hashlib
 import ipaddress
@@ -13,6 +14,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import selectors
 import shutil
 import signal
 import socket
@@ -23,6 +25,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / ".agent/evidence/local-runs"
@@ -36,6 +39,89 @@ TOKEN_NAMES = {"ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN", "SCHEDULE_TO_ACADEMIC_SER
                "ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"}
 COMPOSE = ["docker-compose.e2e.yml", "tests/e2e/infra/docker-compose.clock-fixture.yml",
            "tests/e2e/infra/docker-compose.synthetic-baseline.yml"]
+MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle"}
+NODE_TLS_PROBE = r"""
+const fs=require('fs'),https=require('https'),{X509Certificate}=require('crypto');
+const expected=new X509Certificate(fs.readFileSync(process.argv[1]));
+let finished=false;
+function done(ok){if(finished)return;finished=true;process.stdout.write(JSON.stringify({verified:ok})+'\n');process.exitCode=ok?0:1;}
+const request=https.get(process.argv[2],{agent:false,rejectUnauthorized:true},response=>{
+  try{const peer=response.socket.getPeerCertificate();done(response.socket.authorized===true&&Buffer.isBuffer(peer.raw)&&peer.raw.equals(expected.raw));}
+  catch{done(false);} finally{response.destroy();}
+});
+request.setTimeout(5000,()=>{done(false);request.destroy();});
+request.on('error',()=>done(false));
+"""
+
+
+def validate_node_ca(certificate, environment, expected_digest):
+    info = certificate.lstat()
+    require(certificate.resolve() == certificate and not certificate.is_symlink()
+            and stat.S_ISREG(info.st_mode) and info.st_uid == os.getuid() and not info.st_mode & 0o022
+            and 0 < info.st_size <= 16384 and environment.get("NODE_EXTRA_CA_CERTS") == str(certificate)
+            and hashlib.sha256(certificate.read_bytes()).hexdigest() == expected_digest, "NODE_CA_IDENTITY")
+
+
+def node_tls_probe(certificate, environment, url="https://localhost:8443/app/"):
+    observed = capture(["node", "-e", NODE_TLS_PROBE, str(certificate), url], env=environment, seconds=10)
+    require(json.loads(observed) == {"verified": True}, "NODE_TLS_PEER_IDENTITY")
+
+
+def retain_container_log(identifier, path, *, deadline, byte_bound=16 * 1024**2, seconds=15):
+    """All currently retained Docker logs, not history already lost to Docker rotation."""
+    owned(path.parent, 0o700, directory=True)
+    scope = "CURRENT_RETAINED_DOCKER_LOGS_ROTATION_MAY_HAVE_DROPPED_HISTORY"
+
+    def collect(target, args, limit, end):
+        count, status, eof = 0, "COMPLETE_RETAINED", False
+        with os.fdopen(os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600), "wb") as stream:
+            child = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
+            try:
+                with selectors.DefaultSelector() as ready:
+                    ready.register(child.stdout, selectors.EVENT_READ)
+                    while True:
+                        remaining = end - time.monotonic()
+                        if remaining <= 0 or not ready.select(remaining):
+                            status = "TIME_BOUND"
+                            break
+                        block = os.read(child.stdout.fileno(), min(65536, limit - count + 1))
+                        if not block:
+                            eof = True
+                            break
+                        available = min(len(block), limit - count)
+                        stream.write(block[:available])
+                        count += available
+                        if available != len(block):
+                            status = "BYTE_BOUND"
+                            break
+                if eof:
+                    try:
+                        if child.wait(timeout=max(0.01, end - time.monotonic())) != 0:
+                            status = "COMMAND_FAILED"
+                    except subprocess.TimeoutExpired:
+                        status = "TIME_BOUND"
+            finally:
+                if child.poll() is None:
+                    child.kill()
+                child.wait(timeout=1)
+                child.stdout.close()
+        return {"status": status, "bytes": count, "complete": status == "COMPLETE_RETAINED"}
+
+    started = time.monotonic()
+    if started >= deadline:
+        result = {"status": "BUDGET_EXHAUSTED", "bytes": 0, "complete": False}
+    else:
+        result = collect(path, ["docker", "logs", "--timestamps", identifier], byte_bound, min(deadline, started + seconds))
+    result.update(scope=scope, byte_bound=byte_bound, time_bound_seconds=seconds)
+    if not result["complete"]:
+        if time.monotonic() < deadline:
+            result["late_tail"] = collect(path.with_name(path.name + ".tail"),
+                    ["docker", "logs", "--timestamps", "--tail", "2000", identifier], 1024**2, min(deadline, time.monotonic() + 5))
+        else:
+            result["late_tail"] = {"status": "BUDGET_EXHAUSTED", "bytes": 0, "complete": False}
+    result["elapsed_ms"] = round((time.monotonic() - started) * 1000)
+    write(path.with_name(path.name + ".meta.safe.json"), json.dumps(result, indent=2) + "\n")
+    return result
 
 
 class AdmissionError(RuntimeError):
@@ -85,6 +171,7 @@ def manifest(path):
             and re.fullmatch(r"[0-9a-f]{24}", value["nonce"])
             and value["project"] == "rct-local-stage17-" + value["nonce"][:12]
             and path.parent.name == value["project"], "MANIFEST_IDENTITY")
+    require(value.get("mode") in MODES, "MANIFEST_MODE")
     require(value["source_sha"] == capture(["git", "rev-parse", "HEAD"]).strip(), "SOURCE_REVISION_CHANGED")
     return value
 
@@ -106,24 +193,17 @@ def inventory(project, nonce, *, complete=False):
     return rows
 
 
-def validate_local(*, complete=True, environment=None):
+def validate_local(*, complete=True, environment=None, expected_mode=None):
     """Called before pipeline startup and again immediately before the seed write."""
     environment = os.environ if environment is None else environment
     require(sys.platform == "linux" and not environment.get("GITHUB_ACTIONS")
             and not environment.get("RUNNER_ENVIRONMENT"), "LOCAL_NOT_HOSTED")
     value = manifest(Path(environment.get("RCT_LOCAL_STAGE17_MANIFEST", "")))
-    require(environment.get("RCT_LOCAL_STAGE17_NONCE") == value["nonce"]
-            and environment.get("RCT_REMAINING5_RUN") == value["run"]
-            and environment.get("RCT_E2E_TEACHING_CLOCK_DIR") == value["run"] + "/clock"
-            and environment.get("E2E_BASE_URL") == "https://localhost:8443"
-            and all(environment.get(name) == "true" for name in
-                    ("RCT_E2E_ASYNC_REPORT", "RCT_E2E_REMAINING5", "RCT_E2E_SYNTHETIC_SEED")), "LOCAL_STAGE17_ONLY")
-    for flag in ("RCT_E2E_ADMIN_LIFECYCLE", "RCT_E2E_ROLE_LOGOUT", "RCT_E2E_WEBKIT_SUBSET",
-                 "RCT_E2E_SW_LIFECYCLE", "RCT_E2E_BOT_ROLE_MENU"):
-        require(environment.get(flag) != "true", "LOCAL_STAGE17_ONLY")
+    validate_lane_environment(value, environment, expected_mode)
     for name, expected in value["sources"].items():
         require(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, "SOURCE_BYTES_CHANGED")
     run = Path(value["run"])
+    validate_node_ca(run / "certs/server.crt", environment, value["node_ca_sha256"])
     require(hashlib.sha256((run / "compose.json").read_bytes()).hexdigest() == value["compose_sha256"], "COMPOSE_CHANGED")
     require((run / "clock/disposable-target").read_text() == "RCT_E2E_DISPOSABLE\n", "CLOCK_MARKER")
     owned(run / "artifacts", 0o700, directory=True)
@@ -162,6 +242,30 @@ def validate_local(*, complete=True, environment=None):
     return value
 
 
+def validate_lane_environment(value, environment, expected_mode=None):
+    """Mode and environment are a single manifest-bound admission decision."""
+    mode = value["mode"]
+    require(mode in MODES, "MANIFEST_MODE")
+    require(environment.get("RCT_LOCAL_STAGE17_MODE") == mode
+            and (expected_mode is None or mode == expected_mode), "LOCAL_LANE_MISMATCH")
+    diagnostic = value.get("startup_diagnostic", False)
+    require(type(diagnostic) is bool and (not diagnostic or mode == "client")
+            and environment.get("RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC", "false") == ("true" if diagnostic else "false"),
+            "LOCAL_DIAGNOSTIC_MISMATCH")
+    require(environment.get("RCT_LOCAL_STAGE17_NONCE") == value["nonce"]
+            and environment.get("RCT_REMAINING5_RUN") == value["run"]
+            and environment.get("RCT_E2E_TEACHING_CLOCK_DIR") == value["run"] + "/clock"
+            and environment.get("E2E_BASE_URL") == "https://localhost:8443"
+            and all(environment.get(name) == "true" for name in
+                    ("RCT_E2E_REMAINING5", "RCT_E2E_SYNTHETIC_SEED"))
+            and environment.get("RCT_E2E_ASYNC_REPORT") == ("false" if mode in {"client", "lesson-lifecycle"} else "true")
+            and environment.get("RCT_LESSON_LIFECYCLE_RUN", "") == (value["run"] if mode == "lesson-lifecycle" else ""),
+            "LOCAL_STAGE17_ONLY")
+    for flag in ("RCT_E2E_ADMIN_LIFECYCLE", "RCT_E2E_ROLE_LOGOUT", "RCT_E2E_WEBKIT_SUBSET",
+                 "RCT_E2E_SW_LIFECYCLE", "RCT_E2E_BOT_ROLE_MENU", "RCT_APP_RECOVERY_PROJECT"):
+        require(not environment.get(flag) if flag == "RCT_APP_RECOVERY_PROJECT" else environment.get(flag) != "true", "LOCAL_STAGE17_ONLY")
+
+
 def preflight():
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
@@ -196,7 +300,9 @@ def preflight():
 
 
 class Runner:
-    def __init__(self, mode):
+    def __init__(self, mode, *, startup_diagnostic=False):
+        require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
+        self.startup_diagnostic = startup_diagnostic
         self.mode, self.phase, self.child = mode, "PREPARE", None
         self.nonce = secrets.token_hex(12)
         self.project = "rct-local-stage17-" + self.nonce[:12]
@@ -206,12 +312,16 @@ class Runner:
                    "VIRTUAL_ENV", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE"}
         self.env = {key: value for key, value in os.environ.items() if key in allowed}
         # Explicit synthetic file is the only source of Compose credentials.
-        self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="true", RCT_E2E_REMAINING5="true",
+        self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="false" if mode in {"client", "lesson-lifecycle"} else "true", RCT_E2E_REMAINING5="true",
                         RCT_E2E_SYNTHETIC_BASELINE=BASELINE, E2E_BASE_URL="https://localhost:8443",
                         RCT_E2E_TEACHING_CLOCK_DIR=str(self.run / "clock"), RCT_REMAINING5_RUN=str(self.run),
                         RCT_LOCAL_STAGE17_MANIFEST=str(self.run / "owner.json"), RCT_LOCAL_STAGE17_NONCE=self.nonce,
+                        RCT_LOCAL_STAGE17_MODE=mode,
+                        RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC="true" if startup_diagnostic else "false",
                         PLAYWRIGHT_NO_COPY_PROMPT="1", NODE_OPTIONS="--max-old-space-size=512",
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
+        if mode == "lesson-lifecycle":
+            self.env["RCT_LESSON_LIFECYCLE_RUN"] = str(self.run)
 
     def command(self, phase, args, *, cwd=ROOT, stdin=None):
         self.phase = phase
@@ -270,6 +380,8 @@ class Runner:
         self.command("CERTIFICATES", ["bash", "tests/e2e/infra/scripts/generate-test-certs.sh"])
         self.command("CLOCK_BUILD", ["bash", "gradlew", "e2eClockFixtureJar", "--no-daemon", "--max-workers=1"])
         self.command("CLOCK_PREPARE", ["node", "tests/e2e/backend-clock/prepare-clock.mjs", str(self.run / "clock"), str(ROOT / "build/e2e-clock/clock-fixture.jar")])
+        if self.mode == "lesson-lifecycle":
+            self.prepare_lesson_clock()
         # Compose interpolation receives no ambient credential variables.
         args = ["docker", "compose", "--env-file", str(self.run / "synthetic.env"), "-p", self.project]
         for name in COMPOSE:
@@ -319,13 +431,14 @@ class Runner:
                  and not (".env" in Path(name).name and name != "tests/e2e/.env.ci")}
         paths |= {"scripts/local_e2e_async.py", "tests/e2e/fixtures/local-stage17.ts"}
         hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sorted(paths)}
-        value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce,
-                 "project": self.project, "source_sha": sha, "sources": hashes,
+        value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
+                 "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
+                 "node_ca_sha256": hashlib.sha256((self.run / "certs/server.crt").read_bytes()).hexdigest(),
                  "images": sorted(self.image_targets),
                  "compose_sha256": hashlib.sha256((self.run / "compose.json").read_bytes()).hexdigest(),
                  "dirty": bool(capture(["git", "status", "--porcelain", "--untracked-files=normal"]).strip()),
                  "diff_sha256": hashlib.sha256(subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=ROOT)).hexdigest(),
-                 "qualification": "Local source bytes recorded; HEAD identity does not assert a clean checkout"}
+                 "qualification": "Fresh isolated local lane; does not reproduce preceding CI steps. Source bytes recorded; HEAD identity does not assert a clean checkout"}
         write(self.run / "owner.json", json.dumps(value, indent=2) + "\n")
         self.env["NODE_EXTRA_CA_CERTS"] = str(self.run / "certs/server.crt")
         self.trust()
@@ -334,7 +447,28 @@ class Runner:
         package = ROOT / "tests/e2e/node_modules/@playwright/test/package.json"
         if not package.is_file() or json.loads(package.read_text())["version"] != lock["packages"]["node_modules/@playwright/test"]["version"]:
             self.command("NPM_CI", ["npm", "ci", "--ignore-scripts"], cwd=ROOT / "tests/e2e")
-        emit("PREPARED", run=str(self.run), source_sha=sha, dirty=value["dirty"])
+        emit("PREPARED", mode=self.mode, run=str(self.run), source_sha=sha, dirty=value["dirty"],
+             startup_diagnostic=self.startup_diagnostic, qualification="FRESH_ISOLATED_LANE")
+
+    def prepare_lesson_clock(self):
+        """Before boot only: the final CI lane uses a future weekday at 09:00 Moscow."""
+        directory = self.run / "clock"
+        owned(directory, 0o755, directory=True)
+        marker, clock = directory / "disposable-target", directory / "current-instant"
+        owned(marker, 0o644)
+        owned(clock, 0o644)
+        require(marker.read_bytes() == b"RCT_E2E_DISPOSABLE\n", "CLOCK_MARKER")
+        original = clock.read_text()
+        require(re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\n", original), "CLOCK_INSTANT")
+        current = datetime.datetime.fromisoformat(original.strip().replace("Z", "+00:00"))
+        moscow = ZoneInfo("Europe/Moscow")
+        date = max(current.astimezone(moscow).date(), datetime.datetime.now(moscow).date()) + datetime.timedelta(days=1)
+        while date.weekday() >= 5:
+            date += datetime.timedelta(days=1)
+        future = datetime.datetime.combine(date, datetime.time(9), moscow).astimezone(datetime.timezone.utc)
+        require(future > current, "CLOCK_NOT_FORWARD")
+        # No services have started and this new directory is exclusively owned.
+        clock.write_text(future.isoformat(timespec="milliseconds").replace("+00:00", "Z") + "\n")
 
     def trust(self):
         database = self.run / "home/.local/share/pki/nssdb"
@@ -364,10 +498,18 @@ class Runner:
                 self.image_ids[service["image"]] = identifier
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         validate_local(environment=self.env)
+        node_tls_probe(self.run / "certs/server.crt", self.env)
         self.command("NOTIFICATION_KEY_ISOLATION", self.compose("exec", "-T", "notification-web", "sh", "-c", "test ! -e /keys/private.key && test ! -L /keys/private.key"))
-        sys.path.insert(0, str(ROOT / "infra/prometheus/tests"))
-        import check_pipeline
+        if self.mode in {"client", "lesson-lifecycle"}:
+            config = "playwright.real-mobile.config.ts" if self.mode == "client" else "playwright.lesson-lifecycle.config.ts"
+            self.command("CLIENT_REMAINING5" if self.mode == "client" else "LESSON_LIFECYCLE",
+                         ["npx", "playwright", "test", "--config", config, "--project=chromium",
+                          *(["--max-failures=1"] if self.startup_diagnostic else [])], cwd=ROOT / "tests/e2e")
+            emit("BROWSER_LANE_RESULT", mode=self.mode, result="PASS", qualification="FRESH_ISOLATED_LANE")
+            return
         if self.mode == "openapi":
+            sys.path.insert(0, str(ROOT / "infra/prometheus/tests"))
+            import check_pipeline
             self.phase = "GATEWAY_OPENAPI"
             emit(self.phase, state="RUNNING", strict_timeout_seconds=5)
             safe = {"schema": 1, "result": "FAIL", "phase": "GATEWAY_OPENAPI_PRECHECK"}
@@ -432,6 +574,18 @@ class Runner:
                 and value[1] == self.nonce, "FOREIGN_IMAGE_TAG")
         return value[0]
 
+    def preserve_logs(self):
+        """Nonce-owned container output stays private, bounded, and precedes removal."""
+        rows = inventory(self.project, self.nonce)
+        deadline = time.monotonic() + 120
+        receipt = []
+        for row in rows:
+            service = row["Config"]["Labels"]["com.docker.compose.service"]
+            result = retain_container_log(row["Id"], self.run / ("container-" + service + ".private.log"), deadline=deadline)
+            receipt.append({"service": service, **result})
+        write(self.run / "container-logs.safe.json", json.dumps(receipt, indent=2) + "\n")
+        return all(item["complete"] for item in receipt)
+
     def cleanup(self):
         # Never use broad down/prune. Fresh ownership checks precede every removal.
         rows = inventory(self.project, self.nonce)
@@ -471,12 +625,19 @@ class Runner:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("preflight", "prepare", "openapi", "full", "admit"), nargs="?", default="openapi")
+    parser.add_argument("mode", choices=("preflight", *sorted(MODES), "admit"), nargs="?", default="openapi")
+    parser.add_argument("--expected-mode", choices=sorted(MODES))
+    parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     args = parser.parse_args()
+    require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
     if args.mode == "admit":
-        validate_local()
-        emit("LOCAL_STAGE17_ADMITTED")
+        value = validate_local(expected_mode=args.expected_mode)
+        if args.expected_mode is None:
+            emit("LOCAL_STAGE17_ADMITTED")
+        else:
+            emit("LOCAL_STAGE17_ADMITTED", mode=value["mode"], project=value["project"], nonce=value["nonce"])
         return
+    require(args.expected_mode is None, "EXPECTED_MODE_ADMIT_ONLY")
     preflight()
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
@@ -489,7 +650,7 @@ def main():
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         preflight()  # Race guard after owning the shared fixed-port lease.
-        runner = Runner(args.mode)
+        runner = Runner(args.mode, startup_diagnostic=args.diagnose_startup)
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             runner.prepare()
@@ -498,22 +659,28 @@ def main():
             result = "PASS"
         finally:
             primary = sys.exc_info()[1]
-            cleanup_error = None
+            cleanup_error, logs_error, logs_complete = None, None, True
             if runner.run.exists():
+                try:
+                    logs_complete = runner.preserve_logs() is not False
+                except BaseException as error:
+                    logs_error = error
                 try:
                     runner.cleanup()
                     cleanup = "PASS"
                 except BaseException as error:
                     cleanup = "FAIL_RETAINED_FOR_OWNER"
                     cleanup_error = error
-                failure = primary or cleanup_error
+                failure = primary or logs_error or cleanup_error
                 error_kind = ("INTERRUPTED" if isinstance(failure, KeyboardInterrupt) else
                               type(failure).__name__ if type(failure).__name__ in {
                                   "AdmissionError", "CalledProcessError", "TimeoutExpired", "OSError",
                                   "ValueError", "KeyError", "AssertionError", "RuntimeError", "TypeError"} else
                               "OTHER" if failure is not None else None)
                 code = getattr(failure, "returncode", None)
-                receipt = {"result": "FAIL" if failure else result, "phase": runner.phase, "cleanup": cleanup,
+                receipt = {"result": "FAIL" if failure else result, "phase": runner.phase, "cleanup": cleanup, "mode": args.mode,
+                           "startup_diagnostic": args.diagnose_startup,
+                           "container_logs": "FAIL" if logs_error else "PASS" if logs_complete else "PARTIAL",
                            "run": str(runner.run), "error_kind": error_kind,
                            "exit_code": 130 if isinstance(failure, KeyboardInterrupt) else 1 if failure else 0,
                            "child_returncode": code if type(code) is int and -128 <= code <= 255 else None,
@@ -526,8 +693,8 @@ def main():
                 except BaseException:
                     if failure is None:
                         raise
-            if primary is None and cleanup_error is not None:
-                raise cleanup_error
+            if primary is None and (logs_error or cleanup_error) is not None:
+                raise logs_error or cleanup_error
 
 
 if __name__ == "__main__":

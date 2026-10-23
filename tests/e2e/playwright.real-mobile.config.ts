@@ -3,7 +3,7 @@ import { isAbsolute, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
 import existing from './playwright.config';
 import { readTeachingInstant } from './fixtures/teaching-clock';
-import { requireLocalStage17 } from './fixtures/local-stage17';
+import { requireLocalLane } from './fixtures/local-stage17';
 
 // Pinned Playwright checks this before reading a page snapshot, including during teardown.
 process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
@@ -14,7 +14,13 @@ const roleLogout = process.env.RCT_E2E_ROLE_LOGOUT === 'true';
 const webkitSubset = process.env.RCT_E2E_WEBKIT_SUBSET === 'true';
 const workerLifecycle = process.env.RCT_E2E_SW_LIFECYCLE === 'true';
 const asyncReport = process.env.RCT_E2E_ASYNC_REPORT === 'true';
-const localStage17 = requireLocalStage17();
+const localStage17 = requireLocalLane(
+  asyncReport ? 'full' : process.env.RCT_LESSON_LIFECYCLE_RUN ? 'lesson-lifecycle' : 'client',
+);
+const startupDiagnostic = process.env.RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC === 'true';
+if (startupDiagnostic && (!localStage17 || !remaining5 || asyncReport || process.env.RCT_LESSON_LIFECYCLE_RUN)) {
+  throw new Error('Startup diagnostics require the admitted local client lane');
+}
 const botRoleMenu = process.env.RCT_E2E_BOT_ROLE_MENU === 'true';
 if (
   asyncReport &&
@@ -50,10 +56,10 @@ export default defineConfig<
 >({
   ...existing,
   outputDir: remaining5 ? join(run!, 'artifacts') : './test-results/real-mobile',
-  reporter: [['./fixtures/safe-reporter.ts']],
+  reporter: [['./fixtures/safe-reporter.ts', ...(startupDiagnostic ? [{ localStartupDiagnostic: true }] : [])]],
   use: {
     ...existing.use,
-    ...(localStage17 ? { ignoreHTTPSErrors: false } : {}),
+    ignoreHTTPSErrors: false,
     trace: 'off',
     video: 'off',
     screenshot: 'off',

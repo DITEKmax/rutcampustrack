@@ -5,6 +5,7 @@ import {
   classifySafeFailure,
   discardReportedFailureHint,
   reportedFailureHints,
+  retainReportedFrameworkError,
   safeFailureAnnotation,
   safeFailureDiagnostics,
 } from './safe-reporter';
@@ -192,6 +193,7 @@ export function sanitizeTestErrors(info: TestInfo): void {
       message?.value !==
       'Check failed; source location and outcome are recorded in safe-results.json'
     ) {
+      retainReportedFrameworkError(info.annotations, error);
       recordSafeFailure(info, error);
       recordReportedHints(info, error);
     }

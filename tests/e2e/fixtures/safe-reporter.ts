@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { basename, isAbsolute, relative, resolve } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { isIP } from 'node:net';
 import type {
   FullConfig,
@@ -8,6 +8,7 @@ import type {
   TestCase,
   TestError,
   TestResult,
+  TestStep,
 } from '@playwright/test/reporter';
 
 import {
@@ -1897,7 +1898,159 @@ export function retainD002ReconnectObservation(
   annotations.push({ type: d002ReconnectObservationAnnotation, description });
 }
 
+const startupFixtureStages = {
+  'Fixture "browser"': 'BROWSER_LAUNCH',
+  'Fixture "_contextFactory"': 'CONTEXT_FACTORY',
+  'Fixture "context"': 'CONTEXT_CREATE',
+  'Fixture "page"': 'PAGE_CREATE',
+  'Fixture "dataset"': 'DATASET_SETUP',
+} as const;
+const startupApiStages = {
+  'Launch browser': 'BROWSER_LAUNCH',
+  'Create context': 'CONTEXT_CREATE',
+  'Create page': 'PAGE_CREATE',
+  'Create request context': 'REQUEST_CONTEXT_CREATE',
+} as const;
+type StartupStage = (typeof startupFixtureStages)[keyof typeof startupFixtureStages]
+  | (typeof startupApiStages)[keyof typeof startupApiStages] | 'CLOCK_INSTALL' | 'API_GET' | 'API_POST' | 'OTHER_FRAMEWORK_STEP';
+const startupFiles = {
+  MOBILE_DATASET: resolve(__dirname, 'mobile-dataset.ts'),
+  PWA_AUTH: resolve(__dirname, 'pwa-auth.ts'),
+  TEACHING_CLOCK: resolve(__dirname, 'teaching-clock.ts'),
+  ARTIFACT_PRIVACY: resolve(__dirname, 'artifact-privacy.ts'),
+  MOBILE_SPEC: resolve(__dirname, '../specs/mobile-real-server.spec.ts'),
+  PRIVACY_CONTROL: resolve(__dirname, '../artifact-controls/privacy.control.spec.ts'),
+  PLAYWRIGHT_FIXTURE_RUNNER: resolve(dirname(require.resolve('playwright/package.json')), 'lib/worker/fixtureRunner.js'),
+  PLAYWRIGHT_TEST_INFO: resolve(dirname(require.resolve('playwright/package.json')), 'lib/worker/testInfo.js'),
+  PLAYWRIGHT_INDEX: resolve(dirname(require.resolve('playwright/package.json')), 'lib/index.js'),
+} as const;
+type StartupSource = { file: keyof typeof startupFiles; line: number; column: number };
+interface StartupFailure {
+  stage: StartupStage;
+  completedSetup: StartupStage[];
+  reportedErrorClass: 'Error' | 'TypeError' | 'RangeError' | 'ReferenceError' | 'SyntaxError' | 'TimeoutError' | 'UNKNOWN';
+  reportedTransportCode: 'TLS_CERTIFICATE' | 'ECONNREFUSED' | 'ECONNRESET' | 'ETIMEDOUT' | 'ENOTFOUND' | 'EACCES' | 'ENOENT' | 'TARGET_CLOSED' | 'TIMEOUT' | 'UNKNOWN';
+  reportedSourceFrame: StartupSource | null;
+}
+
+function startupStage(step: unknown, ancestors = true): StartupStage {
+  let current = step;
+  for (let depth = 0; depth < (ancestors ? 8 : 1); depth++) {
+    const category = ownData(current, 'category');
+    const title = ownData(current, 'title');
+    const mapping = category === 'fixture' ? startupFixtureStages : category === 'pw:api' ? startupApiStages : undefined;
+    if (mapping && typeof title === 'string' && Object.prototype.hasOwnProperty.call(mapping, title))
+      return mapping[title as keyof typeof mapping];
+    // Pinned public step titles contain arguments. Match their shape in RAM, emit only the enum.
+    if (category === 'pw:api' && typeof title === 'string' && title.length <= 512) {
+      if (/^Install clock "[^"\r\n]{1,128}"$/.test(title)) return 'CLOCK_INSTALL';
+      if (/^GET "[^"\r\n]{0,256}"$/.test(title)) return 'API_GET';
+      if (/^POST "[^"\r\n]{0,256}"$/.test(title)) return 'API_POST';
+    }
+    current = ownData(current, 'parent');
+    if (!current) break;
+  }
+  return 'OTHER_FRAMEWORK_STEP';
+}
+
+function startupSource(file: unknown, line: unknown, column: unknown): StartupSource | null {
+  if (typeof file !== 'string' || typeof line !== 'number' || typeof column !== 'number' ||
+      !Number.isInteger(line) || !Number.isInteger(column) || line <= 0 || column <= 0) return null;
+  const match = Object.entries(startupFiles).find(([, path]) => path === file);
+  if (!match) return null;
+  try {
+    const lines = readFileSync(file, 'utf8').split('\n');
+    if (line > lines.length || column > lines[line - 1].length + 1) return null;
+    return { file: match[0] as keyof typeof startupFiles, line, column };
+  } catch {
+    return null;
+  }
+}
+
+/** Serialized framework observations only; none of these fields authenticates a product cause. */
+export function closedStartupFailure(step: unknown, completed: readonly StartupStage[] = []): StartupFailure {
+  const error = ownData(step, 'error');
+  const rawMessage = ownData(error, 'message');
+  const message = typeof rawMessage === 'string' && rawMessage.length <= 16384 ? rawMessage : '';
+  const classMatch = /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|TimeoutError):/.exec(message);
+  const transport = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EACCES', 'ENOENT'] as const;
+  const code = transport.find((candidate) => new RegExp(`(?:^|[^A-Z0-9_])${candidate}(?:$|[^A-Z0-9_])`).test(message));
+  let source: StartupSource | null = null;
+  const stack = ownData(error, 'stack');
+  if (typeof stack === 'string' && stack.length <= 16384) {
+    for (const line of stack.split('\n').slice(0, 64)) {
+      if (line.length > 1024) continue;
+      const frame = /^    at (?:[^()\r\n]{1,128} )?\(([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})\)$/.exec(line)
+        ?? /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,5})$/.exec(line);
+      if (frame) source = startupSource(frame[1], Number(frame[2]), Number(frame[3]));
+      if (source) break;
+    }
+  }
+  if (!source) {
+    const location = ownData(step, 'location');
+    source = startupSource(ownData(location, 'file'), ownData(location, 'line'), ownData(location, 'column'));
+  }
+  const allowedStages = new Set<StartupStage>([...Object.values(startupFixtureStages), ...Object.values(startupApiStages), 'CLOCK_INSTALL']);
+  return {
+    stage: startupStage(step),
+    completedSetup: [...new Set(completed.filter((stage) => allowedStages.has(stage)))].slice(0, 12),
+    reportedErrorClass: classMatch ? classMatch[1] as StartupFailure['reportedErrorClass'] : 'UNKNOWN',
+    reportedTransportCode: /\b(?:ERR_CERT_AUTHORITY_INVALID|ERR_CERT_COMMON_NAME_INVALID|CERT_HAS_EXPIRED|SELF_SIGNED_CERT_IN_CHAIN|DEPTH_ZERO_SELF_SIGNED_CERT)\b|self[- ]signed certificate|unable to verify (?:the first certificate|leaf signature)|unable to get local issuer certificate|certificate (?:has expired|is not yet valid)/i.test(message)
+      ? 'TLS_CERTIFICATE' : code ?? (/Target page, context or browser has been closed|Target closed/.test(message) ? 'TARGET_CLOSED'
+        : classMatch?.[1] === 'TimeoutError' || /\bTimeout [0-9]{1,6}ms exceeded\b|\bRequest timed out after [0-9]{1,6}ms\b/.test(message) ? 'TIMEOUT' : 'UNKNOWN'),
+    reportedSourceFrame: source,
+  };
+}
+
+const reportedFrameworkErrorAnnotation = 'rct-reported-framework-error-v1';
+type ReportedFrameworkError = Pick<StartupFailure, 'reportedErrorClass' | 'reportedTransportCode' | 'reportedSourceFrame'> & {
+  reportedHttpStatus: FailureHttpStatus;
+};
+
+/** Closed reported text from an actual TestInfo error, captured before sanitization; never an authenticated cause. */
+export function retainReportedFrameworkError(annotations: TestResult['annotations'], error: unknown): void {
+  if (annotations.length >= 32 || safeReportedFrameworkError(annotations)) return;
+  const projection = closedStartupFailure({ error });
+  const status = classifySafeFailure(error).httpStatus;
+  const value: ReportedFrameworkError = {
+    reportedErrorClass: projection.reportedErrorClass,
+    reportedTransportCode: projection.reportedTransportCode,
+    reportedSourceFrame: projection.reportedSourceFrame,
+    reportedHttpStatus: typeof status === 'number' && failureHttpStatuses.some((item) => item === status) ? status as FailureHttpStatus : 0,
+  };
+  annotations.push({ type: reportedFrameworkErrorAnnotation, description: JSON.stringify(value) });
+}
+
+function safeReportedFrameworkError(annotations: unknown): ReportedFrameworkError | undefined {
+  if (!Array.isArray(annotations)) return;
+  for (let index = 0; index < Math.min(annotations.length, 32); index++) {
+    const annotation = ownData(annotations, String(index));
+    if (ownData(annotation, 'type') !== reportedFrameworkErrorAnnotation) continue;
+    const description = ownData(annotation, 'description');
+    if (typeof description !== 'string' || description.length > 1024) continue;
+    try {
+      const value = JSON.parse(description);
+      if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).length !== 4 ||
+          !['reportedErrorClass', 'reportedTransportCode', 'reportedSourceFrame', 'reportedHttpStatus'].every((key) => Object.hasOwn(value, key)) ||
+          !['Error', 'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TimeoutError', 'UNKNOWN'].includes(value.reportedErrorClass) ||
+          !['TLS_CERTIFICATE', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EACCES', 'ENOENT', 'TARGET_CLOSED', 'TIMEOUT', 'UNKNOWN'].includes(value.reportedTransportCode) ||
+          !failureHttpStatuses.some((status) => status === value.reportedHttpStatus)) continue;
+      let source: StartupSource | null = null;
+      if (value.reportedSourceFrame !== null) {
+        const frame = value.reportedSourceFrame;
+        if (!frame || typeof frame !== 'object' || Array.isArray(frame) || Object.keys(frame).length !== 3 ||
+            !Object.hasOwn(startupFiles, frame.file)) continue;
+        source = startupSource(startupFiles[frame.file as keyof typeof startupFiles], frame.line, frame.column);
+        if (!source) continue;
+      }
+      return { reportedErrorClass: value.reportedErrorClass, reportedTransportCode: value.reportedTransportCode,
+        reportedHttpStatus: value.reportedHttpStatus, reportedSourceFrame: source };
+    } catch { /* Malformed/unbounded untrusted annotations add no diagnostic. */ }
+  }
+}
+
 interface SafeResult {
+  reportedFrameworkError?: ReportedFrameworkError;
   file: string;
   line: number;
   project: string;
@@ -1911,6 +2064,7 @@ interface SafeResult {
   ownedContainerIdentityFailure?: OwnedContainerIdentityFailure;
   nativePrimaryFailures?: NativePrimaryFailure[];
   d002ReconnectObservation?: D002ReconnectObservation;
+  startupFailure?: StartupFailure;
 }
 
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
@@ -1921,6 +2075,12 @@ export default class SafeReporter implements Reporter {
   private suppressedStdoutBytes = 0;
   private suppressedStderrBytes = 0;
   private unsafeArtifact = false;
+  private startupDiagnostic: boolean;
+  private startup = new WeakMap<TestResult, { completed: StartupStage[]; failure?: StartupFailure }>();
+
+  constructor(options: unknown = {}) {
+    this.startupDiagnostic = ownData(options, 'localStartupDiagnostic') === true;
+  }
 
   printsToStdio() {
     return true;
@@ -1937,6 +2097,18 @@ export default class SafeReporter implements Reporter {
   }
   onError(_error: TestError) {
     this.runnerErrors++;
+  }
+  onStepEnd(_test: TestCase, result: TestResult, step: TestStep) {
+    if (!this.startupDiagnostic) return;
+    const state = this.startup.get(result) ?? { completed: [] };
+    if (state.failure) return;
+    if (ownData(step, 'error')) state.failure = closedStartupFailure(step, state.completed);
+    else {
+      const stage = startupStage(step, false);
+      if (stage !== 'OTHER_FRAMEWORK_STEP' && stage !== 'API_GET' && stage !== 'API_POST' && !state.completed.includes(stage) && state.completed.length < 12)
+        state.completed.push(stage);
+    }
+    this.startup.set(result, state);
   }
   onTestEnd(test: TestCase, result: TestResult) {
     const row: SafeResult = {
@@ -1958,6 +2130,12 @@ export default class SafeReporter implements Reporter {
     if (identityFailure) row.ownedContainerIdentityFailure = identityFailure;
     const nativePrimaryFailures = safeNativePrimaryFailures(result.annotations);
     if (nativePrimaryFailures.length) row.nativePrimaryFailures = nativePrimaryFailures;
+    const startupFailure = this.startup.get(result)?.failure;
+    if (result.errors.length && result.status !== 'passed' && result.status !== 'skipped') {
+      const reported = safeReportedFrameworkError(result.annotations);
+      if (reported) row.reportedFrameworkError = reported;
+    }
+    if (startupFailure && result.status !== 'passed' && result.status !== 'skipped') row.startupFailure = startupFailure;
     if (
       test.location.file === resolve(__dirname, '../specs/mobile-real-server.spec.ts') &&
       test.title === d002ReconnectTitle &&
@@ -1999,6 +2177,7 @@ export default class SafeReporter implements Reporter {
           unsafeArtifact: this.unsafeArtifact,
           suppressedStdoutBytes: this.suppressedStdoutBytes,
           suppressedStderrBytes: this.suppressedStderrBytes,
+          ...(this.startupDiagnostic ? { diagnosticScope: 'LOCAL_CLIENT_FIRST_FAILURE' } : {}),
           results: this.results,
         },
         null,

@@ -3,6 +3,9 @@ import { isAbsolute, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
 import existing from './playwright.real-mobile.config';
 import { readTeachingInstant } from './fixtures/teaching-clock';
+import { requireLocalLane } from './fixtures/local-stage17';
+
+requireLocalLane('lesson-lifecycle');
 
 const teachingInstant = readTeachingInstant(process.env.RCT_E2E_TEACHING_CLOCK_DIR);
 const run = process.env.RCT_LESSON_LIFECYCLE_RUN;

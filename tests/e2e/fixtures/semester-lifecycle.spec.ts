@@ -33,7 +33,7 @@ import {
   ownedContainerIdentityChanges,
   type OwnedContainerIdentityFailure,
 } from './owned-container-identity';
-
+import { normalizeDockerHealthTimestamp, observeHealth, withoutGatewayAdmissionDiagnostic, writeHealthDiagnostic } from './semester-health-diagnostic';
 type Row = Record<string, any>;
 
 type SemesterStage =
@@ -3504,26 +3504,29 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
         !Number.isFinite(observedAt)
       )
         return unknown();
+      const startWire = normalizeDockerHealthTimestamp(row.Start),
+        endWire = normalizeDockerHealthTimestamp(row.End);
+      if (startWire === null || endWire === null) return unknown();
       const utc = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/;
       if (
-        !utc.test(row.Start) ||
-        !utc.test(row.End) ||
-        row.Start.trim() !== row.Start ||
-        row.End.trim() !== row.End
+        !utc.test(startWire) ||
+        !utc.test(endWire) ||
+        startWire.trim() !== startWire ||
+        endWire.trim() !== endWire
       )
         return unknown();
-      const start = Date.parse(row.Start),
-        end = Date.parse(row.End);
+      const start = Date.parse(startWire),
+        end = Date.parse(endWire);
       if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || end > observedAt)
         return unknown();
       if (
-        new Date(start).toISOString().slice(0, 19) !== row.Start.slice(0, 19) ||
-        new Date(end).toISOString().slice(0, 19) !== row.End.slice(0, 19) ||
-        row.Start.replace(
+        new Date(start).toISOString().slice(0, 19) !== startWire.slice(0, 19) ||
+        new Date(end).toISOString().slice(0, 19) !== endWire.slice(0, 19) ||
+        startWire.replace(
           /(?:\.(\d{1,9}))?Z$/,
           (_, fraction = '') => `.${fraction.padEnd(9, '0')}Z`,
         ) >
-          row.End.replace(
+          endWire.replace(
             /(?:\.(\d{1,9}))?Z$/,
             (_, fraction = '') => `.${fraction.padEnd(9, '0')}Z`,
           )
@@ -3612,7 +3615,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
           JSON.stringify(initialAddresses) === JSON.stringify(currentAddresses),
         'Owned Attendance network addresses changed',
       );
-      const health = recoveryHealthRead(current.healthLog, scheduleReturnedAt!, Date.now());
+      const health = observeHealth(diagnostic, 'ATTENDANCE', current.healthLog, scheduleReturnedAt!, Date.now(), recoveryHealthRead, run);
       diagnostic.recoveryHealthLastRead = health;
       // Passive Docker health snapshots do not initiate an Academic business RPC.
       const academic = identity('academic-service', Math.min(5000, remaining()));
@@ -3637,10 +3640,10 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
           JSON.stringify(academicMembership) === JSON.stringify(academicPinnedMembership),
         'Pinned Academic network addresses changed',
       );
-      const academicHealth = recoveryHealthRead(
-        academic.healthLog,
+      const academicHealth = observeHealth(
+        diagnostic, 'ACADEMIC', academic.healthLog,
         scheduleReturnedAt!,
-        Date.now(),
+        Date.now(), recoveryHealthRead, run,
       );
       diagnostic.academicRecoveryHealthLastRead = {
         channelState: academicHealth.channelState,
@@ -4063,13 +4066,14 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
             return;
           }
           if (row.requestId !== readinessRequest.id) continue;
-          const match =
+          const message = withoutGatewayAdmissionDiagnostic(row.msg, owned[0]);
+          const match = message === null ? null :
             /^semester\.preview failure source=([A-Z_]+) stage=([A-Z_]+) status=([A-Z_0-9]+) cause=([A-Z_]+)(?: channelBefore=([A-Z_]+) channelAtFailure=([A-Z_]+) connectKind=([A-Z_]+) endpointRelation=(UNKNOWN))?$/.exec(
-              row.msg,
+              message,
             );
           if (
             !match ||
-            match[0] !== row.msg ||
+            match[0] !== message ||
             match[1] !== owned[0] ||
             !(readinessSources[owned[0]].stages as readonly string[]).includes(match[2]) ||
             !(readinessCauses as readonly string[]).includes(match[4])
@@ -5308,7 +5312,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         Buffer.byteLength(safeDiagnostic, 'utf8') <= 4096,
         'Reconciliation diagnostic must remain bounded',
       );
-      writeFileSync(join(run, 'reconciliation.safe.json'), safeDiagnostic, {
+      writeHealthDiagnostic(diagnostic, run, safeDiagnostic, {
         mode: 0o600,
         flag: 'wx',
       });

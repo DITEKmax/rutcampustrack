@@ -13,6 +13,8 @@ import { deniedMark } from '../fixtures/cloud-accepted-support';
 import { Actor, type MobileDataset } from '../fixtures/mobile-dataset';
 import { rosterEditBlockFacts, validateFacts } from '../fixtures/first3-observer';
 import SafeReporter, {
+  closedStartupFailure,
+  retainReportedFrameworkError,
   createD002ReconnectObserver,
   d002ReconnectObservationAnnotation,
   retainD002ReconnectObservation,
@@ -54,6 +56,121 @@ const { renderTitleForCall } = require(
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
 
 test('helper mark diagnostic: closed facts reject private and inconsistent projections', async ({}, info) => {
+  let startupGetterReads = 0;
+  const hostileStartup = Object.fromEntries(['message', 'stack', 'code'].map((key) => [key, null]));
+  for (const key of Object.keys(hostileStartup)) Object.defineProperty(hostileStartup, key, {
+    get() { startupGetterReads++; throw new Error(marker); },
+  });
+  const unknownStartup = closedStartupFailure({ category: 'fixture', title: 'Fixture "dataset"', error: hostileStartup });
+  expect(startupGetterReads).toBe(0);
+  expect(unknownStartup).toEqual({ stage: 'DATASET_SETUP', completedSetup: [], reportedErrorClass: 'UNKNOWN', reportedTransportCode: 'UNKNOWN', reportedSourceFrame: null });
+  const startupStep = {
+    category: 'pw:api', title: marker,
+    parent: { category: 'fixture', title: 'Fixture "dataset"' },
+    error: { message: `Error: ECONNREFUSED ${marker}`, stack: `Error: ${marker}\n    at (${__filename}:1:1)` },
+  };
+  const startupProjection = closedStartupFailure(startupStep, ['BROWSER_LAUNCH', marker as never, 'BROWSER_LAUNCH']);
+  expect(startupProjection.stage).toBe('DATASET_SETUP');
+  expect(startupProjection.completedSetup).toEqual(['BROWSER_LAUNCH']);
+  expect(startupProjection.reportedTransportCode).toBe('ECONNREFUSED');
+  expect(startupProjection.reportedSourceFrame).toEqual({ file: 'PRIVACY_CONTROL', line: 1, column: 1 });
+  expect(JSON.stringify(startupProjection)).not.toContain(marker);
+  for (const [title, stage] of [['Install clock "' + marker + '"', 'CLOCK_INSTALL'], ['GET "/' + marker + '"', 'API_GET'], ['POST "/' + marker + '"', 'API_POST']]) {
+    const projection = closedStartupFailure({ ...startupStep, title });
+    expect(projection.stage).toBe(stage);
+    expect(JSON.stringify(projection)).not.toContain(marker);
+  }
+  for (const stack of [`    at (${marker}:1:1)`, `    at (${__filename}:999999:1)`, `    at (${__filename}:1:999999)`])
+    expect(closedStartupFailure({ ...startupStep, error: { stack } }).reportedSourceFrame).toBeNull();
+  const startupDir = mkdtempSync(join(tmpdir(), 'rct-startup-projection-'));
+  try {
+    for (const enabled of [false, true]) {
+      const reporter = enabled ? new SafeReporter({ localStartupDiagnostic: true }) : new SafeReporter();
+      reporter.onBegin({ projects: [{ outputDir: startupDir }] } as never);
+      const attachment = join(startupDir, 'startup.safe.json');
+      writeFileSync(attachment, '{}');
+      const result = { status: 'failed', duration: 1, errors: [{}], annotations: [], attachments: [{ path: attachment }] };
+      reporter.onStepEnd({} as never, result as never, { category: 'fixture', title: 'Fixture "browser"' } as never);
+      reporter.onStepEnd({} as never, result as never, startupStep as never);
+      reporter.onStepEnd({} as never, result as never, { category: 'fixture', title: 'Fixture "context"', error: { message: 'Error: EACCES' } } as never);
+      reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never, result as never);
+      const retained = JSON.parse(readFileSync(attachment, 'utf8')).startupFailure;
+      if (enabled) expect(retained).toEqual({ ...startupProjection, completedSetup: ['BROWSER_LAUNCH'] });
+      else expect(retained).toBeUndefined();
+    }
+  } finally {
+    rmSync(startupDir, { recursive: true, force: true });
+  }
+  const frameworkDir = mkdtempSync(join(tmpdir(), 'rct-framework-projection-'));
+  try {
+    for (const [message, transport] of [
+      [`Error: self-signed certificate ${marker}`, 'TLS_CERTIFICATE'],
+      [`TimeoutError: apiRequestContext.post: Timeout 10000ms exceeded ${marker}`, 'TIMEOUT'],
+      [`Error: ECONNREFUSED ${marker}`, 'ECONNREFUSED'],
+      [`Error: Target page, context or browser has been closed ${marker}`, 'TARGET_CLOSED'],
+    ]) {
+      const annotations: { type: string; description?: string }[] = [];
+      const error = { message, stack: `Error: ${marker}\n    at (${__filename}:1:1)` };
+      const info = { file: __filename, line: 1, status: 'failed', annotations, errors: [error], attachments: [] } as unknown as TestInfo;
+      sanitizeTestErrors(info);
+      expect(error.message).not.toContain(marker);
+      retainReportedFrameworkError(annotations, { message: `Error: ENOENT ${marker}` });
+      const reporter = new SafeReporter();
+      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never);
+      const attachment = join(frameworkDir, 'framework.safe.json');
+      writeFileSync(attachment, '{}');
+      reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never,
+        { status: 'failed', duration: 1, errors: [error], annotations, attachments: [{ path: attachment }] } as never);
+      const json = readFileSync(attachment, 'utf8');
+      expect(json).not.toContain(marker);
+      expect(JSON.parse(json).reportedFrameworkError).toEqual({ reportedErrorClass: message.startsWith('TimeoutError') ? 'TimeoutError' : 'Error',
+        reportedTransportCode: transport, reportedSourceFrame: { file: 'PRIVACY_CONTROL', line: 1, column: 1 }, reportedHttpStatus: 0 });
+    }
+    const authFile = resolve(__dirname, '../fixtures/pwa-auth.ts');
+    const authSource = readFileSync(authFile, 'utf8').split('\n');
+    const authLine = authSource.findIndex((line) => line.includes("await expect(page.getByRole('navigation'")) + 1;
+    expect(authLine).toBeGreaterThan(0);
+    const helperFrame = { file: 'PWA_AUTH', line: authLine, column: 3 };
+    const helperStack = `Error: ${marker}\n    at loginPwa (${authFile}:${authLine}:3)\n    at (${__filename}:1:1)`;
+    expect(closedStartupFailure({ error: { stack: helperStack } }).reportedSourceFrame).toEqual(helperFrame);
+    for (const [file, line, column] of [
+      [join(dirname(authFile), 'foreign-pwa-auth.ts'), authLine, 3],
+      [authFile, 0, 3], [authFile, authSource.length + 1, 3],
+      [authFile, authLine, 0], [authFile, authLine, authSource[authLine - 1].length + 2],
+    ])
+      expect(closedStartupFailure({ error: { stack: `Error: ${marker}\n    at (${file}:${line}:${column})` } }).reportedSourceFrame).toBeNull();
+    for (const diagnostic of [false, true]) {
+      const annotations: { type: string; description?: string }[] = [];
+      const error = { message: `Error: ${marker}`, stack: helperStack };
+      sanitizeTestErrors({ file: __filename, line: 1, status: 'failed', annotations, errors: [error], attachments: [] } as unknown as TestInfo);
+      const reporter = diagnostic ? new SafeReporter({ localStartupDiagnostic: true }) : new SafeReporter();
+      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never);
+      const attachment = join(frameworkDir, 'auth-frame.safe.json');
+      writeFileSync(attachment, '{}');
+      reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never,
+        { status: 'failed', duration: 1, errors: [error], annotations, attachments: [{ path: attachment }] } as never);
+      const text = readFileSync(attachment, 'utf8');
+      expect(JSON.parse(text).reportedFrameworkError).toEqual({ reportedErrorClass: 'Error', reportedTransportCode: 'UNKNOWN', reportedSourceFrame: helperFrame, reportedHttpStatus: 0 });
+      expect(text).not.toContain(marker);
+      expect(text).not.toContain(authFile);
+      expect(text).not.toContain(helperStack);
+    }
+    for (const bad of [
+      { reportedErrorClass: marker, reportedTransportCode: 'UNKNOWN', reportedSourceFrame: null, reportedHttpStatus: 0 },
+      { reportedErrorClass: 'Error', reportedTransportCode: 'UNKNOWN', reportedSourceFrame: null, reportedHttpStatus: '503' },
+      { reportedErrorClass: 'Error', reportedTransportCode: 'UNKNOWN', reportedSourceFrame: null, reportedHttpStatus: 0, raw: marker },
+    ]) {
+      const reporter = new SafeReporter();
+      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never);
+      const attachment = join(frameworkDir, 'forged.safe.json');
+      writeFileSync(attachment, '{}');
+      reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never,
+        { status: 'failed', duration: 1, errors: [{}], annotations: [{ type: 'rct-reported-framework-error-v1', description: JSON.stringify(bad) }], attachments: [{ path: attachment }] } as never);
+      expect(JSON.parse(readFileSync(attachment, 'utf8')).reportedFrameworkError).toBeUndefined();
+    }
+  } finally {
+    rmSync(frameworkDir, { recursive: true, force: true });
+  }
   const common = {
     path: 'HELPER_MARK_DENIAL' as const,
     errorClass: 'Error',
@@ -299,6 +416,19 @@ test('helper mark diagnostic: closed facts reject private and inconsistent proje
   expect(capped).toHaveLength(32);
   info.annotations.push(...hostileAnnotations);
 });
+
+if (process.env.RCT_E2E_CONTROL_STARTUP_DIAGNOSTIC === 'true') {
+  const startup = test.extend<{ dataset: void }>({
+    dataset: async ({}, _use) => { throw new Error(`ECONNREFUSED ${marker}`); },
+  });
+  startup.describe('closed startup fixture', () => {
+    startup.fail();
+    startup('first fixture failure survives sanitizer without raw data', async ({ dataset }) => {
+      void dataset;
+      throw new Error('Unreachable startup control body');
+    });
+  });
+}
 
 test('helper mark diagnostic: throwing observer preserves native attempts and original error', async () => {
   let fetches = 0;

@@ -26,6 +26,8 @@ import ru.rutcampustrack.auth.session.port.SessionStatePort;
 @Service
 public final class SessionAdmissionService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SessionAdmissionService.class);
+
     private final JwtService jwtService;
     private final SessionStatePort sessionStatePort;
     private final InternalIssuerProperties issuerProperties;
@@ -51,6 +53,7 @@ public final class SessionAdmissionService {
     }
 
     public AuthAdmissionResponse admit(String accessToken) {
+        long diagnosticStartNanos = System.nanoTime();
         Instant initialNow = clock.instant();
         Jws<Claims> parsed;
         try {
@@ -167,6 +170,11 @@ public final class SessionAdmissionService {
                 || !returnNow.isBefore(originalAccessExpiration)) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
         }
+        log.debug("admission.diagnostic source=AUTH_SESSION_ADMISSION outcome=ISSUED initialNowMs={} freshNowMs={} returnNowMs={} issuedAtMs={} expiresAtMs={} elapsedMs={} wallElapsedMs={} correlation=UNCONFIRMED",
+                initialNow.toEpochMilli(), freshNow.toEpochMilli(), returnNow.toEpochMilli(),
+                issuedAt.toEpochMilli(), internalExpiration.toEpochMilli(),
+                (System.nanoTime() - diagnosticStartNanos) / 1_000_000,
+                returnNow.toEpochMilli() - initialNow.toEpochMilli());
         return new AuthAdmissionResponse(
                 internalToken,
                 internalExpiration,

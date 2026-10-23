@@ -80,21 +80,17 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
+        Diagnostic diagnostic = new Diagnostic();
         AccessExpectations expectations;
         try {
-            expectations = readExpectations(exchange);
+            expectations = readExpectations(exchange, diagnostic);
         } catch (RuntimeException e) {
-            log.warn(
-                    "semester.preview failure source=GATEWAY_ISSUER_FILTER stage=EXPECTATIONS"
-                        + " status=NONE cause={}",
-                    e instanceof IllegalArgumentException || e instanceof JwtException
-                            ? "IDENTITY_REJECTED"
-                            : "UNEXPECTED");
+            diagnostic.logFailure("EXPECTATIONS", e);
             return serviceUnavailable(exchange);
         }
 
         return client.admit(accessToken)
-                .flatMap(response -> prepareForwardedChain(exchange, chain, response, expectations))
+                .flatMap(response -> prepareForwardedChain(exchange, chain, response, expectations, diagnostic))
                 .onErrorResume(
                         InternalAdmissionDeniedException.class,
                         error ->
@@ -114,10 +110,11 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
             ServerWebExchange exchange,
             GatewayFilterChain chain,
             AuthAdmissionResponse response,
-            AccessExpectations expectations) {
+            AccessExpectations expectations, Diagnostic diagnostic) {
         final ServerWebExchange forwardedExchange;
         try {
-            validateAdmission(response, expectations);
+            validateAdmission(response, expectations, diagnostic);
+            diagnostic.check = Check.FORWARD_REQUEST;
             ServerHttpRequest request =
                     exchange.getRequest()
                             .mutate()
@@ -130,15 +127,11 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
                             response.userId());
             forwardedExchange = exchange.mutate().request(request).build();
         } catch (RuntimeException e) {
-            log.warn(
-                    "semester.preview failure source=GATEWAY_ISSUER_FILTER stage=FORWARDED_IDENTITY"
-                        + " status=NONE cause={}",
-                    e instanceof IllegalArgumentException || e instanceof JwtException
-                            ? "IDENTITY_REJECTED"
-                            : "UNEXPECTED");
+            diagnostic.logFailure("FORWARDED_IDENTITY", e);
             return Mono.error(unavailable(e));
         }
 
+        diagnostic.logAccepted();
         return Mono.defer(() -> chain.filter(forwardedExchange))
                 .onErrorMap(InternalJwtIssuerFilter::wrapDownstreamError);
     }
@@ -150,17 +143,22 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
         return new DownstreamChainFailure(error);
     }
 
-    private static AccessExpectations readExpectations(ServerWebExchange exchange) {
+    private static AccessExpectations readExpectations(ServerWebExchange exchange, Diagnostic diagnostic) {
+        diagnostic.check = Check.EXPECT_USER;
         String userId =
                 requiredAttribute(exchange, JwtAuthenticationFilter.EXPECTED_USER_ID_ATTRIBUTE);
+        diagnostic.check = Check.EXPECT_SESSION;
         String sessionId =
                 requiredAttribute(exchange, JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE);
+        diagnostic.check = Check.EXPECT_SESSION_VERSION;
         String sessionVersion =
                 requiredAttribute(
                         exchange, JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE);
+        diagnostic.check = Check.EXPECT_ROLES_VERSION;
         String rolesVersion =
                 requiredAttribute(
                         exchange, JwtAuthenticationFilter.EXPECTED_ROLES_VERSION_ATTRIBUTE);
+        diagnostic.check = Check.EXPECT_ACCESS_EXPIRY;
         Instant accessExpiry =
                 exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE);
         if (accessExpiry == null) {
@@ -179,7 +177,19 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
     }
 
     private void validateAdmission(
-            AuthAdmissionResponse response, AccessExpectations expectations) {
+            AuthAdmissionResponse response, AccessExpectations expectations, Diagnostic diagnostic) {
+        diagnostic.check = Check.RESPONSE_STRUCTURE;
+        requireResponse(response);
+        AdmissionIdentity identity = readIdentity(response, diagnostic);
+        requireMatch(diagnostic, Check.ACCESS_USER, expectations.userId().equals(identity.userId()));
+        requireMatch(diagnostic, Check.ACCESS_SESSION, expectations.sessionId().equals(identity.sessionId()));
+        requireMatch(diagnostic, Check.ACCESS_SESSION_VERSION, expectations.sessionVersion().equals(identity.sessionVersion()));
+        requireMatch(diagnostic, Check.ACCESS_ROLES_VERSION, expectations.rolesVersion().equals(identity.rolesVersion()));
+        requireFlags(response, identity, diagnostic);
+        verifyInternalToken(response, identity, expectations.accessExpiry(), null, null, diagnostic);
+    }
+
+    private static void requireResponse(AuthAdmissionResponse response) {
         if (response == null
                 || response.internalToken() == null
                 || response.internalToken().isBlank()
@@ -187,191 +197,178 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
                 || response.expiresAt() == null) {
             throw new IllegalArgumentException("incoherent admission response");
         }
-
-        String userId = requirePositiveLongString(response.userId(), "userId");
-        String sessionId = requireCanonicalUuid(response.sessionId(), "sessionId");
-        String sessionVersion =
-                requirePositiveLongString(response.sessionVersion(), "sessionVersion");
-        String rolesVersion = requirePositiveLongString(response.rolesVersion(), "rolesVersion");
-        String role = requireKnownRole(response.role());
-        String status = requireAdmissionStatus(response.status());
-        String groupId =
-                response.groupId() == null
-                        ? null
-                        : requirePositiveLongString(response.groupId(), "groupId");
-
-        if (!expectations.userId().equals(userId)
-                || !expectations.sessionId().equals(sessionId)
-                || !expectations.sessionVersion().equals(sessionVersion)
-                || !expectations.rolesVersion().equals(rolesVersion)) {
-            throw new IllegalArgumentException("admission response does not match access session");
-        }
-        if (response.isHeadman() != "HEADMAN".equals(role)) {
-            throw new IllegalArgumentException("headman flag does not match role");
-        }
-        if ("HEADMAN".equals(role) && groupId == null) {
-            throw new IllegalArgumentException("HEADMAN admission requires group");
-        }
-        if (response.readOnly() != TERMINAL_STATUSES.contains(status)) {
-            throw new IllegalArgumentException("readOnly flag does not match status");
-        }
-
-        verifyInternalToken(
-                response,
-                userId,
-                sessionId,
-                sessionVersion,
-                rolesVersion,
-                role,
-                status,
-                groupId,
-                expectations.accessExpiry());
     }
 
-    private void verifyInternalToken(
-            AuthAdmissionResponse response,
-            String userId,
-            String sessionId,
-            String sessionVersion,
-            String rolesVersion,
-            String role,
-            String status,
-            String groupId,
-            Instant accessExpiry) {
-        verifyInternalToken(
-                response,
-                userId,
-                sessionId,
-                sessionVersion,
-                rolesVersion,
-                role,
-                status,
-                groupId,
-                accessExpiry,
-                null,
-                null);
+    private static AdmissionIdentity readIdentity(AuthAdmissionResponse response, Diagnostic diagnostic) {
+        diagnostic.check = Check.RESPONSE_USER;
+        String userId = requirePositiveLongString(response.userId(), "userId");
+        diagnostic.check = Check.RESPONSE_SESSION;
+        String sessionId = requireCanonicalUuid(response.sessionId(), "sessionId");
+        diagnostic.check = Check.RESPONSE_SESSION_VERSION;
+        String sessionVersion = requirePositiveLongString(response.sessionVersion(), "sessionVersion");
+        diagnostic.check = Check.RESPONSE_ROLES_VERSION;
+        String rolesVersion = requirePositiveLongString(response.rolesVersion(), "rolesVersion");
+        diagnostic.check = Check.RESPONSE_ROLE;
+        String role = requireKnownRole(response.role());
+        diagnostic.check = Check.RESPONSE_STATUS;
+        String status = requireAdmissionStatus(response.status());
+        diagnostic.check = Check.RESPONSE_GROUP;
+        String groupId = response.groupId() == null ? null : requirePositiveLongString(response.groupId(), "groupId");
+        return new AdmissionIdentity(userId, sessionId, sessionVersion, rolesVersion, role, status, groupId);
+    }
+
+    private static void requireFlags(AuthAdmissionResponse response, AdmissionIdentity identity, Diagnostic diagnostic) {
+        requireMatch(diagnostic, Check.RESPONSE_HEADMAN_FLAG, response.isHeadman() == "HEADMAN".equals(identity.role()));
+        requireMatch(diagnostic, Check.RESPONSE_HEADMAN_GROUP, !"HEADMAN".equals(identity.role()) || identity.groupId() != null);
+        requireMatch(diagnostic, Check.RESPONSE_READONLY_FLAG, response.readOnly() == TERMINAL_STATUSES.contains(identity.status()));
+    }
+
+    private static void requireMatch(Diagnostic diagnostic, Check check, boolean matches) {
+        diagnostic.check = check;
+        if (!matches) {
+            throw new IllegalArgumentException("internal admission check failed");
+        }
     }
 
     void verifyInternalReportDownloadToken(
             AuthAdmissionResponse response, Instant ticketExpiresAt, String reportBindingHash) {
-        if (response == null
-                || response.internalToken() == null
-                || response.internalToken().isBlank()
-                || response.internalToken().length() > 16_384
-                || response.expiresAt() == null
-                || ticketExpiresAt == null
-                || reportBindingHash == null
-                || !reportBindingHash.matches("[0-9a-f]{64}")) {
-            throw new IllegalArgumentException("incoherent report-ticket admission response");
+        Diagnostic diagnostic = new Diagnostic();
+        try {
+            diagnostic.check = Check.REPORT_RESPONSE_STRUCTURE;
+            requireResponse(response);
+            if (ticketExpiresAt == null || reportBindingHash == null || !reportBindingHash.matches("[0-9a-f]{64}")) {
+                throw new IllegalArgumentException("incoherent report-ticket admission response");
+            }
+            AdmissionIdentity identity = readIdentity(response, diagnostic);
+            requireFlags(response, identity, diagnostic);
+            requireMatch(diagnostic, Check.REPORT_TICKET_EXPIRED, ticketExpiresAt.isAfter(Instant.now()));
+            requireMatch(diagnostic, Check.REPORT_TICKET_INTERVAL, !ticketExpiresAt.isAfter(Instant.now().plusSeconds(60)));
+            verifyInternalToken(response, identity, ticketExpiresAt, reportBindingHash, ticketExpiresAt.toString(), diagnostic);
+            diagnostic.logAccepted();
+        } catch (RuntimeException error) {
+            diagnostic.logFailure("REPORT_TICKET_IDENTITY", error);
+            throw error;
         }
-        String userId = requirePositiveLongString(response.userId(), "userId");
-        String sessionId = requireCanonicalUuid(response.sessionId(), "sessionId");
-        String sessionVersion =
-                requirePositiveLongString(response.sessionVersion(), "sessionVersion");
-        String rolesVersion = requirePositiveLongString(response.rolesVersion(), "rolesVersion");
-        String role = requireKnownRole(response.role());
-        String status = requireAdmissionStatus(response.status());
-        String groupId =
-                response.groupId() == null
-                        ? null
-                        : requirePositiveLongString(response.groupId(), "groupId");
-        if (response.isHeadman() != "HEADMAN".equals(role)
-                || ("HEADMAN".equals(role) && groupId == null)
-                || response.readOnly() != TERMINAL_STATUSES.contains(status)
-                || !ticketExpiresAt.isAfter(Instant.now())
-                || ticketExpiresAt.isAfter(Instant.now().plusSeconds(60))) {
-            throw new IllegalArgumentException(
-                    "report-ticket admission identity or expiry is invalid");
-        }
-        verifyInternalToken(
-                response,
-                userId,
-                sessionId,
-                sessionVersion,
-                rolesVersion,
-                role,
-                status,
-                groupId,
-                ticketExpiresAt,
-                reportBindingHash,
-                ticketExpiresAt.toString());
     }
 
     private void verifyInternalToken(
-            AuthAdmissionResponse response,
-            String userId,
-            String sessionId,
-            String sessionVersion,
-            String rolesVersion,
-            String role,
-            String status,
-            String groupId,
-            Instant accessExpiry,
-            String expectedReportBindingHash,
-            String expectedReportTicketExpiry) {
+            AuthAdmissionResponse response, AdmissionIdentity identity, Instant accessExpiry,
+            String expectedReportBindingHash, String expectedReportTicketExpiry, Diagnostic diagnostic) {
         try {
+            diagnostic.check = Check.JWT_KEY;
             PublicKey publicKey = publicKeyConfig.getPublicKey();
             if (!(publicKey instanceof RSAPublicKey)) {
                 throw new IllegalStateException("Gateway public key is not RSA");
             }
-            Jws<Claims> parsed =
-                    Jwts.parser()
-                            .verifyWith(publicKey)
-                            .build()
-                            .parseSignedClaims(response.internalToken());
-            if (!"RS256".equals(parsed.getHeader().getAlgorithm())) {
-                throw new IllegalArgumentException("internal JWT algorithm must be RS256");
-            }
-
+            diagnostic.check = Check.JWT_PARSE;
+            Jws<Claims> parsed = Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(response.internalToken());
+            requireMatch(diagnostic, Check.JWT_ALGORITHM, "RS256".equals(parsed.getHeader().getAlgorithm()));
             Claims claims = parsed.getPayload();
+            diagnostic.check = Check.JWT_PAYLOAD;
             JsonNode originalPayload = readOriginalPayload(response.internalToken());
+            diagnostic.check = Check.JWT_ISSUER;
             requireExactStringClaim(claims, "iss", EXPECTED_ISSUER);
+            diagnostic.check = Check.JWT_AUDIENCE;
             requireSingletonAudience(claims, EXPECTED_INTERNAL_AUDIENCE);
+            diagnostic.check = Check.JWT_USE;
             requireExactStringClaim(claims, "token_use", INTERNAL_TOKEN_USE);
 
+            diagnostic.check = Check.JWT_IAT_WIRE;
             Date issuedAt = requireWholeSecondDate(claims, originalPayload, "iat");
+            diagnostic.check = Check.JWT_EXP_WIRE;
             Date expiresAt = requireWholeSecondDate(claims, originalPayload, "exp");
             Instant now = Instant.now();
-            if (!issuedAt.toInstant().isBefore(expiresAt.toInstant())
-                    || issuedAt.toInstant().isAfter(now)
-                    || !expiresAt.toInstant().isAfter(now)) {
-                throw new IllegalArgumentException("internal JWT time claims are not live");
-            }
+            diagnostic.validationNowMs = now.toEpochMilli();
+            diagnostic.issuedAtMs = issuedAt.getTime();
+            diagnostic.expiresAtMs = expiresAt.getTime();
+            requireMatch(diagnostic, Check.JWT_TIME_INTERVAL, issuedAt.toInstant().isBefore(expiresAt.toInstant()));
+            requireMatch(diagnostic, Check.JWT_IAT_FUTURE, !issuedAt.toInstant().isAfter(now));
+            requireMatch(diagnostic, Check.JWT_EXPIRED, expiresAt.toInstant().isAfter(now));
 
-            if (!userId.equals(requirePositiveLongStringClaim(claims, "sub"))
-                    || !sessionId.equals(requireCanonicalUuidClaim(claims, "sid"))
-                    || !sessionVersion.equals(requirePositiveLongStringClaim(claims, "sv"))
-                    || !rolesVersion.equals(requirePositiveLongStringClaim(claims, "rv"))
-                    || !role.equals(requireKnownRole(requireExactStringClaim(claims, "role")))
-                    || !status.equals(
-                            requireAdmissionStatus(requireExactStringClaim(claims, "status")))) {
-                throw new IllegalArgumentException("internal JWT identity does not match response");
-            }
-
-            String tokenGroupId =
-                    optionalPositiveLongStringClaim(claims, originalPayload, "group_id");
-            if (groupId == null ? tokenGroupId != null : !groupId.equals(tokenGroupId)) {
-                throw new IllegalArgumentException("internal JWT group does not match response");
-            }
-            if (!Boolean.valueOf(response.isHeadman())
-                            .equals(requireBooleanClaim(claims, "is_headman"))
-                    || !Boolean.valueOf(response.readOnly())
-                            .equals(requireBooleanClaim(claims, "readOnly"))) {
-                throw new IllegalArgumentException("internal JWT flags do not match response");
-            }
-
+            diagnostic.check = Check.JWT_USER;
+            requireMatch(diagnostic, Check.JWT_USER, identity.userId().equals(requirePositiveLongStringClaim(claims, "sub")));
+            diagnostic.check = Check.JWT_SESSION;
+            requireMatch(diagnostic, Check.JWT_SESSION, identity.sessionId().equals(requireCanonicalUuidClaim(claims, "sid")));
+            diagnostic.check = Check.JWT_SESSION_VERSION;
+            requireMatch(diagnostic, Check.JWT_SESSION_VERSION, identity.sessionVersion().equals(requirePositiveLongStringClaim(claims, "sv")));
+            diagnostic.check = Check.JWT_ROLES_VERSION;
+            requireMatch(diagnostic, Check.JWT_ROLES_VERSION, identity.rolesVersion().equals(requirePositiveLongStringClaim(claims, "rv")));
+            diagnostic.check = Check.JWT_ROLE;
+            requireMatch(diagnostic, Check.JWT_ROLE, identity.role().equals(requireKnownRole(requireExactStringClaim(claims, "role"))));
+            diagnostic.check = Check.JWT_STATUS;
+            requireMatch(diagnostic, Check.JWT_STATUS, identity.status().equals(requireAdmissionStatus(requireExactStringClaim(claims, "status"))));
+            diagnostic.check = Check.JWT_GROUP;
+            String tokenGroupId = optionalPositiveLongStringClaim(claims, originalPayload, "group_id");
+            requireMatch(diagnostic, Check.JWT_GROUP, identity.groupId() == null ? tokenGroupId == null : identity.groupId().equals(tokenGroupId));
+            diagnostic.check = Check.JWT_HEADMAN_FLAG;
+            requireMatch(diagnostic, Check.JWT_HEADMAN_FLAG, Boolean.valueOf(response.isHeadman()).equals(requireBooleanClaim(claims, "is_headman")));
+            diagnostic.check = Check.JWT_READONLY_FLAG;
+            requireMatch(diagnostic, Check.JWT_READONLY_FLAG, Boolean.valueOf(response.readOnly()).equals(requireBooleanClaim(claims, "readOnly")));
             if (expectedReportBindingHash != null) {
+                diagnostic.check = Check.JWT_REPORT_BINDING;
                 requireExactStringClaim(claims, "report_hash", expectedReportBindingHash);
+                diagnostic.check = Check.JWT_REPORT_EXPIRY;
                 requireExactStringClaim(claims, "report_ticket_exp", expectedReportTicketExpiry);
             }
-
             Instant tokenExpiry = expiresAt.toInstant();
-            if (!response.expiresAt().equals(tokenExpiry) || tokenExpiry.isAfter(accessExpiry)) {
-                throw new IllegalArgumentException(
-                        "internal JWT expiry does not match response/access");
-            }
-        } catch (JwtException | IllegalArgumentException | IllegalStateException e) {
-            throw new IllegalArgumentException("internal JWT is incoherent", e);
+            requireMatch(diagnostic, Check.JWT_RESPONSE_EXPIRY, response.expiresAt().equals(tokenExpiry));
+            requireMatch(diagnostic, Check.JWT_ACCESS_EXPIRY, !tokenExpiry.isAfter(accessExpiry));
+        } catch (JwtException | IllegalArgumentException | IllegalStateException error) {
+            diagnostic.parserFailure = parserFailure(error);
+            throw new IllegalArgumentException("internal JWT is incoherent", error);
+        }
+    }
+
+    private static ParserFailure parserFailure(RuntimeException error) {
+        if (error instanceof io.jsonwebtoken.ExpiredJwtException) return ParserFailure.EXPIRED;
+        if (error instanceof io.jsonwebtoken.PrematureJwtException) return ParserFailure.NOT_YET_VALID;
+        if (error instanceof io.jsonwebtoken.security.SignatureException) return ParserFailure.SIGNATURE;
+        if (error instanceof io.jsonwebtoken.security.SecurityException) return ParserFailure.SECURITY;
+        if (error instanceof io.jsonwebtoken.UnsupportedJwtException) return ParserFailure.UNSUPPORTED;
+        if (error instanceof io.jsonwebtoken.MalformedJwtException) return ParserFailure.MALFORMED;
+        if (error instanceof JwtException) return ParserFailure.OTHER_JWT;
+        return ParserFailure.NONE;
+    }
+
+    private record AdmissionIdentity(String userId, String sessionId, String sessionVersion,
+            String rolesVersion, String role, String status, String groupId) {}
+
+    private enum ParserFailure { NONE, EXPIRED, NOT_YET_VALID, SIGNATURE, SECURITY, UNSUPPORTED, MALFORMED, OTHER_JWT }
+
+    private enum Check {
+        EXPECT_USER, EXPECT_SESSION, EXPECT_SESSION_VERSION, EXPECT_ROLES_VERSION, EXPECT_ACCESS_EXPIRY,
+        RESPONSE_STRUCTURE, RESPONSE_USER, RESPONSE_SESSION, RESPONSE_SESSION_VERSION, RESPONSE_ROLES_VERSION,
+        RESPONSE_ROLE, RESPONSE_STATUS, RESPONSE_GROUP, RESPONSE_HEADMAN_FLAG, RESPONSE_HEADMAN_GROUP, RESPONSE_READONLY_FLAG,
+        ACCESS_USER, ACCESS_SESSION, ACCESS_SESSION_VERSION, ACCESS_ROLES_VERSION,
+        REPORT_RESPONSE_STRUCTURE, REPORT_TICKET_EXPIRED, REPORT_TICKET_INTERVAL,
+        JWT_KEY, JWT_PARSE, JWT_ALGORITHM, JWT_PAYLOAD, JWT_ISSUER, JWT_AUDIENCE, JWT_USE,
+        JWT_IAT_WIRE, JWT_EXP_WIRE, JWT_TIME_INTERVAL, JWT_IAT_FUTURE, JWT_EXPIRED,
+        JWT_USER, JWT_SESSION, JWT_SESSION_VERSION, JWT_ROLES_VERSION, JWT_ROLE, JWT_STATUS,
+        JWT_GROUP, JWT_HEADMAN_FLAG, JWT_READONLY_FLAG, JWT_REPORT_BINDING, JWT_REPORT_EXPIRY,
+        JWT_RESPONSE_EXPIRY, JWT_ACCESS_EXPIRY, FORWARD_REQUEST
+    }
+
+    /** Private diagnostics: closed codes and clock numbers only; never log the exception/claims. */
+    private static final class Diagnostic {
+        private final long startWallMs = Instant.now().toEpochMilli();
+        private final long startNanos = System.nanoTime();
+        private Check check = Check.EXPECT_USER;
+        private ParserFailure parserFailure = ParserFailure.NONE;
+        private Long validationNowMs;
+        private Long issuedAtMs;
+        private Long expiresAtMs;
+
+        private void logFailure(String stage, RuntimeException error) {
+            log.warn("semester.preview failure source=GATEWAY_ISSUER_FILTER stage={} status=NONE cause={} check={} parser={} startWallMs={} validationNowMs={} issuedAtMs={} expiresAtMs={} elapsedMs={} wallElapsedMs={} correlation=UNCONFIRMED",
+                    stage, error instanceof IllegalArgumentException || error instanceof JwtException ? "IDENTITY_REJECTED" : "UNEXPECTED",
+                    check, parserFailure, startWallMs, validationNowMs, issuedAtMs, expiresAtMs,
+                    (System.nanoTime() - startNanos) / 1_000_000, Instant.now().toEpochMilli() - startWallMs);
+        }
+
+        private void logAccepted() {
+            log.debug("admission.diagnostic source=GATEWAY_ISSUER_FILTER outcome=ACCEPTED startWallMs={} validationNowMs={} issuedAtMs={} expiresAtMs={} elapsedMs={} wallElapsedMs={} correlation=UNCONFIRMED",
+                    startWallMs, validationNowMs, issuedAtMs, expiresAtMs,
+                    (System.nanoTime() - startNanos) / 1_000_000, Instant.now().toEpochMilli() - startWallMs);
         }
     }
 

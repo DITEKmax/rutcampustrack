@@ -11,7 +11,7 @@ export default defineConfig({
   outputDir: process.env.RCT_E2E_CONTROL_OUTPUT_DIR,
   workers: 1,
   retries: 0,
-  reporter: [['./fixtures/safe-reporter.ts']],
+  reporter: [['./fixtures/safe-reporter.ts', { localStartupDiagnostic: process.env.RCT_E2E_CONTROL_STARTUP_DIAGNOSTIC === 'true' }]],
   use: { trace: 'off', video: 'off', screenshot: 'off' },
   forbidOnly: true,
 });

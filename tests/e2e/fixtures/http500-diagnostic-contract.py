@@ -406,6 +406,7 @@ class MarkDiagnosticContract(unittest.TestCase):
             "interruptionBoundary": dict(boundary, interrupted=True),
             "interruptionPassed": True,
             "missingGuardRejectedBeforeOperation": True,
+            "startupPassed": True,
             "browser": "NOT_STARTED",
             "guardControl": {
                 key: True
@@ -422,7 +423,7 @@ class MarkDiagnosticContract(unittest.TestCase):
             },
         }
         self.assertTrue(closed(value))
-        failed = dict(value, state="PRIVACY_CONTROL_FAILED", producerBoundary=None, interruptionBoundary=None)
+        failed = dict(value, state="PRIVACY_CONTROL_FAILED", producerBoundary=None, interruptionBoundary=None, startupPassed=False)
         del failed["guardControl"]
         self.assertTrue(closed(failed))
         self.assertTrue(
@@ -434,10 +435,13 @@ class MarkDiagnosticContract(unittest.TestCase):
             ("normalChildStatus", 256),
             ("interruptedChildStatus", True),
             ("markerAbsent", 1),
+            ("startupPassed", False),
+            ("startupPassed", 1),
             ("interruptedChildSignal", private),
             ("producerBoundary", dict(boundary, raw=private)),
         ):
             self.assertFalse(closed(dict(value, **{field: wrong})))
+        self.assertFalse(closed({key: item for key, item in value.items() if key != "startupPassed"}))
         self.assertFalse(closed(dict(value, rawOutput=private)))
         with self.assertRaises(ValueError):
             json.loads(
@@ -476,6 +480,73 @@ class MarkDiagnosticContract(unittest.TestCase):
         value["results"][0]["diagnostics"][0]["httpStatus"] = 409
         self.assertFalse(namespace["is_target_failure"](value, config))
         self.assertFalse(namespace["is_target_failure"](current_receipt(), hosted_config))
+
+    def test_student_stats_exact_current_receipt_and_source_drift(self):
+        results = []
+        for file, line in (('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
+                           ('mobile-schedule-lifecycle.spec.ts', 411), ('mobile-schedule-lifecycle.spec.ts', 1943)):
+            target = line == 411
+            results.append({'file': file, 'line': line, 'project': 'chromium',
+                            'status': 'failed' if target else 'passed', 'expectedStatus': 'passed',
+                            'durationMs': 1, 'errorCount': 1 if target else 0, 'diagnostics': [],
+                            'errorLocations': [{'file': file, 'line': 1471}] if target else []})
+        value = {'results': results}
+        self.assertTrue(namespace['is_student_stats_failure'](value))
+        for source, digest in namespace['STATS_SOURCES'].items():
+            self.assertEqual(hashlib.sha256(Path(source).read_bytes()).hexdigest(), digest)
+        lines = Path('tests/e2e/specs/mobile-schedule-lifecycle.spec.ts').read_text().splitlines()
+        self.assertTrue(lines[410].startswith("test('HEADMAN removes and returns"))
+        self.assertTrue(lines[1942].startswith("test('STUDENT warm semester"))
+        self.assertIn("throw new Error('Student statistics HTTP 503')", lines[1470])
+        for key, changed in (('line', 397), ('line', 412), ('errorLocations', [{'file': results[2]['file'], 'line': 1457}]),
+                             ('errorLocations', [{'file': 'foreign.spec.ts', 'line': 1471}]), ('raw', private)):
+            altered = copy.deepcopy(value)
+            altered['results'][2][key] = changed
+            self.assertFalse(namespace['is_student_stats_failure'](altered))
+
+    def test_current_framework_error_extension_is_closed_for_all_consumers(self):
+        reported = {'reportedErrorClass': 'Error', 'reportedTransportCode': 'UNKNOWN',
+                    'reportedHttpStatus': 503, 'reportedSourceFrame': {'file': 'MOBILE_DATASET', 'line': 1, 'column': 1}}
+        self.assertTrue(namespace['closed_reported_framework_error'](reported))
+        mark = current_receipt()
+        hosted = current_receipt()
+        hosted['results'][0].update(file='mobile-real-server.spec.ts', line=5943,
+            errorLocations=[{'file': 'mobile-real-server.spec.ts', 'line': 6064}],
+            diagnostics=[{'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}])
+        stats = current_receipt()
+        stats['results'] = []
+        for file, line in (('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
+                           ('mobile-schedule-lifecycle.spec.ts', 411), ('mobile-schedule-lifecycle.spec.ts', 1943)):
+            target = line == 411
+            stats['results'].append({'file': file, 'line': line, 'project': 'chromium', 'expectedStatus': 'passed',
+                'status': 'failed' if target else 'passed', 'durationMs': 1, 'errorCount': 1 if target else 0,
+                'diagnostics': [], 'errorLocations': [{'file': file, 'line': 1471}] if target else []})
+        bad = [None, [], dict(reported, raw=private), dict(reported, reportedErrorClass=private),
+               dict(reported, reportedTransportCode=private), dict(reported, reportedHttpStatus=True),
+               dict(reported, reportedHttpStatus='503'), dict(reported, reportedHttpStatus=203),
+               dict(reported, reportedSourceFrame={'file': private, 'line': 1, 'column': 1}),
+               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': True, 'column': 1}),
+               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': 1000000, 'column': 1}),
+               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': 1, 'column': 1000000}),
+               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': 1, 'column': 1, 'raw': private})]
+        for receipt, selected in ((mark, config), (hosted, hosted_config),
+                (homework_receipt(extension=True), namespace['STAGES']['HOMEWORK_CREATE503']),
+                (stats, namespace['STAGES']['STUDENT_STATS503'])):
+            self.assertTrue(namespace['is_target_failure'](receipt, selected))
+            for index, row in enumerate(receipt['results']):
+                if row['status'] != 'failed':
+                    altered = copy.deepcopy(receipt); altered['results'][index]['reportedFrameworkError'] = reported
+                    self.assertFalse(namespace['is_target_failure'](altered, selected))
+                    continue
+                row['reportedFrameworkError'] = copy.deepcopy(reported)
+                self.assertTrue(namespace['is_target_failure'](receipt, selected))
+                altered = copy.deepcopy(receipt); altered['results'][index]['status'] = []
+                self.assertFalse(namespace['is_target_failure'](altered, selected))
+                for value in bad:
+                    altered = copy.deepcopy(receipt); altered['results'][index]['reportedFrameworkError'] = value
+                    self.assertFalse(namespace['is_target_failure'](altered, selected))
+                altered = copy.deepcopy(receipt); altered['results'][index]['raw'] = private
+                self.assertFalse(namespace['is_target_failure'](altered, selected))
 
     def test_hosted_admission_remains_disjoint(self):
         value = current_receipt()

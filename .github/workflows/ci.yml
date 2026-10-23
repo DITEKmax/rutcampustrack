@@ -3339,7 +3339,9 @@ jobs:
       # cookie отбрасывает → T1 spec падает. TLS termination на e2e nginx
       # обходит проблему без изменения production code.
       - name: Generate self-signed TLS cert
-        run: bash tests/e2e/infra/scripts/generate-test-certs.sh
+        run: |
+          bash tests/e2e/infra/scripts/generate-test-certs.sh
+          printf 'NODE_EXTRA_CA_CERTS=%s\n' "$GITHUB_WORKSPACE/tests/e2e/infra/certs/server.crt" >> "$GITHUB_ENV"
 
       - name: Boot isolated Vue auth stack
         id: bootstrap-images
@@ -3374,6 +3376,7 @@ jobs:
           node fixtures/admin-activity-response.control.mjs
           node fixtures/web-panel-route.control.mjs
           node fixtures/registry-html-privacy.control.mjs
+          node fixtures/semester-health-diagnostic.control.mjs
           python3 -B fixtures/lesson-transfer-diagnostic.control.py
 
       - name: Validate the existing safe artifact privacy contract for client scenarios
@@ -3412,12 +3415,13 @@ jobs:
               if value.get('state') == 'CONTROL_EXECUTION_ERROR':
                   return set(value) == {'state', 'rawErrorSuppressed', 'browser'} and value['rawErrorSuppressed'] is True
               boolean_keys = {'markerAbsent', 'originalMetadataLeakReproduced', 'expectedFailureRetained',
-                              'successRetained', 'interruptionPassed', 'missingGuardRejectedBeforeOperation'}
+                              'successRetained', 'interruptionPassed', 'missingGuardRejectedBeforeOperation', 'startupPassed'}
               keys = boolean_keys | {'state', 'normalChildStatus', 'producerBoundary', 'interruptedChildStatus',
                                      'interruptedChildSignal', 'interruptionBoundary', 'browser'}
               if (set(value) not in (keys, keys | {'guardControl'})
                       or value['state'] not in {'PRIVACY_BOUNDARIES_PASSED', 'PRIVACY_CONTROL_FAILED'}
                       or not all(type(value[key]) is bool for key in boolean_keys)
+                      or (value['state'] == 'PRIVACY_BOUNDARIES_PASSED' and value['startupPassed'] is not True)
                       or not boundary(value['producerBoundary']) or not boundary(value['interruptionBoundary'])
                       or value['interruptedChildSignal'] not in {None, 'SIGTERM', 'SIGKILL', 'SIGINT', 'SIGABRT', 'SIGSEGV'}
                       or any(value[key] is not None and (type(value[key]) is not int or not 0 <= value[key] <= 255)
@@ -3730,7 +3734,7 @@ jobs:
                                'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
           STATS_SOURCES = {
               'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
-                  'ed653de5eb029100a1c8c1471bac0fd2f2ee6d4d536989d69b47cc24c8be7338',
+                  '2c31df38f04986465414cd69d1f0ccf7e5c0d30319ebe32c68b97b447fa223d2',
               'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
                   'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
           }
@@ -3895,7 +3899,7 @@ jobs:
                   '451b92e49c1b6d15959fa99fa3734035cad967fd7fc84920d87170cb31ae539a', 191),
               'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
                   'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
-                  'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 625),
+                  '474961092b4b59547fad6e458b8ac9725ba0e01bb00d229c1c6ac082412235fa', 622),
               'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
                   'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
                   '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 271),
@@ -3920,14 +3924,14 @@ jobs:
                   '4f7383059e63fd80cfdfb4f567142aba50e2736f4a105fe70aac933b0bdab1da', 119),
               'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
                   'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
-                  'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 625),
+                  '474961092b4b59547fad6e458b8ac9725ba0e01bb00d229c1c6ac082412235fa', 622),
               'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
                   'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
                   '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 271),
           }
           ORDINARY_MARK_SOURCES = {
               'tests/e2e/fixtures/semester-lifecycle.spec.ts':
-                  '413be7c4a2b1c44f5f8af0b8f018151d62624d726321c84304ebbaa251852570',
+                  '2106c9642387f081cb8ddce3328d6dfd04ff4ad1abdf2d2a5ee07136d830a9ee',
               'tests/e2e/fixtures/mobile-dataset.ts':
                   '7eca9dccdddd55160b5e8ac1c386c49d832c2419572fa7c4f05ada5cdec1fcdd',
           }
@@ -4151,13 +4155,59 @@ jobs:
                           matches.append((match.start(), {'symbol': symbol, 'line': line}))
               return min(matches, key=lambda item: item[0])[1] if matches else None
 
+          def closed_reported_framework_error(value):
+              keys = {'reportedErrorClass', 'reportedTransportCode', 'reportedSourceFrame', 'reportedHttpStatus'}
+              if (type(value) is not dict or set(value) != keys
+                      or type(value['reportedErrorClass']) is not str
+                      or value['reportedErrorClass'] not in {'Error', 'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TimeoutError', 'UNKNOWN'}
+                      or type(value['reportedTransportCode']) is not str
+                      or value['reportedTransportCode'] not in {'TLS_CERTIFICATE', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EACCES', 'ENOENT', 'TARGET_CLOSED', 'TIMEOUT', 'UNKNOWN'}
+                      or type(value['reportedHttpStatus']) is not int
+                      or value['reportedHttpStatus'] not in {0, 200, 201, 202, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504}):
+                  return False
+              frame = value['reportedSourceFrame']
+              if frame is not None:
+                  files = {
+                      'MOBILE_DATASET': 'tests/e2e/fixtures/mobile-dataset.ts',
+                      'PWA_AUTH': 'tests/e2e/fixtures/pwa-auth.ts',
+                      'TEACHING_CLOCK': 'tests/e2e/fixtures/teaching-clock.ts',
+                      'ARTIFACT_PRIVACY': 'tests/e2e/fixtures/artifact-privacy.ts',
+                      'MOBILE_SPEC': 'tests/e2e/specs/mobile-real-server.spec.ts',
+                      'PRIVACY_CONTROL': 'tests/e2e/artifact-controls/privacy.control.spec.ts',
+                      'PLAYWRIGHT_FIXTURE_RUNNER': 'tests/e2e/node_modules/playwright/lib/worker/fixtureRunner.js',
+                      'PLAYWRIGHT_TEST_INFO': 'tests/e2e/node_modules/playwright/lib/worker/testInfo.js',
+                      'PLAYWRIGHT_INDEX': 'tests/e2e/node_modules/playwright/lib/index.js',
+                  }
+                  if (type(frame) is not dict or set(frame) != {'file', 'line', 'column'}
+                          or type(frame['file']) is not str or frame['file'] not in files
+                          or any(type(frame[key]) is not int or not 0 < frame[key] <= 1000000 for key in ('line', 'column'))):
+                      return False
+                  try:
+                      lines = Path(files[frame['file']]).read_text().split('\n')
+                      if frame['line'] > len(lines) or frame['column'] > len(lines[frame['line'] - 1].encode('utf-16-le')) // 2 + 1:
+                          return False
+                  except (OSError, UnicodeError):
+                      return False
+              return len(json.dumps(value, ensure_ascii=True, separators=(',', ':')).encode()) <= 1024
+
+          def without_reported_framework_error(row):
+              if type(row) is not dict or 'reportedFrameworkError' not in row:
+                  return row
+              if (type(row.get('status')) is not str or row['status'] not in {'failed', 'timedOut', 'interrupted'}
+                      or type(row.get('errorCount')) is not int or not 0 < row['errorCount'] <= 8
+                      or not closed_reported_framework_error(row['reportedFrameworkError'])):
+                  return None
+              # Only this separately validated observation is projected away; core keys/gates stay exact.
+              return {key: value for key, value in row.items() if key != 'reportedFrameworkError'}
+
           def is_student_stats_failure(value):
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
                       'errorCount', 'diagnostics', 'errorLocations'}
               expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                          ('mobile-schedule-lifecycle.spec.ts', 397), ('mobile-schedule-lifecycle.spec.ts', 1929)}
+                          ('mobile-schedule-lifecycle.spec.ts', 411), ('mobile-schedule-lifecycle.spec.ts', 1943)}
               seen, target = set(), None
               for row in value['results']:
+                  row = without_reported_framework_error(row)
                   if type(row) is not dict or set(row) != keys:
                       return False
                   identity = (row['file'], row['line'])
@@ -4178,16 +4228,16 @@ jobs:
                                      and 0 < frame['line'] < 1000000 for frame in row['errorLocations'])):
                       return False
                   seen.add(identity)
-                  if identity == ('mobile-schedule-lifecycle.spec.ts', 397):
+                  if identity == ('mobile-schedule-lifecycle.spec.ts', 411):
                       target = row
               return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
-                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1457}])
+                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1471}])
 
           D002_RECONNECT_SOURCES = {
               'tests/e2e/specs/mobile-real-server.spec.ts':
                   'e5fd78781d9526b0951a2ea4273ebd5803ad2e3f8f5c3aafb89fa0e6f75b078b',
               'tests/e2e/fixtures/safe-reporter.ts':
-                  'a57a23cf37bb3fac21bfcf5619e9d8e8167a0c8cd7ce51bf597db1684d0d25c1',
+                  'deebf9e1ff7960a1aa54803099e4071157fa9de0cd07a89c4052e31ed5322219',
           }
 
           def verify_d002_reconnect_sources():
@@ -4236,6 +4286,7 @@ jobs:
           def is_homework_failure(value):
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs', 'errorCount', 'diagnostics', 'errorLocations'}
               for row in value['results']:
+                  row = without_reported_framework_error(row)
                   if type(row) is dict and 'd002ReconnectObservation' in row:
                       if (set(row) != keys | {'d002ReconnectObservation'}
                               or row.get('file') != 'mobile-real-server.spec.ts'
@@ -4338,7 +4389,7 @@ jobs:
                   return is_homework_failure(value)
               if config[4] == 'STUDENT_STATS_HTTP503':
                   return is_student_stats_failure(value)
-              row = value['results'][0]
+              row = without_reported_framework_error(value['results'][0])
               if is_hosted_mark(config) and not is_hosted_mark_row(row):
                   return False
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
@@ -6093,7 +6144,7 @@ jobs:
                               or not 0 <= failure['matchedCount'] <= 200):
                           raise ValueError('Invalid closed reconciliation readiness failure shape')
                       # Fixed markers are interpreted only against these exact five owned sources.
-                      for name, digest in {**{'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java': 'ecd1734bed2e0beb584c9af79547e5190dafaf3026d02cf34ac639a42f383e05', 'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java': '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java': '86c4ff19cebb79624dc6b6abf39673a25f92d5fdb89ef7b8c11296fe2824bee3', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java': ('5b396cdff796e553832d349c5879a6ca443ee26585865d644ae801ab724a0742' if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11') else '9ea65fd830f3e43f41953acf8da5089702fb0fd067e83496e7976813f647b22f'), 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java': 'b62364adcf6a03522665740e5cb609cd8702a018091daad2a4f2e2c86080c32c'}, **({'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/SchedulePreviewFailureObservation.java': 'c133a0fbd3cead04d9c27470f479bf6f9a162d9fe65acaa851a201d29976dca2'} if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11') else {})}.items():
+                      for name, digest in {**{'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java': '474961092b4b59547fad6e458b8ac9725ba0e01bb00d229c1c6ac082412235fa', 'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java': '7469c2bbf285af4331f05aa703d48075937a050edadcd5b505a214bf689950be', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java': '86c4ff19cebb79624dc6b6abf39673a25f92d5fdb89ef7b8c11296fe2824bee3', 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java': ('054894bed833616033f06081b2ec853de5aefd1204ed681d7b94b63d351fe3cb' if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11') else '9ea65fd830f3e43f41953acf8da5089702fb0fd067e83496e7976813f647b22f'), 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java': 'b62364adcf6a03522665740e5cb609cd8702a018091daad2a4f2e2c86080c32c'}, **({'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/SchedulePreviewFailureObservation.java': 'c133a0fbd3cead04d9c27470f479bf6f9a162d9fe65acaa851a201d29976dca2'} if value['schema'] in ('semester-reconciliation.v10', 'semester-reconciliation.v11') else {})}.items():
                           source = Path(name)
                           source_info = source.lstat()
                           if (not stat.S_ISREG(source_info.st_mode) or not 0 < source_info.st_size <= 262144
@@ -6174,6 +6225,39 @@ jobs:
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
           if-no-files-found: warn
+          retention-days: 7
+
+      - name: Validate the closed semester health observation
+        id: semester-health-receipt
+        if: always() && steps.semester-reconciliation.outcome != 'skipped'
+        run: |
+          python3 -B - <<'PY_HEALTH_RECEIPT'
+          import os, re, sys
+          from pathlib import Path
+          sys.path.insert(0, 'tests/e2e/fixtures')
+          from semester_health_contract import load
+          try:
+              run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
+              if not re.fullmatch('[1-9][0-9]{0,19}', run) or not re.fullmatch('[1-9][0-9]{0,5}', attempt):
+                  raise ValueError('Invalid run metadata')
+              directory = Path(os.environ['RUNNER_TEMP']) / ('rct-semester-reconciliation-' + run + '-' + attempt)
+              if str(directory) != os.environ['RCT_SEMESTER_RECONCILIATION_RUN']:
+                  raise ValueError('Invalid health receipt directory')
+              load(directory / 'health-observation.safe.json')
+          except Exception:
+              raise SystemExit('Closed semester health observation missing or rejected') from None
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('validated=true\n')
+          print('PASS closed semester health observation validated')
+          PY_HEALTH_RECEIPT
+
+      - name: Upload only the validated closed semester health observation
+        if: always() && steps.semester-health-receipt.outputs.validated == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: semester-health-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/health-observation.safe.json
+          if-no-files-found: error
           retention-days: 7
 
       - name: Record a closed exception hint after the failed archived lesson report

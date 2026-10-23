@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
+import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.security.RequestContext;
@@ -554,6 +555,10 @@ public class ScheduleGrpcClient {
 
     private RuntimeException mapBindingError(StatusRuntimeException error, String action) {
         Status.Code code = error.getStatus().getCode();
+        if (code == Status.Code.INVALID_ARGUMENT) {
+            // RPC descriptions can contain caller data; expose only the domain's public rejection.
+            return new BadRequestException("Параметры домашней работы отклонены расписанием");
+        }
         if (code == Status.Code.UNAUTHENTICATED || code == Status.Code.PERMISSION_DENIED) {
             return new AccessDeniedException(
                     error.getStatus().getDescription() == null

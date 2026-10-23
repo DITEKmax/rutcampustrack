@@ -83,12 +83,124 @@ class OwnershipControls(unittest.TestCase):
     def test_local_admission_rejects_hosted_and_non_stage17(self):
         with self.assertRaises(lane.AdmissionError):
             lane.validate_local(environment={"GITHUB_ACTIONS": "true"})
-        value = {"nonce": "a" * 24, "run": "/private/run"}
+        value = {"nonce": "a" * 24, "run": "/private/run", "mode": "full"}
         with patch.object(lane.sys, "platform", "linux"), patch.object(lane, "manifest", return_value=value):
             with self.assertRaisesRegex(lane.AdmissionError, "LOCAL_STAGE17_ONLY"):
                 lane.validate_local(environment={"RCT_LOCAL_STAGE17_MANIFEST": "/private/run/owner.json",
                                                  "RCT_LOCAL_STAGE17_NONCE": "a" * 24,
+                                                 "RCT_LOCAL_STAGE17_MODE": "full",
                                                  "E2E_BASE_URL": "https://foreign.example:8443"})
+
+    def test_manifest_lane_requires_its_own_environment_and_expected_consumer(self):
+        for mode in sorted(lane.MODES):
+            with self.subTest(mode=mode):
+                runner = lane.Runner(mode)
+                value = {"mode": mode, "nonce": runner.nonce, "run": "/private/run"}
+                runner.env.update(RCT_REMAINING5_RUN=value["run"], RCT_E2E_TEACHING_CLOCK_DIR=value["run"] + "/clock")
+                if mode == "lesson-lifecycle":
+                    runner.env["RCT_LESSON_LIFECYCLE_RUN"] = value["run"]
+                lane.validate_lane_environment(value, runner.env, mode)
+                for other in lane.MODES - {mode}:
+                    with self.assertRaises(lane.AdmissionError):
+                        lane.validate_lane_environment(value, runner.env, other)
+                for key, bad in (("RCT_LOCAL_STAGE17_MODE", "client" if mode != "client" else "full"),
+                                 ("RCT_E2E_ASYNC_REPORT", "true" if mode in {"client", "lesson-lifecycle"} else "false"),
+                                 ("RCT_LESSON_LIFECYCLE_RUN", "/foreign/run"),
+                                 ("RCT_APP_RECOVERY_PROJECT", "rct-recovery-1-1-dst"),
+                                 ("RCT_E2E_ROLE_LOGOUT", "true"),
+                                 ("RCT_LOCAL_STAGE17_NONCE", "b" * 24)):
+                    with self.subTest(key=key), self.assertRaises(lane.AdmissionError):
+                        lane.validate_lane_environment(value, {**runner.env, key: bad}, mode)
+
+    def test_startup_diagnostic_is_client_only_manifest_bound_and_keeps_selection(self):
+        for mode in lane.MODES - {"client"}:
+            with self.assertRaisesRegex(lane.AdmissionError, "CLIENT_DIAGNOSTIC_ONLY"):
+                lane.Runner(mode, startup_diagnostic=True)
+        for diagnostic in (False, True):
+            runner = lane.Runner("client", startup_diagnostic=diagnostic)
+            value = {"mode": "client", "nonce": runner.nonce, "run": "/private/run", "startup_diagnostic": diagnostic}
+            runner.env.update(RCT_REMAINING5_RUN=value["run"], RCT_E2E_TEACHING_CLOCK_DIR=value["run"] + "/clock")
+            lane.validate_lane_environment(value, runner.env, "client")
+            with self.assertRaisesRegex(lane.AdmissionError, "LOCAL_DIAGNOSTIC_MISMATCH"):
+                lane.validate_lane_environment({**value, "startup_diagnostic": not diagnostic}, runner.env, "client")
+            with tempfile.TemporaryDirectory(prefix="rct-command-control-") as temporary:
+                runner.run = Path(temporary)
+                (runner.run / "compose.json").write_text('{"services":{}}')
+                calls = []
+                with patch.object(runner, "command", lambda phase, args, **_: calls.append((phase, args))), \
+                        patch.object(lane, "validate_local"), patch.object(lane, "node_tls_probe"), patch.object(lane, "emit"):
+                    runner.execute()
+                self.assertEqual(calls[-1], ("CLIENT_REMAINING5", ["npx", "playwright", "test", "--config",
+                    "playwright.real-mobile.config.ts", "--project=chromium", *(["--max-failures=1"] if diagnostic else [])]))
+
+    @unittest.skipUnless(sys.platform == "linux", "Linux private filesystem semantics required")
+    def test_future_lesson_clock_is_a_weekday_and_monotonic(self):
+        with tempfile.TemporaryDirectory(prefix="rct-lesson-clock-control-") as temporary:
+            runner = lane.Runner("lesson-lifecycle")
+            runner.run = Path(temporary)
+            clock = runner.run / "clock"
+            clock.mkdir(mode=0o755)
+            marker, instant = clock / "disposable-target", clock / "current-instant"
+            marker.write_text("RCT_E2E_DISPOSABLE\n")
+            instant.write_text("2099-10-23T06:00:00.000Z\n")
+            marker.chmod(0o644)
+            instant.chmod(0o644)
+            runner.prepare_lesson_clock()
+            future = lane.datetime.datetime.fromisoformat(instant.read_text().strip().replace("Z", "+00:00"))
+            self.assertGreater(future, lane.datetime.datetime(2099, 10, 23, 6, tzinfo=lane.datetime.timezone.utc))
+            self.assertLess(future.weekday(), 5)
+            self.assertEqual((future.hour, future.minute), (6, 0))
+            marker.write_text("FOREIGN\n")
+            with self.assertRaisesRegex(lane.AdmissionError, "CLOCK_MARKER"):
+                runner.prepare_lesson_clock()
+
+    @unittest.skipUnless(sys.platform == "linux", "Linux selectors and private filesystem semantics required")
+    def test_owned_container_logs_are_private_and_byte_bounded(self):
+        with tempfile.TemporaryDirectory(prefix="rct-log-control-") as temporary:
+            runner = lane.Runner("client")
+            runner.run = Path(temporary)
+            popen = lane.subprocess.Popen
+            def output(args, **kwargs):
+                self.assertEqual(args[-1], "owned-id")
+                return popen([sys.executable, "-c", "import sys; sys.stdout.buffer.write(b'x' * 524288 + b'LATE_SENTINEL')"], **kwargs)
+            rows = [{"Id": "owned-id", "Config": {"Labels": {"com.docker.compose.service": "api-gateway"}}}]
+            previous = os.umask(0o077)
+            try:
+                with patch.object(lane, "inventory", return_value=rows), patch.object(lane.subprocess, "Popen", output):
+                    runner.preserve_logs()
+            finally:
+                os.umask(previous)
+            log = runner.run / "container-api-gateway.private.log"
+            self.assertEqual(log.stat().st_size, 524288 + len(b"LATE_SENTINEL"))
+            self.assertTrue(log.read_bytes().endswith(b"LATE_SENTINEL"))
+            self.assertEqual(stat.S_IMODE(log.stat().st_mode), 0o600)
+            receipt = json.loads((runner.run / "container-logs.safe.json").read_text())
+            self.assertEqual(receipt[0]["status"], "COMPLETE_RETAINED")
+            self.assertTrue(receipt[0]["complete"])
+            self.assertEqual(stat.S_IMODE(log.with_name(log.name + ".meta.safe.json").stat().st_mode), 0o600)
+
+    @unittest.skipUnless(sys.platform == "linux", "POSIX private log capture")
+    def test_log_capture_limits_and_late_tail_are_explicit(self):
+        popen = lane.subprocess.Popen
+        with tempfile.TemporaryDirectory(prefix="rct-log-limits-") as tmp:
+            root = Path(tmp)
+            for kind, code, kwargs, expected in (
+                ("bytes", "import sys;sys.stdout.buffer.write(b'x'*100000)", {"byte_bound": 65536}, "BYTE_BOUND"),
+                ("time", "import time;time.sleep(2)", {"seconds": .05}, "TIME_BOUND"),
+                ("exit", "raise SystemExit(7)", {}, "COMMAND_FAILED"),
+                ("budget", "", {"deadline": time.monotonic()-1}, "BUDGET_EXHAUSTED"),
+            ):
+                path = root / (kind + ".log")
+                def output(args, **options):
+                    script = "print('LATE_TAIL_SENTINEL')" if "--tail" in args else code
+                    return popen([sys.executable, "-c", script], **options)
+                with self.subTest(kind=kind), patch.object(lane.subprocess, "Popen", output):
+                    result = lane.retain_container_log("owned-id", path, **{"deadline": time.monotonic()+3, **kwargs})
+                    self.assertEqual(result["status"], expected)
+                    self.assertFalse(result["complete"])
+                    self.assertEqual(result["late_tail"]["status"], "BUDGET_EXHAUSTED" if kind == "budget" else "COMPLETE_RETAINED")
+                    if kind != "budget":
+                        self.assertIn(b"LATE_TAIL_SENTINEL", path.with_name(path.name + ".tail").read_bytes())
 
     def test_cleanup_does_not_remove_foreign_network(self):
         runner = lane.Runner.__new__(lane.Runner)
@@ -144,16 +256,17 @@ class Response(io.BytesIO):
 class FinalizationControls(unittest.TestCase):
     @unittest.skipUnless(sys.platform == "linux", "Linux private filesystem/lock semantics required")
     def test_main_reports_success_failure_and_interrupt_without_masking_primary(self):
-        cases = ("pass", "nonzero", "interrupt", "nonzero-cleanup-failure", "cleanup-failure")
+        cases = ("pass", "nonzero", "interrupt", "nonzero-cleanup-failure", "cleanup-failure", "nonzero-logs-failure", "logs-failure")
         command = lane.Runner.command
         for case in cases:
             with self.subTest(case=case), tempfile.TemporaryDirectory(prefix="rct-finalizer-control-") as temporary:
                 runs = Path(temporary) / "runs"
                 primary = [KeyboardInterrupt("PRIVATE_SENTINEL") if case == "interrupt" else None]
                 cleanup_failure = RuntimeError("PRIVATE_SENTINEL") if "cleanup-failure" in case else None
+                logs_failure = RuntimeError("PRIVATE_SENTINEL") if "logs-failure" in case else None
                 calls = []
                 class FakeRunner:
-                    def __init__(self, mode):
+                    def __init__(self, mode, *, startup_diagnostic=False):
                         self.run, self.phase = runs / "owned", "PREPARE"
                         self.env, self.child = {}, None
                     def prepare(self):
@@ -170,6 +283,10 @@ class FinalizationControls(unittest.TestCase):
                                 raise
                         if primary[0]:
                             raise primary[0]
+                    def preserve_logs(self):
+                        calls.append("logs")
+                        if logs_failure:
+                            raise logs_failure
                     def cleanup(self):
                         calls.append("cleanup")
                         if cleanup_failure:
@@ -182,20 +299,20 @@ class FinalizationControls(unittest.TestCase):
                             patch.object(lane, "preflight"), patch.object(lane, "owned"), \
                             patch.object(lane, "fcntl", lock), patch.object(lane.sys, "argv", ["runner", "openapi"]), \
                             patch.object(lane.os, "O_NOFOLLOW", getattr(os, "O_NOFOLLOW", 0), create=True), redirect_stdout(stdout):
-                        expected_type = lane.AdmissionError if case.startswith("nonzero") else type(primary[0] or cleanup_failure)
+                        expected_type = lane.AdmissionError if case.startswith("nonzero") else type(primary[0] or logs_failure or cleanup_failure)
                         if case != "pass":
                             with self.assertRaises(expected_type) as raised:
                                 lane.main()
-                            self.assertIs(raised.exception, primary[0] or cleanup_failure)
+                            self.assertIs(raised.exception, primary[0] or logs_failure or cleanup_failure)
                         else:
                             lane.main()
                 finally:
                     os.umask(previous)
                 receipt = json.loads((runs / "owned/result.safe.json").read_text())
-                expected = primary[0] or cleanup_failure
+                expected = primary[0] or logs_failure or cleanup_failure
                 events = [json.loads(line) for line in stdout.getvalue().splitlines()]
                 event = events[-1]
-                self.assertEqual(calls, ["prepare", "execute", "cleanup"])
+                self.assertEqual(calls, ["prepare", "execute", "logs", "cleanup"])
                 self.assertEqual(event["phase"], "LOCAL_RUN_COMPLETE")
                 self.assertEqual(event["stage"], receipt["phase"])
                 self.assertEqual(receipt["phase"], "BUILD_API_GATEWAY" if primary[0] else "COMPLETE")

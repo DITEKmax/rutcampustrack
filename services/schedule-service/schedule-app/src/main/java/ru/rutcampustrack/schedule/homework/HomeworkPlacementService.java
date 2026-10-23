@@ -18,6 +18,7 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.*;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /** Guarded placement commands; the existing binding remains the publication identity. */
 @Service
@@ -34,12 +35,12 @@ public class HomeworkPlacementService {
             ObjectMapper mapper,
             ScheduleSemesterArchiveWriteFence fence,
             ApplicationEventPublisher events,
-            Clock clock) {
+            EducationalTime educationalTime) {
         this.jdbc = jdbc;
         this.mapper = mapper;
         this.fence = fence;
         this.events = events;
-        this.clock = clock;
+        this.clock = educationalTime.clock();
     }
 
     @Transactional

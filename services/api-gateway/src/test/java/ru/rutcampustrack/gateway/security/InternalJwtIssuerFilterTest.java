@@ -6,6 +6,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import io.jsonwebtoken.Jwts;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -17,9 +20,11 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -233,6 +238,100 @@ class InternalJwtIssuerFilterTest {
     @Test
     void filterOrder_isAfterJwtAuth() {
         assertThat(filter.getOrder()).isGreaterThan(-100);
+    }
+
+    @Test
+    void diagnostics_distinguishSignedTimeAndNonTimeFailuresWithoutLeakingIdentity() {
+        Instant expiry = Instant.ofEpochSecond(Instant.now().getEpochSecond() + 120);
+        Map<String, Object> changes = new LinkedHashMap<>();
+        changes.put("iss", "private-invalid-issuer");
+        changes.put("aud", "private-invalid-audience");
+        changes.put("token_use", "private-invalid-use");
+        changes.put("iat", expiry.getEpochSecond() - 30);
+        changes.put("sub", "938462751");
+        changes.put("sid", "00000000-0000-0000-0000-000000000099");
+        changes.put("sv", "938462752");
+        changes.put("rv", "938462753");
+        changes.put("role", "TEACHER");
+        changes.put("status", "EXPELLED");
+        changes.put("group_id", "938462754");
+        changes.put("is_headman", true);
+        changes.put("readOnly", true);
+        Map<String, String> checks = Map.ofEntries(
+                Map.entry("iss", "JWT_ISSUER"), Map.entry("aud", "JWT_AUDIENCE"),
+                Map.entry("token_use", "JWT_USE"), Map.entry("iat", "JWT_IAT_FUTURE"),
+                Map.entry("sub", "JWT_USER"), Map.entry("sid", "JWT_SESSION"),
+                Map.entry("sv", "JWT_SESSION_VERSION"), Map.entry("rv", "JWT_ROLES_VERSION"),
+                Map.entry("role", "JWT_ROLE"), Map.entry("status", "JWT_STATUS"),
+                Map.entry("group_id", "JWT_GROUP"), Map.entry("is_headman", "JWT_HEADMAN_FLAG"),
+                Map.entry("readOnly", "JWT_READONLY_FLAG"));
+        for (var change : changes.entrySet()) {
+            Map<String, Object> claims = validClaims(expiry);
+            claims.put("iat", Instant.now().getEpochSecond() - 10);
+            claims.put(change.getKey(), change.getValue());
+            String token = signedRawToken(claims);
+            assertDiagnostic(response(token, expiry), expiry.plusSeconds(60), checks.get(change.getKey()), "NONE");
+        }
+        Map<String, Object> claims = validClaims(expiry);
+        claims.put("iat", expiry.getEpochSecond());
+        assertDiagnostic(response(signedRawToken(claims), expiry), expiry.plusSeconds(60), "JWT_TIME_INTERVAL", "NONE");
+        claims = validClaims(expiry);
+        claims.put("iat", new BigDecimal(Instant.now().getEpochSecond() - 10 + ".5"));
+        assertDiagnostic(response(signedRawToken(claims), expiry), expiry.plusSeconds(60), "JWT_IAT_WIRE", "NONE");
+        claims = validClaims(expiry);
+        claims.put("iat", Instant.now().getEpochSecond() - 10);
+        claims.put("exp", new BigDecimal(expiry.getEpochSecond() + ".5"));
+        assertDiagnostic(response(signedRawToken(claims), expiry), expiry.plusSeconds(60), "JWT_EXP_WIRE", "NONE");
+        claims = validClaims(expiry);
+        claims.put("iat", Instant.now().getEpochSecond() - 10);
+        String token = signedRawToken(claims);
+        assertDiagnostic(response(token, expiry.plusSeconds(1)), expiry.plusSeconds(60), "JWT_RESPONSE_EXPIRY", "NONE");
+        assertDiagnostic(response(token, expiry), expiry.minusSeconds(1), "JWT_ACCESS_EXPIRY", "NONE");
+        assertDiagnostic(response("invalid.private-token", expiry), expiry.plusSeconds(60), "JWT_PARSE", "MALFORMED");
+        String[] parts = token.split("\\.");
+        parts[2] = (parts[2].startsWith("A") ? "B" : "A") + parts[2].substring(1);
+        assertDiagnostic(response(String.join(".", parts), expiry), expiry.plusSeconds(60), "JWT_PARSE", "SIGNATURE");
+        Instant past = Instant.now().minusSeconds(120);
+        assertDiagnostic(response(signedRawToken(validClaims(past)), past), expiry.plusSeconds(60), "JWT_PARSE", "EXPIRED");
+    }
+
+    @Test
+    void diagnostics_markUnexpectedFailuresWithoutExceptionText() {
+        when(publicKeyConfig.getPublicKey()).thenThrow(new UnsupportedOperationException("private-exception-message"));
+        List<ILoggingEvent> events = rejectAndCapture(validAdmission(), Instant.now().plusSeconds(180));
+        assertThat(events).hasSize(1);
+        assertThat(events.getFirst().getFormattedMessage()).contains("cause=UNEXPECTED", "check=JWT_KEY")
+                .doesNotContain("private-exception-message");
+        assertThat(events.getFirst().getThrowableProxy()).isNull();
+    }
+
+    private void assertDiagnostic(AuthAdmissionResponse response, Instant accessExpiry, String check, String parser) {
+        List<ILoggingEvent> events = rejectAndCapture(response, accessExpiry);
+        assertThat(events).hasSize(1);
+        ILoggingEvent event = events.getFirst();
+        assertThat(event.getFormattedMessage()).contains("cause=IDENTITY_REJECTED", "check=" + check + " ", "parser=" + parser + " ")
+                .doesNotContain(response.internalToken(), ACCESS_TOKEN, SESSION_ID, "private-", "93846275", "sub=", "sid=");
+        assertThat(event.getThrowableProxy()).isNull();
+    }
+
+    private List<ILoggingEvent> rejectAndCapture(AuthAdmissionResponse response, Instant accessExpiry) {
+        Logger logger = (Logger) LoggerFactory.getLogger(InternalJwtIssuerFilter.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            when(client.admit(ACCESS_TOKEN)).thenReturn(Mono.just(response));
+            MockServerWebExchange exchange = exchangeWithExpectations(accessExpiry);
+            GatewayFilterChain chain = mock(GatewayFilterChain.class);
+            StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
+            assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+            verifyNoInteractions(chain);
+            assertThat(exchange.getResponse().getBodyAsString().block()).doesNotContain("check=", "parser=", response.internalToken());
+            return List.copyOf(appender.list);
+        } finally {
+            logger.detachAppender(appender);
+            appender.stop();
+        }
     }
 
     private AuthAdmissionResponse validAdmission() {

@@ -66,6 +66,7 @@ export interface AdminUsersListInput {
   readonly search?: string
   readonly role?: AdminManagedRole | ''
   readonly roleStatus?: AdminRoleStatus | ''
+  readonly status?: AdminUser['status'] | ''
   readonly sortDirection?: 'asc' | 'desc'
   readonly page?: number
   readonly size?: number
@@ -356,6 +357,7 @@ export class AdminUsersClient {
     if (input.search?.trim()) params.set('search', input.search.trim())
     if (input.role) params.set('role', input.role)
     if (input.roleStatus) params.set('roleStatus', input.roleStatus)
+    if (input.status) params.set('status', input.status)
     if (input.groupId !== undefined)
       params.set('groupId', String(positiveInteger(input.groupId, 'groupId')))
     if (input.sortDirection) {

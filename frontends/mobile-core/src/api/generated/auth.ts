@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: e571a08edf9dfad1abc53033389a3ec381cb6c3a0afb0c8a820e47afc571c0ef
+// Contract: Auth session/role; SHA-256: 530af77254fb426aff6a008c03895e95f5812a2006906d730e91d73c5056ffb4
 
 export interface paths {
     "/auth/account-history": {
@@ -48,6 +48,24 @@ export interface paths {
         put?: never;
         /** Change the current user's password */
         post: operations["changePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/device-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read or establish the current browser preference context */
+        get: operations["getDevicePreferences"];
+        /** Save a theme with compare-and-set revision */
+        put: operations["putDevicePreferences"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -558,6 +576,11 @@ export interface components {
             sessionVersion: string;
             userId: string;
         };
+        DevicePreferencesResponse: {
+            /** @example 0 */
+            revision: string;
+            theme: string | null;
+        };
         /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
         ErrorResponse: {
             /**
@@ -797,6 +820,12 @@ export interface components {
             /** Format: int64 */
             expiresIn?: number;
             refreshToken?: string;
+        };
+        UpdateDevicePreferencesRequest: {
+            /** @example 0 */
+            expectedRevision: string;
+            /** @enum {string} */
+            theme: "light" | "dark" | "system";
         };
         WsTicketResponse: {
             /** Format: date-time */
@@ -1059,6 +1088,198 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getDevicePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                "__Host-rct_device"?: string;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Preference and decimal CAS revision; null theme means no choice yet */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DevicePreferencesResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Live bearer session required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description DEVICE_PREFERENCES_UNAVAILABLE or AUTHORITY_UNAVAILABLE */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    putDevicePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                "__Host-rct_device"?: string;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDevicePreferencesRequest"];
+            };
+        };
+        responses: {
+            /** @description Durably committed preference and new revision */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DevicePreferencesResponse"];
+                };
+            };
+            /** @description INVALID_REQUEST */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Live bearer session required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description DEVICE_CONTEXT_LOST or DEVICE_REVISION_CONFLICT; read current context before retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description DEVICE_PREFERENCES_UNAVAILABLE or AUTHORITY_UNAVAILABLE; read back before retrying an unknown write */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

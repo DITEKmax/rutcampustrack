@@ -1,6 +1,8 @@
 package ru.rutcampustrack.auth.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -9,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.rutcampustrack.auth.dto.DevicePreferencesResponse;
 import ru.rutcampustrack.auth.dto.UpdateDevicePreferencesRequest;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 @Tag(
         name = "Device preferences",
@@ -21,10 +24,20 @@ public interface DevicePreferencesApi {
     @ApiResponse(
             responseCode = "200",
             description = "Preference and decimal CAS revision; null theme means no choice yet")
-    @ApiResponse(responseCode = "401", description = "Live bearer session required")
+    @ApiResponse(
+            responseCode = "401",
+            description = "Live bearer session required",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(
             responseCode = "503",
-            description = "DEVICE_PREFERENCES_UNAVAILABLE or AUTHORITY_UNAVAILABLE")
+            description = "DEVICE_PREFERENCES_UNAVAILABLE or AUTHORITY_UNAVAILABLE",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping
     ResponseEntity<DevicePreferencesResponse> getDevicePreferences(
             @CookieValue(name = COOKIE_NAME, required = false) String selector,
@@ -34,16 +47,36 @@ public interface DevicePreferencesApi {
     @ApiResponse(
             responseCode = "200",
             description = "Durably committed preference and new revision")
-    @ApiResponse(responseCode = "400", description = "INVALID_REQUEST")
-    @ApiResponse(responseCode = "401", description = "Live bearer session required")
+    @ApiResponse(
+            responseCode = "400",
+            description = "INVALID_REQUEST",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(
+            responseCode = "401",
+            description = "Live bearer session required",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(
             responseCode = "409",
             description =
-                    "DEVICE_CONTEXT_LOST or DEVICE_REVISION_CONFLICT; read current context before retry")
+                    "DEVICE_CONTEXT_LOST or DEVICE_REVISION_CONFLICT; read current context before retry",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(
             responseCode = "503",
             description =
-                    "DEVICE_PREFERENCES_UNAVAILABLE or AUTHORITY_UNAVAILABLE; read back before retrying an unknown write")
+                    "DEVICE_PREFERENCES_UNAVAILABLE or AUTHORITY_UNAVAILABLE; read back before retrying an unknown write",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
     @PutMapping
     ResponseEntity<DevicePreferencesResponse> putDevicePreferences(
             @CookieValue(name = COOKIE_NAME, required = false) String selector,

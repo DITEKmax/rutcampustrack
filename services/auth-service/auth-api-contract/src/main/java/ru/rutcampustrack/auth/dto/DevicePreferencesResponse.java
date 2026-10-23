@@ -7,8 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record DevicePreferencesResponse(
         @JsonInclude(JsonInclude.Include.ALWAYS)
                 @Schema(
-                        nullable = true,
-                        allowableValues = {"light", "dark", "system"})
+                        requiredMode = Schema.RequiredMode.REQUIRED,
+                        types = {"string", "null"},
+                        pattern = "^(light|dark|system)$")
                 String theme,
         @Schema(
                         requiredMode = Schema.RequiredMode.REQUIRED,

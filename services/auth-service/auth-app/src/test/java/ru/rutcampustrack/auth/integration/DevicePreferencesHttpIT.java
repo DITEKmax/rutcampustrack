@@ -96,10 +96,17 @@ class DevicePreferencesHttpIT extends AbstractIntegrationTest {
         assertPreference(get(bootstrap, cookie), null, "0");
         assertPreference(put(bootstrap, cookie, "dark", "0"), "dark", "1");
         String readOnly = login(seed("expelled"));
+        // Existing session policy exposes terminal grants in a bootstrap session;
+        // it never selects a non-selectable role just to save a browser preference.
+        assertThat(jwt.parseBootstrapToken(readOnly)).isNotNull();
+        var account = call("/auth/session", HttpMethod.GET, readOnly, cookie, null);
+        assertThat(account.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(
-                        jwt.parseSessionAccessToken(readOnly)
-                                .getPayload()
-                                .get("readOnly", Boolean.class))
+                        json.readTree(account.getBody())
+                                .path("roles")
+                                .get(0)
+                                .path("readOnly")
+                                .asBoolean())
                 .isTrue();
         assertPreference(put(readOnly, cookie, "light", "1"), "light", "2");
         var claims = jwt.parseSessionAccessToken(actor).getPayload();

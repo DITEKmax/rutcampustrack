@@ -11,6 +11,7 @@ import {
   type HomeworkPeriodMode,
 } from '../../../../mobile-core/src/domain/homework'
 import { createStudentApi } from '../../app/api'
+import { useWebLiveRefresh } from '../../app/live'
 import { message, webSession } from '../../auth/session'
 
 export function useWebHomework() {
@@ -33,7 +34,6 @@ export function useWebHomework() {
   let alive = true
   let request = 0
   let mutationRevision = 0
-  let timer: ReturnType<typeof setInterval> | undefined
   const current = () => alive && webSession.generation.value === identity
   const semester = computed(() =>
     feed.value ? { from: feed.value.semester.dateFrom, to: feed.value.semester.dateTo } : null,
@@ -184,21 +184,14 @@ export function useWebHomework() {
       if (old && feed.value) void load()
     },
   )
-  const refreshVisible = () => {
-    if (!document.hidden && !interacting.value && !Object.values(pending).some(Boolean))
-      void load(true)
-  }
+  useWebLiveRefresh(() => load(true), {
+    blocked: computed(() => interacting.value || Object.values(pending).some(Boolean)),
+  })
   onMounted(() => {
     void load()
-    timer = setInterval(refreshVisible, 15000)
-    window.addEventListener('focus', refreshVisible)
-    window.addEventListener('online', refreshVisible)
   })
   onUnmounted(() => {
     alive = false
-    clearInterval(timer)
-    window.removeEventListener('focus', refreshVisible)
-    window.removeEventListener('online', refreshVisible)
   })
   return {
     feed,

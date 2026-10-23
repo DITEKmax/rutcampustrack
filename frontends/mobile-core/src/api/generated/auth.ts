@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: 530af77254fb426aff6a008c03895e95f5812a2006906d730e91d73c5056ffb4
+// Contract: Auth session/role; SHA-256: f4c0e38e0d5cb9bc7441079209aa552ae9b9203a1f537525507137f9be1d6044
 
 export interface paths {
     "/auth/account-history": {
@@ -12,6 +12,40 @@ export interface paths {
         };
         /** Read the current user's account security history */
         get: operations["accountHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/users/{userId}/generated-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate a version-checked password and revoke old credentials; read back after unknown outcome */
+        post: operations["generatePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/users/{userId}/initial-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the current permitted credential and CAS version; audit direct disclosure */
+        get: operations["readCredential"];
         put?: never;
         post?: never;
         delete?: never;
@@ -538,6 +572,17 @@ export interface components {
             items: components["schemas"]["AccountHistoryEvent"][];
             nextCursor?: string;
         };
+        AdminCredentialView: {
+            credentialsVersion: string;
+            origin: string | null;
+            password: string | null;
+            /** @enum {string} */
+            state: "GENERATED" | "USER_CHANGED" | "UNAVAILABLE";
+            userId: string;
+        };
+        AdminGeneratedPasswordRequest: {
+            expectedCredentialsVersion: string;
+        };
         AdminPasswordResetLinkResponse: {
             /** Format: date-time */
             expiresAt?: string;
@@ -655,7 +700,7 @@ export interface components {
         HeadmanCredentialView: {
             credentialsVersion: string;
             /** @enum {string} */
-            origin: "initial" | "headman_reset";
+            origin: "initial" | "headman_reset" | "admin_reset";
             password: string;
             /** @enum {string} */
             state: "GENERATED" | "STUDENT_CHANGED" | "UNAVAILABLE";
@@ -918,6 +963,198 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    generatePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminGeneratedPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Committed generated password and new credential version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCredentialView"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CREDENTIAL_VERSION_CONFLICT or CREDENTIAL_TARGET_UNAVAILABLE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description AUTHORITY_UNAVAILABLE or ADMIN_AUTHORITY_UNAVAILABLE; do not blindly regenerate */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    readCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current permitted credential and CAS version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCredentialView"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description AUTHORITY_UNAVAILABLE or ADMIN_AUTHORITY_UNAVAILABLE */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

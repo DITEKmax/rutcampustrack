@@ -192,6 +192,8 @@ class JwtAuthenticationFilterPurposeTest {
         for (RequestSpec request :
                 List.of(
                         new RequestSpec("GET", "/auth/account-history"),
+                        new RequestSpec("GET", "/auth/admin/users/1/initial-password"),
+                        new RequestSpec("POST", "/auth/admin/users/1/generated-password"),
                         new RequestSpec("POST", "/auth/device-preferences"),
                         new RequestSpec("DELETE", "/auth/device-preferences"),
                         new RequestSpec("GET", "/auth/device-preferences/"),

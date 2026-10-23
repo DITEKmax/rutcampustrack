@@ -1,18 +1,18 @@
 package ru.rutcampustrack.auth.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import ru.rutcampustrack.auth.dto.AdminPasswordResetLinkResponse;
 import ru.rutcampustrack.auth.dto.HeadmanCredentialView;
 import ru.rutcampustrack.auth.dto.HeadmanCredentialView.Origin;
 import ru.rutcampustrack.auth.dto.HeadmanCredentialView.State;
-import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.SessionLifecycleService;
@@ -20,43 +20,31 @@ import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 
-import java.security.SecureRandom;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-
 /**
  * Own-group credential operations. All authority, effects and disclosure audit share one PG
  * transaction.
  */
 @Service
 public class HeadmanCredentialsService {
-    private static final String PASSWORD_ALPHABET =
-            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     private final JdbcTemplate jdbc;
     private final AuthService auth;
-    private final PasswordEncoder encoder;
-    private final PasswordChangedOutbox outbox;
+    private final GeneratedPasswordMutation mutation;
     private final SessionLifecycleService sessions;
     private final String recoveryUrl;
     private final ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient academic;
     private final org.springframework.transaction.support.TransactionTemplate tx;
-    private final SecureRandom random = new SecureRandom();
 
     public HeadmanCredentialsService(
             JdbcTemplate jdbc,
             AuthService auth,
-            PasswordEncoder encoder,
-            PasswordChangedOutbox outbox,
+            GeneratedPasswordMutation mutation,
             SessionLifecycleService sessions,
             ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient academic,
             org.springframework.transaction.PlatformTransactionManager manager,
             @Value("${auth.password-reset-url:}") String recoveryUrl) {
         this.jdbc = jdbc;
         this.auth = auth;
-        this.encoder = encoder;
-        this.outbox = outbox;
+        this.mutation = mutation;
         this.sessions = sessions;
         this.academic = academic;
         this.tx = new org.springframework.transaction.support.TransactionTemplate(manager);
@@ -100,48 +88,8 @@ public class HeadmanCredentialsService {
             if (!Long.toString(expected).equals(before.credentialsVersion())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Версия доступа изменилась");
             }
-            StringBuilder generated = new StringBuilder(12);
-            for (int index = 0; index < 12; index++) {
-                generated.append(
-                        PASSWORD_ALPHABET.charAt(random.nextInt(PASSWORD_ALPHABET.length())));
-            }
-            String password = generated.toString();
-            // V57 advances the credential generation exactly once and schedules old bot-message
-            // cleanup.
-            int changed =
-                    jdbc.update(
-                            """
-UPDATE auth_identities SET password_hash = ?, initial_password = ?, password_changed = FALSE,
-    generated_password_origin = 'headman_reset'
-WHERE id = ? AND credentials_version = ?
-""",
-                            encoder.encode(password),
-                            password,
-                            studentId,
-                            expected);
-            if (changed != 1)
+            if (!mutation.generate(studentId, expected, Origin.HEADMAN_RESET))
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Версия доступа изменилась");
-            Instant now = Instant.now();
-            jdbc.update(
-                    "UPDATE password_reset_tokens SET used_at = ? WHERE user_id = ? AND used_at IS"
-                            + " NULL",
-                    Timestamp.from(now),
-                    studentId);
-            jdbc.update(
-                    """
-                    UPDATE auth_sessions SET revoked_at = ?, revoke_reason = 'PASSWORD_CHANGED'
-                    WHERE user_id = ? AND revoked_at IS NULL
-                    """,
-                    Timestamp.from(now),
-                    studentId);
-            jdbc.update(
-                    """
-                    INSERT INTO account_security_events(user_id, sid, event_type, occurred_at)
-                    VALUES (?, NULL, 'PASSWORD_CHANGED', ?)
-                    """,
-                    studentId,
-                    Timestamp.from(now));
-            outbox.append(studentId, now);
             HeadmanCredentialView result = currentView(studentId);
             audit(actor.userId(), studentId, "HEADMAN_PASSWORD_RESET", result);
             return result;
@@ -191,7 +139,7 @@ WHERE id = ? AND credentials_version = ?
         var versions =
                 jdbc.queryForList(
                         "SELECT roles_version FROM auth_identities WHERE id=? AND"
-                            + " account_state='ACTIVE' AND fence_operation_id IS NULL",
+                                + " account_state='ACTIVE' AND fence_operation_id IS NULL",
                         Long.class,
                         studentId);
         if (versions.size() != 1) throw denied();
@@ -228,8 +176,8 @@ WHERE id = ? AND credentials_version = ?
         List<Long> users =
                 jdbc.query(
                         "SELECT id FROM auth_identities WHERE id IN (?, ?) AND"
-                            + " account_state='ACTIVE' AND fence_operation_id IS NULL ORDER BY id"
-                            + " FOR UPDATE",
+                                + " account_state='ACTIVE' AND fence_operation_id IS NULL ORDER BY id"
+                                + " FOR UPDATE",
                         (row, index) -> row.getLong(1),
                         actor.userId(),
                         studentId);
@@ -311,7 +259,9 @@ FROM auth_identities WHERE id = ?
                                     ? Origin.INITIAL
                                     : "headman_reset".equals(originCode)
                                             ? Origin.HEADMAN_RESET
-                                            : null;
+                                            : "admin_reset".equals(originCode)
+                                                    ? Origin.ADMIN_RESET
+                                                    : null;
                     State state =
                             changed
                                     ? State.STUDENT_CHANGED

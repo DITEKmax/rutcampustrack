@@ -66,7 +66,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
-        if ("/auth/device-preferences".equals(request.getRequestURI())
+        if (("/auth/device-preferences".equals(request.getRequestURI())
+                        || request.getRequestURI()
+                                .matches(
+                                        "/auth/admin/users/[^/]+/(initial-password|generated-password)"))
                 && (authHeader == null
                         || !authHeader.startsWith("Bearer ")
                         || authHeader.substring(7).isBlank())) {

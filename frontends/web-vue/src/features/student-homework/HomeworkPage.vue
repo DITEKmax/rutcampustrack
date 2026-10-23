@@ -30,14 +30,6 @@ const periodLabel = computed(() => {
   <section
     class="web-homework web-stack"
     data-screen-id="WEB-STUDENT-HOMEWORK"
-    @pointerenter="h.pointerWithin.value = true"
-    @pointerleave="h.pointerWithin.value = false"
-    @focusin="h.focusWithin.value = true"
-    @focusout="
-      h.focusWithin.value = Boolean(
-        ($event.relatedTarget as Node | null) && $el.contains($event.relatedTarget),
-      )
-    "
   >
     <h1>Домашнее задание</h1>
     <div class="web-period-toolbar">

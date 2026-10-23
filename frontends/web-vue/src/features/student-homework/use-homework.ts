@@ -26,9 +26,6 @@ export function useWebHomework() {
   const itemErrors = reactive<Record<string, string>>({})
   const pending = reactive<Record<string, boolean>>({})
   const desired = reactive<Record<string, boolean>>({})
-  const pointerWithin = ref(false)
-  const focusWithin = ref(false)
-  const interacting = computed(() => pointerWithin.value || focusWithin.value)
   const uncertain = reactive<Record<string, boolean>>({})
   const identity = webSession.generation.value
   let alive = true
@@ -185,7 +182,7 @@ export function useWebHomework() {
     },
   )
   useWebLiveRefresh(() => load(true), {
-    blocked: computed(() => interacting.value || Object.values(pending).some(Boolean)),
+    blocked: computed(() => Object.values(pending).some(Boolean)),
   })
   onMounted(() => {
     void load()
@@ -209,8 +206,6 @@ export function useWebHomework() {
     itemErrors,
     pending,
     uncertain,
-    pointerWithin,
-    focusWithin,
     load,
     complete,
     reconcile,

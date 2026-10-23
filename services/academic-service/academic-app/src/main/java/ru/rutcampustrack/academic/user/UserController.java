@@ -4,6 +4,7 @@ import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -12,7 +13,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-
 import ru.rutcampustrack.academic.contract.api.UserApi;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
@@ -28,8 +28,6 @@ import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.shared.web.audit.AdminAction;
-
-import java.util.List;
 
 /**
  * REST controller implementing UserApi contract. Delegates all business logic to UserService. Role
@@ -86,9 +84,11 @@ public class UserController implements UserApi {
             String role,
             AccountStatus status,
             String roleStatus,
+            Long groupId,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {
-        var registry = userService.listUserRegistry(search, role, status, roleStatus, pageable);
+        var registry =
+                userService.listUserRegistry(search, role, status, roleStatus, groupId, pageable);
         Page<User> page = registry.page();
         var grants = registry.grants();
         Page<UserResponse> responsePage =

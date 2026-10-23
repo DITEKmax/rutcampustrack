@@ -3467,6 +3467,15 @@
             "type" : "string"
           }
         }, {
+          "name" : "groupId",
+          "in" : "query",
+          "description" : "Положительный ID группы в сохранённой связи STUDENT/HEADMAN. Не состав на дату; неизвестный ID даёт пустой список.",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
           "name" : "pageable",
           "in" : "query",
           "required" : true,
@@ -16119,6 +16128,10 @@
             "type" : "string",
             "pattern" : "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED"
           },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "sorts" : {
             "type" : "array",
             "items" : {
@@ -16548,6 +16561,10 @@
           "roleStatus" : {
             "type" : "string",
             "pattern" : "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "sorts" : {
             "type" : "array",

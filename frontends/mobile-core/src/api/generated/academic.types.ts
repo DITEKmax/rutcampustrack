@@ -2545,6 +2545,8 @@ export interface components {
             role?: string;
             status?: string;
             roleStatus?: string;
+            /** Format: int64 */
+            groupId?: number;
             sorts?: components["schemas"]["RegistrySort"][];
             /** @enum {string} */
             format: "docx" | "pdf" | "png" | "html" | "xlsx";
@@ -2685,6 +2687,8 @@ export interface components {
             /** @enum {string} */
             status?: "ACTIVE" | "EXPELLED" | "SUSPENDED" | "ARCHIVED";
             roleStatus?: string;
+            /** Format: int64 */
+            groupId?: number;
             sorts?: components["schemas"]["SortOrder"][];
             format: string;
         };
@@ -6300,6 +6304,8 @@ export interface operations {
                 role?: string;
                 status?: "ACTIVE" | "EXPELLED" | "SUSPENDED" | "ARCHIVED";
                 roleStatus?: string;
+                /** @description Положительный ID группы в сохранённой связи STUDENT/HEADMAN. Не состав на дату; неизвестный ID даёт пустой список. */
+                groupId?: number;
                 pageable: components["schemas"]["Pageable"];
                 assembler: components["schemas"]["PagedResourcesAssemblerUserResponse"];
             };

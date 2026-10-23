@@ -100,6 +100,7 @@ export interface RegistryReportSort {
   readonly descending: boolean
 }
 export interface AdminUsersReportSelector {
+  readonly groupId?: number
   readonly search?: string
   readonly role?: AdminManagedRole
   readonly status?: AdminUser['status']
@@ -746,7 +747,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     ],
     HEADMAN_GROUP_COMPOSITION: ['format'],
     HEADMAN_SUBJECT_JOURNAL: ['subjectId', 'lessonTypes', 'weekStarts', 'format'],
-    ADMIN_USERS: ['search', 'role', 'status', 'roleStatus', 'sorts', 'format'],
+    ADMIN_USERS: ['search', 'role', 'status', 'roleStatus', 'groupId', 'sorts', 'format'],
     ADMIN_GROUPS: ['status', 'search', 'course', 'studyMode', 'educationLevel', 'sorts', 'format'],
     ADMIN_GROUP_ATTENDANCE: ['semesterId', 'search', 'sort', 'direction', 'format'],
   }
@@ -846,6 +847,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
           (!Array.isArray(selector.sorts) ||
             selector.sorts.length > 8 ||
             !isHeadmanStatsSortList(selector.sorts))) ||
+        (selector.groupId !== undefined && !isPositiveInteger(selector.groupId)) ||
         (selector.course !== undefined &&
           (!isPositiveInteger(selector.course) || selector.course > 5))
       )

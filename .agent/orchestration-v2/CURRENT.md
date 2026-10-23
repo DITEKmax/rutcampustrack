@@ -1,46 +1,47 @@
-# CURRENT — PR3 readiness, 2026-10-24
+# CURRENT — PR3 implementation GO, 2026-10-24
 
-Current owner instruction: READINESS ONLY in the new published cloud machine.
-Wait for the owner's separate Goal launch. No new persistent Goal, product
-implementation, commit/push, PR mutation, main writes, merge/deploy/production.
-Historical GO/automatic continuation in earlier checkpoints does not activate
-product work in this chat. Owner's intended future main model: GPT-6.1 Sol ultra.
+Owner explicitly launched existing Goal after readiness. Autonomous complete
+implementation, commits/pushes in codex/web-vue-redesign and PR3 updates allowed.
+No new Goal/PR; no main writes/merge/deploy/production. CI/Coverage/Security/OpenAPI
+remain workflow_dispatch/PAUSED until separate owner command. Do not stop after
+first flow or wait for screen approval. Root coordinates/docs/integrates only.
 
-Existing draft PR3: https://github.com/DITEKmax/rutcampustrack/pull/3
-Checkout /workspace/rutcampustrack, local branch codex/web-vue-redesign.
-Remote/PR/local HEAD checked via MCP, gh/API and Git fetch/ls-remote:
-37a15451c1a5647e5267f5ebf2fa388a349e61c1. No rollback/reset/clean/force push.
-Only readiness docs are local WIP; no product/lockfile/workflow changes.
+Existing draft https://github.com/DITEKmax/rutcampustrack/pull/3.
+Checkout /workspace/rutcampustrack; baseline37a15451c, GO/readiness docs60346b26b.
+User future/main model GPT-6.1 Sol ultra. All new product agents explicitly
+requested gpt-6.1-sol/high; tool runtime model telemetry unavailable.
 
-Current observations:
-[READINESS-CHECK-20261024](../../docs/plans/web-vue-pr3/READINESS-CHECK-20261024.md).
-Contract remains [GOAL-CONTRACT](../../docs/plans/web-vue-pr3/GOAL-CONTRACT.md);
-all requested contract/docs/map and applicable AGENTS/RULES were read.
-Old ENVIRONMENT-HANDOFF pending/offline describes a different machine.
+Read full scope in docs/plans/web-vue-pr3/GOAL-CONTRACT, OWNER-BRIEF,
+IMPLEMENTATION-PLAN, OPEN-QUESTIONS and SCREEN-ACTION-MAP.csv; no re-planning.
+Readiness report READINESS-CHECK-20261024: current-chat Figma context/screenshot,
+GitHub MCP+gh/API+Git fetch independently PASS; ZIP size/SHA/CRC/safe paths/
+388PNG manifests verified (422files). Q-ENV-001/Q-INPUT-001 resolved.
 
-Figma current-chat PASS: real design context AND screenshot1550:3168, read-only.
-GitHub MCP, shell gh/REST and Git fetch PASS independently; writes not attempted.
-Actual shell/Docker/JDK21/Gradle/Node/Chromium ready. cgroup16GiB,4CPU quota.
-One isolated minimal project rct-pr3-setup was started: seven containers healthy.
-Four bootJars48/48 UP-TO-DATE. Real API login/roles/active-role/BFF/roster/logout
-PASS; Chromium login/session200, screenshots inspected, no page JS errors.
-Today NOT VERIFIED: schedule503, notification unread-count500, absent downstream
-services. No fake downstream success. Runtime stopped; volumes/images retained.
+First complete package: shared foundation + Vue web password/session/shell +
+student homework read/completion with real API, both themes/adaptive, independent
+review. Neutral foundation/mobile themes and backend device mirror in parallel.
+No role breadth implementation before first path accepted. SLOTS owns exact scopes.
 
-Q-ENV-001 and Q-INPUT-001 resolved. Three wrappers downloaded/validated;
-binary reassembly size87568617/SHA256 matched; CRC/safe paths422 entries PASS;
-388 PNG manifests/hashes/dimensions and34 handoff files verified,140 expected
-narrow light gaps. Inputs: /workspace/rct-pr3-setup/inputs/handoff-20261023-validated;
-evidence: /workspace/rct-pr3-setup/archive-check. No owner answer currently needed.
-Three Q-PROD decisions stay resolved:
-web bell/history/toasts without channels UI; student own export deferred;
-users archive/restore only. Teacher/grants and cancelled legacy scope retained.
+web_foundation owns frontends/web-vue + frontend root package/lock/config,
+new web auth/router/shell/shared controls/student homework. Angular retained until
+functional replacement. theme_foundation owns shared/foundation, mobile theme/
+PCSS/SVG/PWA/TMA integration; backend_device owns auth/device persistence/security/
+Flyway/OpenAPI/generated auth types; runtime_stand owns harness/fixtures and
+external /workspace/rct-pr3-runtime. Each sole writer in separate worktree.
+Root owns common docs/map/API-CHANGES/PROGRESS/PR, branch integration.
 
-Map117 active: AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8/ADMIN34.
-Implemented0/117 (0%); locally verified0/117 (0%) for this Vue iteration.
-Environment readiness is not feature delivery. CI/Coverage/Security/OpenAPI
-PAUSED, workflow_dispatch only, not PASS; no workflow dispatched.
+One heavy lease runtime_stand initially; current16GiB/4CPU. Extends existing
+isolated rct-pr3-setup stand/gateway18080; web14210/PWA15175/TMA15176. Core JAR
+reused; Schedule built; missing services never replaced with mocks/fake success.
+Backend_device waits lease for real PostgreSQL HTTP integration tests.
+Figma remains read-only; network www.figma asset403 under investigation.
 
-Root owns common docs and readiness report; no product writers/worktrees.
-SLOTS records resource state. Readiness complete within the minimal stand scope;
-wait for owner's separate Goal launch. No product readiness claimed.
+Accepted decisions: web bell/history/toasts no channels UI; student own export
+later; users archive/restore only; teacher group AND subject; other grants intact;
+cancelled Angular/Figma operations not returned. Theme light/dark/system all3
+clients, device persistence across logout/login, Telegram vs OS live sources.
+
+Map117active AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8/ADMIN34.
+Implemented0/117(0%); locally verified0/117(0%). First scoped actions in progress;
+readiness/old mobile adapters are not new web delivery. Next integrate shared
+foundation, review/verify first complete backend flow, then expand role packages.

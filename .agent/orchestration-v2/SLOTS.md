@@ -1,33 +1,28 @@
-# SLOTS — PR3 readiness, 2026-10-24
+# SLOTS — PR3 implementation, 2026-10-24
 
-Only readiness authorized; separate Goal launch pending. Existing PR3 branch
-codex/web-vue-redesign; root+6 children runtime ceiling. NO main/product writer.
-Root owns common docs; no product worktrees/parallel writers allocated.
+Existing Goal GO; PR3/codex/web-vue-redesign only. Root+6child runtime ceiling.
+All4 active developers explicitly gpt-6.1-sol/high/fork:none; runtime telemetry
+not exposed. Root docs/Git integration, no product code; main has NO writer.
 
-| Owner | Scope | State | Resources |
+| Owner | Sole worktree | Paths / contracts | State |
 |---|---|---|---|
-| root | readiness coordination, shell/backend/browser, common docs | checkpoint; waiting for Goal | /workspace/rutcampustrack; no product writes |
-| github_readiness | MCP-only PR/ref/permission read | complete | no shell/processes/writes |
-| contract_readiness | complete saved contract/map read | complete | explicit gpt-6.1-sol/high; read-only |
-| archive_readiness | wrappers, binary reassembly, ZIP/manifest validation | complete | only /workspace/rct-pr3-setup/archive-check and inputs; explicit gpt-6.1-sol/high |
+| root | /workspace/rutcampustrack | common docs/map/PROGRESS/API-CHANGES/PR/integration | active |
+| web_foundation | /workspace/rct-worktrees/web-foundation | web-vue, frontend package/lock/config, auth/router/shell/homework | implementation |
+| theme_foundation | /workspace/rct-worktrees/theme-foundation | shared/foundation, mobile PCSS/SVG/theme, PWA/TMA App integration | implementation; neutral early commit |
+| backend_device | /workspace/rct-worktrees/device-api | auth/device/Flyway/security/Gateway exact allows/OpenAPI/generated auth | implementation; heavy waiting |
+| runtime_stand | /workspace/rct-worktrees/runtime-stand | harness/fixtures; /workspace/rct-pr3-runtime external scripts/evidence | exclusive HEAVY initially |
 
-Spawn tools do not expose runtime model telemetry; requested settings do not
-prove actual model. Future main model per owner: GPT-6.1 Sol ultra.
-No hidden orchestrator/children; no product team has started.
+Baseline60346b26b (GO/readiness docs), source37a15451c. Product writers do not
+edit root common docs. API contract direct coordination backend_device↔theme↔web.
+Theme public shared/foundation/index.ts/base.pcss/tokens.pcss/mixins.pcss,
+existing --rct-* aliases retained. Web uses vue-router child route records and
+meta.requiredRoles; public auth/session types owner web foundation.
 
-HEAVY: FREE after one root lease. Actual cgroup16GiB RAM, CPU quota4 cores,
-about30GiB workspace free. Stand namespace rct-pr3-setup, network
-rct-pr3-setup_private_net, own setup-postgres/setup-redis/setup-rabbit named
-volumes, Gateway127.0.0.1:18080, PWA15175/TMA15176. No fixed container_name.
-Only this project was started/stopped; seven services were healthy and core API
-smoke passed. Owned frontend process groups and project containers/network
-stopped/removed; data volumes/images retained. No global Docker cleanup.
+HEAVY runtime_stand only, max-workers2, measured16GiB/4CPU; backend waits lease.
+One existing project rct-pr3-setup/network/private synthetic volumes; Gateway
+127.0.0.1:18080, web14210, PWA15175/TMA15176. No parallel stand collision or fixed
+container names. Core4JAR validated/reused; Schedule minimal build complete.
+No global Docker prune/foreign data. Stand stays running for actual web checks.
 
-Logs/screenshots: /workspace/rct-pr3-setup/readiness-*-20261024.*.
-Schedule/Attendance/Notification and other extended services remain unprepared;
-Today not verified (schedule503, notification unread500). No full suite/CI.
-Four current-source bootJars verified UP-TO-DATE, no dependency reinstall.
-
-Future foundation/tokens/generated/contracts/config/lockfiles owners are not
-yet assigned. Assign only after Goal, using isolated worktrees/resources and
-independent review. Keep CI/Coverage/Security/OpenAPI workflow_dispatch/PAUSED.
+All CI/Coverage/Security/OpenAPI PAUSED/manual only. No merge/deploy/production.
+Readiness children completed; no children of leaf agents/hidden coordinator.

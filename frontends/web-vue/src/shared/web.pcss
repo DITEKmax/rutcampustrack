@@ -195,7 +195,8 @@ h3 {
   font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
-.web-field input {
+.web-field :is(input, select, textarea) {
+  min-inline-size: 0;
   inline-size: 100%;
   min-block-size: var(--control-height);
   padding: var(--space-2) var(--space-5);
@@ -518,3 +519,29 @@ h3 {
     margin-inline-start: auto;
   }
 }
+
+.web-auth-tabs {
+  display: flex;
+  padding: var(--space-1);
+  gap: var(--space-1);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-full);
+}
+.web-auth-tabs a {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  min-inline-size: 0;
+  text-align: center;
+  text-decoration: none;
+  font-size: var(--font-size-micro);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+}
+.web-auth-tabs a.router-link-exact-active { color: var(--color-accent-on-now); background: var(--color-accent-now); }
+.web-auth-link { color: var(--color-text-secondary); font-size: var(--font-size-caption); }
+.web-field .web-code-input { text-align: center; letter-spacing: var(--space-3); font-variant-numeric: tabular-nums; }
+.web-qr-content { display: grid; justify-items: center; gap: var(--space-4); text-align: center; }
+.web-qr-image { inline-size: 12rem; block-size: 12rem; max-inline-size: 100%; object-fit: contain; background: white; border-radius: var(--radius-lg); }

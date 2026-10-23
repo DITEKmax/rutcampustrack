@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import HomeworkPage from '../features/student-homework/HomeworkPage.vue'
 import { headmanRoutes } from '../features/headman/routes'
+import { adminRoutes } from '../features/admin/routes'
 import { webSession } from '../auth/session'
 import { webAssistantAccess } from './assistant'
 import type { HeadmanAssistantPermission } from '../../../mobile-core/src/features/headman-group/headman-group-client'
@@ -24,6 +25,7 @@ function integrateRoute(route: RouteRecordRaw): RouteRecordRaw {
 /** A role feature owns its pages and exports records; only this registry integrates them. */
 export const webFeatures: RouteRecordRaw[] = [
   ...headmanRoutes.map(integrateRoute),
+  ...adminRoutes.map(integrateRoute),
   {
     name: 'student-homework',
     path: '/student/homework',

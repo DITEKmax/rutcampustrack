@@ -58,6 +58,28 @@ desired running, observed pending, connectivity offline, failure null.
 старосты/преподавателя/администратора сохраняются.
 Источник: ответ в этом чате 2026-10-23.
 
+## Q-PROD-003 — окончательное удаление пользователя
+
+**Статус:** asked / unresolved. Блокирует только отдельное irreversible user deletion.
+Источники: canonical JS-ADMIN-18 (knowledge/job-stories.md:281) упоминает
+группу/семестр/пользователя; более точный COMPONENT_REGISTRY.md:127 описывает
+сквозной destructive flow для группы и семестра. Решение
+2026-10-02-user-restore-without-rights.md сохраняет JS-ADMIN-04 как обратимую
+архивацию пользователя с посещаемостью, заявками и историей.
+UserApi DELETE /users/{id} означает archiveUser, а не distinct final deletion.
+Готового отдельного secure protocol удаления пользователя не обнаружено.
+
+Варианты:
+
+1. В этой итерации пользователи имеют архивацию и восстановление.
+2. Включить также окончательное удаление пользователя с preview/proof/durable
+   completion и точным сохранением/удалением связанных данных.
+
+Рекомендация: вариант1. Вопрос отправлен владельцу через UI.
+Архивация/восстановление реализуются независимо от ответа.
+Не считать отсутствие API отменой принятого требования и не называть
+исторический широкий текст достаточным разрешением удалить данные.
+
 ## Разрешённые вопросы без обращения к владельцу
 
 - Teacher read/export scope определяется D023: текущая разрешённая группа AND
@@ -67,3 +89,8 @@ desired running, observed pending, connectivity offline, failure null.
   наличие legacy controls не возвращает их.
 - Новый GO заменяет прежний dark-only Appearance preview: все существующие
   PWA/TMA экраны должны получить light/dark/system.
+
+- Full group deletion остаётся активным implementation gap: registry явно
+  включает группу, legacy DELETE не реализует принятый preview/proof protocol.
+- Admin password regeneration прямо подтверждена JS-ADMIN-20 и RecoveryLinkPanel;
+  отсутствие нового адаптера/API не отменяет эту принятую операцию.

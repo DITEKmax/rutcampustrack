@@ -1,0 +1,42 @@
+[
+  {
+    "path": "foundation-review-4c020f332.md",
+    "original_path": "/workspace/rct-pr3-review/foundation/review-4c020f332.md",
+    "sha256": "64739ab8a1eed898140a50abd3567631bb73f9485fad5006c96144ede269a1d8"
+  },
+  {
+    "path": "theme-mobile-review-6de6fcbca-00fc23d91.md",
+    "original_path": "/workspace/rct-pr3-review/theme-mobile/review-6de6fcbca-00fc23d91.md",
+    "sha256": "4d0da1559d7312ec84a2ed03b445c12d24ccd847e16d53cd5f4be6dc84884a35"
+  },
+  {
+    "path": "device-api-REVIEW-f92cf2ba5.md",
+    "original_path": "/workspace/rct-pr3-review/device-api/REVIEW-f92cf2ba5.md",
+    "sha256": "5fd4a0246449e5e130d4fd8b4eab4105c1cb4dfdbfa78b4e5cd319c10e2fc34e"
+  },
+  {
+    "path": "device-api-RECHECK-3c02a3241.md",
+    "original_path": "/workspace/rct-pr3-review/device-api/RECHECK-3c02a3241.md",
+    "sha256": "bad12ef0c313a7d48c6f3daa072cf1aa9b78d846604f24c7a9d2c06f351a7122"
+  },
+  {
+    "path": "web-foundation-REVIEW-36815621.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/REVIEW-36815621.md",
+    "sha256": "842c80496ae20bb2f7c795b67984db73a5984a71e3b79f3d1614b77d8b46faae"
+  },
+  {
+    "path": "web-foundation-RECHECK-5ab473df.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/RECHECK-5ab473df.md",
+    "sha256": "b84d4a8825447ebcf7fa02a05de98e646bec072733e885d0ac00c8ab74ed0fe5"
+  },
+  {
+    "path": "web-foundation-RECHECK-cab5b8a2.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/RECHECK-cab5b8a2.md",
+    "sha256": "c2bc0094b17228ab41ff7ece11df21bc3460e9f40066bc18a3e102953090d568"
+  },
+  {
+    "path": "web-foundation-RECHECK-a2ef210623.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/RECHECK-a2ef210623.md",
+    "sha256": "98487c7c1b9bbaacad82301795e8c994f0f6185185478c08c1343b462ef2b67a"
+  }
+]

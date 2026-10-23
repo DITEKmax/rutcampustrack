@@ -1,5 +1,13 @@
 # Передача в другую облачную среду — PR3
 
+> Актуальный срез 2026-10-24 после отдельного GO: машина работает, ZIP полностью
+> проверен, первый web/backend пакет интегрирован, runtime HTML-галерея создана.
+> Настоящие Schedule/Attendance/Notification добавлены; API Today200 получен,
+> полный новый web Today ещё не принят. Политика www.figma.com пока403 несмотря
+> на обещанное разрешение. Текущие факты/границы/прогресс — [PROGRESS](PROGRESS.md)
+> и [FIRST-PACKAGE-CHECKPOINT](FIRST-PACKAGE-CHECKPOINT.md). Ниже исторический
+> стартовый снимок; его pending/offline/STOP/old session не являются текущими.
+
 > Обновление 2026-10-24: новая машина реально работает; Figma context/screenshot,
 > GitHub MCP, shell Git fetch и gh/REST проверены, минимальный backend поднят,
 > login/данные/screenshot проверены. Полный «Сегодня» не подтверждён: отсутствует

@@ -44,7 +44,7 @@ Evidence: `/workspace/rct-pr3-setup/archive-check/report.md` и
 
 ## Q-ENV-002 — скачивание оригинальных Figma assets
 
-**Тип:** техническая зависимость. **Статус:** waiting for owner network policy.
+**Тип:** техническая зависимость. **Статус:** owner will allow; applied access pending.
 Figma MCP реально возвращает design context/screenshot, но `curl` временного
 original asset URL через наследуемый proxy с разрешённой network sandbox
 получает `CONNECT tunnel failed, response 403`. Файл политики restricted не
@@ -55,9 +55,33 @@ original asset URL через наследуемый proxy с разрешённ
 облачной среде. Затронуты original auth background и следующие PNG/SVG assets;
 API/shell/theme/другие экраны продолжаются. Screenshot/crop не подменяет
 оригинальный asset; CONNECT policy не обходится direct network/отключением TLS.
+Ответ владельца: «Разрешу www.figma.com». Повторный source download пока403;
+это не подтверждение применённой политики и не новый запрос разрешения.
 После ответа/публикации — повторить один bounded source download и сохранить
 локальный файл. Текст вопроса/положительный ответ сами по себе не доказывают
 применённый доступ.
+
+## Q-PROD-004 — участники окончательно удаляемой группы
+
+**Тип:** существенное продуктовое решение. **Статус:** waiting for owner.
+Финальное удаление группы уже принято: canonical COMPONENT_REGISTRY.md:127,
+JS-ADMIN-18: числовой preview, текущий пароль, подтверждённый cascade. Сам scope
+не обсуждается повторно. Q-PROD-003 запрещает отдельное окончательное удаление
+пользователя. Current GroupService DELETE не реализует безопасный flow и
+блокирует managed history; прежний endpoint не задаёт новую policy.
+
+Не определены последствия для текущего membership и student/headman grants
+участников удаляемой группы при сохранении accounts/остальных ролей. Нельзя
+удалить аккаунты, оставить authority со ссылкой на исчезнувшую группу или
+самовольно выбрать новый статус пользователя.
+
+Владельцу отправлены варианты: убрать участие и отозвать права только удаляемой
+группы; либо требовать предварительного перевода участников. Затронут только
+ACT-ADMIN-GROUP-FINAL-DELETE и его preview/authority/cascade. Другие операции,
+включая admin password regeneration, продолжаются. Молчание не является выбором.
+Source packet подготовлен read-only по актуальным Academic/Auth/Schedule/
+Attendance implementations; reuse existing password step-up/durable participants,
+без browser-цепочки subject deletes и без ослабления scopes.
 
 ## Q-PROD-001 — настройки каналов уведомлений в web
 

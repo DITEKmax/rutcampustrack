@@ -1,5 +1,13 @@
 # Старт — Vue web redesign
 
+> Актуальный срез 2026-10-24 после отдельного GO: машина работает, ZIP полностью
+> проверен, первый web/backend пакет интегрирован, runtime HTML-галерея создана.
+> Настоящие Schedule/Attendance/Notification добавлены; API Today200 получен,
+> полный новый web Today ещё не принят. Политика www.figma.com пока403 несмотря
+> на обещанное разрешение. Текущие факты/границы/прогресс — [PROGRESS](PROGRESS.md)
+> и [FIRST-PACKAGE-CHECKPOINT](FIRST-PACKAGE-CHECKPOINT.md). Ниже исторический
+> стартовый снимок; его pending/offline/STOP/old session не являются текущими.
+
 Дата решений: 2026-10-23 (Europe/Moscow).
 Рабочий PR: https://github.com/DITEKmax/rutcampustrack/pull/3 (draft).
 Новое GO и полный контракт: [GOAL-CONTRACT.md](GOAL-CONTRACT.md).

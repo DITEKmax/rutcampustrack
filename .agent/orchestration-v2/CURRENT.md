@@ -1,47 +1,45 @@
 # CURRENT — PR3 implementation GO, 2026-10-24
 
-Owner explicitly launched existing Goal after readiness. Autonomous complete
-implementation, commits/pushes in codex/web-vue-redesign and PR3 updates allowed.
-No new Goal/PR; no main writes/merge/deploy/production. CI/Coverage/Security/OpenAPI
-remain workflow_dispatch/PAUSED until separate owner command. Do not stop after
-first flow or wait for screen approval. Root coordinates/docs/integrates only.
+Owner explicitly launched existing Goal after readiness. Continue full scope
+without per-screen approval. PR3/codex/web-vue-redesign ONLY; no new Goal/PR,
+main writes/merge/deploy/production. CI/Coverage/Security/OpenAPI workflow_dispatch
+and PAUSED until separate owner command. Root coordinates/docs/integrates only.
 
+Repo /workspace/rutcampustrack; source snapshot072edf183, initial37a15451c.
 Existing draft https://github.com/DITEKmax/rutcampustrack/pull/3.
-Checkout /workspace/rutcampustrack; baseline37a15451c, GO/readiness docs60346b26b.
-User future/main model GPT-6.1 Sol ultra. All new product agents explicitly
-requested gpt-6.1-sol/high; tool runtime model telemetry unavailable.
+User requested main GPT-6.1 Sol ultra; all product/review agents explicitly
+spawned gpt-6.1-sol/high/fork:none; runtime telemetry unavailable, no fallback.
 
-Read full scope in docs/plans/web-vue-pr3/GOAL-CONTRACT, OWNER-BRIEF,
-IMPLEMENTATION-PLAN, OPEN-QUESTIONS and SCREEN-ACTION-MAP.csv; no re-planning.
-Readiness report READINESS-CHECK-20261024: current-chat Figma context/screenshot,
-GitHub MCP+gh/API+Git fetch independently PASS; ZIP size/SHA/CRC/safe paths/
-388PNG manifests verified (422files). Q-ENV-001/Q-INPUT-001 resolved.
+Saved contract docs/plans/web-vue-pr3; do not restart planning. Current PROGRESS:
+implemented5/117(4.27%), locallyverified4/117(3.42%): shared3+homework2 source;
+shared3+completion1 runtime. Browse day/month/link/keyboard targeted gate pending.
+AUTH0/6,SHARED3/15,STUDENT2/16,HEADMAN0/38,TEACHER0/8,ADMIN0/34 implemented;
+source-ready new role packages are not yet counted. Baseline117 remains.
 
-First complete package: shared foundation + Vue web password/session/shell +
-student homework read/completion with real API, both themes/adaptive, independent
-review. Neutral foundation/mobile themes and backend device mirror in parallel.
-No role breadth implementation before first path accepted. SLOTS owns exact scopes.
+First backend-connected web package accepted: shared foundation, password/session/
+role/logout/shell/homework, actual login/read/completion/undo/logout and20+2runtime
+samples. Source review findings corrected, latestcab+a2efPASS. Neutral mobile
+foundation integrated; device APIf92+3c integrated/realDB+browser+PWA mirrorPASS.
+Full Today web/allmobilematrix/signedTelegram not accepted. See FIRST-PACKAGE-CHECKPOINT.
 
-web_foundation owns frontends/web-vue + frontend root package/lock/config,
-new web auth/router/shell/shared controls/student homework. Angular retained until
-functional replacement. theme_foundation owns shared/foundation, mobile theme/
-PCSS/SVG/PWA/TMA integration; backend_device owns auth/device persistence/security/
-Flyway/OpenAPI/generated auth types; runtime_stand owns harness/fixtures and
-external /workspace/rct-pr3-runtime. Each sole writer in separate worktree.
-Root owns common docs/map/API-CHANGES/PROGRESS/PR, branch integration.
+Writers SLOTS: web_foundation commonweb/auth/shared/student/config/lock/registry;
+headman_web features/headman/**; admin_web features/admin/**; teacher_web
+features/teacher/**. All separate worktrees. backend_device Auth/Academic/proto/
+generated contracts; theme_foundation neutral/mobile; runtime_stand harness/stand.
+Root owns docs/map/progress/APIchanges/PR/Git. Never edit another owner scope.
+Scoped createWebTransport guards identity before/after response and decode;
+useWebLiveRefresh common existing-STOMP adapter owned web_foundation in progress.
 
-One heavy lease runtime_stand initially; current16GiB/4CPU. Extends existing
-isolated rct-pr3-setup stand/gateway18080; web14210/PWA15175/TMA15176. Core JAR
-reused; Schedule built; missing services never replaced with mocks/fake success.
-Backend_device waits lease for real PostgreSQL HTTP integration tests.
-Figma remains read-only; network www.figma asset403 under investigation.
+Real16GiB/4CPU, one HEAVY lease. Current renderer runtime_stand lease after
+backend released admin generation tests. Stand rct-pr3-setup private synthetic
+volumes12healthy; Gateway18080, web14210, roledev14220/14230/14240 exactCORSready,
+PWA15175/TMA15176. Immutable Auth/Gateway JAR mounts; no mutable author buildmount.
+No missing services replaced with mocks. Renderer real native dependency in work.
 
-Accepted decisions: web bell/history/toasts no channels UI; student own export
-later; users archive/restore only; teacher group AND subject; other grants intact;
-cancelled Angular/Figma operations not returned. Theme light/dark/system all3
-clients, device persistence across logout/login, Telegram vs OS live sources.
-
-Map117active AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8/ADMIN34.
-Implemented0/117(0%); locally verified0/117(0%). First scoped actions in progress;
-readiness/old mobile adapters are not new web delivery. Next integrate shared
-foundation, review/verify first complete backend flow, then expand role packages.
+Questions: QENV002 owner promisedwww.figma.com; actualpolicyrevision7still403,
+MCPcontext/screenshotworks. QPROD004 groupdelete member/grant semantics pending.
+ZIP original size/SHA/CRC/safe/388PNGmanifests PASS; QINPUT001/QENV001resolved.
+Accepted decisions unchanged: bell/history10stoasts no channels; ownstudentexport
+later; usersarchive/restore only; teacher groupANDsubject/read/export; cancelled
+legacy actions not returned. Admin generated password backend52eb8520 ready for
+independent review, no web acceptance yet; groupfinaldelete remainsactivegap.

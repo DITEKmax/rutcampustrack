@@ -1,63 +1,75 @@
 # PROGRESS — Vue web redesign
 
-Срез2026-10-24 Europe/Moscow. Существующий draft PR3:
-https://github.com/DITEKmax/rutcampustrack/pull/3.
-Владелец отдельно запустил Goal после readiness; полномочия:
-[GOAL-CONTRACT.md](GOAL-CONTRACT.md). Среда/ZIP:
-[READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md).
+Срез 2026-10-24 Europe/Moscow. Существующий draft [PR3](https://github.com/DITEKmax/rutcampustrack/pull/3), ветка `codex/web-vue-redesign`.
+Владелец отдельно запустил Goal после readiness; [контракт](GOAL-CONTRACT.md) сохраняется.
 
-## Функциональный прогресс этой Vue итерации
+## Функциональный прогресс Vue web
 
-**Implemented0/117 (0%). Locally verified0/117 (0%).**
-Знаменатель provisional117 active, не уменьшен; reference/theme/width варианты
-не являются отдельными действиями/тестами. Старый mobile код и настройка среды
-не засчитываются новой web реализацией.
+**Implemented 5/117 (4,27%). Locally verified 4/117 (3,42%).**
+Знаменатель 117 active не уменьшен. Counts относятся к принятым действиям,
+а не к ширинам, темам, screenshots или числу компонентов. Source implementation
+и достаточное локальное подтверждение показаны отдельно. Это промежуточный
+пакет; полная замена Angular и новая реализация целиком ещё не готовы.
 
 | Роль | Active | Implemented | Locally verified |
 |---|---:|---:|---:|
 | AUTH | 6 | 0/6 (0%) | 0/6 (0%) |
-| SHARED | 15 | 0/15 (0%) | 0/15 (0%) |
-| STUDENT | 16 | 0/16 (0%) | 0/16 (0%) |
+| SHARED | 15 | 3/15 (20%) | 3/15 (20%) |
+| STUDENT | 16 | 2/16 (12,50%) | 1/16 (6,25%) |
 | HEADMAN | 38 | 0/38 (0%) | 0/38 (0%) |
 | TEACHER | 8 | 0/8 (0%) | 0/8 (0%) |
 | ADMIN | 34 | 0/34 (0%) | 0/34 (0%) |
 
-## Текущий пакет
+Учтены роль, logout, выбор темы, просмотр/собственная отметка ДЗ. Для просмотра
+ДЗ ещё ожидается адресная runtime проверка day/month/navigation/link/keyboard;
+week уже подтверждён. Password login/session работают в настоящем браузере,
+но AUTH пока не закрыт: original auth asset и полный role bootstrap acceptance
+ожидаются. Подробности и evidence — [первый пакет](FIRST-PACKAGE-CHECKPOINT.md).
 
-В работе password/session/role context/shared shell + student homework
-read/completion. Параллельно общая Onest/semantic/rem PCSS foundation, light/
-dark/system всех PWA/TMA экранов и backend device preference mirror с настоящей
-PostgreSQL HTTP проверкой. Единственные writers — отдельные worktrees в SLOTS.
-Корневые package/lock/config — web owner, tokens/mobile — theme owner,
-auth/generated/backend contracts — backend_device, common docs — root.
+## Текущая работа
 
-После завершения первого сквозного пути — независимое review/исправления и
-runtime обеих тем/адаптива, затем расширение ролей. Owner screen approval не
-требуется. Angular сохраняется до полной функциональной замены.
+Первый shared foundation/password/session/homework пакет интегрирован до
+072edf183, независимые source findings исправлены и recheck PASS. Общая
+light/dark/system основа PWA/TMA и Auth device mirror интегрированы. Настоящий
+PWA app подтвердил сохранение темы между logout/login и сменой аккаунта.
+Полная матрица состояний существующих мобильных экранов и signed Telegram
+admission пока не подтверждены; это не скрывается под общим PASS.
 
-Ранний shared foundation patch4c020f332 интегрирован как bf0ad0a02;
-независимое review в работе, общая тема ещё не принята. Harness0c1d6045f
-интегрирован0f6638c10. Реальный API-путь homework populated read → completion
-write/readback → undo/readback PASS на extended stand; это backend evidence,
-новый web flow ещё не подтверждён и counts не увеличены.
+Далее параллельно: AUTH/SHARED/STUDENT — web_foundation; HEADMAN38 — headman_web;
+ADMIN34 — admin_web; TEACHER8 — teacher_web. Отдельные worktrees, ownership в
+[SLOTS](../../../.agent/orchestration-v2/SLOTS.md). Common registry/config/lock —
+web owner; tokens/mobile — theme owner; API/generated — backend owner; docs — root.
+Новые source-ready role пакеты не засчитываются до достаточной приёмки.
 
-## Проверено / ограничения
+## Настоящий стенд и галерея
 
-Figma actual context+screenshot, GitHub MCP+gh/API+Git fetch, shell/JDK/Gradle/
-Docker/Chromium и проверенный ZIP доступны. Q-ENV-001/Q-INPUT-001 закрыты.
-Core login/authoritative role/BFF session/group roster/logout прошли readiness.
-Полный «Сегодня» НЕ подтверждён: минимальный стенд давал schedule503 и
-notification unread500. Stand owner добавляет настоящие нужные сервисы.
+В изолированный стенд добавлены настоящие Schedule, Attendance, Notification
+с нужными synthetic DB/queue зависимостями; 12 контейнеров healthy. Auth,
+Academic, Gateway, Mobile BFF сохранены. Реальные login/session/homework write/
+readback, schedule/Today/unread API теперь отвечают успешно. API Today200 не
+означает подтверждение полного нового web экрана «Сегодня». Renderer для
+настоящих exports добавляется; фиктивных PDF/успехов нет.
 
-ACT-ADMIN-GROUP-FINAL-DELETE и ACT-ADMIN-REGENERATE-PASSWORD остаются принятыми
-API implementation gaps. Не исключать их из117. Candidate дополнительной
-разовой правки пары не разрешает новые поля без существенного решения.
-Три Q-PROD решения сохранены; новых продуктовых вопросов пока нет.
-Q-ENV-002: original Figma asset downloads с www.figma.com блокирует proxy
-CONNECT403; владельцу отправлен точный запрос на разрешение host. Независимая
-работа продолжается, assets не подменяются screenshots.
+[HTML-галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) содержит
+20 runtime samples с точными revisions: auth, homework populated/completed,
+8 ширин и обе темы. [2 targeted hover samples](../../validation/web-vue-pr3/runtime-gallery/hover-a2ef210623/index.html)
+добавлены отдельно после исправления контраста, старые изображения сохранены.
+В каждой записи ID, screen/state/theme/width/revision/описание; рядом portable
+ZIP для открытия HTML со всеми PNG без deploy. Reference/Figma не выдаётся за runtime.
 
-Runtime HTML-галерея новой web реализации ещё не создана; reference PNG не
-выдаётся за runtime. Actual локальные проверки первого пакета ещё ожидаются.
-CI/Coverage/Security/OpenAPI **PAUSED**, только workflow_dispatch, не PASS.
-Нет main writes/merge/deploy/production. После пакетов обновлять карту/PR/evidence.
+## Блокеры и вопросы
+
+- Q-ENV-002: владелец ответил «Разрешу www.figma.com». В последнем фактическом
+  probe policy revision7 host ещё отсутствует; proxy CONNECT403. Figma MCP
+  context/screenshot работает, загрузка original assets пока блокируется.
+- Q-PROD-004: окончательное удаление группы — судьба участников и групповых
+  STUDENT/HEADMAN grants. Ответ ожидается; независимые действия продолжаются.
+- Admin password generation: backend source/tests готовы к независимому review,
+  web UI не принят. Принятый group final deletion остаётся implementation gap.
+- Server groupId filter пользователей отсутствовал; совместимое дополнение в работе.
+
+Figma read-only; ZIP полностью проверен; MCP/gh/API/Git доступны. Старые
+pending/offline сведения не относятся к этой машине. CI/Coverage/Security/
+OpenAPI **PAUSED**, только workflow_dispatch, не PASS. Нет main writes, merge,
+deploy, production или глобальной очистки Docker. Angular остаётся до полной
+замены возможностей и будет удалён из активной поставки после неё.

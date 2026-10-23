@@ -62,6 +62,13 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
               class="web-profile-menu web-stack"
               @keydown.esc="profile = false"
             >
+              <RouterLink
+                class="web-button"
+                :to="{ name: 'settings' }"
+                @click="profile = false"
+              >
+                Настройки
+              </RouterLink>
               <span>{{ webSession.snapshot.value?.groupLabel }}</span>
               <button
                 class="web-button"

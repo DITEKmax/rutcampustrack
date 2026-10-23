@@ -10,6 +10,7 @@ import {
   DEFAULT_PASSWORD_POLICY,
   validateNewPassword,
 } from '../../../mobile-core/src/features/profile/profile-types';
+import { webSession } from './session';
 import AuthFrame from './AuthFrame.vue';
 import CodeInput from './CodeInput.vue';
 const client = createPasswordRecoveryClient();
@@ -101,6 +102,7 @@ async function complete() {
     if (operation.isCurrent()) {
       resetTicket = '';
       step.value = 'complete';
+      if (webSession.snapshot.value) webSession.invalidate();
     }
   } catch (cause) {
     if (!operation.isCurrent()) return;

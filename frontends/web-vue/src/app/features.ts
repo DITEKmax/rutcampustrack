@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
+import ProfilePage from '../features/profile/ProfilePage.vue'
 import HomeworkPage from '../features/student-homework/HomeworkPage.vue'
 import { headmanRoutes } from '../features/headman/routes'
 import { adminRoutes } from '../features/admin/routes'
@@ -25,6 +26,7 @@ function integrateRoute(route: RouteRecordRaw): RouteRecordRaw {
 
 /** A role feature owns its pages and exports records; only this registry integrates them. */
 export const webFeatures: RouteRecordRaw[] = [
+  { name: 'settings', path: '/settings', component: ProfilePage, meta: { label: 'Настройки', navHidden: true, requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] } },
   ...headmanRoutes.map(integrateRoute),
   ...adminRoutes.map(integrateRoute),
   ...teacherRoutes.map(integrateRoute),

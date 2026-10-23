@@ -4,6 +4,7 @@ import { webSession } from './session'
 export type ReauthenticationReceipt =
   | { kind: 'generated-password'; targetLabel: string; password: string }
   | { kind: 'credential-outcome-unknown'; targetLabel: string }
+  | { kind: 'session-ended'; targetLabel: string; message: string }
 const value = shallowRef<ReauthenticationReceipt | null>(null)
 /** Volatile only: never persisted, logged, placed in a route, or included in a notification. */
 export const reauthenticationReceipt = {

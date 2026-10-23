@@ -9,12 +9,18 @@ import { reauthenticationReceipt } from './reauthentication-receipt'
     aria-labelledby="reauth-receipt-title"
   >
     <h2 id="reauth-receipt-title">
-      Изменение пароля · {{ reauthenticationReceipt.value.value.targetLabel }}
+      {{ reauthenticationReceipt.value.value.kind === 'session-ended' ? 'Сессия' : 'Изменение пароля' }} · {{ reauthenticationReceipt.value.value.targetLabel }}
     </h2>
     <output
       v-if="reauthenticationReceipt.value.value.kind === 'generated-password'"
       class="web-password-receipt"
     >{{ reauthenticationReceipt.value.value.password }}</output>
+    <p
+      v-else-if="reauthenticationReceipt.value.value.kind === 'session-ended'"
+      role="status"
+    >
+      {{ reauthenticationReceipt.value.value.message }}
+    </p>
     <p
       v-else
       role="alert"

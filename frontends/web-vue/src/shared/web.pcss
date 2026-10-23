@@ -582,3 +582,22 @@ h3 {
 }
 .web-code-control:focus-within { outline: var(--web-border) solid var(--color-text-primary); outline-offset: var(--space-2); border-radius: var(--radius-lg); }
 .web-code-cell { display: grid; place-items: center; aspect-ratio: 1; border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-full); font-size: var(--font-size-body); color: var(--color-text-primary); }
+
+.web-profile-data { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-6); }
+.web-profile-definitions { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-4); overflow-wrap: anywhere; }
+.web-profile-definitions dt { color: var(--color-text-muted); font-size: var(--font-size-caption); }
+.web-profile-definitions dd { margin: 0; }
+.web-profile-permissions { padding-inline-start: var(--space-5); }
+.web-profile-list { list-style: none; margin: 0; padding: 0; }
+.web-profile-list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-4); overflow-wrap: anywhere; }
+.web-profile-list li + li { border-block-start: var(--web-border) solid var(--color-border-default); }
+.web-profile-list h3 { font-size: var(--font-size-body); font-weight: 400; }
+.web-avatar-options { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+@mixin rct-compact {
+  .web-profile-data { grid-template-columns: minmax(0, 1fr); }
+  .web-profile-list li { flex-wrap: wrap; }
+}
+.web-confirm-dialog { inline-size: min(32rem, calc(100% - var(--space-8))); max-block-size: calc(100dvh - var(--space-8)); overflow: auto; padding: var(--space-6); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); background: var(--color-surface-raised); color: var(--color-text-primary); }
+.web-confirm-dialog:not([open]) { display: none; }
+.web-confirm-dialog::backdrop { background: color-mix(in srgb, var(--color-surface-base) 75%, transparent); }
+.web-confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }

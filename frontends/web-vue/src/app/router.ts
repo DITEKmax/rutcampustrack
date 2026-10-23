@@ -50,7 +50,7 @@ router.beforeEach(async (to) => {
   if (webSession.phase.value === 'starting') await webSession.bootstrap()
   const session = webSession.snapshot.value
   if (!session) return to.meta.guest ? true : { name: 'login' }
-  if (to.meta.guest) return { name: 'role-home' }
+  if (to.meta.guest && to.name !== 'password-recovery') return { name: 'role-home' }
   if (
     to.meta.requiredRoles &&
     (!session.activeRole || !to.meta.requiredRoles.includes(session.activeRole))

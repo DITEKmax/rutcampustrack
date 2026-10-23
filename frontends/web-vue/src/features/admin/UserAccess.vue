@@ -115,7 +115,7 @@ onMounted(() => admin.init('ADMIN_ACCESS_MANAGE', load));
           Сохранить права
         </button><button
           v-if="profile.assigned"
-          class="web-button admin-danger"
+          class="web-button web-button-danger"
           :disabled="busy || pending"
           @click="confirmRevoke = true"
         >
@@ -133,7 +133,7 @@ onMounted(() => admin.init('ADMIN_ACCESS_MANAGE', load));
           >
             Отмена
           </button><button
-            class="web-button admin-danger"
+            class="web-button web-button-danger"
             :disabled="busy"
             @click="mutate(true)"
           >

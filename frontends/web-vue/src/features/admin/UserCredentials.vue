@@ -26,27 +26,49 @@ const link = shallowRef<AdminRecoveryLink | null>(null);
 const confirming = ref(false);
 const unknownVersion = ref<string | null>(null);
 const revokedSelf = ref(false);
+const selfTarget = String(props.user.id) === webSession.snapshot.value?.userId;
 const self = computed(() => String(props.user.id) === webSession.snapshot.value?.userId);
 const allowed = computed(
   () => full.value || !props.user.roles.some((r) => r.role === 'ADMIN' && r.status === 'ACTIVE'),
 );
 async function read() {
-  await admin.run(async () => {
-    const value = await client.read(props.user.id);
-    admin.assertCurrent();
-    credentials.value = value;
-    if (unknownVersion.value) {
-      notice.value =
-        BigInt(value.credentialsVersion) > BigInt(unknownVersion.value)
-          ? 'Версия пароля изменилась. Показаны текущие данные; повторная генерация не выполнялась.'
-          : 'Версия пароля не изменилась. Предыдущая попытка не подтверждена; автоматического повтора не будет.';
-      // A read showing the old version cannot prove that an in-flight mutation has stopped.
-      if (BigInt(value.credentialsVersion) > BigInt(unknownVersion.value)) {
-        unknownVersion.value = null;
-        emit('locked', false);
+  await admin.run(
+    async () => {
+      let value: GeneratedCredentials;
+      try {
+        value = await client.read(props.user.id);
+      } catch (cause) {
+        if (
+          selfTarget &&
+          unknownVersion.value &&
+          cause instanceof CredentialsError &&
+          cause.status === 401
+        ) {
+          reauthenticationReceipt.show({
+            kind: 'credential-outcome-unknown',
+            targetLabel: props.user.fullName,
+          });
+          webSession.invalidate();
+          return;
+        }
+        throw cause;
       }
-    }
-  }, 'USER_CREDENTIALS_MANAGE');
+      admin.assertCurrent();
+      credentials.value = value;
+      if (unknownVersion.value) {
+        notice.value =
+          BigInt(value.credentialsVersion) > BigInt(unknownVersion.value)
+            ? 'Версия пароля изменилась. Показаны текущие данные; повторная генерация не выполнялась.'
+            : 'Версия пароля не изменилась. Предыдущая попытка не подтверждена; автоматического повтора не будет.';
+        // A read showing the old version cannot prove that an in-flight mutation has stopped.
+        if (BigInt(value.credentialsVersion) > BigInt(unknownVersion.value)) {
+          unknownVersion.value = null;
+          emit('locked', false);
+        }
+      }
+    },
+    selfTarget && unknownVersion.value ? undefined : 'USER_CREDENTIALS_MANAGE',
+  );
   loading.value = false;
 }
 async function generate() {
@@ -190,7 +212,7 @@ void admin.init('USER_CREDENTIALS_MANAGE', async () => {});
         >
           Отмена
         </button><button
-          class="web-button admin-danger"
+          class="web-button web-button-danger"
           :disabled="busy"
           @click="generate"
         >

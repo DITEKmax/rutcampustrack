@@ -35,8 +35,13 @@ export function useAdmin() {
   const full = computed(() => authority.value?.assigned === true && authority.value.mode === 'FULL')
 
   async function refreshAuthority() {
-    authority.value = null
-    const value = await access.getMe(controller.signal)
+    let value: AdminAccessProfile
+    try {
+      value = await access.getMe(controller.signal)
+    } catch (cause) {
+      authority.value = null
+      throw cause
+    }
     assertCurrent()
     if (String(value.userId) !== webSession.snapshot.value?.userId)
       throw new Error('Не удалось подтвердить владельца административных прав.')
@@ -54,6 +59,7 @@ export function useAdmin() {
     error.value = ''
     notice.value = ''
     try {
+      assertCurrent()
       if (permission) await requirePermission(permission)
       await task()
       assertCurrent()

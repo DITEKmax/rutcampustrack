@@ -11,7 +11,7 @@ defineEmits<{ retry: [] }>();
   </p>
   <div
     v-if="error"
-    class="web-notice web-notice-danger"
+    class="web-notice admin-feedback-error"
     role="alert"
   >
     <strong>Не удалось выполнить действие</strong><p>{{ error }}</p>

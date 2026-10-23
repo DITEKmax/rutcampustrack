@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
+import { useWebLiveRefresh } from '../../app/live';
 import {
   AdminUsersClient,
   type AdminUser,
@@ -210,6 +211,7 @@ async function updateRole() {
               ? { groupId: targetGroupId.value }
               : {}),
             ...(roleToUpdate.value === 'TEACHER' ? { employeeNumber: employeeNumber.value } : {}),
+            ...(telegramId.value ? { telegramId: Number(telegramId.value) } : {}),
           },
           admin.signal,
         );
@@ -357,6 +359,14 @@ onBeforeRouteLeave(() => {
   }
 });
 onMounted(() => admin.init('USERS_VIEW', () => load()));
+useWebLiveRefresh(
+  () =>
+    admin.run(async () => {
+      await admin.requirePermission('USERS_VIEW');
+      await load(page.value?.number ?? 0);
+    }),
+  { blocked: () => locked.value || !!selected.value || creating.value },
+);
 </script>
 <template>
   <section
@@ -396,11 +406,17 @@ onMounted(() => admin.init('USERS_VIEW', () => load()));
         v-model="search"
         type="search"
         placeholder="ФИО, логин или Telegram ID"
-      ></label><label class="web-field">Роль<select v-model="role"><option value="">Все роли</option><option
+      ></label><label class="web-field">Роль<select
+        v-model="role"
+        @change="roleStatus = ''"
+      ><option value="">Все роли</option><option
         v-for="(label, value) in roleLabels"
         :key="value"
         :value="value"
-      >{{ label }}</option></select></label><label class="web-field">Статус роли<select v-model="roleStatus"><option value="">Все статусы</option><option
+      >{{ label }}</option></select></label><label class="web-field">Статус роли<select
+        v-model="roleStatus"
+        :disabled="!role"
+      ><option value="">Все статусы</option><option
         v-for="(label, value) in statusLabels"
         :key="value"
         :value="value"
@@ -495,6 +511,7 @@ onMounted(() => admin.init('USERS_VIEW', () => load()));
       v-if="creating || selected"
       ref="editor"
       class="admin-panel"
+      :inert="busy || (pending && !archiveRecovery)"
       tabindex="-1"
       :aria-label="creating ? 'Создание пользователя' : selected!.fullName"
     >
@@ -569,6 +586,7 @@ onMounted(() => admin.init('USERS_VIEW', () => load()));
             v-model="telegramId"
             inputmode="numeric"
             pattern="[1-9][0-9]*"
+            :required="creating && createRole === 'STUDENT'"
           ></label>
         </fieldset>
         <GroupPicker
@@ -685,7 +703,7 @@ onMounted(() => admin.init('USERS_VIEW', () => load()));
         >
           <button
             v-if="selected.status !== 'ARCHIVED'"
-            class="web-button admin-danger"
+            class="web-button web-button-danger"
             :disabled="locked"
             @click="previewArchive"
           >
@@ -726,7 +744,7 @@ onMounted(() => admin.init('USERS_VIEW', () => load()));
             >
               Отмена
             </button><button
-              class="web-button admin-danger"
+              class="web-button web-button-danger"
               :disabled="busy || childLocked"
             >
               Подтвердить архивацию

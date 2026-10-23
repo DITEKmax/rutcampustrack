@@ -10,10 +10,11 @@ import {
   shiftHomeworkPeriod,
   type HomeworkPeriodMode,
 } from '../../../../mobile-core/src/domain/homework'
-import { studentApi } from '../../app/api'
+import { createStudentApi } from '../../app/api'
 import { message, webSession } from '../../auth/session'
 
 export function useWebHomework() {
+  const studentApi = createStudentApi()
   const feed = shallowRef<StudentHomework | null>(null)
   const mode = ref<HomeworkPeriodMode>('day')
   const dates = reactive({ day: '', week: '', month: '' })

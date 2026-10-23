@@ -31,9 +31,23 @@ function clearSession() {
   phase.value = 'guest'
 }
 
+function authorityIdentity(value: ProfileSnapshot | null): string | null {
+  return value
+    ? JSON.stringify([
+        value.userId,
+        value.sessionId,
+        value.sessionVersion,
+        value.rolesVersion,
+        value.activeRole,
+        value.readOnly,
+      ])
+    : null
+}
+
 function acceptSession(value: ProfileSnapshot) {
+  const changedAuthority = authorityIdentity(snapshot.value) !== authorityIdentity(value)
   snapshot.value = value
-  generation.value++
+  if (changedAuthority) generation.value++
   phase.value = 'ready'
 }
 
@@ -173,6 +187,7 @@ export function message(cause: unknown): string {
 }
 
 export const webSession = {
+  identity: computed(() => authorityIdentity(snapshot.value)),
   snapshot: readonly(snapshot),
   phase: readonly(phase),
   busy: readonly(busy),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, reactive, ref, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   toTeacherStatsReportSelector,
@@ -22,6 +22,9 @@ const route = useRoute();
 const selection = useTeacherSelection(scope);
 const stats = useTeacherResource<TeacherStatsResponse>(scope);
 const kind = ref<TeacherStatsScope>('students');
+const drillGroup = ref<number | null>(null);
+const drillHeading = ref<HTMLElement | null>(null);
+const statsTable = ref<InstanceType<typeof TeacherStatsTable> | null>(null);
 const memory = reactive<
   Record<
     TeacherStatsScope,
@@ -58,7 +61,7 @@ const query = computed<TeacherStatsQuery | null>(() => {
     filters: memory[kind.value].filters.map((filter) => ({ ...filter })),
   };
 });
-function load() {
+async function load() {
   const requested = query.value;
   const previous = loadedQuery.value;
   const sameContext = previous && requested && previous.scope === requested.scope &&
@@ -69,7 +72,7 @@ function load() {
     stats.clear();
     return;
   }
-  void stats.load(async () => {
+  await stats.load(async () => {
     const data = await scope.api.stats(requested);
     scope.transport.assertCurrent();
     if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
@@ -80,11 +83,36 @@ function changeScope(value: TeacherStatsScope) {
   if (kind.value === value) return;
   if (kind.value === 'students') memory.students.types = [...selection.lessonTypes.value];
   kind.value = value;
+  drillGroup.value = null;
   if (value === 'students' && memory.students.types.length)
     selection.lessonTypes.value = memory.students.types.filter((type) =>
       selection.types.value.includes(type),
     );
   load();
+}
+async function openGroup(groupId: number) {
+  if (!scope.catalog.value?.groups.some(group => group.id === groupId)) return;
+  const subject = selection.subjectId.value;
+  const selectedTypes = [...memory.groups.types];
+  selection.groupId.value = groupId;
+  selection.subjectId.value = subject;
+  selection.reconcile();
+  const availableTypes = selectedTypes.filter(type => selection.types.value.includes(type));
+  selection.lessonTypes.value = availableTypes.length ? availableTypes : [...selection.types.value];
+  drillGroup.value = groupId;
+  kind.value = 'students';
+  await load();
+  await nextTick();
+  drillHeading.value?.focus();
+}
+async function returnToGroups() {
+  const groupId = drillGroup.value;
+  memory.students.types = [...selection.lessonTypes.value];
+  drillGroup.value = null;
+  kind.value = 'groups';
+  await load();
+  await nextTick();
+  if (groupId !== null) statsTable.value?.focusGroup(groupId);
 }
 function sort(column: string) {
   const sorts = memory[kind.value].sorts;
@@ -110,6 +138,7 @@ watch(
   () => scope.refreshed.value,
   () => {
     selection.reconcile();
+    if (drillGroup.value !== null && !selection.groups.value.some(group => group.id === drillGroup.value)) drillGroup.value = null;
     memory.groups.types = memory.groups.types.filter((type) => allTypes.value.includes(type));
     if (!memory.groups.types.length) memory.groups.types = [...allTypes.value];
     load();
@@ -168,6 +197,23 @@ const exportRequest = computed(() =>
           По моим группам
         </button>
       </div>
+      <div
+        v-if="drillGroup !== null && kind === 'students'"
+        class="teacher-toolbar"
+      >
+        <h2
+          ref="drillHeading"
+          tabindex="-1"
+        >
+          Студенты группы {{ selection.groups.value.find(group => group.id === drillGroup)?.name }}
+        </h2>
+        <button
+          class="web-button"
+          @click="returnToGroups"
+        >
+          Вернуться к моим группам
+        </button>
+      </div>
       <TeacherFilters
         v-if="kind === 'students'"
         :selection="selection"
@@ -206,11 +252,13 @@ const exportRequest = computed(() =>
           {{ stats.data.value.periodTo ?? 'Текущая дата' }} · учтено пар:
           {{ stats.data.value.lessonsCount }}
         </p><TeacherStatsTable
+          ref="statsTable"
           :key="kind"
           :data="stats.data.value"
           :sorts="memory[kind].sorts"
           :filters="memory[kind].filters"
-          :busy="stats.loading.value"
+          :busy="stats.loading.value || scope.loading.value"
+          @group="openGroup"
           @sort="sort"
           @filter="filters"
           @reset="reset"

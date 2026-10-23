@@ -6,7 +6,6 @@ import {
   type TeacherJournalQuery,
   type TeacherJournalResponse,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
-import { mergeJournalPage } from '../../../../mobile-core/src/features/teacher/teacher-journal-model';
 import { teacherLessonTypeLabel } from '../../../../mobile-core/src/features/teacher/teacher-ui-format';
 import {
   shortDate,
@@ -21,11 +20,14 @@ import TeacherMark from './TeacherMark.vue';
 import { teacherAttendanceLabel } from './teacher-mark';
 import TeacherExcusePanel from './TeacherExcusePanel.vue';
 import TeacherExport from './TeacherExport.vue';
+import { useJournalPagination } from './use-journal-pagination';
 
 const scope = useTeacherScope();
 const selection = useTeacherSelection(scope);
 const journal = useTeacherResource<TeacherJournalResponse>(scope);
 const loadedQuery = shallowRef<TeacherJournalQuery | null>(null);
+const pagination = useJournalPagination(scope, journal.data, journal.loading, loadedQuery);
+const { region: journalRegion, edge: journalEdge } = pagination;
 const from = ref(''),
   to = ref('');
 const pastOnly = ref(false);
@@ -66,15 +68,7 @@ function load() {
     return data;
   });
 }
-function more() {
-  const requested = loadedQuery.value,
-    data = journal.data.value;
-  if (!requested || !data?.hasMore || journal.loading.value) return;
-  void journal.load(
-    () => scope.api.journal({ ...requested, page: data.page + 1, includeMetrics: false }),
-    mergeJournalPage,
-  );
-}
+
 watch(
   () => scope.refreshed.value,
   () => {
@@ -96,6 +90,7 @@ const exportRequest = computed(() =>
   journal.data.value?.lessons.length &&
   loadedQuery.value &&
   !journal.loading.value &&
+  !pagination.loading.value &&
   !journal.error.value
     ? (format: Parameters<typeof toTeacherJournalReportRequest>[1]) =>
         toTeacherJournalReportRequest(loadedQuery.value!, format)
@@ -180,6 +175,7 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
       />
       <div
         v-if="journal.data.value?.lessons.length"
+        ref="journalRegion"
         class="teacher-table-scroll teacher-journal"
         tabindex="0"
         aria-label="Журнал. Прокрути, чтобы увидеть все пары"
@@ -222,7 +218,10 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
                 Присутствия и ув.
               </th><th scope="col">
                 Уважительные
-              </th><th scope="col">
+              </th><th
+                ref="journalEdge"
+                scope="col"
+              >
                 Отсутствия
               </th>
             </tr>
@@ -280,14 +279,19 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
           Показано {{ journal.data.value.lessons.length }} из
           {{ journal.data.value.totalLessons }} пар
         </p><button
-          v-if="journal.data.value.hasMore"
+          v-if="journal.data.value.hasMore && !pagination.automatic && !pagination.error.value"
           class="web-button"
-          :disabled="journal.loading.value"
-          @click="more"
+          :disabled="pagination.loading.value"
+          @click="pagination.more"
         >
-          {{ journal.loading.value ? 'Загружаем…' : 'Ещё пары' }}
+          {{ pagination.loading.value ? 'Загружаем…' : 'Загрузить ещё пары' }}
         </button>
       </div>
+      <TeacherNotice
+        :loading="pagination.loading.value"
+        :error="pagination.error.value"
+        @retry="pagination.more"
+      />
       <p class="web-caption">
         + — присутствовал · у — уважительная причина · н — отсутствовал · — — нет отметки · • —
         заявка на рассмотрении. Отметки ведёт староста.

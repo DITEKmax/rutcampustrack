@@ -9,6 +9,7 @@ import {
 import { shortDate, useTeacherResource, type TeacherScope } from './teacher-state';
 import TeacherNotice from './TeacherNotice.vue';
 import TeacherAttachment from './TeacherAttachment.vue';
+import { formatRequestDate, requestTime } from '../../../../mobile-core/src/features/requests/state';
 
 const props = defineProps<{ scope: TeacherScope; ticketId: string }>();
 defineEmits<{ close: [] }>();
@@ -74,6 +75,21 @@ onBeforeUnmount(() => {
         Комментарий: {{ excuse.data.value.comment }}
       </p>
       <dl class="teacher-definitions">
+        <div>
+          <dt>Подана</dt><dd>
+            <time
+              v-if="requestTime(excuse.data.value.createdAt)"
+              :datetime="excuse.data.value.createdAt ?? undefined"
+            >{{ formatRequestDate(excuse.data.value.createdAt, '').trim() }} · {{ requestTime(excuse.data.value.createdAt) }} МСК</time><span v-else>Дата не указана</span>
+          </dd>
+        </div><div>
+          <dt>Решение принято</dt><dd>
+            <time
+              v-if="requestTime(excuse.data.value.decisionAt)"
+              :datetime="excuse.data.value.decisionAt ?? undefined"
+            >{{ formatRequestDate(excuse.data.value.decisionAt, '').trim() }} · {{ requestTime(excuse.data.value.decisionAt) }} МСК</time><span v-else>Дата не указана</span>
+          </dd>
+        </div>
         <div>
           <dt>Статус</dt><dd>
             {{

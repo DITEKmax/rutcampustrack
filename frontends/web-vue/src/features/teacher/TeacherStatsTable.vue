@@ -19,7 +19,13 @@ const emit = defineEmits<{
   sort: [column: string];
   filter: [filters: TeacherStatsFilter[]];
   reset: [];
+  group: [groupId: number];
 }>();
+const tableRegion = ref<HTMLElement | null>(null);
+function focusGroup(groupId: number) {
+  tableRegion.value?.querySelector<HTMLButtonElement>(`[data-teacher-group="${groupId}"]`)?.focus();
+}
+defineExpose({ focusGroup });
 const filterColumn = ref<string | null>(null),
   filterError = ref('');
 const drafts = reactive<Record<string, { minimum: string; maximum: string }>>({});
@@ -79,6 +85,10 @@ function closeFilter() {
   returnFocusAfterLoad = false;
   trigger?.focus();
 }
+function updateRange(bound: 'minimum' | 'maximum', event: Event) {
+  const column = filterColumn.value;
+  if (column && drafts[column]) drafts[column]![bound] = (event.target as HTMLInputElement).value;
+}
 function apply() {
   const column = filterColumn.value;
   if (!column) return;
@@ -97,6 +107,7 @@ function apply() {
 </script>
 <template>
   <div
+    ref="tableRegion"
     class="teacher-table-scroll"
     tabindex="0"
     aria-label="Статистика посещаемости"
@@ -161,18 +172,20 @@ function apply() {
                 <label class="web-field">От{{ filterColumn === 'lessonsCount' ? '' : ', %'
                 }}<input
                   ref="firstInput"
-                  v-model="drafts[filterColumn]!.minimum"
+                  :value="drafts[filterColumn]!.minimum"
                   type="number"
                   min="0"
                   :max="filterColumn === 'lessonsCount' ? undefined : 100"
                   step="any"
+                  @input="updateRange('minimum', $event)"
                 ></label><label class="web-field">До{{ filterColumn === 'lessonsCount' ? '' : ', %'
                 }}<input
-                  v-model="drafts[filterColumn]!.maximum"
+                  :value="drafts[filterColumn]!.maximum"
                   type="number"
                   min="0"
                   :max="filterColumn === 'lessonsCount' ? undefined : 100"
                   step="any"
+                  @input="updateRange('maximum', $event)"
                 ></label>
               </template><button class="web-button">
                 Применить отбор
@@ -197,7 +210,19 @@ function apply() {
           :key="row.id"
         >
           <th scope="row">
-            {{ row.name }}
+            <button
+              v-if="data.scope === 'groups'"
+              class="teacher-text-button"
+              :data-teacher-group="row.id"
+              :disabled="busy"
+              :aria-label="`Открыть студентов группы ${row.name}`"
+              @click="emit('group', row.id)"
+            >
+              {{ row.name }}
+            </button>
+            <template v-else>
+              {{ row.name }}
+            </template>
           </th><td
             v-for="metric in metrics"
             :key="metric.key"

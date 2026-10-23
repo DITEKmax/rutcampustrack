@@ -35,7 +35,7 @@ const selected = shallowRef<AdminGroup | null>(null);
 const creating = ref(false),
   alphabeticCode = ref(''),
   numericCode = ref(''),
-  duration = ref(4),
+  duration = ref<number | ''>(4),
   name = ref('');
 const pending = ref(false),
   unknownWrite = ref(false),
@@ -78,7 +78,7 @@ function open(group: AdminGroup) {
   selected.value = group;
   creating.value = false;
   name.value = group.name;
-  duration.value = group.trainingDurationYears ?? 4;
+  duration.value = group.trainingDurationYears ?? '';
   roster.value = null;
   headmanPreview.value = null;
   confirmArchive.value = false;
@@ -93,6 +93,13 @@ function beginCreate() {
 }
 async function save() {
   await admin.run(async () => {
+    if (
+      duration.value === '' ||
+      !Number.isInteger(duration.value) ||
+      duration.value < 1 ||
+      duration.value > 5
+    )
+      throw new RangeError('Укажи срок обучения от 1 до 5 лет.');
     let acknowledged = false;
     try {
       if (creating.value) {

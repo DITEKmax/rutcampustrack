@@ -1,0 +1,51 @@
+@define-mixin rct-type-body {
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: 1.5;
+}
+
+@define-mixin rct-type-dense {
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: var(--rct-leading-snug);
+}
+
+@define-mixin rct-type-micro {
+  font-size: var(--rct-font-size-micro);
+  font-weight: var(--rct-font-weight-medium);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+}
+
+@define-mixin rct-focus-ring {
+  &:focus-visible {
+    outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+    outline-offset: var(--rct-focus-offset);
+  }
+}
+
+/* Breakpoints use the canonical CSS-pixel basis (16) without changing root font. */
+@define-mixin rct-compact {
+  @media (width < 48rem) {
+    @mixin-content;
+  }
+}
+@define-mixin rct-wide {
+  @media (width >= 64rem) {
+    @mixin-content;
+  }
+}
+@define-mixin rct-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rct-space-4);
+}
+@define-mixin rct-responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--rct-space-4);
+}
+@define-mixin rct-table-scroll {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}

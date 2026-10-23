@@ -59,7 +59,11 @@ onBeforeUnmount(() => {
       @retry="load"
     />
     <template v-if="excuse.data.value">
-      <p>{{ excuse.data.value.studentName }} · {{ excuse.data.value.groupName }}</p>
+      <p>
+        {{ excuse.data.value.studentName }}<template v-if="excuse.data.value.groupName">
+          · {{ excuse.data.value.groupName }}
+        </template>
+      </p>
       <p>
         {{ teacherExcuseTypeLabel(excuse.data.value.excuseType)
         }}<template v-if="excuse.data.value.reason">

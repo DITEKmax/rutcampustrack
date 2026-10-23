@@ -35,9 +35,10 @@ const preview = new TeacherAttachmentPreview(
 );
 const expired = computed(
   () =>
-    props.attachment.expiresAt !== null &&
+    state.value.error === 'Срок хранения файла истёк.' ||
+    (props.attachment.expiresAt !== null &&
     (!Number.isFinite(Date.parse(props.attachment.expiresAt)) ||
-      Date.parse(props.attachment.expiresAt) <= Date.now()),
+      Date.parse(props.attachment.expiresAt) <= Date.now())),
 );
 function open() {
   props.scope.transport.assertCurrent();

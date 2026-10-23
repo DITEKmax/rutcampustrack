@@ -113,6 +113,9 @@ export function dateLabel(date: string | null | undefined) {
       })
     : date
 }
+export function lessonTypeCode(value: string | null | undefined): string {
+  return value?.toUpperCase() ?? ''
+}
 export const lessonTypes: Readonly<Record<string, string>> = {
   LECTURE: 'Лекция',
   PRACTICE: 'Практика',

@@ -7,7 +7,7 @@ import type {
   HeadmanJournalReport,
 } from '../../../../mobile-core/src/features/headman-journal/headman-journal-client';
 import type { HeadmanSubject } from '../../../../mobile-core/src/features/headman-subjects/headman-subjects-client';
-import { dateLabel, lessonTypes, today, useHeadmanFeature } from './context';
+import { dateLabel, lessonTypes, lessonTypeCode, today, useHeadmanFeature } from './context';
 import HeadmanPage from './HeadmanPage.vue';
 const feature = useHeadmanFeature();
 const loading = ref(false),
@@ -126,7 +126,7 @@ useWebLiveRefresh(() => load(true));
             ><th scope="row">{{ lesson.lessonNumber }}</th
             ><td
               >{{ subjects.find((subject) => subject.id === lesson.subjectId)?.name }} ·
-              {{ lessonTypes[lesson.lessonType ?? ''] }}</td
+              {{ lessonTypes[lessonTypeCode(lesson.lessonType)] }}</td
             ><td
               >{{ lesson.startTime?.slice(0, 5) }} — {{ lesson.endTime?.slice(0, 5) }} ·
               {{ lesson.room ?? '—' }}</td

@@ -19,6 +19,7 @@ import {
   addDays,
   dateLabel,
   lessonTypes,
+  lessonTypeCode,
   markLabels,
   markSymbols,
   today,
@@ -64,7 +65,7 @@ const visible = computed(() =>
   lessons.value.filter(
     (lesson) =>
       (!subjectId.value || lesson.subjectId === subjectId.value) &&
-      (!type.value || lesson.lessonType === type.value),
+      (!type.value || lessonTypeCode(lesson.lessonType) === type.value),
   ),
 );
 const roster = computed(() => {
@@ -168,8 +169,10 @@ async function refreshSelected() {
     reports.value = new Map(reports.value).set(owner.lesson.id, report);
     const entry = report.entries.find((item) => item.userId === owner.entry.userId);
     selected.value = entry ? { lesson: owner.lesson, entry } : null;
-    uncertain.value = false;
-    error.value = null;
+    if (uncertain.value)
+      error.value =
+        'Показана текущая отметка сервера. Проверь её и прими как новый черновик перед следующим изменением.';
+    else error.value = null;
   } catch (cause) {
     error.value = message(cause);
   } finally {
@@ -222,8 +225,8 @@ async function save(clear = false) {
       reports.value = new Map(reports.value).set(owner.lesson.id, report);
       const entry = report.entries.find((item) => item.userId === owner.entry.userId);
       selected.value = entry ? { lesson: owner.lesson, entry } : null;
-      uncertain.value = false;
-      if (!markReadbackMatches(entry, command))
+      uncertain.value = !markReadbackMatches(entry, command);
+      if (uncertain.value)
         error.value = `${message(cause)}. Сервер не подтвердил отправленные причину, комментарий или файл. Показана текущая отметка.`;
     } catch {
       error.value = 'Результат изменения неизвестен. Проверь отметку перед следующей записью.';
@@ -366,7 +369,9 @@ useWebLiveRefresh(load, {
       tabindex="0"
       aria-label="Журнал группы, горизонтальная прокрутка"
     >
-      <table class="headman-table headman-journal"
+      <table
+        class="headman-table headman-journal"
+        :style="{ '--headman-columns': visible.length }"
         ><caption class="web-sr-only">Журнал посещаемости</caption
         ><thead
           ><tr
@@ -382,7 +387,7 @@ useWebLiveRefresh(load, {
                 >{{ dateLabel(lesson.date) }} · {{ lesson.lessonNumber }}</button
               ><div>{{ subjectName(lesson.subjectId) }}</div
               ><span
-                >{{ lessonTypes[lesson.lessonType ?? ''] ?? lesson.lessonType }} ·
+                >{{ lessonTypes[lessonTypeCode(lesson.lessonType)] ?? lesson.lessonType }} ·
                 {{ lesson.status === 'CANCELLED' ? 'Отменено' : (lesson.room ?? '—') }}</span
               ></th
             ></tr
@@ -469,6 +474,20 @@ useWebLiveRefresh(load, {
           @click="refreshSelected"
           >Проверить отметку</button
         ></p
+      >
+      <button
+        v-if="uncertain && selected"
+        class="web-button"
+        :disabled="busy"
+        @click="
+          draft.status = selected.entry.status;
+          draft.excuseType = initialExcuseType(selected.entry);
+          draft.comment = selected.entry.comment ?? '';
+          draft.file = null;
+          uncertain = false;
+          error = null;
+        "
+        >Использовать показанную отметку как новый черновик</button
       >
       <form
         v-if="canEdit(selected.lesson, selected.entry)"

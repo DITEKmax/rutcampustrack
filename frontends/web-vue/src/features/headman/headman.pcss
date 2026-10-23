@@ -81,13 +81,17 @@
   background: var(--rct-color-surface-raised);
 }
 .headman-journal {
-  inline-size: max-content;
-  min-inline-size: 100%;
+  table-layout: fixed;
+  inline-size: max(
+    100%,
+    calc(var(--headman-name-width) + var(--headman-columns, 1) * var(--headman-lesson-width))
+  );
 }
 .headman-journal :is(th, td):first-child {
   position: sticky;
   inset-inline-start: 0;
   z-index: 1;
+  inline-size: var(--headman-name-width);
   min-inline-size: var(--headman-name-width);
   max-inline-size: var(--headman-name-width);
   background: var(--rct-color-surface-base);
@@ -221,4 +225,24 @@
 .headman-trend-point {
   fill: var(--rct-color-status-present-text);
   cursor: pointer;
+}
+.headman-dialog {
+  max-inline-size: min(100% - var(--rct-space-8), 32rem);
+  padding: var(--rct-space-6);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-primary);
+}
+.headman-dialog::backdrop {
+  background: var(--rct-color-shadow-overlay-strong);
+}
+
+.headman-page pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.headman-page .web-button {
+  align-self: start;
 }

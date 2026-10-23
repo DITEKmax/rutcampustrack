@@ -9,7 +9,10 @@ Full contract and actual checkpoint:
 [START-REPORT](../../docs/plans/web-vue-pr3/START-REPORT.md),
 [OPEN-QUESTIONS](../../docs/plans/web-vue-pr3/OPEN-QUESTIONS.md).
 
-Goal API unavailable; persistent API Goal NOT activated. Contract tracked in Git.
+Automatic goal_continuation received 2026-10-24: existing product Goal confirmed.
+Get/create Goal tools still unavailable; stop_goal is now provided. Common
+Q-ENV-001 requires blocked outcome until executor restoration/publication result.
+Contract and resume conditions tracked in Git; objective is NOT complete.
 Owner main-model choice GPT-6.1 Sol ultra retained; child settings discretionary.
 Current read-only analysis children requested explicitly gpt-6.1-sol/high.
 Runtime model telemetry not provided by spawn result; no silent fallback.

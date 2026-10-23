@@ -48,8 +48,9 @@ const canManage = computed(() => admin.can('GROUPS_MANAGE'));
 const locked = computed(() => busy.value || pending.value || unknownWrite.value);
 admin.guardUnfinished(() => locked.value);
 const exportSelector = computed(() => {
-  const [field, direction] = sort.value.split(',');
-  return { ...applied.value, sorts: [{ field: field!, descending: direction === 'desc' }] };
+  const { sort: appliedSort, ...filters } = applied.value;
+  const [field, direction] = appliedSort[0]!.split(',');
+  return { ...filters, sorts: [{ field: field!, descending: direction === 'desc' }] };
 });
 function query() {
   return {

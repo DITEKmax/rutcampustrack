@@ -25,7 +25,6 @@ const credentials = shallowRef<GeneratedCredentials | null>(null);
 const link = shallowRef<AdminRecoveryLink | null>(null);
 const confirming = ref(false);
 const unknownVersion = ref<string | null>(null);
-const revokedSelf = ref(false);
 admin.guardUnfinished(() => busy.value || !!unknownVersion.value);
 const selfTarget = String(props.user.id) === webSession.snapshot.value?.userId;
 const self = computed(() => String(props.user.id) === webSession.snapshot.value?.userId);
@@ -172,7 +171,7 @@ void admin.init('USER_CREDENTIALS_MANAGE', async () => {});
       </div>
     </template>
     <div
-      v-if="allowed && !revokedSelf"
+      v-if="allowed"
       class="admin-actions"
     >
       <button
@@ -232,12 +231,5 @@ void admin.init('USER_CREDENTIALS_MANAGE', async () => {});
         Копировать ссылку
       </button>
     </div>
-    <button
-      v-if="revokedSelf"
-      class="web-button web-button-primary"
-      @click="webSession.refresh()"
-    >
-      Пароль сохранён — перейти ко входу
-    </button>
   </section>
 </template>

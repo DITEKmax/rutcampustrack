@@ -22,11 +22,14 @@ const client = new AdminSemesterClient(admin.options);
 const semesters = shallowRef<readonly AdminSemester[]>([]);
 const selected = shallowRef<AdminSemester | null>(null);
 const editing = ref(false),
-  name = ref(''),
   dateFrom = ref(''),
   dateTo = ref(''),
   semesterType = ref<AdminSemesterType>('AUTUMN'),
   academicYear = ref(new Date().getFullYear());
+const name = computed(
+  () =>
+    `${semesterType.value === 'AUTUMN' ? 'Осенний' : 'Весенний'} ${academicYear.value}/${academicYear.value + 1}`,
+);
 const filter = ref<'ALL' | 'CURRENT' | 'ARCHIVED'>('ALL');
 const archiveStatus = shallowRef<AdminSemesterArchiveStatus | null>(null);
 const archiveConfirm = ref(false),
@@ -39,11 +42,20 @@ type DurableReference = {
   kind: 'ARCHIVE' | 'RESTORE' | 'DELETE';
   semesterId: number;
   operationId: string;
+  requestId?: string;
   previewDigest?: string;
 };
 const durable = shallowRef<DurableReference | null>(null);
 const uncertain = ref(false);
 const canManage = computed(() => admin.can('SEMESTERS_MANAGE'));
+const transitionBlocked = computed(() =>
+  Boolean(
+    selected.value &&
+      (selected.value.transition !== 'NONE' ||
+        selected.value.releasePending ||
+        (selected.value.isWriteBlocked && !selected.value.archived)),
+  ),
+);
 const locked = computed(() => busy.value || durable.value !== null || uncertain.value);
 const visible = computed(() =>
   semesters.value.filter(
@@ -92,6 +104,9 @@ function restoreReference() {
         Number(v.semesterId) > 0 &&
         typeof v.operationId === 'string' &&
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v.operationId) &&
+        (v.requestId === undefined ||
+          (typeof v.requestId === 'string' &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v.requestId))) &&
         (v.previewDigest === undefined ||
           (typeof v.previewDigest === 'string' && /^[0-9a-f]{64}$/.test(v.previewDigest)))
       )
@@ -110,11 +125,26 @@ async function open(semester: AdminSemester) {
   await admin.run(async () => {
     const [value, status] = await Promise.all([
       client.getSemester(semester.id, admin.signal),
-      client.getArchiveStatus(semester.id, admin.signal),
+      canManage.value ? client.getArchiveStatus(semester.id, admin.signal) : Promise.resolve(null),
     ]);
     admin.assertCurrent();
+    if (value.id !== semester.id || (status && status.semesterId !== semester.id))
+      throw new Error('Не удалось подтвердить выбранный семестр.');
     selected.value = value;
     archiveStatus.value = status;
+    if (
+      status?.operation &&
+      (status.operation.operationState !== 'COMPLETED' ||
+        status.releasePending ||
+        status.transition !== 'NONE')
+    ) {
+      archiveOperation.value = status.operation;
+      persist({
+        kind: status.operation.action,
+        semesterId: status.semesterId,
+        operationId: status.operation.operationId,
+      });
+    }
     editing.value = false;
     archiveConfirm.value = false;
     activateConfirm.value = false;
@@ -124,7 +154,6 @@ async function open(semester: AdminSemester) {
 function edit(semester?: AdminSemester) {
   selected.value = semester ?? null;
   editing.value = true;
-  name.value = semester?.name ?? '';
   dateFrom.value = semester?.dateFrom ?? '';
   dateTo.value = semester?.dateTo ?? '';
   semesterType.value = semester?.semesterType ?? 'AUTUMN';
@@ -232,6 +261,7 @@ async function changeArchive() {
       semesterId: selected.value.id,
       operationId: crypto.randomUUID(),
     };
+    reference.requestId = reference.operationId;
     persist(reference);
     archiveConfirm.value = false;
     try {
@@ -241,6 +271,7 @@ async function changeArchive() {
           : await client.archiveSemester(reference.semesterId, reference.operationId, admin.signal);
       admin.assertCurrent();
       archiveOperation.value = value;
+      persist({ ...reference, operationId: value.operationId });
       await finishArchive(value);
     } catch (cause) {
       admin.assertCurrent();
@@ -337,11 +368,31 @@ async function inspectOperation() {
     if (current.kind === 'DELETE') {
       const value = await client.getSemesterDeletionOperation(current.operationId, admin.signal);
       admin.assertCurrent();
+      if (value.semesterId !== current.semesterId)
+        throw new Error('Операция относится к другому семестру.');
       deletionOperation.value = value;
       await finishDelete(value);
     } else {
-      const value = await client.getArchiveOperation(current.operationId, admin.signal);
+      let value: AdminSemesterArchiveOperation;
+      try {
+        value = await client.getArchiveOperation(current.operationId, admin.signal);
+      } catch (cause) {
+        if (!(cause instanceof AdminSemesterApiError) || cause.response.status !== 404) throw cause;
+        const status = await client.getArchiveStatus(current.semesterId, admin.signal);
+        admin.assertCurrent();
+        if (!status.operation || status.operation.action !== current.kind)
+          throw new Error('Операция пока не подтверждена. Новое действие не отправлялось.', { cause });
+        value = status.operation;
+        // This is authoritative current state, not proof that an unknown request key owns it.
+        persist({
+          kind: current.kind,
+          semesterId: current.semesterId,
+          operationId: value.operationId,
+        });
+      }
       admin.assertCurrent();
+      if (value.semesterId !== current.semesterId || value.action !== current.kind)
+        throw new Error('Операция относится к другому семестру или действию.');
       archiveOperation.value = value;
       await finishArchive(value);
     }
@@ -350,11 +401,17 @@ async function inspectOperation() {
 async function continueArchive() {
   await admin.run(async () => {
     const reference = durable.value;
-    if (!reference || reference.kind === 'DELETE' || !archiveOperation.value?.retryable) return;
+    if (
+      !reference ||
+      reference.kind === 'DELETE' ||
+      !reference.requestId ||
+      !archiveOperation.value?.retryable
+    )
+      return;
     const value =
       reference.kind === 'RESTORE'
-        ? await client.restoreSemester(reference.semesterId, reference.operationId, admin.signal)
-        : await client.archiveSemester(reference.semesterId, reference.operationId, admin.signal);
+        ? await client.restoreSemester(reference.semesterId, reference.requestId, admin.signal)
+        : await client.archiveSemester(reference.semesterId, reference.requestId, admin.signal);
     admin.assertCurrent();
     archiveOperation.value = value;
     await finishArchive(value);
@@ -506,21 +563,20 @@ useWebLiveRefresh(
         class="web-stack"
         @submit.prevent="save"
       >
+        <p class="web-caption">
+          Название семестра: {{ name }}
+        </p>
         <fieldset
           class="admin-form-grid"
           :disabled="locked"
         >
           <legend class="web-sr-only">
             Параметры семестра
-          </legend><label class="web-field">Название<input
-            v-model="name"
-            required
-            maxlength="128"
-          ></label><label class="web-field">Тип<select v-model="semesterType"><option value="AUTUMN">Осенний</option><option value="SPRING">Весенний</option></select></label><label class="web-field">Первый год учебного года<input
+          </legend><label class="web-field">Тип<select v-model="semesterType"><option value="AUTUMN">Осенний</option><option value="SPRING">Весенний</option></select></label><label class="web-field">Первый год учебного года<input
             v-model.number="academicYear"
             type="number"
-            min="2000"
-            max="2200"
+            min="1"
+            max="9998"
             required
           ></label><label class="web-field">Начало<input
             v-model="dateFrom"
@@ -569,7 +625,7 @@ useWebLiveRefresh(
           Закрыть
         </button>
       </header><p>{{ dateLabel(selected.dateFrom) }} — {{ dateLabel(selected.dateTo) }}</p><p
-        v-if="selected.isWriteBlocked || archiveStatus?.releasePending"
+        v-if="transitionBlocked || archiveStatus?.releasePending"
         class="web-notice"
       >
         Данные семестра защищены на время серверной операции.
@@ -579,20 +635,20 @@ useWebLiveRefresh(
       >
         <button
           class="web-button"
-          :disabled="locked || selected.isWriteBlocked"
+          :disabled="locked || transitionBlocked"
           @click="edit(selected!)"
         >
           Изменить
         </button><button
           v-if="!selected.active && !selected.archived"
           class="web-button"
-          :disabled="locked || selected.isWriteBlocked"
+          :disabled="locked || transitionBlocked"
           @click="activateConfirm = true"
         >
           Активировать
         </button><button
           class="web-button"
-          :disabled="locked || selected.isWriteBlocked"
+          :disabled="locked || transitionBlocked"
           @click="archiveConfirm = true"
         >
           {{ selected.archived ? 'Восстановить' : 'Архивировать' }}
@@ -713,7 +769,7 @@ useWebLiveRefresh(
         >
           Проверить состояние
         </button><button
-          v-if="archiveOperation?.retryable && durable.kind !== 'DELETE'"
+          v-if="archiveOperation?.retryable && durable.kind !== 'DELETE' && durable.requestId"
           class="web-button"
           :disabled="busy"
           @click="continueArchive"

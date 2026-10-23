@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, onMounted, ref, shallowRef } from 'vue';
 import { message } from '../../auth/session';
+import { useWebLiveRefresh } from '../../app/live';
 import type {
   HeadmanJournalLesson,
   HeadmanJournalReport,
@@ -18,8 +19,7 @@ const report = shallowRef<HeadmanJournalReport | null>(null),
   openRequests = ref<number | null>(null),
   homeworkCount = ref<number | null>(null);
 const current = computed(() => lessons.value.find((lesson) => lesson.status === 'ACTIVE'));
-let timer: ReturnType<typeof setInterval> | undefined,
-  run = 0;
+let run = 0;
 async function load(background = false) {
   const revision = ++run;
   if (!background) loading.value = true;
@@ -55,21 +55,8 @@ async function load(background = false) {
     if (revision === run) loading.value = false;
   }
 }
-const refresh = () => {
-  if (!document.hidden) void load(true);
-};
-onMounted(() => {
-  void load();
-  timer = setInterval(refresh, 30000);
-  window.addEventListener('online', refresh);
-  window.addEventListener('focus', refresh);
-});
-onBeforeUnmount(() => {
-  run++;
-  clearInterval(timer);
-  window.removeEventListener('online', refresh);
-  window.removeEventListener('focus', refresh);
-});
+onMounted(() => load());
+useWebLiveRefresh(() => load(true));
 </script>
 <template>
   <HeadmanPage

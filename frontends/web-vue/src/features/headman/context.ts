@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { createWebTransport, WebAuthorityChangedError } from '../../app/api'
 import { webSession } from '../../auth/session'
+import { webAssistantAccess } from '../../app/assistant'
 import {
   HeadmanGroupApi,
   type HeadmanAssistantPermission,
@@ -31,7 +32,7 @@ export function useHeadmanFeature() {
     session?.roles.find((grant) => grant.role === session.activeRole && grant.status === 'ACTIVE')
       ?.groupId,
   )
-  const permissions = ref<readonly HeadmanAssistantPermission[]>([])
+  const permissions = computed(() => webAssistantAccess.permissions.value)
   const ready = ref(false)
   const group = new HeadmanGroupApi(transport)
   const journal = new HeadmanJournalApi(transport)
@@ -43,7 +44,9 @@ export function useHeadmanFeature() {
   const stats = new HeadmanStatsApi(transport)
   const readOnly = computed(() => !!session?.readOnly)
   const allowed = (permission?: HeadmanAssistantPermission) =>
-    ready.value && (isHeadman || (!!permission && permissions.value.includes(permission)))
+    ready.value &&
+    (isHeadman ||
+      (webAssistantAccess.loaded.value && !!permission && permissions.value.includes(permission)))
   const writable = (permission?: HeadmanAssistantPermission) =>
     allowed(permission) && !readOnly.value
   async function initialize() {
@@ -55,9 +58,8 @@ export function useHeadmanFeature() {
     )
       throw new Error('Нет действующего доступа к группе.')
     if (!isHeadman) {
-      const result = await group.listMyPermissions()
+      await webAssistantAccess.load()
       assertCurrent()
-      permissions.value = result.map((option) => option.code)
       if (!permissions.value.length) throw new Error('Тебе не назначены права помощника.')
     }
     ready.value = true

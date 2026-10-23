@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 import { message } from '../../auth/session';
+import { useWebLiveRefresh } from '../../app/live';
 import type {
   HeadmanRequestDetail,
   HeadmanRequestPage,
@@ -179,6 +180,9 @@ async function download(id: string, name: string | null) {
   }
 }
 onMounted(load);
+useWebLiveRefresh(load, {
+  blocked: () => busy.value || loading.value || !!detail.value || !!pending.value,
+});
 </script>
 <template>
   <HeadmanPage

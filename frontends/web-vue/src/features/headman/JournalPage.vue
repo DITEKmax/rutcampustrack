@@ -2,11 +2,13 @@
 import { computed, nextTick, onMounted, reactive, ref, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { message } from '../../auth/session';
+import { useWebLiveRefresh } from '../../app/live';
 import {
   type HeadmanJournalLesson,
   type HeadmanJournalReport,
   type HeadmanJournalRosterEntry,
   type HeadmanJournalExcuseType,
+  type HeadmanJournalMarkCommand,
 } from '../../../../mobile-core/src/features/headman-journal/headman-journal-client';
 import type {
   HeadmanSubject,
@@ -25,6 +27,7 @@ import {
 } from './context';
 import HeadmanPage from './HeadmanPage.vue';
 import JournalExport from './JournalExport.vue';
+import { initialExcuseType, markReadbackMatches, LessonActionsReader } from './journal-state';
 
 const feature = useHeadmanFeature();
 const route = useRoute();
@@ -50,7 +53,7 @@ const audit = shallowRef<readonly HeadmanLessonAction[]>([]),
   cursor = ref<string | null>(null);
 const draft = reactive({
   status: 'PRESENT',
-  excuseType: 'ILLNESS' as HeadmanJournalExcuseType,
+  excuseType: 'ILLNESS' as HeadmanJournalExcuseType | '',
   comment: '',
   file: null as File | null,
 });
@@ -148,6 +151,7 @@ async function choose(lesson: HeadmanJournalLesson, entry: HeadmanJournalRosterE
   if (busy.value || uncertain.value) return;
   selected.value = { lesson, entry };
   draft.status = entry.status === 'EMPTY' ? 'PRESENT' : entry.status;
+  draft.excuseType = initialExcuseType(entry);
   draft.comment = entry.comment ?? '';
   draft.file = null;
   error.value = null;
@@ -177,6 +181,20 @@ async function save(clear = false) {
   if (!owner || busy.value || uncertain.value || !canEdit(owner.lesson, owner.entry)) return;
   const expectedStatus = owner.entry.status;
   if (!['PRESENT', 'ABSENT', 'EXCUSED', 'EMPTY'].includes(expectedStatus)) return;
+  if (!clear && draft.status === 'EXCUSED' && !draft.excuseType) {
+    error.value = 'Выбери поддерживаемую причину перед сохранением.';
+    return;
+  }
+  const command: HeadmanJournalMarkCommand | null = clear
+    ? null
+    : draft.status === 'EXCUSED'
+      ? {
+          status: 'EXCUSED',
+          excuseType: draft.excuseType as HeadmanJournalExcuseType,
+          comment: draft.comment,
+          file: draft.file,
+        }
+      : { status: draft.status as 'PRESENT' | 'ABSENT' };
   busy.value = true;
   error.value = null;
   try {
@@ -188,16 +206,7 @@ async function save(clear = false) {
         expectedRevision: owner.entry.markRevision!,
       });
     } else {
-      const command =
-        draft.status === 'EXCUSED'
-          ? {
-              status: 'EXCUSED' as const,
-              excuseType: draft.excuseType,
-              comment: draft.comment,
-              file: draft.file,
-            }
-          : { status: draft.status as 'PRESENT' | 'ABSENT' };
-      await feature.journal.mark(owner.lesson.id, owner.entry.userId, command, {
+      await feature.journal.mark(owner.lesson.id, owner.entry.userId, command!, {
         expectedStatus: expectedStatus as 'EMPTY' | 'PRESENT' | 'ABSENT' | 'EXCUSED',
         expectedRevision: owner.entry.markRevision!,
       });
@@ -207,7 +216,6 @@ async function save(clear = false) {
   } catch (cause) {
     // Readback resolves an uncertain write. The original command is never replayed.
     uncertain.value = true;
-    const desired = clear ? 'EMPTY' : draft.status;
     try {
       const report = await feature.journal.getLessonAttendance(owner.lesson.id);
       feature.assertCurrent();
@@ -215,7 +223,8 @@ async function save(clear = false) {
       const entry = report.entries.find((item) => item.userId === owner.entry.userId);
       selected.value = entry ? { lesson: owner.lesson, entry } : null;
       uncertain.value = false;
-      if (entry?.status !== desired) error.value = message(cause);
+      if (!markReadbackMatches(entry, command))
+        error.value = `${message(cause)}. Сервер не подтвердил отправленные причину, комментарий или файл. Показана текущая отметка.`;
     } catch {
       error.value = 'Результат изменения неизвестен. Проверь отметку перед следующей записью.';
     }
@@ -223,21 +232,35 @@ async function save(clear = false) {
     busy.value = false;
   }
 }
+const actionsReader = new LessonActionsReader(feature.actions);
 async function loadAudit(id: number, more = false) {
+  const previous = more && auditLesson.value === id ? audit.value : [];
+  const nextCursor = more && auditLesson.value === id ? cursor.value : null;
+  if (more && !nextCursor) return;
+  auditLesson.value = id;
+  if (!more) {
+    audit.value = [];
+    cursor.value = null;
+  }
   try {
-    const result = await feature.actions.getLessonActions(id, more ? cursor.value : null);
+    const result = await actionsReader.read(id, nextCursor, previous);
     feature.assertCurrent();
-    auditLesson.value = id;
-    audit.value = more ? [...audit.value, ...result.items] : result.items;
-    cursor.value = result.nextCursor;
+    if (!result) return;
+    auditLesson.value = result.lessonId;
+    audit.value = result.items;
+    cursor.value = result.cursor;
   } catch (cause) {
-    error.value = message(cause);
+    if (auditLesson.value === id) error.value = message(cause);
   }
 }
+
 watch([mode, semesterId], () => {
   if (semesters.value.length && !loading.value) void load();
 });
 onMounted(load);
+useWebLiveRefresh(load, {
+  blocked: () => busy.value || loading.value || !!selected.value || uncertain.value,
+});
 </script>
 <template>
   <HeadmanPage

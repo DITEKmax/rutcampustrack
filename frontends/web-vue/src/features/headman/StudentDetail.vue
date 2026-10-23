@@ -9,7 +9,7 @@ import type {
 } from '../../../../mobile-core/src/features/headman-stats/headman-stats-client';
 import type { HeadmanStatsLessonPage } from '../../../../mobile-core/src/features/headman-stats/headman-stats-history-client';
 import TrendChart from './TrendChart.vue';
-const props = defineProps<{ feature: HeadmanFeature; studentId: number; semesterId?: number }>();
+const props = defineProps<{ feature: HeadmanFeature; studentId: number; semesterId?: number | undefined }>();
 const detail = shallowRef<HeadmanStatsStudentDetailResponse | null>(null),
   lessons = shallowRef<HeadmanStatsLessonPage | null>(null),
   trend = shallowRef<HeadmanStatsTrendResponse | null>(null);

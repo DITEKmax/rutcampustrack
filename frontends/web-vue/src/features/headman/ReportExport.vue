@@ -4,6 +4,7 @@ import type { WebTransport } from '../../app/api';
 import { message, webSession } from '../../auth/session';
 import {
   ReportDownloadClient,
+  ReportDownloadTicketError,
   exportStateLabel,
   validateTicketRequest,
   type ReportDownloadTicketRequest,
@@ -24,7 +25,8 @@ interface Intent {
 const intent = shallowRef<Intent | null>(null),
   busy = ref(false),
   status = ref(''),
-  error = ref<string | null>(null);
+  error = ref<string | null>(null),
+  terminal = ref(false);
 const owner = webSession.identity.value;
 const storageKey = `rct:web:headman:export:${owner}:${props.scope}`;
 let alive = true;
@@ -61,6 +63,7 @@ onMounted(() => {
     status.value = 'Есть незавершённая выгрузка.';
   } catch (cause) {
     error.value = message(cause);
+    terminal.value = true;
   }
 });
 const tickets = new ReportDownloadClient({
@@ -110,13 +113,18 @@ async function download() {
       (state) => {
         current();
         status.value = exportStateLabel(state);
+        terminal.value = state === 'error';
       },
     );
     current();
     persist(null);
     status.value = 'Файл скачан.';
   } catch (cause) {
-    if (alive) error.value = message(cause);
+    if (alive) {
+      error.value = message(cause);
+      if (cause instanceof ReportDownloadTicketError && [404, 410].includes(cause.status))
+        terminal.value = true;
+    }
   } finally {
     if (alive) busy.value = false;
   }
@@ -138,6 +146,17 @@ async function download() {
             ? 'Проверить и скачать прежнюю выгрузку'
             : (label ?? 'Скачать')
       }}</button
+    >
+    <button
+      v-if="terminal && !busy"
+      class="web-button"
+      @click="
+        persist(null);
+        terminal = false;
+        error = null;
+        status = 'Можно создать новую выгрузку.';
+      "
+      >Создать новую выгрузку</button
     >
     <p
       v-if="status"

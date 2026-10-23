@@ -1,21 +1,10 @@
 name: Security
 
+# Temporary owner-authorized pause for codex/web-vue-redesign.
+# Restore automatic triggers before merge after explicit owner GO.
+# See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-  schedule:
-    # Weekly Monday 03:00 UTC — свежие CVE могут появиться после build'а.
-    - cron: '0 3 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read

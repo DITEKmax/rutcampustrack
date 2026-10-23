@@ -1,25 +1,11 @@
 name: Coverage
 
 # Diagnostic coverage: test failures and report-generation errors remain blocking.
+# Temporary owner-authorized pause for codex/web-vue-redesign.
+# Restore automatic triggers before merge after explicit owner GO.
+# See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
-  pull_request:
-    branches: ['**']
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-      - 'SECURITY.md'
-      - 'renovate.json'
-      - '.pre-commit-config.yaml'
-  push:
-    branches: ['main', 'dev']
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-      - 'SECURITY.md'
-      - 'renovate.json'
-      - '.pre-commit-config.yaml'
+  workflow_dispatch:
 
 permissions:
   contents: read

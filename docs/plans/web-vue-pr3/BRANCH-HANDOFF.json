@@ -1,0 +1,24 @@
+{
+  "status": "PREPARATION_ONLY",
+  "branch": "codex/web-vue-redesign",
+  "repository": "DITEKmax/rutcampustrack",
+  "base_ref": "main",
+  "base_sha": "aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f",
+  "verified_main_date": "2026-10-23",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-vue-pr3-preparation",
+  "future_pr_number_expected": 3,
+  "pr_created": false,
+  "cloud_thread_created": false,
+  "cloud_messages_sent": false,
+  "app_implementation_started": false,
+  "automatic_workflows": "PAUSED_IN_BRANCH_CONFIG",
+  "paused_files": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/coverage.yml",
+    ".github/workflows/security.yml",
+    ".github/workflows/openapi-drift.yml"
+  ],
+  "main_settings_modified": false,
+  "activation_requires_separate_owner_GO": true,
+  "branch_url": "https://github.com/DITEKmax/rutcampustrack/tree/codex/web-vue-redesign"
+}

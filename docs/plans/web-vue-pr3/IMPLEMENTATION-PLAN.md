@@ -1,5 +1,7 @@
 # План новой Vue web-панели и светлых тем PWA/TMA
 
+> **Актуальный статус 2026-10-23:** новое GO владельца получено; создан [draft PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3). Старые PREPARATION/NOT STARTED/STOP ниже относятся к подготовке. Полномочия и границы: [GOAL-CONTRACT.md](GOAL-CONTRACT.md); фактический старт и технический блокер: [START-REPORT.md](START-REPORT.md); решения: [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md). GitHub-проверки PAUSED. Без merge/deploy.
+
 Подготовлено 2026-10-23. Это план будущей реализации, не объявление её старта.
 Канон требований — OWNER-BRIEF.md и последние сообщения OWNER-MESSAGES.md.
 Ветка: `codex/web-vue-redesign`; исходный main: `aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`.

@@ -5,11 +5,13 @@ option java_multiple_files = true;
 option java_package = "ru.rutcampustrack.authsecurity.grpc";
 
 import "auth_data_authority.proto";
+import "group_deletion.proto";
 
 // Academic-only TLS+x-service-token methods. Auth owns live session, credential,
 // password/OTP and capability checks; Academic owns preview/eligibility/effects,
 // report selectors/READY/artifacts. No method calls Academic or reads its DB.
 service AuthSecurityCapabilityService {
+  rpc ApplyGroupDeletion(rutcampustrack.groupdeletion.GroupDeletionCommand) returns (rutcampustrack.groupdeletion.GroupDeletionReceipt);
   rpc AdmitSessionIdentity(StoredSessionIdentity) returns (LiveSessionAuthority);
   rpc AdmitStoredSession(AdmitStoredSessionRequest) returns (AdmittedReportAuthority);
   rpc IssueReportCapability(IssueReportCapabilityRequest) returns (IssuedReportCapability);
@@ -128,6 +130,7 @@ enum PasswordStepUpPurpose {
   PASSWORD_STEP_UP_PURPOSE_SEMESTER_DELETE = 2;
   PASSWORD_STEP_UP_PURPOSE_MAP_FLOOR_DELETE = 3;
   PASSWORD_STEP_UP_PURPOSE_MAP_BUILDING_DELETE = 4;
+  PASSWORD_STEP_UP_PURPOSE_GROUP_DELETE = 5;
 }
 message PasswordStepUpBinding {
   PasswordStepUpPurpose purpose = 1;

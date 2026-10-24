@@ -51,6 +51,7 @@ BEGIN
             'schedule_semester_archive_barriers',
             'schedule_semester_archive_effect_ledger',
             'schedule_subject_deletion_participants',
+            'group_deletion_participants',
             'schedule_transfer_replay',
             'shedlock'];
         ELSE RAISE EXCEPTION 'Unexpected application database';

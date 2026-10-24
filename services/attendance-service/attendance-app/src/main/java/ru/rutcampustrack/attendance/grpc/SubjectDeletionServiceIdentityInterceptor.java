@@ -29,6 +29,8 @@ public class SubjectDeletionServiceIdentityInterceptor implements ServerIntercep
                         ATTENDANCE,
                         Map.of(
                                 "rutcampustrack.subjectdeletion.SubjectDeletionParticipant/Apply",
+                                ServicePrincipal.ACADEMIC_SERVICE,
+                                "rutcampustrack.groupdeletion.GroupDeletionParticipant/Apply",
                                 ServicePrincipal.ACADEMIC_SERVICE),
                         credentials);
     }

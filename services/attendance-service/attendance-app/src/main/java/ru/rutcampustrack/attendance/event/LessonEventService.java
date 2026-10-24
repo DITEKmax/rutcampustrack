@@ -2,13 +2,9 @@ package ru.rutcampustrack.attendance.event;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.dao.DuplicateKeyException;
@@ -19,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -32,6 +29,13 @@ import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Business logic for lesson lifecycle event processing.
@@ -440,15 +444,38 @@ public class LessonEventService {
         processOneOffLessonCancelled(semesters.iterator().next(), groupId, date, lessonNumber);
     }
 
-    @Transactional(transactionManager = "mongoTransactionManager")
-    public void processLessonCancelled(Long lessonId, Long semesterId) {
+    public record LessonCancellationScope(long lessonId, long semesterId, Long groupId) {}
+
+    /** Resolve unknown no-row lesson ownership before the consumer opens its Mongo transaction. */
+    public LessonCancellationScope prepareLessonCancelledScope(Long lessonId, Long semesterId) {
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
-        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, null)) return;
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, null))
+            return new LessonCancellationScope(lessonId, semesterId, null);
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+        if (lesson == null
+                || lesson.getId() != lessonId
+                || lesson.getSemesterId() != semesterId
+                || lesson.getGroupId() <= 0)
+            throw new ScheduleServiceUnavailableException(
+                    "Cancellation lesson scope cannot be resolved authoritatively");
+        return new LessonCancellationScope(lessonId, semesterId, lesson.getGroupId());
+    }
+
+    @Transactional(transactionManager = "mongoTransactionManager")
+    public void processLessonCancelled(Long lessonId, Long semesterId) {
+        processLessonCancelled(lessonId, semesterId, null);
+    }
+
+    @Transactional(transactionManager = "mongoTransactionManager")
+    public void processLessonCancelled(Long lessonId, Long semesterId, Long groupId) {
+        requirePositive(lessonId, "lessonId");
+        requirePositive(semesterId, "semesterId");
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, groupId)) return;
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
-                semesterId, java.util.List.of(lessonId), null, Instant.now());
+                semesterId, java.util.List.of(lessonId), groupId, Instant.now());
         if (pairWriteCoordinator.isTransferredSource(lessonId)) {
             log.info(
                     "lesson.cancelled: transferred source {}, leaving moved attendance unchanged",
@@ -470,13 +497,17 @@ public class LessonEventService {
      * transaction runs.
      */
     public void preflightLessonCancelled(Long lessonId, Long semesterId) {
+        preflightLessonCancelled(lessonId, semesterId, null);
+    }
+
+    public void preflightLessonCancelled(Long lessonId, Long semesterId, Long groupId) {
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
-        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, null)) return;
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, groupId)) return;
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
-                semesterId, java.util.List.of(lessonId), null, Instant.now());
+                semesterId, java.util.List.of(lessonId), groupId, Instant.now());
         if (pairWriteCoordinator.isTransferredSource(lessonId)) {
             return;
         }
@@ -491,7 +522,7 @@ public class LessonEventService {
             throw new ScheduleServiceUnavailableException(
                     "Schedule returned a lesson without a positive semester");
         }
-        processLessonCancelled(lessonId, lesson.getSemesterId());
+        processLessonCancelled(lessonId, lesson.getSemesterId(), lesson.getGroupId());
     }
 
     private LocalDate validateLessonSnapshot(

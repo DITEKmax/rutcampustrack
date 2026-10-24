@@ -475,20 +475,10 @@ public class GroupService {
                     .asRuntimeException();
     }
 
-    @Transactional
+    /** Final deletion requires the exact preview and current ADMIN password protocol. */
     public void deleteGroup(Long id) {
-        Group group =
-                groupRepository
-                        .findByIdForUpdate(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
-        requireOrdinaryGroupWritable(id);
-        if (coverageRepository != null && coverageRepository.existsById(id)) {
-            throw HistoricalMembershipException.unsupported(
-                    "Нельзя удалить группу с управляемой историей посещаемости");
-        }
-        groupRepository.delete(group);
-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
-        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
+        throw new ConflictException(
+                "deletion", id, "Используй подтверждённое окончательное удаление группы");
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)

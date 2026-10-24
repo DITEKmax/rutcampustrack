@@ -94,6 +94,7 @@ public final class AuthDirectedIdentityInterceptor implements ServerInterceptor 
                                 Map.entry(
                                         CAP_SERVICE + "CheckStoredSubjectDeletionReceipt",
                                         ACADEMIC),
+                                Map.entry(CAP_SERVICE + "ApplyGroupDeletion", ACADEMIC),
                                 Map.entry(CAP_SERVICE + "ConfirmPasswordStepUp", ACADEMIC),
                                 Map.entry(CAP_SERVICE + "CheckPasswordStepUpReceipt", ACADEMIC)),
                         credentials);

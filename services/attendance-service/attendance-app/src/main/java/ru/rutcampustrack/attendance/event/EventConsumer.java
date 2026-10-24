@@ -110,6 +110,34 @@ public class EventConsumer extends AbstractEventConsumer {
             return;
         }
 
+        if ("lesson.cancelled".equals(eventType)) {
+            Map<String, Object> payload = extractRequiredPayload(envelope);
+            var scope =
+                    lessonEventService.prepareLessonCancelledScope(
+                            extractPositiveInteger(payload, "lesson_id"),
+                            extractPositiveInteger(payload, "semester_id"));
+            transactionTemplate.executeWithoutResult(
+                    status -> {
+                        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) return;
+                        withTraceContext(
+                                envelope,
+                                () ->
+                                        semesterArchiveEffectService.apply(
+                                                envelope,
+                                                () ->
+                                                        lessonEventService.preflightLessonCancelled(
+                                                                scope.lessonId(),
+                                                                scope.semesterId(),
+                                                                scope.groupId()),
+                                                () ->
+                                                        lessonEventService.processLessonCancelled(
+                                                                scope.lessonId(),
+                                                                scope.semesterId(),
+                                                                scope.groupId())));
+                    });
+            return;
+        }
+
         transactionTemplate.executeWithoutResult(
                 status -> {
                     if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {

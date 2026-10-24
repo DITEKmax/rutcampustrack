@@ -21,12 +21,14 @@ public class AcademicIdentityReadFence {
         Boolean fenced =
                 jdbc.queryForObject(
                         """
-                        SELECT EXISTS(SELECT 1 FROM academic_identity_operation_groups g
-                          JOIN academic_identity_operations o ON o.operation_id=g.operation_id
-                         WHERE g.group_id=? AND g.fenced AND o.phase<>'SUCCEEDED')
-                        OR EXISTS(SELECT 1 FROM academic_group_availability_guards WHERE group_id=?)
-                        """,
+SELECT EXISTS(SELECT 1 FROM academic_identity_operation_groups g
+  JOIN academic_identity_operations o ON o.operation_id=g.operation_id
+ WHERE g.group_id=? AND g.fenced AND o.phase<>'SUCCEEDED')
+OR EXISTS(SELECT 1 FROM academic_group_availability_guards WHERE group_id=?)
+OR EXISTS(SELECT 1 FROM group_deletion_operations WHERE group_id=? AND phase NOT IN ('COMPLETED','CANCELLED'))
+""",
                         Boolean.class,
+                        groupId,
                         groupId,
                         groupId);
         if (!Boolean.FALSE.equals(fenced)) {
@@ -41,10 +43,10 @@ public class AcademicIdentityReadFence {
         requireUnfenced(
                 jdbc.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM academic_identity_operation_targets t JOIN"
-                            + " academic_identity_operations o ON o.operation_id=t.operation_id"
-                            + " WHERE t.user_id=? AND t.fenced AND o.phase<>'SUCCEEDED') OR"
-                            + " EXISTS(SELECT 1 FROM academic_group_availability_headmen WHERE"
-                            + " user_id=?)",
+                                + " academic_identity_operations o ON o.operation_id=t.operation_id"
+                                + " WHERE t.user_id=? AND t.fenced AND o.phase<>'SUCCEEDED') OR"
+                                + " EXISTS(SELECT 1 FROM academic_group_availability_headmen WHERE"
+                                + " user_id=?)",
                         Boolean.class,
                         userId,
                         userId));
@@ -61,7 +63,9 @@ public class AcademicIdentityReadFence {
                             + " academic_identity_operations o ON o.operation_id=g.operation_id"
                             + " WHERE g.fenced AND o.phase<>'SUCCEEDED') OR EXISTS(SELECT 1 FROM"
                             + " academic_group_availability_guards) OR EXISTS(SELECT 1 FROM"
-                            + " academic_group_availability_headmen)",
+                            + " academic_group_availability_headmen) OR EXISTS(SELECT 1 FROM"
+                            + " group_deletion_operations WHERE phase NOT IN"
+                            + " ('COMPLETED','CANCELLED'))",
                         Boolean.class));
     }
 

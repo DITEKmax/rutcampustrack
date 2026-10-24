@@ -16,17 +16,36 @@ import java.util.function.Supplier;
         interceptors = {AuthDirectedIdentityInterceptor.class, AuthActorMetadataInterceptor.class})
 public final class AuthSecurityCapabilityGrpcService
         extends AuthSecurityCapabilityServiceGrpc.AuthSecurityCapabilityServiceImplBase {
+    private final AuthGroupDeletionParticipant groupDeletion;
+
     private final AuthReportCapabilityService reports;
     private final AuthPasswordStepUpService passwords;
     private final ru.rutcampustrack.auth.service.SubjectDeletionProofService subjects;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AuthSecurityCapabilityGrpcService(
+            AuthReportCapabilityService reports,
+            AuthPasswordStepUpService passwords,
+            ru.rutcampustrack.auth.service.SubjectDeletionProofService subjects,
+            AuthGroupDeletionParticipant groupDeletion) {
+        this.reports = reports;
+        this.passwords = passwords;
+        this.subjects = subjects;
+        this.groupDeletion = groupDeletion;
+    }
 
     public AuthSecurityCapabilityGrpcService(
             AuthReportCapabilityService reports,
             AuthPasswordStepUpService passwords,
             ru.rutcampustrack.auth.service.SubjectDeletionProofService subjects) {
-        this.reports = reports;
-        this.passwords = passwords;
-        this.subjects = subjects;
+        this(reports, passwords, subjects, null);
+    }
+
+    @Override
+    public void applyGroupDeletion(
+            ru.rutcampustrack.groupdeletion.grpc.GroupDeletionCommand request,
+            StreamObserver<ru.rutcampustrack.groupdeletion.grpc.GroupDeletionReceipt> reply) {
+        respond(reply, () -> groupDeletion.apply(request));
     }
 
     @Override

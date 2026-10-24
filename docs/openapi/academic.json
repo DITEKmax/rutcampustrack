@@ -9597,6 +9597,7 @@
       "patch" : {
         "tags" : [ "Assistants" ],
         "summary" : "Обновить права помощника (HEADMAN/ADMIN)",
+        "description" : "expectedPermissions задаёт условное сравнение набора прав под блокировкой. Пустые permissions со снимком отзывают помощника и возвращают active=false; без снимка пустой набор запрещён.",
         "operationId" : "updatePermissions",
         "parameters" : [ {
           "name" : "id",
@@ -9658,8 +9659,8 @@
               }
             }
           },
-          "401" : {
-            "description" : "Требуется аутентификация",
+          "409" : {
+            "description" : "Помощник отозван или права изменились; extras.code=ASSISTANT_PERMISSIONS_CONFLICT при несовпадении снимка",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -9668,8 +9669,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Конфликт данных",
+          "401" : {
+            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -17548,12 +17549,19 @@
         "properties" : {
           "permissions" : {
             "type" : "array",
-            "description" : "Новый набор прав (минимум один элемент)",
+            "description" : "Новый набор прав. Пустой набор отзывает помощника только при переданном expectedPermissions.",
             "items" : {
               "type" : "string",
               "enum" : [ "MARK_ATTENDANCE", "MANAGE_EXCUSES", "MANAGE_HOMEWORK", "CANCEL_LESSONS", "VIEW_STATS" ]
-            },
-            "minItems" : 1
+            }
+          },
+          "expectedPermissions" : {
+            "type" : "array",
+            "description" : "Ранее прочитанный полный набор прав. Сравнение без учёта порядка атомарно; несовпадение возвращает 409 ASSISTANT_PERMISSIONS_CONFLICT. Без поля сохраняется прежнее безусловное обновление.",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "MARK_ATTENDANCE", "MANAGE_EXCUSES", "MANAGE_HOMEWORK", "CANCEL_LESSONS", "VIEW_STATS" ]
+            }
           }
         },
         "required" : [ "permissions" ]

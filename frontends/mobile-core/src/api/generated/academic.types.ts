@@ -946,7 +946,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Обновить права помощника (HEADMAN/ADMIN) */
+        /**
+         * Обновить права помощника (HEADMAN/ADMIN)
+         * @description expectedPermissions задаёт условное сравнение набора прав под блокировкой. Пустые permissions со снимком отзывают помощника и возвращают active=false; без снимка пустой набор запрещён.
+         */
         patch: operations["updatePermissions"];
         trace?: never;
     };
@@ -3190,8 +3193,10 @@ export interface components {
         };
         /** @description Запрос на обновление прав помощника старосты */
         UpdateAssistantPermissionsRequest: {
-            /** @description Новый набор прав (минимум один элемент) */
+            /** @description Новый набор прав. Пустой набор отзывает помощника только при переданном expectedPermissions. */
             permissions: ("MARK_ATTENDANCE" | "MANAGE_EXCUSES" | "MANAGE_HOMEWORK" | "CANCEL_LESSONS" | "VIEW_STATS")[];
+            /** @description Ранее прочитанный полный набор прав. Сравнение без учёта порядка атомарно; несовпадение возвращает 409 ASSISTANT_PERMISSIONS_CONFLICT. Без поля сохраняется прежнее безусловное обновление. */
+            expectedPermissions?: ("MARK_ATTENDANCE" | "MANAGE_EXCUSES" | "MANAGE_HOMEWORK" | "CANCEL_LESSONS" | "VIEW_STATS")[];
         };
         Pageable: {
             /** Format: int32 */
@@ -11068,7 +11073,7 @@ export interface operations {
                     "*/*": components["schemas"]["EntityModelAssistantResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Помощник отозван или права изменились; extras.code=ASSISTANT_PERMISSIONS_CONFLICT при несовпадении снимка */
             409: {
                 headers: {
                     [name: string]: unknown;

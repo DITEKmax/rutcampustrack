@@ -205,7 +205,7 @@ const exportRequest = computed(() =>
           ref="drillHeading"
           tabindex="-1"
         >
-          Студенты группы {{ selection.groups.value.find(group => group.id === drillGroup)?.name }}
+          Студенты группы {{ selection.groups.value.find(group => group.id === selection.groupId.value)?.name }}
         </h2>
         <button
           class="web-button"

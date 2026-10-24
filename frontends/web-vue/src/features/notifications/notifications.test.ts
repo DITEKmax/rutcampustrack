@@ -214,7 +214,7 @@ describe('web notification projection ownership', () => {
     expect(store.uncertain.value).toBe(false)
   })
 
-  it('expires a temporary toast after ten seconds while preserving the event in history', async () => {
+  it('retains four arrivals until their individual ten-second expiries while preserving history', async () => {
     vi.useFakeTimers()
     let server = [item('one')]
     vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
@@ -234,12 +234,26 @@ describe('web notification projection ownership', () => {
     const store = webNotifications.value!
     await store.load()
     expect(store.toasts.value).toHaveLength(0)
-    server = [item('new'), ...server]
+    const arrivals = ['new-1', 'new-2', 'new-3', 'new-4']
+    for (const [index, id] of arrivals.entries()) {
+      if (index > 0) await vi.advanceTimersByTimeAsync(750)
+      server = [item(id), ...server]
+      await store.load(true)
+      expect(store.toasts.value.map((value) => value.item.id)).toEqual(arrivals.slice(0, index + 1))
+    }
+    // A repeated live projection neither duplicates nor renews a seen event's lifetime.
     await store.load(true)
-    expect(store.toasts.value.map((value) => value.item.id)).toEqual(['new'])
-    await vi.advanceTimersByTimeAsync(10_250)
-    expect(store.toasts.value).toHaveLength(0)
-    expect(store.items.value.some((value) => value.id === 'new')).toBe(true)
+    await vi.advanceTimersByTimeAsync(7_749)
+    expect(store.toasts.value.map((value) => value.item.id)).toEqual(arrivals)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(store.toasts.value.map((value) => value.item.id)).toEqual(arrivals.slice(1))
+    for (let expired = 2; expired <= arrivals.length; expired++) {
+      await vi.advanceTimersByTimeAsync(750)
+      expect(store.toasts.value.map((value) => value.item.id)).toEqual(arrivals.slice(expired))
+    }
+    expect(new Set(store.items.value.map((value) => value.id))).toEqual(
+      new Set(['one', ...arrivals]),
+    )
     webSession.invalidate()
     expect(webNotifications.value).toBeNull()
   })

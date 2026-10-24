@@ -94,10 +94,7 @@ export function createWebNotifications() {
       const additions = fresh
         .filter(toastAllowed)
         .map((item) => ({ item, expiresAt: Date.now() + 10_000 }))
-      toasts.value = [
-        ...toasts.value.filter((value) => value.expiresAt > Date.now()),
-        ...additions,
-      ].slice(-3)
+      toasts.value = [...toasts.value.filter((value) => value.expiresAt > Date.now()), ...additions]
     }
     items.value = [
       ...new Map([...items.value, ...page].map((item) => [item.id, item])).values(),

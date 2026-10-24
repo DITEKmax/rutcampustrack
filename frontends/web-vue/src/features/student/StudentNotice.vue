@@ -17,13 +17,20 @@ defineEmits<{ retry: [] }>();
       Повторить
     </button>
   </div>
-  <p
+  <div
     v-else-if="loading"
-    role="status"
+    class="web-stack"
     aria-busy="true"
   >
-    Загружаем данные…
-  </p>
+    <span
+      class="web-sr-only"
+      role="status"
+    >Загружаем данные…</span>
+    <div
+      class="web-skeleton"
+      aria-hidden="true"
+    />
+  </div>
   <p
     v-else-if="empty"
     class="web-notice"

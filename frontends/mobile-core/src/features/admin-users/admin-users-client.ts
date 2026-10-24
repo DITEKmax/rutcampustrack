@@ -44,6 +44,7 @@ export interface AdminUser {
 export interface AdminUserGroupOption {
   readonly id: number
   readonly name: string
+  readonly archived: boolean
 }
 export interface AdminUserGroupOptionsPage {
   readonly items: readonly AdminUserGroupOption[]
@@ -377,12 +378,14 @@ export class AdminUsersClient {
     search = '',
     page = 0,
     signal?: AbortSignal,
+    includeArchived = false,
   ): Promise<AdminUserGroupOptionsPage> {
     const params = new URLSearchParams({
       page: String(nonNegativeInteger(page, 'page')),
       size: '20',
     })
     if (search.trim()) params.set('search', search.trim())
+    if (includeArchived) params.set('includeArchived', 'true')
     const value = requiredRecord(
       await this.request<unknown>(
         `/api/academic/groups/options?${params}`,
@@ -402,9 +405,15 @@ export class AdminUsersClient {
     return {
       items: value.items.map((item) => {
         const group = requiredRecord(item, 'group')
+        // Older default-only servers return active options without this additive flag.
+        const archived = group.archived ?? (includeArchived ? undefined : false)
+        if (typeof archived !== 'boolean')
+          throw new Error('Не удалось подтвердить состояние группы.')
+        if (!includeArchived && archived) throw new Error('Архивная группа недоступна для новой роли.')
         return {
           id: positiveInteger(group.id, 'group.id'),
           name: requiredText(group.name, 'group.name'),
+          archived,
         }
       }),
       number,

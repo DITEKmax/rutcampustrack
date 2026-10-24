@@ -9,7 +9,12 @@ import {
 } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherJournalScreen from './TeacherJournalScreen.vue'
-import type { TeacherApi, TeacherJournalQuery, TeacherJournalResponse } from './teacher-client'
+import {
+  TeacherApiError,
+  type TeacherApi,
+  type TeacherJournalQuery,
+  type TeacherJournalResponse,
+} from './teacher-client'
 import type {
   ReportDownloadPort,
   ReportDownloadTicketRequest,
@@ -214,6 +219,7 @@ function mount(
 ) {
   const calls: TeacherJournalQuery[] = []
   const manual: [number, number][] = []
+  const ownerErrors: unknown[] = []
   const api = markRaw({
     journal: async (query: TeacherJournalQuery) => {
       calls.push(query)
@@ -243,6 +249,7 @@ function mount(
     render: () =>
       h(TeacherJournalScreen, {
         api,
+        onError: (cause: unknown) => ownerErrors.push(cause),
         query: state.query,
         active: state.active,
         subjectOptions: subjects,
@@ -258,9 +265,64 @@ function mount(
   })
   apps.push(app)
   app.mount(root)
-  return { root, state, calls, manual }
+  return { root, state, calls, manual, ownerErrors }
 }
 describe('teacher journal context and navigation', () => {
+  it.each([403, 503])(
+    'keeps journal HTTP %i local and recovers the same query without a stale host error',
+    async (status) => {
+      let attempts = 0
+      const cause = new TeacherApiError(new Response(null, { status }), {
+        detail: 'Чтение недоступно',
+      })
+      const view = mount({
+        initialTypes: ['lecture'],
+        journal: async () => {
+          if (++attempts === 1) throw cause
+          return response()
+        },
+      })
+      await settle()
+      expect(attempts).toBe(1)
+      expect(view.ownerErrors).toEqual([])
+      click(view.root, 'Повторить')
+      await settle()
+      expect(attempts).toBe(2)
+      expect(view.calls[1]).toEqual(view.calls[0])
+      expect(view.ownerErrors).toEqual([])
+      expect(find(view.root, (node) => node.props.role === 'alert')).toBeUndefined()
+    },
+  )
+  it('still forwards current journal session denial to the host', async () => {
+    const cause = new TeacherApiError(new Response(null, { status: 401 }), null)
+    const view = mount({
+      initialTypes: ['lecture'],
+      journal: async () => {
+        throw cause
+      },
+    })
+    await settle()
+    expect(view.ownerErrors).toEqual([cause])
+  })
+  it('does not forward a late session denial from an obsolete journal query', async () => {
+    let reject!: (cause: unknown) => void
+    const view = mount({
+      initialTypes: ['lecture'],
+      journal: (query) =>
+        query.subjectId === 3
+          ? new Promise((_resolve, fail) => {
+              reject = fail
+            })
+          : Promise.resolve(response(9)),
+    })
+    await settle()
+    view.state.query = { ...view.state.query, subjectId: 9 }
+    await settle()
+    reject(new TeacherApiError(new Response(null, { status: 401 }), null))
+    await settle()
+    expect(view.ownerErrors).toEqual([])
+  })
+
   it('renders server Table and Chart metrics, with selected-student reads fenced against late results', async () => {
     vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) })
     const present = { numerator: 1, denominator: 4, percent: 25 }

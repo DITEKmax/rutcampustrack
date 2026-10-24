@@ -290,7 +290,8 @@ async function load(retainProjection = false): Promise<void> {
         : cause instanceof Error
           ? cause.message
           : 'Не удалось открыть журнал.';
-    emit('error', cause);
+    // The journal owns this recoverable read error; only session denial belongs to the host.
+    if (cause instanceof TeacherApiError && cause.response.status === 401) emit('error', cause);
   } finally {
     if (active()) loading.value = false;
   }
@@ -495,8 +496,8 @@ useProjectionRefresh(
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" />
-      </button><h1 id="teacher-journal-title">
+        <MobileIcon name="back" /> </button
+      ><h1 id="teacher-journal-title">
         Журнал<small v-if="groupName">{{ groupName }}</small>
       </h1>
     </header>
@@ -536,8 +537,8 @@ useProjectionRefresh(
           @click="toggleType(type)"
         >
           {{ teacherLessonTypeLabel(type) }}
-        </button>
-      </div><button
+        </button> </div
+      ><button
         type="button"
         class="teacher-journal__icon"
         :aria-label="chart ? 'Показать таблицу' : 'Показать график'"
@@ -561,13 +562,27 @@ useProjectionRefresh(
     >
       Выбери один или несколько типов занятий.
     </p>
-    <p
+    <div
       v-else-if="loading"
-      class="teacher-journal__state"
+      class="teacher-journal__loading"
       role="status"
+      aria-live="polite"
     >
-      Загружаем журнал за прошедший период…
-    </p>
+      <span class="teacher-journal__sr">Загружаем журнал за прошедший период…</span>
+      <div aria-hidden="true">
+        <div
+          v-for="row in 7"
+          :key="row"
+          class="teacher-journal__loading-row"
+        >
+          <span
+            v-for="column in 4"
+            :key="column"
+            class="teacher-journal__loading-line"
+          />
+        </div>
+      </div>
+    </div>
     <StudentWarningBlock
       v-else-if="error"
       title="Журнал недоступен"
@@ -645,8 +660,8 @@ useProjectionRefresh(
           :options="formats.map((format) => ({ value: format.code, label: format.label }))"
           :disabled="formatsLoading || exportLoading || !formats.length"
           @update:model-value="changeFormat"
-        />
-      </div><button
+        /> </div
+      ><button
         class="teacher-journal__icon teacher-journal__download"
         type="button"
         data-teacher-action="export-download"

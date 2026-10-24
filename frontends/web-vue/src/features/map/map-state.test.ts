@@ -55,6 +55,52 @@ function manifest() {
   })
 }
 describe('web campus map asset ownership', () => {
+  it('retains the ready SVG and completes PNG when same-plan refresh interrupts its pending download', async () => {
+    let release!: (value: Response) => void
+    let started!: () => void
+    const pngStarted = new Promise<void>((resolve) => {
+      started = resolve
+    })
+    const oldPng = new Promise<Response>((resolve) => {
+      release = resolve
+    })
+    let firstPng = true
+    const { state, active } = fixture(async (input) => {
+      const path = String(input)
+      if (path.endsWith('/manifest')) return manifest()
+      if (path.endsWith('/plan')) {
+        const value = plan('first')
+        return Response.json({
+          plan: { ...value, svg: { ...value.svg, id: 'svg', state: 'ready' } },
+        })
+      }
+      if (path.includes('/svg/'))
+        return new Response('svg', { headers: { 'Content-Type': 'image/svg+xml' } })
+      if (firstPng) {
+        firstPng = false
+        started()
+        return oldPng
+      }
+      return new Response('published PNG', { headers: { 'Content-Type': 'image/png' } })
+    })
+    const initial = state.load()
+    await pngStarted
+    // SVG and PNG decode independently; wait for the already-ready preview before refresh.
+    for (let tick = 0; !state.assets.value.svg && tick < 20; tick++) await Promise.resolve()
+    const visible = state.preview.value
+    expect(visible).toBeDefined()
+    await state.load()
+    release(new Response('obsolete PNG', { headers: { 'Content-Type': 'image/png' } }))
+    await initial
+    expect(state.preview.value).toBe(visible)
+    expect(await state.assets.value.png?.blob.text()).toBe('published PNG')
+    expect(state.guardAsset('png')).toBe(true)
+    expect(state.assetErrors.value).toEqual({})
+    expect(state.floorLoading.value).toBe(false)
+    expect(active.size).toBe(2)
+    state.dispose()
+    expect(active.size).toBe(0)
+  })
   it('retains the visible asset across a live refresh of the same published plan', async () => {
     const { state, active } = fixture(async (input) => {
       if (String(input).endsWith('/manifest')) return manifest()

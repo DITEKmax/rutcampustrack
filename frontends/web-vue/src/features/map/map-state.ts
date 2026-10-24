@@ -82,24 +82,23 @@ export function createMapState(
     try {
       const value = await client.getFloorPlan(selectedBuilding.id, selectedFloor.id, signal)
       if (!current(sequence)) return
-      if (
-        preserve &&
-        preview.value &&
-        !Object.keys(assetErrors.value).length &&
-        JSON.stringify(value) === JSON.stringify(previousPlan)
-      )
-        return
-      clearAssets()
-      assetErrors.value = {}
-      usageError.value = ''
-      openStarted = false
+      const samePlan = preserve && JSON.stringify(value) === JSON.stringify(previousPlan)
+      if (!samePlan) {
+        clearAssets()
+        assetErrors.value = {}
+        usageError.value = ''
+        openStarted = false
+      }
       plan.value = value
       if (!value) return
-      openIntent = globalThis.crypto?.randomUUID() ?? null
+      if (!samePlan) openIntent = globalThis.crypto?.randomUUID() ?? null
       await Promise.all(
         (['svg', 'png'] as const).map(async (format) => {
           const slot = value[format]
-          if (slot.state !== 'ready' || !slot.id) return
+          if (slot.state !== 'ready' || !slot.id || assets.value[format]) return
+          const errors = { ...assetErrors.value }
+          delete errors[format]
+          assetErrors.value = errors
           try {
             const blob = await client.downloadAsset(
               selectedBuilding.id,

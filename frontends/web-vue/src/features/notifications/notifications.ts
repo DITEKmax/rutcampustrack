@@ -53,6 +53,7 @@ export function createWebNotifications() {
   const notice = ref('')
   const pending = ref(false)
   const uncertain = ref(false)
+  const reconciling = ref(false)
   const toasts = shallowRef<readonly WebToast[]>([])
   let preferences: NotificationPreferencesV2 | null = null
   let uncertainIntent:
@@ -63,6 +64,12 @@ export function createWebNotifications() {
   let readRevision = 0
   let writeRevision = 0
   let active = true
+  let inboxReads: Promise<void> = Promise.resolve()
+  function serialRead(task: () => Promise<void>) {
+    const result = inboxReads.then(task, task)
+    inboxReads = result.catch(() => undefined)
+    return result
+  }
   const seen = new Set<string>()
   const queue = new NotificationsMutationQueue()
   function assertCurrent() {
@@ -97,7 +104,11 @@ export function createWebNotifications() {
     ].sort((a, b) => b.orderAt.localeCompare(a.orderAt) || b.id.localeCompare(a.id))
     initialized = true
   }
-  async function load(live = false) {
+  function load(live = false) {
+    return serialRead(() => loadHead(live))
+  }
+  async function loadHead(live: boolean) {
+    if (!active || identity !== webSession.identity.value) return
     const revision = ++readRevision
     const writesAtStart = writeRevision
     if (!initialized) loading.value = true
@@ -108,12 +119,13 @@ export function createWebNotifications() {
       preferences = prefs
       if (!initialized) {
         items.value = []
-        nextCursor.value = page.nextCursor
       }
+      // Retained cards are deduplicated, but pagination must follow the latest head.
+      nextCursor.value = page.nextCursor
       acceptInbox(page.items, live)
       error.value = ''
       loading.value = false
-      await unread.invalidate()
+      void unread.invalidate()
     } catch (cause) {
       if (
         active &&
@@ -127,8 +139,17 @@ export function createWebNotifications() {
     }
   }
   async function more() {
-    if (!nextCursor.value || loadingMore.value || pending.value) return
+    if (!nextCursor.value || loadingMore.value || pending.value || reconciling.value) return
     loadingMore.value = true
+    try {
+      await serialRead(appendPage)
+    } finally {
+      loadingMore.value = false
+    }
+  }
+  async function appendPage() {
+    if (!active || identity !== webSession.identity.value) return
+    if (!nextCursor.value || pending.value || reconciling.value) return
     const revision = readRevision
     const writesAtStart = writeRevision
     try {
@@ -145,11 +166,10 @@ export function createWebNotifications() {
         !(cause instanceof WebAuthorityChangedError)
       )
         error.value = message(cause)
-    } finally {
-      loadingMore.value = false
     }
   }
-  async function readback(item: NotificationItem, read: boolean): Promise<boolean> {
+  // null proves absence at the end of the chain; undefined means the bounded read is incomplete.
+  async function readback(item: NotificationItem): Promise<NotificationItem | null | undefined> {
     let cursor: string | undefined
     const cursors = new Set<string>()
     for (let index = 0; index < 100; index++) {
@@ -158,13 +178,14 @@ export function createWebNotifications() {
       const actual = page.items.find((value) => value.id === item.id)
       if (actual) {
         items.value = items.value.map((value) => (value.id === item.id ? actual : value))
-        return (actual.readAt !== null) === read
+        return actual
       }
-      if (page.nextCursor === null || cursors.has(page.nextCursor)) return false
+      if (page.nextCursor === null) return null
+      if (cursors.has(page.nextCursor)) return undefined
       cursor = page.nextCursor
       cursors.add(cursor)
     }
-    return false
+    return undefined
   }
   function mark(item: NotificationItem, read: boolean) {
     return queue.run(async () => {
@@ -197,7 +218,9 @@ export function createWebNotifications() {
         }
         uncertainIntent = { kind: 'item', item, read }
         try {
-          if (await readback(item, read)) notice.value = 'Состояние уведомления подтверждено.'
+          const actual = await readback(item)
+          if (actual && (actual.readAt !== null) === read)
+            notice.value = 'Состояние уведомления подтверждено.'
           else if (cause instanceof NotificationsApiError && cause.status === 409)
             notice.value = 'Уведомление уже изменилось. Показано текущее состояние.'
           else {
@@ -266,32 +289,51 @@ export function createWebNotifications() {
     })
   }
   async function reconcile() {
-    if (pending.value) return
+    if (pending.value || reconciling.value || !uncertain.value) return
+    if (!active || identity !== webSession.identity.value) return
+    reconciling.value = true
+    writeRevision++
+    readRevision++
     try {
       const intent = uncertainIntent
-      const confirmed =
-        intent?.kind === 'item'
-          ? await readback(intent.item, intent.read)
-          : intent?.kind === 'all'
-            ? (await api.unreadCount()) === 0
-            : true
+      let confirmed = false
+      if (intent?.kind === 'item') {
+        const actual = await readback(intent.item)
+        if (actual === undefined) {
+          notice.value =
+            'Проверка истории не завершена. Запись не повторялась; попробуй проверить позже.'
+          return
+        }
+        confirmed = actual !== null && (actual.readAt !== null) === intent.read
+      } else if (intent?.kind === 'all') {
+        const actual = await api.unreadCount()
+        assertCurrent()
+        unread.acknowledge(actual)
+        confirmed = actual === 0
+      }
       assertCurrent()
-      if (confirmed) {
-        uncertain.value = false
-        uncertainIntent = null
-        notice.value = 'Состояние уведомлений подтверждено.'
-      } else
-        notice.value =
-          'Результат пока не подтверждён. Не повторяй запись; проверь позже или войди заново.'
       await load()
+      assertCurrent()
+      uncertain.value = false
+      uncertainIntent = null
+      notice.value = confirmed
+        ? 'Состояние уведомлений подтверждено.'
+        : 'Показано текущее состояние. Предыдущее изменение не подтверждено. Если нужно, выбери новое действие.'
     } catch {
-      notice.value = 'Не удалось проверить состояние. Запись не повторялась.'
+      try {
+        assertCurrent()
+        notice.value = 'Не удалось проверить состояние. Запись не повторялась.'
+      } catch {
+        /* Old owner has no recovery continuation. */
+      }
+    } finally {
+      reconciling.value = false
     }
   }
   function dismiss(id: string) {
     toasts.value = toasts.value.filter((value) => value.item.id !== id)
   }
-  useWebLiveRefresh(() => load(true), { blocked: pending })
+  useWebLiveRefresh(() => load(true), { blocked: () => pending.value || reconciling.value })
   onScopeDispose(() => {
     active = false
     ++readRevision
@@ -310,6 +352,7 @@ export function createWebNotifications() {
     loadingMore: readonly(loadingMore),
     pending: readonly(pending),
     uncertain: readonly(uncertain),
+    reconciling: readonly(reconciling),
     error: readonly(error),
     notice: readonly(notice),
     toasts: readonly(toasts),

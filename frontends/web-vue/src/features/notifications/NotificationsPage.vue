@@ -4,6 +4,7 @@ import { nextTick, ref, watch } from 'vue';
 import type { NotificationItem } from '../../../../mobile-core/src/features/notifications/notifications-v2-models';
 import { webNotifications } from './notifications';
 import NotificationCard from './NotificationCard.vue';
+import NotificationRecovery from './NotificationRecovery.vue';
 import { openWebNotification } from './actions';
 const n = webNotifications;
 const route = useRoute();
@@ -40,13 +41,7 @@ async function open(item: NotificationItem) {
         Прочитать всё
       </button>
     </div>
-    <p
-      v-if="n?.notice.value"
-      class="web-notice"
-      role="status"
-    >
-      {{ n.notice.value }}
-    </p>
+    <NotificationRecovery />
     <p
       v-if="actionError"
       class="web-error"
@@ -90,7 +85,7 @@ async function open(item: NotificationItem) {
       /><button
         v-if="n.nextCursor.value"
         class="web-button"
-        :disabled="n.loadingMore.value || n.pending.value"
+        :disabled="n.loadingMore.value || n.pending.value || n.reconciling.value"
         @click="n.more()"
       >
         {{ n.loadingMore.value ? 'Загружаем…' : 'Показать ещё' }}

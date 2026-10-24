@@ -3,6 +3,7 @@ import { computed, ref, useId, watch } from 'vue';
 import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import { webSession } from '../../auth/session';
 import { webNotifications } from './notifications';
+import NotificationRecovery from './NotificationRecovery.vue';
 const n = webNotifications;
 const popover = ref<HTMLElement | null>(null);
 const expanded = ref(false);
@@ -47,7 +48,7 @@ watch(webSession.identity, close);
   >
     <h2 :id="id + '-title'">
       Уведомления
-    </h2><p
+    </h2><NotificationRecovery /><p
       v-if="n?.error.value"
       class="web-error"
       role="alert"

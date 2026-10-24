@@ -59,6 +59,119 @@ afterEach(async () => {
   vi.useRealTimers()
 })
 describe('web notification projection ownership', () => {
+  it('fills the complete event union after a burst while More is queued behind a live head', async () => {
+    let server = ['a', 'b', 'c', 'd']
+    let holdHead = false
+    let release!: (value: Response) => void
+    let started!: () => void
+    const headStarted = new Promise<void>((resolve) => {
+      started = resolve
+    })
+    const head = new Promise<Response>((resolve) => {
+      release = resolve
+    })
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const path = String(input)
+      if (path.endsWith('/login')) return Response.json({ accessToken: 'token' })
+      if (path.endsWith('/session')) return Response.json(snapshot())
+      if (path.endsWith('/preferences/v2')) return Response.json(preferences)
+      if (path.includes('/inbox/unread-count'))
+        return Response.json({ role: 'HEADMAN', count: server.length })
+      if (path.includes('/inbox?')) {
+        const cursor = new URL(path, 'http://localhost').searchParams.get('cursor')
+        if (!cursor && holdHead) {
+          holdHead = false
+          started()
+          return head
+        }
+        const start = cursor ? server.indexOf(cursor) + 1 : 0
+        const values = server.slice(start, start + 2)
+        return Response.json({
+          role: 'HEADMAN',
+          items: values.map((id) => item(id)),
+          nextCursor: start + 2 < server.length ? values.at(-1) : null,
+        })
+      }
+      throw new Error(path)
+    })
+    const { webNotifications } = await import('./notifications')
+    const { webSession } = await import('../../auth/session')
+    await webSession.login('test', 'password')
+    const store = webNotifications.value!
+    await store.load()
+    server = ['x', 'y', 'z', ...server]
+    holdHead = true
+    const refresh = store.load(true)
+    await headStarted
+    const more = store.more()
+    release(
+      Response.json({
+        role: 'HEADMAN',
+        items: server.slice(0, 2).map((id) => item(id)),
+        nextCursor: 'y',
+      }),
+    )
+    await Promise.all([refresh, more])
+    expect(store.items.value.some((value) => value.id === 'z')).toBe(true)
+    for (let page = 0; store.nextCursor.value && page < 5; page++) await store.more()
+    expect(new Set(store.items.value.map((value) => value.id))).toEqual(new Set(server))
+    expect(store.nextCursor.value).toBeNull()
+  })
+
+  it('reads an uncertain outcome without replaying it and permits a new explicit CAS from the current state', async () => {
+    let unavailable = false
+    let failedWrite = false
+    let serverRead = false
+    let revision = '1'
+    const current = () => ({ ...item('one', serverRead), revision })
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input)
+      if (path.endsWith('/login')) return Response.json({ accessToken: 'token' })
+      if (path.endsWith('/session')) return Response.json(snapshot())
+      if (path.endsWith('/preferences/v2')) return Response.json(preferences)
+      if (path.endsWith('/read-state')) {
+        if (!failedWrite) {
+          failedWrite = true
+          unavailable = true
+          throw new TypeError('unknown result')
+        }
+        const command = JSON.parse(String(init?.body)) as {
+          expectedRevision: string
+          read: boolean
+        }
+        if (command.expectedRevision !== revision) return new Response(null, { status: 409 })
+        serverRead = command.read
+        revision = '8'
+        return Response.json({ role: 'HEADMAN', item: current(), unreadCount: serverRead ? 0 : 1 })
+      }
+      if (path.includes('/inbox/unread-count'))
+        return Response.json({ role: 'HEADMAN', count: serverRead ? 0 : 1 })
+      if (path.includes('/inbox?')) {
+        if (unavailable) throw new TypeError('readback unavailable')
+        return Response.json({ role: 'HEADMAN', items: [current()], nextCursor: null })
+      }
+      throw new Error(path)
+    })
+    const { webNotifications } = await import('./notifications')
+    const { webSession } = await import('../../auth/session')
+    await webSession.login('test', 'password')
+    const store = webNotifications.value!
+    await store.load()
+    await store.mark(store.items.value[0]!, true)
+    expect(store.uncertain.value).toBe(true)
+    unavailable = false
+    revision = '7'
+    await store.reconcile()
+    expect(store.uncertain.value).toBe(false)
+    expect(store.items.value[0]?.revision).toBe('7')
+    expect(serverRead).toBe(false)
+    expect(store.notice.value).toContain('не подтверждено')
+    await store.mark(store.items.value[0]!, true)
+    expect(serverRead).toBe(true)
+    expect(store.items.value[0]?.revision).toBe('8')
+    expect(store.count.value).toBe(0)
+  })
+
   it('keeps the confirmed read state and count when an older inbox arrives afterwards', async () => {
     let read = false
     let hold = false

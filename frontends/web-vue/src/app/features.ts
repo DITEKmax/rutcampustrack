@@ -4,6 +4,7 @@ import ProfilePage from '../features/profile/ProfilePage.vue'
 import HomeworkPage from '../features/student-homework/HomeworkPage.vue'
 import { headmanRoutes } from '../features/headman/routes'
 import { adminRoutes } from '../features/admin/routes'
+import { studentRoutes } from '../features/student/routes'
 import { teacherRoutes } from '../features/teacher/routes'
 import { webSession } from '../auth/session'
 import { webAssistantAccess } from './assistant'
@@ -29,6 +30,7 @@ function integrateRoute(route: RouteRecordRaw): RouteRecordRaw {
 export const webFeatures: RouteRecordRaw[] = [
   { name: 'notifications', path: '/notifications', component: NotificationsPage, meta: { label: 'Уведомления', navHidden: true, requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] } },
   { name: 'settings', path: '/settings', component: ProfilePage, meta: { label: 'Настройки', navHidden: true, requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] } },
+  ...studentRoutes.map(integrateRoute),
   ...headmanRoutes.map(integrateRoute),
   ...adminRoutes.map(integrateRoute),
   ...teacherRoutes.map(integrateRoute),

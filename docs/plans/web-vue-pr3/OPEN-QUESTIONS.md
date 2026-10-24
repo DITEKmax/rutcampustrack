@@ -44,7 +44,8 @@ Evidence: `/workspace/rct-pr3-setup/archive-check/report.md` и
 
 ## Q-ENV-002 — скачивание оригинальных Figma assets
 
-**Тип:** техническая зависимость. **Статус:** owner will allow; applied access pending.
+**Тип:** техническая зависимость. **Статус:** owner will allow; network application
+pending, original auth asset dependency RESOLVED through authorized MCP reads.
 Figma MCP реально возвращает design context/screenshot, но `curl` временного
 original asset URL через наследуемый proxy с разрешённой network sandbox
 получает `CONNECT tunnel failed, response 403`. Файл политики restricted не
@@ -60,6 +61,34 @@ API/shell/theme/другие экраны продолжаются. Screenshot/c
 После ответа/публикации — повторить один bounded source download и сохранить
 локальный файл. Текст вопроса/положительный ответ сами по себе не доказывают
 применённый доступ.
+
+Обновление2026-10-24: original auth image получен через read-only Figma
+getImageByHash/getBytesAsync в ограниченных частях.937127bytes1498×1050,
+SHA1 совпадает с Figma image hash2259ca44d4dcff802f9f7e1c9c15512880dbbd99;
+SHA2565ecad9bf5b38ddf9fe2114c5ab422cec78ea81c746fc2ee0b2ab5d9b3b6fff16,
+PNG chunks/CRC PASS. Это оригинальные bytes, не screenshot/crop и не обход
+proxy. MCP SVG export также работает. Повторно разрешение владельца не требуется.
+
+## Q-ENV-003 — конкретная проверка user8 после отказа approval review
+
+**Тип:** разрешение на ограниченную проверку стенда. **Статус:** waiting for owner.
+Automatic approval review отклонил сценарий, который временно выдаёт FULL,
+меняет постоянные credentials и проверяет self-regeneration: объём разрешения
+на security mutations был недостаточно явным. До ответа не запускается.
+
+Подготовлен проверяемый `/tmp/admin-users-unknown-review.cjs` для исключительно
+синтетического user8, созданного самим UI в этом стенде. Guard проверяет marker,
+имя/группу/STUDENT, отсутствие активной ADMIN роли и отдельный opt-in. Baseline
+admin1 credentials/profile не меняются. Сценарий проверяет actual200 self-reset
+с сохранением receipt до logout и потерянный ACK401/unknown result. В finally
+предусмотрены точный operation-key readback, отзыв временного FULL только у8,
+подтверждение assigned=false и выход из собственной admin browser session.
+Секреты, коды и capabilities не публикуются; screenshots отсутствуют.
+
+Владельцу отправлен конкретный вопрос с вариантами «Разрешить этот сценарий
+для user8 стенда» / «Не запускать». Молчание не разрешает выполнение.
+Затронут runtime gate ACT-ADMIN-REGENERATE-PASSWORD; user8 заморожен. Остальные
+проверки продолжаются на собственных отдельных fixtures без расширения прав.
 
 ## Q-PROD-004 — участники окончательно удаляемой группы
 

@@ -99,3 +99,84 @@ records source acceptance and UI/runtime limits. Original summary and checks:
 `/tmp/admin-generated-password-checks-20261024.json`. Final source-matched AuthJAR
 SHA256 3f8d9d0e9ea3bd944b774c2a05246df9b3a35caa2d19aae8b8570aba68c5dc05;
 stand rollout remains runtime-owner coordinated, not proof of web UI completion.
+
+## API-003 — retained group and account status in user registry/export
+
+Status: author f3c03bd81 +6289ab528 +b32d47b0e integrated, independent review
+PASS including async selector correction. Source-matched immutable Auth/Academic
+artifacts verified/copied; stand rollout13healthy and actual filtered UI/history/HTML export PASS.
+
+Existing administrator user list and export selectors accept optional groupId;
+existing status filter is forwarded by the shared client. Membership means the
+current or retained STUDENT/HEADMAN grant, including archived accounts/group
+links, rather than any group ever visited. Role/status/group refer to the same
+grant; TEACHER/ADMIN role filtering retains its separate group-link semantics.
+Invalid selectors retain existing400 behavior; granular USERS_VIEW/export rights
+remain enforced. Omitted groupId preserves older query behavior and export hash
+shape, including older queued jobs. Paged totals/rows and sync/async render reuse
+the same selector. This enables retained composition history without inventing
+an as-of dated-membership endpoint.
+
+The async export lease compares complete normalized JSON trees. Canonical parsing
+on both sides prevents a valid small Long ID from falsely mismatching IntNode;
+changed/missing/extra selectors and changed array order still fail admission403.
+Actor/session/version/kind/private lease/state/expiry checks are unchanged.
+
+PWA/TMA: additive optional query and shared client forwarding; omitted selectors
+keep previous behavior. No new web registry/navigation is ported to mobile.
+Real Auth/Academic authority/selector/snapshot checks and async enqueue202→claim→
+render200 with changed/missing selectors403 passed. Independent immutable reports:
+[group selector review](../../validation/web-vue-pr3/review/group-filter-REVIEW-f3c03bd81.md),
+[async correction recheck](../../validation/web-vue-pr3/review/group-filter-RECHECK-b32d47b0e.md).
+
+## API-004 — conditional existing assistant permissions (in progress)
+
+Source072486ca4 integrated; real HTTP3/snapshot/types/JAR PASS. Independent
+review pending; not deployed. Contract: Existing PATCH assistant permissions
+adds optional expectedPermissions set. It compares authoritative rights under
+existing group/headman then assistant locks; mismatch409
+ASSISTANT_PERMISSIONS_CONFLICT without mutation/outbox. Null/unknown enum400.
+Existing nonempty {permissions} calls remain compatible. Conditional permissions[]
+with expected snapshot invokes the existing revoke lifecycle, returns inactive200
+and preserves historical permissions. Legacy empty PATCH remains400 and DELETE204
+is unchanged. Effective rights require active assignment. Web and existing mobile
+confirmation use frozen before snapshot, including removal of the last right;
+new helper assignment behavior is unchanged. No new mobile feature/UI is added.
+
+Targeted real PostgreSQL/HTTP concurrent stale add versus revoke, conflict rollback,
+conditional last-right revoke and legacy/invalid/forbidden cases PASS3tests;
+source/schema/independent review950 PASS; actual stand CAS/lookup rollout gate pending.
+
+## API-005 — names-only group options lookup (source accepted, rollout pending)
+
+Source950e621b0 and real HTTP2/snapshot/types/JAR PASS, independent combined
+CAS/lookup review PASS. Reuse GET /api/academic/groups/options; allow USERS_VIEW in that endpoint's existing
+permission union, without granting GROUPS_VIEW. Optional includeArchived=false
+preserves old pickers. includeArchived=true returns retained archive entries;
+additive archived:boolean accompanies existing id/name only. Count and rows use
+the same predicate; existing Java constructor retained. No profiles/contacts/grants
+are exposed. Shared manual adapter owned admin author; generated types backend.
+Directory history/filter uses archive lookup, create-user picker keeps default.
+PWA/TMA omitted flag stays active-only. No new mobile page or permission widening.
+
+
+## API-006 — whole-scheme map final deletion (implementation in progress)
+
+Canonical owner decision2026-10-02 already authorizes deleting all scheme versions
+and PNG/SVG bytes with preview/password proof. Current format=null endpoint only
+cleared a pointer; whole-chain inspection confirms there is no hidden file GC.
+Approved compatible fix keeps existing routes/request/result/granular permissions,
+Auth confirmation/catalog lock and durable receipts. All-format preview counts
+and hashes the whole version/slot/asset graph, including orphan retained history;
+old narrow digest cannot authorize wider deletion. Within one PostgreSQL transaction
+it removes only owned versions/format rows/BYTEA assets, preserves floor/building/
+usage inventory and receipts, and rolls back on failure. Internal additive high-water
+version counter prevents reusing old metadata URLs after reupload. Exact replay
+cannot delete fresh content. Selected-format availability branch is preserved.
+
+PWA/TMA: existing DTO shapes remain; all-format deletion now implements the already
+agreed meaning, preview totals become exact for the full graph. No new mobile page.
+Real HTTP/PostgreSQL multi-version/equal-hash other-floor, stale/replay/reupload and
+forced rollback cases plus independent review are required before acceptance.
+No production migration/deletion; synthetic resources only. Web final-scheme
+operation must send format=null, not substitute floor inventory deletion.

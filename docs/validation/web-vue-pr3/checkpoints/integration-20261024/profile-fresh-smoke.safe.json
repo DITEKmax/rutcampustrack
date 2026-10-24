@@ -1,0 +1,170 @@
+{
+  "source": "2dae67d32e91be4ff6cb98ce93a9f5c65cff25ae",
+  "clean": true,
+  "checks": [
+    "actual ownprofile/history/sessions rendered",
+    "actual avatar PATCH and readback",
+    "avatar reset readback",
+    "ownedsecondary revoke real204 lostresponse reconciled byfullreadback",
+    "password draft retained when leaving cancelled",
+    "settings nooverflow300/768/1440"
+  ],
+  "errors": [],
+  "api": [
+    {
+      "method": "POST",
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/ws/info"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/ws/info"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/sessions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/account-history"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/users/me"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/sessions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/account-history"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/users/me"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "PATCH",
+      "status": 200,
+      "path": "/api/academic/users/me/avatar"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/users/me"
+    },
+    {
+      "method": "PATCH",
+      "status": 200,
+      "path": "/api/academic/users/me/avatar"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/users/me"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/sessions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/sessions"
+    }
+  ],
+  "provenance": {
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/profile-fresh-smoke.json",
+    "original_sha256": "e5189d3b5be53e64f37487d1fc7e9a33a1062f27a7212218ba81d3b63f007b6c",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  }
+}

@@ -2,6 +2,10 @@
 
 Это промежуточная поставка в существующий PR3 после отдельного запуска Goal.
 Полная замена Angular ещё не готова; работа продолжается по сохранённому контракту.
+Исторический срез первого пакета ниже сохранён. Последующие проверки закрыли
+homework browse gate (теперь verified5/117); original auth PNG получен через
+read-only Figma image bytes; stand имеет13healthy и настоящий Renderer.
+Актуальное состояние: [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md).
 Source snapshot root072edf183; web authora2ef210623; backend device3c02a3241;
 neutral/mobile theme throughcaf3789ab. Каждый runtime sample хранит свою точную
 revision; позднейший source не приписывается старым screenshots.

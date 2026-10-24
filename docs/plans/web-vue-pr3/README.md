@@ -28,3 +28,5 @@
 новые хрупкие E2E, проверки текста/верстки и coverage ради процента не нужны.
 GitHub-проверки пока PAUSED, это не PASS. Продуктовый GO, merge и deploy
 этим подготовительным commit не выдаются. Main и глобальные settings не менялись.
+
+Актуальное состояние после начала Goal: [PROGRESS](PROGRESS.md), [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md), [mobile followups](MOBILE-FOLLOWUPS.md).

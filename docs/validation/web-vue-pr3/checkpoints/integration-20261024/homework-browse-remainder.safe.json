@@ -1,0 +1,141 @@
+{
+  "source": "2ee6a85e842b43ee7fcbcc68ebb043f0fb42fda7",
+  "checks": [
+    "real День projection",
+    "real Неделя projection",
+    "real Месяц projection",
+    "month navigation and today reset",
+    "full long description available",
+    "external link creates separate context and requests exact allowed href",
+    "keyboard calendar native selection",
+    "month root20 no overflow300/768/1440"
+  ],
+  "errors": [],
+  "api": [
+    {
+      "method": "POST",
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/ws/info"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/ws/info"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    }
+  ],
+  "socket": {
+    "opened": 4,
+    "subscribed": true,
+    "messages": 0
+  },
+  "provenance": {
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/homework-browse-remainder.json",
+    "original_sha256": "f7aab747e195e03965e6796601ef77aaa995965d1e63e39933c0e55de1219bfe",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  }
+}

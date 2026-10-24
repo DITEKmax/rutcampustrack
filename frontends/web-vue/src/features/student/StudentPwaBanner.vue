@@ -4,7 +4,9 @@ import { webSession } from '../../auth/session';
 const key = `rct:web:pwa-banner:${webSession.snapshot.value?.userId ?? ''}`;
 const visible = ref(true);
 try {
-  visible.value = localStorage.getItem(key) !== 'hidden';
+  visible.value =
+    localStorage.getItem(key) !== 'hidden' &&
+    localStorage.getItem('pwa-banner-dismissed') !== 'true';
 } catch {
   /* Storage unavailable: keep the action usable. */
 }

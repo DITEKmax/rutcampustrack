@@ -43,6 +43,7 @@ watch(
       @retry="load"
     />
     <template v-if="detail.data.value">
+      <h3>{{ detail.data.value.name }}</h3>
       <div class="student-filter">
         <fieldset class="student-actions">
           <legend>Типы занятий на графике</legend><label

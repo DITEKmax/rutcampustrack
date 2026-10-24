@@ -29,7 +29,15 @@ const date = ref(
 const subject = ref(typeof route.query.subject === 'string' ? route.query.subject : '');
 const types = ref<StudentLessonType[]>([]);
 let restoredTypes = false;
-let remembering = false;
+const pendingQueries = new Set<string>();
+function queryIdentity(query: Record<string, unknown>) {
+  return JSON.stringify([
+    query.view ?? 'weeks',
+    query.date ?? '',
+    query.subject ?? '',
+    Array.isArray(query.type) ? query.type : query.type === undefined ? [] : [query.type],
+  ]);
+}
 const allTypes = ['LECTURE', 'PRACTICE', 'LAB'] as const;
 const availableTypes = computed(
   () =>
@@ -64,21 +72,22 @@ async function loadSubject() {
 }
 async function remember() {
   scope.transport.assertCurrent();
-  remembering = true;
+  const query = {
+    view: mode.value,
+    date: date.value,
+    ...(subject.value ? { subject: subject.value } : {}),
+    type: types.value.length ? types.value : '',
+  };
+  const key = queryIdentity(query);
+  pendingQueries.add(key);
   try {
-    await router.replace({
-      query: {
-        view: mode.value,
-        date: date.value,
-        ...(subject.value ? { subject: subject.value } : {}),
-        type: types.value.length ? types.value : '',
-      },
-    });
+    await router.replace({ query });
   } finally {
-    remembering = false;
+    pendingQueries.delete(key);
   }
 }
 async function chooseSubject() {
+  restoredTypes = true;
   types.value = [...availableTypes.value];
   await remember();
   await loadSubject();
@@ -101,7 +110,7 @@ watch(availableTypes, (value) => {
 watch(
   () => route.query,
   () => {
-    if (remembering) return;
+    if (pendingQueries.has(queryIdentity(route.query))) return;
     mode.value = route.query.view === 'subjects' ? 'subjects' : 'weeks';
     if (
       typeof route.query.date === 'string' &&

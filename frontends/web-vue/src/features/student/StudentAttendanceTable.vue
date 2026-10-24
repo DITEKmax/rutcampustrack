@@ -32,6 +32,9 @@ function close() {
 </script>
 <template>
   <div class="web-stack">
+    <h2 class="web-sr-only">
+      Мои отметки
+    </h2>
     <div
       v-if="lessons.length"
       class="student-attendance-scroll"

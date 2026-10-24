@@ -3,16 +3,10 @@ import type { ProfileRole } from '../../auth/session'
 const requiredRoles: readonly ProfileRole[] = ['STUDENT']
 export const studentRoutes: RouteRecordRaw[] = [
   {
-    name: 'student-requests',
-    path: '/student/requests',
-    component: () => import('./StudentRequestsPage.vue'),
-    meta: { label: 'Заявки и тикеты', requiredRoles },
-  },
-  {
-    name: 'student-request',
-    path: '/student/requests/:requestId',
-    component: () => import('./StudentRequestsPage.vue'),
-    meta: { label: 'Моя заявка', requiredRoles, navHidden: true },
+    name: 'student-home',
+    path: '/student/home',
+    component: () => import('./StudentHomePage.vue'),
+    meta: { label: 'Главная', requiredRoles },
   },
   {
     name: 'student-attendance',
@@ -27,15 +21,21 @@ export const studentRoutes: RouteRecordRaw[] = [
     meta: { label: 'Статистика', requiredRoles },
   },
   {
-    name: 'student-home',
-    path: '/student/home',
-    component: () => import('./StudentHomePage.vue'),
-    meta: { label: 'Главная', requiredRoles },
-  },
-  {
     name: 'student-schedule',
     path: '/student/schedule',
     component: () => import('./StudentSchedulePage.vue'),
     meta: { label: 'Расписание', requiredRoles },
+  },
+  {
+    name: 'student-requests',
+    path: '/student/requests',
+    component: () => import('./StudentRequestsPage.vue'),
+    meta: { label: 'Заявки и тикеты', requiredRoles },
+  },
+  {
+    name: 'student-request',
+    path: '/student/requests/:requestId',
+    component: () => import('./StudentRequestsPage.vue'),
+    meta: { label: 'Моя заявка', requiredRoles, navHidden: true },
   },
 ]

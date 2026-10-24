@@ -3,6 +3,7 @@ import { computed, ref, shallowRef, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
   toTeacherJournalReportRequest,
+  teacherJournalTypes,
   type TeacherJournalQuery,
   type TeacherJournalResponse,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
@@ -53,10 +54,18 @@ const query = computed<TeacherJournalQuery | null>(() =>
       }
     : null,
 );
-function load() {
-  ticketId.value = null;
-  loadedQuery.value = null;
-  const requested = query.value;
+function load(background = false) {
+  const previous = loadedQuery.value;
+  const retain = background === true && previous !== null &&
+    previous.semesterId === scope.semester.value?.id &&
+    previous.groupId === selection.groupId.value && previous.subjectId === selection.subjectId.value &&
+    JSON.stringify(teacherJournalTypes(previous)) === JSON.stringify(selection.lessonTypes.value);
+  // A live hint refreshes the applied period, never submits the date-field draft.
+  const requested = retain ? previous : query.value;
+  if (!retain) {
+    ticketId.value = null;
+    loadedQuery.value = null;
+  }
   if (!requested) {
     journal.clear();
     return;
@@ -66,14 +75,14 @@ function load() {
     scope.transport.assertCurrent();
     if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
     return data;
-  });
+  }, undefined, retain);
 }
 
 watch(
   () => scope.refreshed.value,
   () => {
     selection.reconcile();
-    load();
+    load(scope.backgroundRefresh.value);
   },
 );
 watch(
@@ -90,8 +99,7 @@ const exportRequest = computed(() =>
   journal.data.value?.lessons.length &&
   loadedQuery.value &&
   !journal.loading.value &&
-  !pagination.loading.value &&
-  !journal.error.value
+  !pagination.loading.value
     ? (format: Parameters<typeof toTeacherJournalReportRequest>[1]) =>
         toTeacherJournalReportRequest(loadedQuery.value!, format)
     : null,
@@ -126,7 +134,7 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
       />
       <form
         class="teacher-toolbar"
-        @submit.prevent="load"
+        @submit.prevent="load()"
       >
         <label class="web-field">С даты<input
           v-model="from"

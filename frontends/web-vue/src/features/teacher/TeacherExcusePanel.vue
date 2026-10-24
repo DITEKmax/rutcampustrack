@@ -22,10 +22,10 @@ const statusLabels: Record<string, string> = {
   CANCELLED: 'Отменена',
 };
 let trigger: HTMLElement | null = null;
-function load() {
-  void excuse.load(() => props.scope.api.excuse(props.ticketId));
+function load(background = false) {
+  void excuse.load(() => props.scope.api.excuse(props.ticketId), undefined, background === true);
 }
-watch(() => props.scope.refreshed.value, load);
+watch(() => props.scope.refreshed.value, () => load(props.scope.backgroundRefresh.value));
 onMounted(() => {
   trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   load();

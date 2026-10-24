@@ -20,23 +20,27 @@ const date = ref(today());
 const query = ref('');
 const searchValidation = ref('');
 const groups = computed(() => scope.catalog.value?.groups ?? []);
-function loadAssignments() {
+function loadAssignments(background = false) {
   const semester = scope.semester.value;
   if (!semester) {
     assignments.clear();
     return;
   }
+  const retain = background === true && assignments.data.value?.every(item =>
+    item.semesterId === semester.id && scope.catalog.value?.groups.some(group => group.id === item.groupId));
   void assignments.load(() =>
-    scope.api.assignments(semester.id, semester.dateFrom, semester.dateTo),
-  );
+    scope.api.assignments(semester.id, semester.dateFrom, semester.dateTo), undefined, !!retain);
 }
-function loadDay() {
+function loadDay(background = false) {
   const semester = scope.semester.value;
   if (!semester || !date.value || date.value < semester.dateFrom || date.value > semester.dateTo) {
     day.clear();
     return;
   }
-  void day.load(() => scope.api.day(semester.id, date.value));
+  const previous = day.data.value;
+  const retain = background === true && previous?.semesterId === semester.id && previous.date === date.value &&
+    previous.lessons.every(lesson => scope.catalog.value?.groups.some(group => group.id === lesson.groupId));
+  void day.load(() => scope.api.day(semester.id, date.value), undefined, !!retain);
 }
 function find() {
   const semester = scope.semester.value;
@@ -60,12 +64,12 @@ watch(
           : date.value > semester.dateTo
             ? semester.dateTo
             : date.value;
-    loadAssignments();
-    loadDay();
+    loadAssignments(scope.backgroundRefresh.value);
+    loadDay(scope.backgroundRefresh.value);
     search.clear();
   },
 );
-watch(date, loadDay);
+watch(date, () => loadDay());
 watch(
   () => scope.catalog.value,
   (value) => {

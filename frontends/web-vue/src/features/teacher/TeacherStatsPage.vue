@@ -61,13 +61,15 @@ const query = computed<TeacherStatsQuery | null>(() => {
     filters: memory[kind.value].filters.map((filter) => ({ ...filter })),
   };
 });
-async function load() {
+async function load(background = false) {
   const requested = query.value;
   const previous = loadedQuery.value;
-  const sameContext = previous && requested && previous.scope === requested.scope &&
+  const sameContext = previous && requested && previous.semesterId === requested.semesterId && previous.scope === requested.scope &&
     previous.groupId === requested.groupId && previous.subjectId === requested.subjectId &&
-    JSON.stringify(previous.lessonTypes) === JSON.stringify(requested.lessonTypes);
-  loadedQuery.value = null;
+    JSON.stringify(previous.lessonTypes) === JSON.stringify(requested.lessonTypes) &&
+    (requested.scope !== 'groups' || stats.data.value?.groups.every(group => selection.groups.value.some(available => available.id === group.groupId)));
+  const retain = background === true && !!sameContext;
+  if (!retain) loadedQuery.value = null;
   if (!requested) {
     stats.clear();
     return;
@@ -77,7 +79,7 @@ async function load() {
     scope.transport.assertCurrent();
     if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
     return data;
-  }, sameContext ? (_old, next) => next : undefined);
+  }, sameContext ? (_old, next) => next : undefined, retain);
 }
 function changeScope(value: TeacherStatsScope) {
   if (kind.value === value) return;
@@ -141,7 +143,7 @@ watch(
     if (drillGroup.value !== null && !selection.groups.value.some(group => group.id === drillGroup.value)) drillGroup.value = null;
     memory.groups.types = memory.groups.types.filter((type) => allTypes.value.includes(type));
     if (!memory.groups.types.length) memory.groups.types = [...allTypes.value];
-    load();
+    void load(scope.backgroundRefresh.value);
   },
 );
 watch(
@@ -154,7 +156,7 @@ watch(
   },
 );
 const exportRequest = computed(() =>
-  stats.data.value && loadedQuery.value && !stats.loading.value && !stats.error.value
+  stats.data.value && loadedQuery.value && !stats.loading.value
     ? (format: Parameters<typeof toTeacherStatsReportSelector>[1]) => ({
         kind: 'TEACHER_STATS' as const,
         teacherStats: toTeacherStatsReportSelector(loadedQuery.value!, format),
@@ -231,7 +233,7 @@ const exportRequest = computed(() =>
            v-model="memory.groups.types"
            type="checkbox"
            :value="type"
-           @change="load"
+           @change="load()"
          >
           {{ teacherLessonTypeLabel(type) }}</label>
       </fieldset>

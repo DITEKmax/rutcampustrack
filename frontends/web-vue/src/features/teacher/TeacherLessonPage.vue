@@ -18,20 +18,25 @@ const scope = useTeacherScope(),
   route = useRoute();
 const lesson = useTeacherResource<TeacherLessonResponse>(scope);
 const ticketId = ref<string | null>(null);
-function load() {
+function load(background = false) {
   const id = Number(route.params.lessonId);
-  ticketId.value = null;
+  const previous = lesson.data.value?.lesson;
+  const retain = background === true && previous?.id === id &&
+    previous.semesterId === scope.semester.value?.id &&
+    scope.catalog.value?.subjectOptions.some(option => option.groupId === previous.groupId &&
+      option.subjectId === previous.subjectId && option.lessonTypes.includes(previous.lessonType));
+  if (!retain) ticketId.value = null;
   if (!Number.isSafeInteger(id) || id < 1) {
     lesson.clear();
     lesson.error.value = 'Некорректный адрес пары.';
     return;
   }
-  void lesson.load(() => scope.api.lesson(id));
+  void lesson.load(() => scope.api.lesson(id), undefined, !!retain);
 }
 watch(
   () => [scope.refreshed.value, route.params.lessonId],
-  () => {
-    if (scope.catalog.value) load();
+  (value, previous) => {
+    if (scope.catalog.value) load(scope.backgroundRefresh.value && value[1] === previous[1]);
   },
 );
 watch(

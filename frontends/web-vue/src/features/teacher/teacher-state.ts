@@ -22,6 +22,10 @@ export function teacherError(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'Не удалось получить данные. Повтори попытку.'
 }
 
+function lostTeacherScope(cause: unknown) {
+  return cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status)
+}
+
 /** One page owns its transport and all decoded responses. No cross-role continuation. */
 export function useTeacherScope() {
   const transport = createWebTransport()
@@ -37,14 +41,15 @@ export function useTeacherScope() {
   const loading = ref(false)
   const error = ref('')
   const refreshed = ref(0)
+  const backgroundRefresh = ref(false)
   const pointerWithin = ref(false)
   const focusWithin = ref(false)
   const dirty = ref(false)
-  const blocked = computed(() => pointerWithin.value || focusWithin.value || dirty.value)
   let revision = 0
-  async function load() {
+  async function readScope(background: boolean) {
     const run = ++revision
-    loading.value = true
+    const retain = background && catalog.value !== null
+    loading.value = !retain
     error.value = ''
     try {
       const nextSemester = await api.semester()
@@ -53,11 +58,14 @@ export function useTeacherScope() {
       if (!current() || run !== revision) return
       semester.value = nextSemester
       catalog.value = nextCatalog
+      backgroundRefresh.value = retain
       refreshed.value++
     } catch (cause) {
       if (!current() || run !== revision) return
-      catalog.value = null
-      semester.value = null
+      if (!retain || lostTeacherScope(cause)) {
+        catalog.value = null
+        semester.value = null
+      }
       error.value = teacherError(cause)
     } finally {
       if (current() && run === revision) loading.value = false
@@ -69,8 +77,10 @@ export function useTeacherScope() {
     semester.value = null
     loading.value = false
   }, { flush: 'sync' })
+  const load = () => readScope(catalog.value !== null)
   onMounted(load)
-  useWebLiveRefresh(load, { blocked })
+  // Admission reads cannot wait for a pointer, focused field or unapplied draft.
+  useWebLiveRefresh(() => readScope(true))
   return {
     transport,
     api,
@@ -80,6 +90,7 @@ export function useTeacherScope() {
     loading,
     error,
     refreshed,
+    backgroundRefresh,
     load,
     pointerWithin,
     focusWithin,
@@ -102,11 +113,16 @@ export function useTeacherResource<T>(scope: TeacherScope) {
     error.value = ''
     loading.value = false
   }
-  async function load(request: () => Promise<T>, append?: (old: T | null, next: T) => T) {
+  async function load(
+    request: () => Promise<T>,
+    append?: (old: T | null, next: T) => T,
+    background = false,
+  ) {
     const run = ++revision
-    loading.value = true
+    const retain = background && data.value !== null
+    loading.value = !retain
     error.value = ''
-    if (!append) data.value = null
+    if (!append && !retain) data.value = null
     try {
       const next = await request()
       scope.transport.assertCurrent()
@@ -114,7 +130,8 @@ export function useTeacherResource<T>(scope: TeacherScope) {
       data.value = append ? append(data.value, next) : next
     } catch (cause) {
       if (!scope.current() || run !== revision) return
-      data.value = null
+      // Transient reads retain the admitted projection; definitive loss retires it.
+      if (!retain || lostTeacherScope(cause)) data.value = null
       error.value = teacherError(cause)
     } finally {
       if (scope.current() && run === revision) loading.value = false

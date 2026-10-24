@@ -184,6 +184,62 @@ export type GroupIdentityResult =
   | { readonly kind: 'PROMOTION'; readonly summary: PromotionSummary }
   | { readonly kind: 'RECOVERY' }
 
+export interface AdminGroupDeletionCounts {
+  readonly accountsAffected: number
+  readonly memberships: number
+  readonly headmanAssignments: number
+  readonly assistantAssignments: number
+  readonly academicRows: number
+  readonly scheduleRows: number
+  readonly attendanceRows: number
+  readonly authGrants: number
+  readonly [resource: string]: number
+}
+
+export interface AdminGroupDeletionPreview {
+  readonly groupId: string
+  readonly groupName: string
+  readonly previewDigest: string
+  readonly counts: AdminGroupDeletionCounts
+}
+
+export type AdminGroupDeletionPhase =
+  | 'PREPARING'
+  | 'COMMITTING'
+  | 'COMPLETED'
+  | 'RELEASING'
+  | 'CANCELLED'
+
+export interface AdminGroupDeletionOperation {
+  readonly operationId: string
+  readonly groupId: string
+  readonly phase: AdminGroupDeletionPhase
+  readonly retryable: boolean
+  readonly counts: AdminGroupDeletionCounts
+  readonly failure: string | null
+}
+
+export interface ConfirmAdminGroupDeletionInput {
+  /** Caller-owned intent key; sent only as Idempotency-Key, never in the body. */
+  readonly operationId: string
+  readonly password: string
+  readonly previewDigest: string
+}
+
+/** Recover with getGroupDeletion and this original key; do not repeat the POST blindly. */
+export class AdminGroupDeletionUnknownError extends Error {
+  readonly state = 'UNKNOWN'
+
+  constructor(
+    readonly operationId: string,
+    readonly groupId: string,
+    readonly status: number | null,
+  ) {
+    super('Результат удаления неизвестен. Проверь состояние исходной операции.')
+    this.name = 'AdminGroupDeletionUnknownError'
+  }
+}
+
 export interface AdminGroupsApiOptions {
   readonly accessToken: () => string | null
   readonly onUnauthorized?: () => Promise<void>
@@ -263,6 +319,100 @@ export class AdminGroupsClient {
       signal ? { signal } : undefined,
     )
     return normalizePage(value, requestedPage)
+  }
+
+  async previewGroupDeletion(
+    groupId: string,
+    signal?: AbortSignal,
+  ): Promise<AdminGroupDeletionPreview> {
+    const id = deletionGroupId(groupId)
+    const response = await this.requestResponse(
+      `/api/academic/groups/${encodeURIComponent(id)}/deletion-preview`,
+      { cache: 'no-store', ...(signal ? { signal } : {}) },
+    )
+    if (response.status !== 200) throw new Error('Сервер не подтвердил предварительную проверку.')
+    const value: unknown = await response.json()
+    this.options.assertCurrent?.()
+    const record = requiredRecord(value, 'group deletion preview')
+    if (deletionGroupId(record.groupId) !== id) throw new Error('Сервер вернул другую группу.')
+    return {
+      groupId: id,
+      groupName: requiredText(record.groupName, 'group deletion preview.groupName'),
+      previewDigest: deletionDigest(record.previewDigest),
+      counts: deletionCounts(record.counts),
+    }
+  }
+
+  /** A single password-bearing attempt. Recovery is an explicit original-operation GET. */
+  async confirmGroupDeletion(
+    groupId: string,
+    input: ConfirmAdminGroupDeletionInput,
+    signal?: AbortSignal,
+  ): Promise<AdminGroupDeletionOperation> {
+    const id = deletionGroupId(groupId)
+    const operationId = deletionOperationId(input.operationId)
+    const previewDigest = deletionDigest(input.previewDigest)
+    if (typeof input.password !== 'string' || !input.password.trim() || input.password.length > 256)
+      throw new RangeError('Укажи пароль длиной до 256 символов.')
+    this.options.assertCurrent?.()
+    const headers = new Headers({
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'Idempotency-Key': operationId,
+    })
+    const token = this.options.accessToken()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+    let status: number | null = null
+    try {
+      // Do not use the legacy identity-operation replay or automatic 401 POST retry.
+      const response = await this.fetcher(
+        `/api/academic/groups/${encodeURIComponent(id)}/deletions`,
+        {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          cache: 'no-store',
+          body: JSON.stringify({ password: input.password, previewDigest }),
+          ...(signal ? { signal } : {}),
+        },
+      )
+      status = response.status
+      this.options.assertCurrent?.()
+      if (!response.ok) throw new Error('Сервер не подтвердил запрос удаления.')
+      const value: unknown = await response.json()
+      this.options.assertCurrent?.()
+      const result = normalizeDeletionOperation(value, operationId, id)
+      if (
+        (status !== 200 && status !== 202) ||
+        (status === 200 && result.phase !== 'COMPLETED') ||
+        (status === 202 && result.phase === 'COMPLETED')
+      )
+        throw new Error('Сервер не подтвердил результат операции удаления.')
+      return result
+    } catch {
+      if (status !== null && status >= 400 && status < 500 && status !== 408)
+        // Preserve denial/conflict/rate-limit status without retaining a password echo.
+        throw new AdminGroupsApiError(new Response(null, { status }), null)
+      // A transport/body/owner failure may happen after acceptance. Never expose its cause/body.
+      throw new AdminGroupDeletionUnknownError(operationId, id, status)
+    }
+  }
+
+  async getGroupDeletion(
+    operationId: string,
+    expectedGroupId: string,
+    signal?: AbortSignal,
+  ): Promise<AdminGroupDeletionOperation> {
+    const key = deletionOperationId(operationId)
+    const groupId = deletionGroupId(expectedGroupId)
+    const response = await this.requestResponse(`/api/academic/group-deletions/${key}`, {
+      cache: 'no-store',
+      ...(signal ? { signal } : {}),
+    })
+    if (response.status !== 200) throw new Error('Сервер не подтвердил состояние удаления.')
+    const value: unknown = await response.json()
+    this.options.assertCurrent?.()
+    return normalizeDeletionOperation(value, key, groupId)
   }
 
   createGroup(input: CreateAdminGroupInput, signal?: AbortSignal): Promise<AdminGroup> {
@@ -573,6 +723,84 @@ export class AdminGroupsClient {
       }
     }
     throw new AdminGroupsApiError(response, problem)
+  }
+}
+
+function deletionGroupId(value: unknown): string {
+  if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value))
+    throw new TypeError('Некорректный идентификатор группы.')
+  return value
+}
+
+function deletionOperationId(value: unknown): string {
+  if (
+    typeof value !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value)
+  )
+    throw new TypeError('Некорректный идентификатор операции удаления.')
+  return value
+}
+
+function deletionDigest(value: unknown): string {
+  if (typeof value !== 'string' || !/^[0-9a-f]{64}$/.test(value))
+    throw new TypeError('Некорректная версия предварительной проверки удаления.')
+  return value
+}
+
+function deletionCounts(value: unknown): AdminGroupDeletionCounts {
+  const record = requiredRecord(value, 'group deletion counts')
+  const required = [
+    'accountsAffected',
+    'memberships',
+    'headmanAssignments',
+    'assistantAssignments',
+    'academicRows',
+    'scheduleRows',
+    'attendanceRows',
+    'authGrants',
+  ] as const
+  if (required.some((key) => !Object.hasOwn(record, key)))
+    throw new Error('Сервер не вернул все последствия удаления группы.')
+  return Object.fromEntries(
+    Object.entries(record).map(([key, count]) => [
+      key,
+      nonNegativeInteger(count, 'group deletion count'),
+    ]),
+  ) as unknown as AdminGroupDeletionCounts
+}
+
+function normalizeDeletionOperation(
+  value: unknown,
+  operationId: string,
+  groupId: string,
+): AdminGroupDeletionOperation {
+  const record = requiredRecord(value, 'group deletion operation')
+  if (
+    deletionOperationId(record.operationId) !== operationId ||
+    deletionGroupId(record.groupId) !== groupId
+  )
+    throw new Error('Сервер вернул другую операцию удаления группы.')
+  const phase = record.phase
+  if (
+    phase !== 'PREPARING' &&
+    phase !== 'COMMITTING' &&
+    phase !== 'COMPLETED' &&
+    phase !== 'RELEASING' &&
+    phase !== 'CANCELLED'
+  )
+    throw new Error('Сервер вернул неизвестное состояние удаления группы.')
+  const retryable = requiredBoolean(record.retryable, 'group deletion retryable')
+  if (retryable !== (phase !== 'COMPLETED' && phase !== 'CANCELLED'))
+    throw new Error('Сервер вернул противоречивое состояние удаления группы.')
+  if (record.failure !== null && typeof record.failure !== 'string')
+    throw new Error('Сервер вернул некорректный результат удаления группы.')
+  return {
+    operationId,
+    groupId,
+    phase,
+    retryable,
+    counts: deletionCounts(record.counts),
+    failure: record.failure,
   }
 }
 

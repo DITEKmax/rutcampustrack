@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { computed, nextTick, watch } from 'vue';
 import { formatHomeworkDate } from '../../../../mobile-core/src/domain/homework';
 import { webSession } from '../../auth/session';
 import HomeworkCard from './HomeworkCard.vue';
@@ -9,6 +10,14 @@ import previousIcon from '../../../../mobile-core/src/assets/headman-homework-pr
 import nextIcon from '../../../../mobile-core/src/assets/headman-homework-next.svg';
 
 const h = useWebHomework();
+const route = useRoute();
+let focusedHash = '';
+watch(() => [h.loading.value, h.feed.value, route.hash], async () => {
+  if (h.loading.value || !/^#homework-[1-9][0-9]*$/.test(route.hash) || route.hash === focusedHash) return;
+  await nextTick();
+  const target = document.getElementById(route.hash.slice(1));
+  if (target) { focusedHash = route.hash; target.scrollIntoView({ block: 'center' }); target.querySelector('h3')?.focus(); }
+});
 const modes = [
   { value: 'day', label: 'День' },
   { value: 'week', label: 'Неделя' },

@@ -601,3 +601,25 @@ h3 {
 .web-confirm-dialog:not([open]) { display: none; }
 .web-confirm-dialog::backdrop { background: color-mix(in srgb, var(--color-surface-base) 75%, transparent); }
 .web-confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+.web-notification-bell { position: relative; padding: 0; inline-size: var(--control-height); min-inline-size: var(--control-height); block-size: var(--control-height); display: grid; place-items: center; }
+.web-notification-bell svg { inline-size: var(--space-5); block-size: var(--space-5); }
+.web-notification-badge { position: absolute; inset-block-start: calc(var(--space-1) * -1); inset-inline-end: calc(var(--space-1) * -1); padding: 0 var(--space-1); border-radius: var(--radius-full); background: var(--color-surface-inverse); color: var(--color-text-on-inverse); font-size: var(--font-size-micro); line-height: 1.5; }
+.web-notification-popover { margin: 0; inset: var(--space-4) var(--space-4) auto auto; inline-size: min(26rem, calc(100% - var(--space-8))); max-block-size: calc(100dvh - var(--space-8)); overflow: auto; padding: var(--space-5); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); background: var(--color-surface-raised); color: var(--color-text-primary); }
+.web-notification-popover:not(:popover-open) { display: none; }
+.web-notification-card { min-inline-size: 0; }
+.web-notification-card header { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: var(--space-2); }
+.web-notification-card h2, .web-notification-toast h2 { font-size: var(--font-size-body); }
+.web-notification-card.is-unread { border-color: var(--color-text-secondary); }
+.web-notification-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.web-notification-toasts { position: fixed; z-index: 40; inset-block-start: var(--space-4); inset-inline: 0; margin-inline: auto; inline-size: min(32rem, calc(100% - var(--space-8))); max-block-size: calc(100dvh - var(--space-8)); overflow: hidden; display: grid; gap: var(--space-3); pointer-events: none; }
+.web-notification-toast { pointer-events: auto; box-shadow: 0 var(--space-1) var(--space-4) color-mix(in srgb, var(--color-text-primary) 12%, transparent); }
+.web-notification-toast { max-block-size: calc((100dvh - var(--space-8) - var(--space-6)) / 3); overflow: auto; }
+.web-profile { position: relative; }
+.web-profile-menu { position: absolute; z-index: 30; inset-block-start: 100%; inset-inline-end: 0; inline-size: min(20rem, calc(100vw - var(--space-8))); background: var(--color-surface-raised); }
+@mixin rct-compact {
+  .web-header { padding-inline: var(--space-3); }
+  .web-header-row { gap: var(--space-2); }
+  .web-header-row > .web-brand { inline-size: var(--space-5); block-size: var(--space-5); }
+  .web-menu-toggle, .web-profile > .web-button { padding: 0; inline-size: var(--control-height); min-inline-size: var(--control-height); }
+}
+.web-notification-card, .web-notification-toast { overflow-wrap: anywhere; }

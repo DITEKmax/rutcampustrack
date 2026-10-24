@@ -40,13 +40,16 @@ watch(() => props.item.description, async () => {
 
 <template>
   <article
+    :id="`homework-${item.id}`"
     class="web-homework-card"
     :class="{ 'is-completed': item.completed, 'is-archived': item.archived }"
     :aria-busy="pending"
   >
     <header class="web-homework-heading">
       <div>
-        <h3>{{ item.title || item.subject.name }}</h3><p class="web-caption">
+        <h3 tabindex="-1">
+          {{ item.title || item.subject.name }}
+        </h3><p class="web-caption">
           {{ item.subject.name }} ·
           <time :datetime="item.lessonDate">{{
             new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long' }).format(

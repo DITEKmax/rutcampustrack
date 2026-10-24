@@ -1,4 +1,5 @@
-import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from 'vue'
+import { routeLocationKey } from 'vue-router'
+import { computed, inject, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from 'vue'
 import { StudentApiError } from '../../../../mobile-core/src/api/student-client'
 import type { StudentHomework, StudentHomeworkItem } from '../../../../mobile-core/src/api/types'
 import {
@@ -7,6 +8,7 @@ import {
   groupHomeworkPeriod,
   homeworkPeriodRange,
   moscowDate,
+  isHomeworkDate,
   shiftHomeworkPeriod,
   type HomeworkPeriodMode,
 } from '../../../../mobile-core/src/domain/homework'
@@ -15,9 +17,10 @@ import { useWebLiveRefresh } from '../../app/live'
 import { message, webSession } from '../../auth/session'
 
 export function useWebHomework() {
+  const route = inject(routeLocationKey, undefined)
   const studentApi = createStudentApi()
   const feed = shallowRef<StudentHomework | null>(null)
-  const mode = ref<HomeworkPeriodMode>('day')
+  const mode = ref<HomeworkPeriodMode>(route?.query.mode === 'week' || route?.query.mode === 'month' ? route.query.mode : 'day')
   const dates = reactive({ day: '', week: '', month: '' })
   const selected = ref('')
   const loading = ref(true)
@@ -79,7 +82,8 @@ export function useWebHomework() {
       forbidden.value = false
       error.value = null
       if (!date.value) {
-        const initial = clampHomeworkDate(moscowDate(result.serverNow) ?? result.from, {
+        const requested = route?.query.date
+        const initial = clampHomeworkDate(typeof requested === 'string' && isHomeworkDate(requested) ? requested : moscowDate(result.serverNow) ?? result.from, {
           from: result.semester.dateFrom,
           to: result.semester.dateTo,
         })
@@ -181,6 +185,13 @@ export function useWebHomework() {
       if (old && feed.value) void load()
     },
   )
+  watch(() => [route?.query.date, route?.query.mode], ([target, nextMode]) => {
+    if (!semester.value || typeof target !== 'string' || !isHomeworkDate(target)) return
+    const valid = clampHomeworkDate(target, semester.value)
+    dates.day = dates.week = dates.month = valid
+    selected.value = valid
+    mode.value = nextMode === 'week' || nextMode === 'month' ? nextMode : 'day'
+  })
   useWebLiveRefresh(() => load(true), {
     blocked: computed(() => Object.values(pending).some(Boolean)),
   })

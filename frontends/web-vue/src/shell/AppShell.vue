@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationHost from '../features/notifications/NotificationHost.vue';
 import { computed, ref } from 'vue';
 import { canShowFeature, webFeatures } from '../app/features';
 import { webSession } from '../auth/session';
@@ -45,6 +46,7 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
           <RoleSwitcher />
         </div>
         <div class="web-header-actions">
+          <NotificationHost v-if="webSession.snapshot.value?.activeRole" />
           <ThemeSelect />
           <div class="web-profile">
             <button

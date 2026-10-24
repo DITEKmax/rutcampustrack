@@ -27,3 +27,5 @@ user8frozen,17readonlyADMIN,18ordinarySTUDENT. Only15mark64nowpresent/student_ge
 protected53 andforeign64 unchanged. Sourcewritersisolated, sharedcontracts/
 config/lock ownerweb/backend asabove; rootdocs only. No mainwrites/force/reset/
 clean/merge/deploy/production/workflowdispatch/globalDockerprune.
+
+Exact source-only extension: web_foundation also owns seven relative-inner-locator fixes in web-panel-route.ts paired with final2specs. One static about:blank DOM probe allowed with all requests aborted, no SUT/Auth/cookies/API. Independentdevice_api_review reviews frozenpair.

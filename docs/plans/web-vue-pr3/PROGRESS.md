@@ -1,13 +1,14 @@
 # PROGRESS — Vue web redesign
 
-Существующий draft [PR3](https://github.com/DITEKmax/rutcampustrack/pull/3),
-ветка codex/web-vue-redesign. Goal запущен после readiness, канонGOAL-CONTRACT.
-Срез2026-10-24 05:44UTC. NativeGEOsource1aea; текущийUIlabel43b7; shippingimages
-sourcea813 и их узкие receipts сохраняют собственные revisions. Fetch actual
-remoteHEAD, не откатывать ветку к сохранённомуSHA.
+Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
+ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness.
+Опубликован checkpoint e48b56984; source настоящего GEO — 1aea, текущего
+исправления подписи — 43b7, тестовых адаптеров — c19. Образы a813 сохраняют
+свои прежние точные revisions. Всегда получать актуальный remote HEAD.
 
-**Implemented115/117 (98,29%). Locally verified111/117 (94,87%).**
-Исходные117active неизменны. Кадры/темы/ширины/assertions не являются действиями.
+**Implemented 115/117 (98,29%). Locally verified 111/117 (94,87%).**
+Исходные 117 active действий сохранены. Темы, ширины, кадры и assertions
+не считаются отдельными действиями. Полная замена Angular ещё не завершена.
 
 | Роль | Active | Implemented | Locally verified |
 |---|---:|---:|---:|
@@ -18,57 +19,63 @@ remoteHEAD, не откатывать ветку к сохранённомуSHA.
 | TEACHER |8|8/8 (100%)|8/8 (100%)|
 | ADMIN |34|32/34 (94,12%)|28/34 (82,35%)|
 
-Новый законченный сценарий: normalUI ownSTUDENT15, ACTIVE64, ONEPOST200→
-PRESENT/STUDENT_GEO, authoritativeToday/attendance. Независимый DBpostguard:
-64count0→1 ONLY15, foreign64marks0, protected53/own12+15dochashes/occ45r1/scope/
-geofence неизменны, main13samehealthy. Nativebrowserprovider явноSIMULATED на
-реальнонастроенную серверную точку кампуса; физическое присутствие не заявлено.
-Ownsessionlogout204/context/browser закрыты. [Acceptance/receipts](../../validation/web-vue-pr3/checkpoints/native-geo-20261024/acceptance.json).
-Одна подпись незавершённого периода исправлена43b7; отдельныйreadonlyrender
-безstudentPOST подтверждает новуюUI. Types/ESLint/diff0, Rootindependentreview.
+Новый законченный сценарий: обычный UI check-in студента15 на ACTIVE64,
+один POST200 → PRESENT/STUDENT_GEO, подтверждённый Today и attendance.
+Независимое чтение БД подтвердило единственную новую отметку15, сохранность
+чужих отметок, protected53, occurrence45rev1 и геозоны. Main13 остались healthy.
+Браузерный геопровайдер Playwright явно симулирован на действующую серверную
+точку кампуса; физическое присутствие не заявляется. Собственная сессия вышла
+с204, контексты и браузеры закрыты. [Acceptance/receipts](../../validation/web-vue-pr3/checkpoints/native-geo-20261024/acceptance.json).
+Одной подписью исправлено обозначение незавершённого текущего периода;
+типы/ESLint/runtime-чтение и независимое Root review прошли без нового check-in.
 
-Ранее приняты nativeLate53→Headman12APPROVE→PRESENT/late_checkin и реальные
-STOMP/REST изменения двух вкладок безrefresh/focusloss; current-viewdelegated
-revoke, create/exportunknown-resultrecovery, helperCAS/names-onlyarchive lookup,
-настоящиеPDF/HTML/XLSX черезRenderer/LibreOffice. [Roleacceptance](ROLE-ACCEPTANCE-20261024.md),
-[117-action map](SCREEN-ACTION-MAP.csv), [safereceipts](../../validation/web-vue-pr3/checkpoints/roles-20261024/manifest.json).
+Ранее приняты native Late53 → решение Headman12 → PRESENT/late_checkin,
+STOMP/REST в двух вкладках без refresh и потери focus, отзыв открытого private
+представления, create/export recovery при неизвестном результате, helper CAS,
+names-only archive lookup и настоящие PDF/HTML/XLSX через Renderer/LibreOffice.
+[Приёмка ролей](ROLE-ACCEPTANCE-20261024.md) · [Карта](SCREEN-ACTION-MAP.csv) ·
+[Ранее принятые receipts](../../validation/web-vue-pr3/checkpoints/roles-20261024/manifest.json).
 
-Остаются6ADMINgates: accesswrite, PROMOTEexecution, semesterACTIVATE,
-FULL/self-passwordunknown, wholemapfinaldelete, groupfinaldelete. Read/preview/
-scheduling/cancel не засчитываются как положительные записи этихgates.
-QPROD004 ждёт membership/grantpolicy; QENV003 exactown8securitycase, QENV004
-scopedmapchecks/JAR и QENV0063historicalPROMOTEinputs ждут явныхответов после
-automaticapprovaldenial. Команды не начались/не обойдены. PROMOTEpreview409:
-completedSPRINGnull, legacy1typeNULL сохранён, SQLattempts0. [Точные вопросы](OPEN-QUESTIONS.md).
-QENV005stop/privateDBsnapshot больше не требуется: naturalGEO выполнен безнего,
-разрешение не получено, snapshotFALSE. Ownclock5infrahealthyidle; apps/14250/
-dump/restore никогда не запускались. Main13 не останавливались.
+Остаются шесть ADMIN gates: запись прав, PROMOTE, semester ACTIVATE,
+FULL/self-password unknown-result, whole-map final delete и group final delete.
+Read/preview/scheduling/cancel не засчитываются как эти положительные записи.
+Нужны ответы Q-PROD-004 и Q-ENV-003/004/006 после точных отказов automatic
+approval review. Зависимые команды не выполнялись и не обходились. PROMOTE
+имеет preview409: completed SPRING отсутствует, legacy1.typeNULL сохранён;
+подготовленные historical inputs не вставлялись, SQL attempts0.
+[Вопросы и причины](OPEN-QUESTIONS.md). Q-ENV-005 больше не нужен для GEO:
+stop/snapshot/copy/restore/clock/apps не выполнялись, snapshotFALSE;
+собственные пять clock infra-контейнеров остаются healthy и не используются.
 
-Глобальная замена ещё не завершена: активныйAngular остаётся до замены
-возможностей; outeredge/prodsource/legacycontrols/finalcombineddeliverygates
-pending. Vuee2erootedge и строгийservedVueoracle source-reviewed; config0 и
-8harnesscases PASS, неouterruntime. Четыреbrowserfixtures0d30/6ff исправлены
-после2P2 иnarrowreviewPASS; дальнейший9filee7bbpacket наreview. Browserproof
-дляэтихmigrationpackets не заявлен. [Shipping](SHIPPING-CHECKPOINT-20261024.md),
-[Angular/WebPushinventory](ANGULAR-REMOVAL-INVENTORY.md).
+Глобальные delivery gates: удалить Angular после замены возможностей,
+завершить outer edge/production source wiring и достаточные итоговые проверки.
+Vue e2e edge и строгий served-artifact oracle прошли source review;
+config0 и восемь harness cases не являются outer-runtime PASS.
+Четыре helper-файла исправлены после двух P2; девять auth/role/config-файлов
+прошли source review и интегрированы. В последней адаптации найден лишний
+owner-prefix внутри has-локаторов; отдельное исправление и оставшиеся
+admin-create-user/student-excuse specs готовятся. Browser proof этих пакетов
+не заявлен. [Shipping](SHIPPING-CHECKPOINT-20261024.md) · [Angular inventory](ANGULAR-REMOVAL-INVENTORY.md).
 
-[Runtimeгалереи](../../validation/web-vue-pr3/runtime-gallery/index.html) содержат
-201originalframes: прежние200 сточнымиrevision/limits +текущийGEOreadonlyкадр.
-[PortableHTML](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md) фиксирует
-свойimagepin/count; обновляетсяпослепубликацииPNG. Reference/Figmaотдельно.
-Mobile24sourcefamilies/140retainedsamples, narrow12P2recheckPASS; первыйhelper
-cleanupExit1 отдельно, signedTelegram/externalPushdelivery не заявлены.
+[Галереи](../../validation/web-vue-pr3/runtime-gallery/index.html) содержат
+201 исходный runtime-кадр. [Единый HTML](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md)
+имеет поиск и закреплённые URL изображений. Reference/Figma отделены.
+Mobile: 24 семейства source и 140 сохранённых samples; narrow recheck12 после
+двух P2 прошёл. Ранний cleanup exit1 указан отдельно. Signed Telegram и внешняя
+Push delivery этим не подтверждаются.
 
-Main13healthy: Authf3/Academic950/Gateway3c02 иqualified603Schedule/Attendance/
-BFF/Notification/Renderer+инфраструктура. ZIP87568617bytes/SHA/CRC/safepaths/
-422entries388PNG+34 полностьюпроверен. MCP/ghAPI/Git доступны независимо.
-FigmaMCPcontext/screenshot/originalauthbytes работают; actualpolicy7stilllacks
-www.figma.com/CONNECT403 послеобещаниявладельца, повторногоразрешениянетребуется.
-Триimagesa813/innerstaticWEB12-PWA6-TMA4 PASS — историческийexactsource, не новая
-сборка43b7. VFSdiskfull/30ownedunusedcache recovery/первоначальныйPNG403 сохранены
-вshippingreceipt; mainCIDs/images/mountsets/volumes/foreigncache не потеряны.
+Настоящий main13: immutable Authf3/Academic950/Gateway3c02 и qualified603
+Schedule/Attendance/BFF/Notification/Renderer с инфраструктурой. ZIP целиком
+проверен: 87568617 байт, ожидаемый SHA, CRC, безопасные пути, 422 записи,
+388PNG+34. GitHub MCP, gh/API и Git работают независимо. Figma MCP context,
+screenshot и original auth bytes доступны; www.figma.com пока отсутствует
+в фактической policy7 и даёт CONNECT403 после обещания владельца применить доступ.
+Три imagesa813 и inner-static12/6/4 прошли, но не являются новой сборкой43b7.
+VFS diskfull, восстановление exact30 owned-unused cache IDs и initial PNG403
+сохранены в shipping receipts; чужие состояния и volumes не потеряны.
 
-CI/Coverage/Security/OpenAPI **PAUSED**, workflow_dispatch, неPASS. Без main
-writes/merge/deploy/production/firewall/globalDockercleanup. ExistingPWAWebPush
-сохранён, webchannels исключены, studentownexport отложен, usersarchive/restore
-безfinaldelete, teacherassignedgroup AND subject/currentgrants сохранены.
+CI/Coverage/Security/OpenAPI **PAUSED**, только workflow_dispatch, не PASS.
+Без main writes, merge, deploy, production, firewall и global Docker cleanup.
+Существующий PWA WebPush сохранён; web channels исключены, свой student export
+отложен, пользователи только архивируются/восстанавливаются, teacher grants
+сохраняют ограничение assigned group AND subject.

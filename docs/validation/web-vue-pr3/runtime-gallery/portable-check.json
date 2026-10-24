@@ -1,44 +1,13 @@
 {
-  "kind": "documentation-gallery-smoke",
+  "kind": "portable-gallery-data-only-refresh",
+  "result": "PASS for metadata/hash/path validation only",
+  "imageCount": 201,
+  "imagePin": "e48b569846a536c94b62ca2319de6c2c7228d75c",
+  "artifactSha256": "23e3028cf760684ff0977fb278f930b19a299d7afd5588a9699a5c1eec687b1f",
+  "renderLogicSha256": "3ed5f9c841d201e93facb4c9d7bd6074e1fe9b857e4edf4da7a91f1ed0e8dc83",
+  "renderLogicUnchanged": true,
+  "priorBrowserSmoke": "portable-check-200-51e46f715.json",
+  "browserNotRerun": "Onlymetadata/pin/count updated; unchanged render/filterlogic retains prior200-frame smoke, not a new201browserPASS",
   "functionalActionCount": 0,
-  "documentTransport": "ordinary localhost HTTP; browser file scheme blocked by environment policy",
-  "imageTransport": "real HTTPS responses via Playwright API using inherited proxy and session CA; no native Chromium TLS claim",
-  "tlsVerification": true,
-  "initialCount": 200,
-  "filteredCount": 1,
-  "remoteOriginal": {
-    "url": "https://raw.githubusercontent.com/DITEKmax/rutcampustrack/51e46f715b9bface9a7e17111fe709110135940a/docs/validation/web-vue-pr3/runtime-gallery/auth-20261024/screenshots/WEB-AUTH-OTP__empty-original-asset__light__300__abc8f3dd0.png",
-    "naturalWidth": 300
-  },
-  "emptyCount": 0,
-  "historicalCount": 22,
-  "result": "PASS",
-  "pageErrors": [],
-  "consoleErrors": [],
-  "failedRequests": [],
-  "artifactSha256": "2406280422550b184f2d1753be4716c9304dc39344262661340afa11c3ce9e62",
-  "imagePinRevision": "51e46f715b9bface9a7e17111fe709110135940a",
-  "priorAttempts": [
-    {
-      "kind": "file navigation",
-      "result": "blocked by browser administrator policy; no artifact code ran"
-    },
-    {
-      "kind": "HTTP through browser proxy",
-      "result": "timeout; bounded diagnostic found403 Domain forbidden for loopback proxy request"
-    },
-    {
-      "kind": "HTTP direct loopback, HTTPS via proxy",
-      "result": "200cards/filter1 rendered; remote image failed nativeChromium CA trust"
-    },
-    {
-      "kind": "trusted HTTPS API relay",
-      "result": "pending route callback TargetClosed at cleanup; native1, not PASS"
-    },
-    {
-      "kind": "same relay with standard unrouteAll cleanup",
-      "result": "native0 PASS; functional assertions unchanged"
-    }
-  ],
-  "timing": "Aggregate elapsed UNKNOWN; no product action/check repeated"
+  "originalNativeGeo": "../checkpoints/native-geo-20261024/acceptance.json"
 }

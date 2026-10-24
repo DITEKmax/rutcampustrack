@@ -40,3 +40,5 @@ Remaininglegacyadmincreate/studentexcuse testmigration separatelyownedweb.
 Angular deletion/outeredge/finalcombineddelivery stillpending. Owner product
 exclusions/rights unchanged. FigmaMCP/originalauthbytes valid, actualwwwproxy
 CONNECT403/policy7pendingapplication; ZIP fullyverified422entries/388PNG+34.
+
+Source-test finding06:03: seven e7 has-locators retain an extra owner prefix; author corrects only inner relative locators with outer ownership preserved. Two finallegacy specs bb7074fac frozen for paired independentreview; no SUT/browser proof claimed.

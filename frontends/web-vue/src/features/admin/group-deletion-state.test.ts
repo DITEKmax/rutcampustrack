@@ -8,6 +8,8 @@ import {
 } from '../../../../mobile-core/src/features/admin-groups/admin-groups-client'
 import {
   createGroupDeletionFlow,
+  bindGroupDeletionRecovery,
+  GroupDeletionStorageError,
   restoreGroupDeletion,
   type GroupDeletionReference,
 } from './group-deletion-state'
@@ -45,6 +47,8 @@ const reference: GroupDeletionReference = {
 function fixture(
   client: Pick<AdminGroupsClient, 'confirmGroupDeletion' | 'getGroupDeletion'>,
   saved: GroupDeletionReference | null = null,
+  persist?: (value: GroupDeletionReference | null) => void,
+  recoveryUnavailable = false,
 ) {
   const owner = { current: true }
   let durable = saved
@@ -52,11 +56,13 @@ function fixture(
     userId: '1',
     client,
     saved,
+    recoveryUnavailable,
     newOperationId: () => key,
     assertCurrent() {
       if (!owner.current) throw new Error('retired owner')
     },
     persist(value) {
+      persist?.(value)
       durable = value
     },
     changed() {},
@@ -162,22 +168,48 @@ describe('final group deletion recovery', () => {
     expect(model.flow.state.reference).toBeNull()
   })
 
-  it.each([400, 401, 403, 409, 429])(
-    'requires a fresh preview after definite POST rejection %s',
-    async (status) => {
-      const model = fixture({
-        async confirmGroupDeletion() {
-          throw new AdminGroupsApiError(new Response(null, { status }), null)
-        },
-        getGroupDeletion: unused,
-      })
-      model.flow.prepare(preview)
-      await expect(model.flow.submit('synthetic-password')).rejects.toThrow()
-      expect(model.flow.state).toEqual({ preview: null, operation: null, reference: null })
-      expect(model.durable).toBeNull()
-      await expect(model.flow.submit('another-password')).rejects.toThrow()
-    },
-  )
+  it('preserves an accepted command after a late403 and recovers only its original receipt', async () => {
+    const data = { groupExists: true, laterData: false }
+    const model = fixture({
+      async confirmGroupDeletion(groupId, input) {
+        data.groupExists = false
+        data.laterData = false
+        throw new AdminGroupDeletionUnknownError(input.operationId, groupId, 403)
+      },
+      async getGroupDeletion(operationId, groupId) {
+        if (operationId !== key || groupId !== preview.groupId) throw new Error('unknown receipt')
+        return completed
+      },
+    })
+    model.flow.prepare(preview)
+    await expect(model.flow.submit('synthetic-password')).rejects.toThrow()
+    expect(model.flow.state.reference).toEqual(reference)
+    expect(model.durable).toEqual(reference)
+    expect(() => model.flow.prepare(preview)).toThrow()
+    await expect(model.flow.submit('another-password')).rejects.toThrow()
+    data.laterData = true
+    await model.flow.recover()
+    expect(data).toEqual({ groupExists: false, laterData: true })
+    expect(model.durable).toBeNull()
+  })
+
+  it('does not replace a post-send403 intent when its saved receipt still returns404', async () => {
+    const model = fixture({
+      async confirmGroupDeletion(groupId, input) {
+        throw new AdminGroupDeletionUnknownError(input.operationId, groupId, 403)
+      },
+      async getGroupDeletion() {
+        throw new AdminGroupsApiError(new Response(null, { status: 404 }), null)
+      },
+    })
+    model.flow.prepare(preview)
+    await expect(model.flow.submit('synthetic-password')).rejects.toThrow()
+    await expect(model.flow.recover()).rejects.toThrow()
+    expect(model.durable).toEqual(reference)
+    expect(model.flow.state.reference).toEqual(reference)
+    expect(() => model.flow.prepare(preview)).toThrow()
+    await expect(model.flow.submit('another-password')).rejects.toThrow()
+  })
 
   it('discards private preview and progress on permission withdrawal but preserves the recovery key', async () => {
     const model = fixture({
@@ -193,7 +225,12 @@ describe('final group deletion recovery', () => {
     await model.flow.submit('synthetic-password')
     model.owner.current = false
     model.flow.clearPrivate()
-    expect(model.flow.state).toEqual({ preview: null, operation: null, reference })
+    expect(model.flow.state).toEqual({
+      preview: null,
+      operation: null,
+      reference,
+      recoveryUnavailable: false,
+    })
     expect(model.durable).toEqual(reference)
   })
 
@@ -225,6 +262,10 @@ describe('final group deletion recovery', () => {
       },
       reference,
     )
+    expect(() => model.flow.restoreRecovery({ ...reference, groupId: '43' })).toThrow()
+    expect(() =>
+      model.flow.restoreRecovery({ ...reference, previewDigest: 'b'.repeat(64) }),
+    ).toThrow()
     await expect(model.flow.recover()).rejects.toThrow()
     expect(model.durable).toEqual(reference)
     expect(model.flow.state.operation).toBeNull()
@@ -236,5 +277,125 @@ describe('final group deletion recovery', () => {
     expect(restoreGroupDeletion({ ...reference, password: 'never-restore' }, '1')).toEqual(
       reference,
     )
+  })
+
+  it('keeps group data untouched if the original intent cannot be saved before dispatch', async () => {
+    const data = { exists: true }
+    const recovery = bindGroupDeletionRecovery(
+      {
+        getItem: () => null,
+        setItem() {
+          throw new Error('storage denied')
+        },
+        removeItem() {},
+      },
+      'actor-key',
+      '1',
+    )
+    const model = fixture(
+      {
+        async confirmGroupDeletion() {
+          data.exists = false
+          return completed
+        },
+        getGroupDeletion: unused,
+      },
+      null,
+      recovery.persist,
+    )
+    model.flow.prepare(preview)
+    await expect(model.flow.submit('synthetic-password')).rejects.toBeInstanceOf(
+      GroupDeletionStorageError,
+    )
+    expect(data.exists).toBe(true)
+    expect(model.flow.state.reference).toBeNull()
+    expect(model.flow.state.preview).toEqual(preview)
+    expect(model.durable).toBeNull()
+  })
+
+  it('blocks new commands after an unreadable saved intent until its original key is restored', async () => {
+    let readable = false
+    const data = { laterData: true }
+    const recovery = bindGroupDeletionRecovery(
+      {
+        getItem() {
+          if (!readable) throw new Error('storage denied')
+          return JSON.stringify(reference)
+        },
+        setItem: unused,
+        removeItem() {},
+      },
+      'actor-key',
+      '1',
+    )
+    expect(() => recovery.read()).toThrow(GroupDeletionStorageError)
+    const model = fixture(
+      {
+        async confirmGroupDeletion() {
+          data.laterData = false
+          return completed
+        },
+        async getGroupDeletion(operationId, groupId) {
+          if (operationId !== key || groupId !== reference.groupId)
+            throw new Error('unknown receipt')
+          return completed
+        },
+      },
+      null,
+      recovery.persist,
+      true,
+    )
+    expect(() => model.flow.prepare(preview)).toThrow()
+    await expect(model.flow.submit('synthetic-password')).rejects.toThrow()
+    readable = true
+    model.flow.restoreRecovery(recovery.read()!)
+    await model.flow.recover()
+    expect(data.laterData).toBe(true)
+    expect(model.flow.state.reference).toBeNull()
+    expect(model.flow.state.recoveryUnavailable).toBe(false)
+  })
+
+  it.each(['invalid JSON', JSON.stringify({ ...reference, operationId: 'invalid' })])(
+    'does not treat a malformed saved intent as an empty recovery slot',
+    (raw) => {
+      const recovery = bindGroupDeletionRecovery(
+        {
+          getItem: () => raw,
+          setItem: unused,
+          removeItem: unused,
+        },
+        'actor-key',
+        '1',
+      )
+      expect(() => recovery.read()).toThrow(GroupDeletionStorageError)
+    },
+  )
+
+  it('allows confirmed terminal completion despite unavailable storage cleanup', async () => {
+    const recovery = bindGroupDeletionRecovery(
+      {
+        getItem: () => JSON.stringify(reference),
+        setItem: unused,
+        removeItem() {
+          throw new Error('storage denied')
+        },
+      },
+      'actor-key',
+      '1',
+    )
+    const model = fixture(
+      {
+        confirmGroupDeletion: unused,
+        async getGroupDeletion() {
+          return completed
+        },
+      },
+      recovery.read(),
+      recovery.persist,
+    )
+    await model.flow.recover()
+    expect(model.flow.state.reference).toBeNull()
+    // A reload retains only the old, already-terminal GET-only hint.
+    expect(recovery.read()).toEqual(reference)
   })
 })

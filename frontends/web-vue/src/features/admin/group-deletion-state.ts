@@ -1,5 +1,4 @@
 import {
-  AdminGroupsApiError,
   type AdminGroupDeletionOperation,
   type AdminGroupDeletionPreview,
   type AdminGroupsClient,
@@ -17,6 +16,54 @@ export interface GroupDeletionState {
   readonly preview: AdminGroupDeletionPreview | null
   readonly reference: GroupDeletionReference | null
   readonly operation: AdminGroupDeletionOperation | null
+  readonly recoveryUnavailable: boolean
+}
+
+export class GroupDeletionStorageError extends Error {
+  constructor(readonly operation: 'READ' | 'WRITE') {
+    super(
+      operation === 'WRITE'
+        ? 'Не удалось сохранить исходную операцию. Запрос удаления не отправлен.'
+        : 'Не удалось прочитать исходную операцию. Новое удаление заблокировано.',
+    )
+    this.name = 'GroupDeletionStorageError'
+  }
+}
+
+export function bindGroupDeletionRecovery(
+  storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>,
+  key: string,
+  userId: string,
+) {
+  return {
+    read() {
+      try {
+        const raw = storage.getItem(key)
+        if (raw === null) return null
+        const reference = restoreGroupDeletion(JSON.parse(raw), userId)
+        if (!reference) throw new GroupDeletionStorageError('READ')
+        return reference
+      } catch {
+        throw new GroupDeletionStorageError('READ')
+      }
+    },
+    persist(reference: GroupDeletionReference | null) {
+      if (reference) {
+        try {
+          storage.setItem(key, JSON.stringify(reference))
+        } catch {
+          throw new GroupDeletionStorageError('WRITE')
+        }
+      } else {
+        // A retained terminal hint is safe: a later mount can only GET that receipt.
+        try {
+          storage.removeItem(key)
+        } catch {
+          /* Best-effort terminal cleanup. */
+        }
+      }
+    },
+  }
 }
 
 export function restoreGroupDeletion(
@@ -51,12 +98,14 @@ export function createGroupDeletionFlow(options: {
   persist(reference: GroupDeletionReference | null): void
   changed(state: GroupDeletionState): void
   saved?: GroupDeletionReference | null
+  recoveryUnavailable?: boolean
   newOperationId?: () => string
 }) {
   let state: GroupDeletionState = {
     preview: null,
     reference: restoreGroupDeletion(options.saved, options.userId),
     operation: null,
+    recoveryUnavailable: options.recoveryUnavailable ?? false,
   }
   const change = (next: GroupDeletionState) => {
     options.assertCurrent()
@@ -73,7 +122,12 @@ export function createGroupDeletionFlow(options: {
       throw new Error('Не удалось подтвердить исходную операцию удаления.')
     const terminal = operation.phase === 'COMPLETED' || operation.phase === 'CANCELLED'
     if (terminal) save(null)
-    change({ preview: null, reference: terminal ? null : reference, operation })
+    change({
+      preview: null,
+      reference: terminal ? null : reference,
+      operation,
+      recoveryUnavailable: false,
+    })
     return operation
   }
   return {
@@ -81,8 +135,21 @@ export function createGroupDeletionFlow(options: {
       return state
     },
     prepare(preview: AdminGroupDeletionPreview) {
-      if (state.reference) throw new Error('Сначала проверь исходную операцию удаления.')
-      change({ preview, reference: null, operation: null })
+      if (state.reference || state.recoveryUnavailable)
+        throw new Error('Сначала проверь исходную операцию удаления.')
+      change({ preview, reference: null, operation: null, recoveryUnavailable: false })
+    },
+    restoreRecovery(saved: GroupDeletionReference) {
+      const reference = restoreGroupDeletion(saved, options.userId)
+      if (
+        !reference ||
+        (state.reference &&
+          (state.reference.operationId !== reference.operationId ||
+            state.reference.groupId !== reference.groupId ||
+            state.reference.previewDigest !== reference.previewDigest))
+      )
+        throw new GroupDeletionStorageError('READ')
+      change({ preview: null, reference, operation: null, recoveryUnavailable: false })
     },
     clearPrivate() {
       // Retiring an owner must still erase private projections during unmount.
@@ -92,7 +159,8 @@ export function createGroupDeletionFlow(options: {
     async submit(password: string, signal?: AbortSignal) {
       options.assertCurrent()
       const preview = state.preview
-      if (state.reference || !preview) throw new Error('Сначала получи новый предпросмотр.')
+      if (state.reference || state.recoveryUnavailable || !preview)
+        throw new Error('Сначала получи новый предпросмотр.')
       if (!password.trim() || password.length > 256)
         throw new RangeError('Введи свой текущий пароль.')
       const reference: GroupDeletionReference = {
@@ -103,7 +171,7 @@ export function createGroupDeletionFlow(options: {
       }
       // Persist BEFORE sending: a lost response or reload must keep the original key.
       save(reference)
-      change({ preview: null, reference, operation: null })
+      change({ preview: null, reference, operation: null, recoveryUnavailable: false })
       try {
         const operation = await options.client.confirmGroupDeletion(
           reference.groupId,
@@ -117,16 +185,8 @@ export function createGroupDeletionFlow(options: {
         return accept(operation, reference)
       } catch (cause) {
         options.assertCurrent()
-        if (
-          cause instanceof AdminGroupsApiError &&
-          cause.response.status >= 400 &&
-          cause.response.status < 500 &&
-          cause.response.status !== 408
-        ) {
-          // An explicit rejection permits a fresh preview; an unknown result never does.
-          save(null)
-          change({ preview: null, reference: null, operation: null })
-        }
+        // HTTP status alone cannot prove that a command was never durably accepted.
+        // Preserve the original intent until an authoritative terminal GET/ACK.
         throw cause
       }
     },

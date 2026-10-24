@@ -12,7 +12,8 @@ import ConfirmDialog from '../../shared/ConfirmDialog.vue';
 import type { useAdmin } from './use-admin';
 import {
   createGroupDeletionFlow,
-  restoreGroupDeletion,
+  bindGroupDeletionRecovery,
+  GroupDeletionStorageError,
   type GroupDeletionState,
 } from './group-deletion-state';
 
@@ -27,7 +28,22 @@ const emit = defineEmits<{ locked: [value: boolean] }>();
 const busy = props.admin.busy;
 const userId = webSession.snapshot.value!.userId;
 const storageKey = `rct:web:group-deletion:v1:${userId}`;
-const state = shallowRef<GroupDeletionState>({ preview: null, reference: null, operation: null });
+const recovery = bindGroupDeletionRecovery(
+  {
+    getItem: (key) => sessionStorage.getItem(key),
+    setItem: (key, value) => sessionStorage.setItem(key, value),
+    removeItem: (key) => sessionStorage.removeItem(key),
+  },
+  storageKey,
+  userId,
+);
+const restored = readSaved();
+const state = shallowRef<GroupDeletionState>({
+  preview: null,
+  reference: null,
+  operation: null,
+  recoveryUnavailable: false,
+});
 const password = ref('');
 const failure = ref('');
 const canDelete = computed(
@@ -37,15 +53,11 @@ const flow = createGroupDeletionFlow({
   userId,
   client: props.client,
   assertCurrent: props.admin.assertCurrent,
-  saved: readSaved(),
+  saved: restored.reference,
+  recoveryUnavailable: restored.unavailable,
   persist(reference) {
     props.admin.assertCurrent();
-    try {
-      if (reference) sessionStorage.setItem(storageKey, JSON.stringify(reference));
-      else sessionStorage.removeItem(storageKey);
-    } catch {
-      // The mounted page still retains the original intent if browser storage is unavailable.
-    }
+    recovery.persist(reference);
   },
   changed(value) {
     state.value = value;
@@ -53,7 +65,7 @@ const flow = createGroupDeletionFlow({
 });
 state.value = flow.state;
 watch(
-  () => !!state.value.reference || !!state.value.preview,
+  () => !!state.value.reference || !!state.value.preview || state.value.recoveryUnavailable,
   (value) => emit('locked', value),
   {
     immediate: true,
@@ -155,9 +167,9 @@ function resourceLabel(key: string) {
 }
 function readSaved() {
   try {
-    return restoreGroupDeletion(JSON.parse(sessionStorage.getItem(storageKey) ?? 'null'), userId);
+    return { reference: recovery.read(), unavailable: false };
   } catch {
-    return null;
+    return { reference: null, unavailable: true };
   }
 }
 async function authorize() {
@@ -167,6 +179,10 @@ async function authorize() {
     throw new Error('Для удаления нужны права управления группами и удаления данных.');
 }
 function showFailure(cause: unknown) {
+  if (cause instanceof GroupDeletionStorageError) {
+    failure.value = cause.message;
+    return;
+  }
   if (
     state.value.operation?.phase === 'COMPLETED' ||
     state.value.operation?.phase === 'CANCELLED'
@@ -202,7 +218,8 @@ function showFailure(cause: unknown) {
               : 'Не удалось получить предпросмотр. Повтори проверку.';
 }
 async function prepare() {
-  if (props.blocked || state.value.reference || !props.group) return;
+  if (props.blocked || state.value.reference || state.value.recoveryUnavailable || !props.group)
+    return;
   password.value = '';
   failure.value = '';
   await props.admin.run(async () => {
@@ -252,11 +269,16 @@ async function submit() {
   });
 }
 async function recover() {
-  if (busy.value || !state.value.reference) return;
+  if (busy.value || (!state.value.reference && !state.value.recoveryUnavailable)) return;
   failure.value = '';
   password.value = '';
   await props.admin.run(async () => {
     try {
+      if (state.value.recoveryUnavailable) {
+        const reference = recovery.read();
+        if (!reference) throw new GroupDeletionStorageError('READ');
+        flow.restoreRecovery(reference);
+      }
       await authorize();
       await settle(await flow.recover(props.admin.signal));
     } catch (cause) {
@@ -269,7 +291,7 @@ async function recover() {
 
 <template>
   <section
-    v-if="canDelete && group && !state.reference"
+    v-if="canDelete && group && !state.reference && !state.recoveryUnavailable"
     class="web-stack"
   >
     <h3>Окончательное удаление</h3>
@@ -350,13 +372,16 @@ async function recover() {
     </div>
   </ConfirmDialog>
   <section
-    v-if="state.reference"
+    v-if="state.reference || state.recoveryUnavailable"
     class="web-notice web-stack"
     role="status"
     :aria-busy="busy"
   >
-    <h3>Удаление группы №{{ state.reference.groupId }}</h3>
-    <p>
+    <h3>{{ state.reference ? `Удаление группы №${state.reference.groupId}` : 'Проверка сохранённой операции' }}</h3>
+    <p v-if="state.recoveryUnavailable">
+      Не удалось прочитать исходную запись. Сначала восстанови доступ к сохранённому ключу операции.
+    </p>
+    <p v-else>
       {{
         state.operation ? phases[state.operation.phase] : 'Результат удаления пока неизвестен'
       }}.
